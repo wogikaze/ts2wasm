@@ -1,4 +1,5 @@
 use super::emitter::WatEmitter;
+use super::runtime_fn::RuntimeFn;
 use crate::ir::lowered::LocalId;
 use crate::ir::lowered::LoweredStmt;
 
@@ -39,7 +40,7 @@ impl WatEmitter<'_> {
                 else_body,
             } => {
                 self.emit_expr(wat, condition, indent);
-                wat.push_str(&format!("{pad}(call $truthy_bool)\n"));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
                 wat.push_str(&format!("{pad}(if\n"));
                 wat.push_str(&format!("{pad}  (then\n"));
                 self.emit_statements(wat, then_body, indent + 4);
@@ -55,7 +56,10 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(block $while_exit\n"));
                 wat.push_str(&format!("{pad}  (loop $while_loop\n"));
                 self.emit_expr(wat, condition, indent + 4);
-                wat.push_str(&format!("{pad}    (call $truthy_bool)\n"));
+                wat.push_str(&format!(
+                    "{pad}    (call {})\n",
+                    RuntimeFn::TruthyBool.symbol()
+                ));
                 wat.push_str(&format!("{pad}    (i32.eqz)\n"));
                 wat.push_str(&format!("{pad}    (br_if $while_exit)\n"));
                 self.emit_statements(wat, body, indent + 4);

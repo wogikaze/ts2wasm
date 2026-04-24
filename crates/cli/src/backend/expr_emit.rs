@@ -1,4 +1,5 @@
 use super::emitter::WatEmitter;
+use super::runtime_fn::RuntimeFn;
 use crate::ir::lowered::{
     BuiltinId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp,
 };
@@ -43,19 +44,21 @@ impl WatEmitter<'_> {
             LoweredExpr::Unary { op, expr } => {
                 self.emit_expr(wat, expr, indent);
                 match op {
-                    LoweredUnaryOp::Not => wat.push_str(&format!("{pad}(call $not)\n")),
+                    LoweredUnaryOp::Not => {
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Not.symbol()))
+                    }
                 }
             }
             LoweredExpr::Binary { left, op, right } => {
                 self.emit_expr(wat, left, indent);
                 self.emit_expr(wat, right, indent);
-                let func = match op {
-                    LoweredBinaryOp::Add => "$add",
-                    LoweredBinaryOp::Subtract => "$sub",
-                    LoweredBinaryOp::Less => "$less",
-                    LoweredBinaryOp::StrictEqual => "$strict_equal",
+                let runtime_fn = match op {
+                    LoweredBinaryOp::Add => RuntimeFn::Add,
+                    LoweredBinaryOp::Subtract => RuntimeFn::Sub,
+                    LoweredBinaryOp::Less => RuntimeFn::Less,
+                    LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
                 };
-                wat.push_str(&format!("{pad}(call {func})\n"));
+                wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
             }
             LoweredExpr::Call { kind, args } => {
                 for arg in args {
@@ -66,7 +69,7 @@ impl WatEmitter<'_> {
                         wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*func_id)));
                     }
                     FunctionCallKind::Builtin(BuiltinId::ConsoleLog) => {
-                        wat.push_str(&format!("{pad}(call $log)\n"));
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Log.symbol()));
                     }
                 }
             }
