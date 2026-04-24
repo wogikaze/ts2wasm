@@ -44,8 +44,16 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
     (func $read_stdin_utf8 (result i32)
+    ;; m6-3b reserved layout: stdin_buf={stdin_buf} stdin_size={stdin_size} read_max={read_max}
+    ;; m6-3b reserved fd_read slots: iovec_ptr={iovec_ptr} iovec_len={iovec_len} nread_ptr={nread_ptr}
     (i32.const {undefined_tag}))
   "#,
+        stdin_buf = Layout::STDIN_BUFFER_OFFSET,
+        stdin_size = Layout::STDIN_BUFFER_SIZE,
+        read_max = Layout::STDIN_READ_MAX_BYTES,
+        iovec_ptr = Layout::FD_READ_IOVEC_PTR,
+        iovec_len = Layout::FD_READ_IOVEC_LEN,
+        nread_ptr = Layout::FD_READ_NREAD_PTR,
             undefined_tag = ValueTag::UNDEFINED,
         ));
     }

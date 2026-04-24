@@ -74,6 +74,17 @@ impl<'a> WatEmitter<'a> {
                 span: None,
             });
         }
+        if self.next_data_offset < Layout::DATA_START {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "static data end ({}) is below data start ({})",
+                    self.next_data_offset,
+                    Layout::DATA_START
+                ),
+                span: None,
+            });
+        }
         let scratch_end = Layout::SCRATCH_OFFSET
             .checked_add(Layout::SCRATCH_SIZE)
             .ok_or_else(|| Diagnostic {
@@ -93,12 +104,54 @@ impl<'a> WatEmitter<'a> {
                 span: None,
             });
         }
+        if scratch_end > Layout::STDIN_BUFFER_OFFSET {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "scratch range [{}..{}) overlaps stdin buffer ({})",
+                    Layout::SCRATCH_OFFSET,
+                    scratch_end,
+                    Layout::STDIN_BUFFER_OFFSET
+                ),
+                span: None,
+            });
+        }
+        let stdin_end = Layout::STDIN_BUFFER_OFFSET
+            .checked_add(Layout::STDIN_BUFFER_SIZE)
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "stdin range overflow while validating memory layout".to_owned(),
+                span: None,
+            })?;
+        if stdin_end > Layout::HEAP_START {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "stdin range [{}..{}) overlaps heap start ({})",
+                    Layout::STDIN_BUFFER_OFFSET,
+                    stdin_end,
+                    Layout::HEAP_START
+                ),
+                span: None,
+            });
+        }
         if Layout::SCRATCH_OFFSET >= Layout::HEAP_START {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,
                 message: format!(
                     "scratch buffer ({}) must be below heap start ({})",
                     Layout::SCRATCH_OFFSET,
+                    Layout::HEAP_START
+                ),
+                span: None,
+            });
+        }
+        if Layout::STDIN_BUFFER_OFFSET >= Layout::HEAP_START {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "stdin buffer ({}) must be below heap start ({})",
+                    Layout::STDIN_BUFFER_OFFSET,
                     Layout::HEAP_START
                 ),
                 span: None,
