@@ -342,6 +342,14 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::BuiltinCall { builtin, args } => {
+                if matches!(builtin, BuiltinId::ReadStdinUtf8) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "require(\"fs\").readFileSync(0, \"utf8\") is recognized but runtime wiring is not implemented yet"
+                            .to_owned(),
+                        span: None,
+                    });
+                }
                 let lowered_args = args
                     .iter()
                     .map(|arg| self.lower_expr(arg))
@@ -818,6 +826,19 @@ mod tests {
         assert!(
             errs.iter()
                 .any(|e| e.code == super::DiagCode::ArityMismatch)
+        );
+    }
+
+    #[test]
+    fn lowering_rejects_read_file_sync_idiom_until_runtime_is_connected() {
+        let ast =
+            crate::parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
+        let resolved = crate::ir::builtin_resolver::resolve_builtins(&ast).unwrap();
+        let err = lower_program(&resolved).unwrap_err();
+        assert_eq!(err.code, super::DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message
+                .contains("recognized but runtime wiring is not implemented")
         );
     }
 }

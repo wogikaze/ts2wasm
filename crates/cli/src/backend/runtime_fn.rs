@@ -87,6 +87,7 @@ impl RuntimeFn {
     pub(crate) const fn from_builtin(builtin: BuiltinId) -> Self {
         match builtin {
             BuiltinId::ConsoleLog => Self::Log,
+            BuiltinId::ReadStdinUtf8 => Self::ReadStdinUtf8,
         }
     }
 

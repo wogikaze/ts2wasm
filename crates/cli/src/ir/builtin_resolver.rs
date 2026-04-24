@@ -1,4 +1,4 @@
-use crate::{Diagnostic, Expr, Stmt};
+use crate::{DiagCode, Diagnostic, Expr, Stmt};
 
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
@@ -78,7 +78,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .iter()
                 .map(resolve_expr)
                 .collect::<Result<Vec<_>, _>>()?;
-            if let Some(builtin) = resolve_builtin_call(callee.as_ref()) {
+            if let Some(builtin) = resolve_builtin_call(callee.as_ref(), args)? {
                 Ok(ResolvedExpr::BuiltinCall {
                     builtin,
                     args: resolved_args,
@@ -125,29 +125,125 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     }
 }
 
-fn resolve_builtin_call(callee: &Expr) -> Option<BuiltinId> {
+fn resolve_builtin_call(
+    callee: &Expr,
+    call_args: &[Expr],
+) -> Result<Option<BuiltinId>, Diagnostic> {
     let Expr::Member {
         object, property, ..
     } = callee
     else {
-        return None;
+        return Ok(None);
     };
+
     let Expr::Ident {
         name: object_name, ..
     } = object.as_ref()
     else {
-        return None;
+        if is_require_fs_read_file_sync_callee(callee) {
+            validate_read_stdin_utf8_args(call_args, callee)?;
+            return Ok(Some(BuiltinId::ReadStdinUtf8));
+        }
+        return Ok(None);
     };
+
     if object_name == "console" && property == "log" {
-        Some(BuiltinId::ConsoleLog)
-    } else {
-        None
+        return Ok(Some(BuiltinId::ConsoleLog));
+    }
+
+    Ok(None)
+}
+
+fn is_require_fs_read_file_sync_callee(callee: &Expr) -> bool {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return false;
+    };
+    if property != "readFileSync" {
+        return false;
+    }
+    let Expr::Call {
+        callee: require_callee,
+        args,
+        ..
+    } = object.as_ref()
+    else {
+        return false;
+    };
+    let Expr::Ident {
+        name: require_name, ..
+    } = require_callee.as_ref()
+    else {
+        return false;
+    };
+    if require_name != "require" {
+        return false;
+    }
+    matches!(args.as_slice(), [Expr::String { value, .. }] if value == "fs")
+}
+
+fn validate_read_stdin_utf8_args(args: &[Expr], callee: &Expr) -> Result<(), Diagnostic> {
+    if args.len() != 2 {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "require(\"fs\").readFileSync expects 2 arguments in this milestone, got {}",
+                args.len()
+            ),
+            span: span_of_expr(callee),
+        });
+    }
+    let fd_expr = &args[0];
+    let encoding_expr = &args[1];
+
+    match fd_expr {
+        Expr::Number { value: 0, .. } => {}
+        _ => {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "require(\"fs\").readFileSync currently supports only fd 0 as first argument"
+                        .to_owned(),
+                span: span_of_expr(fd_expr),
+            });
+        }
+    }
+
+    match encoding_expr {
+        Expr::String { value, .. } if value == "utf8" => Ok(()),
+        _ => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "require(\"fs\").readFileSync currently supports only \"utf8\" encoding"
+                .to_owned(),
+            span: span_of_expr(encoding_expr),
+        }),
+    }
+}
+
+fn span_of_expr(expr: &Expr) -> Option<crate::Span> {
+    match expr {
+        Expr::Number { span, .. }
+        | Expr::String { span, .. }
+        | Expr::Bool { span, .. }
+        | Expr::Null { span }
+        | Expr::Undefined { span }
+        | Expr::Ident { span, .. }
+        | Expr::Unary { span, .. }
+        | Expr::Binary { span, .. }
+        | Expr::Member { span, .. }
+        | Expr::Call { span, .. }
+        | Expr::Array { span, .. }
+        | Expr::Object { span, .. }
+        | Expr::Index { span, .. } => Some(*span),
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::resolve_builtins;
+    use crate::DiagCode;
     use crate::ir::builtin::{BuiltinId, BuiltinPropertyId};
     use crate::ir::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 
@@ -194,6 +290,54 @@ mod tests {
         let resolved = resolve_builtins(&program).unwrap();
         match &resolved[1] {
             ResolvedStmt::Let(_, ResolvedExpr::ComputedIndex { .. }) => {}
+            other => panic!("unexpected resolved stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn read_file_sync_stdin_utf8_idiom_resolves_to_builtin_call() {
+        let program =
+            crate::parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
+        let resolved = resolve_builtins(&program).unwrap();
+        match &resolved[0] {
+            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
+                assert_eq!(*builtin, BuiltinId::ReadStdinUtf8);
+                assert_eq!(args.len(), 2);
+            }
+            other => panic!("unexpected resolved stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn read_file_sync_with_nonzero_fd_is_rejected() {
+        let program = crate::parse_program("require(\"fs\").readFileSync(1, \"utf8\");").unwrap();
+        let err = resolve_builtins(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("fd 0"));
+    }
+
+    #[test]
+    fn read_file_sync_with_missing_encoding_is_rejected() {
+        let program = crate::parse_program("require(\"fs\").readFileSync(0);").unwrap();
+        let err = resolve_builtins(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::ArityMismatch);
+    }
+
+    #[test]
+    fn read_file_sync_with_non_utf8_encoding_is_rejected() {
+        let program = crate::parse_program("require(\"fs\").readFileSync(0, \"ascii\");").unwrap();
+        let err = resolve_builtins(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("utf8"));
+    }
+
+    #[test]
+    fn non_fs_read_file_sync_is_not_misclassified() {
+        let program =
+            crate::parse_program("let s = require(\"path\").readFileSync(0, \"utf8\");").unwrap();
+        let resolved = resolve_builtins(&program).unwrap();
+        match &resolved[0] {
+            ResolvedStmt::Let(_, ResolvedExpr::Call { .. }) => {}
             other => panic!("unexpected resolved stmt: {other:?}"),
         }
     }

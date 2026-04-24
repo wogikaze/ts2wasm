@@ -1,6 +1,7 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum BuiltinId {
     ConsoleLog,
+    ReadStdinUtf8,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -19,12 +20,14 @@ impl BuiltinId {
     pub(crate) const fn expected_arity(self) -> usize {
         match self {
             Self::ConsoleLog => 1,
+            Self::ReadStdinUtf8 => 0,
         }
     }
 
     pub(crate) const fn result(self) -> BuiltinResult {
         match self {
             Self::ConsoleLog => BuiltinResult::EffectOnly,
+            Self::ReadStdinUtf8 => BuiltinResult::Value,
         }
     }
 }
