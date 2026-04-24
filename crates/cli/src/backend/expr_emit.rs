@@ -163,7 +163,7 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::PropertyGet { obj, key } => {
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
-                let key_len = self.string_len(key);
+                let key_len = self.ascii_string_len(key);
                 self.emit_expr(wat, obj, indent);
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
