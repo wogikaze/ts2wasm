@@ -94,6 +94,34 @@ pub(crate) enum LoweredExpr {
         kind: FunctionCallKind,
         args: Vec<LoweredExpr>,
     },
+    /// Array literal — allocates on heap; `base_local` is a compiler-allocated
+    /// temp used to hold the heap base pointer during construction;
+    /// `elem_temp` holds each element value during i32.store.
+    ArrayNew {
+        elements: Vec<LoweredExpr>,
+        base_local: LocalId,
+        elem_temp: LocalId,
+    },
+    /// Array index access: `arr[index]`.
+    ArrayGet {
+        arr: Box<LoweredExpr>,
+        index: Box<LoweredExpr>,
+    },
+    /// `.length` on arrays or strings.
+    GetLength(Box<LoweredExpr>),
+    /// Object literal — allocates on heap; `base_local` is a compiler-allocated
+    /// temp.  `val_temp` holds each property value during i32.store.
+    /// Keys are stored as raw interned-string RawValues.
+    ObjectNew {
+        props: Vec<(String, LoweredExpr)>,
+        base_local: LocalId,
+        val_temp: LocalId,
+    },
+    /// Data property read: `obj.key`.
+    PropertyGet {
+        obj: Box<LoweredExpr>,
+        key: String,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -255,9 +283,9 @@ impl<'a> Resolver<'a> {
     fn lower_stmt(&mut self, stmt: &Stmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
             Stmt::Let(name, expr) => {
-                let expr = self.lower_expr(expr)?;
+                let lowered = self.lower_expr(expr)?;
                 let local_id = self.declare_local(name)?;
-                Ok(LoweredStmt::Let(local_id, expr))
+                Ok(LoweredStmt::Let(local_id, lowered))
             }
             Stmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
@@ -309,10 +337,19 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    fn lower_expr(&self, expr: &Expr) -> Result<LoweredExpr, Diagnostic> {
+    fn lower_expr(&mut self, expr: &Expr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
             Expr::Number(value) => Ok(LoweredExpr::Number(*value)),
-            Expr::String(value) => Ok(LoweredExpr::String(value.clone())),
+            Expr::String(value) => {
+                if !value.is_ascii() {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "non-ASCII string literals are not supported in M5".to_owned(),
+                        span: None,
+                    });
+                }
+                Ok(LoweredExpr::String(value.clone()))
+            }
             Expr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
             Expr::Null => Ok(LoweredExpr::Null),
             Expr::Undefined => Ok(LoweredExpr::Undefined),
@@ -338,20 +375,55 @@ impl<'a> Resolver<'a> {
                         });
                     }
                 };
+                let lowered_args = args
+                    .iter()
+                    .map(|arg| self.lower_expr(arg))
+                    .collect::<Result<Vec<_>, _>>()?;
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(self.resolve_func(func_name)?),
-                    args: args
-                        .iter()
-                        .map(|arg| self.lower_expr(arg))
-                        .collect::<Result<Vec<_>, _>>()?,
+                    args: lowered_args,
                 })
             }
-            Expr::Member { .. } => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "member expressions are only supported as console.log(...) callee"
-                    .to_owned(),
-                span: None,
+            Expr::Member { object, property } => {
+                if property == "length" {
+                    Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?)))
+                } else {
+                    Ok(LoweredExpr::PropertyGet {
+                        obj: Box::new(self.lower_expr(object)?),
+                        key: property.clone(),
+                    })
+                }
+            }
+            Expr::Index { object, index } => Ok(LoweredExpr::ArrayGet {
+                arr: Box::new(self.lower_expr(object)?),
+                index: Box::new(self.lower_expr(index)?),
             }),
+            Expr::Array(elements) => {
+                let base_local = self.alloc_temp();
+                let elem_temp = self.alloc_temp();
+                let lowered = elements
+                    .iter()
+                    .map(|e| self.lower_expr(e))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::ArrayNew {
+                    elements: lowered,
+                    base_local,
+                    elem_temp,
+                })
+            }
+            Expr::Object(props) => {
+                let base_local = self.alloc_temp();
+                let val_temp = self.alloc_temp();
+                let lowered = props
+                    .iter()
+                    .map(|(k, v)| Ok((k.clone(), self.lower_expr(v)?)))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::ObjectNew {
+                    props: lowered,
+                    base_local,
+                    val_temp,
+                })
+            }
         }
     }
 
@@ -386,6 +458,14 @@ impl<'a> Resolver<'a> {
         self.locals.push(local_id);
         scope.insert(name.to_owned(), local_id);
         Ok(local_id)
+    }
+
+    /// Allocate an anonymous compiler-temporary local (not user-visible).
+    fn alloc_temp(&mut self) -> LocalId {
+        let id = LocalId(self.next_local_id);
+        self.next_local_id += 1;
+        self.locals.push(id);
+        id
     }
 
     fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
@@ -624,6 +704,38 @@ fn validate_expr(
                 }
             }
         }
+        LoweredExpr::ArrayNew {
+            elements,
+            base_local,
+            elem_temp,
+        } => {
+            check_local_id(*base_local, local_count, errors);
+            check_local_id(*elem_temp, local_count, errors);
+            for elem in elements {
+                validate_expr(elem, local_count, num_funcs, program, errors, true);
+            }
+        }
+        LoweredExpr::ArrayGet { arr, index } => {
+            validate_expr(arr, local_count, num_funcs, program, errors, true);
+            validate_expr(index, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::GetLength(expr) => {
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::ObjectNew {
+            props,
+            base_local,
+            val_temp,
+        } => {
+            check_local_id(*base_local, local_count, errors);
+            check_local_id(*val_temp, local_count, errors);
+            for (_, val) in props {
+                validate_expr(val, local_count, num_funcs, program, errors, true);
+            }
+        }
+        LoweredExpr::PropertyGet { obj, .. } => {
+            validate_expr(obj, local_count, num_funcs, program, errors, true);
+        }
         _ => {}
     }
 }
@@ -694,6 +806,14 @@ mod tests {
         let program = crate::parse_program("function f(a, a) { return a; }").unwrap();
         let err = lower_program(&program).unwrap_err();
         assert_eq!(err.code, super::DiagCode::DuplicateParameter);
+    }
+
+    #[test]
+    fn lowering_rejects_non_ascii_string_literal() {
+        let program = crate::parse_program("let s = \"あ\";").unwrap();
+        let err = lower_program(&program).unwrap_err();
+        assert_eq!(err.code, super::DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("non-ASCII"));
     }
 
     #[test]
