@@ -237,12 +237,36 @@ Planned follow-up after M6-3b:
 - Replace ASCII-only stdin behavior with real UTF-8 decode and JS string semantics (UTF-16 code unit length and indexing behavior).
 - Revisit non-ASCII stdin handling and differential tests under the updated string model.
 
-## M6 runtime layout status (M6-3b-1)
+## M6 memory layout contract (M6-3b-0)
 
 Implemented in this slice:
 
-- Added stdin runtime layout constants: `STDIN_BUFFER_OFFSET`, `STDIN_BUFFER_SIZE`, and `STDIN_READ_MAX_BYTES` (`64 * 1024`).
-- Added dedicated `fd_read` staging constants: `FD_READ_IOVEC_PTR`, `FD_READ_IOVEC_LEN`, `FD_READ_NREAD_PTR`.
+- Renamed `FD_READ_IOVEC_PTR` / `FD_READ_IOVEC_LEN` / `FD_READ_NREAD_PTR` to `STDIN_IOVEC_PTR` / `STDIN_IOVEC_LEN` / `STDIN_NREAD_OFFSET` for consistent `STDIN_` prefix.
+- Added `STDIN_IOVEC_OFFSET = 16` (base offset of the stdin `fd_read` iovec structure).
+- Renamed `STDIN_READ_MAX_BYTES` to `STDIN_READ_LIMIT = 64 * 1024` (64 KiB cap per `readFileSync(0)` call).
+- Extended `validate_memory_layout` in `emitter.rs` with three additional checks:
+  - stdin iovec/nread region `[STDIN_IOVEC_OFFSET .. STDIN_NREAD_OFFSET + 4)` does not overlap `STDIN_BUFFER_OFFSET`.
+  - `HEAP_START % ALIGN == 0` (RawValue heap pointer tag safety).
+- Added layout unit tests:
+  - `stdin_iovec_and_nread_do_not_overlap_stdin_buffer`
+  - `heap_start_is_aligned_to_raw_value_alignment`
+  - `stdin_read_limit_is_64k`
+  - `scratch_stdin_heap_are_ordered`
+
+Not implemented in this slice:
+
+- `$read_stdin_utf8` fd_read runtime body.
+- fd_read loop and EOF handling.
+- UTF-8 decode / non-ASCII byte handling.
+- `ENABLE_READ_STDIN_UTF8_RUNTIME` gate activation.
+- stdin differential fixture execution.
+
+## M6 runtime layout status (M6-3b-1)
+
+Implemented in this slice (superseded by M6-3b-0 renaming):
+
+- Added stdin runtime layout constants: `STDIN_BUFFER_OFFSET`, `STDIN_BUFFER_SIZE`, and `STDIN_READ_LIMIT` (`64 * 1024`).
+- Added dedicated `fd_read` staging constants: `STDIN_IOVEC_PTR`, `STDIN_IOVEC_LEN`, `STDIN_NREAD_OFFSET`.
 - Extended backend memory layout validation to enforce ordered fixed regions:
 	- `DATA_START <= static data end`
 	- `static data end <= SCRATCH_OFFSET`

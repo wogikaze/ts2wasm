@@ -53,11 +53,16 @@ backend が直接数値を埋め込むことは禁止。
 ```text
 linear memory (4 MiB):
 
-  [0 .. 8)            — iovec 領域 (IOVEC_PTR=8, IOVEC_LEN=12)
-  [8 .. DATA_START)   — 予約
-  [DATA_START .. SCRATCH_OFFSET)  — static data segment (interned strings)
-  [SCRATCH_OFFSET .. HEAP_START)  — scratch buffer ($value_to_string_into 用)
-  [HEAP_START .. )    — heap ($heap global, bump allocator)
+  [0 .. 8)                          — 予約
+  [8 .. 16)                         — fd_write iovec (IOVEC_PTR=8, IOVEC_LEN=12)
+  [16 .. 28)                        — stdin fd_read iovec + nread slot
+                                       (STDIN_IOVEC_OFFSET=16, STDIN_IOVEC_PTR=16,
+                                        STDIN_IOVEC_LEN=20, STDIN_NREAD_OFFSET=24)
+  [28 .. DATA_START)                — 予約
+  [DATA_START .. SCRATCH_OFFSET)    — static data segment (interned strings)
+  [SCRATCH_OFFSET .. SCRATCH_OFFSET+SCRATCH_SIZE) — scratch buffer ($value_to_string_into 用)
+  [STDIN_BUFFER_OFFSET .. STDIN_BUFFER_OFFSET+STDIN_BUFFER_SIZE) — stdin read staging buffer
+  [HEAP_START .. )                  — heap ($heap global, bump allocator)
 ```
 
 定数は `runtime/layout.rs` の `Layout` で定義する。
@@ -67,9 +72,45 @@ linear memory (4 MiB):
 | `DATA_START` | 256 | interned string data の開始オフセット |
 | `ALIGN` | 8 | data segment / heap の alignment |
 | `SCRATCH_OFFSET` | 1500 | 一時バッファの開始オフセット |
+| `SCRATCH_SIZE` | 256 | 一時バッファのサイズ |
 | `HEAP_START` | 2048 | heap bump allocator の開始アドレス |
-| `IOVEC_PTR` | 8 | iovec の ptr フィールドオフセット |
-| `IOVEC_LEN` | 12 | iovec の len フィールドオフセット |
+| `IOVEC_PTR` | 8 | fd_write iovec の ptr フィールドオフセット |
+| `IOVEC_LEN` | 12 | fd_write iovec の len フィールドオフセット |
+| `STDIN_IOVEC_OFFSET` | 16 | stdin fd_read iovec 構造体のベースオフセット |
+| `STDIN_IOVEC_PTR` | 16 | stdin fd_read iovec の buf ptr フィールドオフセット |
+| `STDIN_IOVEC_LEN` | 20 | stdin fd_read iovec の buf_len フィールドオフセット |
+| `STDIN_NREAD_OFFSET` | 24 | fd_read が書き込む nread 値のオフセット |
+| `STDIN_BUFFER_OFFSET` | 1792 | stdin read staging buffer の開始オフセット |
+| `STDIN_BUFFER_SIZE` | 256 | stdin read staging buffer のサイズ |
+| `STDIN_READ_LIMIT` | 65536 | 1 回の readFileSync(0) で読める最大バイト数 (64 KiB) |
+
+### M6 stdin 固定メモリレイアウト (M6-3b-0)
+
+M6-3b では `require("fs").readFileSync(0, "utf8")` を WASI `fd_read` に lowering する。
+runtime 本体の実装前に、以下のメモリ領域を固定する。
+
+```text
+fd_read 用 iovec 構造体 (WASI preview1):
+  [STDIN_IOVEC_OFFSET=16 .. +4) : buf ptr  (ここに STDIN_BUFFER_OFFSET を書き込む)
+  [STDIN_IOVEC_LEN=20   .. +4) : buf_len  (ここに STDIN_BUFFER_SIZE を書き込む)
+  [STDIN_NREAD_OFFSET=24 .. +4) : nread   (fd_read が実際に読んだバイト数を書き込む)
+
+stdin staging buffer:
+  [STDIN_BUFFER_OFFSET=1792 .. +STDIN_BUFFER_SIZE=256) : 読み込みバイト列
+
+1 回の fd_read chunk サイズ上限: STDIN_BUFFER_SIZE = 256 bytes
+readFileSync(0) 全体の上限: STDIN_READ_LIMIT = 64 KiB
+```
+
+M6-3b-0 では M6-3b ASCII-only stdin runtime を予定している。
+`fd_read` を繰り返し呼び出して STDIN_READ_LIMIT まで読み込み、
+結果を heap 上の string object として返す。
+
+> **M6-3b 制約**: stdin バイト列は ASCII-only (0x00–0x7F) のみ正しく動作する。
+> バイト値 `>= 0x80` は M6-3b では未定義動作。UTF-8 decode と JS string semantics は後続 slice で実装予定。
+
+> **実装状態 (M6-3b-0)**: メモリレイアウト定数の確定と validation 追加のみ。
+> `$read_stdin_utf8` runtime 本体は未実装。`fd_read` loop も未実装。
 
 ### Heap String Object
 
