@@ -178,7 +178,11 @@ impl<'a> Lexer<'a> {
 
     fn tokenize(mut self) -> Result<Vec<SpannedToken>, Diagnostic> {
         let mut tokens = Vec::new();
+        self.skip_bom();
         while let Some(ch) = self.peek_char() {
+            if self.skip_ignored()? {
+                continue;
+            }
             let start = self.cursor;
             match ch {
                 ch if ch.is_whitespace() => {
@@ -186,7 +190,7 @@ impl<'a> Lexer<'a> {
                 }
                 '0'..='9' => tokens.push(self.number()?),
                 '"' | '\'' => tokens.push(self.string()?),
-                'a'..='z' | 'A'..='Z' | '_' => tokens.push(self.ident_or_keyword()),
+                'a'..='z' | 'A'..='Z' | '_' | '$' => tokens.push(self.ident_or_keyword()),
                 '+' => {
                     self.advance_char();
                     tokens.push(SpannedToken {
@@ -375,6 +379,60 @@ impl<'a> Lexer<'a> {
         Ok(tokens)
     }
 
+    fn skip_bom(&mut self) {
+        if self.cursor == 0 && self.peek_char() == Some('\u{feff}') {
+            self.advance_char();
+        }
+    }
+
+    fn skip_ignored(&mut self) -> Result<bool, Diagnostic> {
+        match (self.peek_char(), self.peek_next_char()) {
+            (Some('\u{feff}'), _) => {
+                self.advance_char();
+                Ok(true)
+            }
+            (Some('/'), Some('/')) => {
+                self.advance_char();
+                self.advance_char();
+                while let Some(ch) = self.peek_char() {
+                    if ch == '\n' || ch == '\r' {
+                        break;
+                    }
+                    self.advance_char();
+                }
+                Ok(true)
+            }
+            (Some('/'), Some('*')) => {
+                let start = self.cursor;
+                self.advance_char();
+                self.advance_char();
+                loop {
+                    match (self.peek_char(), self.peek_next_char()) {
+                        (Some('*'), Some('/')) => {
+                            self.advance_char();
+                            self.advance_char();
+                            return Ok(true);
+                        }
+                        (Some(_), _) => {
+                            self.advance_char();
+                        }
+                        (None, _) => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "unterminated block comment".to_owned(),
+                                span: Some(Span {
+                                    start,
+                                    end: self.cursor,
+                                }),
+                            });
+                        }
+                    }
+                }
+            }
+            _ => Ok(false),
+        }
+    }
+
     fn number(&mut self) -> Result<SpannedToken, Diagnostic> {
         let start = self.cursor;
         while matches!(self.peek_char(), Some('0'..='9')) {
@@ -463,7 +521,7 @@ impl<'a> Lexer<'a> {
         let start = self.cursor;
         while matches!(
             self.peek_char(),
-            Some('a'..='z' | 'A'..='Z' | '0'..='9' | '_')
+            Some('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '$')
         ) {
             self.advance_char();
         }
@@ -491,6 +549,12 @@ impl<'a> Lexer<'a> {
 
     fn peek_char(&self) -> Option<char> {
         self.source[self.cursor..].chars().next()
+    }
+
+    fn peek_next_char(&self) -> Option<char> {
+        let mut chars = self.source[self.cursor..].chars();
+        chars.next()?;
+        chars.next()
     }
 
     fn advance_char(&mut self) -> Option<char> {
@@ -1402,6 +1466,38 @@ mod tests {
     }
 
     #[test]
+    fn parses_program_with_utf8_bom() {
+        let program = parse_program("\u{feff}console.log(1);").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn parses_program_with_line_comment_prefix() {
+        let program = parse_program("// lead comment\nconsole.log(1);").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn parses_program_with_block_comment_prefix() {
+        let program = parse_program("/*--- metadata ---*/\nconsole.log(1);").unwrap();
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn parses_program_with_dollar_identifier() {
+        let program = parse_program("let $done = 1; console.log($done);").unwrap();
+        assert_eq!(program.len(), 2);
+    }
+
+    #[test]
+    fn rejects_unterminated_block_comment() {
+        let err = parse_program("/* unterminated").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("unterminated block comment"));
+        assert!(err.span.is_some());
+    }
+
+    #[test]
     fn rejects_unsupported_statement() {
         let error = parse_program("const x = 1;").unwrap_err();
         assert_eq!(error.code, DiagCode::UnsupportedSyntax);
@@ -1439,6 +1535,7 @@ mod tests {
         let ast = parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
         let resolved = ir::builtin_resolver::resolve_builtins(&ast).unwrap();
         let lowered = ir::lowered::lower_program(&resolved).unwrap();
-        ensure_runtime_feature_gates(&lowered).expect("gate must pass after M6-3b-1 enables runtime");
+        ensure_runtime_feature_gates(&lowered)
+            .expect("gate must pass after M6-3b-1 enables runtime");
     }
 }
