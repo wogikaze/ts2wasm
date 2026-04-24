@@ -24,7 +24,7 @@ test262 は巨大なので、最初から全件 pass を要求するのではな
 
 TypeScript tests は、構文と型の互換性を見るために使う。`tsc` と同じ診断を最初から完全再現する必要はないが、parser の AST 差分、checker の symbol 差分、emit 前 IR の差分は追跡する。
 
-Coverage dashboard は、少なくとも suite、shard、semantic area、target、status を軸に集計する。M8 以降は、`unsupported` と `blocked` の増減を pass rate とは別に表示し、未対応の増加を coverage 改善として扱わない。
+Coverage dashboard は、少なくとも suite、shard、semantic area、target、status を軸に集計する。運用上の実測 dashboard は `docs/16-coverage-matrix.md` を正とする。M8 以降は、`unsupported` と `blocked` の増減を pass rate とは別に表示し、未対応の増加を coverage 改善として扱わない。
 
 ## 追加設計: required test classes
 

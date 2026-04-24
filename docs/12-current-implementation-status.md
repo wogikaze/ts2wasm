@@ -1,6 +1,6 @@
 # Current implementation status
 
-Last updated: 2026-04-24
+Last updated: 2026-04-25
 
 この文書は、現在実装済みの事実だけを記録する。ロードマップ、目標、設計意図は他の docs に置き、この文書では「今できること」と「まだできないこと」を混ぜない。
 
@@ -39,6 +39,7 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 | M5 array/object fixtures vs Node | pass for curated fixtures |
 | Precomputed stdout embedding check | pass for M2/M3 fixtures |
 | `iwasm --version` | pass, `iwasm 2.4.3` |
+| `scripts/update_coverage_matrix.sh --check` | pass locally; PR gate path is wired |
 
 ## Not implemented
 
@@ -53,6 +54,34 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 | Actual capability manifest emission from source analysis | not implemented |
 | test262 integration | not implemented |
 | performance benchmark harness | not implemented |
+
+## Reference coverage bootstrap
+
+Implemented in this slice:
+
+- `docs/16-coverage-matrix.md` now tracks reference-suite coverage against `reference/test262`, `reference/TypeScript/tests/cases/compiler`, and `reference/typescript-go/testdata/tests`.
+- `scripts/reference_coverage.sh` classifies compile results as `pass` / `unsupported` / `fail` / `blocked` and emits `unsupported_diagcodes` so unsupported work can be prioritized by `DiagCode`.
+- `scripts/update_coverage_matrix.sh` ramps executed counts automatically (`test262:+50`, `tsc:+30`, `tsgo:+20`) and rewrites the coverage table in `docs/16-coverage-matrix.md`.
+- PR gate path is wired via `.github/workflows/reference-coverage.yml`; scheduled runs update `docs/16-coverage-matrix.md` through an automated PR.
+
+Current measured sample state:
+
+- `test262`: 200 executed, dominant unsupported diagnostics are `UnsupportedSyntax`, `UnresolvedName`, and `UnresolvedFunction`.
+- `TypeScript compiler cases`: 120 executed, currently dominated by `UnsupportedSyntax`.
+- `typescript-go testdata`: 80 executed, with 3 sample cases already compiling successfully.
+
+## Reference parser compatibility slice
+
+Implemented in this slice:
+
+- Lexer now skips UTF-8 BOM at file start.
+- Lexer now skips `//` line comments and `/* ... */` block comments.
+- Lexer now accepts `$` in identifier start/body positions.
+
+Impact:
+
+- Early reference-suite failures no longer stop immediately on file-header comments or BOM.
+- test262 sample failures progressed from lexer-frontier errors (`unsupported character: /`) to more meaningful semantic blockers such as `UnresolvedName(Date)` and parser gaps after metadata is consumed.
 
 ## Current M0 gaps
 

@@ -32,6 +32,7 @@
 | `docs/13-coding-standard.md` | Rust コード規約。panic 禁止、Diagnostic、Span、IR variant 追加、backend WAT 直書き禁止、RuntimeFn catalog | なし | 新規追加 |
 | `docs/14-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 | なし | 新規追加 |
 | `docs/15-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI | なし | 新規追加 |
+| `docs/16-coverage-matrix.md` | reference test coverage dashboard。test262/TypeScript/tests を分母に進捗管理 | `docs/06` の coverage 方針を実測値で運用 | 新規追加 |
 | `docs/99-original-plan.md` | lossless source | 全文 | なし |
 
 ## Recommended maintenance rule
@@ -42,4 +43,5 @@
 - 実装状況が変わった場合、`docs/12-current-implementation-status.md` を同じ変更で更新する。
 - milestone、test status schema、capability manifest、optimization mode、benchmark policy を更新する場合、`docs/11-shared-definitions.md` を更新し、個別 doc では再定義しない。
 - `docs/13-coding-standard.md`、`docs/14-ir-contracts.md`、`docs/15-runtime-abi.md` を追加した場合は、コード規約・IR 不変条件・runtime ABI が実装に反映されているか確認する。
+- coverage 進捗更新は `docs/16-coverage-matrix.md` の reference suite 行を同じ変更で更新する。
 - host API を増やした場合、`docs/03-api-and-host-capability.md`、`docs/09-security-and-capability-model.md`、`docs/11-shared-definitions.md` の capability manifest を同時に確認する。

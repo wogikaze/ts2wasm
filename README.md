@@ -26,6 +26,7 @@ TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず
 | `docs/13-coding-standard.md` | Rust コード規約。panic 禁止、Diagnostic、Span、IR variant 追加、backend WAT 直書き禁止、RuntimeFn catalog |
 | `docs/14-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 |
 | `docs/15-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI |
+| `docs/16-coverage-matrix.md` | reference test coverage dashboard。test262/TypeScript/tests を分母にした進捗可視化 |
 | `docs/99-original-plan.md` | 元 PLAN 原文。情報欠落チェック用 |
 
 ## First implementation slice
