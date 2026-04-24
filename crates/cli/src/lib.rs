@@ -82,7 +82,7 @@ pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
             span: None,
         })
     })?;
-    let wat = backend::emit_wat(&lowered);
+    let wat = backend::emit_wat(&lowered)?;
     write_wasm_from_wat(&wat, output)
 }
 

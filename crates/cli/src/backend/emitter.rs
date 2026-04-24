@@ -4,8 +4,9 @@ use crate::ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
 use crate::runtime::consts::RuntimeString;
 use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
+use crate::{DiagCode, Diagnostic};
 
-pub(crate) fn emit_wat(program: &LoweredProgram) -> String {
+pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     WatEmitter::new(program).emit()
 }
 
@@ -40,7 +41,8 @@ impl<'a> WatEmitter<'a> {
         emitter
     }
 
-    fn emit(self) -> String {
+    fn emit(self) -> Result<String, Diagnostic> {
+        self.validate_memory_layout()?;
         let mut wat = String::new();
         wat.push_str("(module\n");
         wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
@@ -54,7 +56,33 @@ impl<'a> WatEmitter<'a> {
         self.emit_functions(&mut wat);
         self.emit_start(&mut wat);
         wat.push_str(")\n");
-        wat
+        Ok(wat)
+    }
+
+    fn validate_memory_layout(&self) -> Result<(), Diagnostic> {
+        if self.next_data_offset > Layout::SCRATCH_OFFSET {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "static data segment ({}) overlaps scratch buffer ({})",
+                    self.next_data_offset,
+                    Layout::SCRATCH_OFFSET
+                ),
+                span: None,
+            });
+        }
+        if Layout::SCRATCH_OFFSET >= Layout::HEAP_START {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "scratch buffer ({}) must be below heap start ({})",
+                    Layout::SCRATCH_OFFSET,
+                    Layout::HEAP_START
+                ),
+                span: None,
+            });
+        }
+        Ok(())
     }
 
     fn collect_program_strings(&mut self, statements: &[LoweredStmt]) {
