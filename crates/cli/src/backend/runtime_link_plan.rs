@@ -147,7 +147,6 @@ impl RuntimeLinkPlan {
             }
             LoweredExpr::PropertyGet { obj, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
-                self.add_required_runtime(RuntimeFn::MemEqual);
                 self.collect_required_runtime_expr(obj);
             }
         }

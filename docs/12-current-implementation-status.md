@@ -150,11 +150,11 @@ Current M5 limitations:
 
 ## P0 technical debt carried from M5
 
-The following architectural requirements were deferred during M5 in order to ship the prototype:
+The following architectural requirements are tracked from the M5 prototype phase:
 
 | Item | Status | Impact |
 |---|---|---|
-| RuntimeLinkPlan — separate from WatEmitter | deferred | WatEmitter still owns link planning; adding new runtime functions risks coupling |
+| RuntimeLinkPlan — separate from WatEmitter | done | RuntimeLinkPlan is isolated from WatEmitter and used as the backend link-plan input |
 | AST node span — all `Expr`/`Stmt` carry source span | deferred | New diagnostics (non-ASCII, unsupported-syntax) emit `span: None` |
 | BuiltinResolver pass — separate from Resolver/lowering | deferred | `.length` and property lowering are inline in `Resolver::lower_expr`; scale-out risk |
 | Capability manifest output | deferred | Generated WASM has no associated manifest; capability traceability absent |
