@@ -39,6 +39,22 @@ fn m5_array_object_fixtures_match_node_output_under_iwasm() {
     }
 }
 
+#[test]
+fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        // tag-check safety: out-of-bounds array access → undefined
+        "fixtures/m5/array-oob.ts",
+        // tag-check safety: non-number index on array → undefined
+        "fixtures/m5/array-nonnumber-index.ts",
+        // tag-check safety: .length on number and plain object → undefined
+        "fixtures/m5/length-tag.ts",
+        // duplicate-key semantics: last key wins → 2
+        "fixtures/m5/object-dup-key.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
 fn assert_fixture_matches_node(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
