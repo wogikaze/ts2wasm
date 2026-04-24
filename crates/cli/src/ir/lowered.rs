@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::runtime::value::ValueTag;
 use crate::{BinaryOp, DiagCode, Diagnostic, Expr, Stmt, UnaryOp};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -33,7 +34,7 @@ pub(crate) struct LoweredFunction {
 pub(crate) enum LoweredStmt {
     Let(LocalId, LoweredExpr),
     Assign(LocalId, LoweredExpr),
-    ConsoleLog(LoweredExpr),
+    Expr(LoweredExpr),
     If {
         condition: LoweredExpr,
         then_body: Vec<LoweredStmt>,
@@ -139,7 +140,7 @@ fn lower_function(
     body: &[Stmt],
     function_ids: &HashMap<String, FuncId>,
 ) -> Result<LoweredFunction, Diagnostic> {
-    let (mut resolver, param_ids) = Resolver::with_params(function_ids, params);
+    let (mut resolver, param_ids) = Resolver::with_params(function_ids, params)?;
     let body = resolver.lower_block(body)?;
 
     Ok(LoweredFunction {
@@ -185,7 +186,7 @@ impl<'a> Resolver<'a> {
     fn with_params(
         function_ids: &'a HashMap<String, FuncId>,
         params: &[String],
-    ) -> (Self, Vec<LocalId>) {
+    ) -> Result<(Self, Vec<LocalId>), Diagnostic> {
         let mut resolver = Self {
             function_ids,
             scopes: vec![HashMap::new()],
@@ -193,8 +194,17 @@ impl<'a> Resolver<'a> {
             locals: Vec::new(),
         };
         let mut param_ids = Vec::new();
+        let mut seen_params = HashMap::new();
 
         for param in params {
+            if seen_params.contains_key(param) {
+                return Err(Diagnostic {
+                    code: DiagCode::DuplicateParameter,
+                    message: format!("duplicate parameter name: `{param}`"),
+                    span: None,
+                });
+            }
+            seen_params.insert(param.clone(), ());
             let local_id = LocalId(resolver.next_local_id);
             resolver.next_local_id += 1;
             resolver
@@ -205,7 +215,7 @@ impl<'a> Resolver<'a> {
             param_ids.push(local_id);
         }
 
-        (resolver, param_ids)
+        Ok((resolver, param_ids))
     }
 
     fn lower_block(&mut self, statements: &[Stmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
@@ -234,7 +244,29 @@ impl<'a> Resolver<'a> {
                 let local_id = self.resolve_local(name)?;
                 Ok(LoweredStmt::Assign(local_id, self.lower_expr(expr)?))
             }
-            Stmt::ConsoleLog(expr) => Ok(LoweredStmt::ConsoleLog(self.lower_expr(expr)?)),
+            Stmt::Expr(expr) => {
+                if let Some(args) = Self::as_console_log_call(expr) {
+                    let lowered_args = args
+                        .iter()
+                        .map(|arg| self.lower_expr(arg))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    if lowered_args.len() != 1 {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "console.log expects 1 argument in this milestone, got {}",
+                                lowered_args.len()
+                            ),
+                            span: None,
+                        });
+                    }
+                    return Ok(LoweredStmt::Expr(LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                        args: lowered_args,
+                    }));
+                }
+                Ok(LoweredStmt::Expr(self.lower_expr(expr)?))
+            }
             Stmt::If {
                 condition,
                 then_body,
@@ -275,13 +307,49 @@ impl<'a> Resolver<'a> {
                 op: lower_binary_op(*op),
                 right: Box::new(self.lower_expr(right)?),
             }),
-            Expr::Call { name, args } => Ok(LoweredExpr::Call {
-                kind: FunctionCallKind::User(self.resolve_func(name)?),
-                args: args
-                    .iter()
-                    .map(|arg| self.lower_expr(arg))
-                    .collect::<Result<Vec<_>, _>>()?,
+            Expr::Call { callee, args } => {
+                let func_name = match callee.as_ref() {
+                    Expr::Ident(name) => name,
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "only identifier calls are supported in expression context"
+                                .to_owned(),
+                            span: None,
+                        });
+                    }
+                };
+                Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::User(self.resolve_func(func_name)?),
+                    args: args
+                        .iter()
+                        .map(|arg| self.lower_expr(arg))
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            }
+            Expr::Member { .. } => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "member expressions are only supported as console.log(...) callee"
+                    .to_owned(),
+                span: None,
             }),
+        }
+    }
+
+    fn as_console_log_call(expr: &Expr) -> Option<&[Expr]> {
+        let Expr::Call { callee, args } = expr else {
+            return None;
+        };
+        let Expr::Member { object, property } = callee.as_ref() else {
+            return None;
+        };
+        let Expr::Ident(object_name) = object.as_ref() else {
+            return None;
+        };
+        if object_name == "console" && property == "log" {
+            Some(args)
+        } else {
+            None
         }
     }
 
@@ -382,7 +450,7 @@ fn validate_stmt(
             check_local_id(*id, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors);
         }
-        LoweredStmt::ConsoleLog(expr) | LoweredStmt::Return(expr) => {
+        LoweredStmt::Expr(expr) | LoweredStmt::Return(expr) => {
             validate_expr(expr, local_count, num_funcs, program, errors);
         }
         LoweredStmt::If {
@@ -409,6 +477,19 @@ fn validate_expr(
     errors: &mut Vec<Diagnostic>,
 ) {
     match expr {
+        LoweredExpr::Number(n) => {
+            if !ValueTag::can_encode_number(*n) {
+                errors.push(Diagnostic {
+                    code: DiagCode::NumberOutOfRange,
+                    message: format!(
+                        "number literal {n} is out of M0 tagged-int range ({MIN}..={MAX})",
+                        MIN = ValueTag::NUMBER_PAYLOAD_MIN,
+                        MAX = ValueTag::NUMBER_PAYLOAD_MAX,
+                    ),
+                    span: None,
+                });
+            }
+        }
         LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
         LoweredExpr::Unary { expr, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors);
@@ -467,7 +548,9 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionCallKind, LoweredExpr, LoweredStmt, lower_program, validate_lowered};
+    use super::{
+        BuiltinId, FunctionCallKind, LoweredExpr, LoweredStmt, lower_program, validate_lowered,
+    };
 
     #[test]
     fn lowering_splits_functions_and_resolves_ids() {
@@ -483,9 +566,12 @@ mod tests {
         assert_eq!(lowered.top_level_locals.len(), 1);
 
         match &lowered.top_level_statements[1] {
-            LoweredStmt::ConsoleLog(LoweredExpr::Call { kind, args }) => {
-                assert!(matches!(kind, FunctionCallKind::User(_)));
-                assert!(matches!(args[0], LoweredExpr::Local(_)));
+            LoweredStmt::Expr(LoweredExpr::Call { kind, args }) => {
+                assert!(matches!(
+                    kind,
+                    FunctionCallKind::Builtin(BuiltinId::ConsoleLog)
+                ));
+                assert!(matches!(args[0], LoweredExpr::Call { .. }));
             }
             other => panic!("unexpected lowered statement: {other:?}"),
         }
@@ -508,6 +594,13 @@ mod tests {
     }
 
     #[test]
+    fn lowering_rejects_duplicate_parameter() {
+        let program = crate::parse_program("function f(a, a) { return a; }").unwrap();
+        let err = lower_program(&program).unwrap_err();
+        assert_eq!(err.code, super::DiagCode::DuplicateParameter);
+    }
+
+    #[test]
     fn validate_rejects_arity_mismatch() {
         // Build a program where add(a,b) is called with 3 args by manually
         // constructing a valid-but-wrong-arity LoweredProgram via parse then patch.
@@ -520,7 +613,7 @@ mod tests {
             locals: vec![],
             body: vec![],
         };
-        let call = LoweredStmt::ConsoleLog(LoweredExpr::Call {
+        let call = LoweredStmt::Expr(LoweredExpr::Call {
             kind: FunctionCallKind::User(FuncId(0)),
             // 3 args instead of the expected 2
             args: vec![

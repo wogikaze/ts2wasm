@@ -27,9 +27,11 @@ impl WatEmitter<'_> {
                 self.emit_expr(wat, expr, indent);
                 wat.push_str(&format!("{pad}(local.set {})\n", local_index(*local_id)));
             }
-            LoweredStmt::ConsoleLog(expr) => {
+            LoweredStmt::Expr(expr) => {
                 self.emit_expr(wat, expr, indent);
-                wat.push_str(&format!("{pad}(call $log)\n"));
+                if self.expr_produces_value(expr) {
+                    wat.push_str(&format!("{pad}(drop)\n"));
+                }
             }
             LoweredStmt::If {
                 condition,

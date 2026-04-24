@@ -67,7 +67,7 @@ impl<'a> WatEmitter<'a> {
         match statement {
             LoweredStmt::Let(_, expr)
             | LoweredStmt::Assign(_, expr)
-            | LoweredStmt::ConsoleLog(expr)
+            | LoweredStmt::Expr(expr)
             | LoweredStmt::Return(expr) => {
                 self.collect_expr_strings(expr);
             }

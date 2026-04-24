@@ -49,6 +49,10 @@ pub enum DiagCode {
     DuplicateFunction,
     /// Two local bindings share the same name in the same lexical scope.
     DuplicateLocal,
+    /// Two parameters share the same name in the same function parameter list.
+    DuplicateParameter,
+    /// A number literal is outside M0 tagged-small-int range.
+    NumberOutOfRange,
     /// A function call passes the wrong number of arguments.
     ArityMismatch,
     /// `return` is used in top-level script scope.
@@ -103,8 +107,6 @@ enum Token {
     If,
     Else,
     While,
-    Console,
-    Log,
     Plus,
     Minus,
     Less,
@@ -120,6 +122,12 @@ enum Token {
     Semicolon,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct SpannedToken {
+    kind: Token,
+    span: Span,
+}
+
 struct Lexer<'a> {
     source: &'a str,
     cursor: usize,
@@ -130,31 +138,56 @@ impl<'a> Lexer<'a> {
         Self { source, cursor: 0 }
     }
 
-    fn tokenize(mut self) -> Result<Vec<Token>, Diagnostic> {
+    fn tokenize(mut self) -> Result<Vec<SpannedToken>, Diagnostic> {
         let mut tokens = Vec::new();
         while let Some(ch) = self.peek_char() {
+            let start = self.cursor;
             match ch {
                 ch if ch.is_whitespace() => {
                     self.advance_char();
                 }
                 '0'..='9' => tokens.push(self.number()?),
-                '"' | '\'' => tokens.push(Token::String(self.string()?)),
+                '"' | '\'' => tokens.push(self.string()?),
                 'a'..='z' | 'A'..='Z' | '_' => tokens.push(self.ident_or_keyword()),
                 '+' => {
                     self.advance_char();
-                    tokens.push(Token::Plus);
+                    tokens.push(SpannedToken {
+                        kind: Token::Plus,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 '-' => {
                     self.advance_char();
-                    tokens.push(Token::Minus);
+                    tokens.push(SpannedToken {
+                        kind: Token::Minus,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 '!' => {
                     self.advance_char();
-                    tokens.push(Token::Bang);
+                    tokens.push(SpannedToken {
+                        kind: Token::Bang,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 '<' => {
                     self.advance_char();
-                    tokens.push(Token::Less);
+                    tokens.push(SpannedToken {
+                        kind: Token::Less,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 '=' => {
                     self.advance_char();
@@ -162,7 +195,13 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            tokens.push(Token::StrictEqual);
+                            tokens.push(SpannedToken {
+                                kind: Token::StrictEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
                         } else {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
@@ -174,36 +213,84 @@ impl<'a> Lexer<'a> {
                             });
                         }
                     } else {
-                        tokens.push(Token::Equal);
+                        tokens.push(SpannedToken {
+                            kind: Token::Equal,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
                     }
                 }
                 '(' => {
                     self.advance_char();
-                    tokens.push(Token::LeftParen);
+                    tokens.push(SpannedToken {
+                        kind: Token::LeftParen,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 ')' => {
                     self.advance_char();
-                    tokens.push(Token::RightParen);
+                    tokens.push(SpannedToken {
+                        kind: Token::RightParen,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 '{' => {
                     self.advance_char();
-                    tokens.push(Token::LeftBrace);
+                    tokens.push(SpannedToken {
+                        kind: Token::LeftBrace,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 '}' => {
                     self.advance_char();
-                    tokens.push(Token::RightBrace);
+                    tokens.push(SpannedToken {
+                        kind: Token::RightBrace,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 ',' => {
                     self.advance_char();
-                    tokens.push(Token::Comma);
+                    tokens.push(SpannedToken {
+                        kind: Token::Comma,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 '.' => {
                     self.advance_char();
-                    tokens.push(Token::Dot);
+                    tokens.push(SpannedToken {
+                        kind: Token::Dot,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 ';' => {
                     self.advance_char();
-                    tokens.push(Token::Semicolon);
+                    tokens.push(SpannedToken {
+                        kind: Token::Semicolon,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
                 }
                 other => {
                     return Err(Diagnostic {
@@ -220,7 +307,7 @@ impl<'a> Lexer<'a> {
         Ok(tokens)
     }
 
-    fn number(&mut self) -> Result<Token, Diagnostic> {
+    fn number(&mut self) -> Result<SpannedToken, Diagnostic> {
         let start = self.cursor;
         while matches!(self.peek_char(), Some('0'..='9')) {
             self.advance_char();
@@ -235,10 +322,16 @@ impl<'a> Lexer<'a> {
                     end: self.cursor,
                 }),
             })?;
-        Ok(Token::Number(value))
+        Ok(SpannedToken {
+            kind: Token::Number(value),
+            span: Span {
+                start,
+                end: self.cursor,
+            },
+        })
     }
 
-    fn string(&mut self) -> Result<String, Diagnostic> {
+    fn string(&mut self) -> Result<SpannedToken, Diagnostic> {
         let start = self.cursor;
         let quote = self.advance_char().ok_or(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
@@ -277,7 +370,13 @@ impl<'a> Lexer<'a> {
                 continue;
             }
             if ch == quote {
-                return Ok(value);
+                return Ok(SpannedToken {
+                    kind: Token::String(value),
+                    span: Span {
+                        start,
+                        end: self.cursor,
+                    },
+                });
             }
             value.push(ch);
         }
@@ -292,7 +391,7 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    fn ident_or_keyword(&mut self) -> Token {
+    fn ident_or_keyword(&mut self) -> SpannedToken {
         let start = self.cursor;
         while matches!(
             self.peek_char(),
@@ -300,7 +399,7 @@ impl<'a> Lexer<'a> {
         ) {
             self.advance_char();
         }
-        match &self.source[start..self.cursor] {
+        let kind = match &self.source[start..self.cursor] {
             "let" => Token::Let,
             "function" => Token::Function,
             "return" => Token::Return,
@@ -311,9 +410,14 @@ impl<'a> Lexer<'a> {
             "false" => Token::False,
             "null" => Token::Null,
             "undefined" => Token::Undefined,
-            "console" => Token::Console,
-            "log" => Token::Log,
             ident => Token::Ident(ident.to_owned()),
+        };
+        SpannedToken {
+            kind,
+            span: Span {
+                start,
+                end: self.cursor,
+            },
         }
     }
 
@@ -332,7 +436,7 @@ impl<'a> Lexer<'a> {
 enum Stmt {
     Let(String, Expr),
     Assign(String, Expr),
-    ConsoleLog(Expr),
+    Expr(Expr),
     If {
         condition: Expr,
         then_body: Vec<Stmt>,
@@ -367,8 +471,12 @@ enum Expr {
         op: BinaryOp,
         right: Box<Expr>,
     },
+    Member {
+        object: Box<Expr>,
+        property: String,
+    },
     Call {
-        name: String,
+        callee: Box<Expr>,
         args: Vec<Expr>,
     },
 }
@@ -387,12 +495,12 @@ enum UnaryOp {
 }
 
 struct Parser {
-    tokens: Vec<Token>,
+    tokens: Vec<SpannedToken>,
     cursor: usize,
 }
 
 impl Parser {
-    fn new(tokens: Vec<Token>) -> Self {
+    fn new(tokens: Vec<SpannedToken>) -> Self {
         Self { tokens, cursor: 0 }
     }
 
@@ -411,16 +519,17 @@ impl Parser {
             Some(Token::If) => self.if_statement(),
             Some(Token::While) => self.while_statement(),
             Some(Token::Return) => self.return_statement(),
-            Some(Token::Console) => self.console_log_statement(),
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Equal)) => {
                 self.assign_statement()
             }
-            other => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("unsupported statement: {other:?}"),
-                span: None,
-            }),
+            _ => self.expression_statement(),
         }
+    }
+
+    fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let expr = self.expression()?;
+        self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Expr(expr))
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -438,17 +547,6 @@ impl Parser {
         let expr = self.expression()?;
         self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::Assign(name, expr))
-    }
-
-    fn console_log_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        self.expect(TokenKind::Console)?;
-        self.expect(TokenKind::Dot)?;
-        self.expect(TokenKind::Log)?;
-        self.expect(TokenKind::LeftParen)?;
-        let expr = self.expression()?;
-        self.expect(TokenKind::RightParen)?;
-        self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::ConsoleLog(expr))
     }
 
     fn if_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -578,8 +676,41 @@ impl Parser {
                 expr: Box::new(expr),
             })
         } else {
-            self.primary()
+            self.call_member()
         }
+    }
+
+    fn call_member(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.primary()?;
+        loop {
+            if self.consume(TokenKind::Dot) {
+                let property = self.expect_ident()?;
+                expr = Expr::Member {
+                    object: Box::new(expr),
+                    property,
+                };
+                continue;
+            }
+            if self.consume(TokenKind::LeftParen) {
+                let mut args = Vec::new();
+                if !self.consume(TokenKind::RightParen) {
+                    loop {
+                        args.push(self.expression()?);
+                        if self.consume(TokenKind::RightParen) {
+                            break;
+                        }
+                        self.expect(TokenKind::Comma)?;
+                    }
+                }
+                expr = Expr::Call {
+                    callee: Box::new(expr),
+                    args,
+                };
+                continue;
+            }
+            break;
+        }
+        Ok(expr)
     }
 
     fn primary(&mut self) -> Result<Expr, Diagnostic> {
@@ -590,23 +721,7 @@ impl Parser {
             Some(Token::False) => Ok(Expr::Bool(false)),
             Some(Token::Null) => Ok(Expr::Null),
             Some(Token::Undefined) => Ok(Expr::Undefined),
-            Some(Token::Ident(name)) => {
-                if self.consume(TokenKind::LeftParen) {
-                    let mut args = Vec::new();
-                    if !self.consume(TokenKind::RightParen) {
-                        loop {
-                            args.push(self.expression()?);
-                            if self.consume(TokenKind::RightParen) {
-                                break;
-                            }
-                            self.expect(TokenKind::Comma)?;
-                        }
-                    }
-                    Ok(Expr::Call { name, args })
-                } else {
-                    Ok(Expr::Ident(name))
-                }
-            }
+            Some(Token::Ident(name)) => Ok(Expr::Ident(name)),
             Some(Token::LeftParen) => {
                 let expr = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
@@ -615,7 +730,7 @@ impl Parser {
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unsupported expression: {other:?}"),
-                span: None,
+                span: self.peek_span(),
             }),
         }
     }
@@ -626,7 +741,7 @@ impl Parser {
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected identifier, got {other:?}"),
-                span: None,
+                span: self.peek_span(),
             }),
         }
     }
@@ -638,7 +753,7 @@ impl Parser {
             Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected {kind:?}, got {:?}", self.peek()),
-                span: None,
+                span: self.peek_span(),
             })
         }
     }
@@ -659,11 +774,15 @@ impl Parser {
     }
 
     fn peek(&self) -> Option<&Token> {
-        self.tokens.get(self.cursor)
+        self.tokens.get(self.cursor).map(|t| &t.kind)
     }
 
     fn peek_n(&self, offset: usize) -> Option<&Token> {
-        self.tokens.get(self.cursor + offset)
+        self.tokens.get(self.cursor + offset).map(|t| &t.kind)
+    }
+
+    fn peek_span(&self) -> Option<Span> {
+        self.tokens.get(self.cursor).map(|t| t.span)
     }
 
     fn is_at_end(&self) -> bool {
@@ -679,8 +798,6 @@ enum TokenKind {
     If,
     Else,
     While,
-    Console,
-    Log,
     Plus,
     Minus,
     Less,
@@ -706,8 +823,6 @@ impl TokenKind {
                 | (Self::If, Token::If)
                 | (Self::Else, Token::Else)
                 | (Self::While, Token::While)
-                | (Self::Console, Token::Console)
-                | (Self::Log, Token::Log)
                 | (Self::Plus, Token::Plus)
                 | (Self::Minus, Token::Minus)
                 | (Self::Less, Token::Less)
@@ -739,6 +854,15 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                 });
             }
             Stmt::Function { name, body, .. } => {
+                if top_scope.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!(
+                            "top-level function `{name}` conflicts with existing lexical binding"
+                        ),
+                        span: None,
+                    });
+                }
                 if top_functions.contains_key(name) {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateFunction,
@@ -749,7 +873,7 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
                 top_functions.insert(name.clone(), ());
                 validate_block(body)?;
             }
-            _ => validate_stmt(stmt, true, &mut top_scope)?,
+            _ => validate_stmt(stmt, true, &mut top_scope, &top_functions)?,
         }
     }
 
@@ -758,8 +882,9 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
 
 fn validate_block(statements: &[Stmt]) -> Result<(), Diagnostic> {
     let mut scope = HashMap::new();
+    let functions = HashMap::new();
     for stmt in statements {
-        validate_stmt(stmt, false, &mut scope)?;
+        validate_stmt(stmt, false, &mut scope, &functions)?;
     }
     Ok(())
 }
@@ -768,9 +893,19 @@ fn validate_stmt(
     stmt: &Stmt,
     in_top_level: bool,
     scope: &mut HashMap<String, ()>,
+    top_functions: &HashMap<String, ()>,
 ) -> Result<(), Diagnostic> {
     match stmt {
         Stmt::Let(name, _) => {
+            if in_top_level && top_functions.contains_key(name) {
+                return Err(Diagnostic {
+                    code: DiagCode::DuplicateLocal,
+                    message: format!(
+                        "top-level lexical binding `{name}` conflicts with function declaration"
+                    ),
+                    span: None,
+                });
+            }
             if scope.contains_key(name) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateLocal,
@@ -796,6 +931,7 @@ fn validate_stmt(
             Ok(())
         }
         Stmt::While { body, .. } => validate_block(body),
+        Stmt::Expr(_) => Ok(()),
         Stmt::Function { .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "nested function declarations are not supported in this milestone".to_owned(),
@@ -868,10 +1004,17 @@ mod tests {
     #[test]
     fn parses_console_log_string() {
         let program = parse_program("console.log(\"hi\");").unwrap();
-        assert_eq!(
-            program,
-            vec![Stmt::ConsoleLog(Expr::String("hi".to_owned()))]
-        );
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Expr(Expr::Call { callee, args }) => {
+                assert_eq!(args, &vec![Expr::String("hi".to_owned())]);
+                assert!(matches!(
+                    callee.as_ref(),
+                    Expr::Member { property, .. } if property == "log"
+                ));
+            }
+            other => panic!("unexpected stmt: {other:?}"),
+        }
     }
 
     #[test]
@@ -908,10 +1051,6 @@ mod tests {
     fn rejects_unsupported_statement() {
         let error = parse_program("const x = 1;").unwrap_err();
         assert_eq!(error.code, DiagCode::UnsupportedSyntax);
-        assert!(
-            error.message.contains("unsupported statement")
-                || error.message.contains("unsupported character")
-        );
     }
 
     #[test]

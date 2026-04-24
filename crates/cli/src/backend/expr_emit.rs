@@ -7,6 +7,16 @@ use crate::runtime::value::ValueTag;
 use super::emitter::function_symbol;
 
 impl WatEmitter<'_> {
+    pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
+        !matches!(
+            expr,
+            LoweredExpr::Call {
+                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                ..
+            }
+        )
+    }
+
     pub(super) fn emit_expr(&self, wat: &mut String, expr: &LoweredExpr, indent: usize) {
         let pad = " ".repeat(indent);
         match expr {

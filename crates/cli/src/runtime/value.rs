@@ -27,9 +27,18 @@ impl ValueTag {
     pub const HEAP_MASK: i32 = -8;
     /// Right-shift / left-shift amount used to pack/unpack the number payload.
     pub const NUMBER_SHIFT: i32 = 3;
+    /// Inclusive minimum payload representable in M0 tagged-int encoding.
+    pub const NUMBER_PAYLOAD_MIN: i32 = i32::MIN >> Self::NUMBER_SHIFT;
+    /// Inclusive maximum payload representable in M0 tagged-int encoding.
+    pub const NUMBER_PAYLOAD_MAX: i32 = i32::MAX >> Self::NUMBER_SHIFT;
 
     /// Encode a small signed integer as a tagged i32 value.
     pub fn encode_number(n: i32) -> i32 {
         (n << Self::NUMBER_SHIFT) | Self::NUMBER
+    }
+
+    /// Returns true when `n` can be represented by the M0 tagged-int payload.
+    pub fn can_encode_number(n: i32) -> bool {
+        (Self::NUMBER_PAYLOAD_MIN..=Self::NUMBER_PAYLOAD_MAX).contains(&n)
     }
 }
