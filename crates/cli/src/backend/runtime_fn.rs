@@ -16,6 +16,16 @@ pub(crate) enum RuntimeFn {
     Sub,
     Less,
     StrictEqual,
+    /// Bump-allocate `size` bytes on the heap, aligned to `Layout::ALIGN`.
+    AllocHeap,
+    /// Byte-by-byte memory equality check used by `PropertyGet`.
+    MemEqual,
+    /// Load an element from a heap array by tagged-int index.
+    ArrayGet,
+    /// Read the `.length` of a string or array (i32 at offset 0 of heap ptr).
+    GetLength,
+    /// Linear-scan property lookup on a heap object.
+    PropertyGet,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -180,6 +190,46 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::AllocHeap => RuntimeSpec {
+                symbol: "$alloc_heap",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MemEqual => RuntimeSpec {
+                symbol: "$mem_equal",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayGet => RuntimeSpec {
+                symbol: "$array_get",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::GetLength => RuntimeSpec {
+                symbol: "$get_length",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::PropertyGet => RuntimeSpec {
+                symbol: "$property_get",
+                deps: &[Self::MemEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
         }
     }
 
@@ -210,6 +260,11 @@ impl RuntimeFn {
             Self::Sub,
             Self::Less,
             Self::StrictEqual,
+            Self::AllocHeap,
+            Self::MemEqual,
+            Self::ArrayGet,
+            Self::GetLength,
+            Self::PropertyGet,
         ]
     }
 
@@ -229,6 +284,11 @@ impl RuntimeFn {
             Self::Sub,
             Self::Less,
             Self::StrictEqual,
+            Self::AllocHeap,
+            Self::MemEqual,
+            Self::ArrayGet,
+            Self::GetLength,
+            Self::PropertyGet,
         ]
     }
 }

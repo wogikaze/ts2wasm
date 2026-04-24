@@ -225,6 +225,32 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Null
             | LoweredExpr::Undefined
             | LoweredExpr::Local(_) => {}
+            LoweredExpr::ArrayNew { elements, .. } => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+                for elem in elements {
+                    self.collect_required_runtime_expr(elem);
+                }
+            }
+            LoweredExpr::ArrayGet { arr, index } => {
+                self.add_required_runtime(RuntimeFn::ArrayGet);
+                self.collect_required_runtime_expr(arr);
+                self.collect_required_runtime_expr(index);
+            }
+            LoweredExpr::GetLength(inner) => {
+                self.add_required_runtime(RuntimeFn::GetLength);
+                self.collect_required_runtime_expr(inner);
+            }
+            LoweredExpr::ObjectNew { props, .. } => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+                for (_, val) in props {
+                    self.collect_required_runtime_expr(val);
+                }
+            }
+            LoweredExpr::PropertyGet { obj, .. } => {
+                self.add_required_runtime(RuntimeFn::PropertyGet);
+                self.add_required_runtime(RuntimeFn::MemEqual);
+                self.collect_required_runtime_expr(obj);
+            }
         }
     }
 
@@ -278,6 +304,28 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Null
             | LoweredExpr::Undefined
             | LoweredExpr::Local(_) => {}
+            LoweredExpr::ArrayNew { elements, .. } => {
+                for elem in elements {
+                    self.collect_expr_strings(elem);
+                }
+            }
+            LoweredExpr::ArrayGet { arr, index } => {
+                self.collect_expr_strings(arr);
+                self.collect_expr_strings(index);
+            }
+            LoweredExpr::GetLength(inner) => {
+                self.collect_expr_strings(inner);
+            }
+            LoweredExpr::ObjectNew { props, .. } => {
+                for (key, val) in props {
+                    self.intern_string(key);
+                    self.collect_expr_strings(val);
+                }
+            }
+            LoweredExpr::PropertyGet { obj, key } => {
+                self.collect_expr_strings(obj);
+                self.intern_string(key);
+            }
         }
     }
 
@@ -421,5 +469,49 @@ mod tests {
                 .strings
                 .contains_key(crate::runtime::consts::RuntimeString::NEWLINE)
         );
+    }
+
+    #[test]
+    fn m5_runtime_linker_collects_array_object_and_length_helpers() {
+        let array_get_program = lowered("let x = [1][0];");
+        let array_get = WatEmitter::new(&array_get_program);
+        let array_expected: BTreeSet<_> = [RuntimeFn::AllocHeap, RuntimeFn::ArrayGet]
+            .into_iter()
+            .collect();
+        assert!(
+            array_expected
+                .iter()
+                .all(|runtime_fn| array_get.required_runtime_functions().contains(runtime_fn))
+        );
+        assert!(!array_get.required_imports().contains(&HostImport::FdWrite));
+
+        let length_program = lowered("let a = [1, 2]; let b = a.length;");
+        let length = WatEmitter::new(&length_program);
+        let length_expected: BTreeSet<_> = [RuntimeFn::AllocHeap, RuntimeFn::GetLength]
+            .into_iter()
+            .collect();
+        assert!(
+            length_expected
+                .iter()
+                .all(|runtime_fn| length.required_runtime_functions().contains(runtime_fn))
+        );
+        assert!(!length.required_imports().contains(&HostImport::FdWrite));
+
+        let object_program = lowered("let o = { a: 1 }; let v = o.a;");
+        let object = WatEmitter::new(&object_program);
+        let object_expected: BTreeSet<_> = [
+            RuntimeFn::AllocHeap,
+            RuntimeFn::PropertyGet,
+            RuntimeFn::MemEqual,
+        ]
+        .into_iter()
+        .collect();
+        assert!(
+            object_expected
+                .iter()
+                .all(|runtime_fn| object.required_runtime_functions().contains(runtime_fn))
+        );
+        assert!(object.strings.contains_key("a"));
+        assert!(!object.required_imports().contains(&HostImport::FdWrite));
     }
 }

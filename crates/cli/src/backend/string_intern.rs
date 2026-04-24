@@ -33,4 +33,8 @@ impl WatEmitter<'_> {
             ));
         }
     }
+
+    pub(super) fn string_len(&self, value: &str) -> u32 {
+        value.len() as u32
+    }
 }
