@@ -58,6 +58,8 @@ enum Token {
     String(String),
     True,
     False,
+    Null,
+    Undefined,
     Let,
     Function,
     Return,
@@ -69,6 +71,8 @@ enum Token {
     Plus,
     Minus,
     Less,
+    Bang,
+    StrictEqual,
     Equal,
     LeftParen,
     RightParen,
@@ -107,13 +111,27 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     tokens.push(Token::Minus);
                 }
+                '!' => {
+                    self.advance_char();
+                    tokens.push(Token::Bang);
+                }
                 '<' => {
                     self.advance_char();
                     tokens.push(Token::Less);
                 }
                 '=' => {
                     self.advance_char();
-                    tokens.push(Token::Equal);
+                    if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        if self.peek_char() == Some('=') {
+                            self.advance_char();
+                            tokens.push(Token::StrictEqual);
+                        } else {
+                            return Err("M3 supports === but not ==".to_owned());
+                        }
+                    } else {
+                        tokens.push(Token::Equal);
+                    }
                 }
                 '(' => {
                     self.advance_char();
@@ -210,6 +228,8 @@ impl<'a> Lexer<'a> {
             "while" => Token::While,
             "true" => Token::True,
             "false" => Token::False,
+            "null" => Token::Null,
+            "undefined" => Token::Undefined,
             "console" => Token::Console,
             "log" => Token::Log,
             ident => Token::Ident(ident.to_owned()),
@@ -254,7 +274,13 @@ enum Expr {
     Number(i32),
     String(String),
     Bool(bool),
+    Null,
+    Undefined,
     Ident(String),
+    Unary {
+        op: UnaryOp,
+        expr: Box<Expr>,
+    },
     Binary {
         left: Box<Expr>,
         op: BinaryOp,
@@ -271,6 +297,12 @@ enum BinaryOp {
     Add,
     Subtract,
     Less,
+    StrictEqual,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum UnaryOp {
+    Not,
 }
 
 struct Parser {
@@ -399,7 +431,20 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expr, String> {
-        self.comparison()
+        self.equality()
+    }
+
+    fn equality(&mut self) -> Result<Expr, String> {
+        let mut expr = self.comparison()?;
+        while self.consume(TokenKind::StrictEqual) {
+            let right = self.comparison()?;
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op: BinaryOp::StrictEqual,
+                right: Box::new(right),
+            };
+        }
+        Ok(expr)
     }
 
     fn comparison(&mut self) -> Result<Expr, String> {
@@ -416,7 +461,7 @@ impl Parser {
     }
 
     fn term(&mut self) -> Result<Expr, String> {
-        let mut expr = self.primary()?;
+        let mut expr = self.unary()?;
         loop {
             let op = if self.consume(TokenKind::Plus) {
                 Some(BinaryOp::Add)
@@ -426,7 +471,7 @@ impl Parser {
                 None
             };
             let Some(op) = op else { break };
-            let right = self.primary()?;
+            let right = self.unary()?;
             expr = Expr::Binary {
                 left: Box::new(expr),
                 op,
@@ -436,12 +481,26 @@ impl Parser {
         Ok(expr)
     }
 
+    fn unary(&mut self) -> Result<Expr, String> {
+        if self.consume(TokenKind::Bang) {
+            let expr = self.unary()?;
+            Ok(Expr::Unary {
+                op: UnaryOp::Not,
+                expr: Box::new(expr),
+            })
+        } else {
+            self.primary()
+        }
+    }
+
     fn primary(&mut self) -> Result<Expr, String> {
         match self.advance() {
             Some(Token::Number(value)) => Ok(Expr::Number(value)),
             Some(Token::String(value)) => Ok(Expr::String(value)),
             Some(Token::True) => Ok(Expr::Bool(true)),
             Some(Token::False) => Ok(Expr::Bool(false)),
+            Some(Token::Null) => Ok(Expr::Null),
+            Some(Token::Undefined) => Ok(Expr::Undefined),
             Some(Token::Ident(name)) => {
                 if self.consume(TokenKind::LeftParen) {
                     let mut args = Vec::new();
@@ -524,6 +583,8 @@ enum TokenKind {
     Plus,
     Minus,
     Less,
+    Bang,
+    StrictEqual,
     Equal,
     LeftParen,
     RightParen,
@@ -549,6 +610,8 @@ impl TokenKind {
                 | (Self::Plus, Token::Plus)
                 | (Self::Minus, Token::Minus)
                 | (Self::Less, Token::Less)
+                | (Self::Bang, Token::Bang)
+                | (Self::StrictEqual, Token::StrictEqual)
                 | (Self::Equal, Token::Equal)
                 | (Self::LeftParen, Token::LeftParen)
                 | (Self::RightParen, Token::RightParen)
@@ -566,6 +629,7 @@ enum Value {
     Number(i32),
     String(String),
     Bool(bool),
+    Null,
     Undefined,
 }
 
@@ -575,6 +639,7 @@ impl Value {
             Self::Bool(value) => *value,
             Self::Number(value) => *value != 0,
             Self::String(value) => !value.is_empty(),
+            Self::Null => false,
             Self::Undefined => false,
         }
     }
@@ -585,6 +650,7 @@ impl Value {
             Self::String(value) => value.clone(),
             Self::Bool(true) => "true".to_owned(),
             Self::Bool(false) => "false".to_owned(),
+            Self::Null => "null".to_owned(),
             Self::Undefined => "undefined".to_owned(),
         }
     }
@@ -692,10 +758,18 @@ impl Interpreter {
             Expr::Number(value) => Ok(Value::Number(*value)),
             Expr::String(value) => Ok(Value::String(value.clone())),
             Expr::Bool(value) => Ok(Value::Bool(*value)),
+            Expr::Null => Ok(Value::Null),
+            Expr::Undefined => Ok(Value::Undefined),
             Expr::Ident(name) => env
                 .get(name)
                 .cloned()
                 .ok_or_else(|| format!("unknown identifier: {name}")),
+            Expr::Unary { op, expr } => {
+                let value = self.eval(expr, env)?;
+                match op {
+                    UnaryOp::Not => Ok(Value::Bool(!value.truthy())),
+                }
+            }
             Expr::Binary { left, op, right } => {
                 let left = self.eval(left, env)?;
                 let right = self.eval(right, env)?;
@@ -715,11 +789,12 @@ impl Interpreter {
                         right.js_string()
                     )))
                 } else {
-                    Ok(Value::Number(number(left)? + number(right)?))
+                    Ok(Value::Number(to_number(left)? + to_number(right)?))
                 }
             }
-            BinaryOp::Subtract => Ok(Value::Number(number(left)? - number(right)?)),
-            BinaryOp::Less => Ok(Value::Bool(number(left)? < number(right)?)),
+            BinaryOp::Subtract => Ok(Value::Number(to_number(left)? - to_number(right)?)),
+            BinaryOp::Less => Ok(Value::Bool(to_number(left)? < to_number(right)?)),
+            BinaryOp::StrictEqual => Ok(Value::Bool(strict_equal(&left, &right))),
         }
     }
 
@@ -756,10 +831,31 @@ impl Interpreter {
     }
 }
 
-fn number(value: Value) -> Result<i32, String> {
+fn to_number(value: Value) -> Result<i32, String> {
     match value {
         Value::Number(value) => Ok(value),
-        other => Err(format!("expected number, got {other:?}")),
+        Value::Bool(true) => Ok(1),
+        Value::Bool(false) | Value::Null => Ok(0),
+        Value::String(value) => {
+            if value.is_empty() {
+                Ok(0)
+            } else {
+                value
+                    .parse::<i32>()
+                    .map_err(|_| format!("M3 cannot coerce string to number: {value:?}"))
+            }
+        }
+        Value::Undefined => Err("M3 cannot represent NaN yet".to_owned()),
+    }
+}
+
+fn strict_equal(left: &Value, right: &Value) -> bool {
+    match (left, right) {
+        (Value::Number(left), Value::Number(right)) => left == right,
+        (Value::String(left), Value::String(right)) => left == right,
+        (Value::Bool(left), Value::Bool(right)) => left == right,
+        (Value::Null, Value::Null) | (Value::Undefined, Value::Undefined) => true,
+        _ => false,
     }
 }
 
@@ -912,6 +1008,19 @@ mod tests {
         "#;
         let input = parse_build_input(source).unwrap();
         assert_eq!(input.stdout, "sum=3\n5\n");
+    }
+
+    #[test]
+    fn evaluates_m3_semantics() {
+        let source = r#"
+            console.log(undefined);
+            console.log(null);
+            console.log(null === undefined);
+            console.log("x" + true);
+            if (!0) { console.log("zero false"); }
+        "#;
+        let input = parse_build_input(source).unwrap();
+        assert_eq!(input.stdout, "undefined\nnull\nfalse\nxtrue\nzero false\n");
     }
 
     #[test]

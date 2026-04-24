@@ -14,6 +14,18 @@ fn m2_fixtures_match_node_output_under_iwasm() {
     }
 }
 
+#[test]
+fn m3_semantic_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/m3/null-undefined.ts",
+        "fixtures/m3/truthiness.ts",
+        "fixtures/m3/strict-equal.ts",
+        "fixtures/m3/plus.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
 fn assert_fixture_matches_node(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
