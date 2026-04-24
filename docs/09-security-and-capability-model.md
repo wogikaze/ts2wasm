@@ -82,7 +82,9 @@ Current schema (M5 subset):
 - `capabilities`: import から導出される capability の一覧
 - `runtime`: 依存 closure 展開後の runtime function 一覧
 
-この段階では `fd_read` や stdin runtime は含めない。M6 で `fd_read` 経路を同じ `RuntimeLinkPlan -> manifest` 導線に追加する。
+`runtime` 配列の順序は意味を持たない。監査・差分比較の安定化のため、固定順（現在は安定化された列挙順）で出力する。
+
+P0-3 時点では `fd_read` や stdin runtime は含めない。M6-1 で `fd_read` 経路を同じ `RuntimeLinkPlan -> manifest` 導線に追加した。
 
 ## Host shim trimming
 

@@ -175,4 +175,18 @@ Exit criteria:
 
 Current gate status: 4 / 4 complete. P0 debt gate is implemented; M6 remains paused until this status is reviewed/accepted.
 
+## M6 bootstrap status (M6-1)
+
+Implemented in this slice:
+
+- Added `HostImport::FdRead` and `Capability::StdinRead` to runtime catalog.
+- Added `RuntimeFn::ReadStdinUtf8` placeholder so `RuntimeLinkPlan -> manifest` can carry stdin read intent.
+- `--emit-capabilities` can now emit `wasi_snapshot_preview1.fd_read` and `stdin.read` when stdin runtime is required.
+
+Not implemented in this slice:
+
+- `require("fs").readFileSync(0, "utf8")` idiom resolution/lowering.
+- Actual WASI `fd_read` runtime execution and UTF-8 decode pipeline.
+- stdin fixture differential execution against Node/iwasm.
+
 After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
