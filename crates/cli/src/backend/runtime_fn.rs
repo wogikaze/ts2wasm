@@ -3,6 +3,8 @@ use crate::runtime::consts::RuntimeString;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum RuntimeFn {
+    /// M6-1 skeleton for stdin path. Real UTF-8 decode/runtime behavior is added in later M6 slices.
+    ReadStdinUtf8,
     Write,
     Copy,
     ValueToStringInto,
@@ -30,11 +32,13 @@ pub(crate) enum RuntimeFn {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum HostImport {
+    FdRead,
     FdWrite,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum Capability {
+    StdinRead,
     StdoutWrite,
 }
 
@@ -67,7 +71,9 @@ const CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto];
 const ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
 const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::StringEqual];
 
+const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
+const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
@@ -86,6 +92,14 @@ impl RuntimeFn {
 
     pub(crate) const fn spec(self) -> RuntimeSpec {
         match self {
+            Self::ReadStdinUtf8 => RuntimeSpec {
+                symbol: "$read_stdin_utf8",
+                deps: NO_DEPS,
+                imports: IMPORT_FD_READ,
+                capability: CAP_STDIN_READ,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::Write => RuntimeSpec {
                 symbol: "$write",
                 deps: WRITE_DEPS,
@@ -247,6 +261,7 @@ impl RuntimeFn {
 
     pub(crate) const fn emission_order() -> &'static [RuntimeFn] {
         &[
+            Self::ReadStdinUtf8,
             Self::Write,
             Self::Copy,
             Self::ValueToStringInto,
@@ -271,6 +286,7 @@ impl RuntimeFn {
     #[cfg(test)]
     pub(crate) const fn all() -> &'static [RuntimeFn] {
         &[
+            Self::ReadStdinUtf8,
             Self::Write,
             Self::Copy,
             Self::ValueToStringInto,

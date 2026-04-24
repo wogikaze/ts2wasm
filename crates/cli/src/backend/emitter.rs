@@ -43,6 +43,9 @@ impl<'a> WatEmitter<'a> {
         let _required_capabilities = self.link_plan.required_capabilities();
         let mut wat = String::new();
         wat.push_str("(module\n");
+        if self.requires_host_import(HostImport::FdRead) {
+            wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_read\" (func $fd_read (param i32 i32 i32 i32) (result i32)))\n");
+        }
         if self.requires_host_import(HostImport::FdWrite) {
             wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
         }

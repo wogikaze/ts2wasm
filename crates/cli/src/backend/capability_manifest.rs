@@ -51,18 +51,21 @@ pub(crate) fn emit_capability_manifest_json(program: &LoweredProgram) -> String 
 
 fn host_import_name(import: HostImport) -> &'static str {
     match import {
+        HostImport::FdRead => "wasi_snapshot_preview1.fd_read",
         HostImport::FdWrite => "wasi_snapshot_preview1.fd_write",
     }
 }
 
 fn capability_name(capability: Capability) -> &'static str {
     match capability {
+        Capability::StdinRead => "stdin.read",
         Capability::StdoutWrite => "stdout.write",
     }
 }
 
 fn runtime_name(runtime_fn: RuntimeFn) -> &'static str {
     match runtime_fn {
+        RuntimeFn::ReadStdinUtf8 => "read_stdin_utf8",
         RuntimeFn::Write => "write",
         RuntimeFn::Copy => "copy",
         RuntimeFn::ValueToStringInto => "value_to_string_into",
@@ -104,9 +107,11 @@ fn json_escape(value: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use crate::backend::runtime_fn::RuntimeFn;
+    use crate::backend::runtime_link_plan::RuntimeLinkPlan;
     use crate::ir::lowered::lower_program;
 
-    use super::emit_capability_manifest_json;
+    use super::{CapabilityManifest, emit_capability_manifest_json};
 
     fn lowered(source: &str) -> crate::ir::lowered::LoweredProgram {
         let program = crate::parse_program(source).expect("parse failed");
@@ -144,5 +149,14 @@ mod tests {
             "}\n"
         );
         assert_eq!(manifest, expected);
+    }
+
+    #[test]
+    fn stdin_skeleton_manifest_contains_fd_read_and_stdin_capability() {
+        let plan = RuntimeLinkPlan::from_required_runtime_for_tests(&[RuntimeFn::ReadStdinUtf8]);
+        let manifest = CapabilityManifest::from_link_plan(&plan).to_json();
+        assert!(manifest.contains("\"wasi_snapshot_preview1.fd_read\""));
+        assert!(manifest.contains("\"stdin.read\""));
+        assert!(manifest.contains("\"read_stdin_utf8\""));
     }
 }

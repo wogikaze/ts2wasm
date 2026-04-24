@@ -17,6 +17,7 @@ impl WatEmitter<'_> {
                 continue;
             }
             match runtime_fn {
+                RuntimeFn::ReadStdinUtf8 => self.emit_read_stdin_utf8(wat),
                 RuntimeFn::Write => self.emit_write(wat),
                 RuntimeFn::Copy => self.emit_copy(wat),
                 RuntimeFn::ValueToStringInto => self.emit_value_to_string_into(wat),
@@ -37,6 +38,16 @@ impl WatEmitter<'_> {
                 RuntimeFn::PropertyGet => self.emit_property_get(wat),
             }
         }
+    }
+
+    fn emit_read_stdin_utf8(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+    (func $read_stdin_utf8 (result i32)
+    (i32.const {undefined_tag}))
+  "#,
+            undefined_tag = ValueTag::UNDEFINED,
+        ));
     }
 
     fn emit_write(&self, wat: &mut String) {

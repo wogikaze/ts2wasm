@@ -41,6 +41,16 @@ impl RuntimeLinkPlan {
         &self.required_runtime_strings
     }
 
+    #[cfg(test)]
+    pub(crate) fn from_required_runtime_for_tests(required: &[RuntimeFn]) -> Self {
+        let mut plan = Self::default();
+        for runtime_fn in required {
+            plan.add_required_runtime(*runtime_fn);
+        }
+        plan.populate_derived_sets();
+        plan
+    }
+
     fn add_required_runtime(&mut self, runtime_fn: RuntimeFn) {
         if !self.required_runtime.insert(runtime_fn) {
             return;
@@ -306,5 +316,15 @@ mod tests {
                 .all(|runtime_fn| object.required_runtime_functions().contains(runtime_fn))
         );
         assert!(!object.required_imports().contains(&HostImport::FdWrite));
+    }
+
+    #[test]
+    fn m6_stdin_skeleton_runtime_derives_fd_read_and_stdin_capability() {
+        let plan = RuntimeLinkPlan::from_required_runtime_for_tests(&[RuntimeFn::ReadStdinUtf8]);
+        assert!(plan.required_imports().contains(&HostImport::FdRead));
+        assert!(
+            plan.required_capabilities()
+                .contains(&Capability::StdinRead)
+        );
     }
 }
