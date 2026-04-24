@@ -1,10 +1,15 @@
-use std::collections::HashMap;
+use std::collections::{BTreeSet, HashMap};
 
-use crate::ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
+use crate::ir::lowered::{
+    FuncId, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
+    LoweredUnaryOp,
+};
 use crate::runtime::consts::RuntimeString;
 use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
 use crate::{DiagCode, Diagnostic};
+
+use super::runtime_fn::{Capability, HostImport, RuntimeFn};
 
 pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     WatEmitter::new(program).emit()
@@ -15,6 +20,7 @@ pub(super) struct WatEmitter<'a> {
     pub(super) strings: HashMap<String, u32>,
     pub(super) string_data: Vec<(u32, String)>,
     pub(super) next_data_offset: u32,
+    pub(super) required_runtime: BTreeSet<RuntimeFn>,
 }
 
 impl<'a> WatEmitter<'a> {
@@ -24,6 +30,7 @@ impl<'a> WatEmitter<'a> {
             strings: HashMap::new(),
             string_data: Vec::new(),
             next_data_offset: Layout::DATA_START,
+            required_runtime: BTreeSet::new(),
         };
         for value in [
             RuntimeString::UNDEFINED,
@@ -38,6 +45,7 @@ impl<'a> WatEmitter<'a> {
         for function in &program.functions {
             emitter.collect_program_strings(&function.body);
         }
+        emitter.collect_required_runtime(program);
         emitter
     }
 
@@ -45,7 +53,10 @@ impl<'a> WatEmitter<'a> {
         self.validate_memory_layout()?;
         let mut wat = String::new();
         wat.push_str("(module\n");
-        wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
+        if self.requires_host_import(HostImport::FdWrite) {
+            wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
+        }
+        let _requires_stdout = self.requires_capability(Capability::StdoutWrite);
         wat.push_str("  (memory (export \"memory\") 1)\n");
         wat.push_str(&format!(
             "  (global $heap (mut i32) (i32.const {}))\n",
@@ -71,6 +82,25 @@ impl<'a> WatEmitter<'a> {
                 span: None,
             });
         }
+        let scratch_end = Layout::SCRATCH_OFFSET
+            .checked_add(Layout::SCRATCH_SIZE)
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "scratch range overflow while validating memory layout".to_owned(),
+                span: None,
+            })?;
+        if scratch_end > Layout::HEAP_START {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "scratch range [{}..{}) overlaps heap start ({})",
+                    Layout::SCRATCH_OFFSET,
+                    scratch_end,
+                    Layout::HEAP_START
+                ),
+                span: None,
+            });
+        }
         if Layout::SCRATCH_OFFSET >= Layout::HEAP_START {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,
@@ -83,6 +113,97 @@ impl<'a> WatEmitter<'a> {
             });
         }
         Ok(())
+    }
+
+    fn requires_host_import(&self, import: HostImport) -> bool {
+        self.required_runtime
+            .iter()
+            .any(|runtime_fn| runtime_fn.spec().imports.contains(&import))
+    }
+
+    fn requires_capability(&self, capability: Capability) -> bool {
+        self.required_runtime
+            .iter()
+            .any(|runtime_fn| runtime_fn.spec().capability.contains(&capability))
+    }
+
+    fn add_required_runtime(&mut self, runtime_fn: RuntimeFn) {
+        if !self.required_runtime.insert(runtime_fn) {
+            return;
+        }
+        for dep in runtime_fn.spec().deps {
+            self.add_required_runtime(*dep);
+        }
+    }
+
+    fn collect_required_runtime(&mut self, program: &LoweredProgram) {
+        self.collect_required_runtime_stmts(&program.top_level_statements);
+        for function in &program.functions {
+            self.collect_required_runtime_stmts(&function.body);
+        }
+    }
+
+    fn collect_required_runtime_stmts(&mut self, statements: &[LoweredStmt]) {
+        for statement in statements {
+            match statement {
+                LoweredStmt::Let(_, expr)
+                | LoweredStmt::Assign(_, expr)
+                | LoweredStmt::Expr(expr)
+                | LoweredStmt::Return(expr) => self.collect_required_runtime_expr(expr),
+                LoweredStmt::If {
+                    condition,
+                    then_body,
+                    else_body,
+                } => {
+                    self.collect_required_runtime_expr(condition);
+                    self.add_required_runtime(RuntimeFn::TruthyBool);
+                    self.collect_required_runtime_stmts(then_body);
+                    self.collect_required_runtime_stmts(else_body);
+                }
+                LoweredStmt::While { condition, body } => {
+                    self.collect_required_runtime_expr(condition);
+                    self.add_required_runtime(RuntimeFn::TruthyBool);
+                    self.collect_required_runtime_stmts(body);
+                }
+            }
+        }
+    }
+
+    fn collect_required_runtime_expr(&mut self, expr: &LoweredExpr) {
+        match expr {
+            LoweredExpr::Unary { op, expr } => {
+                self.collect_required_runtime_expr(expr);
+                match op {
+                    LoweredUnaryOp::Not => self.add_required_runtime(RuntimeFn::Not),
+                }
+            }
+            LoweredExpr::Binary { left, op, right } => {
+                self.collect_required_runtime_expr(left);
+                self.collect_required_runtime_expr(right);
+                match op {
+                    LoweredBinaryOp::Add => self.add_required_runtime(RuntimeFn::Add),
+                    LoweredBinaryOp::Subtract => self.add_required_runtime(RuntimeFn::Sub),
+                    LoweredBinaryOp::Less => self.add_required_runtime(RuntimeFn::Less),
+                    LoweredBinaryOp::StrictEqual => {
+                        self.add_required_runtime(RuntimeFn::StrictEqual)
+                    }
+                }
+            }
+            LoweredExpr::Call { kind, args } => {
+                for arg in args {
+                    self.collect_required_runtime_expr(arg);
+                }
+                if let FunctionCallKind::Builtin(builtin) = kind {
+                    self.add_required_runtime(RuntimeFn::from_builtin(*builtin));
+                }
+            }
+            LoweredExpr::Number(_)
+            | LoweredExpr::String(_)
+            | LoweredExpr::Bool(_)
+            | LoweredExpr::Null
+            | LoweredExpr::Undefined
+            | LoweredExpr::Local(_) => {}
+        }
     }
 
     fn collect_program_strings(&mut self, statements: &[LoweredStmt]) {

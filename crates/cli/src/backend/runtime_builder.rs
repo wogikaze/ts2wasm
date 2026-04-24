@@ -1,4 +1,5 @@
 use super::emitter::WatEmitter;
+use super::runtime_fn::RuntimeFn;
 use crate::runtime::{
     consts::{RuntimeConst, RuntimeString},
     layout::Layout,
@@ -11,14 +12,51 @@ impl WatEmitter<'_> {
         let null = self.string_offset(RuntimeString::NULL);
         let false_s = self.string_offset(RuntimeString::FALSE);
         let true_s = self.string_offset(RuntimeString::TRUE);
-        let newline = self.string_offset(RuntimeString::NEWLINE) + 4;
+        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
 
+        for runtime_fn in RuntimeFn::emission_order() {
+            if !self.required_runtime.contains(runtime_fn) {
+                continue;
+            }
+            match runtime_fn {
+                RuntimeFn::Write => self.emit_write(wat),
+                RuntimeFn::Copy => self.emit_copy(wat),
+                RuntimeFn::ValueToStringInto => {
+                    self.emit_value_to_string_into(wat, undefined, null, false_s, true_s)
+                }
+                RuntimeFn::Log => self.emit_log(wat, newline),
+                RuntimeFn::TruthyBool => self.emit_truthy_bool(wat),
+                RuntimeFn::Not => self.emit_not(wat),
+                RuntimeFn::StringEqual => self.emit_string_equal(wat),
+                RuntimeFn::Concat => self.emit_concat(wat),
+                RuntimeFn::IsString => self.emit_is_string(wat),
+                RuntimeFn::Add => self.emit_add(wat),
+                RuntimeFn::Sub => self.emit_sub(wat),
+                RuntimeFn::Less => self.emit_less(wat),
+                RuntimeFn::StrictEqual => self.emit_strict_equal(wat),
+            }
+        }
+    }
+
+    fn emit_write(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $write (param $ptr i32) (param $len i32)
     (i32.store (i32.const {iovec_ptr}) (local.get $ptr))
     (i32.store (i32.const {iovec_len}) (local.get $len))
     (drop (call $fd_write (i32.const {stdout_fd}) (i32.const {iovec_ptr}) (i32.const {one}) (i32.const {zero}))))
+"#,
+            iovec_ptr = Layout::IOVEC_PTR,
+            iovec_len = Layout::IOVEC_LEN,
+            stdout_fd = RuntimeConst::STDOUT_FD,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
+    fn emit_copy(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $copy (param $src i32) (param $dst i32) (param $len i32)
     (local $i i32)
     (block $exit
@@ -30,13 +68,18 @@ impl WatEmitter<'_> {
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $loop))))
 "#,
-            iovec_ptr = Layout::IOVEC_PTR,
-            iovec_len = Layout::IOVEC_LEN,
-            stdout_fd = RuntimeConst::STDOUT_FD,
             one = RuntimeConst::ONE,
-            zero = RuntimeConst::ZERO,
         ));
+    }
 
+    fn emit_value_to_string_into(
+        &self,
+        wat: &mut String,
+        undefined: u32,
+        null: u32,
+        false_s: u32,
+        true_s: u32,
+    ) {
         wat.push_str(&format!(
             r#"
   (func $value_to_string_into (param $v i32) (param $ptr i32) (result i32)
@@ -102,16 +145,11 @@ impl WatEmitter<'_> {
         (local.set $j (i32.sub (local.get $j) (i32.const {one})))
         (br $rev_loop)))
     (i32.sub (local.get $ptr) (local.get $start)))
-  (func $log (param $v i32)
-    (local $len i32)
-    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
-    (call $write (i32.const {scratch}) (local.get $len))
-    (call $write (i32.const {newline}) (i32.const {one})))
 "#,
-            undef_str = undefined + 4,
-            null_str = null + 4,
-            false_str = false_s + 4,
-            true_str = true_s + 4,
+            undef_str = undefined + Layout::STRING_HEADER_SIZE,
+            null_str = null + Layout::STRING_HEADER_SIZE,
+            false_str = false_s + Layout::STRING_HEADER_SIZE,
+            true_str = true_s + Layout::STRING_HEADER_SIZE,
             undefined_tag = ValueTag::UNDEFINED,
             null_tag = ValueTag::NULL,
             false_tag = ValueTag::FALSE,
@@ -130,10 +168,25 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             zero = RuntimeConst::ZERO,
             string_header_size = Layout::STRING_HEADER_SIZE,
+        ));
+    }
+
+    fn emit_log(&self, wat: &mut String, newline: u32) {
+        wat.push_str(&format!(
+            r#"
+  (func $log (param $v i32)
+    (local $len i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (call $write (i32.const {scratch}) (local.get $len))
+    (call $write (i32.const {newline}) (i32.const {one})))
+"#,
             scratch = Layout::SCRATCH_OFFSET,
             newline = newline,
+            one = RuntimeConst::ONE,
         ));
+    }
 
+    fn emit_truthy_bool(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $truthy_bool (param $v i32) (result i32)
@@ -147,10 +200,36 @@ impl WatEmitter<'_> {
         (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
         (return (i32.ne (i32.load (local.get $obj)) (i32.const {zero})))))
     (i32.ne (i32.shr_s (local.get $v) (i32.const {number_shift})) (i32.const {zero})))
+"#,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined_tag = ValueTag::UNDEFINED,
+            null_tag = ValueTag::NULL,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+            string_tag = ValueTag::STRING,
+            tag_mask = ValueTag::TAG_MASK,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
+    fn emit_not(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $not (param $v i32) (result i32)
     (if (result i32) (call $truthy_bool (local.get $v))
       (then (i32.const {false_tag}))
       (else (i32.const {true_tag}))))
+"#,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+        ));
+    }
+
+    fn emit_string_equal(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $string_equal (param $a i32) (param $b i32) (result i32)
     (local $ptr_a i32)
     (local $ptr_b i32)
@@ -172,6 +251,18 @@ impl WatEmitter<'_> {
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $loop)))
     (i32.const {true_tag}))
+"#,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+            one = RuntimeConst::ONE,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+        ));
+    }
+
+    fn emit_strict_equal(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $strict_equal (param $a i32) (param $b i32) (result i32)
     (if (i32.and (call $is_string (local.get $a)) (call $is_string (local.get $b)))
       (then (return (call $string_equal (local.get $a) (local.get $b)))))
@@ -180,6 +271,15 @@ impl WatEmitter<'_> {
     (if (result i32) (i32.eq (local.get $a) (local.get $b))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
+"#,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_concat(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $concat (param $a i32) (param $b i32) (result i32)
     (local $ptr i32)
     (local $data i32)
@@ -202,8 +302,28 @@ impl WatEmitter<'_> {
             (i32.const {heap_bump_padding})))
         (i32.const {heap_mask})))
     (i32.or (local.get $ptr) (i32.const {string_tag})))
+"#,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            heap_bump_padding = Layout::HEAP_BUMP_PADDING,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    fn emit_is_string(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $is_string (param $v i32) (result i32)
     (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {string_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    fn emit_add(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $add (param $a i32) (param $b i32) (result i32)
     (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
       (then (return (call $concat (local.get $a) (local.get $b)))))
@@ -212,31 +332,39 @@ impl WatEmitter<'_> {
         (i32.add (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
         (i32.const {number_shift}))
       (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    fn emit_sub(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $sub (param $a i32) (param $b i32) (result i32)
     (i32.or
       (i32.shl
         (i32.sub (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
         (i32.const {number_shift}))
       (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    fn emit_less(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
   (func $less (param $a i32) (param $b i32) (result i32)
     (if (result i32)
       (i32.lt_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
 "#,
-            zero = RuntimeConst::ZERO,
-            one = RuntimeConst::ONE,
-            undefined_tag = ValueTag::UNDEFINED,
-            null_tag = ValueTag::NULL,
-            false_tag = ValueTag::FALSE,
-            true_tag = ValueTag::TRUE,
-            number_tag = ValueTag::NUMBER,
-            string_tag = ValueTag::STRING,
-            tag_mask = ValueTag::TAG_MASK,
-            heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
-            string_header_size = Layout::STRING_HEADER_SIZE,
-            heap_bump_padding = Layout::HEAP_BUMP_PADDING,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
         ));
     }
 }

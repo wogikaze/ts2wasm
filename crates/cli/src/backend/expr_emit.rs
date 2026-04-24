@@ -1,21 +1,19 @@
 use super::emitter::WatEmitter;
 use super::runtime_fn::RuntimeFn;
-use crate::ir::lowered::{
-    BuiltinId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp,
-};
+use crate::ir::lowered::{FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp};
 use crate::runtime::value::ValueTag;
 
 use super::emitter::function_symbol;
 
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
-        !matches!(
-            expr,
+        match expr {
             LoweredExpr::Call {
-                kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
+                kind: FunctionCallKind::Builtin(builtin),
                 ..
-            }
-        )
+            } => RuntimeFn::from_builtin(*builtin).is_value(),
+            _ => true,
+        }
     }
 
     pub(super) fn emit_expr(&self, wat: &mut String, expr: &LoweredExpr, indent: usize) {
@@ -68,8 +66,9 @@ impl WatEmitter<'_> {
                     FunctionCallKind::User(func_id) => {
                         wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*func_id)));
                     }
-                    FunctionCallKind::Builtin(BuiltinId::ConsoleLog) => {
-                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Log.symbol()));
+                    FunctionCallKind::Builtin(builtin) => {
+                        let runtime_fn = RuntimeFn::from_builtin(*builtin);
+                        wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
                     }
                 }
             }

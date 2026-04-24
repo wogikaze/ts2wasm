@@ -14,6 +14,8 @@ impl Layout {
     /// Linear memory offset used as a scratch buffer by `$log` /
     /// `$value_to_string_into`.
     pub const SCRATCH_OFFSET: u32 = 1500;
+    /// Scratch buffer size (in bytes) reserved for temporary runtime string output.
+    pub const SCRATCH_SIZE: u32 = 256;
     /// Offset of the `buf` pointer field in the `fd_write` iovec record.
     pub const IOVEC_PTR: u32 = 8;
     /// Offset of the `buf_len` field in the `fd_write` iovec record.
