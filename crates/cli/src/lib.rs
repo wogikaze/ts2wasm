@@ -7,7 +7,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-const ENABLE_READ_STDIN_UTF8_RUNTIME: bool = false;
+const ENABLE_READ_STDIN_UTF8_RUNTIME: bool = true;
 
 /// Structured diagnostic emitted by compiler phases.
 ///
@@ -1435,12 +1435,10 @@ mod tests {
     }
 
     #[test]
-    fn m6_3a_runtime_gate_blocks_read_stdin_utf8_execution_path() {
+    fn m6_3b_1_runtime_gate_permits_read_stdin_utf8_execution_path() {
         let ast = parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
         let resolved = ir::builtin_resolver::resolve_builtins(&ast).unwrap();
         let lowered = ir::lowered::lower_program(&resolved).unwrap();
-        let err = ensure_runtime_feature_gates(&lowered).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("disabled in M6-3a"));
+        ensure_runtime_feature_gates(&lowered).expect("gate must pass after M6-3b-1 enables runtime");
     }
 }

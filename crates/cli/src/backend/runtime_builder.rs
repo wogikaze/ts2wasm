@@ -43,18 +43,70 @@ impl WatEmitter<'_> {
     fn emit_read_stdin_utf8(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-    (func $read_stdin_utf8 (result i32)
-    ;; m6-3b reserved layout: stdin_buf={stdin_buf} stdin_size={stdin_size} read_max={read_max}
-    ;; m6-3b reserved fd_read slots: iovec_ptr={iovec_ptr} iovec_len={iovec_len} nread_ptr={nread_ptr}
-    (i32.const {undefined_tag}))
-  "#,
-        stdin_buf = Layout::STDIN_BUFFER_OFFSET,
-        stdin_size = Layout::STDIN_BUFFER_SIZE,
-        read_max = Layout::STDIN_READ_LIMIT,
-        iovec_ptr = Layout::STDIN_IOVEC_PTR,
-        iovec_len = Layout::STDIN_IOVEC_LEN,
-        nread_ptr = Layout::STDIN_NREAD_OFFSET,
-            undefined_tag = ValueTag::UNDEFINED,
+  (func $read_stdin_utf8 (result i32)
+    (local $base i32)
+    (local $total i32)
+    (local $nread i32)
+    (local $remaining i32)
+    (local $chunk i32)
+    (local $ret i32)
+    ;; allocate 4-byte length header + STDIN_READ_LIMIT data bytes on heap
+    (local.set $base (call $alloc_heap (i32.const {alloc_size})))
+    ;; fix iovec buf pointer to staging buffer (constant across iterations)
+    (i32.store (i32.const {iovec_ptr}) (i32.const {buf_offset}))
+    (block $eof
+      (loop $read_loop
+        ;; remaining = STDIN_READ_LIMIT - total
+        (local.set $remaining (i32.sub (i32.const {read_limit}) (local.get $total)))
+        ;; if remaining == 0 (limit reached), stop
+        (br_if $eof (i32.eqz (local.get $remaining)))
+        ;; chunk = min(STDIN_BUFFER_SIZE, remaining)
+        (local.set $chunk
+          (select
+            (local.get $remaining)
+            (i32.const {buf_size})
+            (i32.lt_u (local.get $remaining) (i32.const {buf_size}))))
+        ;; set iovec buf_len = chunk
+        (i32.store (i32.const {iovec_len}) (local.get $chunk))
+        ;; ret = fd_read(0, STDIN_IOVEC_OFFSET, 1, STDIN_NREAD_OFFSET)
+        (local.set $ret
+          (call $fd_read
+            (i32.const {stdin_fd})
+            (i32.const {iovec_offset})
+            (i32.const {one})
+            (i32.const {nread_offset})))
+        ;; trap on fd_read error (non-zero return)
+        (if (i32.ne (local.get $ret) (i32.const {zero})) (then (unreachable)))
+        ;; load bytes actually read
+        (local.set $nread (i32.load (i32.const {nread_offset})))
+        ;; EOF: nread == 0, stop
+        (br_if $eof (i32.eqz (local.get $nread)))
+        ;; copy nread bytes: staging buffer → heap data area
+        (call $copy
+          (i32.const {buf_offset})
+          (i32.add (local.get $base) (i32.add (i32.const {header_size}) (local.get $total)))
+          (local.get $nread))
+        ;; total += nread
+        (local.set $total (i32.add (local.get $total) (local.get $nread)))
+        (br $read_loop)))
+    ;; write i32 length at heap base
+    (i32.store (local.get $base) (local.get $total))
+    ;; return base | STRING_TAG
+    (i32.or (local.get $base) (i32.const {string_tag})))
+"#,
+            alloc_size = Layout::STRING_HEADER_SIZE + Layout::STDIN_READ_LIMIT,
+            iovec_ptr = Layout::STDIN_IOVEC_PTR,
+            iovec_len = Layout::STDIN_IOVEC_LEN,
+            iovec_offset = Layout::STDIN_IOVEC_OFFSET,
+            buf_offset = Layout::STDIN_BUFFER_OFFSET,
+            buf_size = Layout::STDIN_BUFFER_SIZE,
+            read_limit = Layout::STDIN_READ_LIMIT,
+            nread_offset = Layout::STDIN_NREAD_OFFSET,
+            header_size = Layout::STRING_HEADER_SIZE,
+            stdin_fd = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
+            string_tag = ValueTag::STRING,
         ));
     }
 

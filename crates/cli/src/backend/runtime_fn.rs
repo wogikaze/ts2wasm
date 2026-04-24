@@ -62,6 +62,7 @@ const NO_IMPORTS: &[HostImport] = &[];
 const NO_CAPS: &[Capability] = &[];
 const NO_RUNTIME_STRINGS: &[&str] = &[];
 
+const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
 const COPY_DEPS: &[RuntimeFn] = &[];
 const VTS_DEPS: &[RuntimeFn] = &[RuntimeFn::Copy];
@@ -95,7 +96,7 @@ impl RuntimeFn {
         match self {
             Self::ReadStdinUtf8 => RuntimeSpec {
                 symbol: "$read_stdin_utf8",
-                deps: NO_DEPS,
+                deps: READ_STDIN_DEPS,
                 imports: IMPORT_FD_READ,
                 capability: CAP_STDIN_READ,
                 runtime_strings: NO_RUNTIME_STRINGS,
