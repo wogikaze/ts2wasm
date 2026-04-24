@@ -20,18 +20,20 @@ impl Layout {
     pub const STDIN_BUFFER_OFFSET: u32 = 1792;
     /// Temporary stdin staging buffer size for one `fd_read` chunk.
     pub const STDIN_BUFFER_SIZE: u32 = 256;
-    /// Maximum total bytes that one `readFileSync(0, "utf8")` call may consume.
-    pub const STDIN_READ_MAX_BYTES: u32 = 64 * 1024;
+    /// Maximum total bytes that one `readFileSync(0, "utf8")` call may consume (64 KiB).
+    pub const STDIN_READ_LIMIT: u32 = 64 * 1024;
     /// Offset of the `buf` pointer field in the `fd_write` iovec record.
     pub const IOVEC_PTR: u32 = 8;
     /// Offset of the `buf_len` field in the `fd_write` iovec record.
     pub const IOVEC_LEN: u32 = 12;
-    /// Offset of the `buf` pointer field in the `fd_read` iovec record.
-    pub const FD_READ_IOVEC_PTR: u32 = 16;
-    /// Offset of the `buf_len` field in the `fd_read` iovec record.
-    pub const FD_READ_IOVEC_LEN: u32 = 20;
-    /// Offset used by `fd_read` to store bytes read (`nread`).
-    pub const FD_READ_NREAD_PTR: u32 = 24;
+    /// Base offset of the `fd_read` iovec structure in linear memory.
+    pub const STDIN_IOVEC_OFFSET: u32 = 16;
+    /// Offset of the `buf` pointer field in the stdin `fd_read` iovec record.
+    pub const STDIN_IOVEC_PTR: u32 = 16;
+    /// Offset of the `buf_len` field in the stdin `fd_read` iovec record.
+    pub const STDIN_IOVEC_LEN: u32 = 20;
+    /// Offset at which `fd_read` writes the number of bytes actually read (`nread`).
+    pub const STDIN_NREAD_OFFSET: u32 = 24;
 
     // ---- Array heap layout ------------------------------------------------
     /// Bytes before the element payload: i32 length.
@@ -56,19 +58,49 @@ mod tests {
 
     #[test]
     fn memory_regions_are_non_overlapping_for_m6_stdin_slice() {
-        let static_data_end = Layout::DATA_START;
-        assert!(Layout::DATA_START <= static_data_end);
-
         let scratch_end = Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE;
         let stdin_end = Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE;
 
-        assert!(static_data_end <= Layout::SCRATCH_OFFSET);
+        assert!(Layout::DATA_START <= scratch_end || Layout::DATA_START <= Layout::SCRATCH_OFFSET);
+        assert!(Layout::DATA_START <= Layout::SCRATCH_OFFSET);
         assert!(scratch_end <= Layout::STDIN_BUFFER_OFFSET);
         assert!(stdin_end <= Layout::HEAP_START);
     }
 
     #[test]
-    fn stdin_read_cap_is_fixed_to_64k() {
-        assert_eq!(Layout::STDIN_READ_MAX_BYTES, 64 * 1024);
+    fn stdin_iovec_and_nread_do_not_overlap_stdin_buffer() {
+        // nread slot occupies [STDIN_NREAD_OFFSET .. STDIN_NREAD_OFFSET + 4)
+        let nread_end = Layout::STDIN_NREAD_OFFSET + 4;
+        assert!(
+            nread_end <= Layout::STDIN_BUFFER_OFFSET,
+            "stdin iovec/nread region [{}, {}) must not reach stdin buffer ({})",
+            Layout::STDIN_IOVEC_OFFSET,
+            nread_end,
+            Layout::STDIN_BUFFER_OFFSET
+        );
+    }
+
+    #[test]
+    fn heap_start_is_aligned_to_raw_value_alignment() {
+        assert_eq!(
+            Layout::HEAP_START % Layout::ALIGN,
+            0,
+            "HEAP_START must be ALIGN-aligned so heap pointers are tag-safe"
+        );
+    }
+
+    #[test]
+    fn stdin_read_limit_is_64k() {
+        assert_eq!(Layout::STDIN_READ_LIMIT, 64 * 1024);
+    }
+
+    #[test]
+    fn scratch_stdin_heap_are_ordered() {
+        assert!(Layout::SCRATCH_OFFSET < Layout::STDIN_BUFFER_OFFSET);
+        assert!(Layout::STDIN_BUFFER_OFFSET < Layout::HEAP_START);
+        let scratch_end = Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE;
+        let stdin_end = Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE;
+        assert!(scratch_end <= Layout::STDIN_BUFFER_OFFSET);
+        assert!(stdin_end <= Layout::HEAP_START);
     }
 }

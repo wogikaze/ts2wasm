@@ -157,6 +157,38 @@ impl<'a> WatEmitter<'a> {
                 span: None,
             });
         }
+        let stdin_nread_end =
+            Layout::STDIN_NREAD_OFFSET
+                .checked_add(4)
+                .ok_or_else(|| Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "stdin nread region overflow while validating memory layout"
+                        .to_owned(),
+                    span: None,
+                })?;
+        if stdin_nread_end > Layout::STDIN_BUFFER_OFFSET {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "stdin iovec/nread region [{}..{}) overlaps stdin buffer ({})",
+                    Layout::STDIN_IOVEC_OFFSET,
+                    stdin_nread_end,
+                    Layout::STDIN_BUFFER_OFFSET
+                ),
+                span: None,
+            });
+        }
+        if Layout::HEAP_START % Layout::ALIGN != 0 {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "HEAP_START ({}) must be {}-byte aligned for RawValue heap tags",
+                    Layout::HEAP_START,
+                    Layout::ALIGN
+                ),
+                span: None,
+            });
+        }
         Ok(())
     }
 

@@ -50,10 +50,10 @@ impl WatEmitter<'_> {
   "#,
         stdin_buf = Layout::STDIN_BUFFER_OFFSET,
         stdin_size = Layout::STDIN_BUFFER_SIZE,
-        read_max = Layout::STDIN_READ_MAX_BYTES,
-        iovec_ptr = Layout::FD_READ_IOVEC_PTR,
-        iovec_len = Layout::FD_READ_IOVEC_LEN,
-        nread_ptr = Layout::FD_READ_NREAD_PTR,
+        read_max = Layout::STDIN_READ_LIMIT,
+        iovec_ptr = Layout::STDIN_IOVEC_PTR,
+        iovec_len = Layout::STDIN_IOVEC_LEN,
+        nread_ptr = Layout::STDIN_NREAD_OFFSET,
             undefined_tag = ValueTag::UNDEFINED,
         ));
     }
