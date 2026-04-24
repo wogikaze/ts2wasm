@@ -60,6 +60,30 @@ Audit では、少なくとも次を確認する。
 | preopen verification | filesystem access が許可された preopen 内に収まることを検証する |
 | security review | filesystem/env/network/crypto/timer capability を一覧化する |
 
+## P0-3 manifest output (current subset)
+
+P0-3 では、`RuntimeLinkPlan` から最小 capability manifest を生成し、CLI から JSON として出力できるようにする。
+
+```bash
+ts2wasm build input.ts -o out.wasm --emit-capabilities out.cap.json
+```
+
+Current schema (M5 subset):
+
+```json
+{
+  "imports": ["wasi_snapshot_preview1.fd_write"],
+  "capabilities": ["stdout.write"],
+  "runtime": ["copy", "log", "value_to_string_into", "write"]
+}
+```
+
+- `imports`: 実際に link される host import の一覧
+- `capabilities`: import から導出される capability の一覧
+- `runtime`: 依存 closure 展開後の runtime function 一覧
+
+この段階では `fd_read` や stdin runtime は含めない。M6 で `fd_read` 経路を同じ `RuntimeLinkPlan -> manifest` 導線に追加する。
+
 ## Host shim trimming
 
 host shim は固定の巨大 runtime として配布しない。compiler はソースコードと lowering 結果を解析し、実行に必要な host capability だけを manifest として列挙する。その manifest に基づいて、必要な host shim 関数だけを生成または link する。
