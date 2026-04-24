@@ -1,7 +1,8 @@
 use crate::{Diagnostic, Expr, Stmt};
 
-use super::builtin_resolved::{BuiltinPropertyId, ResolvedExpr, ResolvedStmt};
-use super::lowered::BuiltinId;
+use super::builtin::BuiltinId;
+use super::builtin::BuiltinPropertyId;
+use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 
 pub(crate) fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     program.iter().map(resolve_stmt).collect()
@@ -130,8 +131,8 @@ fn resolve_builtin_call(callee: &Expr) -> Option<BuiltinId> {
 #[cfg(test)]
 mod tests {
     use super::resolve_builtins;
-    use crate::ir::builtin_resolved::{BuiltinPropertyId, ResolvedExpr, ResolvedStmt};
-    use crate::ir::lowered::BuiltinId;
+    use crate::ir::builtin::{BuiltinId, BuiltinPropertyId};
+    use crate::ir::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 
     #[test]
     fn console_log_resolves_to_builtin_call() {

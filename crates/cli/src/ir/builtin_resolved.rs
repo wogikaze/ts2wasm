@@ -1,11 +1,6 @@
 use crate::{BinaryOp, UnaryOp};
 
-use super::lowered::BuiltinId;
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) enum BuiltinPropertyId {
-    Length,
-}
+use super::builtin::{BuiltinId, BuiltinPropertyId};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum ResolvedStmt {

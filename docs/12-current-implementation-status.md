@@ -144,6 +144,7 @@ Current M5 limitations:
 - Object literal keys must be identifiers; string-literal keys like `{"x": v}` are a parse error.
 - `obj["key"]` computed property access routes through `$array_get` instead of `$property_get` and returns `undefined` for non-array receivers — this is incorrect JS semantics.
 - Method calls and prototype chain lookups are not implemented.
+- Builtin root name shadowing is not supported yet: `console.log(...)` is resolved by syntax shape in `builtin_resolver`, so local rebinding such as `let console = ...;` is outside the current subset semantics.
 - There is no GC; heap grows monotonically.
 - `$alloc_heap` does not check `memory.size`; large allocations produce undefined behaviour instead of a graceful OOM.
 - Floating-point number values (`NaN`, `-0`, `Infinity`) are still not implemented.

@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
-use super::builtin_resolved::{BuiltinPropertyId, ResolvedExpr, ResolvedStmt};
+use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
+use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
 use crate::runtime::value::ValueTag;
 use crate::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
 
@@ -9,32 +10,6 @@ pub(crate) struct LocalId(pub(crate) usize);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct FuncId(pub(crate) usize);
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) enum BuiltinId {
-    ConsoleLog,
-}
-
-#[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum BuiltinResult {
-    Value,
-    EffectOnly,
-}
-
-impl BuiltinId {
-    pub(crate) const fn expected_arity(self) -> usize {
-        match self {
-            Self::ConsoleLog => 1,
-        }
-    }
-
-    pub(crate) const fn result(self) -> BuiltinResult {
-        match self {
-            Self::ConsoleLog => BuiltinResult::EffectOnly,
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct LoweredProgram {
@@ -729,10 +704,8 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        BuiltinId, BuiltinResult, FunctionCallKind, LoweredExpr, LoweredStmt, lower_program,
-        validate_lowered,
-    };
+    use super::{FunctionCallKind, LoweredExpr, LoweredStmt, lower_program, validate_lowered};
+    use crate::ir::builtin::{BuiltinId, BuiltinResult};
 
     fn parse_and_resolve(source: &str) -> Vec<crate::ir::builtin_resolved::ResolvedStmt> {
         let program = crate::parse_program(source).unwrap();

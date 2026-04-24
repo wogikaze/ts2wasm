@@ -1,4 +1,4 @@
-use crate::ir::lowered::BuiltinId;
+use crate::ir::builtin::BuiltinId;
 use crate::runtime::consts::RuntimeString;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
