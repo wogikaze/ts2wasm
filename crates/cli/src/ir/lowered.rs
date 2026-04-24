@@ -342,14 +342,6 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::BuiltinCall { builtin, args } => {
-                if matches!(builtin, BuiltinId::ReadStdinUtf8) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "require(\"fs\").readFileSync(0, \"utf8\") is recognized but runtime wiring is not implemented yet"
-                            .to_owned(),
-                        span: None,
-                    });
-                }
                 let lowered_args = args
                     .iter()
                     .map(|arg| self.lower_expr(arg))
@@ -830,15 +822,22 @@ mod tests {
     }
 
     #[test]
-    fn lowering_rejects_read_file_sync_idiom_until_runtime_is_connected() {
+    fn lowering_connects_read_file_sync_idiom_to_builtin_call_shape() {
         let ast =
             crate::parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
         let resolved = crate::ir::builtin_resolver::resolve_builtins(&ast).unwrap();
-        let err = lower_program(&resolved).unwrap_err();
-        assert_eq!(err.code, super::DiagCode::UnsupportedSyntax);
-        assert!(
-            err.message
-                .contains("recognized but runtime wiring is not implemented")
-        );
+        let lowered = lower_program(&resolved).unwrap();
+        match &lowered.top_level_statements[0] {
+            LoweredStmt::Let(
+                _,
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(BuiltinId::ReadStdinUtf8),
+                    args,
+                },
+            ) => {
+                assert!(args.is_empty());
+            }
+            other => panic!("unexpected lowered statement: {other:?}"),
+        }
     }
 }

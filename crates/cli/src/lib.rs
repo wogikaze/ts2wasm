@@ -7,6 +7,8 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+const ENABLE_READ_STDIN_UTF8_RUNTIME: bool = false;
+
 /// Structured diagnostic emitted by compiler phases.
 ///
 /// All compiler phases (Lexer / Parser / Resolver / Lowering / Backend)
@@ -91,6 +93,7 @@ pub fn build_file_with_options(
             span: None,
         })
     })?;
+    ensure_runtime_feature_gates(&lowered)?;
     if let Some(path) = capability_manifest_output {
         let manifest = backend::emit_capability_manifest_json(&lowered);
         fs::write(path, manifest).map_err(|error| Diagnostic {
@@ -101,6 +104,112 @@ pub fn build_file_with_options(
     }
     let wat = backend::emit_wat(&lowered)?;
     write_wasm_from_wat(&wat, output)
+}
+
+fn ensure_runtime_feature_gates(lowered: &ir::lowered::LoweredProgram) -> Result<(), Diagnostic> {
+    if ENABLE_READ_STDIN_UTF8_RUNTIME {
+        return Ok(());
+    }
+    if lowered_contains_builtin(lowered, ir::builtin::BuiltinId::ReadStdinUtf8) {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "require(\"fs\").readFileSync(0, \"utf8\") is lowered but runtime execution is disabled in M6-3a"
+                .to_owned(),
+            span: None,
+        });
+    }
+    Ok(())
+}
+
+fn lowered_contains_builtin(
+    lowered: &ir::lowered::LoweredProgram,
+    builtin: ir::builtin::BuiltinId,
+) -> bool {
+    lowered
+        .top_level_statements
+        .iter()
+        .any(|stmt| lowered_stmt_contains_builtin(stmt, builtin))
+        || lowered.functions.iter().any(|func| {
+            func.body
+                .iter()
+                .any(|stmt| lowered_stmt_contains_builtin(stmt, builtin))
+        })
+}
+
+fn lowered_stmt_contains_builtin(
+    stmt: &ir::lowered::LoweredStmt,
+    builtin: ir::builtin::BuiltinId,
+) -> bool {
+    match stmt {
+        ir::lowered::LoweredStmt::Let(_, expr)
+        | ir::lowered::LoweredStmt::Assign(_, expr)
+        | ir::lowered::LoweredStmt::Expr(expr)
+        | ir::lowered::LoweredStmt::Return(expr) => lowered_expr_contains_builtin(expr, builtin),
+        ir::lowered::LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            lowered_expr_contains_builtin(condition, builtin)
+                || then_body
+                    .iter()
+                    .any(|nested| lowered_stmt_contains_builtin(nested, builtin))
+                || else_body
+                    .iter()
+                    .any(|nested| lowered_stmt_contains_builtin(nested, builtin))
+        }
+        ir::lowered::LoweredStmt::While { condition, body } => {
+            lowered_expr_contains_builtin(condition, builtin)
+                || body
+                    .iter()
+                    .any(|nested| lowered_stmt_contains_builtin(nested, builtin))
+        }
+    }
+}
+
+fn lowered_expr_contains_builtin(
+    expr: &ir::lowered::LoweredExpr,
+    builtin: ir::builtin::BuiltinId,
+) -> bool {
+    match expr {
+        ir::lowered::LoweredExpr::Call {
+            kind: ir::lowered::FunctionCallKind::Builtin(found),
+            args,
+        } => {
+            *found == builtin
+                || args
+                    .iter()
+                    .any(|arg| lowered_expr_contains_builtin(arg, builtin))
+        }
+        ir::lowered::LoweredExpr::Call { args, .. } => args
+            .iter()
+            .any(|arg| lowered_expr_contains_builtin(arg, builtin)),
+        ir::lowered::LoweredExpr::Unary { expr, .. }
+        | ir::lowered::LoweredExpr::GetLength(expr) => lowered_expr_contains_builtin(expr, builtin),
+        ir::lowered::LoweredExpr::Binary { left, right, .. }
+        | ir::lowered::LoweredExpr::ArrayGet {
+            arr: left,
+            index: right,
+        } => {
+            lowered_expr_contains_builtin(left, builtin)
+                || lowered_expr_contains_builtin(right, builtin)
+        }
+        ir::lowered::LoweredExpr::ArrayNew { elements, .. } => elements
+            .iter()
+            .any(|elem| lowered_expr_contains_builtin(elem, builtin)),
+        ir::lowered::LoweredExpr::ObjectNew { props, .. } => props
+            .iter()
+            .any(|(_, value)| lowered_expr_contains_builtin(value, builtin)),
+        ir::lowered::LoweredExpr::PropertyGet { obj, .. } => {
+            lowered_expr_contains_builtin(obj, builtin)
+        }
+        ir::lowered::LoweredExpr::Number(_)
+        | ir::lowered::LoweredExpr::String(_)
+        | ir::lowered::LoweredExpr::Bool(_)
+        | ir::lowered::LoweredExpr::Null
+        | ir::lowered::LoweredExpr::Undefined
+        | ir::lowered::LoweredExpr::Local(_) => false,
+    }
 }
 
 #[cfg(test)]
@@ -1414,5 +1523,15 @@ mod tests {
         let err = validate_ast(&program).unwrap_err();
         assert_eq!(err.code, DiagCode::DuplicateLocal);
         assert!(err.span.is_some());
+    }
+
+    #[test]
+    fn m6_3a_runtime_gate_blocks_read_stdin_utf8_execution_path() {
+        let ast = parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
+        let resolved = ir::builtin_resolver::resolve_builtins(&ast).unwrap();
+        let lowered = ir::lowered::lower_program(&resolved).unwrap();
+        let err = ensure_runtime_feature_gates(&lowered).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("disabled in M6-3a"));
     }
 }

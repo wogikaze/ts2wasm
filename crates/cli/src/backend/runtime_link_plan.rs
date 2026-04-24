@@ -327,4 +327,19 @@ mod tests {
                 .contains(&Capability::StdinRead)
         );
     }
+
+    #[test]
+    fn m6_idiom_lowering_populates_fd_read_link_plan_without_execution() {
+        let program = lowered("let s = require(\"fs\").readFileSync(0, \"utf8\");");
+        let plan = RuntimeLinkPlan::from_program(&program);
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::ReadStdinUtf8)
+        );
+        assert!(plan.required_imports().contains(&HostImport::FdRead));
+        assert!(
+            plan.required_capabilities()
+                .contains(&Capability::StdinRead)
+        );
+    }
 }

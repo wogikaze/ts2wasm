@@ -79,9 +79,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .map(resolve_expr)
                 .collect::<Result<Vec<_>, _>>()?;
             if let Some(builtin) = resolve_builtin_call(callee.as_ref(), args)? {
+                let builtin_args = if matches!(builtin, BuiltinId::ReadStdinUtf8) {
+                    Vec::new()
+                } else {
+                    resolved_args
+                };
                 Ok(ResolvedExpr::BuiltinCall {
                     builtin,
-                    args: resolved_args,
+                    args: builtin_args,
                 })
             } else {
                 Ok(ResolvedExpr::Call {
@@ -302,7 +307,7 @@ mod tests {
         match &resolved[0] {
             ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
                 assert_eq!(*builtin, BuiltinId::ReadStdinUtf8);
-                assert_eq!(args.len(), 2);
+                assert!(args.is_empty());
             }
             other => panic!("unexpected resolved stmt: {other:?}"),
         }

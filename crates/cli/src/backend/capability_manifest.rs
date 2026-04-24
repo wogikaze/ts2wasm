@@ -159,4 +159,13 @@ mod tests {
         assert!(manifest.contains("\"stdin.read\""));
         assert!(manifest.contains("\"read_stdin_utf8\""));
     }
+
+    #[test]
+    fn m6_idiom_manifest_contains_fd_read_and_stdin_capability() {
+        let program = lowered("let s = require(\"fs\").readFileSync(0, \"utf8\");");
+        let manifest = emit_capability_manifest_json(&program);
+        assert!(manifest.contains("\"wasi_snapshot_preview1.fd_read\""));
+        assert!(manifest.contains("\"stdin.read\""));
+        assert!(manifest.contains("\"read_stdin_utf8\""));
+    }
 }
