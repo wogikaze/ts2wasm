@@ -837,7 +837,310 @@ ValueTag の範囲検査があるか
 docs/12-current-implementation-status.md が更新されているか
 ```
 
-## 19. 現在の優先順位
+## 19. Gatekeeper Checklist
+
+この checklist は、実装者ではなく gatekeeper が使う。
+PR / agent output / autopilot result を mainline に入れてよいかを判定するための最低条件である。
+
+### 19.1 即 reject 条件
+
+以下のいずれかに該当する場合、内容が動いていても reject する。
+
+```text
+Parser が builtin / API / host capability を判定している
+Resolver / Lowering が host import を知っている
+Backend が名前解決・builtin 判定・arity check をしている
+RuntimeFn を追加したのに RuntimeSpec / emission_order / all / emit function / linker test が更新されていない
+HostImport を追加したのに Capability / manifest / conditional import test がない
+runtime helper を追加したのに RuntimeLinkPlan test がない
+runtime string を無条件 intern している
+fd_write / fd_read など host import が常時 import されている
+source 起因 Diagnostic に span: None を新規追加している
+既存 docs の gate を削除して進行可能に見せている
+「次 milestone に進む」と docs だけ書き換えて、負債を返済していない
+```
+
+### 19.2 差分レビューの最初に見るコマンド
+
+```bash
+git status --short
+git log --oneline -8
+git diff --stat HEAD~1..HEAD
+git show --name-only --oneline HEAD
+cargo fmt --all --check
+cargo test
+```
+
+runtime / backend / WASI / differential に関係する変更では追加で確認する。
+
+```bash
+cargo test -- --include-ignored
+```
+
+または、プロジェクトで定義された iwasm differential suite を実行する。
+
+### 19.3 grep gate
+
+以下の grep で、過去のやらかしの再発を確認する。
+
+```bash
+rg "as_console_log_call" crates/cli/src
+rg 'property == "length"' crates/cli/src/ir/lowered.rs
+rg 'fd_write|fd_read' crates/cli/src/backend -g'*.rs'
+rg 'RuntimeString::.*intern|intern_required_runtime_strings' crates/cli/src/backend
+rg 'span: None' crates/cli/src
+rg 'unwrap\\(|expect\\(|panic!' crates/cli/src
+```
+
+判定基準:
+
+```text
+as_console_log_call が復活していたら reject
+lowered.rs が .length を直接判定していたら reject
+fd_write / fd_read が RuntimeLinkPlan 経由でない場所に直書きされていたら reject
+runtime string の無条件 intern が増えていたら reject
+source 起因 diagnostic の span: None が増えていたら reject
+compiler path の unwrap/expect/panic が増えていたら原則 reject
+```
+
+例外は test code のみ。test code 以外の例外はコメントで理由を書く。
+
+### 19.4 RuntimeFn 追加時 checklist
+
+RuntimeFn variant を追加した PR は、以下をすべて満たすこと。
+
+```text
+RuntimeFn variant を追加した
+RuntimeSpec を追加した
+deps を定義した
+imports を定義した
+capability を定義した
+runtime_strings を定義した
+result を定義した
+emission_order に追加した
+all に追加した
+runtime_builder emit function を追加した
+RuntimeFn::symbol / manifest name を更新した
+RuntimeLinkPlan test を追加した
+capability manifest test を追加した
+behavior が変わる場合は Node vs wasm/iwasm differential test を追加した
+docs/12-current-implementation-status.md を更新した
+docs/15-runtime-abi.md を更新した
+```
+
+1つでも欠けたら reject する。
+
+### 19.5 HostImport / Capability 追加時 checklist
+
+HostImport または Capability を追加した PR は、以下をすべて満たすこと。
+
+```text
+HostImport enum を追加した
+Capability enum を追加した
+RuntimeSpec.imports に接続した
+RuntimeSpec.capability に接続した
+RuntimeLinkPlan.required_imports / required_capabilities test を追加した
+capability manifest JSON に出る test を追加した
+host import が必要時だけ WAT に出る test を追加した
+host import が不要時に WAT に出ない test を追加した
+docs/09-security-and-capability-model.md を更新した
+docs/12-current-implementation-status.md を更新した
+```
+
+host import が常時 emit される変更は reject する。
+
+### 19.6 Builtin 追加時 checklist
+
+BuiltinId / BuiltinPropertyId を追加した PR は、以下をすべて満たすこと。
+
+```text
+ir/builtin.rs に contract を追加した
+BuiltinResolver に source pattern を追加した
+arity / result を定義した
+unsupported argument form の diagnostic を追加した
+誤認識しない negative test を追加した
+Lowering の扱いを明示した
+runtime に接続する場合は RuntimeFn catalog に接続した
+runtime に接続しない場合は compile-time gate で止めた
+docs/05 または docs/12 に subset semantics を記録した
+```
+
+Parser に builtin special form を追加していたら reject する。
+
+### 19.7 RuntimeLinkPlan gate
+
+runtime / capability / manifest に触る PR は、以下を確認する。
+
+```text
+RuntimeLinkPlan が required_runtime を直接収集している
+WatEmitter が runtime dependency を計算していない
+required_imports が RuntimeSpec から導出されている
+required_capabilities が RuntimeSpec から導出されている
+required_runtime_strings が RuntimeSpec から導出されている
+manifest は RuntimeLinkPlan から生成されている
+```
+
+次のような実装は reject する。
+
+```text
+WatEmitter が add_required_runtime を持つ
+backend が fd_write / fd_read を機能名で直接判断する
+manifest が LoweredProgram を直接再走査する
+manifest が RuntimeLinkPlan と別ロジックで imports/capabilities を決める
+```
+
+### 19.8 Memory layout gate
+
+Layout / heap / scratch / stdin buffer / data segment に触る PR は、以下を確認する。
+
+```text
+Layout constants が docs/15-runtime-abi.md と一致している
+static data end <= SCRATCH_OFFSET
+SCRATCH_OFFSET + SCRATCH_SIZE <= next fixed buffer
+fixed buffer end <= HEAP_START
+HEAP_START alignment が ValueTag::HEAP_MASK と整合する
+新しい固定領域を追加した場合、validate_memory_layout が更新されている
+large allocation / OOM policy が docs に書かれている
+```
+
+固定領域を追加して memory validation を更新していない場合は reject する。
+
+### 19.9 Diagnostic / Span gate
+
+source 起因のエラーを追加する PR は、以下を満たすこと。
+
+```text
+Diagnostic code が適切
+message が source user 向け
+span が Some(span)
+test が span.is_some() を確認している
+unsupported と invariant violation を混同していない
+```
+
+以下は reject する。
+
+```text
+source 起因なのに InvariantViolation
+source 起因なのに span: None
+unsupported feature を silent fallback
+未実装 runtime を undefined で返して通す
+```
+
+### 19.10 Docs gate
+
+以下を変更した場合は docs 更新必須。
+
+```text
+syntax
+semantics
+runtime ABI
+value representation
+memory layout
+host import
+capability
+manifest schema
+milestone gate
+unsupported feature set
+test policy
+```
+
+最低限の更新候補:
+
+```text
+docs/05-compatibility-and-semantics.md
+docs/09-security-and-capability-model.md
+docs/11-shared-definitions.md
+docs/12-current-implementation-status.md
+docs/15-runtime-abi.md
+```
+
+docs の gate を削除して進行可能にする変更は reject する。gate を満たした場合のみ、status を done に更新する。
+
+### 19.11 Handoff packet
+
+gatekeeper に渡すときは、以下を必ず添付する。
+
+```text
+目的:
+  何を実装したか。何を実装していないか。
+
+変更範囲:
+  touched files
+  code commits
+  docs commits
+
+検証:
+  cargo fmt --all --check
+  cargo test
+  differential / iwasm test if relevant
+  grep gate 結果
+
+設計上の禁止事項:
+  今回あえてやっていないこと
+  次 slice に残したこと
+
+既知の未関連変更:
+  git status --short の未追跡/未コミット差分
+```
+
+テンプレート:
+
+```text
+Gate handoff
+
+Scope:
+- Implemented:
+- Not implemented:
+
+Commits:
+- <hash> <title>
+- <hash> <title>
+
+Validation:
+- cargo fmt --all --check: pass/fail
+- cargo test: pass/fail
+- iwasm differential: pass/fail/not applicable
+- grep gate:
+  - as_console_log_call: 0
+  - property == "length" in lowered.rs: 0
+  - source diagnostic span None added: no/yes
+
+Risk:
+- Runtime behavior changed: yes/no
+- Host import changed: yes/no
+- Memory layout changed: yes/no
+- Manifest schema changed: yes/no
+
+Docs:
+- docs/12 updated: yes/no
+- docs/15 updated if ABI changed: yes/no
+- docs/09 updated if capability changed: yes/no
+
+Known unrelated working tree changes:
+- <file>
+```
+
+### 19.12 Milestone advance gate
+
+次 milestone に進む前に、docs/12 の gate を確認する。
+
+```text
+done と書かれた項目は実装と test があること
+deferred と書かれた項目を無視して次 milestone に進まないこと
+Next milestone target を書き換えるだけの変更をしないこと
+```
+
+次 milestone に進める条件:
+
+```text
+current milestone の acceptance tests が通っている
+docs/12 の gate が done
+runtime/backend/capability 変更なら manifest と linker tests がある
+unsupported / limitation が docs に残っている
+未実装を実装済みのように書いていない
+```
+
+## 20. 現在の優先順位
 
 次の順で負債を潰す。
 
