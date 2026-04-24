@@ -1,4 +1,5 @@
 use crate::ir::lowered::BuiltinId;
+use crate::runtime::consts::RuntimeString;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum RuntimeFn {
@@ -17,12 +18,12 @@ pub(crate) enum RuntimeFn {
     StrictEqual,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum HostImport {
     FdWrite,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum Capability {
     StdoutWrite,
 }
@@ -38,12 +39,14 @@ pub(crate) struct RuntimeSpec {
     pub deps: &'static [RuntimeFn],
     pub imports: &'static [HostImport],
     pub capability: &'static [Capability],
+    pub runtime_strings: &'static [&'static str],
     pub result: RuntimeResult,
 }
 
 const NO_DEPS: &[RuntimeFn] = &[];
 const NO_IMPORTS: &[HostImport] = &[];
 const NO_CAPS: &[Capability] = &[];
+const NO_RUNTIME_STRINGS: &[&str] = &[];
 
 const WRITE_DEPS: &[RuntimeFn] = &[];
 const COPY_DEPS: &[RuntimeFn] = &[];
@@ -56,6 +59,13 @@ const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::String
 
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
+const VTS_RUNTIME_STRINGS: &[&str] = &[
+    RuntimeString::UNDEFINED,
+    RuntimeString::NULL,
+    RuntimeString::FALSE,
+    RuntimeString::TRUE,
+];
+const LOG_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NEWLINE];
 
 impl RuntimeFn {
     pub(crate) const fn from_builtin(builtin: BuiltinId) -> Self {
@@ -71,6 +81,7 @@ impl RuntimeFn {
                 deps: WRITE_DEPS,
                 imports: IMPORT_FD_WRITE,
                 capability: CAP_STDOUT_WRITE,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::EffectOnly,
             },
             Self::Copy => RuntimeSpec {
@@ -78,6 +89,7 @@ impl RuntimeFn {
                 deps: COPY_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::EffectOnly,
             },
             Self::ValueToStringInto => RuntimeSpec {
@@ -85,6 +97,7 @@ impl RuntimeFn {
                 deps: VTS_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: VTS_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::Log => RuntimeSpec {
@@ -92,6 +105,7 @@ impl RuntimeFn {
                 deps: LOG_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: LOG_RUNTIME_STRINGS,
                 result: RuntimeResult::EffectOnly,
             },
             Self::TruthyBool => RuntimeSpec {
@@ -99,6 +113,7 @@ impl RuntimeFn {
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::Not => RuntimeSpec {
@@ -106,6 +121,7 @@ impl RuntimeFn {
                 deps: &[Self::TruthyBool],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::StringEqual => RuntimeSpec {
@@ -113,6 +129,7 @@ impl RuntimeFn {
                 deps: STRING_EQUAL_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::Concat => RuntimeSpec {
@@ -120,6 +137,7 @@ impl RuntimeFn {
                 deps: CONCAT_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::IsString => RuntimeSpec {
@@ -127,6 +145,7 @@ impl RuntimeFn {
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::Add => RuntimeSpec {
@@ -134,6 +153,7 @@ impl RuntimeFn {
                 deps: ADD_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::Sub => RuntimeSpec {
@@ -141,6 +161,7 @@ impl RuntimeFn {
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::Less => RuntimeSpec {
@@ -148,6 +169,7 @@ impl RuntimeFn {
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::StrictEqual => RuntimeSpec {
@@ -155,6 +177,7 @@ impl RuntimeFn {
                 deps: STRICT_EQUAL_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
         }
@@ -188,5 +211,43 @@ impl RuntimeFn {
             Self::Less,
             Self::StrictEqual,
         ]
+    }
+
+    #[cfg(test)]
+    pub(crate) const fn all() -> &'static [RuntimeFn] {
+        Self::emission_order()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::RuntimeFn;
+
+    #[test]
+    fn emission_order_is_unique_and_complete() {
+        let order = RuntimeFn::emission_order();
+        let all = RuntimeFn::all();
+        assert_eq!(order.len(), all.len());
+        for item in all {
+            assert_eq!(
+                order.iter().filter(|candidate| *candidate == item).count(),
+                1
+            );
+        }
+    }
+
+    #[test]
+    fn emission_order_contains_all_dependencies() {
+        let order = RuntimeFn::emission_order();
+        for runtime_fn in order {
+            for dep in runtime_fn.spec().deps {
+                assert!(
+                    order.contains(dep),
+                    "missing dependency {:?} for {:?} in emission order",
+                    dep,
+                    runtime_fn
+                );
+            }
+        }
     }
 }

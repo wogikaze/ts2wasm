@@ -8,12 +8,6 @@ use crate::runtime::{
 
 impl WatEmitter<'_> {
     pub(super) fn emit_runtime(&self, wat: &mut String) {
-        let undefined = self.string_offset(RuntimeString::UNDEFINED);
-        let null = self.string_offset(RuntimeString::NULL);
-        let false_s = self.string_offset(RuntimeString::FALSE);
-        let true_s = self.string_offset(RuntimeString::TRUE);
-        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
-
         for runtime_fn in RuntimeFn::emission_order() {
             if !self.required_runtime.contains(runtime_fn) {
                 continue;
@@ -21,10 +15,8 @@ impl WatEmitter<'_> {
             match runtime_fn {
                 RuntimeFn::Write => self.emit_write(wat),
                 RuntimeFn::Copy => self.emit_copy(wat),
-                RuntimeFn::ValueToStringInto => {
-                    self.emit_value_to_string_into(wat, undefined, null, false_s, true_s)
-                }
-                RuntimeFn::Log => self.emit_log(wat, newline),
+                RuntimeFn::ValueToStringInto => self.emit_value_to_string_into(wat),
+                RuntimeFn::Log => self.emit_log(wat),
                 RuntimeFn::TruthyBool => self.emit_truthy_bool(wat),
                 RuntimeFn::Not => self.emit_not(wat),
                 RuntimeFn::StringEqual => self.emit_string_equal(wat),
@@ -72,14 +64,11 @@ impl WatEmitter<'_> {
         ));
     }
 
-    fn emit_value_to_string_into(
-        &self,
-        wat: &mut String,
-        undefined: u32,
-        null: u32,
-        false_s: u32,
-        true_s: u32,
-    ) {
+    fn emit_value_to_string_into(&self, wat: &mut String) {
+        let undefined = self.string_offset(RuntimeString::UNDEFINED);
+        let null = self.string_offset(RuntimeString::NULL);
+        let false_s = self.string_offset(RuntimeString::FALSE);
+        let true_s = self.string_offset(RuntimeString::TRUE);
         wat.push_str(&format!(
             r#"
   (func $value_to_string_into (param $v i32) (param $ptr i32) (result i32)
@@ -171,7 +160,8 @@ impl WatEmitter<'_> {
         ));
     }
 
-    fn emit_log(&self, wat: &mut String, newline: u32) {
+    fn emit_log(&self, wat: &mut String) {
+        let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
   (func $log (param $v i32)
