@@ -261,22 +261,25 @@ Not implemented in this slice:
 - `ENABLE_READ_STDIN_UTF8_RUNTIME` gate activation.
 - stdin differential fixture execution.
 
-## M6 runtime layout status (M6-3b-1)
+## M6 runtime implementation (M6-3b-1) — complete
 
-Implemented in this slice (superseded by M6-3b-0 renaming):
+Implemented in this slice:
 
-- Added stdin runtime layout constants: `STDIN_BUFFER_OFFSET`, `STDIN_BUFFER_SIZE`, and `STDIN_READ_LIMIT` (`64 * 1024`).
-- Added dedicated `fd_read` staging constants: `STDIN_IOVEC_PTR`, `STDIN_IOVEC_LEN`, `STDIN_NREAD_OFFSET`.
-- Extended backend memory layout validation to enforce ordered fixed regions:
-	- `DATA_START <= static data end`
-	- `static data end <= SCRATCH_OFFSET`
-	- `SCRATCH_OFFSET + SCRATCH_SIZE <= STDIN_BUFFER_OFFSET`
-	- `STDIN_BUFFER_OFFSET + STDIN_BUFFER_SIZE <= HEAP_START`
+- `$read_stdin_utf8` fully implemented in `runtime_builder.rs` as an `fd_read` loop:
+  - Pre-allocates `STRING_HEADER_SIZE + STDIN_READ_LIMIT` (65540) bytes on the heap via `$alloc_heap`.
+  - Fixes iovec buf pointer to `STDIN_BUFFER_OFFSET` (1792); iterates in `STDIN_BUFFER_SIZE` (256-byte) chunks.
+  - Traps (`unreachable`) on non-zero `fd_read` errno.
+  - Stops on `nread == 0` (EOF) or when `STDIN_READ_LIMIT` (65536 bytes) is reached.
+  - Copies each chunk from the staging buffer into the heap data area via `$copy`.
+  - Writes the i32 byte-length header at the heap base.
+  - Returns `base | STRING_TAG` (6) as a tagged string value.
+- `ReadStdinUtf8` deps updated to `[AllocHeap, Copy]` — transitive link plan resolution now works correctly.
+- `ENABLE_READ_STDIN_UTF8_RUNTIME` gate set to `true`.
+- `fixtures/m6/stdin.ts` added: reads stdin, logs the string.
+- M6 differential integration test added: pipes `"hello"` to both Node.js and iwasm and compares stdout.
 
-Not implemented in this slice:
+Scope limitations (ASCII-only, M6-3b):
 
-- Actual `$read_stdin_utf8` `fd_read` runtime logic.
-- Runtime trap behavior for `fd_read` error / non-ASCII input bytes.
-- Runtime empty-string return path on EOF.
-
-After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
+- Byte values `>= 0x80` in stdin are undefined behaviour; no validation or trap is added for non-ASCII bytes.
+- A single `readFileSync(0, "utf8")` call reads at most 64 KiB. Programs that produce more stdin are unsupported.
+- Multiple calls to `readFileSync(0, "utf8")` in one program are not blocked but will read the remainder of fd 0 on each call.
