@@ -215,7 +215,21 @@ impl RuntimeFn {
 
     #[cfg(test)]
     pub(crate) const fn all() -> &'static [RuntimeFn] {
-        Self::emission_order()
+        &[
+            Self::Write,
+            Self::Copy,
+            Self::ValueToStringInto,
+            Self::Log,
+            Self::TruthyBool,
+            Self::Not,
+            Self::StringEqual,
+            Self::Concat,
+            Self::IsString,
+            Self::Add,
+            Self::Sub,
+            Self::Less,
+            Self::StrictEqual,
+        ]
     }
 }
 
