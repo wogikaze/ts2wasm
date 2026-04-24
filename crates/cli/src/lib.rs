@@ -1,5 +1,6 @@
 mod runtime;
 
+use runtime::{layout::Layout, value::ValueTag};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -606,7 +607,7 @@ impl<'a> WatEmitter<'a> {
             program,
             strings: HashMap::new(),
             string_data: Vec::new(),
-            next_data_offset: 256,
+            next_data_offset: Layout::DATA_START,
         };
         for value in ["undefined", "null", "false", "true", "\n"] {
             emitter.intern_string(value);
@@ -683,15 +684,15 @@ impl<'a> WatEmitter<'a> {
         if let Some(offset) = self.strings.get(value) {
             return *offset;
         }
-        let offset = align_to(self.next_data_offset, 8);
-        self.next_data_offset = align_to(offset + 4 + value.len() as u32, 8);
+        let offset = align_to(self.next_data_offset, Layout::ALIGN);
+        self.next_data_offset = align_to(offset + 4 + value.len() as u32, Layout::ALIGN);
         self.strings.insert(value.to_owned(), offset);
         self.string_data.push((offset, value.to_owned()));
         offset
     }
 
     fn string_value(&self, value: &str) -> u32 {
-        self.strings[value] | 6
+        self.strings[value] | ValueTag::STRING_TAG
     }
 
     fn string_offset(&self, value: &str) -> u32 {
@@ -720,9 +721,9 @@ impl<'a> WatEmitter<'a> {
         wat.push_str(
             r#"
   (func $write (param $ptr i32) (param $len i32)
-    (i32.store (i32.const 8) (local.get $ptr))
-    (i32.store (i32.const 12) (local.get $len))
-    (drop (call $fd_write (i32.const 1) (i32.const 8) (i32.const 1) (i32.const 0))))
+        (i32.store (i32.const 8) (local.get $ptr))
+        (i32.store (i32.const 12) (local.get $len))
+        (drop (call $fd_write (i32.const 1) (i32.const 8) (i32.const 1) (i32.const 0))))
   (func $copy (param $src i32) (param $dst i32) (param $len i32)
     (local $i i32)
     (block $exit
@@ -743,19 +744,19 @@ impl<'a> WatEmitter<'a> {
     (local $len i32)
     (if (i32.eq (local.get $v) (i32.const 0))
       (then
-        (call $copy (i32.const {}) (local.get $ptr) (i32.const 9))
+        (call $copy (i32.const {undef_str}) (local.get $ptr) (i32.const 9))
         (return (i32.const 9))))
     (if (i32.eq (local.get $v) (i32.const 1))
       (then
-        (call $copy (i32.const {}) (local.get $ptr) (i32.const 4))
+        (call $copy (i32.const {null_str}) (local.get $ptr) (i32.const 4))
         (return (i32.const 4))))
     (if (i32.eq (local.get $v) (i32.const 2))
       (then
-        (call $copy (i32.const {}) (local.get $ptr) (i32.const 5))
+        (call $copy (i32.const {false_str}) (local.get $ptr) (i32.const 5))
         (return (i32.const 5))))
     (if (i32.eq (local.get $v) (i32.const 3))
       (then
-        (call $copy (i32.const {}) (local.get $ptr) (i32.const 4))
+        (call $copy (i32.const {true_str}) (local.get $ptr) (i32.const 4))
         (return (i32.const 4))))
     (if (i32.eq (i32.and (local.get $v) (i32.const 7)) (i32.const 6))
       (then
@@ -767,15 +768,16 @@ impl<'a> WatEmitter<'a> {
     (i32.const 1))
   (func $log (param $v i32)
     (local $len i32)
-    (local.set $len (call $value_to_string_into (local.get $v) (i32.const 1500)))
-    (call $write (i32.const 1500) (local.get $len))
-    (call $write (i32.const {}) (i32.const 1)))
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (call $write (i32.const {scratch}) (local.get $len))
+    (call $write (i32.const {newline}) (i32.const 1)))
 "#,
-            undefined + 4,
-            null + 4,
-            false_s + 4,
-            true_s + 4,
-            newline
+            undef_str = undefined + 4,
+            null_str = null + 4,
+            false_str = false_s + 4,
+            true_str = true_s + 4,
+            scratch = Layout::SCRATCH_OFFSET,
+            newline = newline,
         ));
 
         wat.push_str(
@@ -958,16 +960,17 @@ impl<'a> WatEmitter<'a> {
     fn emit_expr(&self, wat: &mut String, expr: &Expr, indent: usize) {
         let pad = " ".repeat(indent);
         match expr {
-            Expr::Number(value) => {
-                wat.push_str(&format!("{pad}(i32.const {})\n", (value << 3) | 4))
-            }
+            Expr::Number(value) => wat.push_str(&format!(
+                "{pad}(i32.const {})\n",
+                ValueTag::encode_number(*value)
+            )),
             Expr::String(value) => {
                 wat.push_str(&format!("{pad}(i32.const {})\n", self.string_value(value)))
             }
-            Expr::Bool(true) => wat.push_str(&format!("{pad}(i32.const 3)\n")),
-            Expr::Bool(false) => wat.push_str(&format!("{pad}(i32.const 2)\n")),
-            Expr::Null => wat.push_str(&format!("{pad}(i32.const 1)\n")),
-            Expr::Undefined => wat.push_str(&format!("{pad}(i32.const 0)\n")),
+            Expr::Bool(true) => wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::TRUE)),
+            Expr::Bool(false) => wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::FALSE)),
+            Expr::Null => wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::NULL)),
+            Expr::Undefined => wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED)),
             Expr::Ident(name) => wat.push_str(&format!("{pad}(local.get ${})\n", wasm_ident(name))),
             Expr::Unary { op, expr } => {
                 self.emit_expr(wat, expr, indent);
