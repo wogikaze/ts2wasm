@@ -199,6 +199,8 @@ string alloc 時は以下の手順で行う。
 M0 では GC を実装しない。bump allocator のみ。
 heap overflow の検査は M1 以降。
 
+> **M5 現状**: `$alloc_heap` は `memory.size` を参照しない。配列・オブジェクトのサイズが線形メモリを超えた場合の動作は未定義。heap OOM check は P0 負債として M6 前に対処する。
+
 ## 将来の Value Representation 移行方針
 
 M0 → M3+ での段階的拡張:

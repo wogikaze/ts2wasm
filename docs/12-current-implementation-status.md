@@ -141,9 +141,25 @@ Current M5 limitations:
 
 - String values are ASCII-only; character byte length equals JS `.length`. UTF-16 code unit semantics are not implemented.
 - Dynamic property key expressions are not supported.
+- Object literal keys must be identifiers; string-literal keys like `{"x": v}` are a parse error.
+- `obj["key"]` computed property access routes through `$array_get` instead of `$property_get` and returns `undefined` for non-array receivers — this is incorrect JS semantics.
 - Method calls and prototype chain lookups are not implemented.
 - There is no GC; heap grows monotonically.
+- `$alloc_heap` does not check `memory.size`; large allocations produce undefined behaviour instead of a graceful OOM.
 - Floating-point number values (`NaN`, `-0`, `Infinity`) are still not implemented.
+
+## P0 technical debt carried from M5
+
+The following architectural requirements were deferred during M5 in order to ship the prototype:
+
+| Item | Status | Impact |
+|---|---|---|
+| RuntimeLinkPlan — separate from WatEmitter | deferred | WatEmitter still owns link planning; adding new runtime functions risks coupling |
+| AST node span — all `Expr`/`Stmt` carry source span | deferred | New diagnostics (non-ASCII, unsupported-syntax) emit `span: None` |
+| BuiltinResolver pass — separate from Resolver/lowering | deferred | `.length` and property lowering are inline in `Resolver::lower_expr`; scale-out risk |
+| Capability manifest output | deferred | Generated WASM has no associated manifest; capability traceability absent |
+
+These items must be resolved before M6 work begins. They are P0 because they block safe extension of the compiler and could mask regressions.
 
 ## Next milestone target
 
