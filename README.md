@@ -22,6 +22,7 @@ TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず
 | `docs/09-security-and-capability-model.md` | host capability、WASI preopen、Node host security、manifest 監査 |
 | `docs/10-related-projects.md` | QuickJS、AssemblyScript、Emscripten、Javy、tsc などとの比較 |
 | `docs/11-shared-definitions.md` | milestone、test status schema、capability manifest、optimization mode、benchmark policy |
+| `docs/12-current-implementation-status.md` | 現在の実装事実、未実装範囲、検証状況 |
 | `docs/99-original-plan.md` | 元 PLAN 原文。情報欠落チェック用 |
 
 ## First implementation slice

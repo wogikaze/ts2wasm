@@ -28,6 +28,7 @@
 | `docs/09-security-and-capability-model.md` | sandbox/capability/security policy | Host Shim Trimming、API 対応方針から抽出 | preopen/env/fs/network threat model |
 | `docs/10-related-projects.md` | related projects と差分 | Relative Projects | comparison criteria |
 | `docs/11-shared-definitions.md` | milestone、test status schema、capability manifest、optimization mode、benchmark policy | 複数 doc から参照される横断定義 | 重複定義の集約 |
+| `docs/12-current-implementation-status.md` | 現在の実装事実、未実装範囲、検証状況 | なし | status tracking |
 | `docs/99-original-plan.md` | lossless source | 全文 | なし |
 
 ## Recommended maintenance rule
@@ -35,5 +36,6 @@
 - README は 150〜250 行程度を上限にする。
 - 仕様・設計・テスト・性能の詳細は docs に置く。
 - 新しい設計判断は ADR または該当 docs に置く。
+- 実装状況が変わった場合、`docs/12-current-implementation-status.md` を同じ変更で更新する。
 - milestone、test status schema、capability manifest、optimization mode、benchmark policy を更新する場合、`docs/11-shared-definitions.md` を更新し、個別 doc では再定義しない。
 - host API を増やした場合、`docs/03-api-and-host-capability.md`、`docs/09-security-and-capability-model.md`、`docs/11-shared-definitions.md` の capability manifest を同時に確認する。
