@@ -117,7 +117,10 @@ enum Token {
     RightParen,
     LeftBrace,
     RightBrace,
+    LeftBracket,
+    RightBracket,
     Comma,
+    Colon,
     Dot,
     Semicolon,
 }
@@ -266,6 +269,36 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     tokens.push(SpannedToken {
                         kind: Token::Comma,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
+                ':' => {
+                    self.advance_char();
+                    tokens.push(SpannedToken {
+                        kind: Token::Colon,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
+                '[' => {
+                    self.advance_char();
+                    tokens.push(SpannedToken {
+                        kind: Token::LeftBracket,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
+                ']' => {
+                    self.advance_char();
+                    tokens.push(SpannedToken {
+                        kind: Token::RightBracket,
                         span: Span {
                             start,
                             end: self.cursor,
@@ -479,6 +512,12 @@ enum Expr {
         callee: Box<Expr>,
         args: Vec<Expr>,
     },
+    Array(Vec<Expr>),
+    Object(Vec<(String, Expr)>),
+    Index {
+        object: Box<Expr>,
+        index: Box<Expr>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -691,6 +730,15 @@ impl Parser {
                 };
                 continue;
             }
+            if self.consume(TokenKind::LeftBracket) {
+                let index = self.expression()?;
+                self.expect(TokenKind::RightBracket)?;
+                expr = Expr::Index {
+                    object: Box::new(expr),
+                    index: Box::new(index),
+                };
+                continue;
+            }
             if self.consume(TokenKind::LeftParen) {
                 let mut args = Vec::new();
                 if !self.consume(TokenKind::RightParen) {
@@ -726,6 +774,35 @@ impl Parser {
                 let expr = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
                 Ok(expr)
+            }
+            Some(Token::LeftBracket) => {
+                let mut elements = Vec::new();
+                if !self.consume(TokenKind::RightBracket) {
+                    loop {
+                        elements.push(self.expression()?);
+                        if self.consume(TokenKind::RightBracket) {
+                            break;
+                        }
+                        self.expect(TokenKind::Comma)?;
+                    }
+                }
+                Ok(Expr::Array(elements))
+            }
+            Some(Token::LeftBrace) => {
+                let mut props = Vec::new();
+                if !self.consume(TokenKind::RightBrace) {
+                    loop {
+                        let key = self.expect_ident()?;
+                        self.expect(TokenKind::Colon)?;
+                        let val = self.expression()?;
+                        props.push((key, val));
+                        if self.consume(TokenKind::RightBrace) {
+                            break;
+                        }
+                        self.expect(TokenKind::Comma)?;
+                    }
+                }
+                Ok(Expr::Object(props))
             }
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -808,7 +885,10 @@ enum TokenKind {
     RightParen,
     LeftBrace,
     RightBrace,
+    LeftBracket,
+    RightBracket,
     Comma,
+    Colon,
     Dot,
     Semicolon,
 }
@@ -833,7 +913,10 @@ impl TokenKind {
                 | (Self::RightParen, Token::RightParen)
                 | (Self::LeftBrace, Token::LeftBrace)
                 | (Self::RightBrace, Token::RightBrace)
+                | (Self::LeftBracket, Token::LeftBracket)
+                | (Self::RightBracket, Token::RightBracket)
                 | (Self::Comma, Token::Comma)
+                | (Self::Colon, Token::Colon)
                 | (Self::Dot, Token::Dot)
                 | (Self::Semicolon, Token::Semicolon)
         )
