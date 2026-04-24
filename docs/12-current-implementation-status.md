@@ -208,6 +208,12 @@ Implemented in this slice:
 - `require("fs").readFileSync(0, "utf8")` idiom now lowers to `Builtin(ReadStdinUtf8)` call shape.
 - Link-plan/manifest tests confirm source-driven lowering carries `ReadStdinUtf8` -> `fd_read`/`stdin.read` requirements.
 - Build pipeline has a compile-time runtime gate (`ENABLE_READ_STDIN_UTF8_RUNTIME = false`) so lowered stdin-read paths fail before WAT/wasm emission.
+- Runtime gate decision is queried from `RuntimeLinkPlan` requirements instead of ad-hoc lowered-tree traversal in `lib.rs`.
+
+Production-path note:
+
+- The supported compile entry for production is `build_file` / `build_file_with_options`.
+- Direct `emit_wat(&lowered)` calls are permitted for focused backend/link-plan tests, but they intentionally bypass the runtime feature gate.
 
 Not implemented in this slice:
 
