@@ -1,4 +1,5 @@
 mod backend;
+mod ir;
 mod runtime;
 
 use std::fs;
@@ -10,7 +11,8 @@ pub fn build_file(input: &Path, output: &Path) -> Result<(), String> {
         .map_err(|error| format!("failed to read {}: {error}", input.display()))?;
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
-    let wat = backend::emit_wat(&program);
+    let lowered = ir::lowered::lower_program(&program);
+    let wat = backend::emit_wat(&lowered.statements);
     write_wasm_from_wat(&wat, output)
 }
 
@@ -591,42 +593,6 @@ impl TokenKind {
                 | (Self::Semicolon, Token::Semicolon)
         )
     }
-}
-
-fn collect_locals(statements: &[Stmt]) -> Vec<String> {
-    let mut locals = Vec::new();
-    for statement in statements {
-        match statement {
-            Stmt::Let(name, _) => {
-                if !locals.contains(name) {
-                    locals.push(name.clone());
-                }
-            }
-            Stmt::If {
-                then_body,
-                else_body,
-                ..
-            } => {
-                for local in collect_locals(then_body)
-                    .into_iter()
-                    .chain(collect_locals(else_body))
-                {
-                    if !locals.contains(&local) {
-                        locals.push(local);
-                    }
-                }
-            }
-            Stmt::While { body, .. } | Stmt::Function { body, .. } => {
-                for local in collect_locals(body) {
-                    if !locals.contains(&local) {
-                        locals.push(local);
-                    }
-                }
-            }
-            Stmt::Assign(_, _) | Stmt::ConsoleLog(_) | Stmt::Return(_) => {}
-        }
-    }
-    locals
 }
 
 fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), String> {

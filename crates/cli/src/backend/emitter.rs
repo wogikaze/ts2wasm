@@ -1,21 +1,22 @@
 use std::collections::HashMap;
 
+use crate::ir::lowered::{LoweredExpr, LoweredStmt};
 use crate::runtime::layout::Layout;
-use crate::{Expr, Stmt, collect_locals, wasm_ident};
+use crate::wasm_ident;
 
-pub(crate) fn emit_wat(program: &[Stmt]) -> String {
+pub(crate) fn emit_wat(program: &[LoweredStmt]) -> String {
     WatEmitter::new(program).emit()
 }
 
 pub(super) struct WatEmitter<'a> {
-    pub(super) program: &'a [Stmt],
+    pub(super) program: &'a [LoweredStmt],
     pub(super) strings: HashMap<String, u32>,
     pub(super) string_data: Vec<(u32, String)>,
     pub(super) next_data_offset: u32,
 }
 
 impl<'a> WatEmitter<'a> {
-    pub(super) fn new(program: &'a [Stmt]) -> Self {
+    pub(super) fn new(program: &'a [LoweredStmt]) -> Self {
         let mut emitter = Self {
             program,
             strings: HashMap::new(),
@@ -43,21 +44,21 @@ impl<'a> WatEmitter<'a> {
         wat
     }
 
-    fn collect_program_strings(&mut self, statements: &[Stmt]) {
+    fn collect_program_strings(&mut self, statements: &[LoweredStmt]) {
         for statement in statements {
             self.collect_statement_strings(statement);
         }
     }
 
-    fn collect_statement_strings(&mut self, statement: &Stmt) {
+    fn collect_statement_strings(&mut self, statement: &LoweredStmt) {
         match statement {
-            Stmt::Let(_, expr)
-            | Stmt::Assign(_, expr)
-            | Stmt::ConsoleLog(expr)
-            | Stmt::Return(expr) => {
+            LoweredStmt::Let(_, expr)
+            | LoweredStmt::Assign(_, expr)
+            | LoweredStmt::ConsoleLog(expr)
+            | LoweredStmt::Return(expr) => {
                 self.collect_expr_strings(expr);
             }
-            Stmt::If {
+            LoweredStmt::If {
                 condition,
                 then_body,
                 else_body,
@@ -66,36 +67,40 @@ impl<'a> WatEmitter<'a> {
                 self.collect_program_strings(then_body);
                 self.collect_program_strings(else_body);
             }
-            Stmt::While { condition, body } => {
+            LoweredStmt::While { condition, body } => {
                 self.collect_expr_strings(condition);
                 self.collect_program_strings(body);
             }
-            Stmt::Function { body, .. } => self.collect_program_strings(body),
+            LoweredStmt::Function { body, .. } => self.collect_program_strings(body),
         }
     }
 
-    fn collect_expr_strings(&mut self, expr: &Expr) {
+    fn collect_expr_strings(&mut self, expr: &LoweredExpr) {
         match expr {
-            Expr::String(value) => {
+            LoweredExpr::String(value) => {
                 self.intern_string(value);
             }
-            Expr::Unary { expr, .. } => self.collect_expr_strings(expr),
-            Expr::Binary { left, right, .. } => {
+            LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
+            LoweredExpr::Binary { left, right, .. } => {
                 self.collect_expr_strings(left);
                 self.collect_expr_strings(right);
             }
-            Expr::Call { args, .. } => {
+            LoweredExpr::Call { args, .. } => {
                 for arg in args {
                     self.collect_expr_strings(arg);
                 }
             }
-            Expr::Number(_) | Expr::Bool(_) | Expr::Null | Expr::Undefined | Expr::Ident(_) => {}
+            LoweredExpr::Number(_)
+            | LoweredExpr::Bool(_)
+            | LoweredExpr::Null
+            | LoweredExpr::Undefined
+            | LoweredExpr::Ident(_) => {}
         }
     }
 
     fn emit_functions(&self, wat: &mut String) {
         for statement in self.program {
-            if let Stmt::Function { name, params, body } = statement {
+            if let LoweredStmt::Function { name, params, body } = statement {
                 wat.push_str(&format!("  (func $user_{} ", wasm_ident(name)));
                 for param in params {
                     wat.push_str(&format!("(param ${} i32) ", wasm_ident(param)));
@@ -121,4 +126,40 @@ impl<'a> WatEmitter<'a> {
         self.emit_statements(wat, self.program, 4);
         wat.push_str("  )\n");
     }
+}
+
+fn collect_locals(statements: &[LoweredStmt]) -> Vec<String> {
+    let mut locals = Vec::new();
+    for statement in statements {
+        match statement {
+            LoweredStmt::Let(name, _) => {
+                if !locals.contains(name) {
+                    locals.push(name.clone());
+                }
+            }
+            LoweredStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                for local in collect_locals(then_body)
+                    .into_iter()
+                    .chain(collect_locals(else_body))
+                {
+                    if !locals.contains(&local) {
+                        locals.push(local);
+                    }
+                }
+            }
+            LoweredStmt::While { body, .. } | LoweredStmt::Function { body, .. } => {
+                for local in collect_locals(body) {
+                    if !locals.contains(&local) {
+                        locals.push(local);
+                    }
+                }
+            }
+            LoweredStmt::Assign(_, _) | LoweredStmt::ConsoleLog(_) | LoweredStmt::Return(_) => {}
+        }
+    }
+    locals
 }

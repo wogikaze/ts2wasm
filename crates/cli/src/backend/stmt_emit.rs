@@ -1,25 +1,31 @@
 use super::emitter::WatEmitter;
-use crate::{Stmt, wasm_ident};
+use crate::ir::lowered::LoweredStmt;
+use crate::wasm_ident;
 
 impl WatEmitter<'_> {
-    pub(super) fn emit_statements(&self, wat: &mut String, statements: &[Stmt], indent: usize) {
+    pub(super) fn emit_statements(
+        &self,
+        wat: &mut String,
+        statements: &[LoweredStmt],
+        indent: usize,
+    ) {
         for statement in statements {
             self.emit_statement(wat, statement, indent);
         }
     }
 
-    fn emit_statement(&self, wat: &mut String, statement: &Stmt, indent: usize) {
+    fn emit_statement(&self, wat: &mut String, statement: &LoweredStmt, indent: usize) {
         let pad = " ".repeat(indent);
         match statement {
-            Stmt::Let(name, expr) | Stmt::Assign(name, expr) => {
+            LoweredStmt::Let(name, expr) | LoweredStmt::Assign(name, expr) => {
                 self.emit_expr(wat, expr, indent);
                 wat.push_str(&format!("{pad}(local.set ${})\n", wasm_ident(name)));
             }
-            Stmt::ConsoleLog(expr) => {
+            LoweredStmt::ConsoleLog(expr) => {
                 self.emit_expr(wat, expr, indent);
                 wat.push_str(&format!("{pad}(call $log)\n"));
             }
-            Stmt::If {
+            LoweredStmt::If {
                 condition,
                 then_body,
                 else_body,
@@ -37,7 +43,7 @@ impl WatEmitter<'_> {
                 }
                 wat.push_str(&format!("{pad})\n"));
             }
-            Stmt::While { condition, body } => {
+            LoweredStmt::While { condition, body } => {
                 wat.push_str(&format!("{pad}(block $while_exit\n"));
                 wat.push_str(&format!("{pad}  (loop $while_loop\n"));
                 self.emit_expr(wat, condition, indent + 4);
@@ -49,11 +55,11 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}  )\n"));
                 wat.push_str(&format!("{pad})\n"));
             }
-            Stmt::Return(expr) => {
+            LoweredStmt::Return(expr) => {
                 self.emit_expr(wat, expr, indent);
                 wat.push_str(&format!("{pad}(return)\n"));
             }
-            Stmt::Function { .. } => {}
+            LoweredStmt::Function { .. } => {}
         }
     }
 }
