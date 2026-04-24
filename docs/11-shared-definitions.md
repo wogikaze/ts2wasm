@@ -14,9 +14,9 @@ M0 の機械可読な実装定義は `crates/shared/` に置く。文書上の s
 | M1 | single-file TS/JS から WASI `.wasm` を生成し、`console.log("hi")` が iwasm で動く |
 | M2 | number/string/boolean/if/while/function の fixtures が Node と一致する |
 | M3 | `undefined` / `null` / truthiness / `===` / `+` の semantic tests が通る |
-| M4 | array と string runtime の基本操作が通る |
-| M5 | object literal と data property access が通る。prototype はまだ対象外でよい |
-| M6 | `require("fs").readFileSync(0, "utf8")` と `console.log` が Node host なしで動く |
+| M4 | compile-time evaluator をやめ、`undefined` / `null` / truthiness / `===` / `+` の M3 fixtures が WASM runtime 上の JS value execution で通る |
+| M5 | array、string、object literal、data property access の基本操作が WASM runtime 上で通る。prototype はまだ対象外でよい |
+| M6 | `require("fs").readFileSync(0, "utf8")` と `console.log` が Node host なしで動く。stdin は WASI `fd_read` で読み、入力処理は WASM/runtime 側で実行する |
 | M7 | differential test runner で Node との差分を分類できる |
 | M8 | test262 の小 shard を canonical test status schema で管理できる |
 | M9 | TypeScript 型情報を使った primitive fast path が入る |

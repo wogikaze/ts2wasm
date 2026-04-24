@@ -90,11 +90,27 @@ The current M3 gate covers only a small integer/string/boolean/null/undefined su
 
 Remaining M3 work:
 
-- Implement JS semantics in generated wasm instead of compile-time evaluation.
 - Add `NaN`, `-0`, `Infinity`, and floating-point number fixtures.
 - Add `==` only after explicit abstract equality semantics are defined.
 - Add machine-readable semantic test records.
 
+## Runtime execution gate
+
+M4 is the point where compile-time stdout evaluation must stop being the implementation path. From M4 onward, fixtures only count as milestone progress if the observable behavior is produced by generated WASM executing JS values and control flow through a runtime representation.
+
+Required M4 properties:
+
+- Generated WASM must execute at least `undefined`, `null`, boolean, integer number, and string values through a runtime value representation.
+- M3 semantic fixtures must pass without precomputing stdout during compilation.
+- `console.log` may still lower to WASI `fd_write`, but its argument must be evaluated in WASM/runtime code.
+- Node.js must remain only a differential oracle, not an execution provider.
+
+Required M6 stdin properties:
+
+- `require("fs").readFileSync(0, "utf8")` must lower to WASI `fd_read`.
+- UTF-8 decoding and subsequent string processing must run in WASM/runtime code.
+- Node.js must not receive stdin content for program execution. It may only run the same fixture as the differential oracle.
+
 ## Next milestone target
 
-The next implementation target is to harden M3 from `source -> compile-time evaluator -> stdout wasm` into `source -> minimal IR -> WASI wasm -> iwasm`, while preserving the Node differential fixture gate.
+The next implementation target is M4: replace `source -> compile-time evaluator -> stdout wasm` with `source -> minimal IR -> WASM runtime JS values -> iwasm`, while preserving the Node differential fixture gate.
