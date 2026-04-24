@@ -156,7 +156,7 @@ The following architectural requirements are tracked from the M5 prototype phase
 |---|---|---|
 | RuntimeLinkPlan — separate from WatEmitter | done | RuntimeLinkPlan is isolated from WatEmitter and used as the backend link-plan input |
 | AST node span — all `Expr`/`Stmt` carry source span | deferred | New diagnostics (non-ASCII, unsupported-syntax) emit `span: None` |
-| BuiltinResolver pass — separate from Resolver/lowering | deferred | `.length` and property lowering are inline in `Resolver::lower_expr`; scale-out risk |
+| BuiltinResolver pass — separate from Resolver/lowering | done | Builtin resolution is a distinct phase (`builtin_resolver`) and lowering consumes `Resolved*` IR |
 | Capability manifest output | deferred | Generated WASM has no associated manifest; capability traceability absent |
 
 These items must be resolved before M6 work begins. They are P0 because they block safe extension of the compiler and could mask regressions.

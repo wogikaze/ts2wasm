@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
+use super::builtin_resolved::{BuiltinPropertyId, ResolvedExpr, ResolvedStmt};
 use crate::runtime::value::ValueTag;
-use crate::{BinaryOp, DiagCode, Diagnostic, Expr, Stmt, UnaryOp};
+use crate::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct LocalId(pub(crate) usize);
@@ -137,7 +138,7 @@ pub(crate) enum LoweredUnaryOp {
     Not,
 }
 
-pub(crate) fn lower_program(program: &[Stmt]) -> Result<LoweredProgram, Diagnostic> {
+pub(crate) fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let mut resolver = Resolver::new(&function_ids);
     let mut top_level_statements = Vec::new();
@@ -145,7 +146,7 @@ pub(crate) fn lower_program(program: &[Stmt]) -> Result<LoweredProgram, Diagnost
 
     for stmt in program {
         match stmt {
-            Stmt::Function { name, params, body } => {
+            ResolvedStmt::Function { name, params, body } => {
                 let func_id = function_ids[name];
                 functions.push(lower_function(func_id, params, body, &function_ids)?);
             }
@@ -160,12 +161,12 @@ pub(crate) fn lower_program(program: &[Stmt]) -> Result<LoweredProgram, Diagnost
     })
 }
 
-fn collect_function_ids(program: &[Stmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
+fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
     let mut function_ids = HashMap::new();
     let mut next_func_id = 0;
 
     for stmt in program {
-        if let Stmt::Function { name, .. } = stmt {
+        if let ResolvedStmt::Function { name, .. } = stmt {
             if function_ids.contains_key(name.as_str()) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateFunction,
@@ -184,7 +185,7 @@ fn collect_function_ids(program: &[Stmt]) -> Result<HashMap<String, FuncId>, Dia
 fn lower_function(
     id: FuncId,
     params: &[String],
-    body: &[Stmt],
+    body: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
 ) -> Result<LoweredFunction, Diagnostic> {
     let (mut resolver, param_ids) = Resolver::with_params(function_ids, params)?;
@@ -265,7 +266,7 @@ impl<'a> Resolver<'a> {
         Ok((resolver, param_ids))
     }
 
-    fn lower_block(&mut self, statements: &[Stmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
+    fn lower_block(&mut self, statements: &[ResolvedStmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let mut lowered = Vec::with_capacity(statements.len());
         for statement in statements {
             lowered.push(self.lower_stmt(statement)?);
@@ -273,48 +274,29 @@ impl<'a> Resolver<'a> {
         Ok(lowered)
     }
 
-    fn lower_nested_block(&mut self, statements: &[Stmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
+    fn lower_nested_block(
+        &mut self,
+        statements: &[ResolvedStmt],
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         self.scopes.push(HashMap::new());
         let lowered = self.lower_block(statements);
         self.scopes.pop();
         lowered
     }
 
-    fn lower_stmt(&mut self, stmt: &Stmt) -> Result<LoweredStmt, Diagnostic> {
+    fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
-            Stmt::Let(name, expr) => {
+            ResolvedStmt::Let(name, expr) => {
                 let lowered = self.lower_expr(expr)?;
                 let local_id = self.declare_local(name)?;
                 Ok(LoweredStmt::Let(local_id, lowered))
             }
-            Stmt::Assign(name, expr) => {
+            ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
                 Ok(LoweredStmt::Assign(local_id, self.lower_expr(expr)?))
             }
-            Stmt::Expr(expr) => {
-                if let Some(args) = Self::as_console_log_call(expr) {
-                    let lowered_args = args
-                        .iter()
-                        .map(|arg| self.lower_expr(arg))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    if lowered_args.len() != 1 {
-                        return Err(Diagnostic {
-                            code: DiagCode::ArityMismatch,
-                            message: format!(
-                                "console.log expects 1 argument in this milestone, got {}",
-                                lowered_args.len()
-                            ),
-                            span: None,
-                        });
-                    }
-                    return Ok(LoweredStmt::Expr(LoweredExpr::Call {
-                        kind: FunctionCallKind::Builtin(BuiltinId::ConsoleLog),
-                        args: lowered_args,
-                    }));
-                }
-                Ok(LoweredStmt::Expr(self.lower_expr(expr)?))
-            }
-            Stmt::If {
+            ResolvedStmt::Expr(expr) => Ok(LoweredStmt::Expr(self.lower_expr(expr)?)),
+            ResolvedStmt::If {
                 condition,
                 then_body,
                 else_body,
@@ -323,12 +305,12 @@ impl<'a> Resolver<'a> {
                 then_body: self.lower_nested_block(then_body)?,
                 else_body: self.lower_nested_block(else_body)?,
             }),
-            Stmt::While { condition, body } => Ok(LoweredStmt::While {
+            ResolvedStmt::While { condition, body } => Ok(LoweredStmt::While {
                 condition: self.lower_expr(condition)?,
                 body: self.lower_nested_block(body)?,
             }),
-            Stmt::Return(expr) => Ok(LoweredStmt::Return(self.lower_expr(expr)?)),
-            Stmt::Function { .. } => Err(Diagnostic {
+            ResolvedStmt::Return(expr) => Ok(LoweredStmt::Return(self.lower_expr(expr)?)),
+            ResolvedStmt::Function { .. } => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "nested function declarations are not supported in this milestone"
                     .to_owned(),
@@ -337,10 +319,10 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    fn lower_expr(&mut self, expr: &Expr) -> Result<LoweredExpr, Diagnostic> {
+    fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
-            Expr::Number(value) => Ok(LoweredExpr::Number(*value)),
-            Expr::String(value) => {
+            ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value)),
+            ResolvedExpr::String(value) => {
                 if !value.is_ascii() {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -350,22 +332,22 @@ impl<'a> Resolver<'a> {
                 }
                 Ok(LoweredExpr::String(value.clone()))
             }
-            Expr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
-            Expr::Null => Ok(LoweredExpr::Null),
-            Expr::Undefined => Ok(LoweredExpr::Undefined),
-            Expr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
-            Expr::Unary { op, expr } => Ok(LoweredExpr::Unary {
+            ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
+            ResolvedExpr::Null => Ok(LoweredExpr::Null),
+            ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
+            ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
+            ResolvedExpr::Unary { op, expr } => Ok(LoweredExpr::Unary {
                 op: lower_unary_op(*op),
                 expr: Box::new(self.lower_expr(expr)?),
             }),
-            Expr::Binary { left, op, right } => Ok(LoweredExpr::Binary {
+            ResolvedExpr::Binary { left, op, right } => Ok(LoweredExpr::Binary {
                 left: Box::new(self.lower_expr(left)?),
                 op: lower_binary_op(*op),
                 right: Box::new(self.lower_expr(right)?),
             }),
-            Expr::Call { callee, args } => {
+            ResolvedExpr::Call { callee, args } => {
                 let func_name = match callee.as_ref() {
-                    Expr::Ident(name) => name,
+                    ResolvedExpr::Ident(name) => name,
                     _ => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -384,21 +366,30 @@ impl<'a> Resolver<'a> {
                     args: lowered_args,
                 })
             }
-            Expr::Member { object, property } => {
-                if property == "length" {
-                    Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?)))
-                } else {
-                    Ok(LoweredExpr::PropertyGet {
-                        obj: Box::new(self.lower_expr(object)?),
-                        key: property.clone(),
-                    })
-                }
+            ResolvedExpr::BuiltinCall { builtin, args } => {
+                let lowered_args = args
+                    .iter()
+                    .map(|arg| self.lower_expr(arg))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(*builtin),
+                    args: lowered_args,
+                })
             }
-            Expr::Index { object, index } => Ok(LoweredExpr::ArrayGet {
+            ResolvedExpr::BuiltinProperty { builtin, object } => match builtin {
+                BuiltinPropertyId::Length => {
+                    Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?)))
+                }
+            },
+            ResolvedExpr::PropertyAccess { object, key } => Ok(LoweredExpr::PropertyGet {
+                obj: Box::new(self.lower_expr(object)?),
+                key: key.clone(),
+            }),
+            ResolvedExpr::ComputedIndex { object, index } => Ok(LoweredExpr::ArrayGet {
                 arr: Box::new(self.lower_expr(object)?),
                 index: Box::new(self.lower_expr(index)?),
             }),
-            Expr::Array(elements) => {
+            ResolvedExpr::Array(elements) => {
                 let base_local = self.alloc_temp();
                 let elem_temp = self.alloc_temp();
                 let lowered = elements
@@ -411,7 +402,7 @@ impl<'a> Resolver<'a> {
                     elem_temp,
                 })
             }
-            Expr::Object(props) => {
+            ResolvedExpr::Object(props) => {
                 let base_local = self.alloc_temp();
                 let val_temp = self.alloc_temp();
                 let lowered = props
@@ -424,23 +415,6 @@ impl<'a> Resolver<'a> {
                     val_temp,
                 })
             }
-        }
-    }
-
-    fn as_console_log_call(expr: &Expr) -> Option<&[Expr]> {
-        let Expr::Call { callee, args } = expr else {
-            return None;
-        };
-        let Expr::Member { object, property } = callee.as_ref() else {
-            return None;
-        };
-        let Expr::Ident(object_name) = object.as_ref() else {
-            return None;
-        };
-        if object_name == "console" && property == "log" {
-            Some(args)
-        } else {
-            None
         }
     }
 
@@ -760,12 +734,16 @@ mod tests {
         validate_lowered,
     };
 
+    fn parse_and_resolve(source: &str) -> Vec<crate::ir::builtin_resolved::ResolvedStmt> {
+        let program = crate::parse_program(source).unwrap();
+        crate::ir::builtin_resolver::resolve_builtins(&program).unwrap()
+    }
+
     #[test]
     fn lowering_splits_functions_and_resolves_ids() {
-        let program = crate::parse_program(
+        let program = parse_and_resolve(
             "function add(a, b) { return a + b; } let x = 1; console.log(add(x, 2));",
-        )
-        .unwrap();
+        );
 
         let lowered = lower_program(&program).unwrap();
 
@@ -787,7 +765,7 @@ mod tests {
 
     #[test]
     fn lowering_rejects_unresolved_name() {
-        let program = crate::parse_program("let x = y;").unwrap();
+        let program = parse_and_resolve("let x = y;");
         let err = lower_program(&program).unwrap_err();
         assert_eq!(err.code, super::DiagCode::UnresolvedName);
         assert!(err.message.contains('`'));
@@ -795,22 +773,21 @@ mod tests {
 
     #[test]
     fn lowering_rejects_duplicate_function() {
-        let program =
-            crate::parse_program("function f() { return 1; } function f() { return 2; }").unwrap();
+        let program = parse_and_resolve("function f() { return 1; } function f() { return 2; }");
         let err = lower_program(&program).unwrap_err();
         assert_eq!(err.code, super::DiagCode::DuplicateFunction);
     }
 
     #[test]
     fn lowering_rejects_duplicate_parameter() {
-        let program = crate::parse_program("function f(a, a) { return a; }").unwrap();
+        let program = parse_and_resolve("function f(a, a) { return a; }");
         let err = lower_program(&program).unwrap_err();
         assert_eq!(err.code, super::DiagCode::DuplicateParameter);
     }
 
     #[test]
     fn lowering_rejects_non_ascii_string_literal() {
-        let program = crate::parse_program("let s = \"あ\";").unwrap();
+        let program = parse_and_resolve("let s = \"あ\";");
         let err = lower_program(&program).unwrap_err();
         assert_eq!(err.code, super::DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("non-ASCII"));
@@ -857,5 +834,17 @@ mod tests {
             BuiltinId::ConsoleLog.result(),
             BuiltinResult::EffectOnly
         ));
+    }
+
+    #[test]
+    fn validate_rejects_builtin_arity_mismatch_after_builtin_resolution() {
+        let ast = crate::parse_program("console.log(1, 2);").unwrap();
+        let resolved = crate::ir::builtin_resolver::resolve_builtins(&ast).unwrap();
+        let lowered = lower_program(&resolved).unwrap();
+        let errs = validate_lowered(&lowered).unwrap_err();
+        assert!(
+            errs.iter()
+                .any(|e| e.code == super::DiagCode::ArityMismatch)
+        );
     }
 }

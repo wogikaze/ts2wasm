@@ -12,6 +12,11 @@ Source
 AST (Abstract Syntax Tree)
   構文構造。Span を持つ。名前解決なし。型情報なし。
 
+BuiltinResolved AST (現在の semantic 前段)
+  BuiltinResolver pass の出力。
+  `console.log` / `.length` / property / computed index の意味付けを持つ。
+  まだ LocalId / FuncId には解決されていない。
+
 HIR (High-level IR) — 未実装、M1 以降
   名前解決済み。JS semantic operation を保持する。
   型情報の一部（typeof, instanceof など）を持ちうる。
@@ -25,7 +30,7 @@ Wasm IR — 未実装、M2 以降
   wasm-encoder や WasmFunc builder の入力形式。
 
 LoweredProgram (現在の中間形式、M0)
-  Resolver が名前を LocalId / FuncId に解決した後の表現。
+  NameResolver + Lowering が Resolved 表現を LocalId / FuncId に解決した後の表現。
   backend が AST を直接参照しないための隔離層。
   HIR / MIR の分割が完了するまでの暫定形式。
 ```
@@ -42,7 +47,6 @@ LoweredProgram (現在の中間形式、M0)
 
 * すべての node は `Span { start, end }` を持つ（M1 以降）。
   M0 では Span なしを許容するが、新規 node は Span を持つこと。
-* `Stmt::ConsoleLog` は M0 互換のため存在する。M1 以降は追加しない。
 * parser は入力の構文エラーを `Vec<Diagnostic>` で返す。`panic!` しない（M1 以降）。
 
 ### validate_ast の仕様（M1 以降）
@@ -59,24 +63,37 @@ pub fn validate_ast(ast: &[Stmt]) -> Result<(), Vec<Diagnostic>>
 | 関数定義の重複 | `DuplicateFunction` | M1 |
 | サポート外構文（for, class, try 等） | `UnsupportedSyntax` | M0 |
 
-### AST enum 設計方針
+### BuiltinResolved AST
 
-現在の `Stmt::ConsoleLog(Expr)` は M0 互換として保持する。
-M1 以降は以下に移行する。
+BuiltinResolver は Parser AST を以下へ写像する。
 
 ```rust
-Expr::Member {
-    object: Box<Expr>,
-    property: PropertyKey,
-}
-
-Expr::Call {
-    callee: Box<Expr>,
-    args: Vec<Expr>,
-}
+ResolvedExpr::BuiltinCall { builtin: BuiltinId, args: Vec<ResolvedExpr> }
+ResolvedExpr::BuiltinProperty { builtin: BuiltinPropertyId, object: Box<ResolvedExpr> }
+ResolvedExpr::PropertyAccess { object: Box<ResolvedExpr>, key: String }
+ResolvedExpr::ComputedIndex { object: Box<ResolvedExpr>, index: Box<ResolvedExpr> }
 ```
 
-`console.log(x)` → semantic pass → `BuiltinCall(ConsoleLog, [x])`
+```text
+console.log(x) -> BuiltinCall(ConsoleLog, [x])
+obj.length -> BuiltinProperty(Length, obj)
+obj.key -> PropertyAccess(obj, "key")
+obj[index] -> ComputedIndex(obj, index)
+```
+
+Lowering はこの Resolved 表現を入力に取り、Parser AST を直接解釈しない。
+
+### AST enum 設計方針
+
+Parser AST は構文だけを保持し、builtin の意味判定を持たない。
+
+```rust
+Expr::Member { object: Box<Expr>, property: PropertyKey }
+Expr::Call { callee: Box<Expr>, args: Vec<Expr> }
+Expr::Index { object: Box<Expr>, index: Box<Expr> }
+```
+
+`console.log(x)` かどうかは BuiltinResolver だけが判断する。
 
 ## HIR — High-level IR（M1 以降）
 

@@ -6,7 +6,7 @@ use crate::ir::lowered::{
 
 use super::runtime_fn::{Capability, HostImport, RuntimeFn};
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub(crate) struct RuntimeLinkPlan {
     required_runtime: BTreeSet<RuntimeFn>,
     required_imports: BTreeSet<HostImport>,
@@ -165,7 +165,9 @@ mod tests {
 
     fn lowered(source: &str) -> crate::ir::lowered::LoweredProgram {
         let program = crate::parse_program(source).expect("parse failed");
-        lower_program(&program).expect("lowering failed")
+        let resolved = crate::ir::builtin_resolver::resolve_builtins(&program)
+            .expect("builtin resolution failed");
+        lower_program(&resolved).expect("lowering failed")
     }
 
     #[test]

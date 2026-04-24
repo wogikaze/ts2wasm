@@ -843,10 +843,10 @@ docs/12-current-implementation-status.md が更新されているか
 
 ```text
 P0:
-  RuntimeLinkPlan を WatEmitter から分離
+  RuntimeLinkPlan を WatEmitter から分離 (done)
+  BuiltinResolver pass 分離 (done)
   capability manifest 出力
   AST node span
-  BuiltinResolver pass 分離
 
 P1:
   typed WAT writer

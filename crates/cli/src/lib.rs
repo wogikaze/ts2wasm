@@ -74,7 +74,8 @@ pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
-    let lowered = ir::lowered::lower_program(&program)?;
+    let resolved = ir::builtin_resolver::resolve_builtins(&program)?;
+    let lowered = ir::lowered::lower_program(&resolved)?;
     ir::lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
             code: DiagCode::InvariantViolation,
