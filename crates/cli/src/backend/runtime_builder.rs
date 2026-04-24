@@ -1,13 +1,17 @@
 use super::emitter::WatEmitter;
-use crate::runtime::{consts::RuntimeConst, layout::Layout, value::ValueTag};
+use crate::runtime::{
+    consts::{RuntimeConst, RuntimeString},
+    layout::Layout,
+    value::ValueTag,
+};
 
 impl WatEmitter<'_> {
     pub(super) fn emit_runtime(&self, wat: &mut String) {
-        let undefined = self.string_offset("undefined");
-        let null = self.string_offset("null");
-        let false_s = self.string_offset("false");
-        let true_s = self.string_offset("true");
-        let newline = self.string_offset("\n") + 4;
+        let undefined = self.string_offset(RuntimeString::UNDEFINED);
+        let null = self.string_offset(RuntimeString::NULL);
+        let false_s = self.string_offset(RuntimeString::FALSE);
+        let true_s = self.string_offset(RuntimeString::TRUE);
+        let newline = self.string_offset(RuntimeString::NEWLINE) + 4;
 
         wat.push_str(&format!(
             r#"
@@ -80,10 +84,10 @@ impl WatEmitter<'_> {
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
-            undefined_len = RuntimeConst::UNDEFINED_LEN,
-            null_len = RuntimeConst::NULL_LEN,
-            false_len = RuntimeConst::FALSE_LEN,
-            true_len = RuntimeConst::TRUE_LEN,
+            undefined_len = RuntimeString::UNDEFINED.len() as i32,
+            null_len = RuntimeString::NULL.len() as i32,
+            false_len = RuntimeString::FALSE.len() as i32,
+            true_len = RuntimeString::TRUE.len() as i32,
             ascii_zero = RuntimeConst::ASCII_ZERO,
             one = RuntimeConst::ONE,
             string_header_size = Layout::STRING_HEADER_SIZE,

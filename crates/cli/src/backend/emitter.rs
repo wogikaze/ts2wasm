@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use crate::ir::lowered::{LoweredExpr, LoweredStmt};
+use crate::runtime::consts::RuntimeString;
 use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
 use crate::wasm_ident;
@@ -24,7 +25,13 @@ impl<'a> WatEmitter<'a> {
             string_data: Vec::new(),
             next_data_offset: Layout::DATA_START,
         };
-        for value in ["undefined", "null", "false", "true", "\n"] {
+        for value in [
+            RuntimeString::UNDEFINED,
+            RuntimeString::NULL,
+            RuntimeString::FALSE,
+            RuntimeString::TRUE,
+            RuntimeString::NEWLINE,
+        ] {
             emitter.intern_string(value);
         }
         emitter.collect_program_strings(program);

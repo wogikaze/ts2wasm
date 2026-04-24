@@ -26,7 +26,7 @@ impl ValueTag {
     pub const TAG_MASK: i32 = 7;
     pub const HEAP_MASK: i32 = -8;
     /// Right-shift / left-shift amount used to pack/unpack the number payload.
-    pub const NUMBER_SHIFT: u32 = 3;
+    pub const NUMBER_SHIFT: i32 = 3;
 
     /// Encode a small signed integer as a tagged i32 value.
     pub fn encode_number(n: i32) -> i32 {

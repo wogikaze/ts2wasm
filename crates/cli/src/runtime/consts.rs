@@ -5,8 +5,14 @@ impl RuntimeConst {
     pub const ONE: i32 = 1;
     pub const STDOUT_FD: i32 = 1;
     pub const ASCII_ZERO: i32 = 48;
-    pub const UNDEFINED_LEN: i32 = 9;
-    pub const NULL_LEN: i32 = 4;
-    pub const FALSE_LEN: i32 = 5;
-    pub const TRUE_LEN: i32 = 4;
+}
+
+pub struct RuntimeString;
+
+impl RuntimeString {
+    pub const UNDEFINED: &'static str = "undefined";
+    pub const NULL: &'static str = "null";
+    pub const FALSE: &'static str = "false";
+    pub const TRUE: &'static str = "true";
+    pub const NEWLINE: &'static str = "\n";
 }
