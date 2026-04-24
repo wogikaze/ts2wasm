@@ -221,4 +221,20 @@ Not implemented in this slice:
 - UTF-8 decoder/runtime string semantics for non-ASCII input.
 - stdin differential execution tests.
 
+## M6 runtime contract (M6-3b pre-coding)
+
+The following contract is fixed before implementing runtime `fd_read` execution:
+
+- Input size cap: one `readFileSync(0, "utf8")` call reads at most 64 KiB from fd 0 in M6-3b.
+- Multiple calls: reads are sequential from the current stdin cursor; after EOF, subsequent calls return an empty string.
+- `fd_read` error handling: runtime exits with trap (no silent fallback, no Node host fallback).
+- EOF handling: EOF is not an error; it returns an empty string value.
+- Returned string representation (temporary): M6-3b is ASCII-only for stdin bytes. Byte values `>= 0x80` are treated as unsupported in this slice.
+- `.length` semantics: for supported ASCII stdin input, `.length` equals byte length.
+
+Planned follow-up after M6-3b:
+
+- Replace ASCII-only stdin behavior with real UTF-8 decode and JS string semantics (UTF-16 code unit length and indexing behavior).
+- Revisit non-ASCII stdin handling and differential tests under the updated string model.
+
 After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
