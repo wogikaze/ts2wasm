@@ -1,13 +1,10 @@
 use super::emitter::WatEmitter;
+use crate::ir::lowered::LocalId;
 use crate::ir::lowered::LoweredStmt;
-use crate::wasm_ident;
 
 impl WatEmitter<'_> {
     pub(super) fn emit_top_level_statements(&self, wat: &mut String, indent: usize) {
-        for statement in self.program {
-            if matches!(statement, LoweredStmt::Function { .. }) {
-                continue;
-            }
+        for statement in &self.program.top_level_statements {
             self.emit_statement(wat, statement, indent);
         }
     }
@@ -26,9 +23,9 @@ impl WatEmitter<'_> {
     fn emit_statement(&self, wat: &mut String, statement: &LoweredStmt, indent: usize) {
         let pad = " ".repeat(indent);
         match statement {
-            LoweredStmt::Let(name, expr) | LoweredStmt::Assign(name, expr) => {
+            LoweredStmt::Let(local_id, expr) | LoweredStmt::Assign(local_id, expr) => {
                 self.emit_expr(wat, expr, indent);
-                wat.push_str(&format!("{pad}(local.set ${})\n", wasm_ident(name)));
+                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*local_id)));
             }
             LoweredStmt::ConsoleLog(expr) => {
                 self.emit_expr(wat, expr, indent);
@@ -68,7 +65,10 @@ impl WatEmitter<'_> {
                 self.emit_expr(wat, expr, indent);
                 wat.push_str(&format!("{pad}(return)\n"));
             }
-            LoweredStmt::Function { .. } => {}
         }
     }
+}
+
+fn local_index(id: LocalId) -> usize {
+    id.0
 }

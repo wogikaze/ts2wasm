@@ -1,24 +1,23 @@
 use std::collections::HashMap;
 
-use crate::ir::lowered::{LoweredExpr, LoweredStmt};
+use crate::ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
 use crate::runtime::consts::RuntimeString;
 use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
-use crate::wasm_ident;
 
-pub(crate) fn emit_wat(program: &[LoweredStmt]) -> String {
+pub(crate) fn emit_wat(program: &LoweredProgram) -> String {
     WatEmitter::new(program).emit()
 }
 
 pub(super) struct WatEmitter<'a> {
-    pub(super) program: &'a [LoweredStmt],
+    pub(super) program: &'a LoweredProgram,
     pub(super) strings: HashMap<String, u32>,
     pub(super) string_data: Vec<(u32, String)>,
     pub(super) next_data_offset: u32,
 }
 
 impl<'a> WatEmitter<'a> {
-    pub(super) fn new(program: &'a [LoweredStmt]) -> Self {
+    pub(super) fn new(program: &'a LoweredProgram) -> Self {
         let mut emitter = Self {
             program,
             strings: HashMap::new(),
@@ -34,7 +33,10 @@ impl<'a> WatEmitter<'a> {
         ] {
             emitter.intern_string(value);
         }
-        emitter.collect_program_strings(program);
+        emitter.collect_program_strings(&program.top_level_statements);
+        for function in &program.functions {
+            emitter.collect_program_strings(&function.body);
+        }
         emitter
     }
 
@@ -82,7 +84,6 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(condition);
                 self.collect_program_strings(body);
             }
-            LoweredStmt::Function { body, .. } => self.collect_program_strings(body),
         }
     }
 
@@ -105,88 +106,36 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null
             | LoweredExpr::Undefined
-            | LoweredExpr::Ident(_) => {}
+            | LoweredExpr::Local(_) => {}
         }
     }
 
     fn emit_functions(&self, wat: &mut String) {
-        for statement in self.program {
-            if let LoweredStmt::Function { name, params, body } = statement {
-                wat.push_str(&format!("  (func $user_{} ", wasm_ident(name)));
-                for param in params {
-                    wat.push_str(&format!("(param ${} i32) ", wasm_ident(param)));
-                }
-                wat.push_str("(result i32)\n");
-                for local in collect_locals(body) {
-                    if !params.contains(&local) {
-                        wat.push_str(&format!("    (local ${} i32)\n", wasm_ident(&local)));
-                    }
-                }
-                self.emit_statements(wat, body, 4);
-                wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
-                wat.push_str("  )\n");
+        for function in &self.program.functions {
+            wat.push_str(&format!("  (func ${} ", function_symbol(function.id)));
+            for _ in &function.params {
+                wat.push_str("(param i32) ");
             }
+            wat.push_str("(result i32)\n");
+            for _ in &function.locals {
+                wat.push_str("    (local i32)\n");
+            }
+            self.emit_statements(wat, &function.body, 4);
+            wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
+            wat.push_str("  )\n");
         }
     }
 
     fn emit_start(&self, wat: &mut String) {
         wat.push_str("  (func $_start (export \"_start\")\n");
-        for local in collect_start_locals(self.program) {
-            wat.push_str(&format!("    (local ${} i32)\n", wasm_ident(&local)));
+        for _ in &self.program.top_level_locals {
+            wat.push_str("    (local i32)\n");
         }
         self.emit_top_level_statements(wat, 4);
         wat.push_str("  )\n");
     }
 }
 
-fn collect_start_locals(statements: &[LoweredStmt]) -> Vec<String> {
-    let mut locals = Vec::new();
-    for statement in statements {
-        if matches!(statement, LoweredStmt::Function { .. }) {
-            continue;
-        }
-
-        for local in collect_locals(std::slice::from_ref(statement)) {
-            if !locals.contains(&local) {
-                locals.push(local);
-            }
-        }
-    }
-    locals
-}
-
-fn collect_locals(statements: &[LoweredStmt]) -> Vec<String> {
-    let mut locals = Vec::new();
-    for statement in statements {
-        match statement {
-            LoweredStmt::Let(name, _) => {
-                if !locals.contains(name) {
-                    locals.push(name.clone());
-                }
-            }
-            LoweredStmt::If {
-                then_body,
-                else_body,
-                ..
-            } => {
-                for local in collect_locals(then_body)
-                    .into_iter()
-                    .chain(collect_locals(else_body))
-                {
-                    if !locals.contains(&local) {
-                        locals.push(local);
-                    }
-                }
-            }
-            LoweredStmt::While { body, .. } | LoweredStmt::Function { body, .. } => {
-                for local in collect_locals(body) {
-                    if !locals.contains(&local) {
-                        locals.push(local);
-                    }
-                }
-            }
-            LoweredStmt::Assign(_, _) | LoweredStmt::ConsoleLog(_) | LoweredStmt::Return(_) => {}
-        }
-    }
-    locals
+pub(super) fn function_symbol(id: FuncId) -> String {
+    format!("func_{}", id.0)
 }

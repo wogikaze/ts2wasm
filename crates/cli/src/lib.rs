@@ -12,7 +12,7 @@ pub fn build_file(input: &Path, output: &Path) -> Result<(), String> {
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     let lowered = ir::lowered::lower_program(&program);
-    let wat = backend::emit_wat(&lowered.statements);
+    let wat = backend::emit_wat(&lowered);
     write_wasm_from_wat(&wat, output)
 }
 
@@ -626,18 +626,6 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), String> {
 
 fn align_to(value: u32, alignment: u32) -> u32 {
     value.div_ceil(alignment) * alignment
-}
-
-fn wasm_ident(name: &str) -> String {
-    name.chars()
-        .map(|ch| {
-            if ch.is_ascii_alphanumeric() || ch == '_' {
-                ch
-            } else {
-                '_'
-            }
-        })
-        .collect()
 }
 
 fn wat_bytes(bytes: &[u8]) -> String {

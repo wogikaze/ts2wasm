@@ -1,7 +1,10 @@
 use super::emitter::WatEmitter;
-use crate::ir::lowered::{LoweredBinaryOp, LoweredExpr, LoweredUnaryOp};
+use crate::ir::lowered::{
+    BuiltinId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp,
+};
 use crate::runtime::value::ValueTag;
-use crate::wasm_ident;
+
+use super::emitter::function_symbol;
 
 impl WatEmitter<'_> {
     pub(super) fn emit_expr(&self, wat: &mut String, expr: &LoweredExpr, indent: usize) {
@@ -24,8 +27,8 @@ impl WatEmitter<'_> {
             LoweredExpr::Undefined => {
                 wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
             }
-            LoweredExpr::Ident(name) => {
-                wat.push_str(&format!("{pad}(local.get ${})\n", wasm_ident(name)))
+            LoweredExpr::Local(local_id) => {
+                wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
             }
             LoweredExpr::Unary { op, expr } => {
                 self.emit_expr(wat, expr, indent);
@@ -44,12 +47,23 @@ impl WatEmitter<'_> {
                 };
                 wat.push_str(&format!("{pad}(call {func})\n"));
             }
-            LoweredExpr::Call { name, args } => {
+            LoweredExpr::Call { kind, args } => {
                 for arg in args {
                     self.emit_expr(wat, arg, indent);
                 }
-                wat.push_str(&format!("{pad}(call $user_{})\n", wasm_ident(name)));
+                match kind {
+                    FunctionCallKind::User(func_id) => {
+                        wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*func_id)));
+                    }
+                    FunctionCallKind::Builtin(BuiltinId::ConsoleLog) => {
+                        wat.push_str(&format!("{pad}(call $log)\n"));
+                    }
+                }
             }
         }
     }
+}
+
+fn local_index(id: LocalId) -> usize {
+    id.0
 }
