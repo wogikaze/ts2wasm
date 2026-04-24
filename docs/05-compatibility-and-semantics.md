@@ -68,6 +68,24 @@ TypeScript 型は、最適化のヒントであって別言語への opt-in で�
 | `with`          | 初期非対応、診断必須                                |
 | Proxy           | 初期非対応、object model 安定後に検討                 |
 
+## M5 実装済み array/object semantics
+
+M5 で実装した array と object の semantics 要件を記録する。
+
+| 機能 | 実装状態 | 備考 |
+|---|---|---|
+| array literal `[e0, e1, ...]` | 実装済み | heap block `[i32 len, elem₀, ...]` tagged `ptr\|5` |
+| numeric array index `arr[n]` | 実装済み | tag check あり; 範囲外は `undefined` |
+| `arr.length` | 実装済み | tag check あり; 非 array/string は `undefined` |
+| `str.length` (ASCII only) | 実装済み | byte length = JS length; 非 ASCII は compile error |
+| object literal `{k: v}` | 実装済み | heap block `[i32 count, (key_raw, value)×n]` tagged `ptr\|7` |
+| data property read `obj.key` | 実装済み | reverse scan; last duplicate key wins (JS 仕様) |
+| dynamic property key | 未実装 | `unsupported-dynamic-property` |
+| prototype / method call | 未実装 | `unsupported-method-call` / `unsupported-prototype` |
+| non-ASCII string literal | 意図的に非対応 | M5 は ASCII-only; `DiagCode::UnsupportedSyntax` |
+
+`$property_get` の reverse scan により、`{a:1, a:2}.a === 2` が成立する (JS 仕様準拠)。
+
 ## Standard idiom semantics
 
 docs/03 の WASI-compatible idiom は、host shim 不要という意味で standalone 候補である。ただし、そこに含まれる JS 意味論は runtime 側で別途実装されている必要がある。

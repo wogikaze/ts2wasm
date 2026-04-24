@@ -6,9 +6,9 @@ Last updated: 2026-04-24
 
 ## Summary
 
-現在の実装段階は M4 の最小 runtime execution gate に到達した直後である。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
+現在の実装段階は M5 の heap-allocated array/object gate に到達した。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
 
-M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined` / `null` / truthiness / `===` / `+` の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。M4 では compile-time evaluator を削除し、stdout の事前計算ではなく、生成 WASM 内の tagged JS value runtime で式・制御フロー・`console.log` 引数評価を実行している。ただし、これはまだ汎用 TypeScript/JavaScript compiler ではない。
+M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined` / `null` / truthiness / `===` / `+` の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。M4 では compile-time evaluator を削除し、stdout の事前計算ではなく、生成 WASM 内の tagged JS value runtime で式・制御フロー・`console.log` 引数評価を実行している。M5 では array literal、numeric index、object literal、data property read、`.length` を heap runtime で実装した。ただし、これはまだ汎用 TypeScript/JavaScript compiler ではない。
 
 ## Implemented
 
@@ -33,9 +33,10 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 | Check | Result |
 |---|---|
 | `cargo fmt --all --check` | pass |
-| `cargo test` | pass, includes M1/M2/M3 `iwasm` integration tests |
+| `cargo test` | pass, includes M1/M2/M3/M5 `iwasm` integration tests |
 | M2 fixtures vs Node | pass for curated fixtures |
 | M3 semantic fixtures vs Node | pass for curated fixtures |
+| M5 array/object fixtures vs Node | pass for curated fixtures |
 | Precomputed stdout embedding check | pass for M2/M3 fixtures |
 | `iwasm --version` | pass, `iwasm 2.4.3` |
 
@@ -122,6 +123,28 @@ Required M6 stdin properties:
 - UTF-8 decoding and subsequent string processing must run in WASM/runtime code.
 - Node.js must not receive stdin content for program execution. It may only run the same fixture as the differential oracle.
 
+## M5 gate
+
+M5 extends the WASM runtime with heap-allocated array and object values. Array literals, numeric array indexing, `.length` on arrays and ASCII strings, object literals, and data property read are now implemented.
+
+Implemented M5 properties:
+
+- Array literals `[e0, e1, ...]` allocate a heap block `[i32 len, i32 elem₀, ...]`, tagged with `ptr | 5`.
+- Numeric array element access `arr[idx]` dispatches through `$array_get`, which validates both array tag (5) and index tag (4) before reading.
+- Object literals `{k: v, ...}` allocate a heap block `[i32 count, (i32 key_raw, i32 value)×n]`, tagged with `ptr | 7`.
+- Data property read `obj.key` dispatches through `$property_get`, which validates object tag (7) and performs a reverse scan so the last duplicate key wins (JS semantics).
+- `.length` on arrays and ASCII strings dispatches through `$get_length`, which validates the tag before reading.
+- Non-ASCII string literals are rejected at lowering time with `DiagCode::UnsupportedSyntax`.
+- All three M5 fixtures (`array.ts`, `string-length.ts`, `object.ts`) match Node output under `iwasm`.
+
+Current M5 limitations:
+
+- String values are ASCII-only; character byte length equals JS `.length`. UTF-16 code unit semantics are not implemented.
+- Dynamic property key expressions are not supported.
+- Method calls and prototype chain lookups are not implemented.
+- There is no GC; heap grows monotonically.
+- Floating-point number values (`NaN`, `-0`, `Infinity`) are still not implemented.
+
 ## Next milestone target
 
-The next implementation target is M5: array, string, object literal, and data property access basics on the WASM runtime path. Before expanding broadly, M5 should keep the M4 invariant that Node.js is only a differential oracle and that observable behavior comes from generated WASM runtime execution.
+The next implementation target is M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.

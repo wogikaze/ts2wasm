@@ -18,7 +18,9 @@ i32 tagged value (RawValue):
   false:     0b010 = 2
   true:      0b011 = 3
   number:    (n << 3) | 0b100   — n は i32 の範囲内の整数のみ
+  array:     ptr | 0b101        — ptr はヒープ上の Array object のアドレス (8-byte aligned)
   string:    ptr | 0b110        — ptr はヒープ上の String object のアドレス (8-byte aligned)
+  object:    ptr | 0b111        — ptr はヒープ上の Object のアドレス (8-byte aligned)
 
 TAG_MASK:  0b111
 HEAP_MASK: !0b111 (= -8 in two's complement)
@@ -84,6 +86,36 @@ ptr を取り出すには: `ptr = raw_value & HEAP_MASK`
 length を読むには: `len = i32.load(ptr)`
 文字列バイトは: `ptr + 4` から `len` バイト
 
+> **M5 制約**: 文字列リテラルは ASCII のみ。`byte_length == JS .length` が保証される。非 ASCII は compile error (`DiagCode::UnsupportedSyntax`)。
+
+### Heap Array Object (M5)
+
+```text
+[offset + 0 .. +4)           : i32 element count
+[offset + 4 .. +4 + n*4)     : i32 elem₀, elem₁, ...  (RawValue each)
+
+RawValue = ptr | 0b101  (tag 5, ptr は 8-byte aligned)
+```
+
+`ARRAY_HEADER_SIZE = 4` (定数は `runtime/layout.rs` の `Layout`)
+
+要素アクセス: `elem_i = i32.load(ptr + 4 + i*4)` — bounds check は `$array_get` が実施。
+
+### Heap Object (M5)
+
+```text
+[offset + 0 .. +4)                     : i32 property count
+[offset + 4 + i*8 .. +4 + i*8 + 4)    : i32 key_raw  (tagged string RawValue)
+[offset + 4 + i*8 + 4 .. +4 + i*8 + 8): i32 value    (any RawValue)
+
+RawValue = ptr | 0b111  (tag 7, ptr は 8-byte aligned)
+```
+
+`OBJECT_HEADER_SIZE = 4`, `OBJECT_ENTRY_SIZE = 8`, `OBJECT_VALUE_OFFSET = 4`
+(定数は `runtime/layout.rs` の `Layout`)
+
+property lookup は `$property_get` が reverse scan (後勝ち、JS duplicate key semantics)。
+
 ## RuntimeFn Catalog
 
 runtime 関数は `RuntimeFn` カタログとして管理する（M1 以降に実装）。
@@ -99,7 +131,7 @@ pub struct RuntimeFn {
 }
 ```
 
-### 現在の runtime 関数一覧（M0）
+### 現在の runtime 関数一覧（M0–M5）
 
 | 関数 | 依存 | host import | capability | 説明 |
 |---|---|---|---|---|
@@ -116,6 +148,11 @@ pub struct RuntimeFn {
 | `$add` | `$concat`, `$is_string` | — | — | JS `+` |
 | `$sub` | — | — | — | JS `-` (number のみ) |
 | `$less` | — | — | — | JS `<` (number のみ) |
+| `$alloc_heap` | — | — | — | bump allocator; 指定バイト確保し ptr を返す |
+| `$mem_equal` | — | — | — | メモリ範囲の byte 比較; string key 照合に使用 |
+| `$array_get` | — | — | — | array RawValue + number index → element; tag check あり |
+| `$get_length` | — | — | — | string / array RawValue → length (number); tag check あり |
+| `$property_get` | `$mem_equal` | — | — | object RawValue + key ptr/len → value; reverse scan; tag check あり |
 
 ### Tree-shaking 方針
 
