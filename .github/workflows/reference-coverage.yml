@@ -1,0 +1,81 @@
+name: reference-coverage
+
+on:
+  pull_request:
+    paths:
+      - crates/cli/**
+      - scripts/reference_coverage.sh
+      - scripts/update_coverage_matrix.sh
+      - docs/16-coverage-matrix.md
+      - .github/workflows/reference-coverage.yml
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  coverage-gate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install wabt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+
+      - name: Fetch base branch docs
+        run: |
+          git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.ref }}
+          git show origin/${{ github.event.pull_request.base.ref }}:docs/16-coverage-matrix.md > /tmp/base-coverage-matrix.md
+
+      - name: Run coverage matrix check
+        run: |
+          chmod +x scripts/reference_coverage.sh scripts/update_coverage_matrix.sh scripts/check_coverage_gate.sh
+          scripts/update_coverage_matrix.sh --check
+
+      - name: Run coverage delta gate
+        run: |
+          scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md docs/16-coverage-matrix.md
+
+  coverage-ramp:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install wabt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+
+      - name: Update coverage matrix (ramp)
+        run: |
+          chmod +x scripts/reference_coverage.sh scripts/update_coverage_matrix.sh
+          scripts/update_coverage_matrix.sh
+
+      - name: Create pull request if matrix changed
+        uses: peter-evans/create-pull-request@v7
+        with:
+          commit-message: docs: refresh reference coverage matrix
+          title: docs: refresh reference coverage matrix
+          body: |
+            Automated reference coverage refresh.
+
+            - ran scripts/update_coverage_matrix.sh
+            - advanced per-suite executed limits by ramp step
+            - updated docs/16-coverage-matrix.md
+          branch: ci/reference-coverage-ramp
+          delete-branch: true
