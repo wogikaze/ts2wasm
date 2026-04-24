@@ -19,9 +19,10 @@ impl ValueTag {
     pub const FALSE: i32 = 2;
     pub const TRUE: i32 = 3;
     pub const NUMBER: i32 = 4;
+    pub const STRING: i32 = 6;
     /// Low-3-bit tag for heap-allocated string values.  `u32` so it can be
     /// OR-ed directly with `u32` heap offsets stored in the string table.
-    pub const STRING_TAG: u32 = 6;
+    pub const STRING_TAG: u32 = Self::STRING as u32;
     pub const TAG_MASK: i32 = 7;
     pub const HEAP_MASK: i32 = -8;
     /// Right-shift / left-shift amount used to pack/unpack the number payload.

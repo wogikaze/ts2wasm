@@ -2,6 +2,7 @@ use std::collections::HashMap;
 
 use crate::ir::lowered::{LoweredExpr, LoweredStmt};
 use crate::runtime::layout::Layout;
+use crate::runtime::value::ValueTag;
 use crate::wasm_ident;
 
 pub(crate) fn emit_wat(program: &[LoweredStmt]) -> String {
@@ -35,7 +36,10 @@ impl<'a> WatEmitter<'a> {
         wat.push_str("(module\n");
         wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
         wat.push_str("  (memory (export \"memory\") 1)\n");
-        wat.push_str("  (global $heap (mut i32) (i32.const 2048))\n");
+        wat.push_str(&format!(
+            "  (global $heap (mut i32) (i32.const {}))\n",
+            Layout::HEAP_START,
+        ));
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
         self.emit_functions(&mut wat);
@@ -112,7 +116,7 @@ impl<'a> WatEmitter<'a> {
                     }
                 }
                 self.emit_statements(wat, body, 4);
-                wat.push_str("    (i32.const 0)\n");
+                wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
                 wat.push_str("  )\n");
             }
         }

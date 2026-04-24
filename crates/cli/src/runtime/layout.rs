@@ -6,6 +6,9 @@ impl Layout {
     pub const DATA_START: u32 = 256;
     /// Byte alignment for heap allocations and data segment entries.
     pub const ALIGN: u32 = 8;
+    pub const ALIGN_MASK: u32 = Self::ALIGN - 1;
+    pub const STRING_HEADER_SIZE: u32 = 4;
+    pub const HEAP_BUMP_PADDING: u32 = Self::STRING_HEADER_SIZE + Self::ALIGN_MASK;
     /// Initial value of the `$heap` global (base of the dynamic heap).
     pub const HEAP_START: u32 = 2048;
     /// Linear memory offset used as a scratch buffer by `$log` /
