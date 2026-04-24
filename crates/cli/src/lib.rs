@@ -484,57 +484,135 @@ impl<'a> Lexer<'a> {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Stmt {
-    Let(String, Expr),
-    Assign(String, Expr),
-    Expr(Expr),
+    Let {
+        name: String,
+        expr: Expr,
+        span: Span,
+    },
+    Assign {
+        name: String,
+        expr: Expr,
+        span: Span,
+    },
+    Expr {
+        expr: Expr,
+        span: Span,
+    },
     If {
         condition: Expr,
         then_body: Vec<Stmt>,
         else_body: Vec<Stmt>,
+        span: Span,
     },
     While {
         condition: Expr,
         body: Vec<Stmt>,
+        span: Span,
     },
     Function {
         name: String,
         params: Vec<String>,
         body: Vec<Stmt>,
+        span: Span,
     },
-    Return(Expr),
+    Return {
+        expr: Expr,
+        span: Span,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Expr {
-    Number(i32),
-    String(String),
-    Bool(bool),
-    Null,
-    Undefined,
-    Ident(String),
+    Number {
+        value: i32,
+        span: Span,
+    },
+    String {
+        value: String,
+        span: Span,
+    },
+    Bool {
+        value: bool,
+        span: Span,
+    },
+    Null {
+        span: Span,
+    },
+    Undefined {
+        span: Span,
+    },
+    Ident {
+        name: String,
+        span: Span,
+    },
     Unary {
         op: UnaryOp,
         expr: Box<Expr>,
+        span: Span,
     },
     Binary {
         left: Box<Expr>,
         op: BinaryOp,
         right: Box<Expr>,
+        span: Span,
     },
     Member {
         object: Box<Expr>,
         property: String,
+        span: Span,
     },
     Call {
         callee: Box<Expr>,
         args: Vec<Expr>,
+        span: Span,
     },
-    Array(Vec<Expr>),
-    Object(Vec<(String, Expr)>),
+    Array {
+        elements: Vec<Expr>,
+        span: Span,
+    },
+    Object {
+        props: Vec<(String, Expr)>,
+        span: Span,
+    },
     Index {
         object: Box<Expr>,
         index: Box<Expr>,
+        span: Span,
     },
+}
+
+impl Stmt {
+    fn span(&self) -> Span {
+        match self {
+            Self::Let { span, .. }
+            | Self::Assign { span, .. }
+            | Self::Expr { span, .. }
+            | Self::If { span, .. }
+            | Self::While { span, .. }
+            | Self::Function { span, .. }
+            | Self::Return { span, .. } => *span,
+        }
+    }
+}
+
+impl Expr {
+    fn span(&self) -> Span {
+        match self {
+            Self::Number { span, .. }
+            | Self::String { span, .. }
+            | Self::Bool { span, .. }
+            | Self::Null { span }
+            | Self::Undefined { span }
+            | Self::Ident { span, .. }
+            | Self::Unary { span, .. }
+            | Self::Binary { span, .. }
+            | Self::Member { span, .. }
+            | Self::Call { span, .. }
+            | Self::Array { span, .. }
+            | Self::Object { span, .. }
+            | Self::Index { span, .. } => *span,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -584,29 +662,49 @@ impl Parser {
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let expr = self.expression()?;
-        self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Expr(expr))
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Expr {
+            span: Span {
+                start: expr.span().start,
+                end: semi.end,
+            },
+            expr,
+        })
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        self.expect(TokenKind::Let)?;
-        let name = self.expect_ident()?;
+        let start = self.expect(TokenKind::Let)?;
+        let (name, _) = self.expect_ident()?;
         self.expect(TokenKind::Equal)?;
         let expr = self.expression()?;
-        self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Let(name, expr))
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Let {
+            name,
+            expr,
+            span: Span {
+                start: start.start,
+                end: semi.end,
+            },
+        })
     }
 
     fn assign_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let name = self.expect_ident()?;
+        let (name, start) = self.expect_ident()?;
         self.expect(TokenKind::Equal)?;
         let expr = self.expression()?;
-        self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Assign(name, expr))
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Assign {
+            name,
+            expr,
+            span: Span {
+                start: start.start,
+                end: semi.end,
+            },
+        })
     }
 
     fn if_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        self.expect(TokenKind::If)?;
+        let start = self.expect(TokenKind::If)?;
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
         self.expect(TokenKind::RightParen)?;
@@ -616,30 +714,50 @@ impl Parser {
         } else {
             Vec::new()
         };
+        let end = if let Some(last) = else_body.last().or(then_body.last()) {
+            last.span().end
+        } else {
+            condition.span().end
+        };
         Ok(Stmt::If {
             condition,
             then_body,
             else_body,
+            span: Span {
+                start: start.start,
+                end,
+            },
         })
     }
 
     fn while_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        self.expect(TokenKind::While)?;
+        let start = self.expect(TokenKind::While)?;
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
         self.expect(TokenKind::RightParen)?;
         let body = self.block()?;
-        Ok(Stmt::While { condition, body })
+        let end = body
+            .last()
+            .map(|stmt| stmt.span().end)
+            .unwrap_or(condition.span().end);
+        Ok(Stmt::While {
+            condition,
+            body,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
     }
 
     fn function_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        self.expect(TokenKind::Function)?;
-        let name = self.expect_ident()?;
+        let start = self.expect(TokenKind::Function)?;
+        let (name, _) = self.expect_ident()?;
         self.expect(TokenKind::LeftParen)?;
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                params.push(self.expect_ident()?);
+                params.push(self.expect_ident()?.0);
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -647,14 +765,29 @@ impl Parser {
             }
         }
         let body = self.block()?;
-        Ok(Stmt::Function { name, params, body })
+        let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
+        Ok(Stmt::Function {
+            name,
+            params,
+            body,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
     }
 
     fn return_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        self.expect(TokenKind::Return)?;
+        let start = self.expect(TokenKind::Return)?;
         let expr = self.expression()?;
-        self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Return(expr))
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Return {
+            expr,
+            span: Span {
+                start: start.start,
+                end: semi.end,
+            },
+        })
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
@@ -665,7 +798,7 @@ impl Parser {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "unterminated block".to_owned(),
-                    span: None,
+                    span: self.prev_span().or_else(|| self.peek_span()),
                 });
             }
             statements.push(self.statement()?);
@@ -681,10 +814,15 @@ impl Parser {
         let mut expr = self.comparison()?;
         while self.consume(TokenKind::StrictEqual) {
             let right = self.comparison()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
             expr = Expr::Binary {
                 left: Box::new(expr),
                 op: BinaryOp::StrictEqual,
                 right: Box::new(right),
+                span,
             };
         }
         Ok(expr)
@@ -694,10 +832,15 @@ impl Parser {
         let mut expr = self.term()?;
         while self.consume(TokenKind::Less) {
             let right = self.term()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
             expr = Expr::Binary {
                 left: Box::new(expr),
                 op: BinaryOp::Less,
                 right: Box::new(right),
+                span,
             };
         }
         Ok(expr)
@@ -715,21 +858,31 @@ impl Parser {
             };
             let Some(op) = op else { break };
             let right = self.unary()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
             expr = Expr::Binary {
                 left: Box::new(expr),
                 op,
                 right: Box::new(right),
+                span,
             };
         }
         Ok(expr)
     }
 
     fn unary(&mut self) -> Result<Expr, Diagnostic> {
-        if self.consume(TokenKind::Bang) {
+        if let Some(bang_span) = self.consume_span(TokenKind::Bang) {
             let expr = self.unary()?;
+            let end = expr.span().end;
             Ok(Expr::Unary {
                 op: UnaryOp::Not,
                 expr: Box::new(expr),
+                span: Span {
+                    start: bang_span.start,
+                    end,
+                },
             })
         } else {
             self.call_member()
@@ -740,19 +893,29 @@ impl Parser {
         let mut expr = self.primary()?;
         loop {
             if self.consume(TokenKind::Dot) {
-                let property = self.expect_ident()?;
+                let (property, prop_span) = self.expect_ident()?;
+                let start = expr.span().start;
                 expr = Expr::Member {
                     object: Box::new(expr),
                     property,
+                    span: Span {
+                        start,
+                        end: prop_span.end,
+                    },
                 };
                 continue;
             }
             if self.consume(TokenKind::LeftBracket) {
                 let index = self.expression()?;
-                self.expect(TokenKind::RightBracket)?;
+                let right_span = self.expect(TokenKind::RightBracket)?;
+                let start = expr.span().start;
                 expr = Expr::Index {
                     object: Box::new(expr),
                     index: Box::new(index),
+                    span: Span {
+                        start,
+                        end: right_span.end,
+                    },
                 };
                 continue;
             }
@@ -767,9 +930,15 @@ impl Parser {
                         self.expect(TokenKind::Comma)?;
                     }
                 }
+                let end = self
+                    .prev_span()
+                    .map(|span| span.end)
+                    .unwrap_or(expr.span().end);
+                let start = expr.span().start;
                 expr = Expr::Call {
                     callee: Box::new(expr),
                     args,
+                    span: Span { start, end },
                 };
                 continue;
             }
@@ -780,19 +949,46 @@ impl Parser {
 
     fn primary(&mut self) -> Result<Expr, Diagnostic> {
         match self.advance() {
-            Some(Token::Number(value)) => Ok(Expr::Number(value)),
-            Some(Token::String(value)) => Ok(Expr::String(value)),
-            Some(Token::True) => Ok(Expr::Bool(true)),
-            Some(Token::False) => Ok(Expr::Bool(false)),
-            Some(Token::Null) => Ok(Expr::Null),
-            Some(Token::Undefined) => Ok(Expr::Undefined),
-            Some(Token::Ident(name)) => Ok(Expr::Ident(name)),
-            Some(Token::LeftParen) => {
+            Some(SpannedToken {
+                kind: Token::Number(value),
+                span,
+            }) => Ok(Expr::Number { value, span }),
+            Some(SpannedToken {
+                kind: Token::String(value),
+                span,
+            }) => Ok(Expr::String { value, span }),
+            Some(SpannedToken {
+                kind: Token::True,
+                span,
+            }) => Ok(Expr::Bool { value: true, span }),
+            Some(SpannedToken {
+                kind: Token::False,
+                span,
+            }) => Ok(Expr::Bool { value: false, span }),
+            Some(SpannedToken {
+                kind: Token::Null,
+                span,
+            }) => Ok(Expr::Null { span }),
+            Some(SpannedToken {
+                kind: Token::Undefined,
+                span,
+            }) => Ok(Expr::Undefined { span }),
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) => Ok(Expr::Ident { name, span }),
+            Some(SpannedToken {
+                kind: Token::LeftParen,
+                ..
+            }) => {
                 let expr = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
                 Ok(expr)
             }
-            Some(Token::LeftBracket) => {
+            Some(SpannedToken {
+                kind: Token::LeftBracket,
+                span: start,
+            }) => {
                 let mut elements = Vec::new();
                 if !self.consume(TokenKind::RightBracket) {
                     loop {
@@ -803,13 +999,23 @@ impl Parser {
                         self.expect(TokenKind::Comma)?;
                     }
                 }
-                Ok(Expr::Array(elements))
+                let end = self.prev_span().map(|span| span.end).unwrap_or(start.end);
+                Ok(Expr::Array {
+                    elements,
+                    span: Span {
+                        start: start.start,
+                        end,
+                    },
+                })
             }
-            Some(Token::LeftBrace) => {
+            Some(SpannedToken {
+                kind: Token::LeftBrace,
+                span: start,
+            }) => {
                 let mut props = Vec::new();
                 if !self.consume(TokenKind::RightBrace) {
                     loop {
-                        let key = self.expect_ident()?;
+                        let (key, _) = self.expect_ident()?;
                         self.expect(TokenKind::Colon)?;
                         let val = self.expression()?;
                         props.push((key, val));
@@ -819,7 +1025,14 @@ impl Parser {
                         self.expect(TokenKind::Comma)?;
                     }
                 }
-                Ok(Expr::Object(props))
+                let end = self.prev_span().map(|span| span.end).unwrap_or(start.end);
+                Ok(Expr::Object {
+                    props,
+                    span: Span {
+                        start: start.start,
+                        end,
+                    },
+                })
             }
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -829,9 +1042,12 @@ impl Parser {
         }
     }
 
-    fn expect_ident(&mut self) -> Result<String, Diagnostic> {
+    fn expect_ident(&mut self) -> Result<(String, Span), Diagnostic> {
         match self.advance() {
-            Some(Token::Ident(name)) => Ok(name),
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) => Ok((name, span)),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected identifier, got {other:?}"),
@@ -840,9 +1056,9 @@ impl Parser {
         }
     }
 
-    fn expect(&mut self, kind: TokenKind) -> Result<(), Diagnostic> {
-        if self.consume(kind) {
-            Ok(())
+    fn expect(&mut self, kind: TokenKind) -> Result<Span, Diagnostic> {
+        if let Some(span) = self.consume_span(kind) {
+            Ok(span)
         } else {
             Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -853,16 +1069,21 @@ impl Parser {
     }
 
     fn consume(&mut self, kind: TokenKind) -> bool {
+        self.consume_span(kind).is_some()
+    }
+
+    fn consume_span(&mut self, kind: TokenKind) -> Option<Span> {
         if self.peek().is_some_and(|token| kind.matches(token)) {
+            let span = self.peek_span();
             self.cursor += 1;
-            true
+            span
         } else {
-            false
+            None
         }
     }
 
-    fn advance(&mut self) -> Option<Token> {
-        let token = self.peek().cloned()?;
+    fn advance(&mut self) -> Option<SpannedToken> {
+        let token = self.tokens.get(self.cursor).cloned()?;
         self.cursor += 1;
         Some(token)
     }
@@ -877,6 +1098,13 @@ impl Parser {
 
     fn peek_span(&self) -> Option<Span> {
         self.tokens.get(self.cursor).map(|t| t.span)
+    }
+
+    fn prev_span(&self) -> Option<Span> {
+        self.cursor
+            .checked_sub(1)
+            .and_then(|idx| self.tokens.get(idx))
+            .map(|t| t.span)
     }
 
     fn is_at_end(&self) -> bool {
@@ -946,28 +1174,30 @@ fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
 
     for stmt in program {
         match stmt {
-            Stmt::Return(_) => {
+            Stmt::Return { span, .. } => {
                 return Err(Diagnostic {
                     code: DiagCode::InvalidTopLevelReturn,
                     message: "top-level return is not supported".to_owned(),
-                    span: None,
+                    span: Some(*span),
                 });
             }
-            Stmt::Function { name, body, .. } => {
+            Stmt::Function {
+                name, body, span, ..
+            } => {
                 if top_scope.contains_key(name) {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateLocal,
                         message: format!(
                             "top-level function `{name}` conflicts with existing lexical binding"
                         ),
-                        span: None,
+                        span: Some(*span),
                     });
                 }
                 if top_functions.contains_key(name) {
                     return Err(Diagnostic {
                         code: DiagCode::DuplicateFunction,
                         message: format!("duplicate function definition: `{name}`"),
-                        span: None,
+                        span: Some(*span),
                     });
                 }
                 top_functions.insert(name.clone(), ());
@@ -996,30 +1226,30 @@ fn validate_stmt(
     top_functions: &HashMap<String, ()>,
 ) -> Result<(), Diagnostic> {
     match stmt {
-        Stmt::Let(name, _) => {
+        Stmt::Let { name, span, .. } => {
             if in_top_level && top_functions.contains_key(name) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateLocal,
                     message: format!(
                         "top-level lexical binding `{name}` conflicts with function declaration"
                     ),
-                    span: None,
+                    span: Some(*span),
                 });
             }
             if scope.contains_key(name) {
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateLocal,
                     message: format!("duplicate local binding: `{name}`"),
-                    span: None,
+                    span: Some(*span),
                 });
             }
             scope.insert(name.clone(), ());
             Ok(())
         }
-        Stmt::Return(_) if in_top_level => Err(Diagnostic {
+        Stmt::Return { span, .. } if in_top_level => Err(Diagnostic {
             code: DiagCode::InvalidTopLevelReturn,
             message: "top-level return is not supported".to_owned(),
-            span: None,
+            span: Some(*span),
         }),
         Stmt::If {
             then_body,
@@ -1031,11 +1261,11 @@ fn validate_stmt(
             Ok(())
         }
         Stmt::While { body, .. } => validate_block(body),
-        Stmt::Expr(_) => Ok(()),
-        Stmt::Function { .. } => Err(Diagnostic {
+        Stmt::Expr { .. } => Ok(()),
+        Stmt::Function { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "nested function declarations are not supported in this milestone".to_owned(),
-            span: None,
+            span: Some(*span),
         }),
         _ => Ok(()),
     }
@@ -1106,8 +1336,14 @@ mod tests {
         let program = parse_program("console.log(\"hi\");").unwrap();
         assert_eq!(program.len(), 1);
         match &program[0] {
-            Stmt::Expr(Expr::Call { callee, args }) => {
-                assert_eq!(args, &vec![Expr::String("hi".to_owned())]);
+            Stmt::Expr {
+                expr: Expr::Call { callee, args, .. },
+                ..
+            } => {
+                assert!(matches!(
+                    args.as_slice(),
+                    [Expr::String { value, .. }] if value == "hi"
+                ));
                 assert!(matches!(
                     callee.as_ref(),
                     Expr::Member { property, .. } if property == "log"
@@ -1177,5 +1413,6 @@ mod tests {
         let program = parse_program("let x = 1; let x = 2;").unwrap();
         let err = validate_ast(&program).unwrap_err();
         assert_eq!(err.code, DiagCode::DuplicateLocal);
+        assert!(err.span.is_some());
     }
 }

@@ -10,13 +10,16 @@ pub(crate) fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Di
 
 fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
     match stmt {
-        Stmt::Let(name, expr) => Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?)),
-        Stmt::Assign(name, expr) => Ok(ResolvedStmt::Assign(name.clone(), resolve_expr(expr)?)),
-        Stmt::Expr(expr) => Ok(ResolvedStmt::Expr(resolve_expr(expr)?)),
+        Stmt::Let { name, expr, .. } => Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?)),
+        Stmt::Assign { name, expr, .. } => {
+            Ok(ResolvedStmt::Assign(name.clone(), resolve_expr(expr)?))
+        }
+        Stmt::Expr { expr, .. } => Ok(ResolvedStmt::Expr(resolve_expr(expr)?)),
         Stmt::If {
             condition,
             then_body,
             else_body,
+            ..
         } => Ok(ResolvedStmt::If {
             condition: resolve_expr(condition)?,
             then_body: then_body
@@ -28,15 +31,19 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
-        Stmt::While { condition, body } => Ok(ResolvedStmt::While {
+        Stmt::While {
+            condition, body, ..
+        } => Ok(ResolvedStmt::While {
             condition: resolve_expr(condition)?,
             body: body
                 .iter()
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
-        Stmt::Return(expr) => Ok(ResolvedStmt::Return(resolve_expr(expr)?)),
-        Stmt::Function { name, params, body } => Ok(ResolvedStmt::Function {
+        Stmt::Return { expr, .. } => Ok(ResolvedStmt::Return(resolve_expr(expr)?)),
+        Stmt::Function {
+            name, params, body, ..
+        } => Ok(ResolvedStmt::Function {
             name: name.clone(),
             params: params.clone(),
             body: body
@@ -49,22 +56,24 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
 
 fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
-        Expr::Number(value) => Ok(ResolvedExpr::Number(*value)),
-        Expr::String(value) => Ok(ResolvedExpr::String(value.clone())),
-        Expr::Bool(value) => Ok(ResolvedExpr::Bool(*value)),
-        Expr::Null => Ok(ResolvedExpr::Null),
-        Expr::Undefined => Ok(ResolvedExpr::Undefined),
-        Expr::Ident(name) => Ok(ResolvedExpr::Ident(name.clone())),
-        Expr::Unary { op, expr } => Ok(ResolvedExpr::Unary {
+        Expr::Number { value, .. } => Ok(ResolvedExpr::Number(*value)),
+        Expr::String { value, .. } => Ok(ResolvedExpr::String(value.clone())),
+        Expr::Bool { value, .. } => Ok(ResolvedExpr::Bool(*value)),
+        Expr::Null { .. } => Ok(ResolvedExpr::Null),
+        Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
+        Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
+        Expr::Unary { op, expr, .. } => Ok(ResolvedExpr::Unary {
             op: *op,
             expr: Box::new(resolve_expr(expr)?),
         }),
-        Expr::Binary { left, op, right } => Ok(ResolvedExpr::Binary {
+        Expr::Binary {
+            left, op, right, ..
+        } => Ok(ResolvedExpr::Binary {
             left: Box::new(resolve_expr(left)?),
             op: *op,
             right: Box::new(resolve_expr(right)?),
         }),
-        Expr::Call { callee, args } => {
+        Expr::Call { callee, args, .. } => {
             let resolved_args = args
                 .iter()
                 .map(resolve_expr)
@@ -81,7 +90,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 })
             }
         }
-        Expr::Member { object, property } => {
+        Expr::Member {
+            object, property, ..
+        } => {
             let resolved_object = Box::new(resolve_expr(object)?);
             if property == "length" {
                 Ok(ResolvedExpr::BuiltinProperty {
@@ -95,19 +106,19 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 })
             }
         }
-        Expr::Array(elements) => Ok(ResolvedExpr::Array(
+        Expr::Array { elements, .. } => Ok(ResolvedExpr::Array(
             elements
                 .iter()
                 .map(resolve_expr)
                 .collect::<Result<Vec<_>, _>>()?,
         )),
-        Expr::Object(props) => Ok(ResolvedExpr::Object(
+        Expr::Object { props, .. } => Ok(ResolvedExpr::Object(
             props
                 .iter()
                 .map(|(k, v)| Ok((k.clone(), resolve_expr(v)?)))
                 .collect::<Result<Vec<_>, _>>()?,
         )),
-        Expr::Index { object, index } => Ok(ResolvedExpr::ComputedIndex {
+        Expr::Index { object, index, .. } => Ok(ResolvedExpr::ComputedIndex {
             object: Box::new(resolve_expr(object)?),
             index: Box::new(resolve_expr(index)?),
         }),
@@ -115,10 +126,16 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
 }
 
 fn resolve_builtin_call(callee: &Expr) -> Option<BuiltinId> {
-    let Expr::Member { object, property } = callee else {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
         return None;
     };
-    let Expr::Ident(object_name) = object.as_ref() else {
+    let Expr::Ident {
+        name: object_name, ..
+    } = object.as_ref()
+    else {
         return None;
     };
     if object_name == "console" && property == "log" {
