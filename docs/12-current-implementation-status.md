@@ -189,4 +189,16 @@ Not implemented in this slice:
 - Actual WASI `fd_read` runtime execution and UTF-8 decode pipeline.
 - stdin fixture differential execution against Node/iwasm.
 
+## M6 idiom status (M6-2)
+
+Implemented in this slice:
+
+- BuiltinResolver recognizes `require("fs").readFileSync(0, "utf8")` idiom shape.
+- BuiltinResolver validates idiom arguments and rejects unsupported forms (`fd != 0`, missing encoding, non-`"utf8"`).
+
+Not implemented in this slice:
+
+- Lowering/runtime connection for the idiom. Current lowering reports `UnsupportedSyntax` to prevent accidental execution against placeholder runtime.
+- Actual WASI `fd_read` runtime execution and UTF-8 decode pipeline.
+
 After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
