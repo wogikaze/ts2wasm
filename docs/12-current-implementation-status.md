@@ -201,4 +201,18 @@ Not implemented in this slice:
 - Lowering/runtime connection for the idiom. Current lowering reports `UnsupportedSyntax` to prevent accidental execution against placeholder runtime.
 - Actual WASI `fd_read` runtime execution and UTF-8 decode pipeline.
 
+## M6 lowering status (M6-3a)
+
+Implemented in this slice:
+
+- `require("fs").readFileSync(0, "utf8")` idiom now lowers to `Builtin(ReadStdinUtf8)` call shape.
+- Link-plan/manifest tests confirm source-driven lowering carries `ReadStdinUtf8` -> `fd_read`/`stdin.read` requirements.
+- Build pipeline has a compile-time runtime gate (`ENABLE_READ_STDIN_UTF8_RUNTIME = false`) so lowered stdin-read paths fail before WAT/wasm emission.
+
+Not implemented in this slice:
+
+- Actual WASI `fd_read` runtime behavior.
+- UTF-8 decoder/runtime string semantics for non-ASCII input.
+- stdin differential execution tests.
+
 After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
