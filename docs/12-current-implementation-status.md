@@ -6,9 +6,9 @@ Last updated: 2026-04-24
 
 ## Summary
 
-現在の実装段階は M2 の最小 fixture gate に到達した直後である。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
+現在の実装段階は M3 の最小 semantic fixture gate に到達した直後である。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
 
-M2 fixtures では、number/string/boolean/if/while/function の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。ただし、これは汎用 TypeScript/JavaScript compiler ではない。現在の CLI は限定 parser と compile-time evaluator で stdout を先に求め、その stdout を WASI `fd_write` する最小 `.wasm` に埋め込む。JS 意味論を WASM 上の runtime と IR で実行しているわけではない。
+M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined` / `null` / truthiness / `===` / `+` の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。ただし、これは汎用 TypeScript/JavaScript compiler ではない。現在の CLI は限定 parser と compile-time evaluator で stdout を先に求め、その stdout を WASI `fd_write` する最小 `.wasm` に埋め込む。JS 意味論を WASM 上の runtime と IR で実行しているわけではない。
 
 ## Implemented
 
@@ -24,6 +24,7 @@ M2 fixtures では、number/string/boolean/if/while/function の小さな subset
 | Test status model | partial | `crates/shared/src/test_status.rs` |
 | `console.log("hi")` to WASI wasm | implemented for string literal only | `crates/cli/`, `fixtures/m1/hello.ts` |
 | M2 fixture comparison | implemented for small curated fixtures | `fixtures/m2/`, `crates/cli/tests/m2_node_diff.rs` |
+| M3 semantic fixture comparison | implemented for small curated fixtures | `fixtures/m3/`, `crates/cli/tests/m2_node_diff.rs` |
 | Repository agent guidance | implemented | `AGENTS.md`, `.agents/skills/` |
 
 ## Verified
@@ -31,8 +32,9 @@ M2 fixtures では、number/string/boolean/if/while/function の小さな subset
 | Check | Result |
 |---|---|
 | `cargo fmt --all --check` | pass |
-| `cargo test` | pass, includes M1/M2 `iwasm` integration tests |
+| `cargo test` | pass, includes M1/M2/M3 `iwasm` integration tests |
 | M2 fixtures vs Node | pass for curated fixtures |
+| M3 semantic fixtures vs Node | pass for curated fixtures |
 | `iwasm --version` | pass, `iwasm 2.4.3` |
 
 ## Not implemented
@@ -82,6 +84,17 @@ Remaining M2 work:
 - Add `const` support or explicitly classify it as unsupported in test records.
 - Add machine-readable test records for each fixture result.
 
+## Current M3 gaps
+
+The current M3 gate covers only a small integer/string/boolean/null/undefined subset.
+
+Remaining M3 work:
+
+- Implement JS semantics in generated wasm instead of compile-time evaluation.
+- Add `NaN`, `-0`, `Infinity`, and floating-point number fixtures.
+- Add `==` only after explicit abstract equality semantics are defined.
+- Add machine-readable semantic test records.
+
 ## Next milestone target
 
-The next implementation target is to harden M2 from `source -> compile-time evaluator -> stdout wasm` into `source -> minimal IR -> WASI wasm -> iwasm`, while preserving the Node differential fixture gate.
+The next implementation target is to harden M3 from `source -> compile-time evaluator -> stdout wasm` into `source -> minimal IR -> WASI wasm -> iwasm`, while preserving the Node differential fixture gate.
