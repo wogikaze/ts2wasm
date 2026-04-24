@@ -9,10 +9,30 @@ pub(crate) struct LocalId(pub(crate) usize);
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct FuncId(pub(crate) usize);
 
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum BuiltinId {
     ConsoleLog,
+}
+
+#[allow(dead_code)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum BuiltinResult {
+    Value,
+    EffectOnly,
+}
+
+impl BuiltinId {
+    pub(crate) const fn expected_arity(self) -> usize {
+        match self {
+            Self::ConsoleLog => 1,
+        }
+    }
+
+    pub(crate) const fn result(self) -> BuiltinResult {
+        match self {
+            Self::ConsoleLog => BuiltinResult::EffectOnly,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -50,7 +70,6 @@ pub(crate) enum LoweredStmt {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum FunctionCallKind {
     User(FuncId),
-    #[allow(dead_code)]
     Builtin(BuiltinId),
 }
 
@@ -406,6 +425,8 @@ pub(crate) fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagn
     let mut errors = Vec::new();
     let num_funcs = program.functions.len();
 
+    validate_functions(program, &mut errors);
+
     validate_stmts(
         &program.top_level_statements,
         program.top_level_locals.len(),
@@ -423,6 +444,49 @@ pub(crate) fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagn
         Ok(())
     } else {
         Err(errors)
+    }
+}
+
+fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
+    for (idx, function) in program.functions.iter().enumerate() {
+        if function.id.0 != idx {
+            errors.push(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "function id {} does not match its index {}",
+                    function.id.0, idx
+                ),
+                span: None,
+            });
+        }
+
+        for (param_index, local_id) in function.params.iter().enumerate() {
+            if local_id.0 != param_index {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "parameter LocalId {} must match parameter index {}",
+                        local_id.0, param_index
+                    ),
+                    span: None,
+                });
+            }
+        }
+
+        let base = function.params.len();
+        for (local_index, local_id) in function.locals.iter().enumerate() {
+            let expected = base + local_index;
+            if local_id.0 != expected {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "local LocalId {} must be contiguous and start at {}",
+                        local_id.0, base
+                    ),
+                    span: None,
+                });
+            }
+        }
     }
 }
 
@@ -448,22 +512,25 @@ fn validate_stmt(
     match stmt {
         LoweredStmt::Let(id, expr) | LoweredStmt::Assign(id, expr) => {
             check_local_id(*id, local_count, errors);
-            validate_expr(expr, local_count, num_funcs, program, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredStmt::Expr(expr) | LoweredStmt::Return(expr) => {
-            validate_expr(expr, local_count, num_funcs, program, errors);
+        LoweredStmt::Expr(expr) => {
+            validate_expr(expr, local_count, num_funcs, program, errors, false);
+        }
+        LoweredStmt::Return(expr) => {
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredStmt::If {
             condition,
             then_body,
             else_body,
         } => {
-            validate_expr(condition, local_count, num_funcs, program, errors);
+            validate_expr(condition, local_count, num_funcs, program, errors, true);
             validate_stmts(then_body, local_count, num_funcs, program, errors);
             validate_stmts(else_body, local_count, num_funcs, program, errors);
         }
         LoweredStmt::While { condition, body } => {
-            validate_expr(condition, local_count, num_funcs, program, errors);
+            validate_expr(condition, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, errors);
         }
     }
@@ -475,6 +542,7 @@ fn validate_expr(
     num_funcs: usize,
     program: &LoweredProgram,
     errors: &mut Vec<Diagnostic>,
+    value_required: bool,
 ) {
     match expr {
         LoweredExpr::Number(n) => {
@@ -492,36 +560,63 @@ fn validate_expr(
         }
         LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
         LoweredExpr::Unary { expr, .. } => {
-            validate_expr(expr, local_count, num_funcs, program, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::Binary { left, right, .. } => {
-            validate_expr(left, local_count, num_funcs, program, errors);
-            validate_expr(right, local_count, num_funcs, program, errors);
+            validate_expr(left, local_count, num_funcs, program, errors, true);
+            validate_expr(right, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::Call { kind, args } => {
             for arg in args {
-                validate_expr(arg, local_count, num_funcs, program, errors);
+                validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
-            if let FunctionCallKind::User(func_id) = kind {
-                if func_id.0 >= num_funcs {
-                    errors.push(Diagnostic {
-                        code: DiagCode::InvariantViolation,
-                        message: format!(
-                            "FuncId {} is out of range (program has {} function(s))",
-                            func_id.0, num_funcs
-                        ),
-                        span: None,
-                    });
-                } else {
-                    let expected = program.functions[func_id.0].params.len();
+            match kind {
+                FunctionCallKind::User(func_id) => {
+                    if func_id.0 >= num_funcs {
+                        errors.push(Diagnostic {
+                            code: DiagCode::InvariantViolation,
+                            message: format!(
+                                "FuncId {} is out of range (program has {} function(s))",
+                                func_id.0, num_funcs
+                            ),
+                            span: None,
+                        });
+                    } else {
+                        let expected = program.functions[func_id.0].params.len();
+                        if args.len() != expected {
+                            errors.push(Diagnostic {
+                                code: DiagCode::ArityMismatch,
+                                message: format!(
+                                    "function {} expects {} argument(s), got {}",
+                                    func_id.0,
+                                    expected,
+                                    args.len()
+                                ),
+                                span: None,
+                            });
+                        }
+                    }
+                }
+                FunctionCallKind::Builtin(builtin) => {
+                    let expected = builtin.expected_arity();
                     if args.len() != expected {
                         errors.push(Diagnostic {
                             code: DiagCode::ArityMismatch,
                             message: format!(
-                                "function {} expects {} argument(s), got {}",
-                                func_id.0,
+                                "builtin {:?} expects {} argument(s), got {}",
+                                builtin,
                                 expected,
                                 args.len()
+                            ),
+                            span: None,
+                        });
+                    }
+                    if value_required && matches!(builtin.result(), BuiltinResult::EffectOnly) {
+                        errors.push(Diagnostic {
+                            code: DiagCode::InvariantViolation,
+                            message: format!(
+                                "builtin {:?} is effect-only and cannot be used in a value context",
+                                builtin
                             ),
                             span: None,
                         });
@@ -549,7 +644,8 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
 #[cfg(test)]
 mod tests {
     use super::{
-        BuiltinId, FunctionCallKind, LoweredExpr, LoweredStmt, lower_program, validate_lowered,
+        BuiltinId, BuiltinResult, FunctionCallKind, LoweredExpr, LoweredStmt, lower_program,
+        validate_lowered,
     };
 
     #[test]
@@ -632,5 +728,14 @@ mod tests {
         assert_eq!(errs.len(), 1);
         assert_eq!(errs[0].code, DiagCode::ArityMismatch);
         let _ = LoweredBinaryOp::Add; // suppress dead_code lint in test
+    }
+
+    #[test]
+    fn builtin_console_log_contract_is_effect_only() {
+        assert_eq!(BuiltinId::ConsoleLog.expected_arity(), 1);
+        assert!(matches!(
+            BuiltinId::ConsoleLog.result(),
+            BuiltinResult::EffectOnly
+        ));
     }
 }
