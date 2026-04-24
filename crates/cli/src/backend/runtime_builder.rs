@@ -42,6 +42,13 @@ impl WatEmitter<'_> {
   (func $value_to_string_into (param $v i32) (param $ptr i32) (result i32)
     (local $obj i32)
     (local $len i32)
+    (local $n i32)
+    (local $abs i32)
+    (local $start i32)
+    (local $i i32)
+    (local $j i32)
+    (local $tmp i32)
+    (local $digit i32)
     (if (i32.eq (local.get $v) (i32.const {undefined_tag}))
       (then
         (call $copy (i32.const {undef_str}) (local.get $ptr) (i32.const {undefined_len}))
@@ -64,8 +71,37 @@ impl WatEmitter<'_> {
         (local.set $len (i32.load (local.get $obj)))
         (call $copy (i32.add (local.get $obj) (i32.const {string_header_size})) (local.get $ptr) (local.get $len))
         (return (local.get $len))))
-    (i32.store8 (local.get $ptr) (i32.add (i32.shr_s (local.get $v) (i32.const {number_shift})) (i32.const {ascii_zero})))
-    (i32.const {one}))
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (if (i32.eq (local.get $n) (i32.const {zero}))
+      (then
+        (i32.store8 (local.get $ptr) (i32.const {ascii_zero}))
+        (return (i32.const {one}))))
+    (local.set $start (local.get $ptr))
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then
+        (i32.store8 (local.get $ptr) (i32.const {ascii_minus}))
+        (local.set $ptr (i32.add (local.get $ptr) (i32.const {one})))
+        (local.set $abs (i32.sub (i32.const {zero}) (local.get $n))))
+      (else (local.set $abs (local.get $n))))
+    (local.set $i (local.get $ptr))
+    (block $digit_exit
+      (loop $digit_loop
+        (local.set $digit (i32.rem_u (local.get $abs) (i32.const {ten})))
+        (i32.store8 (local.get $ptr) (i32.add (local.get $digit) (i32.const {ascii_zero})))
+        (local.set $ptr (i32.add (local.get $ptr) (i32.const {one})))
+        (local.set $abs (i32.div_u (local.get $abs) (i32.const {ten})))
+        (br_if $digit_loop (i32.gt_u (local.get $abs) (i32.const {zero})))))
+    (local.set $j (i32.sub (local.get $ptr) (i32.const {one})))
+    (block $rev_exit
+      (loop $rev_loop
+        (br_if $rev_exit (i32.ge_u (local.get $i) (local.get $j)))
+        (local.set $tmp (i32.load8_u (local.get $i)))
+        (i32.store8 (local.get $i) (i32.load8_u (local.get $j)))
+        (i32.store8 (local.get $j) (local.get $tmp))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (local.set $j (i32.sub (local.get $j) (i32.const {one})))
+        (br $rev_loop)))
+    (i32.sub (local.get $ptr) (local.get $start)))
   (func $log (param $v i32)
     (local $len i32)
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
@@ -89,7 +125,10 @@ impl WatEmitter<'_> {
             false_len = RuntimeString::FALSE.len() as i32,
             true_len = RuntimeString::TRUE.len() as i32,
             ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ten = RuntimeConst::TEN,
             one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
             string_header_size = Layout::STRING_HEADER_SIZE,
             scratch = Layout::SCRATCH_OFFSET,
             newline = newline,

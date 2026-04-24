@@ -22,6 +22,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/m3/truthiness.ts",
         "fixtures/m3/strict-equal.ts",
         "fixtures/m3/plus.ts",
+        "fixtures/m3/number-stringify.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
