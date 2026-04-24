@@ -28,6 +28,17 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
     }
 }
 
+#[test]
+fn m5_array_object_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/m5/array.ts",
+        "fixtures/m5/string-length.ts",
+        "fixtures/m5/object.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
 fn assert_fixture_matches_node(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
