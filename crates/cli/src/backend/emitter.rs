@@ -124,12 +124,28 @@ impl<'a> WatEmitter<'a> {
 
     fn emit_start(&self, wat: &mut String) {
         wat.push_str("  (func $_start (export \"_start\")\n");
-        for local in collect_locals(self.program) {
+        for local in collect_start_locals(self.program) {
             wat.push_str(&format!("    (local ${} i32)\n", wasm_ident(&local)));
         }
-        self.emit_statements(wat, self.program, 4);
+        self.emit_top_level_statements(wat, 4);
         wat.push_str("  )\n");
     }
+}
+
+fn collect_start_locals(statements: &[LoweredStmt]) -> Vec<String> {
+    let mut locals = Vec::new();
+    for statement in statements {
+        if matches!(statement, LoweredStmt::Function { .. }) {
+            continue;
+        }
+
+        for local in collect_locals(std::slice::from_ref(statement)) {
+            if !locals.contains(&local) {
+                locals.push(local);
+            }
+        }
+    }
+    locals
 }
 
 fn collect_locals(statements: &[LoweredStmt]) -> Vec<String> {

@@ -3,6 +3,15 @@ use crate::ir::lowered::LoweredStmt;
 use crate::wasm_ident;
 
 impl WatEmitter<'_> {
+    pub(super) fn emit_top_level_statements(&self, wat: &mut String, indent: usize) {
+        for statement in self.program {
+            if matches!(statement, LoweredStmt::Function { .. }) {
+                continue;
+            }
+            self.emit_statement(wat, statement, indent);
+        }
+    }
+
     pub(super) fn emit_statements(
         &self,
         wat: &mut String,
