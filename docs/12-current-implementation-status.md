@@ -156,7 +156,7 @@ The following architectural requirements are tracked from the M5 prototype phase
 | Item | Status | Impact |
 |---|---|---|
 | RuntimeLinkPlan — separate from WatEmitter | done | RuntimeLinkPlan is isolated from WatEmitter and used as the backend link-plan input |
-| AST node span — all `Expr`/`Stmt` carry source span | deferred | New diagnostics (non-ASCII, unsupported-syntax) emit `span: None` |
+| AST node span — all `Expr`/`Stmt` carry source span | done | Parser now builds span-bearing `Expr`/`Stmt`; AST validation diagnostics (e.g. duplicate local, top-level return, nested function) report source spans |
 | BuiltinResolver pass — separate from Resolver/lowering | done | Builtin resolution is a distinct phase (`builtin_resolver`) and lowering consumes `Resolved*` IR |
 | Capability manifest output | done | `--emit-capabilities` emits JSON from `RuntimeLinkPlan` (`imports`/`capabilities`/`runtime`); currently covers `fd_write` path |
 
@@ -173,6 +173,6 @@ Exit criteria:
 - Capability manifest output is emitted through catalog + plan (`fd_write` now; same pathway to be extended with `fd_read` in M6).
 - Source-origin diagnostics have a span-bearing path (AST node span rollout started and wired to diagnostics).
 
-Current gate status: 3 / 4 complete. Remaining blocker before M6 is AST node span.
+Current gate status: 4 / 4 complete. P0 debt gate is implemented; M6 remains paused until this status is reviewed/accepted.
 
 After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
