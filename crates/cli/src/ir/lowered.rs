@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{BinaryOp, Expr, Stmt, UnaryOp};
+use crate::{BinaryOp, DiagCode, Diagnostic, Expr, Stmt, UnaryOp};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct LocalId(pub(crate) usize);
@@ -89,8 +89,8 @@ pub(crate) enum LoweredUnaryOp {
     Not,
 }
 
-pub(crate) fn lower_program(program: &[Stmt]) -> LoweredProgram {
-    let function_ids = collect_function_ids(program);
+pub(crate) fn lower_program(program: &[Stmt]) -> Result<LoweredProgram, Diagnostic> {
+    let function_ids = collect_function_ids(program)?;
     let mut resolver = Resolver::new(&function_ids);
     let mut top_level_statements = Vec::new();
     let mut functions = Vec::new();
@@ -99,31 +99,37 @@ pub(crate) fn lower_program(program: &[Stmt]) -> LoweredProgram {
         match stmt {
             Stmt::Function { name, params, body } => {
                 let func_id = function_ids[name];
-                functions.push(lower_function(func_id, params, body, &function_ids));
+                functions.push(lower_function(func_id, params, body, &function_ids)?);
             }
-            _ => top_level_statements.push(resolver.lower_stmt(stmt)),
+            _ => top_level_statements.push(resolver.lower_stmt(stmt)?),
         }
     }
 
-    LoweredProgram {
+    Ok(LoweredProgram {
         top_level_statements,
         top_level_locals: resolver.locals,
         functions,
-    }
+    })
 }
 
-fn collect_function_ids(program: &[Stmt]) -> HashMap<String, FuncId> {
+fn collect_function_ids(program: &[Stmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
     let mut function_ids = HashMap::new();
     let mut next_func_id = 0;
 
     for stmt in program {
         if let Stmt::Function { name, .. } = stmt {
+            if function_ids.contains_key(name.as_str()) {
+                return Err(Diagnostic {
+                    code: DiagCode::DuplicateFunction,
+                    message: format!("duplicate function definition: `{name}`"),
+                });
+            }
             function_ids.insert(name.clone(), FuncId(next_func_id));
             next_func_id += 1;
         }
     }
 
-    function_ids
+    Ok(function_ids)
 }
 
 fn lower_function(
@@ -131,16 +137,16 @@ fn lower_function(
     params: &[String],
     body: &[Stmt],
     function_ids: &HashMap<String, FuncId>,
-) -> LoweredFunction {
+) -> Result<LoweredFunction, Diagnostic> {
     let (mut resolver, param_ids) = Resolver::with_params(function_ids, params);
-    let body = resolver.lower_block(body);
+    let body = resolver.lower_block(body)?;
 
-    LoweredFunction {
+    Ok(LoweredFunction {
         id,
         params: param_ids,
         locals: resolver.locals,
         body,
-    }
+    })
 }
 
 fn lower_binary_op(op: BinaryOp) -> LoweredBinaryOp {
@@ -201,74 +207,79 @@ impl<'a> Resolver<'a> {
         (resolver, param_ids)
     }
 
-    fn lower_block(&mut self, statements: &[Stmt]) -> Vec<LoweredStmt> {
+    fn lower_block(&mut self, statements: &[Stmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let mut lowered = Vec::with_capacity(statements.len());
         for statement in statements {
-            lowered.push(self.lower_stmt(statement));
+            lowered.push(self.lower_stmt(statement)?);
         }
-        lowered
+        Ok(lowered)
     }
 
-    fn lower_nested_block(&mut self, statements: &[Stmt]) -> Vec<LoweredStmt> {
+    fn lower_nested_block(&mut self, statements: &[Stmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
         self.scopes.push(HashMap::new());
-        let lowered = self.lower_block(statements);
+        let lowered = self.lower_block(statements)?;
         self.scopes.pop();
-        lowered
+        Ok(lowered)
     }
 
-    fn lower_stmt(&mut self, stmt: &Stmt) -> LoweredStmt {
+    fn lower_stmt(&mut self, stmt: &Stmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
             Stmt::Let(name, expr) => {
-                let expr = self.lower_expr(expr);
+                let expr = self.lower_expr(expr)?;
                 let local_id = self.declare_local(name);
-                LoweredStmt::Let(local_id, expr)
+                Ok(LoweredStmt::Let(local_id, expr))
             }
             Stmt::Assign(name, expr) => {
-                let local_id = self.resolve_local(name);
-                LoweredStmt::Assign(local_id, self.lower_expr(expr))
+                let local_id = self.resolve_local(name)?;
+                Ok(LoweredStmt::Assign(local_id, self.lower_expr(expr)?))
             }
-            Stmt::ConsoleLog(expr) => LoweredStmt::ConsoleLog(self.lower_expr(expr)),
+            Stmt::ConsoleLog(expr) => Ok(LoweredStmt::ConsoleLog(self.lower_expr(expr)?)),
             Stmt::If {
                 condition,
                 then_body,
                 else_body,
-            } => LoweredStmt::If {
-                condition: self.lower_expr(condition),
-                then_body: self.lower_nested_block(then_body),
-                else_body: self.lower_nested_block(else_body),
-            },
-            Stmt::While { condition, body } => LoweredStmt::While {
-                condition: self.lower_expr(condition),
-                body: self.lower_nested_block(body),
-            },
-            Stmt::Return(expr) => LoweredStmt::Return(self.lower_expr(expr)),
-            Stmt::Function { .. } => {
-                panic!("function declarations must be split before lowering statements")
-            }
+            } => Ok(LoweredStmt::If {
+                condition: self.lower_expr(condition)?,
+                then_body: self.lower_nested_block(then_body)?,
+                else_body: self.lower_nested_block(else_body)?,
+            }),
+            Stmt::While { condition, body } => Ok(LoweredStmt::While {
+                condition: self.lower_expr(condition)?,
+                body: self.lower_nested_block(body)?,
+            }),
+            Stmt::Return(expr) => Ok(LoweredStmt::Return(self.lower_expr(expr)?)),
+            Stmt::Function { .. } => Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "function declaration reached statement lowering; this is a compiler bug"
+                    .to_owned(),
+            }),
         }
     }
 
-    fn lower_expr(&self, expr: &Expr) -> LoweredExpr {
+    fn lower_expr(&self, expr: &Expr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
-            Expr::Number(value) => LoweredExpr::Number(*value),
-            Expr::String(value) => LoweredExpr::String(value.clone()),
-            Expr::Bool(value) => LoweredExpr::Bool(*value),
-            Expr::Null => LoweredExpr::Null,
-            Expr::Undefined => LoweredExpr::Undefined,
-            Expr::Ident(name) => LoweredExpr::Local(self.resolve_local(name)),
-            Expr::Unary { op, expr } => LoweredExpr::Unary {
+            Expr::Number(value) => Ok(LoweredExpr::Number(*value)),
+            Expr::String(value) => Ok(LoweredExpr::String(value.clone())),
+            Expr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
+            Expr::Null => Ok(LoweredExpr::Null),
+            Expr::Undefined => Ok(LoweredExpr::Undefined),
+            Expr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
+            Expr::Unary { op, expr } => Ok(LoweredExpr::Unary {
                 op: lower_unary_op(*op),
-                expr: Box::new(self.lower_expr(expr)),
-            },
-            Expr::Binary { left, op, right } => LoweredExpr::Binary {
-                left: Box::new(self.lower_expr(left)),
+                expr: Box::new(self.lower_expr(expr)?),
+            }),
+            Expr::Binary { left, op, right } => Ok(LoweredExpr::Binary {
+                left: Box::new(self.lower_expr(left)?),
                 op: lower_binary_op(*op),
-                right: Box::new(self.lower_expr(right)),
-            },
-            Expr::Call { name, args } => LoweredExpr::Call {
-                kind: FunctionCallKind::User(self.resolve_func(name)),
-                args: args.iter().map(|arg| self.lower_expr(arg)).collect(),
-            },
+                right: Box::new(self.lower_expr(right)?),
+            }),
+            Expr::Call { name, args } => Ok(LoweredExpr::Call {
+                kind: FunctionCallKind::User(self.resolve_func(name)?),
+                args: args
+                    .iter()
+                    .map(|arg| self.lower_expr(arg))
+                    .collect::<Result<Vec<_>, _>>()?,
+            }),
         }
     }
 
@@ -283,25 +294,168 @@ impl<'a> Resolver<'a> {
         local_id
     }
 
-    fn resolve_local(&self, name: &str) -> LocalId {
+    fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
         self.scopes
             .iter()
             .rev()
             .find_map(|scope| scope.get(name).copied())
-            .unwrap_or_else(|| panic!("unresolved local during lowering: {name}"))
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnresolvedName,
+                message: format!("unresolved name: `{name}`"),
+            })
     }
 
-    fn resolve_func(&self, name: &str) -> FuncId {
+    fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
         self.function_ids
             .get(name)
             .copied()
-            .unwrap_or_else(|| panic!("unresolved function during lowering: {name}"))
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnresolvedFunction,
+                message: format!("unresolved function: `{name}`"),
+            })
+    }
+}
+
+/// Validate the structural invariants of a `LoweredProgram`.
+///
+/// This gate must pass before the program is handed to the backend.
+/// It catches:
+/// - `FuncId` values that are out of range
+/// - `LocalId` values that are out of range for their enclosing scope
+/// - Call arity mismatches
+///
+/// See `docs/14-ir-contracts.md` § validate_lowered.
+pub(crate) fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>> {
+    let mut errors = Vec::new();
+    let num_funcs = program.functions.len();
+
+    validate_stmts(
+        &program.top_level_statements,
+        program.top_level_locals.len(),
+        num_funcs,
+        program,
+        &mut errors,
+    );
+
+    for func in &program.functions {
+        let local_count = func.params.len() + func.locals.len();
+        validate_stmts(&func.body, local_count, num_funcs, program, &mut errors);
+    }
+
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
+}
+
+fn validate_stmts(
+    stmts: &[LoweredStmt],
+    local_count: usize,
+    num_funcs: usize,
+    program: &LoweredProgram,
+    errors: &mut Vec<Diagnostic>,
+) {
+    for stmt in stmts {
+        validate_stmt(stmt, local_count, num_funcs, program, errors);
+    }
+}
+
+fn validate_stmt(
+    stmt: &LoweredStmt,
+    local_count: usize,
+    num_funcs: usize,
+    program: &LoweredProgram,
+    errors: &mut Vec<Diagnostic>,
+) {
+    match stmt {
+        LoweredStmt::Let(id, expr) | LoweredStmt::Assign(id, expr) => {
+            check_local_id(*id, local_count, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors);
+        }
+        LoweredStmt::ConsoleLog(expr) | LoweredStmt::Return(expr) => {
+            validate_expr(expr, local_count, num_funcs, program, errors);
+        }
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            validate_expr(condition, local_count, num_funcs, program, errors);
+            validate_stmts(then_body, local_count, num_funcs, program, errors);
+            validate_stmts(else_body, local_count, num_funcs, program, errors);
+        }
+        LoweredStmt::While { condition, body } => {
+            validate_expr(condition, local_count, num_funcs, program, errors);
+            validate_stmts(body, local_count, num_funcs, program, errors);
+        }
+    }
+}
+
+fn validate_expr(
+    expr: &LoweredExpr,
+    local_count: usize,
+    num_funcs: usize,
+    program: &LoweredProgram,
+    errors: &mut Vec<Diagnostic>,
+) {
+    match expr {
+        LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
+        LoweredExpr::Unary { expr, .. } => {
+            validate_expr(expr, local_count, num_funcs, program, errors);
+        }
+        LoweredExpr::Binary { left, right, .. } => {
+            validate_expr(left, local_count, num_funcs, program, errors);
+            validate_expr(right, local_count, num_funcs, program, errors);
+        }
+        LoweredExpr::Call { kind, args } => {
+            for arg in args {
+                validate_expr(arg, local_count, num_funcs, program, errors);
+            }
+            if let FunctionCallKind::User(func_id) = kind {
+                if func_id.0 >= num_funcs {
+                    errors.push(Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "FuncId {} is out of range (program has {} function(s))",
+                            func_id.0, num_funcs
+                        ),
+                    });
+                } else {
+                    let expected = program.functions[func_id.0].params.len();
+                    if args.len() != expected {
+                        errors.push(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "function {} expects {} argument(s), got {}",
+                                func_id.0,
+                                expected,
+                                args.len()
+                            ),
+                        });
+                    }
+                }
+            }
+        }
+        _ => {}
+    }
+}
+
+fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>) {
+    if id.0 >= local_count {
+        errors.push(Diagnostic {
+            code: DiagCode::InvariantViolation,
+            message: format!(
+                "LocalId {} is out of range (scope has {} local(s))",
+                id.0, local_count
+            ),
+        });
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionCallKind, LoweredExpr, LoweredStmt, lower_program};
+    use super::{FunctionCallKind, LoweredExpr, LoweredStmt, lower_program, validate_lowered};
 
     #[test]
     fn lowering_splits_functions_and_resolves_ids() {
@@ -310,7 +464,7 @@ mod tests {
         )
         .unwrap();
 
-        let lowered = lower_program(&program);
+        let lowered = lower_program(&program).unwrap();
 
         assert_eq!(lowered.functions.len(), 1);
         assert_eq!(lowered.top_level_statements.len(), 2);
@@ -323,5 +477,55 @@ mod tests {
             }
             other => panic!("unexpected lowered statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn lowering_rejects_unresolved_name() {
+        let program = crate::parse_program("let x = y;").unwrap();
+        let err = lower_program(&program).unwrap_err();
+        assert_eq!(err.code, super::DiagCode::UnresolvedName);
+        assert!(err.message.contains('`'));
+    }
+
+    #[test]
+    fn lowering_rejects_duplicate_function() {
+        let program =
+            crate::parse_program("function f() { return 1; } function f() { return 2; }").unwrap();
+        let err = lower_program(&program).unwrap_err();
+        assert_eq!(err.code, super::DiagCode::DuplicateFunction);
+    }
+
+    #[test]
+    fn validate_rejects_arity_mismatch() {
+        // Build a program where add(a,b) is called with 3 args by manually
+        // constructing a valid-but-wrong-arity LoweredProgram via parse then patch.
+        use super::{DiagCode, FuncId, LoweredBinaryOp, LoweredFunction, LoweredProgram};
+        use crate::ir::lowered::{LocalId, LoweredExpr};
+
+        let func = LoweredFunction {
+            id: FuncId(0),
+            params: vec![LocalId(0), LocalId(1)],
+            locals: vec![],
+            body: vec![],
+        };
+        let call = LoweredStmt::ConsoleLog(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(0)),
+            // 3 args instead of the expected 2
+            args: vec![
+                LoweredExpr::Number(1),
+                LoweredExpr::Number(2),
+                LoweredExpr::Number(3),
+            ],
+        });
+        let program = LoweredProgram {
+            top_level_statements: vec![call],
+            top_level_locals: vec![],
+            functions: vec![func],
+        };
+
+        let errs = validate_lowered(&program).unwrap_err();
+        assert_eq!(errs.len(), 1);
+        assert_eq!(errs[0].code, DiagCode::ArityMismatch);
+        let _ = LoweredBinaryOp::Add; // suppress dead_code lint in test
     }
 }

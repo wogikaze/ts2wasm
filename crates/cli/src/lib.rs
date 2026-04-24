@@ -6,12 +6,52 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+/// Structured diagnostic emitted by compiler phases.
+///
+/// All compiler phases (Lexer / Parser / Resolver / Lowering / Backend)
+/// must return `Result<T, Diagnostic>` rather than panicking or returning
+/// unstructured `String` errors. See `docs/13-coding-standard.md` §1–2.
+#[derive(Debug, Clone)]
+pub struct Diagnostic {
+    pub code: DiagCode,
+    pub message: String,
+}
+
+impl std::fmt::Display for Diagnostic {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "[{:?}] {}", self.code, self.message)
+    }
+}
+
+/// Error codes for compiler diagnostics. See `docs/13-coding-standard.md` §2.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum DiagCode {
+    /// A name referenced in source was not declared in any enclosing scope.
+    UnresolvedName,
+    /// A function called in source was not declared in the program.
+    UnresolvedFunction,
+    /// Two functions share the same name in the same program.
+    DuplicateFunction,
+    /// A function call passes the wrong number of arguments.
+    ArityMismatch,
+    /// A lowered IR node violates a structural invariant — this is a compiler bug.
+    InvariantViolation,
+    /// Source uses syntax that is not supported in the current milestone.
+    UnsupportedSyntax,
+}
+
 pub fn build_file(input: &Path, output: &Path) -> Result<(), String> {
     let source = fs::read_to_string(input)
         .map_err(|error| format!("failed to read {}: {error}", input.display()))?;
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
-    let lowered = ir::lowered::lower_program(&program);
+    let lowered = ir::lowered::lower_program(&program).map_err(|d| d.to_string())?;
+    ir::lowered::validate_lowered(&lowered).map_err(|errs| {
+        errs.iter()
+            .map(|d| d.to_string())
+            .collect::<Vec<_>>()
+            .join("\n")
+    })?;
     let wat = backend::emit_wat(&lowered);
     write_wasm_from_wat(&wat, output)
 }
