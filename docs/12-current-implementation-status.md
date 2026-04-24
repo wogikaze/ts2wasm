@@ -163,4 +163,13 @@ These items must be resolved before M6 work begins. They are P0 because they blo
 
 ## Next milestone target
 
-The next implementation target is M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
+The next implementation target is a dedicated P0 debt repayment milestone before M6.
+
+Exit criteria:
+
+- RuntimeLinkPlan is separated from `WatEmitter`.
+- BuiltinResolver pass is separated from resolver/lowering and handles at least `console.log`, `.length`, and property read semantics.
+- Capability manifest output is emitted through catalog + plan (including `fd_write` and `fd_read` pathways).
+- Source-origin diagnostics have a span-bearing path (AST node span rollout started and wired to diagnostics).
+
+After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.

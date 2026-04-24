@@ -22,6 +22,17 @@ M0 の機械可読な実装定義は `crates/shared/` に置く。文書上の s
 | M9 | TypeScript 型情報を使った primitive fast path が入る |
 | M10 | Node host が必要な API を manifest 付きで実行できる |
 
+### M6 entry gate (required)
+
+M6 への着手条件として、M5 で先送りした P0 技術負債を返済する。順序は次を推奨する。
+
+1. RuntimeLinkPlan を `WatEmitter` から分離する
+2. BuiltinResolver pass を分離する（`console.log` / `.length` / property read）
+3. capability manifest 出力を導入する（`fd_write` / `fd_read` を catalog + plan + manifest で一貫管理）
+4. AST node span を導入し、source 起因 diagnostic に span を付与する
+
+この gate を満たすまでは M6 の成功条件を評価しない。
+
 ## Test status schema
 
 すべてのテスト結果は、次の状態のいずれかに分類する。単なる skip は禁止する。
