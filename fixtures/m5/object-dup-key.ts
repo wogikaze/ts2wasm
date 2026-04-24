@@ -1,2 +1,2 @@
-let o = {a: 1, a: 2};
+let o = { a: 1, a: 2 };
 console.log(o.a);
