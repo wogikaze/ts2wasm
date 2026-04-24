@@ -6,9 +6,9 @@ Last updated: 2026-04-24
 
 ## Summary
 
-現在の実装段階は M1 の最小縦切りに到達した直後である。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
+現在の実装段階は M2 の最小 fixture gate に到達した直後である。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
 
-ただし、これは汎用 TypeScript/JavaScript compiler ではない。現在の CLI は `console.log("literal")` だけを認識し、IR や runtime ABI call を経由せず、WASI `fd_write` を呼ぶ最小 `.wasm` を直接生成する。
+M2 fixtures では、number/string/boolean/if/while/function の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。ただし、これは汎用 TypeScript/JavaScript compiler ではない。現在の CLI は限定 parser と compile-time evaluator で stdout を先に求め、その stdout を WASI `fd_write` する最小 `.wasm` に埋め込む。JS 意味論を WASM 上の runtime と IR で実行しているわけではない。
 
 ## Implemented
 
@@ -17,10 +17,13 @@ Last updated: 2026-04-24
 | Rust workspace | implemented | `Cargo.toml` |
 | M0 shared crate | implemented | `crates/shared/` |
 | Minimal CLI | partial | `crates/cli/` |
+| Minimal parser/frontend | partial | `crates/cli/src/lib.rs` |
+| Compile-time evaluator for M2 fixtures | partial | `crates/cli/src/lib.rs` |
 | Runtime ABI logical definitions | partial | `crates/shared/src/abi.rs` |
 | Capability manifest model | partial | `crates/shared/src/capability.rs` |
 | Test status model | partial | `crates/shared/src/test_status.rs` |
 | `console.log("hi")` to WASI wasm | implemented for string literal only | `crates/cli/`, `fixtures/m1/hello.ts` |
+| M2 fixture comparison | implemented for small curated fixtures | `fixtures/m2/`, `crates/cli/tests/m2_node_diff.rs` |
 | Repository agent guidance | implemented | `AGENTS.md`, `.agents/skills/` |
 
 ## Verified
@@ -28,14 +31,15 @@ Last updated: 2026-04-24
 | Check | Result |
 |---|---|
 | `cargo fmt --all --check` | pass |
-| `cargo test` | pass, includes M1 `iwasm` integration test |
+| `cargo test` | pass, includes M1/M2 `iwasm` integration tests |
+| M2 fixtures vs Node | pass for curated fixtures |
 | `iwasm --version` | pass, `iwasm 2.4.3` |
 
 ## Not implemented
 
 | Area | Status |
 |---|---|
-| TypeScript parser integration | not implemented |
+| TypeScript parser integration | not implemented; current parser is project-local subset only |
 | JavaScript semantic IR | not implemented |
 | General WASM emitter | not implemented |
 | WASM runtime implementation | not implemented |
@@ -67,6 +71,17 @@ Remaining M1 work:
 - Emit a capability manifest for `wasi.stdout`.
 - Keep the `iwasm` integration test as the milestone gate.
 
+## Current M2 gaps
+
+The current M2 gate proves that curated fixtures can match Node stdout, but the implementation is intentionally narrow.
+
+Remaining M2 work:
+
+- Replace compile-time stdout evaluation with a minimal IR that executes program behavior in generated wasm.
+- Expand expression support beyond `+`, `-`, and `<`.
+- Add `const` support or explicitly classify it as unsupported in test records.
+- Add machine-readable test records for each fixture result.
+
 ## Next milestone target
 
-The next implementation target is to harden M1 from a direct emitter demo into the intended `source -> minimal IR -> WASI wasm -> iwasm` path.
+The next implementation target is to harden M2 from `source -> compile-time evaluator -> stdout wasm` into `source -> minimal IR -> WASI wasm -> iwasm`, while preserving the Node differential fixture gate.
