@@ -16,9 +16,26 @@ fn run() -> Result<(), String> {
     let args = env::args().skip(1).collect::<Vec<_>>();
     match args.as_slice() {
         [command, input, flag, output] if command == "build" && flag == "-o" => {
-            ts2wasm_cli::build_file(&PathBuf::from(input), &PathBuf::from(output))
-                .map_err(|e| e.to_string())
+            ts2wasm_cli::build_file_with_options(
+                &PathBuf::from(input),
+                &PathBuf::from(output),
+                None,
+            )
+            .map_err(|e| e.to_string())
         }
-        _ => Err("usage: ts2wasm build <input.ts> -o <output.wasm>".to_owned()),
+        [command, input, flag, output, emit_flag, manifest]
+            if command == "build" && flag == "-o" && emit_flag == "--emit-capabilities" =>
+        {
+            ts2wasm_cli::build_file_with_options(
+                &PathBuf::from(input),
+                &PathBuf::from(output),
+                Some(&PathBuf::from(manifest)),
+            )
+            .map_err(|e| e.to_string())
+        }
+        _ => Err(
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-capabilities <output.cap.json>]"
+                .to_owned(),
+        ),
     }
 }

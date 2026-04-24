@@ -66,6 +66,14 @@ pub enum DiagCode {
 }
 
 pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
+    build_file_with_options(input, output, None)
+}
+
+pub fn build_file_with_options(
+    input: &Path,
+    output: &Path,
+    capability_manifest_output: Option<&Path>,
+) -> Result<(), Diagnostic> {
     let source = fs::read_to_string(input).map_err(|error| Diagnostic {
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", input.display()),
@@ -83,6 +91,14 @@ pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
             span: None,
         })
     })?;
+    if let Some(path) = capability_manifest_output {
+        let manifest = backend::emit_capability_manifest_json(&lowered);
+        fs::write(path, manifest).map_err(|error| Diagnostic {
+            code: DiagCode::BackendIo,
+            message: format!("failed to write {}: {error}", path.display()),
+            span: None,
+        })?;
+    }
     let wat = backend::emit_wat(&lowered)?;
     write_wasm_from_wat(&wat, output)
 }
