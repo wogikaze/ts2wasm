@@ -1,0 +1,15 @@
+# project files
+reference/*
+.ig/
+
+# whats this
+.codex
+
+# js
+node_modules
+build/
+dist/
+
+# rust
+target/
+
