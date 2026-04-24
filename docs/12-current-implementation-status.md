@@ -6,9 +6,9 @@ Last updated: 2026-04-24
 
 ## Summary
 
-現在の実装段階は M3 の最小 semantic fixture gate に到達した直後である。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
+現在の実装段階は M4 の最小 runtime execution gate に到達した直後である。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
 
-M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined` / `null` / truthiness / `===` / `+` の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。ただし、これは汎用 TypeScript/JavaScript compiler ではない。現在の CLI は限定 parser と compile-time evaluator で stdout を先に求め、その stdout を WASI `fd_write` する最小 `.wasm` に埋め込む。JS 意味論を WASM 上の runtime と IR で実行しているわけではない。
+M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined` / `null` / truthiness / `===` / `+` の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。M4 では compile-time evaluator を削除し、stdout の事前計算ではなく、生成 WASM 内の tagged JS value runtime で式・制御フロー・`console.log` 引数評価を実行している。ただし、これはまだ汎用 TypeScript/JavaScript compiler ではない。
 
 ## Implemented
 
@@ -18,7 +18,8 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 | M0 shared crate | implemented | `crates/shared/` |
 | Minimal CLI | partial | `crates/cli/` |
 | Minimal parser/frontend | partial | `crates/cli/src/lib.rs` |
-| Compile-time evaluator for M2 fixtures | partial | `crates/cli/src/lib.rs` |
+| WAT/WASM runtime emitter | partial | `crates/cli/src/lib.rs` |
+| Tagged JS value execution | partial | immediate values plus heap strings in generated WASM |
 | Runtime ABI logical definitions | partial | `crates/shared/src/abi.rs` |
 | Capability manifest model | partial | `crates/shared/src/capability.rs` |
 | Test status model | partial | `crates/shared/src/test_status.rs` |
@@ -35,6 +36,7 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 | `cargo test` | pass, includes M1/M2/M3 `iwasm` integration tests |
 | M2 fixtures vs Node | pass for curated fixtures |
 | M3 semantic fixtures vs Node | pass for curated fixtures |
+| Precomputed stdout embedding check | pass for M2/M3 fixtures |
 | `iwasm --version` | pass, `iwasm 2.4.3` |
 
 ## Not implemented
@@ -43,8 +45,8 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 |---|---|
 | TypeScript parser integration | not implemented; current parser is project-local subset only |
 | JavaScript semantic IR | not implemented |
-| General WASM emitter | not implemented |
-| WASM runtime implementation | not implemented |
+| General WASM emitter | not implemented; current emitter is direct WAT generation for M1-M4 subset |
+| Complete WASM runtime implementation | not implemented; current runtime only covers M3 fixture semantics |
 | General CLI | not implemented |
 | Node differential test runner | not implemented |
 | Actual capability manifest emission from source analysis | not implemented |
@@ -79,7 +81,7 @@ The current M2 gate proves that curated fixtures can match Node stdout, but the 
 
 Remaining M2 work:
 
-- Replace compile-time stdout evaluation with a minimal IR that executes program behavior in generated wasm.
+- Add a minimal IR between parser and WAT generation.
 - Expand expression support beyond `+`, `-`, and `<`.
 - Add `const` support or explicitly classify it as unsupported in test records.
 - Add machine-readable test records for each fixture result.
@@ -96,14 +98,23 @@ Remaining M3 work:
 
 ## Runtime execution gate
 
-M4 is the point where compile-time stdout evaluation must stop being the implementation path. From M4 onward, fixtures only count as milestone progress if the observable behavior is produced by generated WASM executing JS values and control flow through a runtime representation.
+M4 is implemented for the curated M3 fixtures. The old compile-time evaluator and stdout-only binary emitter have been removed from the CLI implementation path. From M4 onward, fixtures only count as milestone progress if the observable behavior is produced by generated WASM executing JS values and control flow through a runtime representation.
 
-Required M4 properties:
+Implemented M4 properties:
 
-- Generated WASM must execute at least `undefined`, `null`, boolean, integer number, and string values through a runtime value representation.
-- M3 semantic fixtures must pass without precomputing stdout during compilation.
-- `console.log` may still lower to WASI `fd_write`, but its argument must be evaluated in WASM/runtime code.
-- Node.js must remain only a differential oracle, not an execution provider.
+- Generated WASM executes `undefined`, `null`, boolean, small integer number, and string values through a tagged runtime value representation.
+- M3 semantic fixtures pass without precomputing stdout during compilation.
+- `console.log` lowers to WASI `fd_write`, while its argument is evaluated in WASM/runtime code.
+- Node.js remains only a differential oracle in tests, not an execution provider.
+
+Current M4 limitations:
+
+- Integer formatting in `value_to_string` only handles single decimal digits correctly.
+- Numbers are still small signed integers; `NaN`, `-0`, `Infinity`, floating-point values, and numeric string parsing are not implemented.
+- Strings are heap objects with length-prefixed bytes, but there is no GC, bounds growth, UTF-8 validation, or general string library.
+- The compiler emits WAT and shells out to `wat2wasm`; there is no direct wasm binary backend yet.
+- There is no source-level capability manifest emission yet, even though generated output currently imports only WASI `fd_write`.
+- Function support is direct calls only; closures, `this`, hoisting, recursion validation, and arity semantics are not implemented.
 
 Required M6 stdin properties:
 
@@ -113,4 +124,4 @@ Required M6 stdin properties:
 
 ## Next milestone target
 
-The next implementation target is M4: replace `source -> compile-time evaluator -> stdout wasm` with `source -> minimal IR -> WASM runtime JS values -> iwasm`, while preserving the Node differential fixture gate.
+The next implementation target is M5: array, string, object literal, and data property access basics on the WASM runtime path. Before expanding broadly, M5 should keep the M4 invariant that Node.js is only a differential oracle and that observable behavior comes from generated WASM runtime execution.
