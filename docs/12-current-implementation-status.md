@@ -237,4 +237,22 @@ Planned follow-up after M6-3b:
 - Replace ASCII-only stdin behavior with real UTF-8 decode and JS string semantics (UTF-16 code unit length and indexing behavior).
 - Revisit non-ASCII stdin handling and differential tests under the updated string model.
 
+## M6 runtime layout status (M6-3b-1)
+
+Implemented in this slice:
+
+- Added stdin runtime layout constants: `STDIN_BUFFER_OFFSET`, `STDIN_BUFFER_SIZE`, and `STDIN_READ_MAX_BYTES` (`64 * 1024`).
+- Added dedicated `fd_read` staging constants: `FD_READ_IOVEC_PTR`, `FD_READ_IOVEC_LEN`, `FD_READ_NREAD_PTR`.
+- Extended backend memory layout validation to enforce ordered fixed regions:
+	- `DATA_START <= static data end`
+	- `static data end <= SCRATCH_OFFSET`
+	- `SCRATCH_OFFSET + SCRATCH_SIZE <= STDIN_BUFFER_OFFSET`
+	- `STDIN_BUFFER_OFFSET + STDIN_BUFFER_SIZE <= HEAP_START`
+
+Not implemented in this slice:
+
+- Actual `$read_stdin_utf8` `fd_read` runtime logic.
+- Runtime trap behavior for `fd_read` error / non-ASCII input bytes.
+- Runtime empty-string return path on EOF.
+
 After this gate is complete, the project resumes M6: stdin read (`require("fs").readFileSync(0, "utf8")`) lowering to WASI `fd_read`, with UTF-8 decoding and subsequent string processing running in WASM/runtime code.
