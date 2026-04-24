@@ -1,14 +1,12 @@
-use std::collections::{BTreeSet, HashMap};
+use std::collections::HashMap;
 
-use crate::ir::lowered::{
-    FuncId, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt,
-    LoweredUnaryOp,
-};
+use crate::ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
 use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
 use crate::{DiagCode, Diagnostic};
 
-use super::runtime_fn::{Capability, HostImport, RuntimeFn};
+use super::runtime_fn::HostImport;
+use super::runtime_link_plan::RuntimeLinkPlan;
 
 pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     WatEmitter::new(program).emit()
@@ -16,22 +14,22 @@ pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
 
 pub(super) struct WatEmitter<'a> {
     pub(super) program: &'a LoweredProgram,
+    pub(super) link_plan: RuntimeLinkPlan,
     pub(super) strings: HashMap<String, u32>,
     pub(super) string_data: Vec<(u32, String)>,
     pub(super) next_data_offset: u32,
-    pub(super) required_runtime: BTreeSet<RuntimeFn>,
 }
 
 impl<'a> WatEmitter<'a> {
     pub(super) fn new(program: &'a LoweredProgram) -> Self {
+        let link_plan = RuntimeLinkPlan::from_program(program);
         let mut emitter = Self {
             program,
+            link_plan,
             strings: HashMap::new(),
             string_data: Vec::new(),
             next_data_offset: Layout::DATA_START,
-            required_runtime: BTreeSet::new(),
         };
-        emitter.collect_required_runtime(program);
         emitter.intern_required_runtime_strings();
         emitter.collect_program_strings(&program.top_level_statements);
         for function in &program.functions {
@@ -42,7 +40,7 @@ impl<'a> WatEmitter<'a> {
 
     fn emit(self) -> Result<String, Diagnostic> {
         self.validate_memory_layout()?;
-        let _required_capabilities = self.required_capabilities();
+        let _required_capabilities = self.link_plan.required_capabilities();
         let mut wat = String::new();
         wat.push_str("(module\n");
         if self.requires_host_import(HostImport::FdWrite) {
@@ -107,150 +105,18 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn requires_host_import(&self, import: HostImport) -> bool {
-        self.required_imports().contains(&import)
-    }
-
-    pub(super) fn required_imports(&self) -> BTreeSet<HostImport> {
-        let mut imports = BTreeSet::new();
-        for runtime_fn in &self.required_runtime {
-            for import in runtime_fn.spec().imports {
-                imports.insert(*import);
-            }
-        }
-        imports
-    }
-
-    pub(super) fn required_capabilities(&self) -> BTreeSet<Capability> {
-        let mut capabilities = BTreeSet::new();
-        self.required_runtime.iter().for_each(|runtime_fn| {
-            runtime_fn.spec().capability.iter().for_each(|capability| {
-                capabilities.insert(*capability);
-            });
-        });
-        capabilities
-    }
-
-    #[cfg(test)]
-    pub(super) fn required_runtime_functions(&self) -> &BTreeSet<RuntimeFn> {
-        &self.required_runtime
-    }
-
-    fn add_required_runtime(&mut self, runtime_fn: RuntimeFn) {
-        if !self.required_runtime.insert(runtime_fn) {
-            return;
-        }
-        for dep in runtime_fn.spec().deps {
-            self.add_required_runtime(*dep);
-        }
-    }
-
-    fn collect_required_runtime(&mut self, program: &LoweredProgram) {
-        self.collect_required_runtime_stmts(&program.top_level_statements);
-        for function in &program.functions {
-            self.collect_required_runtime_stmts(&function.body);
-        }
+        self.link_plan.required_imports().contains(&import)
     }
 
     fn intern_required_runtime_strings(&mut self) {
-        let mut strings = Vec::new();
-        for runtime_fn in &self.required_runtime {
-            for value in runtime_fn.spec().runtime_strings {
-                strings.push(*value);
-            }
-        }
-        strings.sort_unstable();
-        strings.dedup();
-        for value in strings {
+        let runtime_strings: Vec<_> = self
+            .link_plan
+            .required_runtime_strings()
+            .iter()
+            .copied()
+            .collect();
+        for value in runtime_strings {
             self.intern_string(value);
-        }
-    }
-
-    fn collect_required_runtime_stmts(&mut self, statements: &[LoweredStmt]) {
-        for statement in statements {
-            match statement {
-                LoweredStmt::Let(_, expr)
-                | LoweredStmt::Assign(_, expr)
-                | LoweredStmt::Expr(expr)
-                | LoweredStmt::Return(expr) => self.collect_required_runtime_expr(expr),
-                LoweredStmt::If {
-                    condition,
-                    then_body,
-                    else_body,
-                } => {
-                    self.collect_required_runtime_expr(condition);
-                    self.add_required_runtime(RuntimeFn::TruthyBool);
-                    self.collect_required_runtime_stmts(then_body);
-                    self.collect_required_runtime_stmts(else_body);
-                }
-                LoweredStmt::While { condition, body } => {
-                    self.collect_required_runtime_expr(condition);
-                    self.add_required_runtime(RuntimeFn::TruthyBool);
-                    self.collect_required_runtime_stmts(body);
-                }
-            }
-        }
-    }
-
-    fn collect_required_runtime_expr(&mut self, expr: &LoweredExpr) {
-        match expr {
-            LoweredExpr::Unary { op, expr } => {
-                self.collect_required_runtime_expr(expr);
-                match op {
-                    LoweredUnaryOp::Not => self.add_required_runtime(RuntimeFn::Not),
-                }
-            }
-            LoweredExpr::Binary { left, op, right } => {
-                self.collect_required_runtime_expr(left);
-                self.collect_required_runtime_expr(right);
-                match op {
-                    LoweredBinaryOp::Add => self.add_required_runtime(RuntimeFn::Add),
-                    LoweredBinaryOp::Subtract => self.add_required_runtime(RuntimeFn::Sub),
-                    LoweredBinaryOp::Less => self.add_required_runtime(RuntimeFn::Less),
-                    LoweredBinaryOp::StrictEqual => {
-                        self.add_required_runtime(RuntimeFn::StrictEqual)
-                    }
-                }
-            }
-            LoweredExpr::Call { kind, args } => {
-                for arg in args {
-                    self.collect_required_runtime_expr(arg);
-                }
-                if let FunctionCallKind::Builtin(builtin) = kind {
-                    self.add_required_runtime(RuntimeFn::from_builtin(*builtin));
-                }
-            }
-            LoweredExpr::Number(_)
-            | LoweredExpr::String(_)
-            | LoweredExpr::Bool(_)
-            | LoweredExpr::Null
-            | LoweredExpr::Undefined
-            | LoweredExpr::Local(_) => {}
-            LoweredExpr::ArrayNew { elements, .. } => {
-                self.add_required_runtime(RuntimeFn::AllocHeap);
-                for elem in elements {
-                    self.collect_required_runtime_expr(elem);
-                }
-            }
-            LoweredExpr::ArrayGet { arr, index } => {
-                self.add_required_runtime(RuntimeFn::ArrayGet);
-                self.collect_required_runtime_expr(arr);
-                self.collect_required_runtime_expr(index);
-            }
-            LoweredExpr::GetLength(inner) => {
-                self.add_required_runtime(RuntimeFn::GetLength);
-                self.collect_required_runtime_expr(inner);
-            }
-            LoweredExpr::ObjectNew { props, .. } => {
-                self.add_required_runtime(RuntimeFn::AllocHeap);
-                for (_, val) in props {
-                    self.collect_required_runtime_expr(val);
-                }
-            }
-            LoweredExpr::PropertyGet { obj, .. } => {
-                self.add_required_runtime(RuntimeFn::PropertyGet);
-                self.add_required_runtime(RuntimeFn::MemEqual);
-                self.collect_required_runtime_expr(obj);
-            }
         }
     }
 
@@ -357,161 +223,4 @@ impl<'a> WatEmitter<'a> {
 
 pub(super) fn function_symbol(id: FuncId) -> String {
     format!("func_{}", id.0)
-}
-
-#[cfg(test)]
-mod tests {
-    use std::collections::BTreeSet;
-
-    use super::WatEmitter;
-    use crate::backend::emit_wat;
-    use crate::backend::runtime_fn::{Capability, HostImport, RuntimeFn};
-    use crate::ir::lowered::lower_program;
-
-    fn lowered(source: &str) -> crate::ir::lowered::LoweredProgram {
-        let program = crate::parse_program(source).expect("parse failed");
-        lower_program(&program).expect("lowering failed")
-    }
-
-    #[test]
-    fn no_console_log_has_no_fd_write_import() {
-        let program = lowered("let x = 1 + 2;");
-        let wat = emit_wat(&program).expect("emit failed");
-        assert!(!wat.contains("\"fd_write\""));
-
-        let emitter = WatEmitter::new(&program);
-        assert!(!emitter.required_imports().contains(&HostImport::FdWrite));
-        assert!(
-            !emitter
-                .required_capabilities()
-                .contains(&Capability::StdoutWrite)
-        );
-    }
-
-    #[test]
-    fn console_log_requires_fd_write_and_runtime_strings() {
-        let program = lowered("console.log(1);");
-        let wat = emit_wat(&program).expect("emit failed");
-        assert!(wat.contains("\"fd_write\""));
-
-        let emitter = WatEmitter::new(&program);
-        assert!(emitter.required_imports().contains(&HostImport::FdWrite));
-        assert!(
-            emitter
-                .required_capabilities()
-                .contains(&Capability::StdoutWrite)
-        );
-        assert!(
-            emitter
-                .strings
-                .contains_key(crate::runtime::consts::RuntimeString::NEWLINE)
-        );
-        assert!(
-            emitter
-                .strings
-                .contains_key(crate::runtime::consts::RuntimeString::UNDEFINED)
-        );
-    }
-
-    #[test]
-    fn runtime_linker_collects_expected_dependencies() {
-        let strict_program = lowered("let x = 1 === 2;");
-        let strict = WatEmitter::new(&strict_program);
-        let strict_expected: BTreeSet<_> = [
-            RuntimeFn::StrictEqual,
-            RuntimeFn::IsString,
-            RuntimeFn::StringEqual,
-        ]
-        .into_iter()
-        .collect();
-        assert!(
-            strict_expected
-                .iter()
-                .all(|runtime_fn| strict.required_runtime_functions().contains(runtime_fn))
-        );
-
-        let add_program = lowered("let y = \"x\" + 12;");
-        let add = WatEmitter::new(&add_program);
-        let add_expected: BTreeSet<_> = [
-            RuntimeFn::Add,
-            RuntimeFn::IsString,
-            RuntimeFn::Concat,
-            RuntimeFn::ValueToStringInto,
-            RuntimeFn::Copy,
-        ]
-        .into_iter()
-        .collect();
-        assert!(
-            add_expected
-                .iter()
-                .all(|runtime_fn| add.required_runtime_functions().contains(runtime_fn))
-        );
-
-        let cond_program = lowered("if (1) { let x = 1; }");
-        let cond = WatEmitter::new(&cond_program);
-        assert!(
-            cond.required_runtime_functions()
-                .contains(&RuntimeFn::TruthyBool)
-        );
-    }
-
-    #[test]
-    fn runtime_strings_are_trimmed_when_runtime_not_needed() {
-        let program = lowered("let x = 1;");
-        let emitter = WatEmitter::new(&program);
-        assert!(
-            !emitter
-                .strings
-                .contains_key(crate::runtime::consts::RuntimeString::UNDEFINED)
-        );
-        assert!(
-            !emitter
-                .strings
-                .contains_key(crate::runtime::consts::RuntimeString::NEWLINE)
-        );
-    }
-
-    #[test]
-    fn m5_runtime_linker_collects_array_object_and_length_helpers() {
-        let array_get_program = lowered("let x = [1][0];");
-        let array_get = WatEmitter::new(&array_get_program);
-        let array_expected: BTreeSet<_> = [RuntimeFn::AllocHeap, RuntimeFn::ArrayGet]
-            .into_iter()
-            .collect();
-        assert!(
-            array_expected
-                .iter()
-                .all(|runtime_fn| array_get.required_runtime_functions().contains(runtime_fn))
-        );
-        assert!(!array_get.required_imports().contains(&HostImport::FdWrite));
-
-        let length_program = lowered("let a = [1, 2]; let b = a.length;");
-        let length = WatEmitter::new(&length_program);
-        let length_expected: BTreeSet<_> = [RuntimeFn::AllocHeap, RuntimeFn::GetLength]
-            .into_iter()
-            .collect();
-        assert!(
-            length_expected
-                .iter()
-                .all(|runtime_fn| length.required_runtime_functions().contains(runtime_fn))
-        );
-        assert!(!length.required_imports().contains(&HostImport::FdWrite));
-
-        let object_program = lowered("let o = { a: 1 }; let v = o.a;");
-        let object = WatEmitter::new(&object_program);
-        let object_expected: BTreeSet<_> = [
-            RuntimeFn::AllocHeap,
-            RuntimeFn::PropertyGet,
-            RuntimeFn::MemEqual,
-        ]
-        .into_iter()
-        .collect();
-        assert!(
-            object_expected
-                .iter()
-                .all(|runtime_fn| object.required_runtime_functions().contains(runtime_fn))
-        );
-        assert!(object.strings.contains_key("a"));
-        assert!(!object.required_imports().contains(&HostImport::FdWrite));
-    }
 }

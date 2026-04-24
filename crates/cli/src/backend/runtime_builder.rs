@@ -9,7 +9,11 @@ use crate::runtime::{
 impl WatEmitter<'_> {
     pub(super) fn emit_runtime(&self, wat: &mut String) {
         for runtime_fn in RuntimeFn::emission_order() {
-            if !self.required_runtime.contains(runtime_fn) {
+            if !self
+                .link_plan
+                .required_runtime_functions()
+                .contains(runtime_fn)
+            {
                 continue;
             }
             match runtime_fn {
