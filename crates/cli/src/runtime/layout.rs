@@ -61,7 +61,6 @@ mod tests {
         let scratch_end = Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE;
         let stdin_end = Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE;
 
-        assert!(Layout::DATA_START <= scratch_end || Layout::DATA_START <= Layout::SCRATCH_OFFSET);
         assert!(Layout::DATA_START <= Layout::SCRATCH_OFFSET);
         assert!(scratch_end <= Layout::STDIN_BUFFER_OFFSET);
         assert!(stdin_end <= Layout::HEAP_START);
