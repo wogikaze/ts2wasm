@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -53,6 +54,7 @@ fn assert_fixture_matches_node(fixture: &str) {
         String::from_utf8_lossy(&build.stdout),
         String::from_utf8_lossy(&build.stderr)
     );
+    assert_no_precomputed_stdout(fixture, &output, &node.stdout);
 
     let iwasm = Command::new("iwasm").arg(&output).output().unwrap();
     assert!(
@@ -66,6 +68,16 @@ fn assert_fixture_matches_node(fixture: &str) {
         String::from_utf8_lossy(&iwasm.stdout),
         String::from_utf8_lossy(&node.stdout),
         "stdout mismatch for {fixture}"
+    );
+}
+
+fn assert_no_precomputed_stdout(fixture: &str, output: &Path, expected_stdout: &[u8]) {
+    let wasm = fs::read(output).unwrap();
+    assert!(
+        !wasm
+            .windows(expected_stdout.len())
+            .any(|window| window == expected_stdout),
+        "compiled wasm embeds precomputed stdout for {fixture}"
     );
 }
 

@@ -1,54 +1,21 @@
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct BuildInput {
-    pub stdout: String,
-}
+use std::process::Command;
 
 pub fn build_file(input: &Path, output: &Path) -> Result<(), String> {
     let source = fs::read_to_string(input)
         .map_err(|error| format!("failed to read {}: {error}", input.display()))?;
-    let parsed = parse_build_input(&source)?;
-    let wasm = emit_stdout_wasm(&parsed.stdout);
-    fs::write(output, wasm)
-        .map_err(|error| format!("failed to write {}: {error}", output.display()))
-}
-
-pub fn parse_build_input(source: &str) -> Result<BuildInput, String> {
-    let tokens = Lexer::new(source).tokenize()?;
+    let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
-    let stdout = Interpreter::default().run(&program)?;
-    Ok(BuildInput { stdout })
+    let wat = WatEmitter::new(&program).emit();
+    write_wasm_from_wat(&wat, output)
 }
 
-pub fn emit_console_log_wasm(message: &str) -> Vec<u8> {
-    emit_stdout_wasm(&format!("{message}\n"))
-}
-
-pub fn emit_stdout_wasm(stdout: &str) -> Vec<u8> {
-    let bytes = stdout.as_bytes();
-    let iovec_offset = 8u32;
-    let data_offset = 16u32;
-
-    let mut module = Vec::new();
-    module.extend_from_slice(b"\0asm");
-    module.extend_from_slice(&[1, 0, 0, 0]);
-
-    section(&mut module, 1, &type_section());
-    section(&mut module, 2, &import_section());
-    section(&mut module, 3, &function_section());
-    section(&mut module, 5, &memory_section());
-    section(&mut module, 7, &export_section());
-    section(&mut module, 10, &code_section(iovec_offset));
-    section(
-        &mut module,
-        11,
-        &data_section(iovec_offset, data_offset, bytes),
-    );
-
-    module
+#[cfg(test)]
+fn parse_program(source: &str) -> Result<Vec<Stmt>, String> {
+    let tokens = Lexer::new(source).tokenize()?;
+    Parser::new(tokens).parse_program()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -624,363 +591,501 @@ impl TokenKind {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum Value {
-    Number(i32),
-    String(String),
-    Bool(bool),
-    Null,
-    Undefined,
+struct WatEmitter<'a> {
+    program: &'a [Stmt],
+    strings: HashMap<String, u32>,
+    string_data: Vec<(u32, String)>,
+    next_data_offset: u32,
 }
 
-impl Value {
-    fn truthy(&self) -> bool {
-        match self {
-            Self::Bool(value) => *value,
-            Self::Number(value) => *value != 0,
-            Self::String(value) => !value.is_empty(),
-            Self::Null => false,
-            Self::Undefined => false,
+impl<'a> WatEmitter<'a> {
+    fn new(program: &'a [Stmt]) -> Self {
+        let mut emitter = Self {
+            program,
+            strings: HashMap::new(),
+            string_data: Vec::new(),
+            next_data_offset: 256,
+        };
+        for value in ["undefined", "null", "false", "true", "\n"] {
+            emitter.intern_string(value);
         }
+        emitter.collect_program_strings(program);
+        emitter
     }
 
-    fn js_string(&self) -> String {
-        match self {
-            Self::Number(value) => value.to_string(),
-            Self::String(value) => value.clone(),
-            Self::Bool(true) => "true".to_owned(),
-            Self::Bool(false) => "false".to_owned(),
-            Self::Null => "null".to_owned(),
-            Self::Undefined => "undefined".to_owned(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Default)]
-struct Interpreter {
-    functions: HashMap<String, FunctionDef>,
-}
-
-#[derive(Debug, Clone)]
-struct FunctionDef {
-    params: Vec<String>,
-    body: Vec<Stmt>,
-}
-
-impl Interpreter {
-    fn run(mut self, program: &[Stmt]) -> Result<String, String> {
-        let mut env = HashMap::new();
-        let mut stdout = String::new();
-        self.exec_block(program, &mut env, &mut stdout)?;
-        Ok(stdout)
+    fn emit(self) -> String {
+        let mut wat = String::new();
+        wat.push_str("(module\n");
+        wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
+        wat.push_str("  (memory (export \"memory\") 1)\n");
+        wat.push_str("  (global $heap (mut i32) (i32.const 2048))\n");
+        self.emit_data_segments(&mut wat);
+        self.emit_runtime(&mut wat);
+        self.emit_functions(&mut wat);
+        self.emit_start(&mut wat);
+        wat.push_str(")\n");
+        wat
     }
 
-    fn exec_block(
-        &mut self,
-        statements: &[Stmt],
-        env: &mut HashMap<String, Value>,
-        stdout: &mut String,
-    ) -> Result<Option<Value>, String> {
+    fn collect_program_strings(&mut self, statements: &[Stmt]) {
         for statement in statements {
-            if let Some(value) = self.exec_stmt(statement, env, stdout)? {
-                return Ok(Some(value));
-            }
+            self.collect_statement_strings(statement);
         }
-        Ok(None)
     }
 
-    fn exec_stmt(
-        &mut self,
-        statement: &Stmt,
-        env: &mut HashMap<String, Value>,
-        stdout: &mut String,
-    ) -> Result<Option<Value>, String> {
+    fn collect_statement_strings(&mut self, statement: &Stmt) {
         match statement {
-            Stmt::Let(name, expr) => {
-                let value = self.eval(expr, env)?;
-                env.insert(name.clone(), value);
-                Ok(None)
-            }
-            Stmt::Assign(name, expr) => {
-                if !env.contains_key(name) {
-                    return Err(format!("assignment to undeclared variable: {name}"));
-                }
-                let value = self.eval(expr, env)?;
-                env.insert(name.clone(), value);
-                Ok(None)
-            }
-            Stmt::ConsoleLog(expr) => {
-                let value = self.eval(expr, env)?;
-                stdout.push_str(&value.js_string());
-                stdout.push('\n');
-                Ok(None)
+            Stmt::Let(_, expr)
+            | Stmt::Assign(_, expr)
+            | Stmt::ConsoleLog(expr)
+            | Stmt::Return(expr) => {
+                self.collect_expr_strings(expr);
             }
             Stmt::If {
                 condition,
                 then_body,
                 else_body,
             } => {
-                if self.eval(condition, env)?.truthy() {
-                    self.exec_block(then_body, env, stdout)
-                } else {
-                    self.exec_block(else_body, env, stdout)
-                }
+                self.collect_expr_strings(condition);
+                self.collect_program_strings(then_body);
+                self.collect_program_strings(else_body);
             }
             Stmt::While { condition, body } => {
-                let mut iterations = 0usize;
-                while self.eval(condition, env)?.truthy() {
-                    iterations += 1;
-                    if iterations > 10_000 {
-                        return Err("while loop exceeded M2 iteration limit".to_owned());
-                    }
-                    if let Some(value) = self.exec_block(body, env, stdout)? {
-                        return Ok(Some(value));
-                    }
-                }
-                Ok(None)
+                self.collect_expr_strings(condition);
+                self.collect_program_strings(body);
             }
-            Stmt::Function { name, params, body } => {
-                self.functions.insert(
-                    name.clone(),
-                    FunctionDef {
-                        params: params.clone(),
-                        body: body.clone(),
-                    },
-                );
-                Ok(None)
-            }
-            Stmt::Return(expr) => Ok(Some(self.eval(expr, env)?)),
+            Stmt::Function { body, .. } => self.collect_program_strings(body),
         }
     }
 
-    fn eval(&mut self, expr: &Expr, env: &mut HashMap<String, Value>) -> Result<Value, String> {
+    fn collect_expr_strings(&mut self, expr: &Expr) {
         match expr {
-            Expr::Number(value) => Ok(Value::Number(*value)),
-            Expr::String(value) => Ok(Value::String(value.clone())),
-            Expr::Bool(value) => Ok(Value::Bool(*value)),
-            Expr::Null => Ok(Value::Null),
-            Expr::Undefined => Ok(Value::Undefined),
-            Expr::Ident(name) => env
-                .get(name)
-                .cloned()
-                .ok_or_else(|| format!("unknown identifier: {name}")),
+            Expr::String(value) => {
+                self.intern_string(value);
+            }
+            Expr::Unary { expr, .. } => self.collect_expr_strings(expr),
+            Expr::Binary { left, right, .. } => {
+                self.collect_expr_strings(left);
+                self.collect_expr_strings(right);
+            }
+            Expr::Call { args, .. } => {
+                for arg in args {
+                    self.collect_expr_strings(arg);
+                }
+            }
+            Expr::Number(_) | Expr::Bool(_) | Expr::Null | Expr::Undefined | Expr::Ident(_) => {}
+        }
+    }
+
+    fn intern_string(&mut self, value: &str) -> u32 {
+        if let Some(offset) = self.strings.get(value) {
+            return *offset;
+        }
+        let offset = align_to(self.next_data_offset, 8);
+        self.next_data_offset = align_to(offset + 4 + value.len() as u32, 8);
+        self.strings.insert(value.to_owned(), offset);
+        self.string_data.push((offset, value.to_owned()));
+        offset
+    }
+
+    fn string_value(&self, value: &str) -> u32 {
+        self.strings[value] | 6
+    }
+
+    fn string_offset(&self, value: &str) -> u32 {
+        self.strings[value]
+    }
+
+    fn emit_data_segments(&self, wat: &mut String) {
+        for (offset, value) in &self.string_data {
+            let mut bytes = Vec::new();
+            bytes.extend_from_slice(&(value.len() as u32).to_le_bytes());
+            bytes.extend_from_slice(value.as_bytes());
+            wat.push_str(&format!(
+                "  (data (i32.const {offset}) \"{}\")\n",
+                wat_bytes(&bytes)
+            ));
+        }
+    }
+
+    fn emit_runtime(&self, wat: &mut String) {
+        let undefined = self.string_offset("undefined");
+        let null = self.string_offset("null");
+        let false_s = self.string_offset("false");
+        let true_s = self.string_offset("true");
+        let newline = self.string_offset("\n") + 4;
+
+        wat.push_str(
+            r#"
+  (func $write (param $ptr i32) (param $len i32)
+    (i32.store (i32.const 8) (local.get $ptr))
+    (i32.store (i32.const 12) (local.get $len))
+    (drop (call $fd_write (i32.const 1) (i32.const 8) (i32.const 1) (i32.const 0))))
+  (func $copy (param $src i32) (param $dst i32) (param $len i32)
+    (local $i i32)
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.ge_u (local.get $i) (local.get $len)))
+        (i32.store8
+          (i32.add (local.get $dst) (local.get $i))
+          (i32.load8_u (i32.add (local.get $src) (local.get $i))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $loop))))
+"#,
+        );
+
+        wat.push_str(&format!(
+            r#"
+  (func $value_to_string_into (param $v i32) (param $ptr i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (if (i32.eq (local.get $v) (i32.const 0))
+      (then
+        (call $copy (i32.const {}) (local.get $ptr) (i32.const 9))
+        (return (i32.const 9))))
+    (if (i32.eq (local.get $v) (i32.const 1))
+      (then
+        (call $copy (i32.const {}) (local.get $ptr) (i32.const 4))
+        (return (i32.const 4))))
+    (if (i32.eq (local.get $v) (i32.const 2))
+      (then
+        (call $copy (i32.const {}) (local.get $ptr) (i32.const 5))
+        (return (i32.const 5))))
+    (if (i32.eq (local.get $v) (i32.const 3))
+      (then
+        (call $copy (i32.const {}) (local.get $ptr) (i32.const 4))
+        (return (i32.const 4))))
+    (if (i32.eq (i32.and (local.get $v) (i32.const 7)) (i32.const 6))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const -8)))
+        (local.set $len (i32.load (local.get $obj)))
+        (call $copy (i32.add (local.get $obj) (i32.const 4)) (local.get $ptr) (local.get $len))
+        (return (local.get $len))))
+    (i32.store8 (local.get $ptr) (i32.add (i32.shr_s (local.get $v) (i32.const 3)) (i32.const 48)))
+    (i32.const 1))
+  (func $log (param $v i32)
+    (local $len i32)
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.const 1500)))
+    (call $write (i32.const 1500) (local.get $len))
+    (call $write (i32.const {}) (i32.const 1)))
+"#,
+            undefined + 4,
+            null + 4,
+            false_s + 4,
+            true_s + 4,
+            newline
+        ));
+
+        wat.push_str(
+            r#"
+  (func $truthy_bool (param $v i32) (result i32)
+    (local $obj i32)
+    (if (i32.eq (local.get $v) (i32.const 0)) (then (return (i32.const 0))))
+    (if (i32.eq (local.get $v) (i32.const 1)) (then (return (i32.const 0))))
+    (if (i32.eq (local.get $v) (i32.const 2)) (then (return (i32.const 0))))
+    (if (i32.eq (local.get $v) (i32.const 3)) (then (return (i32.const 1))))
+    (if (i32.eq (i32.and (local.get $v) (i32.const 7)) (i32.const 6))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const -8)))
+        (return (i32.ne (i32.load (local.get $obj)) (i32.const 0)))))
+    (i32.ne (i32.shr_s (local.get $v) (i32.const 3)) (i32.const 0)))
+  (func $not (param $v i32) (result i32)
+    (if (result i32) (call $truthy_bool (local.get $v))
+      (then (i32.const 2))
+      (else (i32.const 3))))
+  (func $string_equal (param $a i32) (param $b i32) (result i32)
+    (local $ptr_a i32)
+    (local $ptr_b i32)
+    (local $len i32)
+    (local $i i32)
+    (local.set $ptr_a (i32.and (local.get $a) (i32.const -8)))
+    (local.set $ptr_b (i32.and (local.get $b) (i32.const -8)))
+    (local.set $len (i32.load (local.get $ptr_a)))
+    (if (i32.ne (local.get $len) (i32.load (local.get $ptr_b)))
+      (then (return (i32.const 2))))
+    (block $exit
+      (loop $loop
+        (br_if $exit (i32.ge_u (local.get $i) (local.get $len)))
+        (if
+          (i32.ne
+            (i32.load8_u (i32.add (i32.add (local.get $ptr_a) (i32.const 4)) (local.get $i)))
+            (i32.load8_u (i32.add (i32.add (local.get $ptr_b) (i32.const 4)) (local.get $i))))
+          (then (return (i32.const 2))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $loop)))
+    (i32.const 3))
+  (func $strict_equal (param $a i32) (param $b i32) (result i32)
+    (if (i32.and (call $is_string (local.get $a)) (call $is_string (local.get $b)))
+      (then (return (call $string_equal (local.get $a) (local.get $b)))))
+    (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
+      (then (return (i32.const 2))))
+    (if (result i32) (i32.eq (local.get $a) (local.get $b))
+      (then (i32.const 3))
+      (else (i32.const 2))))
+  (func $concat (param $a i32) (param $b i32) (result i32)
+    (local $ptr i32)
+    (local $data i32)
+    (local $len_a i32)
+    (local $len_b i32)
+    (local.set $ptr (global.get $heap))
+    (local.set $data (i32.add (local.get $ptr) (i32.const 4)))
+    (local.set $len_a (call $value_to_string_into (local.get $a) (local.get $data)))
+    (local.set $len_b
+      (call $value_to_string_into
+        (local.get $b)
+        (i32.add (local.get $data) (local.get $len_a))))
+    (i32.store (local.get $ptr) (i32.add (local.get $len_a) (local.get $len_b)))
+    (global.set $heap
+      (i32.and
+        (i32.add
+          (local.get $ptr)
+          (i32.add
+            (i32.add (local.get $len_a) (local.get $len_b))
+            (i32.const 11)))
+        (i32.const -8)))
+    (i32.or (local.get $ptr) (i32.const 6)))
+  (func $is_string (param $v i32) (result i32)
+    (i32.eq (i32.and (local.get $v) (i32.const 7)) (i32.const 6)))
+  (func $add (param $a i32) (param $b i32) (result i32)
+    (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
+      (then (return (call $concat (local.get $a) (local.get $b)))))
+    (i32.or
+      (i32.shl
+        (i32.add (i32.shr_s (local.get $a) (i32.const 3)) (i32.shr_s (local.get $b) (i32.const 3)))
+        (i32.const 3))
+      (i32.const 4)))
+  (func $sub (param $a i32) (param $b i32) (result i32)
+    (i32.or
+      (i32.shl
+        (i32.sub (i32.shr_s (local.get $a) (i32.const 3)) (i32.shr_s (local.get $b) (i32.const 3)))
+        (i32.const 3))
+      (i32.const 4)))
+  (func $less (param $a i32) (param $b i32) (result i32)
+    (if (result i32)
+      (i32.lt_s (i32.shr_s (local.get $a) (i32.const 3)) (i32.shr_s (local.get $b) (i32.const 3)))
+      (then (i32.const 3))
+      (else (i32.const 2))))
+"#,
+        );
+    }
+
+    fn emit_functions(&self, wat: &mut String) {
+        for statement in self.program {
+            if let Stmt::Function { name, params, body } = statement {
+                wat.push_str(&format!("  (func $user_{} ", wasm_ident(name)));
+                for param in params {
+                    wat.push_str(&format!("(param ${} i32) ", wasm_ident(param)));
+                }
+                wat.push_str("(result i32)\n");
+                for local in collect_locals(body) {
+                    if !params.contains(&local) {
+                        wat.push_str(&format!("    (local ${} i32)\n", wasm_ident(&local)));
+                    }
+                }
+                self.emit_statements(wat, body, 4);
+                wat.push_str("    (i32.const 0)\n");
+                wat.push_str("  )\n");
+            }
+        }
+    }
+
+    fn emit_start(&self, wat: &mut String) {
+        wat.push_str("  (func $_start (export \"_start\")\n");
+        for local in collect_locals(self.program) {
+            wat.push_str(&format!("    (local ${} i32)\n", wasm_ident(&local)));
+        }
+        self.emit_statements(wat, self.program, 4);
+        wat.push_str("  )\n");
+    }
+
+    fn emit_statements(&self, wat: &mut String, statements: &[Stmt], indent: usize) {
+        for statement in statements {
+            self.emit_statement(wat, statement, indent);
+        }
+    }
+
+    fn emit_statement(&self, wat: &mut String, statement: &Stmt, indent: usize) {
+        let pad = " ".repeat(indent);
+        match statement {
+            Stmt::Let(name, expr) | Stmt::Assign(name, expr) => {
+                self.emit_expr(wat, expr, indent);
+                wat.push_str(&format!("{pad}(local.set ${})\n", wasm_ident(name)));
+            }
+            Stmt::ConsoleLog(expr) => {
+                self.emit_expr(wat, expr, indent);
+                wat.push_str(&format!("{pad}(call $log)\n"));
+            }
+            Stmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                self.emit_expr(wat, condition, indent);
+                wat.push_str(&format!("{pad}(call $truthy_bool)\n"));
+                wat.push_str(&format!("{pad}(if\n"));
+                wat.push_str(&format!("{pad}  (then\n"));
+                self.emit_statements(wat, then_body, indent + 4);
+                wat.push_str(&format!("{pad}  )\n"));
+                if !else_body.is_empty() {
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    self.emit_statements(wat, else_body, indent + 4);
+                    wat.push_str(&format!("{pad}  )\n"));
+                }
+                wat.push_str(&format!("{pad})\n"));
+            }
+            Stmt::While { condition, body } => {
+                wat.push_str(&format!("{pad}(block $while_exit\n"));
+                wat.push_str(&format!("{pad}  (loop $while_loop\n"));
+                self.emit_expr(wat, condition, indent + 4);
+                wat.push_str(&format!("{pad}    (call $truthy_bool)\n"));
+                wat.push_str(&format!("{pad}    (i32.eqz)\n"));
+                wat.push_str(&format!("{pad}    (br_if $while_exit)\n"));
+                self.emit_statements(wat, body, indent + 4);
+                wat.push_str(&format!("{pad}    (br $while_loop)\n"));
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad})\n"));
+            }
+            Stmt::Return(expr) => {
+                self.emit_expr(wat, expr, indent);
+                wat.push_str(&format!("{pad}(return)\n"));
+            }
+            Stmt::Function { .. } => {}
+        }
+    }
+
+    fn emit_expr(&self, wat: &mut String, expr: &Expr, indent: usize) {
+        let pad = " ".repeat(indent);
+        match expr {
+            Expr::Number(value) => {
+                wat.push_str(&format!("{pad}(i32.const {})\n", (value << 3) | 4))
+            }
+            Expr::String(value) => {
+                wat.push_str(&format!("{pad}(i32.const {})\n", self.string_value(value)))
+            }
+            Expr::Bool(true) => wat.push_str(&format!("{pad}(i32.const 3)\n")),
+            Expr::Bool(false) => wat.push_str(&format!("{pad}(i32.const 2)\n")),
+            Expr::Null => wat.push_str(&format!("{pad}(i32.const 1)\n")),
+            Expr::Undefined => wat.push_str(&format!("{pad}(i32.const 0)\n")),
+            Expr::Ident(name) => wat.push_str(&format!("{pad}(local.get ${})\n", wasm_ident(name))),
             Expr::Unary { op, expr } => {
-                let value = self.eval(expr, env)?;
+                self.emit_expr(wat, expr, indent);
                 match op {
-                    UnaryOp::Not => Ok(Value::Bool(!value.truthy())),
+                    UnaryOp::Not => wat.push_str(&format!("{pad}(call $not)\n")),
                 }
             }
             Expr::Binary { left, op, right } => {
-                let left = self.eval(left, env)?;
-                let right = self.eval(right, env)?;
-                self.eval_binary(left, *op, right)
+                self.emit_expr(wat, left, indent);
+                self.emit_expr(wat, right, indent);
+                let func = match op {
+                    BinaryOp::Add => "$add",
+                    BinaryOp::Subtract => "$sub",
+                    BinaryOp::Less => "$less",
+                    BinaryOp::StrictEqual => "$strict_equal",
+                };
+                wat.push_str(&format!("{pad}(call {func})\n"));
             }
-            Expr::Call { name, args } => self.call(name, args, env),
+            Expr::Call { name, args } => {
+                for arg in args {
+                    self.emit_expr(wat, arg, indent);
+                }
+                wat.push_str(&format!("{pad}(call $user_{})\n", wasm_ident(name)));
+            }
         }
     }
+}
 
-    fn eval_binary(&self, left: Value, op: BinaryOp, right: Value) -> Result<Value, String> {
-        match op {
-            BinaryOp::Add => {
-                if matches!(left, Value::String(_)) || matches!(right, Value::String(_)) {
-                    Ok(Value::String(format!(
-                        "{}{}",
-                        left.js_string(),
-                        right.js_string()
-                    )))
-                } else {
-                    Ok(Value::Number(to_number(left)? + to_number(right)?))
+fn collect_locals(statements: &[Stmt]) -> Vec<String> {
+    let mut locals = Vec::new();
+    for statement in statements {
+        match statement {
+            Stmt::Let(name, _) => {
+                if !locals.contains(name) {
+                    locals.push(name.clone());
                 }
             }
-            BinaryOp::Subtract => Ok(Value::Number(to_number(left)? - to_number(right)?)),
-            BinaryOp::Less => Ok(Value::Bool(to_number(left)? < to_number(right)?)),
-            BinaryOp::StrictEqual => Ok(Value::Bool(strict_equal(&left, &right))),
-        }
-    }
-
-    fn call(
-        &mut self,
-        name: &str,
-        args: &[Expr],
-        env: &mut HashMap<String, Value>,
-    ) -> Result<Value, String> {
-        let function = self
-            .functions
-            .get(name)
-            .cloned()
-            .ok_or_else(|| format!("unknown function: {name}"))?;
-
-        if function.params.len() != args.len() {
-            return Err(format!(
-                "function {name} expected {} args, got {}",
-                function.params.len(),
-                args.len()
-            ));
-        }
-
-        let mut local_env = HashMap::new();
-        for (param, arg) in function.params.iter().zip(args) {
-            let value = self.eval(arg, env)?;
-            local_env.insert(param.clone(), value);
-        }
-
-        let mut ignored_stdout = String::new();
-        Ok(self
-            .exec_block(&function.body, &mut local_env, &mut ignored_stdout)?
-            .unwrap_or(Value::Undefined))
-    }
-}
-
-fn to_number(value: Value) -> Result<i32, String> {
-    match value {
-        Value::Number(value) => Ok(value),
-        Value::Bool(true) => Ok(1),
-        Value::Bool(false) | Value::Null => Ok(0),
-        Value::String(value) => {
-            if value.is_empty() {
-                Ok(0)
-            } else {
-                value
-                    .parse::<i32>()
-                    .map_err(|_| format!("M3 cannot coerce string to number: {value:?}"))
+            Stmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                for local in collect_locals(then_body)
+                    .into_iter()
+                    .chain(collect_locals(else_body))
+                {
+                    if !locals.contains(&local) {
+                        locals.push(local);
+                    }
+                }
             }
+            Stmt::While { body, .. } | Stmt::Function { body, .. } => {
+                for local in collect_locals(body) {
+                    if !locals.contains(&local) {
+                        locals.push(local);
+                    }
+                }
+            }
+            Stmt::Assign(_, _) | Stmt::ConsoleLog(_) | Stmt::Return(_) => {}
         }
-        Value::Undefined => Err("M3 cannot represent NaN yet".to_owned()),
+    }
+    locals
+}
+
+fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), String> {
+    let wat_path = std::env::temp_dir().join(format!("ts2wasm-{}.wat", std::process::id()));
+    fs::write(&wat_path, wat).map_err(|error| {
+        format!(
+            "failed to write temporary wat {}: {error}",
+            wat_path.display()
+        )
+    })?;
+    let command_output = Command::new("wat2wasm")
+        .arg(&wat_path)
+        .arg("-o")
+        .arg(output)
+        .output()
+        .map_err(|error| format!("failed to execute wat2wasm: {error}"))?;
+
+    let _ = fs::remove_file(&wat_path);
+
+    if command_output.status.success() {
+        Ok(())
+    } else {
+        Err(format!(
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}\nwat:\n{}",
+            String::from_utf8_lossy(&command_output.stdout),
+            String::from_utf8_lossy(&command_output.stderr),
+            wat
+        ))
     }
 }
 
-fn strict_equal(left: &Value, right: &Value) -> bool {
-    match (left, right) {
-        (Value::Number(left), Value::Number(right)) => left == right,
-        (Value::String(left), Value::String(right)) => left == right,
-        (Value::Bool(left), Value::Bool(right)) => left == right,
-        (Value::Null, Value::Null) | (Value::Undefined, Value::Undefined) => true,
-        _ => false,
-    }
+fn align_to(value: u32, alignment: u32) -> u32 {
+    value.div_ceil(alignment) * alignment
 }
 
-fn type_section() -> Vec<u8> {
-    let mut bytes = Vec::new();
-    vec_len(&mut bytes, 2);
-    bytes.push(0x60);
-    vec_len(&mut bytes, 4);
-    bytes.extend_from_slice(&[0x7f, 0x7f, 0x7f, 0x7f]);
-    vec_len(&mut bytes, 1);
-    bytes.push(0x7f);
-    bytes.push(0x60);
-    vec_len(&mut bytes, 0);
-    vec_len(&mut bytes, 0);
-    bytes
+fn wasm_ident(name: &str) -> String {
+    name.chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() || ch == '_' {
+                ch
+            } else {
+                '_'
+            }
+        })
+        .collect()
 }
 
-fn import_section() -> Vec<u8> {
-    let mut bytes = Vec::new();
-    vec_len(&mut bytes, 1);
-    name(&mut bytes, "wasi_snapshot_preview1");
-    name(&mut bytes, "fd_write");
-    bytes.push(0x00);
-    u32_leb(&mut bytes, 0);
-    bytes
-}
-
-fn function_section() -> Vec<u8> {
-    let mut bytes = Vec::new();
-    vec_len(&mut bytes, 1);
-    u32_leb(&mut bytes, 1);
-    bytes
-}
-
-fn memory_section() -> Vec<u8> {
-    let mut bytes = Vec::new();
-    vec_len(&mut bytes, 1);
-    bytes.push(0x00);
-    u32_leb(&mut bytes, 1);
-    bytes
-}
-
-fn export_section() -> Vec<u8> {
-    let mut bytes = Vec::new();
-    vec_len(&mut bytes, 2);
-    name(&mut bytes, "memory");
-    bytes.push(0x02);
-    u32_leb(&mut bytes, 0);
-    name(&mut bytes, "_start");
-    bytes.push(0x00);
-    u32_leb(&mut bytes, 1);
-    bytes
-}
-
-fn code_section(iovec_offset: u32) -> Vec<u8> {
-    let mut body = Vec::new();
-    vec_len(&mut body, 0);
-    i32_const(&mut body, 1);
-    i32_const(&mut body, iovec_offset);
-    i32_const(&mut body, 1);
-    i32_const(&mut body, 0);
-    body.push(0x10);
-    u32_leb(&mut body, 0);
-    body.push(0x1a);
-    body.push(0x0b);
-
-    let mut bytes = Vec::new();
-    vec_len(&mut bytes, 1);
-    u32_leb(&mut bytes, body.len() as u32);
-    bytes.extend(body);
-    bytes
-}
-
-fn data_section(iovec_offset: u32, data_offset: u32, data: &[u8]) -> Vec<u8> {
-    let mut iovec = Vec::new();
-    iovec.extend_from_slice(&data_offset.to_le_bytes());
-    iovec.extend_from_slice(&(data.len() as u32).to_le_bytes());
-
-    let mut bytes = Vec::new();
-    vec_len(&mut bytes, 2);
-    data_segment(&mut bytes, iovec_offset, &iovec);
-    data_segment(&mut bytes, data_offset, data);
-    bytes
-}
-
-fn data_segment(bytes: &mut Vec<u8>, offset: u32, data: &[u8]) {
-    bytes.push(0x00);
-    i32_const(bytes, offset);
-    bytes.push(0x0b);
-    u32_leb(bytes, data.len() as u32);
-    bytes.extend_from_slice(data);
-}
-
-fn section(module: &mut Vec<u8>, id: u8, payload: &[u8]) {
-    module.push(id);
-    u32_leb(module, payload.len() as u32);
-    module.extend_from_slice(payload);
-}
-
-fn name(bytes: &mut Vec<u8>, value: &str) {
-    u32_leb(bytes, value.len() as u32);
-    bytes.extend_from_slice(value.as_bytes());
-}
-
-fn vec_len(bytes: &mut Vec<u8>, len: u32) {
-    u32_leb(bytes, len);
-}
-
-fn i32_const(bytes: &mut Vec<u8>, value: u32) {
-    bytes.push(0x41);
-    u32_leb(bytes, value);
-}
-
-fn u32_leb(bytes: &mut Vec<u8>, mut value: u32) {
-    loop {
-        let mut byte = (value & 0x7f) as u8;
-        value >>= 7;
-        if value != 0 {
-            byte |= 0x80;
-        }
-        bytes.push(byte);
-        if value == 0 {
-            break;
+fn wat_bytes(bytes: &[u8]) -> String {
+    let mut encoded = String::new();
+    for byte in bytes {
+        match *byte {
+            b'"' => encoded.push_str("\\22"),
+            b'\\' => encoded.push_str("\\5c"),
+            0x20..=0x7e => encoded.push(*byte as char),
+            other => encoded.push_str(&format!("\\{other:02x}")),
         }
     }
+    encoded
 }
 
 #[cfg(test)]
@@ -989,12 +1094,15 @@ mod tests {
 
     #[test]
     fn parses_console_log_string() {
-        let input = parse_build_input("console.log(\"hi\");").unwrap();
-        assert_eq!(input.stdout, "hi\n");
+        let program = parse_program("console.log(\"hi\");").unwrap();
+        assert_eq!(
+            program,
+            vec![Stmt::ConsoleLog(Expr::String("hi".to_owned()))]
+        );
     }
 
     #[test]
-    fn evaluates_m2_subset() {
+    fn parses_m2_subset() {
         let source = r#"
             let i = 0;
             let sum = 0;
@@ -1006,12 +1114,12 @@ mod tests {
             if (true) { console.log("sum=" + sum); } else { console.log("bad"); }
             console.log(add(2, 3));
         "#;
-        let input = parse_build_input(source).unwrap();
-        assert_eq!(input.stdout, "sum=3\n5\n");
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 6);
     }
 
     #[test]
-    fn evaluates_m3_semantics() {
+    fn parses_m3_semantics() {
         let source = r#"
             console.log(undefined);
             console.log(null);
@@ -1019,19 +1127,18 @@ mod tests {
             console.log("x" + true);
             if (!0) { console.log("zero false"); }
         "#;
-        let input = parse_build_input(source).unwrap();
-        assert_eq!(input.stdout, "undefined\nnull\nfalse\nxtrue\nzero false\n");
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 5);
     }
 
     #[test]
     fn rejects_unsupported_statement() {
-        let error = parse_build_input("const x = 1;").unwrap_err();
+        let error = parse_program("const x = 1;").unwrap_err();
         assert!(error.contains("unsupported statement") || error.contains("unsupported character"));
     }
 
     #[test]
-    fn emits_wasm_module_header() {
-        let wasm = emit_console_log_wasm("hi");
-        assert_eq!(&wasm[0..8], b"\0asm\x01\0\0\0");
+    fn encodes_wat_string_bytes() {
+        assert_eq!(wat_bytes(b"a\n\"\\\0"), "a\\0a\\22\\5c\\00");
     }
 }
