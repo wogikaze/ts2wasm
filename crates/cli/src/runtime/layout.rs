@@ -20,4 +20,20 @@ impl Layout {
     pub const IOVEC_PTR: u32 = 8;
     /// Offset of the `buf_len` field in the `fd_write` iovec record.
     pub const IOVEC_LEN: u32 = 12;
+
+    // ---- Array heap layout ------------------------------------------------
+    /// Bytes before the element payload: i32 length.
+    pub const ARRAY_HEADER_SIZE: u32 = 4;
+    /// Shift to compute element byte offset from index (each element is 4 bytes).
+    pub const ARRAY_ELEM_SHIFT: u32 = 2;
+
+    // ---- Object heap layout -----------------------------------------------
+    /// Bytes before the property entries: i32 property count.
+    pub const OBJECT_HEADER_SIZE: u32 = 4;
+    /// Each entry: (i32 key_raw_value, i32 value) = 8 bytes; shift = 3.
+    pub const OBJECT_ENTRY_SHIFT: u32 = 3;
+    /// Byte offset of the value field within one property entry.
+    pub const OBJECT_VALUE_OFFSET: u32 = 4;
+    /// Size of one property entry in bytes.
+    pub const OBJECT_ENTRY_SIZE: u32 = 8;
 }
