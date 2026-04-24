@@ -110,7 +110,7 @@ fn ensure_runtime_feature_gates(lowered: &ir::lowered::LoweredProgram) -> Result
     if ENABLE_READ_STDIN_UTF8_RUNTIME {
         return Ok(());
     }
-    if lowered_contains_builtin(lowered, ir::builtin::BuiltinId::ReadStdinUtf8) {
+    if backend::program_requires_read_stdin_utf8_runtime(lowered) {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "require(\"fs\").readFileSync(0, \"utf8\") is lowered but runtime execution is disabled in M6-3a"
@@ -119,97 +119,6 @@ fn ensure_runtime_feature_gates(lowered: &ir::lowered::LoweredProgram) -> Result
         });
     }
     Ok(())
-}
-
-fn lowered_contains_builtin(
-    lowered: &ir::lowered::LoweredProgram,
-    builtin: ir::builtin::BuiltinId,
-) -> bool {
-    lowered
-        .top_level_statements
-        .iter()
-        .any(|stmt| lowered_stmt_contains_builtin(stmt, builtin))
-        || lowered.functions.iter().any(|func| {
-            func.body
-                .iter()
-                .any(|stmt| lowered_stmt_contains_builtin(stmt, builtin))
-        })
-}
-
-fn lowered_stmt_contains_builtin(
-    stmt: &ir::lowered::LoweredStmt,
-    builtin: ir::builtin::BuiltinId,
-) -> bool {
-    match stmt {
-        ir::lowered::LoweredStmt::Let(_, expr)
-        | ir::lowered::LoweredStmt::Assign(_, expr)
-        | ir::lowered::LoweredStmt::Expr(expr)
-        | ir::lowered::LoweredStmt::Return(expr) => lowered_expr_contains_builtin(expr, builtin),
-        ir::lowered::LoweredStmt::If {
-            condition,
-            then_body,
-            else_body,
-        } => {
-            lowered_expr_contains_builtin(condition, builtin)
-                || then_body
-                    .iter()
-                    .any(|nested| lowered_stmt_contains_builtin(nested, builtin))
-                || else_body
-                    .iter()
-                    .any(|nested| lowered_stmt_contains_builtin(nested, builtin))
-        }
-        ir::lowered::LoweredStmt::While { condition, body } => {
-            lowered_expr_contains_builtin(condition, builtin)
-                || body
-                    .iter()
-                    .any(|nested| lowered_stmt_contains_builtin(nested, builtin))
-        }
-    }
-}
-
-fn lowered_expr_contains_builtin(
-    expr: &ir::lowered::LoweredExpr,
-    builtin: ir::builtin::BuiltinId,
-) -> bool {
-    match expr {
-        ir::lowered::LoweredExpr::Call {
-            kind: ir::lowered::FunctionCallKind::Builtin(found),
-            args,
-        } => {
-            *found == builtin
-                || args
-                    .iter()
-                    .any(|arg| lowered_expr_contains_builtin(arg, builtin))
-        }
-        ir::lowered::LoweredExpr::Call { args, .. } => args
-            .iter()
-            .any(|arg| lowered_expr_contains_builtin(arg, builtin)),
-        ir::lowered::LoweredExpr::Unary { expr, .. }
-        | ir::lowered::LoweredExpr::GetLength(expr) => lowered_expr_contains_builtin(expr, builtin),
-        ir::lowered::LoweredExpr::Binary { left, right, .. }
-        | ir::lowered::LoweredExpr::ArrayGet {
-            arr: left,
-            index: right,
-        } => {
-            lowered_expr_contains_builtin(left, builtin)
-                || lowered_expr_contains_builtin(right, builtin)
-        }
-        ir::lowered::LoweredExpr::ArrayNew { elements, .. } => elements
-            .iter()
-            .any(|elem| lowered_expr_contains_builtin(elem, builtin)),
-        ir::lowered::LoweredExpr::ObjectNew { props, .. } => props
-            .iter()
-            .any(|(_, value)| lowered_expr_contains_builtin(value, builtin)),
-        ir::lowered::LoweredExpr::PropertyGet { obj, .. } => {
-            lowered_expr_contains_builtin(obj, builtin)
-        }
-        ir::lowered::LoweredExpr::Number(_)
-        | ir::lowered::LoweredExpr::String(_)
-        | ir::lowered::LoweredExpr::Bool(_)
-        | ir::lowered::LoweredExpr::Null
-        | ir::lowered::LoweredExpr::Undefined
-        | ir::lowered::LoweredExpr::Local(_) => false,
-    }
 }
 
 #[cfg(test)]
