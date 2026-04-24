@@ -23,18 +23,34 @@ TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず
 | `docs/10-related-projects.md` | QuickJS、AssemblyScript、Emscripten、Javy、tsc などとの比較 |
 | `docs/11-shared-definitions.md` | milestone、test status schema、capability manifest、optimization mode、benchmark policy |
 | `docs/12-current-implementation-status.md` | 現在の実装事実、未実装範囲、検証状況 |
+| `docs/13-coding-standard.md` | Rust コード規約。panic 禁止、Diagnostic、Span、IR variant 追加、backend WAT 直書き禁止、RuntimeFn catalog |
+| `docs/14-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 |
+| `docs/15-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI |
 | `docs/99-original-plan.md` | 元 PLAN 原文。情報欠落チェック用 |
 
 ## First implementation slice
 
 ```text
-single file TS/JS
-→ JS semantic IR
-→ runtime ABI call
-→ WASI wasm
-→ iwasm execution
-→ Node differential test
-→ capability manifest
+Long-term target:
+  TypeScript / JavaScript assets を可能な限り WASM 実行へ移す。
+
+M0 implementation scope (現在):
+  single-file JS subset compiler。
+  TypeScript type syntax、object semantics、module resolution、npm package compatibility は対象外。
+  数値は i32 small-int tagged encoding のみ。
+
+M0 pipeline:
+  single file TS/JS
+  → JS semantic IR
+  → runtime ABI call
+  → WASI wasm
+  → iwasm execution
+  → Node differential test
+  → capability manifest
+
+M1+ expansion:
+  compatibility level ごとに syntax / semantics / runtime / host capability を追加する。
+  詳細は docs/08-roadmap-and-success.md を参照。
 ```
 
 ## Current source preservation rule
