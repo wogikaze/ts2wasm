@@ -122,6 +122,7 @@ fn collect_function_ids(program: &[Stmt]) -> Result<HashMap<String, FuncId>, Dia
                 return Err(Diagnostic {
                     code: DiagCode::DuplicateFunction,
                     message: format!("duplicate function definition: `{name}`"),
+                    span: None,
                 });
             }
             function_ids.insert(name.clone(), FuncId(next_func_id));
@@ -217,16 +218,16 @@ impl<'a> Resolver<'a> {
 
     fn lower_nested_block(&mut self, statements: &[Stmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
         self.scopes.push(HashMap::new());
-        let lowered = self.lower_block(statements)?;
+        let lowered = self.lower_block(statements);
         self.scopes.pop();
-        Ok(lowered)
+        lowered
     }
 
     fn lower_stmt(&mut self, stmt: &Stmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
             Stmt::Let(name, expr) => {
                 let expr = self.lower_expr(expr)?;
-                let local_id = self.declare_local(name);
+                let local_id = self.declare_local(name)?;
                 Ok(LoweredStmt::Let(local_id, expr))
             }
             Stmt::Assign(name, expr) => {
@@ -249,9 +250,10 @@ impl<'a> Resolver<'a> {
             }),
             Stmt::Return(expr) => Ok(LoweredStmt::Return(self.lower_expr(expr)?)),
             Stmt::Function { .. } => Err(Diagnostic {
-                code: DiagCode::InvariantViolation,
-                message: "function declaration reached statement lowering; this is a compiler bug"
+                code: DiagCode::UnsupportedSyntax,
+                message: "nested function declarations are not supported in this milestone"
                     .to_owned(),
+                span: None,
             }),
         }
     }
@@ -283,15 +285,20 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    fn declare_local(&mut self, name: &str) -> LocalId {
+    fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
+        let scope = self.scopes.last_mut().expect("scope must exist");
+        if scope.contains_key(name) {
+            return Err(Diagnostic {
+                code: DiagCode::DuplicateLocal,
+                message: format!("duplicate local binding: `{name}`"),
+                span: None,
+            });
+        }
         let local_id = LocalId(self.next_local_id);
         self.next_local_id += 1;
         self.locals.push(local_id);
-        self.scopes
-            .last_mut()
-            .expect("scope must exist")
-            .insert(name.to_owned(), local_id);
-        local_id
+        scope.insert(name.to_owned(), local_id);
+        Ok(local_id)
     }
 
     fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
@@ -302,6 +309,7 @@ impl<'a> Resolver<'a> {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnresolvedName,
                 message: format!("unresolved name: `{name}`"),
+                span: None,
             })
     }
 
@@ -312,6 +320,7 @@ impl<'a> Resolver<'a> {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::UnresolvedFunction,
                 message: format!("unresolved function: `{name}`"),
+                span: None,
             })
     }
 }
@@ -420,6 +429,7 @@ fn validate_expr(
                             "FuncId {} is out of range (program has {} function(s))",
                             func_id.0, num_funcs
                         ),
+                        span: None,
                     });
                 } else {
                     let expected = program.functions[func_id.0].params.len();
@@ -432,6 +442,7 @@ fn validate_expr(
                                 expected,
                                 args.len()
                             ),
+                            span: None,
                         });
                     }
                 }
@@ -449,6 +460,7 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
                 "LocalId {} is out of range (scope has {} local(s))",
                 id.0, local_count
             ),
+            span: None,
         });
     }
 }

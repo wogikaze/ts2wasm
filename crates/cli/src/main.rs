@@ -17,6 +17,7 @@ fn run() -> Result<(), String> {
     match args.as_slice() {
         [command, input, flag, output] if command == "build" && flag == "-o" => {
             ts2wasm_cli::build_file(&PathBuf::from(input), &PathBuf::from(output))
+                .map_err(|e| e.to_string())
         }
         _ => Err("usage: ts2wasm build <input.ts> -o <output.wasm>".to_owned()),
     }

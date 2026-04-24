@@ -2,6 +2,7 @@ mod backend;
 mod ir;
 mod runtime;
 
+use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
@@ -11,15 +12,29 @@ use std::process::Command;
 /// All compiler phases (Lexer / Parser / Resolver / Lowering / Backend)
 /// must return `Result<T, Diagnostic>` rather than panicking or returning
 /// unstructured `String` errors. See `docs/13-coding-standard.md` §1–2.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Span {
+    pub start: usize,
+    pub end: usize,
+}
+
 #[derive(Debug, Clone)]
 pub struct Diagnostic {
     pub code: DiagCode,
     pub message: String,
+    pub span: Option<Span>,
 }
 
 impl std::fmt::Display for Diagnostic {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "[{:?}] {}", self.code, self.message)
+        match self.span {
+            Some(span) => write!(
+                f,
+                "[{:?}] {} at {}..{}",
+                self.code, self.message, span.start, span.end
+            ),
+            None => write!(f, "[{:?}] {}", self.code, self.message),
+        }
     }
 }
 
@@ -32,32 +47,43 @@ pub enum DiagCode {
     UnresolvedFunction,
     /// Two functions share the same name in the same program.
     DuplicateFunction,
+    /// Two local bindings share the same name in the same lexical scope.
+    DuplicateLocal,
     /// A function call passes the wrong number of arguments.
     ArityMismatch,
+    /// `return` is used in top-level script scope.
+    InvalidTopLevelReturn,
     /// A lowered IR node violates a structural invariant — this is a compiler bug.
     InvariantViolation,
     /// Source uses syntax that is not supported in the current milestone.
     UnsupportedSyntax,
+    /// I/O or command execution failure at the backend boundary.
+    BackendIo,
 }
 
-pub fn build_file(input: &Path, output: &Path) -> Result<(), String> {
-    let source = fs::read_to_string(input)
-        .map_err(|error| format!("failed to read {}: {error}", input.display()))?;
+pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
+    let source = fs::read_to_string(input).map_err(|error| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("failed to read {}: {error}", input.display()),
+        span: None,
+    })?;
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
-    let lowered = ir::lowered::lower_program(&program).map_err(|d| d.to_string())?;
+    validate_ast(&program)?;
+    let lowered = ir::lowered::lower_program(&program)?;
     ir::lowered::validate_lowered(&lowered).map_err(|errs| {
-        errs.iter()
-            .map(|d| d.to_string())
-            .collect::<Vec<_>>()
-            .join("\n")
+        errs.into_iter().next().unwrap_or(Diagnostic {
+            code: DiagCode::InvariantViolation,
+            message: "validate_lowered failed with empty diagnostic list".to_owned(),
+            span: None,
+        })
     })?;
     let wat = backend::emit_wat(&lowered);
     write_wasm_from_wat(&wat, output)
 }
 
 #[cfg(test)]
-fn parse_program(source: &str) -> Result<Vec<Stmt>, String> {
+fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
     Parser::new(tokens).parse_program()
 }
@@ -104,7 +130,7 @@ impl<'a> Lexer<'a> {
         Self { source, cursor: 0 }
     }
 
-    fn tokenize(mut self) -> Result<Vec<Token>, String> {
+    fn tokenize(mut self) -> Result<Vec<Token>, Diagnostic> {
         let mut tokens = Vec::new();
         while let Some(ch) = self.peek_char() {
             match ch {
@@ -138,7 +164,14 @@ impl<'a> Lexer<'a> {
                             self.advance_char();
                             tokens.push(Token::StrictEqual);
                         } else {
-                            return Err("M3 supports === but not ==".to_owned());
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "M3 supports === but not ==".to_owned(),
+                                span: Some(Span {
+                                    start: self.cursor.saturating_sub(2),
+                                    end: self.cursor,
+                                }),
+                            });
                         }
                     } else {
                         tokens.push(Token::Equal);
@@ -172,25 +205,46 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     tokens.push(Token::Semicolon);
                 }
-                other => return Err(format!("unsupported character: {other}")),
+                other => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("unsupported character: {other}"),
+                        span: Some(Span {
+                            start: self.cursor,
+                            end: self.cursor + other.len_utf8(),
+                        }),
+                    });
+                }
             }
         }
         Ok(tokens)
     }
 
-    fn number(&mut self) -> Result<Token, String> {
+    fn number(&mut self) -> Result<Token, Diagnostic> {
         let start = self.cursor;
         while matches!(self.peek_char(), Some('0'..='9')) {
             self.advance_char();
         }
         let value = self.source[start..self.cursor]
             .parse::<i32>()
-            .map_err(|error| format!("invalid number literal: {error}"))?;
+            .map_err(|error| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("invalid number literal: {error}"),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+            })?;
         Ok(Token::Number(value))
     }
 
-    fn string(&mut self) -> Result<String, String> {
-        let quote = self.advance_char().unwrap();
+    fn string(&mut self) -> Result<String, Diagnostic> {
+        let start = self.cursor;
+        let quote = self.advance_char().ok_or(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "expected string delimiter".to_owned(),
+            span: None,
+        })?;
         let mut value = String::new();
         let mut escaped = false;
 
@@ -203,7 +257,16 @@ impl<'a> Lexer<'a> {
                     'n' => '\n',
                     'r' => '\r',
                     't' => '\t',
-                    other => return Err(format!("unsupported escape sequence: \\{other}")),
+                    other => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("unsupported escape sequence: \\{other}"),
+                            span: Some(Span {
+                                start: self.cursor.saturating_sub(2),
+                                end: self.cursor,
+                            }),
+                        });
+                    }
                 });
                 escaped = false;
                 continue;
@@ -219,7 +282,14 @@ impl<'a> Lexer<'a> {
             value.push(ch);
         }
 
-        Err("unterminated string literal".to_owned())
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "unterminated string literal".to_owned(),
+            span: Some(Span {
+                start,
+                end: self.cursor,
+            }),
+        })
     }
 
     fn ident_or_keyword(&mut self) -> Token {
@@ -326,7 +396,7 @@ impl Parser {
         Self { tokens, cursor: 0 }
     }
 
-    fn parse_program(&mut self) -> Result<Vec<Stmt>, String> {
+    fn parse_program(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
             statements.push(self.statement()?);
@@ -334,7 +404,7 @@ impl Parser {
         Ok(statements)
     }
 
-    fn statement(&mut self) -> Result<Stmt, String> {
+    fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
             Some(Token::Let) => self.let_statement(),
             Some(Token::Function) => self.function_statement(),
@@ -345,11 +415,15 @@ impl Parser {
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Equal)) => {
                 self.assign_statement()
             }
-            other => Err(format!("unsupported statement: {other:?}")),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("unsupported statement: {other:?}"),
+                span: None,
+            }),
         }
     }
 
-    fn let_statement(&mut self) -> Result<Stmt, String> {
+    fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::Let)?;
         let name = self.expect_ident()?;
         self.expect(TokenKind::Equal)?;
@@ -358,7 +432,7 @@ impl Parser {
         Ok(Stmt::Let(name, expr))
     }
 
-    fn assign_statement(&mut self) -> Result<Stmt, String> {
+    fn assign_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let name = self.expect_ident()?;
         self.expect(TokenKind::Equal)?;
         let expr = self.expression()?;
@@ -366,7 +440,7 @@ impl Parser {
         Ok(Stmt::Assign(name, expr))
     }
 
-    fn console_log_statement(&mut self) -> Result<Stmt, String> {
+    fn console_log_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::Console)?;
         self.expect(TokenKind::Dot)?;
         self.expect(TokenKind::Log)?;
@@ -377,7 +451,7 @@ impl Parser {
         Ok(Stmt::ConsoleLog(expr))
     }
 
-    fn if_statement(&mut self) -> Result<Stmt, String> {
+    fn if_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::If)?;
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
@@ -395,7 +469,7 @@ impl Parser {
         })
     }
 
-    fn while_statement(&mut self) -> Result<Stmt, String> {
+    fn while_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::While)?;
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
@@ -404,7 +478,7 @@ impl Parser {
         Ok(Stmt::While { condition, body })
     }
 
-    fn function_statement(&mut self) -> Result<Stmt, String> {
+    fn function_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::Function)?;
         let name = self.expect_ident()?;
         self.expect(TokenKind::LeftParen)?;
@@ -422,30 +496,34 @@ impl Parser {
         Ok(Stmt::Function { name, params, body })
     }
 
-    fn return_statement(&mut self) -> Result<Stmt, String> {
+    fn return_statement(&mut self) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::Return)?;
         let expr = self.expression()?;
         self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::Return(expr))
     }
 
-    fn block(&mut self) -> Result<Vec<Stmt>, String> {
+    fn block(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         self.expect(TokenKind::LeftBrace)?;
         let mut statements = Vec::new();
         while !self.consume(TokenKind::RightBrace) {
             if self.is_at_end() {
-                return Err("unterminated block".to_owned());
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "unterminated block".to_owned(),
+                    span: None,
+                });
             }
             statements.push(self.statement()?);
         }
         Ok(statements)
     }
 
-    fn expression(&mut self) -> Result<Expr, String> {
+    fn expression(&mut self) -> Result<Expr, Diagnostic> {
         self.equality()
     }
 
-    fn equality(&mut self) -> Result<Expr, String> {
+    fn equality(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.comparison()?;
         while self.consume(TokenKind::StrictEqual) {
             let right = self.comparison()?;
@@ -458,7 +536,7 @@ impl Parser {
         Ok(expr)
     }
 
-    fn comparison(&mut self) -> Result<Expr, String> {
+    fn comparison(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.term()?;
         while self.consume(TokenKind::Less) {
             let right = self.term()?;
@@ -471,7 +549,7 @@ impl Parser {
         Ok(expr)
     }
 
-    fn term(&mut self) -> Result<Expr, String> {
+    fn term(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.unary()?;
         loop {
             let op = if self.consume(TokenKind::Plus) {
@@ -492,7 +570,7 @@ impl Parser {
         Ok(expr)
     }
 
-    fn unary(&mut self) -> Result<Expr, String> {
+    fn unary(&mut self) -> Result<Expr, Diagnostic> {
         if self.consume(TokenKind::Bang) {
             let expr = self.unary()?;
             Ok(Expr::Unary {
@@ -504,7 +582,7 @@ impl Parser {
         }
     }
 
-    fn primary(&mut self) -> Result<Expr, String> {
+    fn primary(&mut self) -> Result<Expr, Diagnostic> {
         match self.advance() {
             Some(Token::Number(value)) => Ok(Expr::Number(value)),
             Some(Token::String(value)) => Ok(Expr::String(value)),
@@ -534,22 +612,34 @@ impl Parser {
                 self.expect(TokenKind::RightParen)?;
                 Ok(expr)
             }
-            other => Err(format!("unsupported expression: {other:?}")),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("unsupported expression: {other:?}"),
+                span: None,
+            }),
         }
     }
 
-    fn expect_ident(&mut self) -> Result<String, String> {
+    fn expect_ident(&mut self) -> Result<String, Diagnostic> {
         match self.advance() {
             Some(Token::Ident(name)) => Ok(name),
-            other => Err(format!("expected identifier, got {other:?}")),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("expected identifier, got {other:?}"),
+                span: None,
+            }),
         }
     }
 
-    fn expect(&mut self, kind: TokenKind) -> Result<(), String> {
+    fn expect(&mut self, kind: TokenKind) -> Result<(), Diagnostic> {
         if self.consume(kind) {
             Ok(())
         } else {
-            Err(format!("expected {kind:?}, got {:?}", self.peek()))
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("expected {kind:?}, got {:?}", self.peek()),
+                span: None,
+            })
         }
     }
 
@@ -635,32 +725,122 @@ impl TokenKind {
     }
 }
 
-fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), String> {
+fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
+    let mut top_functions = HashMap::new();
+    let mut top_scope = HashMap::new();
+
+    for stmt in program {
+        match stmt {
+            Stmt::Return(_) => {
+                return Err(Diagnostic {
+                    code: DiagCode::InvalidTopLevelReturn,
+                    message: "top-level return is not supported".to_owned(),
+                    span: None,
+                });
+            }
+            Stmt::Function { name, body, .. } => {
+                if top_functions.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateFunction,
+                        message: format!("duplicate function definition: `{name}`"),
+                        span: None,
+                    });
+                }
+                top_functions.insert(name.clone(), ());
+                validate_block(body)?;
+            }
+            _ => validate_stmt(stmt, true, &mut top_scope)?,
+        }
+    }
+
+    Ok(())
+}
+
+fn validate_block(statements: &[Stmt]) -> Result<(), Diagnostic> {
+    let mut scope = HashMap::new();
+    for stmt in statements {
+        validate_stmt(stmt, false, &mut scope)?;
+    }
+    Ok(())
+}
+
+fn validate_stmt(
+    stmt: &Stmt,
+    in_top_level: bool,
+    scope: &mut HashMap<String, ()>,
+) -> Result<(), Diagnostic> {
+    match stmt {
+        Stmt::Let(name, _) => {
+            if scope.contains_key(name) {
+                return Err(Diagnostic {
+                    code: DiagCode::DuplicateLocal,
+                    message: format!("duplicate local binding: `{name}`"),
+                    span: None,
+                });
+            }
+            scope.insert(name.clone(), ());
+            Ok(())
+        }
+        Stmt::Return(_) if in_top_level => Err(Diagnostic {
+            code: DiagCode::InvalidTopLevelReturn,
+            message: "top-level return is not supported".to_owned(),
+            span: None,
+        }),
+        Stmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            validate_block(then_body)?;
+            validate_block(else_body)?;
+            Ok(())
+        }
+        Stmt::While { body, .. } => validate_block(body),
+        Stmt::Function { .. } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "nested function declarations are not supported in this milestone".to_owned(),
+            span: None,
+        }),
+        _ => Ok(()),
+    }
+}
+
+fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
     let wat_path = std::env::temp_dir().join(format!("ts2wasm-{}.wat", std::process::id()));
-    fs::write(&wat_path, wat).map_err(|error| {
-        format!(
+    fs::write(&wat_path, wat).map_err(|error| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!(
             "failed to write temporary wat {}: {error}",
             wat_path.display()
-        )
+        ),
+        span: None,
     })?;
     let command_output = Command::new("wat2wasm")
         .arg(&wat_path)
         .arg("-o")
         .arg(output)
         .output()
-        .map_err(|error| format!("failed to execute wat2wasm: {error}"))?;
+        .map_err(|error| Diagnostic {
+            code: DiagCode::BackendIo,
+            message: format!("failed to execute wat2wasm: {error}"),
+            span: None,
+        })?;
 
     let _ = fs::remove_file(&wat_path);
 
     if command_output.status.success() {
         Ok(())
     } else {
-        Err(format!(
-            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}\nwat:\n{}",
-            String::from_utf8_lossy(&command_output.stdout),
-            String::from_utf8_lossy(&command_output.stderr),
-            wat
-        ))
+        Err(Diagnostic {
+            code: DiagCode::BackendIo,
+            message: format!(
+                "wat2wasm failed\nstdout:\n{}\nstderr:\n{}\nwat:\n{}",
+                String::from_utf8_lossy(&command_output.stdout),
+                String::from_utf8_lossy(&command_output.stderr),
+                wat
+            ),
+            span: None,
+        })
     }
 }
 
@@ -727,11 +907,36 @@ mod tests {
     #[test]
     fn rejects_unsupported_statement() {
         let error = parse_program("const x = 1;").unwrap_err();
-        assert!(error.contains("unsupported statement") || error.contains("unsupported character"));
+        assert_eq!(error.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            error.message.contains("unsupported statement")
+                || error.message.contains("unsupported character")
+        );
     }
 
     #[test]
     fn encodes_wat_string_bytes() {
         assert_eq!(wat_bytes(b"a\n\"\\\0"), "a\\0a\\22\\5c\\00");
+    }
+
+    #[test]
+    fn rejects_top_level_return_in_ast_validation() {
+        let program = parse_program("return 1;").unwrap();
+        let err = validate_ast(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::InvalidTopLevelReturn);
+    }
+
+    #[test]
+    fn rejects_nested_function_in_ast_validation() {
+        let program = parse_program("if (true) { function f() { return 1; } }").unwrap();
+        let err = validate_ast(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    }
+
+    #[test]
+    fn rejects_duplicate_let_in_same_scope() {
+        let program = parse_program("let x = 1; let x = 2;").unwrap();
+        let err = validate_ast(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::DuplicateLocal);
     }
 }
