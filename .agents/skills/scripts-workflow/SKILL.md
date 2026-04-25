@@ -75,6 +75,7 @@ Use `fixtures-workflow` together with this skill when a script change requires f
 10. Send human progress logs to stderr when stdout is machine-readable.
 11. If behavior, options, defaults, or output format change, update the usage header in the same file.
 12. If a docs page documents the script command or output contract, update that docs page in the same change.
+13. If a contract (e.g., manifest schema, JSON format, TestRecord schema) changes, update consuming scripts in the same commit to avoid schema/script mismatch.
 
 ## Fixture Boundary Rules
 
