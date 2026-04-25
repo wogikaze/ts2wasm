@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::process::Stdio;
 
+use ts2wasm_shared::{TestRecord, TestStatus};
+
 #[test]
 fn m2_fixtures_match_node_output_under_iwasm() {
     for fixture in [
@@ -115,9 +117,181 @@ fn temp_wasm_path(fixture: &str) -> PathBuf {
     std::env::temp_dir().join(format!("ts2wasm-{safe_name}-{}.wasm", std::process::id()))
 }
 
+/// Differential test runner that classifies test results
+///
+/// This implements M7: differential test runner that can classify
+/// Node.js vs ts2wasm/iwasm output differences
+pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
+    let fixture_str = fixture_path.to_string_lossy();
+    let suite = format!(
+        "fixtures/{}",
+        fixture_path.parent().unwrap().to_string_lossy()
+    );
+    let case = fixture_path
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .to_string();
+
+    // Run Node.js
+    let node_result = Command::new("node").arg(fixture_path).output();
+
+    let node_output = match &node_result {
+        Ok(output) => String::from_utf8_lossy(&output.stdout).to_string(),
+        Err(_) => "".to_string(),
+    };
+
+    // Build ts2wasm
+    let wasm_path = temp_wasm_path(&fixture_str);
+    let build_result = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(fixture_path)
+        .arg("-o")
+        .arg(&wasm_path)
+        .output();
+
+    match build_result {
+        Ok(output) if !output.status.success() => {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let diag_code = extract_diag_code(&stderr);
+
+            match diag_code.as_str() {
+                "BackendIo" => TestRecord {
+                    suite,
+                    case,
+                    target: "wasm32-wasi".to_string(),
+                    status: TestStatus::Blocked,
+                    reason: Some("I/O or command execution failure".to_string()),
+                    tracking: Some("build:backend-io".to_string()),
+                },
+                "InvariantViolation" => TestRecord {
+                    suite,
+                    case,
+                    target: "wasm32-wasi".to_string(),
+                    status: TestStatus::Fail,
+                    reason: Some("Internal compiler bug".to_string()),
+                    tracking: Some("bug:invariant-violation".to_string()),
+                },
+                _ => TestRecord {
+                    suite,
+                    case,
+                    target: "wasm32-wasi".to_string(),
+                    status: TestStatus::Unsupported,
+                    reason: Some(format!("Unsupported syntax: {diag_code}")),
+                    tracking: Some(format!("feature:{diag_code}")),
+                },
+            }
+        }
+        Ok(_) => {
+            // Build succeeded, run with iwasm
+            let iwasm_result = Command::new("iwasm").arg(&wasm_path).output();
+
+            match iwasm_result {
+                Ok(output) if !output.status.success() => TestRecord {
+                    suite,
+                    case,
+                    target: "wasm32-wasi".to_string(),
+                    status: TestStatus::Fail,
+                    reason: Some("iwasm execution failed".to_string()),
+                    tracking: Some("runtime:iwasm-fail".to_string()),
+                },
+                Ok(output) => {
+                    let iwasm_output = String::from_utf8_lossy(&output.stdout).to_string();
+
+                    // Compare outputs
+                    if iwasm_output == node_output {
+                        TestRecord {
+                            suite,
+                            case,
+                            target: "wasm32-wasi".to_string(),
+                            status: TestStatus::Pass,
+                            reason: None,
+                            tracking: None,
+                        }
+                    } else {
+                        TestRecord {
+                            suite,
+                            case,
+                            target: "wasm32-wasi".to_string(),
+                            status: TestStatus::Fail,
+                            reason: Some(format!(
+                                "stdout mismatch: node={:?}, iwasm={:?}",
+                                node_output, iwasm_output
+                            )),
+                            tracking: Some("runtime:stdout-mismatch".to_string()),
+                        }
+                    }
+                }
+                Err(_) => TestRecord {
+                    suite,
+                    case,
+                    target: "wasm32-wasi".to_string(),
+                    status: TestStatus::Blocked,
+                    reason: Some("Failed to execute iwasm".to_string()),
+                    tracking: Some("runtime:iwasm-unavailable".to_string()),
+                },
+            }
+        }
+        Err(_) => TestRecord {
+            suite,
+            case,
+            target: "wasm32-wasi".to_string(),
+            status: TestStatus::Blocked,
+            reason: Some("Failed to build ts2wasm".to_string()),
+            tracking: Some("build:ts2wasm-unavailable".to_string()),
+        },
+    }
+}
+
+/// Extract diagnostic code from error message
+fn extract_diag_code(stderr: &str) -> String {
+    if let Some(start) = stderr.find('[') {
+        if let Some(end) = stderr[start..].find(']') {
+            return stderr[start + 1..start + end].to_string();
+        }
+    }
+    "Unknown".to_string()
+}
+
 #[test]
 fn m6_stdin_fixture_matches_node_output_under_iwasm() {
     assert_stdin_fixture_matches_node("fixtures/m6/stdin.ts", b"hello");
+}
+
+#[test]
+fn differential_test_runner_classifies_fixtures() {
+    // Test the differential test runner with various fixtures
+    let fixtures = vec![
+        "fixtures/m2/number.ts",
+        "fixtures/m2/string.ts",
+        "fixtures/m3/null-undefined.ts",
+        "fixtures/m5/array.ts",
+    ];
+
+    for fixture in fixtures {
+        let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../..")
+            .join(fixture);
+
+        let record = run_differential_test(&fixture_path);
+
+        // Validate the record
+        assert!(
+            record.validate().is_ok(),
+            "Invalid test record for {}: {:?}",
+            fixture,
+            record.validate().err()
+        );
+
+        // All these fixtures should pass
+        assert_eq!(
+            record.status,
+            TestStatus::Pass,
+            "Fixture {} should pass but got: {:?}",
+            fixture,
+            record.status
+        );
+    }
 }
 
 fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
