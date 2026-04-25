@@ -51,6 +51,21 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
+        // New statement types (not yet supported in resolver)
+        Stmt::ClassDecl { span, .. }
+        | Stmt::TryCatch { span, .. }
+        | Stmt::Throw { span, .. }
+        | Stmt::Switch { span, .. }
+        | Stmt::DoWhile { span, .. }
+        | Stmt::For { span, .. }
+        | Stmt::ForIn { span, .. }
+        | Stmt::ForOf { span, .. }
+        | Stmt::Break { span }
+        | Stmt::Continue { span } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "statement type not yet supported in builtin resolver".to_owned(),
+            span: Some(*span),
+        }),
     }
 }
 
@@ -126,6 +141,17 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Index { object, index, .. } => Ok(ResolvedExpr::ComputedIndex {
             object: Box::new(resolve_expr(object)?),
             index: Box::new(resolve_expr(index)?),
+        }),
+        // New expression types (not yet supported in resolver)
+        Expr::New { span, .. }
+        | Expr::TypeOf { span, .. }
+        | Expr::InstanceOf { span, .. }
+        | Expr::Ternary { span, .. }
+        | Expr::ArrowFn { span, .. }
+        | Expr::Spread { span, .. } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "expression type not yet supported in builtin resolver".to_owned(),
+            span: Some(*span),
         }),
     }
 }
@@ -241,7 +267,13 @@ fn span_of_expr(expr: &Expr) -> Option<crate::Span> {
         | Expr::Call { span, .. }
         | Expr::Array { span, .. }
         | Expr::Object { span, .. }
-        | Expr::Index { span, .. } => Some(*span),
+        | Expr::Index { span, .. }
+        | Expr::New { span, .. }
+        | Expr::TypeOf { span, .. }
+        | Expr::InstanceOf { span, .. }
+        | Expr::Ternary { span, .. }
+        | Expr::ArrowFn { span, .. }
+        | Expr::Spread { span, .. } => Some(*span),
     }
 }
 

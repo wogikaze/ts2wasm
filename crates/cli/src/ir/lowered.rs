@@ -178,22 +178,52 @@ fn lower_function(
     })
 }
 
-fn lower_binary_op(op: BinaryOp) -> LoweredBinaryOp {
+fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
     match op {
-        BinaryOp::Add => LoweredBinaryOp::Add,
-        BinaryOp::Subtract => LoweredBinaryOp::Subtract,
-        BinaryOp::Less => LoweredBinaryOp::Less,
-        BinaryOp::Greater => LoweredBinaryOp::Greater,
-        BinaryOp::StrictEqual => LoweredBinaryOp::StrictEqual,
-        BinaryOp::And => LoweredBinaryOp::And,
-        BinaryOp::Or => LoweredBinaryOp::Or,
+        BinaryOp::Add => Ok(LoweredBinaryOp::Add),
+        BinaryOp::Subtract => Ok(LoweredBinaryOp::Subtract),
+        BinaryOp::Less => Ok(LoweredBinaryOp::Less),
+        BinaryOp::Greater => Ok(LoweredBinaryOp::Greater),
+        BinaryOp::StrictEqual => Ok(LoweredBinaryOp::StrictEqual),
+        BinaryOp::And => Ok(LoweredBinaryOp::And),
+        BinaryOp::Or => Ok(LoweredBinaryOp::Or),
+        // Not yet supported
+        BinaryOp::Multiply
+        | BinaryOp::Divide
+        | BinaryOp::Modulo
+        | BinaryOp::Power
+        | BinaryOp::BitwiseAnd
+        | BinaryOp::BitwiseOr
+        | BinaryOp::BitwiseXor
+        | BinaryOp::LeftShift
+        | BinaryOp::RightShift
+        | BinaryOp::UnsignedRightShift
+        | BinaryOp::In
+        | BinaryOp::InstanceOf => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("binary operator {:?} not yet supported", op),
+            span: None,
+        }),
     }
 }
 
-fn lower_unary_op(op: UnaryOp) -> LoweredUnaryOp {
+fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
     match op {
-        UnaryOp::Not => LoweredUnaryOp::Not,
-        UnaryOp::Negate => LoweredUnaryOp::Negate,
+        UnaryOp::Not => Ok(LoweredUnaryOp::Not),
+        UnaryOp::Negate => Ok(LoweredUnaryOp::Negate),
+        // Not yet supported
+        UnaryOp::Increment
+        | UnaryOp::Decrement
+        | UnaryOp::PreIncrement
+        | UnaryOp::PreDecrement
+        | UnaryOp::TypeOf
+        | UnaryOp::BitwiseNot
+        | UnaryOp::Delete
+        | UnaryOp::Void => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("unary operator {:?} not yet supported", op),
+            span: None,
+        }),
     }
 }
 
@@ -320,12 +350,12 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
             ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
             ResolvedExpr::Unary { op, expr } => Ok(LoweredExpr::Unary {
-                op: lower_unary_op(*op),
+                op: lower_unary_op(*op)?,
                 expr: Box::new(self.lower_expr(expr)?),
             }),
             ResolvedExpr::Binary { left, op, right } => Ok(LoweredExpr::Binary {
                 left: Box::new(self.lower_expr(left)?),
-                op: lower_binary_op(*op),
+                op: lower_binary_op(*op)?,
                 right: Box::new(self.lower_expr(right)?),
             }),
             ResolvedExpr::Call { callee, args } => {

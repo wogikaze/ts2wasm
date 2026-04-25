@@ -32,6 +32,33 @@ pub(crate) enum RuntimeFn {
     GetLength,
     /// Linear-scan property lookup on a heap object.
     PropertyGet,
+    /// M10: String methods
+    StringCharAt,
+    StringSubstring,
+    StringSlice,
+    StringIndexOf,
+    StringSplit,
+    /// M10: Array methods
+    ArrayPush,
+    ArrayPop,
+    ArraySlice,
+    ArrayConcat,
+    ArrayJoin,
+    ArrayReverse,
+    /// M10: Object statics
+    ObjectKeys,
+    ObjectValues,
+    ObjectEntries,
+    /// M10: Math functions
+    MathFloor,
+    MathCeil,
+    MathRound,
+    MathAbs,
+    MathMax,
+    MathMin,
+    /// M10: JSON functions
+    JsonStringify,
+    JsonParse,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -89,6 +116,49 @@ const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::TRUE,
 ];
 const LOG_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NEWLINE];
+
+// String method dependencies
+const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::IsString, RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::IsString, RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const STRING_SLICE_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::IsString, RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::MemEqual,
+];
+
+// Array method dependencies
+const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const ARRAY_POP_DEPS: &[RuntimeFn] = &[];
+const ARRAY_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
+const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
+
+// Object method dependencies
+const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+
+// Math function dependencies (no deps)
+const MATH_DEPS: &[RuntimeFn] = &[];
+
+// JSON function dependencies
+const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+];
+const JSON_PARSE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 
 impl RuntimeFn {
     pub(crate) const fn from_builtin(builtin: BuiltinId) -> Self {
@@ -284,6 +354,182 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringCharAt => RuntimeSpec {
+                symbol: "$string_char_at",
+                deps: STRING_CHAR_AT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringSubstring => RuntimeSpec {
+                symbol: "$string_substring",
+                deps: STRING_SUBSTRING_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringSlice => RuntimeSpec {
+                symbol: "$string_slice",
+                deps: STRING_SLICE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringIndexOf => RuntimeSpec {
+                symbol: "$string_index_of",
+                deps: STRING_INDEX_OF_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringSplit => RuntimeSpec {
+                symbol: "$string_split",
+                deps: STRING_SPLIT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayPush => RuntimeSpec {
+                symbol: "$array_push",
+                deps: ARRAY_PUSH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayPop => RuntimeSpec {
+                symbol: "$array_pop",
+                deps: ARRAY_POP_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArraySlice => RuntimeSpec {
+                symbol: "$array_slice",
+                deps: ARRAY_SLICE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayConcat => RuntimeSpec {
+                symbol: "$array_concat",
+                deps: ARRAY_CONCAT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayJoin => RuntimeSpec {
+                symbol: "$array_join",
+                deps: ARRAY_JOIN_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayReverse => RuntimeSpec {
+                symbol: "$array_reverse",
+                deps: ARRAY_REVERSE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ObjectKeys => RuntimeSpec {
+                symbol: "$object_keys",
+                deps: OBJECT_KEYS_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ObjectValues => RuntimeSpec {
+                symbol: "$object_values",
+                deps: OBJECT_VALUES_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ObjectEntries => RuntimeSpec {
+                symbol: "$object_entries",
+                deps: OBJECT_ENTRIES_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MathFloor => RuntimeSpec {
+                symbol: "$math_floor",
+                deps: MATH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MathCeil => RuntimeSpec {
+                symbol: "$math_ceil",
+                deps: MATH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MathRound => RuntimeSpec {
+                symbol: "$math_round",
+                deps: MATH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MathAbs => RuntimeSpec {
+                symbol: "$math_abs",
+                deps: MATH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MathMax => RuntimeSpec {
+                symbol: "$math_max",
+                deps: MATH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MathMin => RuntimeSpec {
+                symbol: "$math_min",
+                deps: MATH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::JsonStringify => RuntimeSpec {
+                symbol: "$json_stringify",
+                deps: JSON_STRINGIFY_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::JsonParse => RuntimeSpec {
+                symbol: "$json_parse",
+                deps: JSON_PARSE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
         }
     }
 
@@ -324,6 +570,33 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
+            // String methods
+            Self::StringCharAt,
+            Self::StringSubstring,
+            Self::StringSlice,
+            Self::StringIndexOf,
+            Self::StringSplit,
+            // Array methods
+            Self::ArrayPush,
+            Self::ArrayPop,
+            Self::ArraySlice,
+            Self::ArrayConcat,
+            Self::ArrayJoin,
+            Self::ArrayReverse,
+            // Object statics
+            Self::ObjectKeys,
+            Self::ObjectValues,
+            Self::ObjectEntries,
+            // Math functions
+            Self::MathFloor,
+            Self::MathCeil,
+            Self::MathRound,
+            Self::MathAbs,
+            Self::MathMax,
+            Self::MathMin,
+            // JSON functions
+            Self::JsonStringify,
+            Self::JsonParse,
         ]
     }
 
@@ -353,6 +626,33 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
+            // String methods
+            Self::StringCharAt,
+            Self::StringSubstring,
+            Self::StringSlice,
+            Self::StringIndexOf,
+            Self::StringSplit,
+            // Array methods
+            Self::ArrayPush,
+            Self::ArrayPop,
+            Self::ArraySlice,
+            Self::ArrayConcat,
+            Self::ArrayJoin,
+            Self::ArrayReverse,
+            // Object statics
+            Self::ObjectKeys,
+            Self::ObjectValues,
+            Self::ObjectEntries,
+            // Math functions
+            Self::MathFloor,
+            Self::MathCeil,
+            Self::MathRound,
+            Self::MathAbs,
+            Self::MathMax,
+            Self::MathMin,
+            // JSON functions
+            Self::JsonStringify,
+            Self::JsonParse,
         ]
     }
 }

@@ -144,6 +144,34 @@ enum Token {
     If,
     Else,
     While,
+    // New keywords for OOP and control flow
+    Class,
+    Try,
+    Catch,
+    Throw,
+    Finally,
+    Extends,
+    Super,
+    Static,
+    Async,
+    Await,
+    Import,
+    Export,
+    Default,
+    Case,
+    Do,
+    For,
+    In,
+    Of,
+    New,
+    TypeOf,
+    InstanceOf,
+    Void,
+    Delete,
+    Switch,
+    Break,
+    Continue,
+    // Operators
     Plus,
     Minus,
     Less,
@@ -153,6 +181,31 @@ enum Token {
     AndAnd,
     OrOr,
     Greater,
+    Power,
+    Increment,
+    Decrement,
+    PlusEqual,
+    MinusEqual,
+    StarEqual,
+    SlashEqual,
+    PercentEqual,
+    PowerEqual,
+    Percent,
+    Slash,
+    Star,
+    Ampersand,
+    Pipe,
+    Caret,
+    Tilde,
+    LeftShift,
+    RightShift,
+    UnsignedRightShift,
+    Question,
+    Spread,
+    Arrow,
+    OptionalChain,
+    NullishCoalesce,
+    // Delimiters
     LeftParen,
     RightParen,
     LeftBrace,
@@ -198,23 +251,63 @@ impl<'a> Lexer<'a> {
                 'a'..='z' | 'A'..='Z' | '_' | '$' => tokens.push(self.ident_or_keyword()),
                 '+' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
-                        kind: Token::Plus,
-                        span: Span {
-                            start,
-                            end: self.cursor,
-                        },
-                    });
+                    if self.peek_char() == Some('+') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::Increment,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::PlusEqual,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Plus,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
                 }
                 '-' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
-                        kind: Token::Minus,
-                        span: Span {
-                            start,
-                            end: self.cursor,
-                        },
-                    });
+                    if self.peek_char() == Some('-') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::Decrement,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::MinusEqual,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Minus,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
                 }
                 '!' => {
                     self.advance_char();
@@ -226,25 +319,99 @@ impl<'a> Lexer<'a> {
                         },
                     });
                 }
+                '*' => {
+                    self.advance_char();
+                    if self.peek_char() == Some('*') {
+                        self.advance_char();
+                        if self.peek_char() == Some('=') {
+                            self.advance_char();
+                            tokens.push(SpannedToken {
+                                kind: Token::PowerEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        } else {
+                            tokens.push(SpannedToken {
+                                kind: Token::Power,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        }
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::StarEqual,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Star,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
+                }
                 '<' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
-                        kind: Token::Less,
-                        span: Span {
-                            start,
-                            end: self.cursor,
-                        },
-                    });
+                    if self.peek_char() == Some('<') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::LeftShift,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Less,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
                 }
                 '>' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
-                        kind: Token::Greater,
-                        span: Span {
-                            start,
-                            end: self.cursor,
-                        },
-                    });
+                    if self.peek_char() == Some('>') {
+                        self.advance_char();
+                        if self.peek_char() == Some('>') {
+                            self.advance_char();
+                            tokens.push(SpannedToken {
+                                kind: Token::UnsignedRightShift,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        } else {
+                            tokens.push(SpannedToken {
+                                kind: Token::RightShift,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        }
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Greater,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
                 }
                 '=' => {
                     self.advance_char();
@@ -269,6 +436,15 @@ impl<'a> Lexer<'a> {
                                 }),
                             });
                         }
+                    } else if self.peek_char() == Some('>') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::Arrow,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
                     } else {
                         tokens.push(SpannedToken {
                             kind: Token::Equal,
@@ -291,13 +467,12 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "unsupported operator: &".to_owned(),
-                            span: Some(Span {
+                        tokens.push(SpannedToken {
+                            kind: Token::Ampersand,
+                            span: Span {
                                 start,
                                 end: self.cursor,
-                            }),
+                            },
                         });
                     }
                 }
@@ -313,13 +488,104 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "unsupported operator: |".to_owned(),
-                            span: Some(Span {
+                        tokens.push(SpannedToken {
+                            kind: Token::Pipe,
+                            span: Span {
                                 start,
                                 end: self.cursor,
-                            }),
+                            },
+                        });
+                    }
+                }
+                '^' => {
+                    self.advance_char();
+                    tokens.push(SpannedToken {
+                        kind: Token::Caret,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
+                '~' => {
+                    self.advance_char();
+                    tokens.push(SpannedToken {
+                        kind: Token::Tilde,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
+                '%' => {
+                    self.advance_char();
+                    if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::PercentEqual,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Percent,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
+                }
+                '/' => {
+                    self.advance_char();
+                    if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::SlashEqual,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Slash,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
+                }
+                '?' => {
+                    self.advance_char();
+                    if self.peek_char() == Some('.') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::OptionalChain,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else if self.peek_char() == Some('?') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::NullishCoalesce,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Question,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         });
                     }
                 }
@@ -405,13 +671,25 @@ impl<'a> Lexer<'a> {
                 }
                 '.' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
-                        kind: Token::Dot,
-                        span: Span {
-                            start,
-                            end: self.cursor,
-                        },
-                    });
+                    if self.peek_char() == Some('.') && self.peek_n_char(1) == Some('.') {
+                        self.advance_char();
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::Spread,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Dot,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
                 }
                 ';' => {
                     self.advance_char();
@@ -597,6 +875,33 @@ impl<'a> Lexer<'a> {
             "false" => Token::False,
             "null" => Token::Null,
             "undefined" => Token::Undefined,
+            // New keywords
+            "class" => Token::Class,
+            "try" => Token::Try,
+            "catch" => Token::Catch,
+            "throw" => Token::Throw,
+            "finally" => Token::Finally,
+            "extends" => Token::Extends,
+            "super" => Token::Super,
+            "static" => Token::Static,
+            "async" => Token::Async,
+            "await" => Token::Await,
+            "import" => Token::Import,
+            "export" => Token::Export,
+            "default" => Token::Default,
+            "case" => Token::Case,
+            "do" => Token::Do,
+            "for" => Token::For,
+            "in" => Token::In,
+            "of" => Token::Of,
+            "new" => Token::New,
+            "typeof" => Token::TypeOf,
+            "instanceof" => Token::InstanceOf,
+            "void" => Token::Void,
+            "delete" => Token::Delete,
+            "switch" => Token::Switch,
+            "break" => Token::Break,
+            "continue" => Token::Continue,
             ident => Token::Ident(ident.to_owned()),
         };
         SpannedToken {
@@ -615,6 +920,14 @@ impl<'a> Lexer<'a> {
     fn peek_next_char(&self) -> Option<char> {
         let mut chars = self.source[self.cursor..].chars();
         chars.next()?;
+        chars.next()
+    }
+
+    fn peek_n_char(&self, n: usize) -> Option<char> {
+        let mut chars = self.source[self.cursor..].chars();
+        for _ in 0..=n {
+            chars.next()?;
+        }
         chars.next()
     }
 
@@ -660,6 +973,58 @@ enum Stmt {
     },
     Return {
         expr: Expr,
+        span: Span,
+    },
+    ClassDecl {
+        name: String,
+        extends: Option<Box<Expr>>,
+        body: Vec<Stmt>,
+        span: Span,
+    },
+    TryCatch {
+        try_block: Vec<Stmt>,
+        catch_param: Option<String>,
+        catch_block: Option<Vec<Stmt>>,
+        finally_block: Option<Vec<Stmt>>,
+        span: Span,
+    },
+    Throw {
+        expr: Expr,
+        span: Span,
+    },
+    Switch {
+        expr: Expr,
+        cases: Vec<(Option<Expr>, Vec<Stmt>)>,
+        span: Span,
+    },
+    DoWhile {
+        body: Vec<Stmt>,
+        condition: Expr,
+        span: Span,
+    },
+    For {
+        init: Option<Box<Stmt>>,
+        condition: Option<Expr>,
+        update: Option<Expr>,
+        body: Vec<Stmt>,
+        span: Span,
+    },
+    ForIn {
+        var: String,
+        iter: Expr,
+        body: Vec<Stmt>,
+        span: Span,
+    },
+    ForOf {
+        var: String,
+        iter: Expr,
+        body: Vec<Stmt>,
+        span: Span,
+    },
+    Break {
+        span: Span,
+    },
+    Continue {
         span: Span,
     },
 }
@@ -722,6 +1087,35 @@ enum Expr {
         index: Box<Expr>,
         span: Span,
     },
+    New {
+        expr: Box<Expr>,
+        args: Vec<Expr>,
+        span: Span,
+    },
+    TypeOf {
+        expr: Box<Expr>,
+        span: Span,
+    },
+    InstanceOf {
+        expr: Box<Expr>,
+        type_expr: Box<Expr>,
+        span: Span,
+    },
+    Ternary {
+        condition: Box<Expr>,
+        then_expr: Box<Expr>,
+        else_expr: Box<Expr>,
+        span: Span,
+    },
+    ArrowFn {
+        params: Vec<String>,
+        body: Box<Expr>,
+        span: Span,
+    },
+    Spread {
+        expr: Box<Expr>,
+        span: Span,
+    },
 }
 
 impl Stmt {
@@ -733,7 +1127,17 @@ impl Stmt {
             | Self::If { span, .. }
             | Self::While { span, .. }
             | Self::Function { span, .. }
-            | Self::Return { span, .. } => *span,
+            | Self::Return { span, .. }
+            | Self::ClassDecl { span, .. }
+            | Self::TryCatch { span, .. }
+            | Self::Throw { span, .. }
+            | Self::Switch { span, .. }
+            | Self::DoWhile { span, .. }
+            | Self::For { span, .. }
+            | Self::ForIn { span, .. }
+            | Self::ForOf { span, .. }
+            | Self::Break { span }
+            | Self::Continue { span } => *span,
         }
     }
 }
@@ -753,7 +1157,13 @@ impl Expr {
             | Self::Call { span, .. }
             | Self::Array { span, .. }
             | Self::Object { span, .. }
-            | Self::Index { span, .. } => *span,
+            | Self::Index { span, .. }
+            | Self::New { span, .. }
+            | Self::TypeOf { span, .. }
+            | Self::InstanceOf { span, .. }
+            | Self::Ternary { span, .. }
+            | Self::ArrowFn { span, .. }
+            | Self::Spread { span, .. } => *span,
         }
     }
 }
@@ -767,12 +1177,32 @@ enum BinaryOp {
     StrictEqual,
     And,
     Or,
+    Multiply,
+    Divide,
+    Modulo,
+    Power,
+    BitwiseAnd,
+    BitwiseOr,
+    BitwiseXor,
+    LeftShift,
+    RightShift,
+    UnsignedRightShift,
+    In,
+    InstanceOf,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum UnaryOp {
     Not,
     Negate,
+    Increment,
+    Decrement,
+    PreIncrement,
+    PreDecrement,
+    TypeOf,
+    BitwiseNot,
+    Delete,
+    Void,
 }
 
 struct Parser {
@@ -801,6 +1231,14 @@ impl Parser {
             Some(Token::Function) => self.function_statement(),
             Some(Token::If) => self.if_statement(),
             Some(Token::While) => self.while_statement(),
+            Some(Token::Do) => self.do_while_statement(),
+            Some(Token::For) => self.for_statement(),
+            Some(Token::Switch) => self.switch_statement(),
+            Some(Token::Try) => self.try_statement(),
+            Some(Token::Throw) => self.throw_statement(),
+            Some(Token::Break) => self.break_statement(),
+            Some(Token::Continue) => self.continue_statement(),
+            Some(Token::Class) => self.class_statement(),
             Some(Token::Return) => self.return_statement(),
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Equal)) => {
                 self.assign_statement()
@@ -951,6 +1389,313 @@ impl Parser {
         })
     }
 
+    fn break_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let span = self.expect(TokenKind::Break)?;
+        self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Break { span })
+    }
+
+    fn continue_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let span = self.expect(TokenKind::Continue)?;
+        self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Continue { span })
+    }
+
+    fn do_while_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let start = self.expect(TokenKind::Do)?;
+        let body = self.block()?;
+        self.expect(TokenKind::While)?;
+        self.expect(TokenKind::LeftParen)?;
+        let condition = self.expression()?;
+        self.expect(TokenKind::RightParen)?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::DoWhile {
+            body,
+            condition,
+            span: Span {
+                start: start.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn for_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let start = self.expect(TokenKind::For)?;
+        self.expect(TokenKind::LeftParen)?;
+
+        // Try to determine which type of for loop this is
+        // We need to look ahead to see if we have for/for-in/for-of
+        let saved_cursor = self.cursor;
+
+        // Try to parse a simple identifier or variable declaration
+        let is_for_in_of = if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
+            self.advance();
+            if let Some(Token::Ident(_)) = self.peek() {
+                self.advance();
+                matches!(self.peek(), Some(Token::In | Token::Of))
+            } else {
+                false
+            }
+        } else if matches!(self.peek(), Some(Token::Ident(_))) {
+            self.advance();
+            matches!(self.peek(), Some(Token::In | Token::Of))
+        } else {
+            false
+        };
+
+        self.cursor = saved_cursor;
+
+        if is_for_in_of {
+            // Parse for-in or for-of
+            if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
+                self.advance();
+            }
+            let (var_name, _) = self.expect_ident()?;
+
+            if self.consume(TokenKind::In) {
+                let iter = self.expression()?;
+                self.expect(TokenKind::RightParen)?;
+                let body = self.block()?;
+                let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
+                Ok(Stmt::ForIn {
+                    var: var_name,
+                    iter,
+                    body,
+                    span: Span {
+                        start: start.start,
+                        end,
+                    },
+                })
+            } else if self.consume(TokenKind::Of) {
+                let iter = self.expression()?;
+                self.expect(TokenKind::RightParen)?;
+                let body = self.block()?;
+                let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
+                Ok(Stmt::ForOf {
+                    var: var_name,
+                    iter,
+                    body,
+                    span: Span {
+                        start: start.start,
+                        end,
+                    },
+                })
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "expected 'in' or 'of' in for loop".to_owned(),
+                    span: self.peek_span(),
+                })
+            }
+        } else {
+            // Parse traditional for loop
+            let init = if self.consume(TokenKind::Semicolon) {
+                None
+            } else {
+                let stmt = if matches!(self.peek(), Some(Token::Let | Token::Const | Token::Var)) {
+                    self.let_statement()?
+                } else if matches!(self.peek(), Some(Token::Ident(_))) {
+                    // Assignment
+                    let (name, _) = self.expect_ident()?;
+                    self.expect(TokenKind::Equal)?;
+                    let expr = self.expression()?;
+                    self.expect(TokenKind::Semicolon)?;
+                    Stmt::Assign {
+                        name,
+                        expr,
+                        span: Span { start: 0, end: 0 },
+                    }
+                } else {
+                    self.expression()?;
+                    self.expect(TokenKind::Semicolon)?;
+                    Stmt::Expr {
+                        expr: Expr::Ident {
+                            name: "".to_owned(),
+                            span: Span { start: 0, end: 0 },
+                        },
+                        span: Span { start: 0, end: 0 },
+                    }
+                };
+                Some(Box::new(stmt))
+            };
+
+            let condition = if self.consume(TokenKind::Semicolon) {
+                None
+            } else {
+                let expr = self.expression()?;
+                self.expect(TokenKind::Semicolon)?;
+                Some(expr)
+            };
+
+            let update = if self.consume(TokenKind::RightParen) {
+                None
+            } else {
+                let expr = self.expression()?;
+                self.expect(TokenKind::RightParen)?;
+                Some(expr)
+            };
+
+            let body = self.block()?;
+            let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
+
+            Ok(Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                span: Span {
+                    start: start.start,
+                    end,
+                },
+            })
+        }
+    }
+
+    fn switch_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let start = self.expect(TokenKind::Switch)?;
+        self.expect(TokenKind::LeftParen)?;
+        let expr = self.expression()?;
+        self.expect(TokenKind::RightParen)?;
+        self.expect(TokenKind::LeftBrace)?;
+
+        let mut cases = Vec::new();
+
+        while !matches!(self.peek(), Some(Token::RightBrace)) && !self.is_at_end() {
+            if self.consume(TokenKind::Case) {
+                let case_expr = self.expression()?;
+                self.expect(TokenKind::Colon)?;
+                let mut case_stmts = Vec::new();
+                while !matches!(
+                    self.peek(),
+                    Some(Token::Case | Token::Default | Token::RightBrace)
+                ) && !self.is_at_end()
+                {
+                    case_stmts.push(self.statement()?);
+                }
+                cases.push((Some(case_expr), case_stmts));
+            } else if self.consume(TokenKind::Default) {
+                self.expect(TokenKind::Colon)?;
+                let mut case_stmts = Vec::new();
+                while !matches!(
+                    self.peek(),
+                    Some(Token::Case | Token::Default | Token::RightBrace)
+                ) && !self.is_at_end()
+                {
+                    case_stmts.push(self.statement()?);
+                }
+                cases.push((None, case_stmts));
+            } else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "expected 'case' or 'default' in switch statement".to_owned(),
+                    span: self.peek_span(),
+                });
+            }
+        }
+
+        let end_span = self.expect(TokenKind::RightBrace)?;
+
+        Ok(Stmt::Switch {
+            expr,
+            cases,
+            span: Span {
+                start: start.start,
+                end: end_span.end,
+            },
+        })
+    }
+
+    fn try_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let start = self.expect(TokenKind::Try)?;
+        let try_block = self.block()?;
+
+        let (catch_param, catch_block) = if self.consume(TokenKind::Catch) {
+            let param = if self.consume(TokenKind::LeftParen) {
+                let (name, _) = self.expect_ident()?;
+                self.expect(TokenKind::RightParen)?;
+                Some(name)
+            } else {
+                None
+            };
+            let block = self.block()?;
+            (param, Some(block))
+        } else {
+            (None, None)
+        };
+
+        let finally_block = if self.consume(TokenKind::Finally) {
+            Some(self.block()?)
+        } else {
+            None
+        };
+
+        if catch_block.is_none() && finally_block.is_none() {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "try statement must have catch or finally block".to_owned(),
+                span: Some(Span {
+                    start: start.start,
+                    end: start.end,
+                }),
+            });
+        }
+
+        let end = finally_block
+            .as_ref()
+            .or(catch_block.as_ref())
+            .and_then(|b| b.last().map(|s| s.span().end))
+            .unwrap_or(start.end);
+
+        Ok(Stmt::TryCatch {
+            try_block,
+            catch_param,
+            catch_block,
+            finally_block,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
+    }
+
+    fn throw_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let start = self.expect(TokenKind::Throw)?;
+        let expr = self.expression()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::Throw {
+            expr,
+            span: Span {
+                start: start.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let start = self.expect(TokenKind::Class)?;
+        let (name, _) = self.expect_ident()?;
+
+        let extends = if self.consume(TokenKind::Extends) {
+            let expr = self.expression()?;
+            Some(Box::new(expr))
+        } else {
+            None
+        };
+
+        let body = self.block()?;
+        let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
+
+        Ok(Stmt::ClassDecl {
+            name,
+            extends,
+            body,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
+    }
+
     fn block(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         self.expect(TokenKind::LeftBrace)?;
         let mut statements = Vec::new();
@@ -968,7 +1713,109 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expr, Diagnostic> {
-        self.logical_or()
+        self.assignment()
+    }
+
+    fn assignment(&mut self) -> Result<Expr, Diagnostic> {
+        // Check for arrow function: (params) => expr or id => expr
+        let saved_cursor = self.cursor;
+
+        // Try to parse arrow function
+        let is_arrow = if self.consume(TokenKind::LeftParen) {
+            // Could be arrow function with multiple params
+            let mut _param_count = 0;
+            while !matches!(self.peek(), Some(Token::RightParen)) && !self.is_at_end() {
+                if matches!(self.peek(), Some(Token::Ident(_))) {
+                    self.advance();
+                    _param_count += 1;
+            if self.consume(TokenKind::RightParen) && self.consume(TokenKind::Arrow) {
+                true
+            } else {
+                false
+            }
+        } else if matches!(self.peek(), Some(Token::Ident(_))) {
+            self.advance();
+            if self.consume(TokenKind::Arrow) {
+                true
+            } else {
+                false
+            }
+        } else {
+            false
+        };
+
+        self.cursor = saved_cursor;
+
+        if is_arrow {
+            return self.arrow_function();
+        }
+
+        self.ternary()
+    }
+
+    fn arrow_function(&mut self) -> Result<Expr, Diagnostic> {
+        let start_span = self.peek_span().unwrap_or(Span { start: 0, end: 0 });
+        let mut params = Vec::new();
+
+        if self.consume(TokenKind::LeftParen) {
+            if !self.consume(TokenKind::RightParen) {
+                loop {
+                    let (param, _) = self.expect_ident()?;
+                    params.push(param);
+                    if self.consume(TokenKind::RightParen) {
+                        break;
+                    }
+                    self.expect(TokenKind::Comma)?;
+                }
+            }
+        } else {
+            let (param, _) = self.expect_ident()?;
+            params.push(param);
+        }
+
+        self.expect(TokenKind::Arrow)?;
+
+        // Body can be an expression or a block
+        let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
+            let _block_stmts = self.block()?;
+            // Convert block to expression (for now, wrap as identifier)
+            Expr::Ident {
+                name: "block_body".to_owned(),
+                span: Span { start: 0, end: 0 },
+            }
+        } else {
+            self.ternary()?
+        };
+
+        let end = body.span().end;
+        Ok(Expr::ArrowFn {
+            params,
+            body: Box::new(body),
+            span: Span {
+                start: start_span.start,
+                end,
+            },
+        })
+    }
+
+    fn ternary(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.logical_or()?;
+        if self.consume(TokenKind::Question) {
+            let then_expr = self.expression()?;
+            self.expect(TokenKind::Colon)?;
+            let else_expr = self.ternary()?;
+            let span = Span {
+                start: expr.span().start,
+                end: else_expr.span().end,
+            };
+            expr = Expr::Ternary {
+                condition: Box::new(expr),
+                then_expr: Box::new(then_expr),
+                else_expr: Box::new(else_expr),
+                span,
+            };
+        }
+        Ok(expr)
     }
 
     fn logical_or(&mut self) -> Result<Expr, Diagnostic> {
@@ -1026,29 +1873,153 @@ impl Parser {
     }
 
     fn comparison(&mut self) -> Result<Expr, Diagnostic> {
-        let mut expr = self.term()?;
-        while self.consume(TokenKind::Less) {
-            let right = self.term()?;
+        let mut expr = self.bitwise()?;
+        loop {
+            let op = if self.consume(TokenKind::Less) {
+                Some(BinaryOp::Less)
+            } else if self.consume(TokenKind::Greater) {
+                Some(BinaryOp::Greater)
+            } else {
+                None
+            };
+            let Some(op) = op else { break };
+            let right = self.bitwise()?;
             let span = Span {
                 start: expr.span().start,
                 end: right.span().end,
             };
             expr = Expr::Binary {
                 left: Box::new(expr),
-                op: BinaryOp::Less,
+                op,
                 right: Box::new(right),
                 span,
             };
         }
-        while self.consume(TokenKind::Greater) {
-            let right = self.term()?;
+        Ok(expr)
+    }
+
+    fn bitwise(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.shift()?;
+        loop {
+            let op = if self.consume(TokenKind::Ampersand) {
+                Some(BinaryOp::BitwiseAnd)
+            } else if self.consume(TokenKind::Pipe) {
+                Some(BinaryOp::BitwiseOr)
+            } else if self.consume(TokenKind::Caret) {
+                Some(BinaryOp::BitwiseXor)
+            } else {
+                None
+            };
+            let Some(op) = op else { break };
+            let right = self.shift()?;
             let span = Span {
                 start: expr.span().start,
                 end: right.span().end,
             };
             expr = Expr::Binary {
                 left: Box::new(expr),
-                op: BinaryOp::Greater,
+                op,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
+    }
+
+    fn shift(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.addition()?;
+        loop {
+            let op = if self.consume(TokenKind::LeftShift) {
+                Some(BinaryOp::LeftShift)
+            } else if self.consume(TokenKind::RightShift) {
+                Some(BinaryOp::RightShift)
+            } else if self.consume(TokenKind::UnsignedRightShift) {
+                Some(BinaryOp::UnsignedRightShift)
+            } else {
+                None
+            };
+            let Some(op) = op else { break };
+            let right = self.addition()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
+    }
+
+    fn addition(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.multiplication()?;
+        loop {
+            let op = if self.consume(TokenKind::Plus) {
+                Some(BinaryOp::Add)
+            } else if self.consume(TokenKind::Minus) {
+                Some(BinaryOp::Subtract)
+            } else {
+                None
+            };
+            let Some(op) = op else { break };
+            let right = self.multiplication()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
+    }
+
+    fn multiplication(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.power()?;
+        loop {
+            let op = if self.consume(TokenKind::Star) {
+                Some(BinaryOp::Multiply)
+            } else if self.consume(TokenKind::Slash) {
+                Some(BinaryOp::Divide)
+            } else if self.consume(TokenKind::Percent) {
+                Some(BinaryOp::Modulo)
+            } else {
+                None
+            };
+            let Some(op) = op else { break };
+            let right = self.power()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
+    }
+
+    fn power(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.unary()?;
+        // Right-associative
+        if self.consume(TokenKind::Power) {
+            let right = self.power()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op: BinaryOp::Power,
                 right: Box::new(right),
                 span,
             };
@@ -1108,9 +2079,130 @@ impl Parser {
                     end,
                 },
             })
+        } else if let Some(tilde_span) = self.consume_span(TokenKind::Tilde) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Unary {
+                op: UnaryOp::BitwiseNot,
+                expr: Box::new(expr),
+                span: Span {
+                    start: tilde_span.start,
+                    end,
+                },
+            })
+        } else if let Some(typeof_span) = self.consume_span(TokenKind::TypeOf) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::TypeOf {
+                expr: Box::new(expr),
+                span: Span {
+                    start: typeof_span.start,
+                    end,
+                },
+            })
+        } else if let Some(delete_span) = self.consume_span(TokenKind::Delete) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Unary {
+                op: UnaryOp::Delete,
+                expr: Box::new(expr),
+                span: Span {
+                    start: delete_span.start,
+                    end,
+                },
+            })
+        } else if let Some(void_span) = self.consume_span(TokenKind::Void) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Unary {
+                op: UnaryOp::Void,
+                expr: Box::new(expr),
+                span: Span {
+                    start: void_span.start,
+                    end,
+                },
+            })
+        } else if let Some(new_span) = self.consume_span(TokenKind::New) {
+            let expr = self.call_member_no_call()?;
+            let mut args = Vec::new();
+            if self.consume(TokenKind::LeftParen) {
+                if !self.consume(TokenKind::RightParen) {
+                    loop {
+                        args.push(self.expression()?);
+                        if self.consume(TokenKind::RightParen) {
+                            break;
+                        }
+                        self.expect(TokenKind::Comma)?;
+                    }
+                }
+            }
+            let end = self.prev_span().map(|s| s.end).unwrap_or(expr.span().end);
+            Ok(Expr::New {
+                expr: Box::new(expr),
+                args,
+                span: Span {
+                    start: new_span.start,
+                    end,
+                },
+            })
         } else {
-            self.call_member()
+            self.postfix()
         }
+    }
+
+    fn postfix(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.call_member()?;
+
+        // Handle instanceof
+        if self.consume(TokenKind::InstanceOf) {
+            let type_expr = self.call_member()?;
+            let span = Span {
+                start: expr.span().start,
+                end: type_expr.span().end,
+            };
+            expr = Expr::InstanceOf {
+                expr: Box::new(expr),
+                type_expr: Box::new(type_expr),
+                span,
+            };
+        }
+
+        Ok(expr)
+    }
+
+    fn call_member_no_call(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.primary()?;
+        loop {
+            if self.consume(TokenKind::Dot) {
+                let (property, prop_span) = self.expect_ident()?;
+                let start = expr.span().start;
+                expr = Expr::Member {
+                    object: Box::new(expr),
+                    property,
+                    span: Span {
+                        start,
+                        end: prop_span.end,
+                    },
+                };
+                continue;
+            }
+            if self.consume(TokenKind::LeftBracket) {
+                let index = self.expression()?;
+                let right_span = self.expect(TokenKind::RightBracket)?;
+                let start = expr.span().start;
+                expr = Expr::Index {
+                    object: Box::new(expr),
+                    index: Box::new(index),
+                    span: Span {
+                        start,
+                        end: right_span.end,
+                    },
+                };
+                continue;
+            }
+            break;
+        }
+        Ok(expr)
     }
 
     fn call_member(&mut self) -> Result<Expr, Diagnostic> {
@@ -1346,6 +2438,32 @@ enum TokenKind {
     If,
     Else,
     While,
+    Class,
+    Try,
+    Catch,
+    Throw,
+    Finally,
+    Extends,
+    Super,
+    Static,
+    Async,
+    Await,
+    Import,
+    Export,
+    Default,
+    Case,
+    Do,
+    For,
+    In,
+    Of,
+    New,
+    TypeOf,
+    InstanceOf,
+    Void,
+    Delete,
+    Switch,
+    Break,
+    Continue,
     Plus,
     Minus,
     Less,
@@ -1355,6 +2473,30 @@ enum TokenKind {
     AndAnd,
     OrOr,
     Greater,
+    Power,
+    Increment,
+    Decrement,
+    PlusEqual,
+    MinusEqual,
+    StarEqual,
+    SlashEqual,
+    PercentEqual,
+    PowerEqual,
+    Percent,
+    Slash,
+    Star,
+    Ampersand,
+    Pipe,
+    Caret,
+    Tilde,
+    LeftShift,
+    RightShift,
+    UnsignedRightShift,
+    Question,
+    Spread,
+    Arrow,
+    OptionalChain,
+    NullishCoalesce,
     LeftParen,
     RightParen,
     LeftBrace,
@@ -1379,6 +2521,32 @@ impl TokenKind {
                 | (Self::If, Token::If)
                 | (Self::Else, Token::Else)
                 | (Self::While, Token::While)
+                | (Self::Class, Token::Class)
+                | (Self::Try, Token::Try)
+                | (Self::Catch, Token::Catch)
+                | (Self::Throw, Token::Throw)
+                | (Self::Finally, Token::Finally)
+                | (Self::Extends, Token::Extends)
+                | (Self::Super, Token::Super)
+                | (Self::Static, Token::Static)
+                | (Self::Async, Token::Async)
+                | (Self::Await, Token::Await)
+                | (Self::Import, Token::Import)
+                | (Self::Export, Token::Export)
+                | (Self::Default, Token::Default)
+                | (Self::Case, Token::Case)
+                | (Self::Do, Token::Do)
+                | (Self::For, Token::For)
+                | (Self::In, Token::In)
+                | (Self::Of, Token::Of)
+                | (Self::New, Token::New)
+                | (Self::TypeOf, Token::TypeOf)
+                | (Self::InstanceOf, Token::InstanceOf)
+                | (Self::Void, Token::Void)
+                | (Self::Delete, Token::Delete)
+                | (Self::Switch, Token::Switch)
+                | (Self::Break, Token::Break)
+                | (Self::Continue, Token::Continue)
                 | (Self::Plus, Token::Plus)
                 | (Self::Minus, Token::Minus)
                 | (Self::Less, Token::Less)
@@ -1388,6 +2556,30 @@ impl TokenKind {
                 | (Self::AndAnd, Token::AndAnd)
                 | (Self::OrOr, Token::OrOr)
                 | (Self::Greater, Token::Greater)
+                | (Self::Power, Token::Power)
+                | (Self::Increment, Token::Increment)
+                | (Self::Decrement, Token::Decrement)
+                | (Self::PlusEqual, Token::PlusEqual)
+                | (Self::MinusEqual, Token::MinusEqual)
+                | (Self::StarEqual, Token::StarEqual)
+                | (Self::SlashEqual, Token::SlashEqual)
+                | (Self::PercentEqual, Token::PercentEqual)
+                | (Self::PowerEqual, Token::PowerEqual)
+                | (Self::Percent, Token::Percent)
+                | (Self::Slash, Token::Slash)
+                | (Self::Star, Token::Star)
+                | (Self::Ampersand, Token::Ampersand)
+                | (Self::Pipe, Token::Pipe)
+                | (Self::Caret, Token::Caret)
+                | (Self::Tilde, Token::Tilde)
+                | (Self::LeftShift, Token::LeftShift)
+                | (Self::RightShift, Token::RightShift)
+                | (Self::UnsignedRightShift, Token::UnsignedRightShift)
+                | (Self::Question, Token::Question)
+                | (Self::Spread, Token::Spread)
+                | (Self::Arrow, Token::Arrow)
+                | (Self::OptionalChain, Token::OptionalChain)
+                | (Self::NullishCoalesce, Token::NullishCoalesce)
                 | (Self::LeftParen, Token::LeftParen)
                 | (Self::RightParen, Token::RightParen)
                 | (Self::LeftBrace, Token::LeftBrace)
@@ -1485,6 +2677,7 @@ fn validate_stmt(
             message: "top-level return is not supported".to_owned(),
             span: Some(*span),
         }),
+        Stmt::Return { .. } => Ok(()),
         Stmt::If {
             then_body,
             else_body,
@@ -1495,13 +2688,42 @@ fn validate_stmt(
             Ok(())
         }
         Stmt::While { body, .. } => validate_block(body),
+        Stmt::DoWhile { body, .. } => validate_block(body),
+        Stmt::For { body, .. } => validate_block(body),
+        Stmt::ForIn { body, .. } => validate_block(body),
+        Stmt::ForOf { body, .. } => validate_block(body),
+        Stmt::Switch { cases, .. } => {
+            for (_, case_body) in cases {
+                validate_block(case_body)?;
+            }
+            Ok(())
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            validate_block(try_block)?;
+            if let Some(catch) = catch_block {
+                validate_block(catch)?;
+            }
+            if let Some(finally) = finally_block {
+                validate_block(finally)?;
+            }
+            Ok(())
+        }
+        Stmt::ClassDecl { body, .. } => validate_block(body),
         Stmt::Expr { .. } => Ok(()),
         Stmt::Function { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "nested function declarations are not supported in this milestone".to_owned(),
             span: Some(*span),
         }),
-        _ => Ok(()),
+        Stmt::Throw { .. } => Ok(()),
+        Stmt::Break { .. } => Ok(()),
+        Stmt::Continue { .. } => Ok(()),
+        Stmt::Assign { .. } => Ok(()),
     }
 }
 

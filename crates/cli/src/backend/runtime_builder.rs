@@ -40,6 +40,28 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
                 RuntimeFn::GetLength => self.emit_get_length(wat),
                 RuntimeFn::PropertyGet => self.emit_property_get(wat),
+                RuntimeFn::StringCharAt => self.emit_string_char_at(wat),
+                RuntimeFn::StringSubstring => self.emit_string_substring(wat),
+                RuntimeFn::StringSlice => self.emit_string_slice(wat),
+                RuntimeFn::StringIndexOf => self.emit_string_index_of(wat),
+                RuntimeFn::StringSplit => self.emit_string_split(wat),
+                RuntimeFn::ArrayPush => self.emit_array_push(wat),
+                RuntimeFn::ArrayPop => self.emit_array_pop(wat),
+                RuntimeFn::ArraySlice => self.emit_array_slice(wat),
+                RuntimeFn::ArrayConcat => self.emit_array_concat(wat),
+                RuntimeFn::ArrayJoin => self.emit_array_join(wat),
+                RuntimeFn::ArrayReverse => self.emit_array_reverse(wat),
+                RuntimeFn::ObjectKeys => self.emit_object_keys(wat),
+                RuntimeFn::ObjectValues => self.emit_object_values(wat),
+                RuntimeFn::ObjectEntries => self.emit_object_entries(wat),
+                RuntimeFn::MathFloor => self.emit_math_floor(wat),
+                RuntimeFn::MathCeil => self.emit_math_ceil(wat),
+                RuntimeFn::MathRound => self.emit_math_round(wat),
+                RuntimeFn::MathAbs => self.emit_math_abs(wat),
+                RuntimeFn::MathMax => self.emit_math_max(wat),
+                RuntimeFn::MathMin => self.emit_math_min(wat),
+                RuntimeFn::JsonStringify => self.emit_json_stringify(wat),
+                RuntimeFn::JsonParse => self.emit_json_parse(wat),
             }
         }
     }
@@ -643,6 +665,624 @@ impl WatEmitter<'_> {
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // String methods (M10)
+
+    fn emit_string_char_at(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_char_at (param $s i32) (param $idx i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
+    (if (i32.or (i32.lt_s (local.get $i) (i32.const {zero})) (i32.ge_u (local.get $i) (local.get $len)))
+      (then (return (i32.const {undefined}))))
+    ;; allocate 1-byte string for char
+    (local.set $obj (call $alloc_heap (i32.const {char_size})))
+    (i32.store (local.get $obj) (i32.const {one}))
+    (i32.store8
+      (i32.add (local.get $obj) (i32.const {header}))
+      (i32.load8_u
+        (i32.add
+          (i32.and (local.get $s) (i32.const {heap_mask}))
+          (i32.add (i32.const {header}) (local.get $i)))))
+    (i32.or (local.get $obj) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            char_size = Layout::STRING_HEADER_SIZE + 1,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    fn emit_string_substring(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_substring (param $s i32) (param $start i32) (param $end i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $s_pos i32)
+    (local $e_pos i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
+    (local.set $e_pos (i32.shr_s (local.get $end) (i32.const {number_shift})))
+    ;; clamp to [0, len]
+    (if (i32.lt_s (local.get $s_pos) (i32.const {zero})) (then (local.set $s_pos (i32.const {zero}))))
+    (if (i32.gt_u (local.get $s_pos) (local.get $len)) (then (local.set $s_pos (local.get $len))))
+    (if (i32.lt_s (local.get $e_pos) (i32.const {zero})) (then (local.set $e_pos (i32.const {zero}))))
+    (if (i32.gt_u (local.get $e_pos) (local.get $len)) (then (local.set $e_pos (local.get $len))))
+    ;; if start >= end, return empty string
+    (if (i32.ge_u (local.get $s_pos) (local.get $e_pos))
+      (then
+        (local.set $result_ptr (call $alloc_heap (i32.const {header})))
+        (i32.store (local.get $result_ptr) (i32.const {zero}))
+        (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
+    (local.set $result_len (i32.sub (local.get $e_pos) (local.get $s_pos)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (call $copy
+      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $s_pos)))
+      (i32.add (local.get $result_ptr) (i32.const {header}))
+      (local.get $result_len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    fn emit_string_slice(&self, wat: &mut String) {
+        // ES slice: negative indices count from end, defaults applied
+        wat.push_str(&format!(
+            r#"
+  (func $string_slice (param $s i32) (param $start i32) (param $end i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $s_pos i32)
+    (local $e_pos i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
+    (local.set $e_pos (i32.shr_s (local.get $end) (i32.const {number_shift})))
+    ;; handle negative indices
+    (if (i32.lt_s (local.get $s_pos) (i32.const {zero})) 
+      (then (local.set $s_pos (i32.add (local.get $len) (local.get $s_pos)))))
+    (if (i32.lt_s (local.get $e_pos) (i32.const {zero})) 
+      (then (local.set $e_pos (i32.add (local.get $len) (local.get $e_pos)))))
+    ;; clamp to [0, len]
+    (if (i32.lt_s (local.get $s_pos) (i32.const {zero})) (then (local.set $s_pos (i32.const {zero}))))
+    (if (i32.gt_u (local.get $s_pos) (local.get $len)) (then (local.set $s_pos (local.get $len))))
+    (if (i32.lt_s (local.get $e_pos) (i32.const {zero})) (then (local.set $e_pos (i32.const {zero}))))
+    (if (i32.gt_u (local.get $e_pos) (local.get $len)) (then (local.set $e_pos (local.get $len))))
+    ;; if start >= end, return empty string
+    (if (i32.ge_u (local.get $s_pos) (local.get $e_pos))
+      (then
+        (local.set $result_ptr (call $alloc_heap (i32.const {header})))
+        (i32.store (local.get $result_ptr) (i32.const {zero}))
+        (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
+    (local.set $result_len (i32.sub (local.get $e_pos) (local.get $s_pos)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (call $copy
+      (i32.add (i32.and (local.get $s) (i32.const {heap_mask})) (i32.add (i32.const {header}) (local.get $s_pos)))
+      (i32.add (local.get $result_ptr) (i32.const {header}))
+      (local.get $result_len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    fn emit_string_index_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_index_of (param $haystack i32) (param $needle i32) (result i32)
+    (local $h_obj i32)
+    (local $n_obj i32)
+    (local $h_len i32)
+    (local $n_len i32)
+    (local $i i32)
+    (if (i32.eqz (call $is_string (local.get $haystack))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.eqz (call $is_string (local.get $needle))) (then (return (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (local.set $h_obj (i32.and (local.get $haystack) (i32.const {heap_mask})))
+    (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
+    (local.set $h_len (i32.load (local.get $h_obj)))
+    (local.set $n_len (i32.load (local.get $n_obj)))
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.const {zero}))))
+    (block $not_found
+      (loop $search
+        (br_if $not_found (i32.gt_u (local.get $i) (i32.sub (local.get $h_len) (local.get $n_len))))
+        (if (call $mem_equal
+              (i32.add (i32.add (local.get $h_obj) (i32.const {header})) (local.get $i))
+              (i32.add (local.get $n_obj) (i32.const {header}))
+              (local.get $n_len))
+          (then (return (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number_tag})))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $search)))
+    (i32.or (i32.shl (i32.const {neg_one}) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            neg_one = -1i32,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
+    fn emit_string_split(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_split (param $s i32) (param $sep i32) (result i32)
+    (local $s_obj i32)
+    (local $sep_obj i32)
+    (local $s_len i32)
+    (local $sep_len i32)
+    (local $count i32)
+    (local $i i32)
+    (local $j i32)
+    (local $part_start i32)
+    (local $result_ptr i32)
+    (local $part_ptr i32)
+    (local $part_len i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (if (i32.eqz (call $is_string (local.get $sep))) (then (return (i32.const {undefined}))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $sep_obj (i32.and (local.get $sep) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $sep_len (i32.load (local.get $sep_obj)))
+    (if (i32.eqz (local.get $sep_len)) (then (return (i32.const {undefined}))))
+    ;; TODO: implement split properly (simplified: return 1-element array)
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.const {elem_size}))))
+    (i32.store (local.get $result_ptr) (i32.const {one}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_header})) (local.get $s))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_size = 4,
+            one = RuntimeConst::ONE,
+            array_tag = ValueTag::ARRAY,
+        ));
+    }
+
+    // Array methods (M10)
+
+    fn emit_array_push(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_push (param $arr i32) (param $val i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    ;; TODO: reallocate if needed; for now assume enough space
+    (i32.store (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift})))) (local.get $val))
+    (local.set $len (i32.add (local.get $len) (i32.const {one})))
+    (i32.store (local.get $obj) (local.get $len))
+    (i32.or (i32.shl (local.get $len) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_array_pop(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_pop (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (if (i32.eqz (local.get $len)) (then (return (i32.const {undefined}))))
+    (local.set $len (i32.sub (local.get $len) (i32.const {one})))
+    (i32.store (local.get $obj) (local.get $len))
+    (i32.load (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $len) (i32.const {elem_shift}))))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_array_slice(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_slice (param $arr i32) (param $start i32) (param $end i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $s_pos i32)
+    (local $e_pos i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (local $i i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $s_pos (i32.shr_s (local.get $start) (i32.const {number_shift})))
+    (local.set $e_pos (i32.shr_s (local.get $end) (i32.const {number_shift})))
+    ;; clamp
+    (if (i32.lt_s (local.get $s_pos) (i32.const {zero})) (then (local.set $s_pos (i32.const {zero}))))
+    (if (i32.gt_u (local.get $s_pos) (local.get $len)) (then (local.set $s_pos (local.get $len))))
+    (if (i32.lt_s (local.get $e_pos) (i32.const {zero})) (then (local.set $e_pos (i32.const {zero}))))
+    (if (i32.gt_u (local.get $e_pos) (local.get $len)) (then (local.set $e_pos (local.get $len))))
+    (if (i32.ge_u (local.get $s_pos) (local.get $e_pos))
+      (then
+        (local.set $result_ptr (call $alloc_heap (i32.const {array_header})))
+        (i32.store (local.get $result_ptr) (i32.const {zero}))
+        (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+    (local.set $result_len (i32.sub (local.get $e_pos) (local.get $s_pos)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $result_len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (call $copy
+      (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $s_pos) (i32.const {elem_shift}))))
+      (i32.add (local.get $result_ptr) (i32.const {array_header}))
+      (i32.shl (local.get $result_len) (i32.const {elem_shift})))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_array_concat(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_concat (param $a i32) (param $b i32) (result i32)
+    (local $a_obj i32)
+    (local $b_obj i32)
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $a_len i32)
+    (local $b_len i32)
+    (local $result_ptr i32)
+    (local $result_len i32)
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $a_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $b_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $a_obj (i32.and (local.get $a) (i32.const {heap_mask})))
+    (local.set $b_obj (i32.and (local.get $b) (i32.const {heap_mask})))
+    (local.set $a_len (i32.load (local.get $a_obj)))
+    (local.set $b_len (i32.load (local.get $b_obj)))
+    (local.set $result_len (i32.add (local.get $a_len) (local.get $b_len)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $result_len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (call $copy
+      (i32.add (local.get $a_obj) (i32.const {array_header}))
+      (i32.add (local.get $result_ptr) (i32.const {array_header}))
+      (i32.shl (local.get $a_len) (i32.const {elem_shift})))
+    (call $copy
+      (i32.add (local.get $b_obj) (i32.const {array_header}))
+      (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $a_len) (i32.const {elem_shift}))))
+      (i32.shl (local.get $b_len) (i32.const {elem_shift})))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_array_join(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_join (param $arr i32) (param $sep i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    ;; TODO: implement proper join
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    ;; simplified: return empty string for now
+    (local.set $obj (call $alloc_heap (i32.const {header})))
+    (i32.store (local.get $obj) (i32.const {zero}))
+    (i32.or (local.get $obj) (i32.const {string_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            string_tag = ValueTag::STRING,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_array_reverse(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_reverse (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    ;; TODO: implement proper reverse
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    ;; simplified: return original array
+    (local.get $arr))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Object methods (M10)
+
+    fn emit_object_keys(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_keys (param $obj i32) (result i32)
+    (local $tag i32)
+    ;; TODO: implement object keys extraction
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    ;; simplified: return empty array
+    (local.set $obj (call $alloc_heap (i32.const {array_header})))
+    (i32.store (local.get $obj) (i32.const {zero}))
+    (i32.or (local.get $obj) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            array_tag = ValueTag::ARRAY,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_object_values(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_values (param $obj i32) (result i32)
+    (local $tag i32)
+    ;; TODO: implement object values extraction
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    ;; simplified: return empty array
+    (local.set $obj (call $alloc_heap (i32.const {array_header})))
+    (i32.store (local.get $obj) (i32.const {zero}))
+    (i32.or (local.get $obj) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            array_tag = ValueTag::ARRAY,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_object_entries(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_entries (param $obj i32) (result i32)
+    (local $tag i32)
+    ;; TODO: implement object entries extraction
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    ;; simplified: return empty array
+    (local.set $obj (call $alloc_heap (i32.const {array_header})))
+    (i32.store (local.get $obj) (i32.const {zero}))
+    (i32.or (local.get $obj) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            array_tag = ValueTag::ARRAY,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Math functions (M10)
+
+    fn emit_math_floor(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_floor (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
+    ;; floor is no-op for encoded integers
+    (local.get $v))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_math_ceil(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_ceil (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
+    ;; ceil is no-op for encoded integers
+    (local.get $v))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_math_round(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_round (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
+    ;; round is no-op for encoded integers
+    (local.get $v))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_math_abs(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_abs (param $v i32) (result i32)
+    (local $tag i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
+    (i32.or (i32.shl (local.get $n) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_math_max(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_max (param $a i32) (param $b i32) (result i32)
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $a_n i32)
+    (local $b_n i32)
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
+    (if (i32.or (i32.ne (local.get $a_tag) (i32.const {number_tag})) (i32.ne (local.get $b_tag) (i32.const {number_tag})))
+      (then (return (i32.const {undefined}))))
+    (local.set $a_n (i32.shr_s (local.get $a) (i32.const {number_shift})))
+    (local.set $b_n (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (if (i32.gt_s (local.get $a_n) (local.get $b_n))
+      (then (return (local.get $a))))
+    (local.get $b))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_math_min(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_min (param $a i32) (param $b i32) (result i32)
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $a_n i32)
+    (local $b_n i32)
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
+    (if (i32.or (i32.ne (local.get $a_tag) (i32.const {number_tag})) (i32.ne (local.get $b_tag) (i32.const {number_tag})))
+      (then (return (i32.const {undefined}))))
+    (local.set $a_n (i32.shr_s (local.get $a) (i32.const {number_shift})))
+    (local.set $b_n (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $a_n) (local.get $b_n))
+      (then (return (local.get $a))))
+    (local.get $b))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // JSON functions (M10)
+
+    fn emit_json_stringify(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $json_stringify (param $v i32) (result i32)
+    ;; TODO: implement proper JSON.stringify
+    ;; simplified: call value_to_string_into
+    (local $result_ptr i32)
+    (local $len i32)
+    (local.set $result_ptr (call $alloc_heap (i32.const {header_plus_buffer})))
+    (local.set $len (call $value_to_string_into (local.get $v) (i32.add (local.get $result_ptr) (i32.const {header}))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            header = Layout::STRING_HEADER_SIZE,
+            header_plus_buffer = Layout::STRING_HEADER_SIZE + 256,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    fn emit_json_parse(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $json_parse (param $s i32) (result i32)
+    ;; TODO: implement proper JSON.parse
+    ;; simplified: return undefined
+    (i32.const {undefined}))
+"#,
             undefined = ValueTag::UNDEFINED,
         ));
     }
