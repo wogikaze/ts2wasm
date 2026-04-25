@@ -16,15 +16,15 @@ TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず
 | `docs/05-compatibility-and-semantics.md` | TypeScript 構文・型、JavaScript 意味論、module/npm 対応境界 |
 | `docs/06-testing-and-coverage.md` | テスト分類、coverage state、differential testing、skip policy |
 | `docs/07-performance-and-optimization.md` | performance goal、optimization levels、optimization strategy、benchmark state |
-| `docs/08-roadmap-and-success.md` | 実装ロードマップ、成功条件、canonical milestone への参照 |
+| `docs/08-roadmap-and-success.md` | 実装ロードマップ、成功条件、workstream/gate 運用 |
 | `docs/09-security-and-capability-model.md` | host capability、WASI preopen、Node host security、manifest 監査 |
 | `docs/10-related-projects.md` | QuickJS、AssemblyScript、Emscripten、Javy、tsc などとの比較 |
-| `docs/11-shared-definitions.md` | milestone、test status schema、capability manifest、optimization mode、benchmark policy |
-| `docs/12-current-implementation-status.md` | 現在の実装事実、未実装範囲、検証状況 |
+| `docs/11-shared-definitions.md` | test status schema、capability manifest、optimization mode、benchmark policy |
+| `current-state.md` | 現在の実装事実、未実装範囲、検証状況（root 管理） |
 | `docs/13-coding-standard.md` | Rust コード規約。panic 禁止、Diagnostic、Span、IR variant 追加、backend WAT 直書き禁止、RuntimeFn catalog |
 | `docs/14-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 |
 | `docs/15-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI |
-| `docs/16-coverage-matrix.md` | reference test coverage dashboard。test262/TypeScript/tests を分母にした進捗可視化 |
+| `docs/16-coverage-matrix.md` | coverage 運用ポリシーと gate 判定基準 |
 
 ## Development Init
 
@@ -44,6 +44,11 @@ https://github.com/rustwasm/wasm-bindgen.git reference/wasm-bindgen
 https://github.com/quickjs-ng/quickjs.git reference/quickjs-ng
 EOF
 
+# install repo-managed git hooks
+scripts/install_git_hooks.sh
+
 # run test
 
 ```
+
+`pre-commit` では `cargo fmt --all --check` を強制する。hook を有効にするには init 時に `scripts/install_git_hooks.sh` を実行する。

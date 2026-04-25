@@ -237,4 +237,4 @@ IR に variant を追加・変更する際は以下の順番で行う。
 3. debug / Display impl を更新する。
 4. snapshot test を更新する。
 5. differential test が通ることを確認する。
-6. `docs/12-current-implementation-status.md` を更新する。
+6. `current-state.md` を更新する。

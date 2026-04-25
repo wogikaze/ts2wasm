@@ -494,7 +494,7 @@ semantic snapshot
 lowered snapshot
 linker structure test if runtime is affected
 differential test if behavior is affected
-docs/12-current-implementation-status.md
+current-state.md
 unsupported diagnostic test
 ```
 
@@ -785,7 +785,7 @@ docs/05-compatibility-and-semantics.md
 docs/06-testing-and-coverage.md
 docs/09-security-and-capability-model.md
 docs/11-shared-definitions.md
-docs/12-current-implementation-status.md
+current-state.md
 ```
 
 ## 17. Commit / Review Policy
@@ -813,7 +813,7 @@ big refactor
 
 ```bash
 cargo fmt --all --check
-cargo test
+cargo nextest run
 ```
 
 runtime / backend / differential に関わる変更では、Node vs wasm/iwasm differential も通す。
@@ -834,7 +834,7 @@ RuntimeLinkPlan test があるか
 fd_write など host import が条件化されているか
 runtime strings が必要時のみ intern されるか
 ValueTag の範囲検査があるか
-docs/12-current-implementation-status.md が更新されているか
+current-state.md が更新されているか
 ```
 
 ## 19. Gatekeeper Checklist
@@ -868,13 +868,13 @@ git log --oneline -8
 git diff --stat HEAD~1..HEAD
 git show --name-only --oneline HEAD
 cargo fmt --all --check
-cargo test
+cargo nextest run
 ```
 
 runtime / backend / WASI / differential に関係する変更では追加で確認する。
 
 ```bash
-cargo test -- --include-ignored
+cargo nextest run --include-ignored
 ```
 
 または、プロジェクトで定義された iwasm differential suite を実行する。
@@ -924,7 +924,7 @@ RuntimeFn::symbol / manifest name を更新した
 RuntimeLinkPlan test を追加した
 capability manifest test を追加した
 behavior が変わる場合は Node vs wasm/iwasm differential test を追加した
-docs/12-current-implementation-status.md を更新した
+current-state.md を更新した
 docs/15-runtime-abi.md を更新した
 ```
 
@@ -944,7 +944,7 @@ capability manifest JSON に出る test を追加した
 host import が必要時だけ WAT に出る test を追加した
 host import が不要時に WAT に出ない test を追加した
 docs/09-security-and-capability-model.md を更新した
-docs/12-current-implementation-status.md を更新した
+current-state.md を更新した
 ```
 
 host import が常時 emit される変更は reject する。
@@ -1050,7 +1050,7 @@ test policy
 docs/05-compatibility-and-semantics.md
 docs/09-security-and-capability-model.md
 docs/11-shared-definitions.md
-docs/12-current-implementation-status.md
+current-state.md
 docs/15-runtime-abi.md
 ```
 
@@ -1071,7 +1071,7 @@ gatekeeper に渡すときは、以下を必ず添付する。
 
 検証:
   cargo fmt --all --check
-  cargo test
+  cargo nextest run
   differential / iwasm test if relevant
   grep gate 結果
 
@@ -1098,7 +1098,7 @@ Commits:
 
 Validation:
 - cargo fmt --all --check: pass/fail
-- cargo test: pass/fail
+- cargo nextest run: pass/fail
 - iwasm differential: pass/fail/not applicable
 - grep gate:
   - as_console_log_call: 0

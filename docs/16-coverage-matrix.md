@@ -102,7 +102,7 @@ The coverage matrix above shows test262 execution counts. For detailed test resu
 ## Gate 連携ルール
 
 - Gate F に影響する変更では、まず `artifacts/coverage/reference-coverage-matrix.md` の該当 suite 行を更新する。
-- `docs/12-current-implementation-status.md` は実装詳細、`docs/16-coverage-matrix.md` は coverage のポリシーと判定基準に専念する。
+- `current-state.md` は実装詳細、`docs/16-coverage-matrix.md` は coverage のポリシーと判定基準に専念する。
 - Gate F 判定では test262 行の `executed > 0` と status 内訳が必須。
 
 ## 更新チェックリスト
@@ -111,4 +111,4 @@ The coverage matrix above shows test262 execution counts. For detailed test resu
 - 変更対象 suite の `executed` と status 内訳を `artifacts/coverage/reference-coverage-matrix.md` に反映したか
 - `coverage%` の再計算を反映したか
 - `unsupported (DiagCode breakdown)` が最新の実行結果を反映しているか
-- 必要なら `docs/12-current-implementation-status.md` と整合したか
+- 必要なら `current-state.md` と整合したか

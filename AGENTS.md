@@ -18,7 +18,7 @@ Future implementation should use clear top-level directories such as `runtime/`,
 Key commands:
 
 ```bash
-cargo test
+cargo nextest run
 cargo fmt --all
 which iwasm
 ig "process.env" docs
@@ -31,7 +31,7 @@ scripts/test262_runner.sh --sample 50 --jobs 4 | tee test262-results.jsonl | scr
 scripts/test_regression_gate.sh test262-results.jsonl
 ```
 
-`cargo test` runs the current Rust unit tests. `cargo fmt --all` formats Rust code. `which iwasm` verifies the required WASI runner is available. Use `ig` for code and document search; fall back to `rg` only if `ig` is unavailable.
+`cargo nextest run` runs the current Rust unit tests. `cargo fmt --all` formats Rust code. `which iwasm` verifies the required WASI runner is available. Use `ig` for code and document search; fall back to `rg` only if `ig` is unavailable.
 
 Coverage measurement and update notes:
 
