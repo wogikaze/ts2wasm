@@ -6,16 +6,16 @@ Last updated: 2026-04-25
 
 ## Summary
 
-現在の実装段階は M5 の heap-allocated array/object gate に到達した。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
+現在の実装段階は W0/W1/W2/W3 の一部が動作し、heap-allocated array/object を含む最小 data model が動く状態に到達した。`docs/11-shared-definitions.md` にある runtime ABI、capability manifest、test status schema の一部を Rust 型と validation として `crates/shared/` に実装し、`console.log("hi")` の単一入力から WASI `.wasm` を生成して `iwasm` で実行できるようになった。
 
-M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined` / `null` / truthiness / `===` / `+` の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。M4 では compile-time evaluator を削除し、stdout の事前計算ではなく、生成 WASM 内の tagged JS value runtime で式・制御フロー・`console.log` 引数評価を実行している。M5 では array literal、numeric index、object literal、data property read、`.length` を heap runtime で実装した。ただし、これはまだ汎用 TypeScript/JavaScript compiler ではない。
+semantic-core fixtures では、number/string/boolean/if/while/function と、`undefined` / `null` / truthiness / `===` / `+` の小さな subset を Node と比較し、生成 wasm の `iwasm` stdout が一致する。compile-time evaluator は削除済みで、stdout の事前計算ではなく、生成 WASM 内の tagged JS value runtime で式・制御フロー・`console.log` 引数評価を実行している。data-model fixtures では array literal、numeric index、object literal、data property read、`.length` を heap runtime で実装した。ただし、これはまだ汎用 TypeScript/JavaScript compiler ではない。
 
 ## Implemented
 
 | Area | Status | Location |
 |---|---|---|
 | Rust workspace | implemented | `Cargo.toml` |
-| M0 shared crate | implemented | `crates/shared/` |
+| Shared definitions crate (W0 substrate) | implemented | `crates/shared/` |
 | Minimal CLI | partial | `crates/cli/` |
 | Minimal parser/frontend | partial | `crates/cli/src/lib.rs` |
 | WAT/WASM runtime emitter | partial | `crates/cli/src/lib.rs` |
@@ -24,8 +24,7 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 | Capability manifest model | partial | `crates/shared/src/capability.rs` |
 | Test status model | partial | `crates/shared/src/test_status.rs` |
 | `console.log("hi")` to WASI wasm | implemented for string literal only | `crates/cli/`, `fixtures/m1/hello.ts` |
-| M2 fixture comparison | implemented for small curated fixtures | `fixtures/m2/`, `crates/cli/tests/m2_node_diff.rs` |
-| M3 semantic fixture comparison | implemented for small curated fixtures | `fixtures/m3/`, `crates/cli/tests/m2_node_diff.rs` |
+| Semantic-core fixture comparison | implemented for small curated fixtures | `fixtures/m2/`, `fixtures/m3/`, `crates/cli/tests/m2_node_diff.rs` |
 | Repository agent guidance | implemented | `AGENTS.md`, `.agents/skills/` |
 
 ## Verified
@@ -33,11 +32,10 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 | Check | Result |
 |---|---|
 | `cargo fmt --all --check` | pass |
-| `cargo test` | pass, includes M1/M2/M3/M5 `iwasm` integration tests |
-| M2 fixtures vs Node | pass for curated fixtures |
-| M3 semantic fixtures vs Node | pass for curated fixtures |
-| M5 array/object fixtures vs Node | pass for curated fixtures |
-| Precomputed stdout embedding check | pass for M2/M3 fixtures |
+| `cargo test` | pass, includes current `iwasm` integration tests |
+| Semantic-core fixtures vs Node | pass for curated fixtures |
+| Data-model fixtures vs Node | pass for curated fixtures |
+| Precomputed stdout embedding check | pass for semantic-core fixtures |
 | `iwasm --version` | pass, `iwasm 2.4.3` |
 | `scripts/update_coverage_matrix.sh --check` | pass locally; PR gate path is wired |
 
@@ -59,10 +57,10 @@ M2/M3 fixtures では、number/string/boolean/if/while/function と、`undefined
 
 Implemented in this slice:
 
-- `docs/16-coverage-matrix.md` now tracks reference-suite coverage against `reference/test262`, `reference/TypeScript/tests/cases/compiler`, and `reference/typescript-go/testdata/tests`.
+- `artifacts/coverage/reference-coverage-matrix.md` now tracks reference-suite coverage against `reference/test262`, `reference/TypeScript/tests/cases/compiler`, and `reference/typescript-go/testdata/tests`.
 - `scripts/reference_coverage.sh` classifies compile results as `pass` / `unsupported` / `fail` / `blocked` and emits `unsupported_diagcodes` so unsupported work can be prioritized by `DiagCode`.
-- `scripts/update_coverage_matrix.sh` ramps executed counts automatically (`test262:+50`, `tsc:+30`, `tsgo:+20`) and rewrites the coverage table in `docs/16-coverage-matrix.md`.
-- PR gate path is wired via `.github/workflows/reference-coverage.yml`; scheduled runs update `docs/16-coverage-matrix.md` through an automated PR.
+- `scripts/update_coverage_matrix.sh` ramps executed counts automatically (`test262:+50`, `tsc:+30`, `tsgo:+20`) and rewrites the coverage table in `artifacts/coverage/reference-coverage-matrix.md`.
+- PR gate path is wired via `.github/workflows/reference-coverage.yml`; scheduled runs update `artifacts/coverage/reference-coverage-matrix.md` through an automated PR.
 
 Current measured sample state:
 

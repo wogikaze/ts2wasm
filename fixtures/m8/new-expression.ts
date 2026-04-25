@@ -1,11 +1,11 @@
 class Box {
-  constructor(v) {
-    this.v = v;
-  }
+    constructor(v) {
+        this.v = v;
+    }
 
-  get() {
-    return this.v;
-  }
+    get() {
+        return this.v;
+    }
 }
 
 let b = new Box(42);

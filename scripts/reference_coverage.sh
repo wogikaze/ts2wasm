@@ -130,7 +130,7 @@ fi
 
 coverage_percent="0.00"
 if [[ "$denominator" -gt 0 ]]; then
-  coverage_percent="$(awk -v e="$executed" -v d="$denominator" 'BEGIN { printf "%.2f", (e / d) * 100 }')"
+  coverage_percent="$(awk -v p="$pass_count" -v d="$denominator" 'BEGIN { printf "%.2f", (p / d) * 100 }')"
 fi
 
 printf 'suite=%s\n' "$suite"

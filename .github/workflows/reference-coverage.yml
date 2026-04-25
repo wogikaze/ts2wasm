@@ -9,7 +9,7 @@ on:
       - scripts/test262_runner.sh
       - scripts/test_differential_reporter.sh
       - scripts/test_regression_gate.sh
-      - docs/16-coverage-matrix.md
+      - artifacts/coverage/reference-coverage-matrix.md
       - .github/workflows/reference-coverage.yml
   schedule:
     - cron: '0 3 * * *'
@@ -38,7 +38,7 @@ jobs:
       - name: Fetch base branch docs
         run: |
           git fetch --no-tags --depth=1 origin ${{ github.event.pull_request.base.ref }}
-          git show origin/${{ github.event.pull_request.base.ref }}:docs/16-coverage-matrix.md > /tmp/base-coverage-matrix.md
+          git show origin/${{ github.event.pull_request.base.ref }}:artifacts/coverage/reference-coverage-matrix.md > /tmp/base-coverage-matrix.md || true
 
       - name: Run coverage matrix check
         run: |
@@ -47,7 +47,7 @@ jobs:
 
       - name: Run coverage delta gate
         run: |
-          scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md docs/16-coverage-matrix.md
+          scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
 
   test262-gate:
     if: github.event_name == 'pull_request'
@@ -71,10 +71,15 @@ jobs:
           sudo mv iwasm /usr/local/bin/
           chmod +x /usr/local/bin/iwasm
 
+      - name: Check shell scripts
+        run: |
+          chmod +x scripts/check_scripts.sh
+          scripts/check_scripts.sh
+
       - name: Run test262 runner with sample
         run: |
           chmod +x scripts/test262_runner.sh scripts/test_differential_reporter.sh scripts/test_regression_gate.sh
-          scripts/test262_runner.sh --sample 50 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+          scripts/test262_runner.sh --sample 50 --jobs 4 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
 
       - name: Run regression gate
         run: |
@@ -119,6 +124,6 @@ jobs:
 
             - ran scripts/update_coverage_matrix.sh
             - advanced per-suite executed limits by ramp step
-            - updated docs/16-coverage-matrix.md
+            - updated artifacts/coverage/reference-coverage-matrix.md
           branch: ci/reference-coverage-ramp
           delete-branch: true

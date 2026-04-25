@@ -23,9 +23,22 @@ cargo fmt --all
 which iwasm
 ig "process.env" docs
 ig "runtime ABI" docs
+scripts/reference_coverage.sh test262 --limit 50
+scripts/update_coverage_matrix.sh
+scripts/update_coverage_matrix.sh --check
+scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
+scripts/test262_runner.sh --sample 50 --jobs 4 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+scripts/test_regression_gate.sh test262-results.jsonl
 ```
 
 `cargo test` runs the current Rust unit tests. `cargo fmt --all` formats Rust code. `which iwasm` verifies the required WASI runner is available. Use `ig` for code and document search; fall back to `rg` only if `ig` is unavailable.
+
+Coverage measurement and update notes:
+
+- Generated coverage table lives in `artifacts/coverage/reference-coverage-matrix.md`.
+- `scripts/update_coverage_matrix.sh` rewrites only the generated artifact table block.
+- `scripts/update_coverage_matrix.sh --check` fails when generated table is stale relative to current script output.
+- Coverage percent is pass-based (`pass / denominator * 100`); unsupported/blocked/skip are tracked as breakdown, not numerator.
 
 ## Coding Style & Naming Conventions
 

@@ -1,13 +1,13 @@
 class Base {
-  value() {
-    return 4;
-  }
+    value() {
+        return 4;
+    }
 }
 
 class Child extends Base {
-  value() {
-    return super.value();
-  }
+    value() {
+        return super.value();
+    }
 }
 
 let c = new Child();

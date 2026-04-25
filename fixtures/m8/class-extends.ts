@@ -1,7 +1,7 @@
 class Base {
-  value() {
-    return 7;
-  }
+    value() {
+        return 7;
+    }
 }
 
 class Child extends Base {
