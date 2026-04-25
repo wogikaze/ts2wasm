@@ -2,6 +2,8 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+use serde_json::Value;
+
 fn fixture_path(fixture: &str) -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -44,6 +46,21 @@ fn compile_with_manifest(fixture: &str) -> (std::path::PathBuf, std::path::PathB
     (output, manifest)
 }
 
+fn manifest_runtime_entries(path: &std::path::Path) -> Vec<String> {
+    let manifest = fs::read_to_string(path).expect("failed to read manifest");
+    let json: Value = serde_json::from_str(&manifest).expect("manifest should be valid JSON");
+    json.get("runtime")
+        .and_then(Value::as_array)
+        .expect("manifest.runtime should be an array")
+        .iter()
+        .map(|v| {
+            v.as_str()
+                .expect("manifest.runtime should contain strings")
+                .to_owned()
+        })
+        .collect()
+}
+
 #[test]
 fn typed_add_runtime_equivalence() {
     let (wasm, _) = compile_with_manifest("m9/typed-add.ts");
@@ -64,17 +81,17 @@ fn typed_add_runtime_equivalence() {
 #[test]
 fn typed_add_uses_fast_runtime_path() {
     let (_, manifest_path) = compile_with_manifest("m9/typed-add.ts");
-    let manifest = fs::read_to_string(&manifest_path).expect("failed to read manifest");
-    assert!(manifest.contains("\"add_fast\""));
+    let runtime = manifest_runtime_entries(&manifest_path);
+    assert!(runtime.iter().any(|entry| entry == "add_fast"));
 }
 
 #[test]
 fn property_get_uses_inline_cache_runtime() {
     let (wasm, manifest_path) = compile_with_manifest("m9/property-ic.ts");
-    let manifest = fs::read_to_string(&manifest_path).expect("failed to read manifest");
+    let runtime = manifest_runtime_entries(&manifest_path);
     // TODO(P2-Correctness): PropertyGetIc optimization disabled until object correctness proven.
     // Verify base property_get is used instead.
-    assert!(manifest.contains("\"property_get\""));
+    assert!(runtime.iter().any(|entry| entry == "property_get"));
 
     let run = Command::new("iwasm")
         .arg(&wasm)

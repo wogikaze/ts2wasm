@@ -1,3 +1,4 @@
+use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
 use ts2wasm_shared::{TestRecord, TestStatus};
@@ -23,11 +24,15 @@ fn test_record_json_serialization() {
     };
 
     let json = record.to_json_line();
-    assert!(json.contains("\"suite\":\"test262\""));
-    assert!(json.contains("\"case\":\"expressions/arithmetic.js\""));
-    assert!(json.contains("\"status\":\"pass\""));
-    assert!(json.contains("\"expected\":\"42\""));
-    assert!(json.contains("\"actual\":\"42\""));
+    let parsed: Value = serde_json::from_str(&json).expect("record JSON should be valid");
+    assert_eq!(parsed.get("suite").and_then(Value::as_str), Some("test262"));
+    assert_eq!(
+        parsed.get("case").and_then(Value::as_str),
+        Some("expressions/arithmetic.js")
+    );
+    assert_eq!(parsed.get("status").and_then(Value::as_str), Some("pass"));
+    assert_eq!(parsed.get("expected").and_then(Value::as_str), Some("42"));
+    assert_eq!(parsed.get("actual").and_then(Value::as_str), Some("42"));
 }
 
 #[test]
@@ -45,9 +50,19 @@ fn test_record_json_with_unsupported_reason() {
 
     record.validate().expect("record should be valid");
     let json = record.to_json_line();
-    assert!(json.contains("\"status\":\"unsupported\""));
-    assert!(json.contains("\"reason\":"));
-    assert!(json.contains("feature:async"));
+    let parsed: Value = serde_json::from_str(&json).expect("record JSON should be valid");
+    assert_eq!(
+        parsed.get("status").and_then(Value::as_str),
+        Some("unsupported")
+    );
+    assert_eq!(
+        parsed.get("tracking").and_then(Value::as_str),
+        Some("feature:async")
+    );
+    assert_eq!(
+        parsed.get("reason").and_then(Value::as_str),
+        Some("UnsupportedSyntax: async not yet implemented")
+    );
 }
 
 #[test]
@@ -64,10 +79,19 @@ fn test_record_json_escaping() {
     };
 
     let json = record.to_json_line();
-    // Verify JSON contains properly escaped values (this is basic verification)
-    assert!(json.contains("\"case\":"));
-    assert!(json.contains("\"expected\":"));
-    assert!(json.contains("\"actual\":"));
+    let parsed: Value = serde_json::from_str(&json).expect("record JSON should be valid");
+    assert_eq!(
+        parsed.get("case").and_then(Value::as_str),
+        Some("test\"with\\quotes.js")
+    );
+    assert_eq!(
+        parsed.get("expected").and_then(Value::as_str),
+        Some("line1\nline2")
+    );
+    assert_eq!(
+        parsed.get("actual").and_then(Value::as_str),
+        Some("got\"unexpected")
+    );
 }
 
 #[test]
@@ -189,11 +213,8 @@ fn test_multiple_test_records_jsonl_format() {
     let jsonl_lines: Vec<String> = records.iter().map(|r| r.to_json_line()).collect();
 
     assert_eq!(jsonl_lines.len(), 2);
-    assert!(jsonl_lines[0].contains("\"status\":\"pass\""));
-    assert!(jsonl_lines[1].contains("\"status\":\"fail\""));
-
-    // Each line should be valid standalone JSON
-    for line in &jsonl_lines {
-        assert!(line.starts_with("{") && line.ends_with("}"));
-    }
+    let first: Value = serde_json::from_str(&jsonl_lines[0]).expect("line 1 should be JSON");
+    let second: Value = serde_json::from_str(&jsonl_lines[1]).expect("line 2 should be JSON");
+    assert_eq!(first.get("status").and_then(Value::as_str), Some("pass"));
+    assert_eq!(second.get("status").and_then(Value::as_str), Some("fail"));
 }

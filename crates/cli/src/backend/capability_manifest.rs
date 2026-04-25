@@ -183,6 +183,8 @@ fn json_escape(value: &str) -> String {
 
 #[cfg(test)]
 mod tests {
+    use serde_json::Value;
+
     use crate::backend::runtime_fn::RuntimeFn;
     use crate::backend::runtime_link_plan::RuntimeLinkPlan;
     use crate::ir::lowered::lower_program;
@@ -196,21 +198,46 @@ mod tests {
         lower_program(&resolved).expect("lowering failed")
     }
 
+    fn parse_json(input: &str) -> Value {
+        serde_json::from_str(input).expect("manifest JSON should be valid")
+    }
+
+    fn array_values<'a>(json: &'a Value, key: &str) -> Vec<&'a str> {
+        json.get(key)
+            .and_then(Value::as_array)
+            .unwrap_or_else(|| panic!("manifest field `{key}` should be an array"))
+            .iter()
+            .map(|v| {
+                v.as_str()
+                    .unwrap_or_else(|| panic!("manifest array `{key}` should contain strings"))
+            })
+            .collect()
+    }
+
     #[test]
     fn console_log_manifest_contains_fd_write_stdout_and_log_runtime() {
         let program = lowered("console.log(1);");
         let manifest = emit_capability_manifest_json(&program);
-        assert!(manifest.contains("\"wasi_snapshot_preview1.fd_write\""));
-        assert!(manifest.contains("\"stdout.write\""));
-        assert!(manifest.contains("\"log\""));
+        let json = parse_json(&manifest);
+        let imports = array_values(&json, "imports");
+        let capabilities = array_values(&json, "capabilities");
+        let runtime = array_values(&json, "runtime");
+
+        assert_eq!(imports, vec!["wasi_snapshot_preview1.fd_write"]);
+        assert_eq!(capabilities, vec!["stdout.write"]);
+        assert!(runtime.contains(&"log"));
     }
 
     #[test]
     fn no_console_log_manifest_omits_fd_write() {
         let program = lowered("let x = 1 + 2;");
         let manifest = emit_capability_manifest_json(&program);
-        assert!(!manifest.contains("\"wasi_snapshot_preview1.fd_write\""));
-        assert!(!manifest.contains("\"stdout.write\""));
+        let json = parse_json(&manifest);
+        let imports = array_values(&json, "imports");
+        let capabilities = array_values(&json, "capabilities");
+
+        assert!(!imports.contains(&"wasi_snapshot_preview1.fd_write"));
+        assert!(!capabilities.contains(&"stdout.write"));
     }
 
     #[test]
@@ -231,52 +258,107 @@ mod tests {
     fn stdin_skeleton_manifest_contains_fd_read_and_stdin_capability() {
         let plan = RuntimeLinkPlan::from_required_runtime_for_tests(&[RuntimeFn::ReadStdinUtf8]);
         let manifest = CapabilityManifest::from_link_plan(&plan).to_json();
-        assert!(manifest.contains("\"wasi_snapshot_preview1.fd_read\""));
-        assert!(manifest.contains("\"stdin.read\""));
-        assert!(manifest.contains("\"read_stdin_utf8\""));
+        let json = parse_json(&manifest);
+        let imports = array_values(&json, "imports");
+        let capabilities = array_values(&json, "capabilities");
+        let runtime = array_values(&json, "runtime");
+
+        assert!(imports.contains(&"wasi_snapshot_preview1.fd_read"));
+        assert!(capabilities.contains(&"stdin.read"));
+        assert!(runtime.contains(&"read_stdin_utf8"));
     }
 
     #[test]
     fn m6_idiom_manifest_contains_fd_read_and_stdin_capability() {
         let program = lowered("let s = require(\"fs\").readFileSync(0, \"utf8\");");
         let manifest = emit_capability_manifest_json(&program);
-        assert!(manifest.contains("\"wasi_snapshot_preview1.fd_read\""));
-        assert!(manifest.contains("\"stdin.read\""));
-        assert!(manifest.contains("\"read_stdin_utf8\""));
+        let json = parse_json(&manifest);
+        let imports = array_values(&json, "imports");
+        let capabilities = array_values(&json, "capabilities");
+        let runtime = array_values(&json, "runtime");
+
+        assert!(imports.contains(&"wasi_snapshot_preview1.fd_read"));
+        assert!(capabilities.contains(&"stdin.read"));
+        assert!(runtime.contains(&"read_stdin_utf8"));
     }
 
     #[test]
     fn manifest_v1_console_log_structured_schema() {
         let program = lowered("console.log(1);");
         let manifest_v1 = emit_manifest_v1_json(&program);
-        // Check structured imports with ABI contract
-        assert!(manifest_v1.contains("\"abi\": \"wasi-preview1\""));
-        assert!(manifest_v1.contains("\"module\": \"wasi_snapshot_preview1\""));
-        assert!(manifest_v1.contains("\"name\": \"fd_write\""));
-        // Check target is set
-        assert!(manifest_v1.contains("\"target\": \"wasm32-wasi-p1\""));
-        // Check capabilities
-        assert!(manifest_v1.contains("\"kind\": \"stdout.write\""));
+        let json = parse_json(&manifest_v1);
+
+        assert_eq!(
+            json.get("target").and_then(Value::as_str),
+            Some("wasm32-wasi-p1")
+        );
+
+        let imports = json
+            .get("imports")
+            .and_then(Value::as_array)
+            .expect("imports should be an array");
+        assert!(imports.iter().any(|imp| {
+            imp.get("abi").and_then(Value::as_str) == Some("wasi-preview1")
+                && imp.get("module").and_then(Value::as_str) == Some("wasi_snapshot_preview1")
+                && imp.get("name").and_then(Value::as_str) == Some("fd_write")
+        }));
+
+        let capabilities = json
+            .get("capabilities")
+            .and_then(Value::as_array)
+            .expect("capabilities should be an array");
+        assert!(
+            capabilities
+                .iter()
+                .any(|cap| cap.get("kind").and_then(Value::as_str) == Some("stdout.write"))
+        );
     }
 
     #[test]
     fn manifest_v1_node_api_separates_abi() {
         let program = lowered("console.log(require(\"fs\").readFileSync(\"./file\", \"utf8\"));");
         let manifest_v1 = emit_manifest_v1_json(&program);
-        // Check both WASI and node-shim ABIs are present
-        assert!(manifest_v1.contains("\"abi\": \"wasi-preview1\""));
-        assert!(manifest_v1.contains("\"abi\": \"node-shim\""));
-        // Check module/name separation for node API
-        assert!(manifest_v1.contains("\"module\": \"host\""));
-        assert!(manifest_v1.contains("\"name\": \"fs.readFileSync\""));
+        let json = parse_json(&manifest_v1);
+        let imports = json
+            .get("imports")
+            .and_then(Value::as_array)
+            .expect("imports should be an array");
+
+        assert!(
+            imports
+                .iter()
+                .any(|imp| imp.get("abi").and_then(Value::as_str) == Some("wasi-preview1"))
+        );
+        assert!(
+            imports
+                .iter()
+                .any(|imp| imp.get("abi").and_then(Value::as_str) == Some("node-shim"))
+        );
+        assert!(imports.iter().any(|imp| {
+            imp.get("module").and_then(Value::as_str) == Some("host")
+                && imp.get("name").and_then(Value::as_str) == Some("fs.readFileSync")
+        }));
     }
 
     #[test]
     fn manifest_v1_pure_wasi_no_node_shim() {
         let program = lowered("console.log(1 + 2);");
         let manifest_v1 = emit_manifest_v1_json(&program);
-        // Pure arithmetic + console.log should only have WASI, not node-shim
-        assert!(manifest_v1.contains("\"abi\": \"wasi-preview1\""));
-        assert!(!manifest_v1.contains("\"abi\": \"node-shim\""));
+        let json = parse_json(&manifest_v1);
+        let imports = json
+            .get("imports")
+            .and_then(Value::as_array)
+            .expect("imports should be an array");
+
+        assert!(
+            imports
+                .iter()
+                .any(|imp| imp.get("abi").and_then(Value::as_str) == Some("wasi-preview1"))
+        );
+        assert!(
+            !imports
+                .iter()
+                .any(|imp| imp.get("abi").and_then(Value::as_str) == Some("node-shim"))
+        );
     }
 }
