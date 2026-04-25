@@ -80,6 +80,23 @@ scripts/gen/coverage-matrix.sh
 - OOM/GC/UTF-8 完全対応は未完
 - host-deny / capability manifest の「監査可能な」E2E は `docs/06` の required test classes に沿って拡張予定
 
+## Risk Management
+
+既知のリスクと対応計画。
+
+| リスク | 緊急度 | 影響 | 対応計画 | 状態 |
+|---|---|---|---|---|
+| TypeScript parser integration の複雑性 | 中 | 高 | 既存 parser を oracle として活用しつつ、段階的に置換 | 監視中 |
+| GC 実装の複雑さ | 中 | 高 | 初期は arena + 明示 lifetime、段階的に mark-and-sweep | 計画中 |
+| WASM 提案の進化による ABI 変更 | 低 | 中 | 論理 ABI を固定し、backend で表現を差し替える設計 | 設計済み |
+| test262 カバレッジの達成困難 | 中 | 高 | 機能レベルの breakdown (issue 005) を優先 | 実行中 |
+| Node host import の増大 | 中 | 高 | capability manifest と host-deny test で監査 | 実装中 |
+| Reference repository の依存 | 低 | 中 | 参照 repository のハッシュ固定、local cache 検討 | 検討中 |
+
+**リスク評価基準**:
+- **緊急度**: 高 (即時対応)、中 (次回更新時)、低 (将来検討)
+- **影響**: 高 (プロジェクト成功に致命的)、中 (主要機能に影響)、低 (軽微)
+
 ## Next legal slice（実装単位の候補）
 
 次に取り込みやすい縦スライスは、`docs/11` の workstream 順と open issue を優先する。具体的な ticket は `issues/` を参照。ここでは「次の一行」だけ固定しない（更新コストを避けるため）。

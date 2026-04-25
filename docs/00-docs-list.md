@@ -91,3 +91,21 @@ scripts/manager coverage-report -- --format markdown
 - `docs/12-coding-standard.md`、`docs/13-ir-contracts.md`、`docs/14-runtime-abi.md`、`docs/15-coverage-matrix.md` のいずれかを変更した場合は、コード規約・IR 不変条件・runtime ABI・coverage ポリシーが実装・artifact と一致しているか確認する。
 - coverage 進捗更新は `artifacts/coverage/reference-coverage-matrix.md` を同じ変更で更新する。
 - host API を増やした場合、`docs/03-api-and-host-capability.md`、`docs/09-security-and-capability-model.md`、`docs/11-shared-definitions.md` の capability manifest を同時に確認する。
+
+## Recommended Reading Path
+
+新規参加者は以下の順序でドキュメントを読むことを推奨。
+
+1. **README.md** - プロジェクト概要と成功基準
+2. **docs/01-project-definition.md** - 目標、非目標、禁止事項
+3. **docs/04-compiler-architecture-and-runtime.md** - Compiler pipeline と runtime ABI
+4. **docs/12-coding-standard.md** - Rust コード規約と禁止事項
+5. **current-state.md** - 現在の実装状態と次のステップ
+6. **docs/05-compatibility-and-semantics.md** - TypeScript/JavaScript 対応方針
+7. **docs/06-testing-and-coverage.md** - テスト方針と differential testing
+8. **docs/11-shared-definitions.md** - Workstreams、Gates、共有定義
+
+必要に応じて以下を参照:
+- **docs/03-api-and-host-capability.md** - API 対応と capability manifest
+- **docs/09-security-and-capability-model.md** - Security と capability model
+- **docs/15-coverage-matrix.md** - Coverage 運用と gate 基準

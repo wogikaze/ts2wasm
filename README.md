@@ -96,3 +96,33 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 `iwasm`（WAMR）は OS のパッージマネージャやソースビルドで用意する。`cargo` / `rustc` は [rustup](https://rustup.rs/) 等で揃える。
 
 `pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `scripts/check_issue_queue.sh`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
+
+## FAQ
+
+### Q: なぜ AssemblyScript や QuickJS ではなく独自の compiler/runtime を作るのか？
+
+A: AssemblyScript は TypeScript 風の別言語であり、既存の JavaScript 資産をそのまま変換できない。QuickJS/Javy は JS engine 同梱であり、WASM サイズと capability boundary の観点で最適ではない。このプロジェクトは、既存の TS/JS 資産を可能な限りそのまま WASM に持ち込み、必要最小限の host shim で実行することを目指す。
+
+### Q: TypeScript の型情報はどう扱うのか？
+
+A: 初期段階では型を「実行に必要な情報」と「診断に必要な情報」に分ける。実行に必要な情報は優先して compiler pipeline に取り込み、診断互換は段階的に強化する。詳細は `docs/04-compiler-architecture-and-runtime.md` を参照。
+
+### Q: Node.js との semantic equivalence はどう確認するのか？
+
+A: differential testing を使用する。同じ TS/JS コードを Node.js と生成された WASM で実行し、stdout を比較する。詳細は `docs/06-testing-and-coverage.md` を参照。
+
+### Q: standalone 対象プログラムとは何か？
+
+A: Node host import を必要としないプログラム。WASI のみで実行可能。capability manifest により監査可能。詳細は `docs/03-api-and-host-capability.md` を参照。
+
+### Q: どの issue から着手すべきか？
+
+A: `current-state.md` の「Next Priority Slice」セクションに優先度順のリストがある。AI エージェントや自律開発ループではこのリストを参照。
+
+### Q: テストはどう実行するのか？
+
+A: `cargo nextest run` で実行。differential testing が必要な場合は `scripts/run/reference-coverage.sh` を使用。詳細は `docs/06-testing-and-coverage.md` を参照。
+
+### Q: Nix がなくても開発できるか？
+
+A: 可能。手動でツールを入れる場合の例が README にある。ただし Nix を使うとツールの共有が容易になる。
