@@ -84,6 +84,34 @@ scripts/gen/coverage-matrix.sh
 
 次に取り込みやすい縦スライスは、`docs/11` の workstream 順と open issue を優先する。具体的な ticket は `issues/` を参照。ここでは「次の一行」だけ固定しない（更新コストを避けるため）。
 
+## Next Priority Slice（優先度順の具体的な次ステップ）
+
+AI エージェントや自律開発ループでのタスク選択のため、現在の Ready queue から優先度順に以下を推奨。
+
+1. **issues/open/002-emit-canonical-capability-manifest-schema.md** (P0)
+   - capability manifest schema の正本を定義
+   - Gate C の前提条件
+
+2. **issues/open/012-fix-computed-property-semantics-bug.md** (P0)
+   - 意味論バグ修正
+   - 既存 fixture で再現可能
+
+3. **issues/open/013-implement-heap-oom-check.md** (P0)
+   - runtime safety critical
+   - memory safety 関連
+
+4. **issues/open/004-reclassify-compile-only-compatibility-tests.md** (P0)
+   - coverage 測定の正確性改善
+   - Gate D の前提条件
+
+5. **issues/open/005-add-fine-grained-unsupported-feature-breakdown.md** (P0)
+   - coverage breakdown の改善
+   - 機能レベルのトラッキング
+
+6. **issues/open/010-extract-frontend-module-from-crates-cli.md** (P1)
+   - frontend モジュールの分離
+   - TypeScript integration の前提
+
 ## Current Policy
 
 - `docs/` は ADR/設計判断の保存先として扱う。

@@ -1,5 +1,17 @@
 # TS transpiler to WASM
 
+## Project Success Criteria
+
+このプロジェクトが成功した状態を以下のように定義する。
+
+- TypeScript/JavaScript 資産を WASM に変換し、iwasm で実行可能
+- Node.js との differential testing で semantic equivalence を確認
+- capability manifest による監査可能なセキュリティモデル
+- test262 / TypeScript corpus の実行カバレッジが目標レベルに到達
+- standalone 対象プログラムが Node host import なしで動く
+
+詳細な成功条件は `docs/08-roadmap-and-success.md` を参照。
+
 ## Project position
 
 TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず、可能な限り WebAssembly 実行環境へ持ち込む compiler/runtime プロジェクトである。AssemblyScript のような TypeScript 風の別言語ではなく、QuickJS/Javy のような JS engine 同梱にも寄せすぎない。生成 WASM、WASM 側 runtime、必要最小限の host shim を分離する。
