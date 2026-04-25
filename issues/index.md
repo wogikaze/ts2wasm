@@ -51,6 +51,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 053 | Implement Math | feature | runtime/builtins | implementation-ready | P1 |  | Implement Math |
 | 054 | Implement Error types | feature | runtime/builtins | implementation-ready | P1 |  | Implement Error types |
 | 055 | Implement import and export | feature | frontend/semantics | implementation-ready | P1 |  | Implement import and export |
+| 056 | Implement name resolution for variables and identifiers | feature | frontend | design-ready | P0 |  | Implement name resolution for variables and identifiers |
+| 057 | Implement function resolution for function calls | feature | frontend | design-ready | P0 |  | Implement function resolution for function calls |
 <!-- generated:ready:end -->
 
 ## Blocked queue
