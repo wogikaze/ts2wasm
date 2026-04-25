@@ -24,6 +24,8 @@ WAMR (wasm-micro-runtime) は W3C Wasm MVP 完全準拠で、WASI 対応、multi
 
 第三ターゲットとして、将来的に Wasm GC / Component Model / WIT を利用したより型付きの host interface を検討する。wasm-tools は既に Component Model を実装しており（Stage 4+ではないがデフォルト有効）、jco は JavaScript/TypeScript から Components をビルドし、ES modules に transpile できる。ただし、これは初期の iwasm 実行可能性を壊さない範囲で進める。iwasm で動く `.wasm` と、より高機能な runtime 向け `.wasm` は、同じ compiler pipeline から別 backend として出す。
 
+WASM 提案の詳細な対応状況は `docs/language-reference/wasm-features.md` を参照。
+
 ## Target matrix
 
 | Target | Runtime dependency | Intended use | Hard gate |

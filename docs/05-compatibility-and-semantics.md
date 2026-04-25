@@ -8,28 +8,7 @@
 
 構文の基準は TypeScript compiler が受理する TypeScript と、実行時の ECMAScript semantics である。AssemblyScript 固有の `i32`、`i64`、`f32`、`usize`、`changetype`、明示メモリ操作 API、AssemblyScript 標準ライブラリは入力言語として扱わない。内部最適化で primitive 表現を使う場合も、ユーザー可視の構文・型は TypeScript に限定する。
 
-| 構文 | 初期 | 中期 | 最終 |
-|---|---|---|---|
-| `let` / `const` / `var` | parse + lowering | 対応 | 対応 |
-| number / string / boolean literal | parse + lowering | 対応 | 対応 |
-| object literal | basic own properties | property semantics 拡張 | 対応 |
-| array literal | dense array | sparse / holes | 対応 |
-| function declaration/expression | direct call | closure / `this` 拡張 | 対応 |
-| arrow function | lexical `this` 診断付き | 対応 | 対応 |
-| closure | simple capture | mutable capture / escape | 対応 |
-| class | unsupported-class | prototype / constructor | 対応 |
-| interface | type-only parse | checker 利用 | type-only |
-| type alias | type-only parse | checker 利用 | type-only |
-| generics | erased type syntax | 型情報による最適化 | 対応 |
-| enum | numeric enum subset | string / const enum | 対応 |
-| namespace | unsupported-namespace | 部分 | 対応 |
-| module import/export | single file only | relative static import/export | package 解決 |
-| async/await | unsupported-async | Promise/runtime + host event loop | 対応 |
-| exception | `throw` / `try` 診断付き | runtime exception | 対応 |
-| destructuring | unsupported-destructuring | 部分 | 対応 |
-| spread/rest | unsupported-spread-rest | 部分 | 対応 |
-| optional chaining | lowering candidate | 対応 | 対応 |
-| nullish coalescing | lowering candidate | 対応 | 対応 |
+構文ごとの対応方針と実装状況の詳細は `docs/language-reference/typescript-features.md` および `docs/language-reference/javascript-features.md` を参照。
 
 初期段階で重要なのは、「簡単な構文しか対応しない」ことではなく、「構文ごとの未対応理由を潰せる形で管理する」ことである。たとえば `async/await` が未対応なら、parser が読めないのか、IR が表現できないのか、runtime に Promise がないのか、host event loop がないのかを分ける。
 

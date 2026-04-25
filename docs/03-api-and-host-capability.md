@@ -2,6 +2,8 @@
 
 この文書は、WASI に lowering できる API、Node host が必要な API、host shim trimming、capability manifest を扱う。capability manifest の canonical schema は `docs/11-shared-definitions.md` を参照する。
 
+WASI 機能の詳細な対応状況は `docs/language-reference/wasi-features.md` を参照。
+
 ## API 対応方針
 
 API は「standalone で動く API」と「Node.js host が必要な API」に分ける。
