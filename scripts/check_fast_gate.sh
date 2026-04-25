@@ -17,9 +17,9 @@ Usage:
 
 Runs:
   cargo fmt --all --check
-  scripts/check_scripts.sh
+  scripts/check/shell-syntax.sh
   scripts/check_issue_queue.sh
-  scripts/update_coverage_matrix.sh --check
+  scripts/gen/coverage-matrix.sh --check
   cargo nextest run   (unless skipped)
 
 Options:
@@ -65,9 +65,9 @@ run() {
 }
 
 run cargo fmt --all --check
-run bash "${repo_root}/scripts/check_scripts.sh"
+run bash "${repo_root}/scripts/check/shell-syntax.sh"
 run bash "${repo_root}/scripts/check_issue_queue.sh"
-run bash "${repo_root}/scripts/update_coverage_matrix.sh" --check
+run bash "${repo_root}/scripts/gen/coverage-matrix.sh" --check
 
 if [[ "$skip_nextest" -eq 0 ]]; then
   run cargo nextest run

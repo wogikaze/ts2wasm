@@ -29,6 +29,6 @@ Acceptance Criteria:
 Validation:
 
 ```sh
-scripts/reference_coverage.sh tsc --limit 300
-scripts/reference_coverage.sh tsgo --limit 165
+scripts/run/reference-coverage.sh tsc --limit 300
+scripts/run/reference-coverage.sh tsgo --limit 165
 ```

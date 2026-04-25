@@ -29,7 +29,7 @@ Acceptance Criteria:
 Validation:
 
 ```sh
-scripts/check_scripts.sh
-scripts/reference_coverage.sh test262 --limit 1
-scripts/update_coverage_matrix.sh --check
+scripts/check/shell-syntax.sh
+scripts/run/reference-coverage.sh test262 --limit 1
+scripts/gen/coverage-matrix.sh --check
 ```

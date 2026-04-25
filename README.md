@@ -64,7 +64,7 @@ https://github.com/quickjs-ng/quickjs.git reference/quickjs-ng
 EOF
 
 # install repo-managed git hooks
-scripts/install_git_hooks.sh
+scripts/dev/install-git-hooks.sh
 
 # optional: one entry for all scripts/ without opening each .sh
 # scripts/manager help
@@ -83,4 +83,4 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 
 `iwasm`（WAMR）は OS のパッージマネージャやソースビルドで用意する。`cargo` / `rustc` は [rustup](https://rustup.rs/) 等で揃える。
 
-`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `scripts/check_issue_queue.sh`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/install_git_hooks.sh` を実行する。
+`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `scripts/check_issue_queue.sh`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。

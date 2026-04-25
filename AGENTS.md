@@ -70,7 +70,7 @@ crates/
 - docs/: 設計・仕様ドキュメント
 - fixtures/: feature group 単位のテストフィクスチャ（workstream 名ではなく意味領域で管理）
 - nix/: Nix devshell（`nix/nixpkgs-tarball.nix` で nixpkgs を `builtins.fetchTarball` 固定、`nix/devshell.nix` でパッケージ一覧）
-- scripts/: テスト/カバレッジ/検証スクリプト
+- scripts/: テスト/カバレッジ/検証スクリプト（`scripts/check/` `scripts/gate/` `scripts/gen/` `scripts/run/` `scripts/report/` `scripts/perf/` `scripts/dev/` `scripts/lib/`。互換のため `scripts/*.sh` に薄いラッパーを残す場合あり）
 - artifacts/coverage/: 生成カバレッジ成果物
 - reference/: 外部参照資料（原則 read-only）
 
@@ -89,23 +89,23 @@ scripts/check_issue_index.sh
 # Manifest imports と wasm import の一致（wasm-tools / jq が必要）
 scripts/check_manifest_imports.sh
 
-# 参照カバレッジ計測
-scripts/reference_coverage.sh test262 --limit 50
+# 参照カバレッジ計測（run = 実行・測定）
+scripts/run/reference-coverage.sh test262 --limit 50
 
-# カバレッジ表の更新/検証
-scripts/update_coverage_matrix.sh
-scripts/update_coverage_matrix.sh --check
+# カバレッジ表の更新/検証（gen = tracked artifact 更新 / --check は非破壊検証）
+scripts/gen/coverage-matrix.sh
+scripts/gen/coverage-matrix.sh --check
 
-# カバレッジゲート確認
-scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
+# カバレッジゲート確認（gate = pass/fail 判定）
+scripts/gate/coverage.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
 
 # test262 実行 + レポート
-scripts/test262_runner.sh --sample 50 --jobs 4 \
+scripts/run/test262.sh --sample 50 --jobs 4 \
  | tee test262-results.jsonl \
- | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+ | scripts/report/differential.sh --html test262-report.html --markdown test262-report.md
 
 # 回帰ゲート
-scripts/test_regression_gate.sh test262-results.jsonl
+scripts/gate/regression.sh test262-results.jsonl
 ```
 
 ## 5) 運用上の最小ルール

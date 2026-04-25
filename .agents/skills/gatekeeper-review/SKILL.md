@@ -187,7 +187,7 @@ Validation:
 
 - cargo fmt --all --check: pass/fail
 - cargo nextest run: pass/fail
-- scripts/update_coverage_matrix.sh --check: pass/fail/not applicable
+- scripts/gen/coverage-matrix.sh --check: pass/fail/not applicable
 - iwasm differential: pass/fail/not applicable
 - grep gate:
   - as_console_log_call: 0/non-zero

@@ -4,11 +4,14 @@ on:
   pull_request:
     paths:
       - crates/cli/**
-      - scripts/reference_coverage.sh
-      - scripts/update_coverage_matrix.sh
-      - scripts/test262_runner.sh
-      - scripts/test_differential_reporter.sh
-      - scripts/test_regression_gate.sh
+      - scripts/run/reference-coverage.sh
+      - scripts/gen/coverage-matrix.sh
+      - scripts/gate/coverage.sh
+      - scripts/run/test262.sh
+      - scripts/report/differential.sh
+      - scripts/gate/regression.sh
+      - scripts/check/shell-syntax.sh
+      - scripts/lib/common.sh
       - artifacts/coverage/reference-coverage-matrix.md
       - .github/workflows/reference-coverage.yml
   schedule:
@@ -42,12 +45,12 @@ jobs:
 
       - name: Run coverage matrix check
         run: |
-          chmod +x scripts/reference_coverage.sh scripts/update_coverage_matrix.sh scripts/check_coverage_gate.sh
-          scripts/update_coverage_matrix.sh --check
+          chmod +x scripts/run/reference-coverage.sh scripts/gen/coverage-matrix.sh scripts/gate/coverage.sh
+          scripts/gen/coverage-matrix.sh --check
 
       - name: Run coverage delta gate
         run: |
-          scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
+          scripts/gate/coverage.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
 
   test262-gate:
     if: github.event_name == 'pull_request'
@@ -73,17 +76,17 @@ jobs:
 
       - name: Check shell scripts
         run: |
-          chmod +x scripts/check_scripts.sh
-          scripts/check_scripts.sh
+          chmod +x scripts/check/shell-syntax.sh
+          scripts/check/shell-syntax.sh
 
       - name: Run test262 runner with sample
         run: |
-          chmod +x scripts/test262_runner.sh scripts/test_differential_reporter.sh scripts/test_regression_gate.sh
-          scripts/test262_runner.sh --sample 50 --jobs 4 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+          chmod +x scripts/run/test262.sh scripts/report/differential.sh scripts/gate/regression.sh
+          scripts/run/test262.sh --sample 50 --jobs 4 | tee test262-results.jsonl | scripts/report/differential.sh --html test262-report.html --markdown test262-report.md
 
       - name: Run regression gate
         run: |
-          scripts/test_regression_gate.sh test262-results.jsonl
+          scripts/gate/regression.sh test262-results.jsonl
 
       - name: Upload test262 results
         uses: actions/upload-artifact@v4
@@ -111,8 +114,8 @@ jobs:
 
       - name: Update coverage matrix (ramp)
         run: |
-          chmod +x scripts/reference_coverage.sh scripts/update_coverage_matrix.sh
-          scripts/update_coverage_matrix.sh
+          chmod +x scripts/run/reference-coverage.sh scripts/gen/coverage-matrix.sh
+          scripts/gen/coverage-matrix.sh
 
       - name: Create pull request if matrix changed
         uses: peter-evans/create-pull-request@v7
@@ -122,7 +125,7 @@ jobs:
           body: |
             Automated reference coverage refresh.
 
-            - ran scripts/update_coverage_matrix.sh
+            - ran scripts/gen/coverage-matrix.sh
             - advanced per-suite executed limits by ramp step
             - updated artifacts/coverage/reference-coverage-matrix.md
           branch: ci/reference-coverage-ramp

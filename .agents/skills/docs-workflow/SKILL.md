@@ -370,7 +370,7 @@ rg -n "TODO|FIXME|not yet|currently|temporary|workaround|future|planned|later|ro
 When docs mention scripts or generated reports, also run:
 
 ```sh
-scripts/check_scripts.sh
+scripts/check/shell-syntax.sh
 ```
 
 When docs mention test status schema, coverage, fixture behavior, runtime ABI, or CLI contracts, run impacted tests:

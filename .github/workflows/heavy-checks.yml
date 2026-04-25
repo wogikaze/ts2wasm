@@ -1,0 +1,48 @@
+name: heavy-checks
+
+on:
+  pull_request:
+    paths:
+      - "crates/**"
+      - "fixtures/**"
+      - "scripts/check_fixture_differential.sh"
+  push:
+    branches:
+      - master
+    paths:
+      - "crates/**"
+      - "fixtures/**"
+      - "scripts/check_fixture_differential.sh"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install wasm-tools
+        run: |
+          cargo install wasm-tools
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install WasmEdge
+        run: |
+          wget -qO- https://raw.githubusercontent.com/WasmEdge/WasmEdge/master/utils/install.sh | bash -s -- -e all
+          echo "$HOME/.wasmedge/bin" >> $GITHUB_PATH
+
+      - name: Fixture differential check
+        run: |
+          cd "${GITHUB_WORKSPACE}"
+          ./scripts/check_fixture_differential.sh

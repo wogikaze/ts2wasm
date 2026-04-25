@@ -5,7 +5,7 @@ description: "Use when adding or editing scripts under scripts/ in this reposito
 
 # Scripts workflow
 
-**Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`. **Harness baseline:** `scripts/check_harness_installation.sh` inventories toolchain + P0 `check_*.sh` and runs the rest of the project gates; optional strict Rust warnings: `TS2WASM_NEXTEST_DENY_WARNINGS=1` (see `issues/open/011-*.md` until the tree is clean).
+**Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`. **Layout (first tier):** `scripts/check/` (static, non-destructive), `scripts/gate/` (pass/fail), `scripts/gen/` (refresh tracked generated artifacts), `scripts/run/` (execute/measure), `scripts/report/` (human-facing formatting), `scripts/perf/` (benchmarks), `scripts/dev/` (local setup), `scripts/lib/` (sourced helpers only; not executed). Deprecated top-level names may remain as thin `exec` wrappers during migration. **Harness baseline:** `scripts/check_harness_installation.sh` inventories toolchain + P0 `check_*.sh` and runs the rest of the project gates; optional strict Rust warnings: `TS2WASM_NEXTEST_DENY_WARNINGS=1` (see `issues/open/011-*.md` until the tree is clean).
 
 ## Mise: run before you merge a script change (required)
 
@@ -25,7 +25,7 @@ It does not own fixture content, fixture naming, fixture migration, or fixture p
 
 In scope:
 
-- scripts/*.sh maintenance
+- scripts/**/*.sh and `scripts/manager` maintenance
 - script usage header updates
 - script option parsing
 - script reliability and reproducibility improvements
@@ -197,27 +197,27 @@ Use the strictest relevant validation group below.
 Always run:
 
 - cargo fmt --all --check
-- scripts/check_scripts.sh（`bash -n` のみ。syntax OK は runtime OK を意味しない）
+- scripts/check/shell-syntax.sh（`bash -n` のみ。syntax OK は runtime OK を意味しない）
 - bash -n <touched-script>
 
-Run the touched script with a representative command（`check_scripts.sh` はこれに代わらない）。
+Run the touched script with a representative command（`shell-syntax.sh` はこれに代わらない）。
 
 Examples:
 
-- scripts/reference_coverage.sh test262 --limit 1
-- scripts/reference_coverage.sh tsc --limit 1
-- scripts/reference_coverage.sh tsgo --limit 1
-- scripts/update_coverage_matrix.sh --check
+- scripts/run/reference-coverage.sh test262 --limit 1
+- scripts/run/reference-coverage.sh tsc --limit 1
+- scripts/run/reference-coverage.sh tsgo --limit 1
+- scripts/gen/coverage-matrix.sh --check
 - scripts/check_fast_gate.sh --skip-nextest
 - scripts/check_manifest_imports.sh
 - scripts/check_test_records_schema.sh <file.jsonl>
 - scripts/check_fixture_catalog.sh
 - scripts/check_architecture_rules.sh
 - scripts/check_compiler_diagnostics.sh
-- scripts/check_coverage_gate.sh <base-doc> <current-doc>
-- scripts/test262_runner.sh --sample 1 --jobs 1
-- scripts/test_regression_gate.sh <results.jsonl> --baseline <baseline.json>
-- scripts/test_differential_reporter.sh --markdown <tmp.md> --html <tmp.html>
+- scripts/gate/coverage.sh <base-doc> <current-doc>
+- scripts/run/test262.sh --sample 1 --jobs 1
+- scripts/gate/regression.sh <results.jsonl> --baseline <baseline.json>
+- scripts/report/differential.sh --markdown <tmp.md> --html <tmp.html>
 
 Run tests:
 

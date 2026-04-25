@@ -31,6 +31,6 @@ Validation:
 ```sh
 cargo fmt --all --check
 cargo nextest run
-scripts/reference_coverage.sh test262 --limit 50
-scripts/update_coverage_matrix.sh --check
+scripts/run/reference-coverage.sh test262 --limit 50
+scripts/gen/coverage-matrix.sh --check
 ```

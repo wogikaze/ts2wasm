@@ -9,7 +9,7 @@ Last updated: 2026-04-26
 正本は `docs/11-shared-definitions.md` の Workstreams / Gates。実装・レビューでまず満たすのは次の組み合わせとする。
 
 - **Gate A（テスト）**: `cargo fmt --all --check` と `cargo nextest run`（フル suite。重いテストを分離する場合は `docs/11` の filterset 方針に従う）。
-- **Gate D（coverage artifact）**: `scripts/update_coverage_matrix.sh --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
+- **Gate D（coverage artifact）**: `scripts/gen/coverage-matrix.sh --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
 - **その他（B–C, E–G）**: ポリシーと checklist は `docs/11` / `docs/12-coding-standard.md`（§19）に記載。証拠コマンドは下記「Last verified commands」。
 
 ## Last verified commands（代表）
@@ -19,8 +19,8 @@ Last updated: 2026-04-26
 ```bash
 cargo fmt --all --check
 cargo nextest run
-scripts/update_coverage_matrix.sh --check
-scripts/check_scripts.sh
+scripts/gen/coverage-matrix.sh --check
+scripts/check/shell-syntax.sh
 scripts/check_fast_gate.sh --skip-nextest
 scripts/check_manifest_imports.sh
 scripts/check_fixture_catalog.sh
@@ -33,8 +33,8 @@ scripts/check_issue_index.sh
 reference coverage を更新する場合（実測値を変えるとき）:
 
 ```bash
-scripts/update_coverage_matrix.sh
-# または単 suite: scripts/reference_coverage.sh test262 --limit 50
+scripts/gen/coverage-matrix.sh
+# または単 suite: scripts/run/reference-coverage.sh test262 --limit 50
 ```
 
 ## Snapshot
@@ -59,14 +59,14 @@ scripts/update_coverage_matrix.sh
 
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
 - ポリシーと列定義: `docs/15-coverage-matrix.md`
-- 列 `build_pass` / `semantic_pass` は `scripts/reference_coverage.sh` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
+- 列 `build_pass` / `semantic_pass` は `scripts/run/reference-coverage.sh` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
 
 ## Implemented (high-level)
 
 - minimal parser/frontend（`crates/cli`）
 - WAT/WASM emitter と runtime subset（`crates/cli`）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
-- reference coverage パイプライン（`scripts/reference_coverage.sh`, `scripts/update_coverage_matrix.sh`, `scripts/check_coverage_gate.sh`）
+- reference coverage パイプライン（`scripts/run/reference-coverage.sh`, `scripts/gen/coverage-matrix.sh`, `scripts/gate/coverage.sh`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
 - issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `scripts/update_issue_index.sh` が生成、`scripts/check_issue_index.sh` で整合検証）
 - harness scripts（`scripts/check_fast_gate.sh`、`check_manifest_imports.sh`、`check_test_records_schema.sh`、`check_fixture_catalog.sh`、`check_architecture_rules.sh`、`check_compiler_diagnostics.sh`；pre-push は `.githooks/pre-push`）

@@ -78,7 +78,7 @@ Allowed here:
 - update fixture directory globs after a migration
 - update usage examples only when they mention a moved fixture
 - update comments that list fixture directories
-- run `scripts/check_scripts.sh` after touching scripts
+- run `scripts/check/shell-syntax.sh` after touching scripts
 
 Not allowed here:
 
@@ -315,7 +315,7 @@ cargo nextest run
 If scripts were touched only for fixture path synchronization, also run:
 
 ```bash
-scripts/check_scripts.sh
+scripts/check/shell-syntax.sh
 ```
 
 If the moved fixture is used by differential execution, run the relevant differential/integration test. Examples:
@@ -334,7 +334,7 @@ If the fixture requires `iwasm`, state whether `iwasm` was available. Do not rep
 If docs mention coverage artifacts, validate the coverage matrix check when relevant:
 
 ```bash
-scripts/update_coverage_matrix.sh --check
+scripts/gen/coverage-matrix.sh --check
 ```
 
 Do not run reference corpus scripts for ordinary project fixture edits unless the change affects reference coverage, TestRecord schema, differential classification, or CI coverage scripts.
@@ -428,8 +428,8 @@ Validation:
 - cargo fmt --all --check:
 - cargo nextest run -p ts2wasm-cli <impacted>:
 - cargo nextest run:
-- scripts/check_scripts.sh:
-- scripts/update_coverage_matrix.sh --check:
+- scripts/check/shell-syntax.sh:
+- scripts/gen/coverage-matrix.sh --check:
 - iwasm-dependent checks:
 
 Search gates:

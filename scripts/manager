@@ -23,7 +23,7 @@ Examples:
   scripts/manager check-issue-queue
   scripts/manager update-issue-index -- --check
   scripts/manager nextest -- --no-fail-fast
-  ./scripts/test262_runner.sh --sample 5 2>&1 | scripts/manager test-differential-reporter
+  ./scripts/run/test262.sh --sample 5 2>&1 | scripts/manager test-differential-reporter
 
 Commands:
 MSG
@@ -93,7 +93,7 @@ FALL
   fi
   echo
   echo "Mise: run \`mise tasks\` / \`mise run <task>\` for the same set (mise optional)."
-  echo "Shell scripts live under scripts/*.sh; this only dispatches to them."
+  echo "Shell scripts: scripts/{check,gate,gen,run,...}/*.sh and scripts/*.sh; this dispatches to them."
 }
 
 target="${1:-help}"
@@ -104,7 +104,7 @@ fi
 shift
 
 case "$target" in
-  check-scripts) exec bash "${repo_root}/scripts/check_scripts.sh" "$@" ;;
+  check-scripts) exec bash "${repo_root}/scripts/check/shell-syntax.sh" "$@" ;;
   check-fast-gate) exec bash "${repo_root}/scripts/check_fast_gate.sh" "$@" ;;
   check-manifest-imports) exec bash "${repo_root}/scripts/check_manifest_imports.sh" "$@" ;;
   check-test-records-schema) exec bash "${repo_root}/scripts/check_test_records_schema.sh" "$@" ;;
@@ -120,20 +120,20 @@ case "$target" in
   check-issue-index) exec bash "${repo_root}/scripts/check_issue_index.sh" "$@" ;;
   check-issue-queue) exec bash "${repo_root}/scripts/check_issue_queue.sh" "$@" ;;
   update-issue-index) exec bash "${repo_root}/scripts/update_issue_index.sh" "$@" ;;
-  install-hooks) exec bash "${repo_root}/scripts/install_git_hooks.sh" "$@" ;;
-  check-coverage-gate) exec bash "${repo_root}/scripts/check_coverage_gate.sh" "$@" ;;
-  update-coverage-matrix) exec bash "${repo_root}/scripts/update_coverage_matrix.sh" "$@" ;;
-  reference-coverage) exec bash "${repo_root}/scripts/reference_coverage.sh" "$@" ;;
-  benchmark-tracker) exec bash "${repo_root}/scripts/benchmark_tracker.sh" "$@" ;;
-  test262) exec bash "${repo_root}/scripts/test262_runner.sh" "$@" ;;
-  test-differential-reporter) exec bash "${repo_root}/scripts/test_differential_reporter.sh" "$@" ;;
-  test-regression-gate) exec bash "${repo_root}/scripts/test_regression_gate.sh" "$@" ;;
+  install-hooks) exec bash "${repo_root}/scripts/dev/install-git-hooks.sh" "$@" ;;
+  check-coverage-gate) exec bash "${repo_root}/scripts/gate/coverage.sh" "$@" ;;
+  update-coverage-matrix) exec bash "${repo_root}/scripts/gen/coverage-matrix.sh" "$@" ;;
+  reference-coverage) exec bash "${repo_root}/scripts/run/reference-coverage.sh" "$@" ;;
+  benchmark-tracker) exec bash "${repo_root}/scripts/perf/benchmark-tracker.sh" "$@" ;;
+  test262) exec bash "${repo_root}/scripts/run/test262.sh" "$@" ;;
+  test-differential-reporter) exec bash "${repo_root}/scripts/report/differential.sh" "$@" ;;
+  test-regression-gate) exec bash "${repo_root}/scripts/gate/regression.sh" "$@" ;;
   fmt) exec cargo fmt --all --check ;;
   clippy) exec cargo clippy --all-targets -- "$@" ;;
   nextest) exec cargo nextest run "$@" ;;
   check-repo-smoke)
     cargo fmt --all --check
-    bash "${repo_root}/scripts/check_scripts.sh"
+    bash "${repo_root}/scripts/check/shell-syntax.sh"
     bash "${repo_root}/scripts/check_issue_queue.sh"
     ;;
   *)
