@@ -1,70 +1,87 @@
 # Repository Guidelines
 
-## Project Structure & Module Organization
+このファイルは最小運用ルールのみを記載する。
 
-This repository contains design documentation and the first Rust shared-definition crate for a TypeScript/JavaScript to WebAssembly compiler/runtime project.
+## 1) 開発でまず見るドキュメント
 
-- `README.md` is the project entry point and documentation map.
-- `docs/00-*.md` through `docs/11-*.md` hold the split design documents. Keep detailed design changes in the relevant doc, not only in `README.md`.
-- `docs/99-original-plan.md` preserves the original plan for loss-checking. Do not rewrite it as live design.
-- `crates/shared/` contains M0 canonical Rust definitions for runtime ABI, capability manifests, and test status records.
-- `.agents/skills/` contains repository-specific agent workflows. Keep them concise and procedural.
-- `reference/` contains upstream reference material such as TypeScript, WASI, WebAssembly spec, and test262. Treat it as read-only unless explicitly updating references.
+- README.md: 入口と全体像
+- docs/00-docs-list.md: 設計ドキュメント索引
+- docs/04-compiler-architecture-and-runtime.md: compiler/runtime アーキテクチャ
+- docs/05-compatibility-and-semantics.md: 互換性と意味論
+- docs/06-testing-and-coverage.md: テスト方針
+- docs/11-shared-definitions.md: shared 定義
+- docs/14-ir-contracts.md: IR 契約
+- docs/15-runtime-abi.md: runtime ABI
 
-Future implementation should use clear top-level directories such as `runtime/`, `tests/`, and `fixtures/`, and update `README.md` plus `docs/00-docs-list.md`.
-
-## Build, Test, and Development Commands
-
-Key commands:
+## 2) 最初期セットアップ
 
 ```bash
-cargo nextest run
-cargo fmt --all
+# 前提確認
+which cargo
 which iwasm
-ig "process.env" docs
-ig "runtime ABI" docs
+
+# 整形チェック
+cargo fmt --all --check
+
+# テスト実行（本プロジェクト標準）
+cargo nextest run
+```
+
+検索は ig を優先し、未導入なら rg を使う。
+
+## 3) ファイル構成（要点）
+
+```text
+crates/
+ shared/
+  schema, manifest, test record, report format
+
+ frontend/
+  lexer, parser, AST, Span, syntax diagnostics
+
+ ir/
+  resolved AST, lowered IR, builtin model, validation
+
+ runtime-abi/
+  RawValue tags, layout constants, runtime ABI, host import names
+
+ backend-wasm/
+  WAT/WASM emission, RuntimeLinkPlan, RuntimeFn emission
+
+ cli/
+  command line, build pipeline orchestration
+```
+
+- docs/: 設計・仕様ドキュメント
+- fixtures/: マイルストーン別フィクスチャ
+- scripts/: テスト/カバレッジ/検証スクリプト
+- artifacts/coverage/: 生成カバレッジ成果物
+- reference/: 外部参照資料（原則 read-only）
+
+## 4) scripts の使い方（頻用）
+
+```bash
+# 参照カバレッジ計測
 scripts/reference_coverage.sh test262 --limit 50
+
+# カバレッジ表の更新/検証
 scripts/update_coverage_matrix.sh
 scripts/update_coverage_matrix.sh --check
+
+# カバレッジゲート確認
 scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
-scripts/test262_runner.sh --sample 50 --jobs 4 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+
+# test262 実行 + レポート
+scripts/test262_runner.sh --sample 50 --jobs 4 \
+ | tee test262-results.jsonl \
+ | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+
+# 回帰ゲート
 scripts/test_regression_gate.sh test262-results.jsonl
 ```
 
-`cargo nextest run` runs the current Rust unit tests. `cargo fmt --all` formats Rust code. `which iwasm` verifies the required WASI runner is available. Use `ig` for code and document search; fall back to `rg` only if `ig` is unavailable.
+## 5) 運用上の最小ルール
 
-Coverage measurement and update notes:
-
-- Generated coverage table lives in `artifacts/coverage/reference-coverage-matrix.md`.
-- `scripts/update_coverage_matrix.sh` rewrites only the generated artifact table block.
-- `scripts/update_coverage_matrix.sh --check` fails when generated table is stale relative to current script output.
-- Coverage percent is pass-based (`pass / denominator * 100`); unsupported/blocked/skip are tracked as breakdown, not numerator.
-
-## Coding Style & Naming Conventions
-
-Use Markdown for documentation and Rust for compiler/runtime implementation unless a later design doc explicitly changes this.
-
-- Use lowercase, hyphenated doc filenames with numeric prefixes, for example `docs/04-compiler-architecture-and-runtime.md`.
-- Use Rust module and file names in `snake_case`; use type names in `UpperCamelCase`.
-- Keep terminology consistent: `generated wasm`, `WASM runtime`, `host shim`, `capability manifest`, and `standalone WASI`.
-- TypeScript/ECMAScript is the input-language baseline. Do not introduce AssemblyScript-only syntax or types as user-facing requirements.
-
-## Testing Guidelines
-
-Testing policy is documented in `docs/06-testing-and-coverage.md`. New implementation work should include fixtures that classify results as `pass`, `fail`, `unsupported`, `blocked`, or `skip-with-reason`.
-
-For compiler/runtime changes, add or update tests for Node differential behavior, WASI/iwasm execution, runtime ABI compatibility, capability manifests, and unsupported-feature diagnostics.
-
-M0 changes must keep `docs/11-shared-definitions.md` and `crates/shared/` aligned.
-
-## Commit & Pull Request Guidelines
-
-This checkout has no Git history, so no local commit convention can be inferred. Use short imperative commit messages, for example `docs: clarify env fallback policy`.
-
-Commit in small logical work units. Do not collapse an entire assistant turn into one commit when it contains separable work. Prefer boundaries such as documentation baseline, shared schema implementation, repository agent workflow, and verification/configuration cleanup.
-
-Pull requests should include the motivation, affected docs or modules, verification performed, and any unresolved compatibility or security tradeoffs. Link related issues when available.
-
-## Security & Configuration Notes
-
-Host capabilities must stay explicit. If a feature requires filesystem, environment, network, crypto, timers, or Node.js fallback, document the capability and update the relevant manifest/security docs.
+- テストは cargo test ではなく cargo nextest run を使う
+- 変更前後で cargo fmt --all --check を通す
+- docs を更新する場合は、該当トピックの番号付きドキュメントを優先して更新する

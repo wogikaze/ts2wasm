@@ -47,7 +47,9 @@ EOF
 # install repo-managed git hooks
 scripts/install_git_hooks.sh
 
-# run test
+# install tools
+npm install --global @ast-grep/cli
+
 
 ```
 
