@@ -105,12 +105,16 @@ pub(crate) enum LoweredBinaryOp {
     Add,
     Subtract,
     Less,
+    Greater,
     StrictEqual,
+    And,
+    Or,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum LoweredUnaryOp {
     Not,
+    Negate,
 }
 
 pub(crate) fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
@@ -179,13 +183,17 @@ fn lower_binary_op(op: BinaryOp) -> LoweredBinaryOp {
         BinaryOp::Add => LoweredBinaryOp::Add,
         BinaryOp::Subtract => LoweredBinaryOp::Subtract,
         BinaryOp::Less => LoweredBinaryOp::Less,
+        BinaryOp::Greater => LoweredBinaryOp::Greater,
         BinaryOp::StrictEqual => LoweredBinaryOp::StrictEqual,
+        BinaryOp::And => LoweredBinaryOp::And,
+        BinaryOp::Or => LoweredBinaryOp::Or,
     }
 }
 
 fn lower_unary_op(op: UnaryOp) -> LoweredUnaryOp {
     match op {
         UnaryOp::Not => LoweredUnaryOp::Not,
+        UnaryOp::Negate => LoweredUnaryOp::Negate,
     }
 }
 
