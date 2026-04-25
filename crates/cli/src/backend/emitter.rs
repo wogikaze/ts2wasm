@@ -44,51 +44,8 @@ impl<'a> WatEmitter<'a> {
         let _required_capabilities = self.link_plan.required_capabilities();
         let mut wat = String::new();
         wat.push_str("(module\n");
-        if self.requires_host_import(HostImport::FdRead) {
-            wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_read\" (func $fd_read (param i32 i32 i32 i32) (result i32)))\n");
-        }
-        if self.requires_host_import(HostImport::FdWrite) {
-            wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
-        }
-        if self.requires_host_import(HostImport::FsReadFileSync) {
-            wat.push_str("  (import \"host\" \"fs.readFileSync\" (func $host_fs_read_file_sync (param i32 i32) (result i32)))\n");
-        }
-        if self.requires_host_import(HostImport::FsWriteFileSync) {
-            wat.push_str("  (import \"host\" \"fs.writeFileSync\" (func $host_fs_write_file_sync (param i32 i32)))\n");
-        }
-        if self.requires_host_import(HostImport::FsAppendFileSync) {
-            wat.push_str("  (import \"host\" \"fs.appendFileSync\" (func $host_fs_append_file_sync (param i32 i32)))\n");
-        }
-        if self.requires_host_import(HostImport::ProcessArgv) {
-            wat.push_str(
-                "  (import \"host\" \"process.argv\" (func $host_process_argv (result i32)))\n",
-            );
-        }
-        if self.requires_host_import(HostImport::ProcessEnv) {
-            wat.push_str(
-                "  (import \"host\" \"process.env\" (func $host_process_env (result i32)))\n",
-            );
-        }
-        if self.requires_host_import(HostImport::ProcessExit) {
-            wat.push_str(
-                "  (import \"host\" \"process.exit\" (func $host_process_exit (param i32)))\n",
-            );
-        }
-        if self.requires_host_import(HostImport::PathJoin) {
-            wat.push_str("  (import \"host\" \"path.join\" (func $host_path_join (param i32 i32) (result i32)))\n");
-        }
-        if self.requires_host_import(HostImport::PathResolve) {
-            wat.push_str("  (import \"host\" \"path.resolve\" (func $host_path_resolve (param i32) (result i32)))\n");
-        }
-        if self.requires_host_import(HostImport::PathBasename) {
-            wat.push_str("  (import \"host\" \"path.basename\" (func $host_path_basename (param i32) (result i32)))\n");
-        }
-        if self.requires_host_import(HostImport::PathDirname) {
-            wat.push_str("  (import \"host\" \"path.dirname\" (func $host_path_dirname (param i32) (result i32)))\n");
-        }
-        if self.requires_host_import(HostImport::CryptoRandomBytes) {
-            wat.push_str("  (import \"host\" \"crypto.randomBytes\" (func $host_crypto_random_bytes (param i32) (result i32)))\n");
-        }
+        // Emit all required imports from catalog (single source of truth)
+        self.emit_imports_from_catalog(&mut wat);
         wat.push_str("  (memory (export \"memory\") 1)\n");
         wat.push_str(&format!(
             "  (global $heap (mut i32) (i32.const {}))\n",
@@ -251,6 +208,29 @@ impl<'a> WatEmitter<'a> {
 
     fn requires_host_import(&self, import: HostImport) -> bool {
         self.link_plan.required_imports().contains(&import)
+    }
+
+    fn emit_imports_from_catalog(&self, wat: &mut String) {
+        // Emit all required imports using catalog as single source of truth
+        for import in self.link_plan.required_imports() {
+            let spec = import.spec();
+            // Build complete WAT function signature from catalog
+            let mut sig = String::new();
+            if !spec.params.is_empty() {
+                sig.push(' ');
+                sig.push_str(spec.params);
+            }
+            if !spec.result.is_empty() {
+                sig.push(' ');
+                sig.push('(');
+                sig.push_str(spec.result);
+                sig.push(')');
+            }
+            wat.push_str(&format!(
+                "  (import \"{}\" \"{}\" (func {}{})\n",
+                spec.module, spec.name, spec.wat_symbol, sig
+            ));
+        }
     }
 
     fn intern_required_runtime_strings(&mut self) {
