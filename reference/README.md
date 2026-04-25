@@ -41,6 +41,16 @@
   - `test/` - テストケース
   - `tools/` - テストツール
 
+### WASI
+
+- Main: <https://github.com/WebAssembly/WASI>
+- Key files:
+  - `docs/Preview1.md` - Preview 1 仕様
+  - `docs/Preview2.md` - Preview 2 仕様
+- Additional resources:
+  - WASI libc: <https://github.com/WebAssembly/wasi-libc>
+  - WASI Phases: <https://github.com/WebAssembly/WASI/blob/main/phases/README.md>
+
 ## WebAssembly
 
 ### wasm-micro-runtime (WAMR)
