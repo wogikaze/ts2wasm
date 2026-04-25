@@ -25,6 +25,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 013 | Implement heap OOM check | feature | runtime/memory | implementation-ready | P0 | none | `$alloc_heap` does not check `memory.size` before allocation. Large allocations can cause undefined behavior or memor... |
 | 015 | Implement object literal string key support | feature | parser/semantics | implementation-ready | P1 | none | Object literal with string literal keys `{"x": v}` is not implemented. Currently only identifier keys `{x: v}` are su... |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | implementation-ready | P1 | none | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
+| 024 |  |  |  |  |  |  |  |
+| 025 |  |  |  |  |  |  |  |
+| 026 |  |  |  |  |  |  |  |
+| 027 |  |  |  |  |  |  |  |
+| 028 |  |  |  |  |  |  |  |
 <!-- generated:ready:end -->
 
 ## Blocked queue

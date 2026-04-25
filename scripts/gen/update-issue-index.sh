@@ -16,10 +16,10 @@
 set -euo pipefail
 
 _ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=scripts/lib/common.sh
-source "${_ts2wasm_entry_dir}/lib/common.sh"
-# This script is in scripts/ directly, so repo root is one level up
-TS2WASM_REPO_ROOT="$(cd "${_ts2wasm_entry_dir}/.." && pwd)"
+# shellcheck source=../lib/common.sh
+source "${_ts2wasm_entry_dir}/../lib/common.sh"
+# This script is in scripts/gen/, so repo root is two levels up
+TS2WASM_REPO_ROOT="$(cd "${_ts2wasm_entry_dir}/../.." && pwd)"
 export TS2WASM_REPO_ROOT
 cd "$TS2WASM_REPO_ROOT"
 
