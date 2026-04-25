@@ -9,13 +9,17 @@ pub(crate) enum HostAbi {
     InternalHost,
 }
 
-/// Complete metadata for a host import binding.
+/// Complete metadata for a host import binding (single source of truth).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) struct HostImportSpec {
     pub module: &'static str,
     pub name: &'static str,
     pub wat_symbol: &'static str,
     pub abi: HostAbi,
+    /// WAT parameter list (e.g., "param i32 i32 i32 i32") or empty
+    pub params: &'static str,
+    /// WAT result type (e.g., "result i32") or empty
+    pub result: &'static str,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -138,80 +142,106 @@ impl HostImport {
             Self::FdRead => HostImportSpec {
                 module: "wasi_snapshot_preview1",
                 name: "fd_read",
-                wat_symbol: "$import_fd_read",
+                wat_symbol: "$fd_read",
                 abi: HostAbi::WasiPreview1,
+                params: "param i32 i32 i32 i32",
+                result: "result i32",
             },
             Self::FdWrite => HostImportSpec {
                 module: "wasi_snapshot_preview1",
                 name: "fd_write",
-                wat_symbol: "$import_fd_write",
+                wat_symbol: "$fd_write",
                 abi: HostAbi::WasiPreview1,
+                params: "param i32 i32 i32 i32",
+                result: "result i32",
             },
             Self::FsReadFileSync => HostImportSpec {
                 module: "host",
                 name: "fs.readFileSync",
-                wat_symbol: "$import_fs_read_file_sync",
+                wat_symbol: "$host_fs_read_file_sync",
                 abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
             },
             Self::FsWriteFileSync => HostImportSpec {
                 module: "host",
                 name: "fs.writeFileSync",
-                wat_symbol: "$import_fs_write_file_sync",
+                wat_symbol: "$host_fs_write_file_sync",
                 abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "",
             },
             Self::FsAppendFileSync => HostImportSpec {
                 module: "host",
                 name: "fs.appendFileSync",
-                wat_symbol: "$import_fs_append_file_sync",
+                wat_symbol: "$host_fs_append_file_sync",
                 abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "",
             },
             Self::ProcessArgv => HostImportSpec {
                 module: "host",
                 name: "process.argv",
-                wat_symbol: "$import_process_argv",
+                wat_symbol: "$host_process_argv",
                 abi: HostAbi::NodeShim,
+                params: "",
+                result: "result i32",
             },
             Self::ProcessEnv => HostImportSpec {
                 module: "host",
                 name: "process.env",
-                wat_symbol: "$import_process_env",
+                wat_symbol: "$host_process_env",
                 abi: HostAbi::NodeShim,
+                params: "",
+                result: "result i32",
             },
             Self::ProcessExit => HostImportSpec {
                 module: "host",
                 name: "process.exit",
-                wat_symbol: "$import_process_exit",
+                wat_symbol: "$host_process_exit",
                 abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "",
             },
             Self::PathJoin => HostImportSpec {
                 module: "host",
                 name: "path.join",
-                wat_symbol: "$import_path_join",
+                wat_symbol: "$host_path_join",
                 abi: HostAbi::NodeShim,
+                params: "param i32 i32",
+                result: "result i32",
             },
             Self::PathResolve => HostImportSpec {
                 module: "host",
                 name: "path.resolve",
-                wat_symbol: "$import_path_resolve",
+                wat_symbol: "$host_path_resolve",
                 abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
             },
             Self::PathBasename => HostImportSpec {
                 module: "host",
                 name: "path.basename",
-                wat_symbol: "$import_path_basename",
+                wat_symbol: "$host_path_basename",
                 abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
             },
             Self::PathDirname => HostImportSpec {
                 module: "host",
                 name: "path.dirname",
-                wat_symbol: "$import_path_dirname",
+                wat_symbol: "$host_path_dirname",
                 abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
             },
             Self::CryptoRandomBytes => HostImportSpec {
                 module: "host",
                 name: "crypto.randomBytes",
-                wat_symbol: "$import_crypto_random_bytes",
+                wat_symbol: "$host_crypto_random_bytes",
                 abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
             },
         }
     }

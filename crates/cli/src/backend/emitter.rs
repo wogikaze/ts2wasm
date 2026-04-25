@@ -218,7 +218,9 @@ impl<'a> WatEmitter<'a> {
             let mut sig = String::new();
             if !spec.params.is_empty() {
                 sig.push(' ');
+                sig.push('(');
                 sig.push_str(spec.params);
+                sig.push(')');
             }
             if !spec.result.is_empty() {
                 sig.push(' ');
@@ -227,7 +229,7 @@ impl<'a> WatEmitter<'a> {
                 sig.push(')');
             }
             wat.push_str(&format!(
-                "  (import \"{}\" \"{}\" (func {}{})\n",
+                "  (import \"{}\" \"{}\" (func {}{}))\n",
                 spec.module, spec.name, spec.wat_symbol, sig
             ));
         }
