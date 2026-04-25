@@ -13,7 +13,7 @@ cd "$repo_root"
 
 usage() {
   cat <<'MSG'
-ts2wasm — script manager (one entry; arguments pass through to the underlying .sh)
+ts2wasm — script manager (one entry; arguments pass through to the underlying script)
 
 Usage:
   scripts/manager [help]
@@ -21,7 +21,7 @@ Usage:
 
 Examples:
   scripts/manager check-issue-queue
-  scripts/manager update-issue-index -- --check
+  scripts/manager update-issue-index --check
   scripts/manager nextest -- --no-fail-fast
   ./scripts/run/test262.sh --sample 5 2>&1 | scripts/manager test-differential-reporter
 
@@ -46,7 +46,7 @@ check-wasm-validation	Build sample fixtures; wasm-tools validate
 check-agent-state	Validate .agents/state JSON files against schemas
 check-issue-index	Fail if issues/index.md is stale or queue tables are wrong
 check-issue-queue	Mechanical invariants: ids, done checkboxes, paths, index+tables
-update-issue-index	Regenerate index tables (add -- --check to verify only)
+update-issue-index	Regenerate index tables (add --check to verify only)
 install-hooks	Install .githooks (fmt, markdown, issues) via git config core.hooksPath
 check-coverage-gate	Compare two coverage matrix docs (args: see script --help)
 update-coverage-matrix	Refresh reference coverage table (args: see script --help)
@@ -79,7 +79,7 @@ TABLE
   check-agent-state            Validate .agents/state JSON files against schemas
   check-issue-index         Fail if issues/index.md is stale or queue tables are wrong
   check-issue-queue         Mechanical invariants: ids, paths, index+tables
-  update-issue-index        Regenerate index tables (add -- --check to verify only)
+  update-issue-index        Regenerate index tables (add --check to verify only)
   install-hooks             Install .githooks via git config core.hooksPath
   check-coverage-gate        Compare two coverage matrix docs
   update-coverage-matrix     Refresh reference coverage table
@@ -97,7 +97,7 @@ FALL
   fi
   echo
   echo "Mise: run \`mise tasks\` / \`mise run <task>\` for the same set (mise optional)."
-  echo "Shell scripts: scripts/{check,gate,gen,run,...}/*.sh and scripts/*.sh; this dispatches to them."
+  echo "Scripts: scripts/{check,gate,gen,run,...}/* and scripts/manager; this dispatches to them."
 }
 
 target="${1:-help}"
@@ -124,10 +124,11 @@ case "$target" in
   check-agent-state) exec python3 "${repo_root}/scripts/check/agent-state.py" "$@" ;;
   check-issue-index) exec python3 "${repo_root}/scripts/check/issue-queue.py" "$@" ;;
   check-issue-queue) exec python3 "${repo_root}/scripts/check/issue-queue.py" "$@" ;;
-  update-issue-index) exec bash "${repo_root}/scripts/gen/update-issue-index.sh" "$@" ;;
+  update-issue-index) exec python3 "${repo_root}/scripts/gen/update-issue-index.py" "$@" ;;
   install-hooks) exec bash "${repo_root}/scripts/dev/install-git-hooks.sh" "$@" ;;
   check-coverage-gate) exec bash "${repo_root}/scripts/gate/coverage.sh" "$@" ;;
   update-coverage-matrix) exec python3 "${repo_root}/scripts/gen/coverage-matrix.py" "$@" ;;
+  coverage-report) exec bash "${repo_root}/scripts/gen/coverage-report.sh" "$@" ;;
   reference-coverage) exec bash "${repo_root}/scripts/run/reference-coverage.sh" "$@" ;;
   benchmark-tracker) exec bash "${repo_root}/scripts/perf/benchmark-tracker.sh" "$@" ;;
   test262) exec bash "${repo_root}/scripts/run/test262.sh" "$@" ;;

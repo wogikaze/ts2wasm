@@ -1,6 +1,7 @@
 ---
 name: post-wave-orchestration
 description: false-done監査wave後に使用。残存作業を分類、issue indexを同期、差分を分割、次のwaveを決定。オーケストレーションのみ。
+---
 
 ## 禁止事項
 

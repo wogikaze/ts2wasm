@@ -17,12 +17,12 @@ description: issues/以下のissue追加/クローズ/移動/分割/再分類時
 ## ルール
 
 - `issues/open/`と`issues/done/`のissueファイルが真実のソース。`issues/index.md`キューテーブルは生成
-- 任意のissueライフサイクル変更後、`scripts/update_issue_index.sh`を実行し、更新された`issues/index.md`をコミット
+- 任意のissueライフサイクル変更後、`scripts/manager update-issue-index`を実行し、更新された`issues/index.md`をコミット
 - `issues/index.md`の`<!-- generated:*:start -->`と`<!-- generated:*:end -->`間のHTMLコメント領域を手編集しない
 - `issues/templates/issue.md`のテンプレートを優先。`**ID**`、`**Depends on**`、`**Orchestration class**`、1行の`Problem:`を使用し、indexジェネレータがissueを要約できるようにする
 - `**Depends on**`はこのissueをブロックするopen-issue IDをリスト、または`none`。カンマ区切りIDを使用（例: `003,004`）。ジェネレータはリストされた依存のいずれかがまだopenの場合、または`**Orchestration class**`が正確に`blocked`（大文字小文字不問）の場合、issueをblockedとして扱う
 - issueをクローズする場合: 完了証拠を記入、`**Status**`を`done`に設定、ファイルを`issues/done/`に移動、次にindexを再生成
-- キューの検証: `scripts/update_issue_index.sh --check`と`scripts/check_issue_index.sh`（stderrに人間ステータス。終了コードが契約）
+- キューの検証: `scripts/manager update-issue-index --check`と`scripts/manager check-issue-index`（stderrに人間ステータス。終了コードが契約）
 
 ## アンチパターン
 

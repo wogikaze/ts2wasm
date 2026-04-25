@@ -1,6 +1,7 @@
 ---
 name: post-wave-orchestration
 description: Use after false-done audit wave. Classifies residual work, syncs issue index, splits diffs, decides next wave. Orchestration-only.
+---
 
 ## Prohibitions
 

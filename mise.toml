@@ -12,7 +12,7 @@ run = "scripts/manager check-issue-index"
 
 
 [tasks."update-issue-index"]
-description = "Regenerate issues/index.md (pass -- --check to verify only)"
+description = "Regenerate issues/index.md (pass --check to verify only)"
 run = "scripts/manager update-issue-index"
 
 [tasks."install-hooks"]

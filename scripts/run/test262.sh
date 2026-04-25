@@ -85,6 +85,22 @@ if ! [[ "$JOBS" =~ ^[0-9]+$ ]] || (( JOBS < 1 )); then
     exit 1
 fi
 
+if [[ "$SAMPLE" == "0" ]]; then
+    echo "Starting test262 runner..." >&2
+    echo "Category filter: $CATEGORY_PATTERN" >&2
+    echo "Parallel jobs: $JOBS" >&2
+    echo "Sample mode: first 0 files per category" >&2
+    echo "Selected files: 0" >&2
+    echo "" >&2
+    echo "=== Test262 Summary ===" >&2
+    echo "Pass: 0" >&2
+    echo "Fail: 0" >&2
+    echo "Unsupported: 0" >&2
+    echo "Blocked: 0" >&2
+    echo "Total: 0" >&2
+    exit 0
+fi
+
 escape_json() {
     sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/' | tr -d '\n'
 }

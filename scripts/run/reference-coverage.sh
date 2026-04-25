@@ -30,12 +30,16 @@ fi
 suite="$1"
 shift
 
-limit=0
+limit=""
 json_output=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --limit)
       limit="${2:-}"
+      if [[ -z "$limit" || ! "$limit" =~ ^[0-9]+$ ]]; then
+        echo "--limit requires a non-negative integer" >&2
+        exit 1
+      fi
       shift 2
       ;;
     --json)
@@ -76,8 +80,47 @@ case "$suite" in
     ;;
 esac
 
+if [[ "$limit" == "0" ]]; then
+  if [[ "$json_output" -eq 1 ]]; then
+    cat <<JSON
+{
+  "suite": "$suite",
+  "suite_name": "$suite",
+  "denominator": 0,
+  "executed": 0,
+  "build_coverage_percent": "0.00",
+  "semantic_coverage_percent": "0.00",
+  "build_pass": 0,
+  "semantic_pass": 0,
+  "fail": 0,
+  "unsupported": 0,
+  "blocked": 0,
+  "skip_with_reason": 0,
+  "unsupported_diagcodes": {},
+  "status": "in-progress",
+  "evidence": "scripts/run/reference-coverage.sh $suite --limit 0"
+}
+JSON
+  else
+    printf 'suite=%s\n' "$suite"
+    printf 'denominator=0\n'
+    printf 'executed=0\n'
+    printf 'coverage_percent=0.00\n'
+    printf 'semantic_coverage_percent=0.00\n'
+    printf 'build_pass=0\n'
+    printf 'semantic_pass=0\n'
+    printf 'fail=0\n'
+    printf 'unsupported=0\n'
+    printf 'blocked=0\n'
+    printf 'skip_with_reason=0\n'
+    printf 'unsupported_diagcodes=\n'
+    printf 'semantic_enabled=0\n'
+  fi
+  exit 0
+fi
+
 mapfile -t files < <(eval "$file_cmd")
-if [[ "$limit" -gt 0 ]]; then
+if [[ -n "$limit" ]]; then
   files=("${files[@]:0:$limit}")
 fi
 

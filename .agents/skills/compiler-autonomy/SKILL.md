@@ -54,7 +54,7 @@ The autonomous loop is considered complete when:
 2. **Update issue file**: Move issue from `issues/open/` to `issues/done/` and update frontmatter:
    - Change `Status: open` → `Status: done`
    - Add `Completed: <date>` field
-3. **Regenerate issues index**: Run `mise run update-issue-index` or `scripts/update_issue_index.sh`
+3. **Regenerate issues index**: Run `mise run update-issue-index` or `scripts/manager update-issue-index`
 4. **Verify index consistency**: Run `mise run check-issue-index` to ensure the index reflects the change
 5. **Document completion evidence**: In the issue file or cycle report, explicitly state how each acceptance criterion was verified with specific commands/outputs.
 

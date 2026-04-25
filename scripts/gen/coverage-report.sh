@@ -7,7 +7,40 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
-format="${1:-text}"
+format="text"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --)
+      shift
+      ;;
+    --format)
+      format="${2:?--format requires text or markdown}"
+      shift 2
+      ;;
+    text|markdown)
+      format="$1"
+      shift
+      ;;
+    -h|--help)
+      sed -n '2,3p' "$0"
+      exit 0
+      ;;
+    *)
+      echo "unknown option: $1" >&2
+      echo "Usage: scripts/gen/coverage-report.sh [--format text|markdown]" >&2
+      exit 1
+      ;;
+  esac
+done
+
+case "$format" in
+  text|markdown) ;;
+  *)
+    echo "unknown format: $format" >&2
+    echo "Usage: scripts/gen/coverage-report.sh [--format text|markdown]" >&2
+    exit 1
+    ;;
+esac
 
 # Function to extract table data from markdown
 extract_table() {

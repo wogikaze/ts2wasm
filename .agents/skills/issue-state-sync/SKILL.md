@@ -34,7 +34,7 @@ mise run check-issue-queue
 ## `issues/index.md`
 
 - **生成マーカー外**の方針文は手編集可。
-- **生成マーカー内**は `scripts/update_issue_index.sh` のみ（`issues-workflow` skill と同じ）。
+- **生成マーカー内**は `scripts/manager update-issue-index` のみ（`issues-workflow` skill と同じ）。
 
 ## Dependency graph / cross-links
 
@@ -59,10 +59,10 @@ git mv issues/done/012-fix-bug.md issues/open/012-fix-bug.md
 ### After: Run sync commands
 
 ```bash
-scripts/update_issue_index.sh
-scripts/update_issue_index.sh --check
-scripts/check_issue_index.sh
-scripts/check_issue_queue.sh
+scripts/manager update-issue-index
+scripts/manager update-issue-index --check
+scripts/manager check-issue-index
+scripts/manager check-issue-queue
 # Index regenerated, queue validated
 ```
 

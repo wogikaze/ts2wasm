@@ -19,10 +19,10 @@ description: 監査駆動のissue移動、新規issue、またはID/依存関係
 issue ファイルや index に触ったら、必ず:
 
 ```bash
-scripts/update_issue_index.sh
-scripts/update_issue_index.sh --check
-scripts/check_issue_index.sh
-scripts/check_issue_queue.sh
+scripts/manager update-issue-index
+scripts/manager update-issue-index --check
+scripts/manager check-issue-index
+scripts/manager check-issue-queue
 ```
 
 `mise` を使う場合は `mise run update-issue-index` 等（`mise.toml` / `scripts/manager` 参照）。
@@ -36,7 +36,7 @@ scripts/check_issue_queue.sh
 ## `issues/index.md`
 
 - **生成マーカー外**の方針文は手編集可。
-- **生成マーカー内**は `scripts/update_issue_index.sh` のみ（`issues-workflow` skill と同じ）。
+- **生成マーカー内**は `scripts/manager update-issue-index` のみ（`issues-workflow` skill と同じ）。
 
 ## 依存関係グラフ / 相互リンク
 
@@ -61,10 +61,10 @@ git mv issues/done/012-fix-bug.md issues/open/012-fix-bug.md
 ### 後: 同期コマンドを実行
 
 ```bash
-scripts/update_issue_index.sh
-scripts/update_issue_index.sh --check
-scripts/check_issue_index.sh
-scripts/check_issue_queue.sh
+scripts/manager update-issue-index
+scripts/manager update-issue-index --check
+scripts/manager check-issue-index
+scripts/manager check-issue-queue
 # index再生成、キュー検証済み
 ```
 

@@ -12,7 +12,7 @@ description: 完了したタスクからの学びをルール、skills、また�
 **学びの反映がコード・`issues`・`scripts`に及ぶなら、報告前に下を実行し通す。** `mise`なしは`scripts/manager`同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
 
 - ルールや`scripts`を直した: `mise run check-scripts`および`mise run check-repo-smoke`
-- `issues` / PR方針を直した: `mise run check-issue-queue`と`mise run update-issue-index`（必要に応じ`-- --check`）
+- `issues` / PR方針を直した: `mise run check-issue-queue`と`mise run update-issue-index`（必要に応じ`scripts/manager update-issue-index --check`）
 - Rust/テスト手直しを含めた: `mise run fmt`と`mise run nextest`
 
 ## いつ使うか

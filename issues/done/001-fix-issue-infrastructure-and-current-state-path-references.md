@@ -31,7 +31,7 @@ Validation:
 ```sh
 rg 'docs/current-state\.md' issues || true
 find issues -maxdepth 2 -type d | sort
-scripts/manager update-issue-index -- --check
+scripts/manager update-issue-index --check
 scripts/manager check-issue-index
 ```
 
