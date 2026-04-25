@@ -95,7 +95,7 @@ pub fn build_file_with_options(
     })?;
     ensure_runtime_feature_gates(&lowered)?;
     if let Some(path) = capability_manifest_output {
-        let manifest = backend::emit_capability_manifest_json(&lowered);
+        let manifest = backend::emit_manifest_v1_json(&lowered);
         fs::write(path, manifest).map_err(|error| Diagnostic {
             code: DiagCode::BackendIo,
             message: format!("failed to write {}: {error}", path.display()),

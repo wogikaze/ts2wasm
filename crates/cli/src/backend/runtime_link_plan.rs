@@ -273,7 +273,9 @@ impl RuntimeLinkPlan {
                 }
             }
             LoweredExpr::PropertyGet { obj, .. } => {
-                self.add_required_runtime(RuntimeFn::PropertyGetIc);
+                // TODO(P2-Correctness): Use PropertyGetIc only after object semantics proven.
+                // Currently using PropertyGet (non-IC version) to validate correctness first.
+                self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
             }
             LoweredExpr::PropertySet { object, value, .. } => {

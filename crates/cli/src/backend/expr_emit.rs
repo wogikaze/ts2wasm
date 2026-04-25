@@ -221,7 +221,7 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
                 wat.push_str(&format!(
                     "{pad}(call {})\n",
-                    RuntimeFn::PropertyGetIc.symbol()
+                    RuntimeFn::PropertyGet.symbol()
                 ));
             }
             LoweredExpr::MethodCall {

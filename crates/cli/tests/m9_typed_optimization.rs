@@ -72,7 +72,9 @@ fn typed_add_uses_fast_runtime_path() {
 fn property_get_uses_inline_cache_runtime() {
     let (wasm, manifest_path) = compile_with_manifest("m9/property-ic.ts");
     let manifest = fs::read_to_string(&manifest_path).expect("failed to read manifest");
-    assert!(manifest.contains("\"property_get_ic\""));
+    // TODO(P2-Correctness): PropertyGetIc optimization disabled until object correctness proven.
+    // Verify base property_get is used instead.
+    assert!(manifest.contains("\"property_get\""));
 
     let run = Command::new("iwasm")
         .arg(&wasm)

@@ -9,7 +9,7 @@ mod string_intern;
 
 use crate::ir::lowered::LoweredProgram;
 
-pub(crate) use capability_manifest::emit_capability_manifest_json;
+pub(crate) use capability_manifest::emit_manifest_v1_json;
 pub(crate) use emitter::emit_wat;
 pub(crate) use runtime_fn::RuntimeFn;
 

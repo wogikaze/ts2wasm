@@ -187,9 +187,7 @@ mod tests {
     use crate::backend::runtime_link_plan::RuntimeLinkPlan;
     use crate::ir::lowered::lower_program;
 
-    use super::{
-        CapabilityManifest, ManifestV1, emit_capability_manifest_json, emit_manifest_v1_json,
-    };
+    use super::{CapabilityManifest, emit_capability_manifest_json, emit_manifest_v1_json};
 
     fn lowered(source: &str) -> crate::ir::lowered::LoweredProgram {
         let program = crate::parse_program(source).expect("parse failed");
