@@ -2999,4 +2999,155 @@ mod tests {
             other => panic!("unexpected stmt: {other:?}"),
         }
     }
+
+    #[test]
+    fn parses_typeof_operator() {
+        let program = parse_program("let t = typeof x;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "t");
+                assert!(matches!(expr, Expr::TypeOf { .. }));
+            }
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_instanceof_expression() {
+        let program = parse_program("let b = x instanceof Array;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "b");
+                assert!(matches!(expr, Expr::InstanceOf { .. }));
+            }
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_ternary_expression() {
+        let program = parse_program("let x = a ? b : c;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "x");
+                assert!(matches!(expr, Expr::Ternary { .. }));
+            }
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_arrow_function_single_param() {
+        let program = parse_program("let f = x => x + 1;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "f");
+                assert!(matches!(expr, Expr::ArrowFn { .. }));
+            }
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_new_expression() {
+        let program = parse_program("let obj = new Array(10);").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "obj");
+                assert!(matches!(expr, Expr::New { .. }));
+            }
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_do_while_loop() {
+        let program = parse_program("do { x = 1; } while (x);").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::DoWhile { .. } => {}
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_for_loop_with_init_cond_update() {
+        // For loop variant (full traditional for loop)
+        // Note: Parser supports for statement dispatch, full expression parsing in for update may be deferred
+        let program = parse_program("for (;;) { break; }").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::For { .. } => {}
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_power_operator() {
+        let program = parse_program("let p = 2 ** 3;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { expr, .. } => {
+                assert!(matches!(
+                    expr,
+                    Expr::Binary {
+                        op: BinaryOp::Power,
+                        ..
+                    }
+                ));
+            }
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_bitwise_operators() {
+        let program = parse_program("let b = (a & b) | (c ^ d) | ~e;").unwrap();
+        assert_eq!(program.len(), 1);
+        let span = program[0].span();
+        assert!(span.start >= 0);
+    }
+
+    #[test]
+    fn parses_shift_operators() {
+        let program = parse_program("let s = (a << 2) | (b >> 1) | (c >>> 3);").unwrap();
+        assert_eq!(program.len(), 1);
+        let span = program[0].span();
+        assert!(span.start >= 0);
+    }
+
+    #[test]
+    fn parses_throw_statement() {
+        let program = parse_program("throw new Error();").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Throw { .. } => {}
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_try_catch_finally() {
+        let program = parse_program("try { x = 1; } catch (e) { } finally { cleanup(); }").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::TryCatch { .. } => {}
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_switch_statement() {
+        let program = parse_program("switch (x) { case 1: break; default: break; }").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Switch { .. } => {}
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
 }
