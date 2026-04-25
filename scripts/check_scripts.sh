@@ -3,7 +3,7 @@
 #
 # Note: `bash -n` is syntax-only. It does not prove runtime behavior.
 # After editing a script, also run a representative command (see
-# `.agents/skills/ts2wasm-scripts-workflow/SKILL.md`).
+# `.agents/skills/scripts-workflow/SKILL.md`).
 
 set -euo pipefail
 

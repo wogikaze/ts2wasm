@@ -1,11 +1,20 @@
 ---
-name: ts2wasm-docs-workflow
-description: "Use when adding, editing, auditing, splitting, deleting, or reorganizing docs under docs/ in ts2wasm. Trigger phrases: update docs, edit docs, docs audit, current-state, roadmap cleanup, remove stale docs, move TODO to issue, project goal docs, architecture docs."
+name: docs-workflow
+description: "Use when adding, editing, auditing, splitting, deleting, or reorganizing docs under docs/ in this repository. Trigger phrases: update docs, edit docs, docs audit, current-state, roadmap cleanup, remove stale docs, move TODO to issue, project goal docs, architecture docs."
 ---
 
-# ts2wasm Docs Workflow
+# Docs workflow
 
 Use this skill only for documentation changes under docs/ and README-level documentation changes.
+
+## Mise: run before you finish (required if you touched paths under verification)
+
+**Run and pass the commands that match your change before reporting completion.** Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+
+- Always: `mise run fmt` (touches `*.md` / Rust in examples)
+- Default smoke: `mise run check-repo-smoke`
+- If docs claim test or compiler behavior: `mise run nextest` (and `mise run clippy` if Rust examples changed)
+- If you edited `issues/` cross-links or agent/issue docs: `mise run check-issue-queue`
 
 This skill enforces a strict separation between:
 

@@ -7,6 +7,14 @@ description: "Use for autonomous / agent compiler-dev runs: FSM, current_task.js
 
 This skill is the **thin entry** for the autonomous build/test loop. The authoritative contract is large; it lives in the workflow + state files, not in this `SKILL.md` alone.
 
+## Mise: run before you exit VERIFY* / report RETRO (required)
+
+**The autonomy loop is only honest if the gates were actually executed; run these and fail the step on red.** Without `mise`, use `scripts/manager` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+
+- `current_task.json` または issue が示す `commands.fast` / `commands.full` 相当（通常は少なくとも `mise run fmt` と `mise run nextest`）
+- Issue / index と整合: `mise run check-issue-queue`（`issues` を扱う場合は `mise run update-issue-index` も）
+- 軽い一括: `mise run check-repo-smoke`
+
 ## Read order
 
 1. `../../workflows/compiler_dev_fsm.md` — FSM, failure edges, done/forbidden, RETRO rules
@@ -23,6 +31,6 @@ This skill is the **thin entry** for the autonomous build/test loop. The authori
 
 ## Related skills
 
-- `ts2wasm-milestone` for roadmap slices
-- `ts2wasm-gatekeeper-review` for merge gates
-- `ts2wasm-scripts-workflow` for adding automation that implements a guard
+- `milestone` for roadmap / vertical slices
+- `gatekeeper-review` for merge gates
+- `scripts-workflow` for adding automation that implements a guard

@@ -1,9 +1,9 @@
 ---
-name: ts2wasm-gatekeeper-review
-description: "Use when acting as a gatekeeper/reviewer for ts2wasm PRs, agent outputs, or autopilot results before mainline merge. Trigger phrases: review as gatekeeper, merge gate check, runtime/backend checklist, grep gate, handoff packet."
+name: gatekeeper-review
+description: "Use when acting as a gatekeeper/reviewer for PRs to this repository, agent outputs, or autopilot results before mainline merge. Trigger phrases: review as gatekeeper, merge gate check, runtime/backend checklist, grep gate, handoff packet."
 ---
 
-# ts2wasm Gatekeeper Review Workflow
+# Gatekeeper review
 
 Use this skill when deciding whether a change is safe to merge into mainline.
 
@@ -13,6 +13,24 @@ Primary source of truth:
 - docs/12-coding-standard.md, section 19 (Gatekeeper Checklist)
 - docs/12-coding-standard.md, section 20 (priority context)
 - current-state.md（実装の現在地と代表コマンド）
+
+## Mise: run these before a merge / finish decision (required)
+
+**基準はコマンドの成否。未実施のまま合格判定を出さない。** `mise` なし → `scripts/manager` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
+
+```bash
+mise run fmt
+mise run nextest
+mise run check-repo-smoke
+```
+
+下記はスコープに応じて**追加**（WASI/互換/参考カバレッジ/大規模差分など）:
+
+```bash
+mise run clippy
+mise run reference-coverage
+mise run check-coverage-gate   # マトリクス比較時（引数は script --help 参照）
+```
 
 ## Goal
 

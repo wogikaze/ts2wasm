@@ -1,11 +1,24 @@
 ---
-name: ts2wasm-compatibility
-description: Use when changing TypeScript/ECMAScript compatibility, runtime semantics, WASI capability lowering, Node.js host fallback, or AssemblyScript boundary rules in ts2wasm.
+name: compatibility
+description: Use when changing TypeScript/ECMAScript compatibility, runtime semantics, WASI capability lowering, Node.js host fallback, or AssemblyScript boundary rules in this compiler.
 ---
 
-# ts2wasm Compatibility Workflow
+# Language compatibility
 
 The input language is TypeScript plus ECMAScript runtime semantics. Do not require AssemblyScript-only syntax, primitive types, intrinsics, or standard library behavior from users.
+
+## Mise: run before you finish (required for semantic changes)
+
+**A compatibility change is not “done” until the relevant test gates are green; run the commands below and record outcomes.** Without `mise`, use `scripts/manager` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+
+```bash
+mise run fmt
+mise run clippy
+mise run nextest
+```
+
+- If test262 or differential work is in scope: `mise run test262` (and pipe through `mise run test-differential-reporter` / `mise run test-regression-gate` with the project’s file conventions; see `scripts` headers)
+- If reference-suite coverage is relevant: `mise run reference-coverage` (as documented for that script)
 
 ## Decision Order
 

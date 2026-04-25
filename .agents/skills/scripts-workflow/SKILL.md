@@ -1,11 +1,20 @@
 ---
-name: ts2wasm-scripts-workflow
-description: "Use when adding or editing scripts under scripts/ in ts2wasm. Trigger phrases: add script, edit script, update script, benchmark script, coverage script, regression gate script, reporter script, reference coverage script."
+name: scripts-workflow
+description: "Use when adding or editing scripts under scripts/ in this repository. Trigger phrases: add script, edit script, update script, benchmark script, coverage script, regression gate script, reporter script, reference coverage script."
 ---
 
-# ts2wasm Scripts Workflow
+# Scripts workflow
 
 **Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`.
+
+## Mise: run before you merge a script change (required)
+
+**Execute all that apply; do not ship a script change without a green local gate.** First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)). Without `mise`, use `scripts/manager` with the same subcommand.
+
+- Always: `mise run check-scripts` (plus `mise run fmt` if the script is invoked from tests or the diff touches Rust)
+- `mise run check-repo-smoke` after touching `issues` paths or the manager
+- For coverage/ CI scripts: also run the same command family you would run in `scripts` docs (e.g. `mise run reference-coverage` with a small limit when that script supports it)
+- `mise tasks` to confirm your new `mise run <task>` appears after you add it to `mise.toml`
 
 Use this skill only for scripts/ changes.
 
@@ -33,7 +42,7 @@ Out of scope:
 - changing TestRecord status semantics
 - changing docs policy without updating the script contract that consumes it
 
-Use `ts2wasm-fixtures-workflow` together with this skill when a script change requires fixture path migration or fixture reference synchronization.
+Use `fixtures-workflow` together with this skill when a script change requires fixture path migration or fixture reference synchronization.
 
 ## Core Rules
 
@@ -70,7 +79,7 @@ Restricted:
 - silently replacing old fixture paths with new ones
 - encoding milestone-style fixture group names such as `m1`, `m2`, `stream-g`
 
-When fixture paths are touched or fixture references are changed, run the fixture reference update pass from `ts2wasm-fixtures-workflow` in the same change:
+When fixture paths are touched or fixture references are changed, run the fixture reference update pass from `fixtures-workflow` in the same change:
 
 - crates/cli/tests/**
 - scripts/**

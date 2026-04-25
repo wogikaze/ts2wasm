@@ -7,6 +7,14 @@ description: Guide for operating ast-grep as a project lint tool. Covers sgconfi
 
 Complement general-purpose lint tools (ESLint, oxlint, Biome, clippy, etc.) with ast-grep for patterns they cannot express. Always prefer reproducible static rules over natural-language prompts.
 
+## Mise: run before you close the task (required for in-repo work)
+
+**Execute** the commands below before claiming rules are integrated; on failure, fix or document blockers. Without `mise`, use `scripts/manager` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+
+- `mise run check-scripts` (ensures all `scripts/*.sh` and `scripts/manager` still parse)
+- `mise run fmt` and `mise run nextest` (you touched the repo, including rule tests under tests or `rule-tests/`)
+- Optional but recommended after adding CI-facing checks: `mise run check-repo-smoke`
+
 ## Installation
 
 ```bash

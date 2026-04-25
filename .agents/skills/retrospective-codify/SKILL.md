@@ -7,6 +7,14 @@ description: タスク完了時に「最初に失敗した内容」と「最終�
 
 タスクの終盤で「最初にこれを知っていれば遠回りしなかった」知見を抽出し、静的ルール・skill・常時有効ルールのいずれかに固定する。プロンプトに頼らず再現可能な形に落とすことを優先する。
 
+## Mise: 完了前に必ず意識する
+
+**学びの反映がコード・`issues`・`scripts` に及ぶなら、報告前に下を実行し通す。** `mise` なしは `scripts/manager` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
+
+- ルールや `scripts` を直した: `mise run check-scripts` および `mise run check-repo-smoke`
+- `issues` / PR 方針を直した: `mise run check-issue-queue` と `mise run update-issue-index`（必要に応じ `-- --check`）
+- Rust/テスト手直しを含めた: `mise run fmt` と `mise run nextest`
+
 ## いつ使うか
 
 - タスク完了直前、またはユーザーから「学びを残して」「ルール化して」と指示されたとき

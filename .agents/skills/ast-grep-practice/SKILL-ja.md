@@ -7,6 +7,14 @@ description: ast-grep をプロジェクト lint ツールとして運用する�
 
 汎用 lint ツール（ESLint, oxlint, Biome, clippy 等）で表現できないパターンを ast-grep で補完する。自然言語プロンプトより再現可能な静的ルールを常に優先する。
 
+## Mise: タスク完了前に必ず
+
+**リポジトリ内の作業を完了にする前に、当てはまるコマンドを実行し通すこと。** `mise` なし → `scripts/manager` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
+
+- `mise run check-scripts`（`scripts/*.sh` と `scripts/manager` のシンタックス）
+- ルールや `tests` / `rule-tests` を触った: `mise run fmt` と `mise run nextest`
+- 推奨: `mise run check-repo-smoke`
+
 ## インストール
 
 ```bash

@@ -1,13 +1,22 @@
 ---
-name: ts2wasm-fixtures-workflow
-description: "Use when adding, editing, moving, or renaming fixtures under fixtures/ in ts2wasm. Trigger phrases: add fixture, edit fixture, rename fixture, migrate fixtures, fixture path update, fixture reference sync."
+name: fixtures-workflow
+description: "Use when adding, editing, moving, or renaming fixtures under fixtures/ in this repository. Trigger phrases: add fixture, edit fixture, rename fixture, migrate fixtures, fixture path update, fixture reference sync."
 ---
 
-# ts2wasm Fixtures Workflow
+# Fixtures workflow
 
 Use this skill when a change touches `fixtures/**` or fixture path references caused by a `fixtures/**` change.
 
-This skill is for fixture input files, fixture naming, fixture migration, and fixture reference synchronization. It may update script path references, but it must not redesign script behavior. Use `ts2wasm-scripts-workflow` for script logic, script output schema, command-line options, CI script orchestration, or coverage pipeline behavior changes.
+## Mise: run before you finish (required)
+
+**You must** run the matching entries below and ensure they pass before calling the work done. Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+
+- `mise run fmt` and `mise run nextest` (minimum)
+- If compiler/runtime/Fixture references change: `mise run clippy` as well
+- `mise run check-repo-smoke` as a light aggregate (fmt + script syntax + `issues` invariants)
+- If reference coverage or fixtures in matrix were affected: `mise run update-coverage-matrix` / `mise run reference-coverage` (see `scripts/` for flags)
+
+This skill is for fixture input files, fixture naming, fixture migration, and fixture reference synchronization. It may update script path references, but it must not redesign script behavior. Use `scripts-workflow` for script logic, script output schema, command-line options, CI script orchestration, or coverage pipeline behavior changes.
 
 ## Scope
 
@@ -81,7 +90,7 @@ Not allowed here:
 - change script stdout/stderr contract
 - change generated artifact policy
 
-If a fixture rename reveals that a script needs different logic, stop the fixture-only change and hand off the script part to `ts2wasm-scripts-workflow`.
+If a fixture rename reveals that a script needs different logic, stop the fixture-only change and hand off the script part to `scripts-workflow`.
 
 ## Naming Rules
 

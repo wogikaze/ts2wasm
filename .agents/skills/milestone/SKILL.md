@@ -1,11 +1,24 @@
 ---
-name: ts2wasm-milestone
-description: Use when implementing ts2wasm vertical slices, updating shared definitions in docs/11, or deciding the next compiler/runtime work bounded by gates (historical name "milestone"; prefer workstreams/gates in new text).
+name: milestone
+description: Use when implementing vertical slices, updating shared definitions in docs/11, or deciding the next compiler/runtime work bounded by gates (historical name "milestone"; prefer workstreams/gates in new text).
 ---
 
-# ts2wasm Vertical Slice Workflow
+# Vertical slice workflow
 
 Use `docs/11-shared-definitions.md` as the canonical source for project goal、workstreams、gates、test status schema、capability manifest、and benchmark policy.
+
+## Mise: run before you finish a slice (required)
+
+**Run and pass the commands that match the slice; do not mark the workstream step done on red.** Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+
+```bash
+mise run fmt
+mise run nextest
+mise run clippy
+mise run check-repo-smoke
+```
+
+If the slice changes reference coverage or benchmark policy expectations, also use `mise run reference-coverage` / `mise run check-coverage-gate` (see `scripts/*` and `docs/15`).
 
 ## Workflow
 
