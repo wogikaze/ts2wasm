@@ -1099,7 +1099,9 @@ impl<'a> Resolver<'a> {
             return *id;
         }
 
-        let id = self.modules.len();
+        // Reserve module id 0 for the current (entry) module.
+        // External `require("...")` specifiers start from 1.
+        let id = self.modules.len() + 1;
         self.module_ids.insert(specifier.to_owned(), id);
         self.modules.push(ModuleInfo {
             id,
