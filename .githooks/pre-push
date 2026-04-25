@@ -6,10 +6,10 @@ repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
 echo "pre-push: fast gate (fmt, scripts, issues, coverage matrix check; no full nextest)"
-bash scripts/check_fast_gate.sh --skip-nextest
+scripts/manager check-fast-gate --skip-nextest
 
 echo "pre-push: manifest vs wasm imports"
-bash scripts/check_manifest_imports.sh
+scripts/manager check-manifest-imports
 
 echo "pre-push: one Node differential smoke (m2)"
 cargo nextest run -p ts2wasm-cli --test m2_node_diff m2_fixtures_match_node_output_under_iwasm

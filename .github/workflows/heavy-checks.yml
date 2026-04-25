@@ -45,4 +45,4 @@ jobs:
       - name: Fixture differential check
         run: |
           cd "${GITHUB_WORKSPACE}"
-          ./scripts/check_fixture_differential.sh
+          ./scripts/check/fixture-differential.sh

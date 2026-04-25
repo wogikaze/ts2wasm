@@ -23,6 +23,7 @@ The autonomous loop is considered complete when:
 **The autonomy loop is only honest if the gates were actually executed; run these and fail the step on red.** Without `mise`, use `scripts/manager` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
 - `current_task.json` または issue が示す `commands.fast` / `commands.full` 相当（通常は少なくとも `mise run fmt` と `mise run nextest`）
+- **CRITICAL: Full test suite must pass, not just filtered tests. If `cargo nextest run` fails, you MUST investigate before marking done.**
 - Issue / index と整合: `mise run check-issue-queue`（`issues` を扱う場合は `mise run update-issue-index` も）
 - 軽い一括: `mise run check-repo-smoke`
 
@@ -43,6 +44,32 @@ The autonomous loop is considered complete when:
 - Skipping fixture requirements
 - Not verifying alias behavior (e.g., --emit-capabilities vs --emit-manifest)
 - Leaving unused code (e.g., transitional schemas)
+- Running filtered tests instead of full suite when pre-existing failures exist
+
+## Issue Completion Checklist (REQUIRED before marking done)
+
+**Before marking an issue as complete, you MUST:**
+
+1. **Verify full test suite passes**: Run `cargo nextest run` (no filters). If there are pre-existing failures, document them in the cycle report and confirm they are unrelated to your changes.
+2. **Update issue file**: Move issue from `issues/open/` to `issues/done/` and update frontmatter:
+   - Change `Status: open` → `Status: done`
+   - Add `Completed: <date>` field
+3. **Regenerate issues index**: Run `mise run update-issue-index` or `scripts/update_issue_index.sh`
+4. **Verify index consistency**: Run `mise run check-issue-index` to ensure the index reflects the change
+5. **Document completion evidence**: In the issue file or cycle report, explicitly state how each acceptance criterion was verified with specific commands/outputs.
+
+**Failure to complete these steps means the issue is NOT done.**
+
+## Close (RETRO state)
+
+- Update issue file status to "done" and add completion evidence
+- Move issue file from `issues/open/` to `issues/done/`
+- Run `mise run update-issue-index` to regenerate `issues/index.md`
+- Clear `current_task.json` to idle state
+- Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
+- **REQUIRED**: If new failure pattern discovered, add to `failure_patterns.md` with mechanical guards
+- **REQUIRED**: If new guard needed, add to `review_checklist.md`
+- **REQUIRED**: Run `mise run check-agent-state` to validate state files
 
 ## Read order
 

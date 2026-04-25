@@ -19,22 +19,22 @@ Last updated: 2026-04-26
 ```bash
 cargo fmt --all --check
 cargo nextest run
-scripts/gen/coverage-matrix.sh --check
-scripts/check/shell-syntax.sh
-scripts/check_fast_gate.sh --skip-nextest
-scripts/check_manifest_imports.sh
-scripts/check_fixture_catalog.sh
-scripts/check_architecture_rules.sh
-scripts/check_compiler_diagnostics.sh
-scripts/update_issue_index.sh --check
-scripts/check_issue_index.sh
+mise run check-coverage-matrix
+mise run check-shell-syntax
+mise run check-fast-gate --skip-nextest
+mise run check-manifest-imports
+mise run check-fixture-catalog
+mise run check-architecture-rules
+mise run check-compiler-diagnostics
+mise run update-issue-index --check
+mise run check-issue-index
 ```
 
 reference coverage を更新する場合（実測値を変えるとき）:
 
 ```bash
-scripts/gen/coverage-matrix.sh
-# または単 suite: scripts/run/reference-coverage.sh test262 --limit 50
+mise run update-coverage-matrix
+# または単 suite: mise run reference-coverage -- test262 --limit 50
 ```
 
 ## Snapshot
@@ -66,10 +66,10 @@ scripts/gen/coverage-matrix.sh
 - minimal parser/frontend（`crates/cli`）
 - WAT/WASM emitter と runtime subset（`crates/cli`）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
-- reference coverage パイプライン（`scripts/run/reference-coverage.sh`, `scripts/gen/coverage-matrix.sh`, `scripts/gate/coverage.sh`）
+- reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run check-coverage`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
-- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `scripts/update_issue_index.sh` が生成、`scripts/check_issue_index.sh` で整合検証）
-- harness scripts（`scripts/check_fast_gate.sh`、`check_manifest_imports.sh`、`check_test_records_schema.sh`、`check_fixture_catalog.sh`、`check_architecture_rules.sh`、`check_compiler_diagnostics.sh`；pre-push は `.githooks/pre-push`）
+- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `mise run update-issue-index` が生成、`mise run check-issue-index` で整合検証）
+- harness scripts（`mise run check-fast-gate`、`mise run check-manifest-imports`、`mise run check-test-records-schema`、`mise run check-fixture-catalog`、`mise run check-architecture-rules`、`mise run check-compiler-diagnostics`；pre-push は `.githooks/pre-push`）
 
 ## Known blockers / gaps
 

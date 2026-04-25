@@ -17,19 +17,15 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 002 | Emit canonical capability manifest schema | feature | abi/wasi | implementation-ready | P0 | none | docs define a canonical manifest schema with `schema_version`, `target`, `standalone`, `wasi`, `node_host`, and `capa... |
+| 003 | Verify manifest against emitted WAT imports | test | wasi/tests | implementation-ready | P0 | 002 | A manifest is only useful as a gate if it matches emitted WAT/wasm imports. The current project needs a test that cro... |
 | 004 | Reclassify compile-only compatibility tests | test | tests/coverage | implementation-ready | P0 | none | Tests such as class/module/Node API compile-only checks can make compatibility look more advanced than it is. Build s... |
 | 005 | Add fine-grained unsupported feature breakdown | infra | scripts/coverage | implementation-ready | P0 | none | `UnsupportedSyntax:423` is not actionable. The project needs feature-level breakdown such as class, import, regexp li... |
 | 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | implementation-ready | P2 | none | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) |
-| 012 | Fix computed property semantics bug | bug | runtime/semantics | implementation-ready | P0 | none | `obj["key"]` computed property access currently uses `$array_get` which performs an array tag check and returns `unde... |
 | 013 | Implement heap OOM check | feature | runtime/memory | implementation-ready | P0 | none | `$alloc_heap` does not check `memory.size` before allocation. Large allocations can cause undefined behavior or memor... |
+| 014 | Implement dynamic property key support | feature | runtime/semantics | implementation-ready | P1 | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupported-dynamic-proper... |
 | 015 | Implement object literal string key support | feature | parser/semantics | implementation-ready | P1 | none | Object literal with string literal keys `{"x": v}` is not implemented. Currently only identifier keys `{x: v}` are su... |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | implementation-ready | P1 | none | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
-| 024 |  |  |  |  |  |  |  |
-| 025 |  |  |  |  |  |  |  |
 | 026 |  |  |  |  |  |  |  |
-| 027 |  |  |  |  |  |  |  |
-| 028 |  |  |  |  |  |  |  |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -37,13 +33,11 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 003 | Verify manifest against emitted WAT imports | test | wasi/tests | 002 | A manifest is only useful as a gate if it matches emitted WAT/wasm imports. The current project n... |
 | 006 | Remove stale milestone and transitional docs | cleanup | docs | 002,003 | Several docs appear to mix stale milestone notes, transitional manifest schema, and current imple... |
 | 007 | Harden reference coverage prerequisites | infra | scripts/reference | 005 | Reference coverage scripts depend on external reference repositories. If those repositories are m... |
 | 008 | Introduce typed WAT writer skeleton | refactor | backend | 003 | Large raw WAT string generation in runtime builder code is a major maintainability risk. A full r... |
 | 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to... |
 | 010 | Extract frontend module from crates/cli | refactor | frontend | 003,004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline c... |
-| 014 | Implement dynamic property key support | feature | runtime/semantics | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupp... |
 | 016 | Implement prototype and method call support | feature | runtime/semantics | 014 | Prototype chain lookup and method calls are not implemented. Currently diagnosed as `unsupported-... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memor... |
 | 017a | Design GC strategy | feature | runtime/memory | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memor... |
@@ -67,11 +61,16 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|
 | 000 | Short imperative title | feature | frontend | see `issues/done/000-sample-issue.md` |
 | 001 | Fix issue infrastructure and current-state path references | infra | issues/docs | see `issues/done/001-fix-issue-infrastructure-and-current-state-path-references.md` |
+| 002 | Emit canonical capability manifest schema | feature | abi/wasi | see `issues/done/002-emit-canonical-capability-manifest-schema.md` |
+| 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
+| 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
+| 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
+| 027 | Migrate frontend code to frontend crate | refactor | frontend | see `issues/done/027-migrate-frontend-code-to-frontend-crate.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
 
-Run `scripts/update_issue_index.sh` after adding, closing, or moving issues. CI and agents should run `scripts/update_issue_index.sh --check` and `scripts/check_issue_index.sh`.
+Run `mise run update-issue-index` after adding, closing, or moving issues. CI and agents should run `mise run update-issue-index --check` and `mise run check-issue-index`.
 
 A future generator may replace only the regions between these markers:
 

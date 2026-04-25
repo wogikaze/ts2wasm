@@ -6,18 +6,15 @@
   "required": [
     "id",
     "title",
-    "status",
-    "scope",
-    "acceptance",
-    "commands",
-    "risk"
+    "status"
   ],
   "properties": {
-    "id": { "type": "string", "minLength": 1 },
-    "title": { "type": "string", "minLength": 1 },
+    "id": { "type": ["string", "null"] },
+    "title": { "type": ["string", "null"] },
     "status": {
       "type": "string",
       "enum": [
+        "idle",
         "backlog",
         "selected",
         "in_progress",
@@ -28,7 +25,7 @@
       ]
     },
     "scope": {
-      "type": "object",
+      "type": ["object", "null"],
       "required": ["allowed_files", "forbidden_files"],
       "properties": {
         "allowed_files": { "type": "array", "items": { "type": "string" } },
@@ -36,17 +33,17 @@
       },
       "additionalProperties": false
     },
-    "acceptance": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "acceptance": { "type": ["array", "null"], "items": { "type": "string" } },
     "commands": {
-      "type": "object",
+      "type": ["object", "null"],
       "required": ["fast", "full"],
       "properties": {
-        "fast": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
-        "full": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        "fast": { "type": "array", "items": { "type": "string" } },
+        "full": { "type": "array", "items": { "type": "string" } }
       },
       "additionalProperties": false
     },
-    "risk": { "type": "array", "items": { "type": "string" } },
+    "risk": { "type": ["array", "null"], "items": { "type": "string" } },
     "issue_path": { "type": "string", "description": "Optional path to issues/open or issues/done file" },
     "notes": { "type": "string" }
   },

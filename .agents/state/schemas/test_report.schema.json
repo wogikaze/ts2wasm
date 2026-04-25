@@ -6,6 +6,7 @@
   "required": [
     "run_id",
     "task_id",
+    "git",
     "commands",
     "fixtures",
     "regressions",
@@ -14,14 +15,36 @@
   "properties": {
     "run_id": { "type": "string", "minLength": 1 },
     "task_id": { "type": "string" },
+    "git": {
+      "type": "object",
+      "required": ["sha", "exit_code", "changed_files", "commits"],
+      "properties": {
+        "sha": { "type": "string", "minLength": 1 },
+        "exit_code": { "type": "integer" },
+        "changed_files": { "type": "array", "items": { "type": "string" } },
+        "commits": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["sha", "message"],
+            "properties": {
+              "sha": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
     "commands": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["cmd", "status"],
+        "required": ["cmd", "status", "exit_code"],
         "properties": {
           "cmd": { "type": "string" },
           "status": { "type": "string", "enum": ["pass", "fail", "skip", "error"] },
+          "exit_code": { "type": "integer" },
           "elapsed_ms": { "type": "integer", "minimum": 0 }
         },
         "additionalProperties": true

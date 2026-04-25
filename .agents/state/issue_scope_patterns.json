@@ -1,0 +1,100 @@
+{
+  "default": {
+    "allowed_files": [],
+    "forbidden_files": ["docs/"]
+  },
+  "by_area": {
+    "runtime/semantics": {
+      "allowed_files": [
+        "crates/ir/src/builtin_resolver.rs",
+        "crates/ir/src/lowered.rs",
+        "crates/cli/src/backend/expr_emit.rs",
+        "crates/cli/src/backend/runtime_builder.rs",
+        "fixtures/"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "abi/wasi": {
+      "allowed_files": [
+        "crates/shared/src/capability.rs",
+        "crates/cli/src/backend/capability_manifest.rs",
+        "crates/cli/src/backend/runtime_link_plan.rs"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "ir": {
+      "allowed_files": [
+        "crates/ir/src/"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "frontend": {
+      "allowed_files": [
+        "crates/frontend/src/"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "runtime/memory": {
+      "allowed_files": [
+        "crates/runtime-abi/src/",
+        "crates/cli/src/backend/runtime_builder.rs"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "tests/coverage": {
+      "allowed_files": [
+        "crates/cli/tests/",
+        "scripts/gen/coverage-matrix.py",
+        "artifacts/coverage/"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "scripts/coverage": {
+      "allowed_files": [
+        "scripts/gen/",
+        "scripts/run/",
+        "scripts/gate/"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "issues/docs": {
+      "allowed_files": [
+        "issues/",
+        ".agents/state/"
+      ],
+      "forbidden_files": []
+    }
+  },
+  "by_type": {
+    "bug": {
+      "forbidden_files": ["docs/"]
+    },
+    "feature": {
+      "forbidden_files": ["docs/"]
+    },
+    "refactor": {
+      "forbidden_files": ["docs/"]
+    },
+    "infra": {
+      "allowed_files": [
+        "scripts/",
+        ".github/",
+        ".githooks/",
+        "mise.toml",
+        "Cargo.toml"
+      ],
+      "forbidden_files": []
+    },
+    "test": {
+      "allowed_files": [
+        "crates/cli/tests/",
+        "fixtures/"
+      ],
+      "forbidden_files": ["docs/"]
+    },
+    "cleanup": {
+      "allowed_files": [],
+      "forbidden_files": []
+    }
+  }
+}

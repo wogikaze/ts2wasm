@@ -5,7 +5,7 @@ type: refactor
 area: ir
 class: implementation-ready
 priority: P1
-depends_on: [024, 028]
+depends_on: [024]
 blocks: [026]
 created: 2026-04-26
 updated: 2026-04-26

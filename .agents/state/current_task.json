@@ -1,31 +1,14 @@
 {
-  "id": "TEMPLATE-000",
-  "title": "Example: lower BinaryExpression '+' for number operands (copy and replace fields)",
-  "status": "backlog",
+  "id": null,
+  "title": null,
+  "status": "idle",
   "issue_path": null,
-  "scope": {
-    "allowed_files": [
-      "crates/cli/src/ir/lowered.rs",
-      "fixtures/expressions/add-number.ts"
-    ],
-    "forbidden_files": ["docs/roadmap.md"]
-  },
-  "acceptance": [
-    "fixture add-number.ts compiles",
-    "generated wasm output matches Node output",
-    "no regression in existing expression fixtures"
-  ],
+  "scope": null,
+  "acceptance": [],
   "commands": {
-    "fast": [
-      "cargo fmt --all --check",
-      "cargo test lower_binary_expression",
-      "scripts/run-fixture fixtures/expressions/add-number.ts"
-    ],
-    "full": ["cargo test", "scripts/run-fixtures"]
+    "fast": [],
+    "full": []
   },
-  "risk": [
-    "JS '+' has string concatenation semantics",
-    "do not assume number-only '+' globally"
-  ],
-  "notes": "Edit this file when an issue is active; set status to backlog and clear when idle. Command strings are project-specific (see issues README and AGENTS.md)."
+  "risk": [],
+  "notes": "Issue 012 completed and moved to done. Ready to select next task."
 }

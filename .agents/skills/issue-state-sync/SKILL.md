@@ -19,13 +19,11 @@ description: Use after audit-driven issue moves, new issues, or ID/dependency ed
 issue ファイルや index に触ったら、必ず:
 
 ```bash
-scripts/update_issue_index.sh
-scripts/update_issue_index.sh --check
-scripts/check_issue_index.sh
-scripts/check_issue_queue.sh
+mise run update-issue-index
+mise run update-issue-index --check
+mise run check-issue-index
+mise run check-issue-queue
 ```
-
-`mise` を使う場合は `mise run update-issue-index` 等（`mise.toml` / `scripts/manager` 参照）。
 
 ## ファイル規約
 

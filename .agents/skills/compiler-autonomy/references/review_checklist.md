@@ -12,6 +12,7 @@
 
 - [ ] Language compatibility decisions match `docs/05-compatibility-and-semantics.md` (or a noted deviation filed as a follow-up issue)
 - [ ] `+` and other double-edged operators: number-only when claimed (see this skill’s `references/failure_patterns.md` FP-001)
+- [ ] Bracket notation `obj[key]` discriminates string literal vs numeric: string uses `PropertyAccess`, numeric uses `ComputedIndex` (see FP-003)
 
 ## Quality bar
 

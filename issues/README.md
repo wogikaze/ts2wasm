@@ -21,7 +21,7 @@ Use these locations consistently:
 
 ## Mechanical checks
 
-`scripts/check_issue_queue.sh` (run locally, in pre-commit, and in CI) fails if:
+`mise run check-issue-queue` (run locally, in pre-commit, and in CI) fails if:
 
 - the same `NNN-` id appears twice in `issues/open/` or twice in `issues/done/`, or the same `NNN` exists in both trees;
 - a file `NNN-*.md` does not match the `**ID**:` (or yaml `id:`) value in the file;
@@ -29,7 +29,7 @@ Use these locations consistently:
 - a `**Depends on**` id has no `issues/open/NNN-*.md` or `issues/done/NNN-*.md`;
 - a backticked path under `crates/`, `docs/`, `fixtures/`, `scripts/`, `reference/`, `issues/`, `reports/`, `.github/`, `.agents/`, or `artifacts/` points to a path that does not exist (placeholders with `...` and similar are skipped);
 - a JSON file under `.agents/state/` is not valid JSON (when `jq` is installed);
-- `issues/index.md` fails `scripts/check_issue_index.sh` (stale generated tables or an open id missing from Ready/Blocked).
+- `issues/index.md` fails `mise run check-issue-index` (stale generated tables or an open id missing from Ready/Blocked).
 
 `pre-commit` runs the generator so `issues/index.md` is refreshed and staged when needed, then runs this script.
 

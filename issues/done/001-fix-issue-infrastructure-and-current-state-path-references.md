@@ -42,7 +42,7 @@ Commits: (record on merge)
 Validation result:
 
 ```text
-command: rg 'docs/current-state\.md' issues; scripts/update_issue_index.sh --check; scripts/check_issue_index.sh
+command: rg 'docs/current-state\.md' issues; mise run update-issue-index --check; mise run check-issue-index
 result: no matches under issues/; index generator --check pass; check_issue_index pass
 date: 2026-04-26
 ```

@@ -1,141 +1,10 @@
-use serde::Serialize;
-
 use ts2wasm_ir::lowered::LoweredProgram;
 use ts2wasm_shared::capability::CapabilityManifest;
 
 use super::runtime_fn::{Capability, HostAbi};
 use super::runtime_link_plan::RuntimeLinkPlan;
 
-#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
-pub(crate) struct ManifestV1 {
-    pub target: String,
-    pub imports: Vec<ImportV1>,
-    pub capabilities: Vec<CapabilityV1>,
-    pub runtime: Vec<String>,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) struct ImportV1 {
-    pub abi: String,
-    pub module: String,
-    pub name: String,
-}
-
-#[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) struct CapabilityV1 {
-    pub kind: String,
-    pub resource: String,
-    pub effect: String,
-    pub policy: String,
-}
-
-impl ManifestV1 {
-    pub(crate) fn from_link_plan(plan: &RuntimeLinkPlan) -> Self {
-        let mut imports: Vec<ImportV1> = plan
-            .required_imports()
-            .iter()
-            .map(|import| {
-                let spec = import.spec();
-                let abi = match spec.abi {
-                    HostAbi::WasiPreview1 => "wasi-preview1",
-                    HostAbi::NodeShim => "node-shim",
-                    HostAbi::InternalHost => "internal-host",
-                };
-                ImportV1 {
-                    abi: abi.to_owned(),
-                    module: spec.module.to_owned(),
-                    name: spec.name.to_owned(),
-                }
-            })
-            .collect();
-        imports.sort();
-
-        let mut capabilities: Vec<CapabilityV1> = plan
-            .required_capabilities()
-            .iter()
-            .map(|cap| capability_entry(*cap))
-            .collect();
-        capabilities.sort();
-
-        let runtime: Vec<String> = plan
-            .required_runtime_functions()
-            .iter()
-            .map(|rt| rt.manifest_name().to_owned())
-            .collect();
-
-        Self {
-            target: plan.manifest_target().to_owned(),
-            imports,
-            capabilities,
-            runtime,
-        }
-    }
-
-    pub(crate) fn to_json(&self) -> String {
-        let mut out = serde_json::to_string_pretty(self)
-            .expect("ManifestV1 should always serialize to valid JSON");
-        out.push('\n');
-        out
-    }
-}
-
-fn capability_entry(cap: Capability) -> CapabilityV1 {
-    match cap {
-        Capability::StdinRead => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "stdin".to_owned(),
-            effect: "read".to_owned(),
-            policy: "wasi-preview1".to_owned(),
-        },
-        Capability::StdoutWrite => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "stdout".to_owned(),
-            effect: "write".to_owned(),
-            policy: "wasi-preview1".to_owned(),
-        },
-        Capability::HostFsReadFileSync => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "filesystem".to_owned(),
-            effect: "read".to_owned(),
-            policy: "host-defined".to_owned(),
-        },
-        Capability::HostFsWriteFileSync | Capability::HostFsAppendFileSync => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "filesystem".to_owned(),
-            effect: "write".to_owned(),
-            policy: "host-defined".to_owned(),
-        },
-        Capability::HostProcessArgv | Capability::HostProcessEnv => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "process".to_owned(),
-            effect: "read".to_owned(),
-            policy: "host-defined".to_owned(),
-        },
-        Capability::HostProcessExit => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "process".to_owned(),
-            effect: "terminate".to_owned(),
-            policy: "host-defined".to_owned(),
-        },
-        Capability::HostPathJoin
-        | Capability::HostPathResolve
-        | Capability::HostPathBasename
-        | Capability::HostPathDirname => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "path".to_owned(),
-            effect: "read".to_owned(),
-            policy: "host-defined".to_owned(),
-        },
-        Capability::HostCryptoRandomBytes => CapabilityV1 {
-            kind: cap.manifest_name().to_owned(),
-            resource: "random".to_owned(),
-            effect: "read".to_owned(),
-            policy: "host-defined".to_owned(),
-        },
-    }
-}
-
-pub(crate) fn emit_manifest_v1_json(program: &LoweredProgram) -> String {
+pub(crate) fn emit_canonical_manifest_json(program: &LoweredProgram) -> String {
     let plan = RuntimeLinkPlan::from_program(program);
     canonical_manifest_from_link_plan(&plan).to_json()
 }
@@ -155,14 +24,24 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
         CapabilityManifest::new_wasi()
     };
 
-    // Map WASI capabilities
+    // Map WASI capabilities with reasons
     for cap in plan.required_capabilities() {
         match cap {
             Capability::StdoutWrite => {
                 manifest.wasi.stdout = true;
+                manifest
+                    .capability_reasons
+                    .entry("wasi.stdout".to_owned())
+                    .or_default()
+                    .push("console.log".to_owned());
             }
             Capability::StdinRead => {
                 manifest.wasi.stdin = true;
+                manifest
+                    .capability_reasons
+                    .entry("wasi.stdin".to_owned())
+                    .or_default()
+                    .push("fs.readFileSync(0, \"utf8\")".to_owned());
             }
             Capability::HostFsReadFileSync
             | Capability::HostFsWriteFileSync
@@ -215,7 +94,7 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
 mod tests {
     use serde_json::Value;
 
-    use super::emit_manifest_v1_json;
+    use super::emit_canonical_manifest_json;
 
     fn lowered(source: &str) -> ts2wasm_ir::lowered::LoweredProgram {
         let program = crate::parse_program(source).expect("parse failed");
@@ -231,7 +110,7 @@ mod tests {
     #[test]
     fn canonical_manifest_console_log_exact_sets() {
         let program = lowered("console.log(1);");
-        let json = parse_json(&emit_manifest_v1_json(&program));
+        let json = parse_json(&emit_canonical_manifest_json(&program));
 
         assert_eq!(json.get("schema_version").and_then(Value::as_u64), Some(1));
         assert_eq!(
@@ -256,7 +135,7 @@ mod tests {
     #[test]
     fn canonical_manifest_node_api_exact_sets() {
         let program = lowered("console.log(require(\"fs\").readFileSync(\"./file\", \"utf8\"));");
-        let json = parse_json(&emit_manifest_v1_json(&program));
+        let json = parse_json(&emit_canonical_manifest_json(&program));
 
         assert_eq!(json.get("schema_version").and_then(Value::as_u64), Some(1));
         assert_eq!(
@@ -284,7 +163,7 @@ mod tests {
     #[test]
     fn canonical_manifest_pure_wasi_exact_set() {
         let program = lowered("console.log(1 + 2);");
-        let json = parse_json(&emit_manifest_v1_json(&program));
+        let json = parse_json(&emit_canonical_manifest_json(&program));
 
         assert_eq!(json.get("schema_version").and_then(Value::as_u64), Some(1));
         assert_eq!(
@@ -297,6 +176,36 @@ mod tests {
                 .and_then(|w| w.get("stdout"))
                 .and_then(Value::as_bool),
             Some(true)
+        );
+    }
+
+    #[test]
+    fn canonical_manifest_capability_reasons_stdout() {
+        let program = lowered("console.log(1);");
+        let json = parse_json(&emit_canonical_manifest_json(&program));
+
+        assert!(
+            json.get("capability_reasons")
+                .and_then(|cr| cr.get("wasi.stdout"))
+                .and_then(Value::as_array)
+                .map(|arr| arr.iter().any(|r| r.as_str() == Some("console.log")))
+                .unwrap_or(false)
+        );
+    }
+
+    #[test]
+    fn canonical_manifest_capability_reasons_stdin() {
+        let program = lowered("let s = require(\"fs\").readFileSync(0, \"utf8\"); console.log(s);");
+        let json = parse_json(&emit_canonical_manifest_json(&program));
+
+        assert!(
+            json.get("capability_reasons")
+                .and_then(|cr| cr.get("wasi.stdin"))
+                .and_then(Value::as_array)
+                .map(|arr| arr
+                    .iter()
+                    .any(|r| r.as_str() == Some("fs.readFileSync(0, \"utf8\")")))
+                .unwrap_or(false)
         );
     }
 }

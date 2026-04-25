@@ -22,7 +22,7 @@ Use when adding, closing, moving, splitting, or reclassifying issues under `issu
 - Prefer the template at `issues/templates/issue.md`. Use `**ID**`, `**Depends on**`, `**Orchestration class**`, and a one-line `Problem:` so the index generator can summarize issues.
 - **Depends on** lists open-issue IDs that block this issue, or `none`. Use comma-separated IDs (e.g. `003,004`). The generator treats an issue as blocked if any listed dependency is still open, or if **Orchestration class** is exactly `blocked` (case-insensitive).
 - Closing an issue: fill completion evidence, set **Status** to `done`, move the file to `issues/done/`, then regenerate the index.
-- Validation for the queue: `scripts/update_issue_index.sh --check` and `scripts/check_issue_index.sh` (human status on stderr; exit code is the contract).
+- Validation for the queue: `mise run update-issue-index --check` and `mise run check-issue-index` (human status on stderr; exit code is the contract).
 
 ## Anti-patterns
 

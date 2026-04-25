@@ -10,7 +10,7 @@ mod string_intern;
 use crate::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::LoweredProgram;
 
-pub(crate) use capability_manifest::emit_manifest_v1_json;
+pub(crate) use capability_manifest::emit_canonical_manifest_json;
 pub(crate) use runtime_fn::RuntimeFn;
 
 pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {

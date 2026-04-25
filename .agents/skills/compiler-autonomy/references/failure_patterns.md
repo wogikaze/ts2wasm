@@ -57,4 +57,29 @@ This is a **bounded, curated** set of known failure classes. It replaces unbound
 - [ ] Test fixture validates `schema_version`, `standalone`, `wasi.stdout`, `node_host.required`
 - [ ] Gate script to check manifest JSON against canonical schema
 
-_Add the next real incident as `FP-003+`; do not keep placeholder stubs._
+## FP-003: Use array runtime for object computed property access
+
+**Trigger**
+
+- Adding or modifying property access lowering in resolver
+- Handling `Expr::Index` or `ComputedIndex` in `builtin_resolver.rs`
+
+**Check**
+
+- String literal bracket notation `obj["key"]` uses `PropertyAccess` → `$property_get`
+- Numeric bracket notation `arr[n]` uses `ComputedIndex` → `$array_get`
+- Object tag check is used for string keys, array tag check for numeric keys
+
+**Required action**
+
+- Check index expression type in resolver before choosing runtime function
+- Emit `PropertyAccess` for string literal indices, `ComputedIndex` otherwise
+- Add regression fixture for computed property access on objects
+
+**Guards to add on recurrence**
+
+- [x] Item in `review_checklist.md` for bracket notation type discrimination
+- [x] Regression fixture `fixtures/arrays-objects/computed-property.ts`
+- [ ] Type predicate assertion in IR lowering for index expression kinds
+
+_Add the next real incident as `FP-004+`; do not keep placeholder stubs._

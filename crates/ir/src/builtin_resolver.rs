@@ -396,10 +396,21 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .map(|(k, v)| Ok((k.clone(), resolve_expr(v)?)))
                 .collect::<Result<Vec<_>, _>>()?,
         )),
-        Expr::Index { object, index, .. } => Ok(ResolvedExpr::ComputedIndex {
-            object: Box::new(resolve_expr(object)?),
-            index: Box::new(resolve_expr(index)?),
-        }),
+        Expr::Index { object, index, .. } => {
+            // For string literal keys, use PropertyAccess (object property semantics)
+            // For other expressions, use ComputedIndex (array indexing semantics)
+            if let Expr::String { value, .. } = index.as_ref() {
+                Ok(ResolvedExpr::PropertyAccess {
+                    object: Box::new(resolve_expr(object)?),
+                    key: value.clone(),
+                })
+            } else {
+                Ok(ResolvedExpr::ComputedIndex {
+                    object: Box::new(resolve_expr(object)?),
+                    index: Box::new(resolve_expr(index)?),
+                })
+            }
+        }
         Expr::New {
             expr: new_expr,
             args,

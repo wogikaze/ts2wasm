@@ -30,4 +30,4 @@ jobs:
       - name: Issue queue invariants
         run: |
           cd "${GITHUB_WORKSPACE}"
-          ./scripts/check_issue_queue.sh
+          ./scripts/check/issue-queue.py

@@ -20,3 +20,85 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 2. Agent checks current state from `state/current_task.json` and `state/project_state.json`
 3. Agent follows the state machine: SYNC → TRIAGE → TASK_SELECT → PLAN → IMPLEMENT → VERIFY → RETRO
 4. Agent updates state files and writes cycle reports to `reports/runs/`
+
+## Detailed Steps
+
+### Preflight (SYNC state)
+
+- Read `workflows/compiler_dev_fsm.md` to understand FSM contract
+- Read `state/current_task.json` to check if a task is already in progress
+- Read `docs/11-shared-definitions.md` for workstreams and gates
+- Read `docs/12-coding-standard.md` for coding standards
+- Read `issues/index.md` to see the current issue queue
+
+### Task Selection (TASK_SELECT state)
+
+- If `current_task.json` is idle, select a Ready issue from `issues/index.md`
+- Prioritize P0 issues, then P1, then P2
+- Check dependencies are satisfied (issue must not be in Blocked queue)
+- Update `current_task.json` with selected task details
+
+### Planning (PLAN state)
+
+- Read the selected issue file from `issues/open/`
+- Identify scope (allowed_files, forbidden_files)
+- List acceptance criteria
+- Define validation commands
+- Create implementation plan
+
+### Implementation (IMPLEMENT state)
+
+- Make changes only within scope.allowed_files
+- Do not modify forbidden files
+- Follow coding standards from docs/12
+- Run incremental validation as needed
+
+### Verification (VERIFY state)
+
+- Run all validation commands from the issue
+- `cargo fmt --all --check`
+- `cargo nextest run` (full suite, no filters)
+- Any fixture-specific tests (e.g., `iwasm fixture.wasm`)
+- Verify all acceptance criteria with evidence
+
+### Close (RETRO state)
+
+- Update issue file status to "done" and add completion evidence
+- Move issue file from `issues/open/` to `issues/done/`
+- Run `mise run update-issue-index` to regenerate `issues/index.md`
+- Clear `current_task.json` to idle state
+- Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
+- Update failure_patterns.md if new failure pattern discovered
+- Update review_checklist.md if new guard needed
+
+## Critical Requirements
+
+**A loop is NOT complete until:**
+- Full test suite passes (`cargo nextest run` with no filters)
+- Issue file is moved from `issues/open/` to `issues/done/` with updated frontmatter
+- `issues/index.md` is regenerated and verified
+- All acceptance criteria are explicitly verified with evidence
+- **Mechanical guards added** to `failure_patterns.md` or `review_checklist.md` if new patterns discovered
+- **State files validated** with `mise run check-agent-state`
+- **Command outputs saved** to `reports/runs/<run_id>/stdout.log` and `stderr.log`
+
+Do not mark an issue as done without completing these steps.
+
+## Worktree/Branch Naming Convention
+
+When starting a new task, create a worktree/branch following this pattern:
+
+```
+git worktree add ../ts2wasm-NNN-short-title NNNNNNNNNNNNN
+# or
+git checkout -b NNNNNNNNNNNNNN
+```
+
+Where:
+- `NNN` is the issue ID (e.g., 012)
+- `short-title` is a brief description (kebab-case, max 20 chars)
+- `NNNNNNNNNNNNNN` is a 12-character timestamp or random suffix for uniqueness
+
+Examples:
+- `git worktree add ../ts2wasm-012-computed-prop 202604260728`
+- `git checkout -b 012-computed-prop-202604260728`

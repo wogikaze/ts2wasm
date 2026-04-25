@@ -96,7 +96,7 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 
 **ビルド高速化**: プロジェクトは `mold` linker を使用してビルド時間を短縮しています。Nix devshell には含まれていますが、手動環境では別途インストールが必要です。
 
-`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `scripts/check_issue_queue.sh`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
+`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `mise run check-issue-queue`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
 
 ## FAQ
 
