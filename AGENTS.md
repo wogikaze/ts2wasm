@@ -53,7 +53,7 @@ crates/
 ```
 
 - docs/: 設計・仕様ドキュメント
-- fixtures/: マイルストーン別フィクスチャ
+- fixtures/: workstream 別テストフィクスチャ（feature group 単位で管理）
 - scripts/: テスト/カバレッジ/検証スクリプト
 - artifacts/coverage/: 生成カバレッジ成果物
 - reference/: 外部参照資料（原則 read-only）

@@ -79,7 +79,7 @@ Must include:
 - RuntimeLinkPlan tests.
 - capability manifest tests.
 - differential tests if behavior changed.
-- docs/12 and docs/15 updates.
+- current-state.md and docs/15 updates.
 
 ### HostImport/Capability addition
 
@@ -88,7 +88,7 @@ Must include:
 - RuntimeLinkPlan required_imports/required_capabilities tests.
 - manifest JSON tests.
 - conditional WAT import present/absent tests.
-- docs/09 and docs/12 updates.
+- docs/09 and current-state.md updates.
 
 ### Builtin addition
 
@@ -99,7 +99,7 @@ Must include:
 - unsupported-args diagnostics and negative tests.
 - Lowering handling explicitly stated.
 - runtime mapping or compile-time gate.
-- docs/05 or docs/12 subset semantics update.
+- docs/05 or current-state.md subset semantics update.
 
 ### Memory layout changes
 
@@ -128,7 +128,7 @@ Minimum candidates:
 - docs/05-compatibility-and-semantics.md
 - docs/09-security-and-capability-model.md
 - docs/11-shared-definitions.md
-- docs/12-current-implementation-status.md
+- current-state.md
 - docs/15-runtime-abi.md
 
 ## 7) Output Contract (what reviewer must deliver)
@@ -170,7 +170,7 @@ Risk:
 - Manifest schema changed: yes/no
 
 Docs:
-- docs/12 updated: yes/no
+- current-state.md updated: yes/no
 - docs/15 updated if ABI changed: yes/no
 - docs/09 updated if capability changed: yes/no
 
