@@ -106,6 +106,7 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(expr);
                 match op {
                     LoweredUnaryOp::Not => self.add_required_runtime(RuntimeFn::Not),
+                    LoweredUnaryOp::Negate => self.add_required_runtime(RuntimeFn::Negate),
                 }
             }
             LoweredExpr::Binary { left, op, right } => {
@@ -115,9 +116,12 @@ impl RuntimeLinkPlan {
                     LoweredBinaryOp::Add => self.add_required_runtime(RuntimeFn::Add),
                     LoweredBinaryOp::Subtract => self.add_required_runtime(RuntimeFn::Sub),
                     LoweredBinaryOp::Less => self.add_required_runtime(RuntimeFn::Less),
+                    LoweredBinaryOp::Greater => self.add_required_runtime(RuntimeFn::Greater),
                     LoweredBinaryOp::StrictEqual => {
                         self.add_required_runtime(RuntimeFn::StrictEqual)
                     }
+                    LoweredBinaryOp::And => self.add_required_runtime(RuntimeFn::And),
+                    LoweredBinaryOp::Or => self.add_required_runtime(RuntimeFn::Or),
                 }
             }
             LoweredExpr::Call { kind, args } => {

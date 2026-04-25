@@ -5,6 +5,9 @@ version = 4
 [[package]]
 name = "ts2wasm-cli"
 version = "0.1.0"
+dependencies = [
+ "ts2wasm-shared",
+]
 
 [[package]]
 name = "ts2wasm-shared"

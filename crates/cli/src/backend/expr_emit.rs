@@ -46,6 +46,9 @@ impl WatEmitter<'_> {
                     LoweredUnaryOp::Not => {
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Not.symbol()))
                     }
+                    LoweredUnaryOp::Negate => {
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Negate.symbol()))
+                    }
                 }
             }
             LoweredExpr::Binary { left, op, right } => {
@@ -55,7 +58,10 @@ impl WatEmitter<'_> {
                     LoweredBinaryOp::Add => RuntimeFn::Add,
                     LoweredBinaryOp::Subtract => RuntimeFn::Sub,
                     LoweredBinaryOp::Less => RuntimeFn::Less,
+                    LoweredBinaryOp::Greater => RuntimeFn::Greater,
                     LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
+                    LoweredBinaryOp::And => RuntimeFn::And,
+                    LoweredBinaryOp::Or => RuntimeFn::Or,
                 };
                 wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
             }

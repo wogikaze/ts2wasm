@@ -12,3 +12,6 @@ path = "src/main.rs"
 [lib]
 name = "ts2wasm_cli"
 path = "src/lib.rs"
+
+[dependencies]
+ts2wasm-shared = { path = "../shared" }
