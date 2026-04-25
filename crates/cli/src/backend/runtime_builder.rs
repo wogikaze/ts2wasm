@@ -29,8 +29,12 @@ impl WatEmitter<'_> {
                 RuntimeFn::IsString => self.emit_is_string(wat),
                 RuntimeFn::Add => self.emit_add(wat),
                 RuntimeFn::Sub => self.emit_sub(wat),
+                RuntimeFn::Negate => self.emit_negate(wat),
                 RuntimeFn::Less => self.emit_less(wat),
+                RuntimeFn::Greater => self.emit_greater(wat),
                 RuntimeFn::StrictEqual => self.emit_strict_equal(wat),
+                RuntimeFn::And => self.emit_and(wat),
+                RuntimeFn::Or => self.emit_or(wat),
                 RuntimeFn::AllocHeap => self.emit_alloc_heap(wat),
                 RuntimeFn::MemEqual => self.emit_mem_equal(wat),
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
@@ -347,6 +351,30 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_and(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $and (param $a i32) (param $b i32) (result i32)
+    (if (result i32)
+      (call $truthy_bool (local.get $a))
+      (then (local.get $b))
+      (else (local.get $a))))
+"#,
+        ));
+    }
+
+    fn emit_or(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $or (param $a i32) (param $b i32) (result i32)
+    (if (result i32)
+      (call $truthy_bool (local.get $a))
+      (then (local.get $a))
+      (else (local.get $b))))
+"#,
+        ));
+    }
+
     fn emit_concat(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -423,12 +451,42 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_negate(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $negate (param $a i32) (result i32)
+    (i32.or
+      (i32.shl
+        (i32.sub (i32.const 0) (i32.shr_s (local.get $a) (i32.const {number_shift})))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
     fn emit_less(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $less (param $a i32) (param $b i32) (result i32)
     (if (result i32)
       (i32.lt_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+      (then (i32.const {true_tag}))
+      (else (i32.const {false_tag}))))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_greater(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $greater (param $a i32) (param $b i32) (result i32)
+    (if (result i32)
+      (i32.gt_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
 "#,

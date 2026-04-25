@@ -16,8 +16,12 @@ pub(crate) enum RuntimeFn {
     IsString,
     Add,
     Sub,
+    Negate,
     Less,
+    Greater,
     StrictEqual,
+    And,
+    Or,
     /// Bump-allocate `size` bytes on the heap, aligned to `Layout::ALIGN`.
     AllocHeap,
     /// Byte-by-byte memory equality check used by `PropertyGet`.
@@ -71,6 +75,8 @@ const STRING_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto];
 const ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
 const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::StringEqual];
+const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
+const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
@@ -190,8 +196,24 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::Negate => RuntimeSpec {
+                symbol: "$negate",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::Less => RuntimeSpec {
                 symbol: "$less",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::Greater => RuntimeSpec {
+                symbol: "$greater",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
@@ -201,6 +223,22 @@ impl RuntimeFn {
             Self::StrictEqual => RuntimeSpec {
                 symbol: "$strict_equal",
                 deps: STRICT_EQUAL_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::And => RuntimeSpec {
+                symbol: "$and",
+                deps: AND_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::Or => RuntimeSpec {
+                symbol: "$or",
+                deps: OR_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -275,8 +313,12 @@ impl RuntimeFn {
             Self::IsString,
             Self::Add,
             Self::Sub,
+            Self::Negate,
             Self::Less,
+            Self::Greater,
             Self::StrictEqual,
+            Self::And,
+            Self::Or,
             Self::AllocHeap,
             Self::MemEqual,
             Self::ArrayGet,
@@ -300,8 +342,12 @@ impl RuntimeFn {
             Self::IsString,
             Self::Add,
             Self::Sub,
+            Self::Negate,
             Self::Less,
+            Self::Greater,
             Self::StrictEqual,
+            Self::And,
+            Self::Or,
             Self::AllocHeap,
             Self::MemEqual,
             Self::ArrayGet,
