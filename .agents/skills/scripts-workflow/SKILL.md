@@ -5,7 +5,7 @@ description: "Use when adding or editing scripts under scripts/ in this reposito
 
 # Scripts workflow
 
-**Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`.
+**Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`. **Harness baseline:** `scripts/check_harness_installation.sh` inventories toolchain + P0 `check_*.sh` and runs the rest of the project gates; optional strict Rust warnings: `TS2WASM_NEXTEST_DENY_WARNINGS=1` (see `issues/open/011-*.md` until the tree is clean).
 
 ## Mise: run before you merge a script change (required)
 
@@ -208,6 +208,12 @@ Examples:
 - scripts/reference_coverage.sh tsc --limit 1
 - scripts/reference_coverage.sh tsgo --limit 1
 - scripts/update_coverage_matrix.sh --check
+- scripts/check_fast_gate.sh --skip-nextest
+- scripts/check_manifest_imports.sh
+- scripts/check_test_records_schema.sh <file.jsonl>
+- scripts/check_fixture_catalog.sh
+- scripts/check_architecture_rules.sh
+- scripts/check_compiler_diagnostics.sh
 - scripts/check_coverage_gate.sh <base-doc> <current-doc>
 - scripts/test262_runner.sh --sample 1 --jobs 1
 - scripts/test_regression_gate.sh <results.jsonl> --baseline <baseline.json>

@@ -38,6 +38,8 @@ cargo nextest run
 
 各 `scripts/*.sh` の内容を開かずに使う: ルートで `scripts/manager`（`help` で一覧）。引数はそのまま下位スクリプトに渡る。Mise 利用者は同じ一覧を `mise tasks` / `mise run <task>` でも実行できる。初回のみプロジェクトの `mise trust`（非エージェント向け手順: <https://mise.jdx.dev/cli/trust.html> ）。
 
+網羅的な「ハーネス棚卸し＋一括ゲート」は `scripts/check_harness_installation.sh`（P0 ラッパー + `check_fast_gate --skip-nextest` + `cargo nextest` + 既存の `check_*` 群。所要 ~1 分前後が目安）。Rust 警告をテスト失敗扱いにするのは `TS2WASM_NEXTEST_DENY_WARNINGS=1`（整備中: `issues/open/011-*.md` 参照）。
+
 ## 3) ファイル構成（要点）
 
 **Current layout（このリポジトリの現状）**: 実装の大半は `crates/cli` に集約されている。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi`, `crates/backend-wasm` はアーカイブ/プレースホルダが多く、空ディレクトリや `.gitkeep` のみの場合がある。
@@ -75,10 +77,17 @@ crates/
 ## 4) scripts の使い方（頻用）
 
 ```bash
+# ローカル一括ゲート（fmt + scripts + issues + coverage matrix + nextest。pre-push 相当の速さなら --skip-nextest）
+scripts/check_fast_gate.sh
+scripts/check_fast_gate.sh --skip-nextest
+
 # Issue queue index（open/done から Ready/Blocked/Done 表を再生成）
 scripts/update_issue_index.sh
 scripts/update_issue_index.sh --check
 scripts/check_issue_index.sh
+
+# Manifest imports と wasm import の一致（wasm-tools / jq が必要）
+scripts/check_manifest_imports.sh
 
 # 参照カバレッジ計測
 scripts/reference_coverage.sh test262 --limit 50

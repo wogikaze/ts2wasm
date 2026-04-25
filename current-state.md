@@ -21,6 +21,11 @@ cargo fmt --all --check
 cargo nextest run
 scripts/update_coverage_matrix.sh --check
 scripts/check_scripts.sh
+scripts/check_fast_gate.sh --skip-nextest
+scripts/check_manifest_imports.sh
+scripts/check_fixture_catalog.sh
+scripts/check_architecture_rules.sh
+scripts/check_compiler_diagnostics.sh
 scripts/update_issue_index.sh --check
 scripts/check_issue_index.sh
 ```
@@ -64,6 +69,7 @@ scripts/update_coverage_matrix.sh
 - reference coverage パイプライン（`scripts/reference_coverage.sh`, `scripts/update_coverage_matrix.sh`, `scripts/check_coverage_gate.sh`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
 - issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `scripts/update_issue_index.sh` が生成、`scripts/check_issue_index.sh` で整合検証）
+- harness scripts（`scripts/check_fast_gate.sh`、`check_manifest_imports.sh`、`check_test_records_schema.sh`、`check_fixture_catalog.sh`、`check_architecture_rules.sh`、`check_compiler_diagnostics.sh`；pre-push は `.githooks/pre-push`）
 
 ## Known blockers / gaps
 

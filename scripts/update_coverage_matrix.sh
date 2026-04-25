@@ -140,6 +140,7 @@ row_tsc="$(run_suite tsc "TypeScript compiler cases" 30)"
 row_tsgo="$(run_suite tsgo "typescript-go testdata" 20)"
 
 tmp_file="$(mktemp /tmp/ts2wasm-cov-matrix-XXXXXX.md)"
+trap 'rm -f "$tmp_file"' EXIT
 awk -v r1="$row_test262" -v r2="$row_tsc" -v r3="$row_tsgo" '
   BEGIN {state=0}
   /<!-- coverage-table:start -->/ {
@@ -158,16 +159,17 @@ awk -v r1="$row_test262" -v r2="$row_tsc" -v r3="$row_tsgo" '
     next
   }
   state==0 {print}
-' "$doc_file" > "$tmp_file"
-
-mv "$tmp_file" "$doc_file"
+' "$doc_file" >"$tmp_file"
 
 if [[ "$check_mode" -eq 1 ]]; then
-  if ! git diff --quiet -- "$doc_file"; then
+  if ! cmp -s "$doc_file" "$tmp_file"; then
     echo "coverage matrix is stale; run scripts/update_coverage_matrix.sh and commit $doc_file" >&2
-    git --no-pager diff -- "$doc_file" >&2 || true
+    diff -u "$doc_file" "$tmp_file" >&2 || true
     exit 1
   fi
+  echo "coverage matrix OK (up to date)" >&2
+else
+  mv "$tmp_file" "$doc_file"
+  trap - EXIT
+  echo "updated $doc_file" >&2
 fi
-
-echo "updated $doc_file"

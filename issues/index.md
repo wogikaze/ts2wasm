@@ -20,6 +20,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 002 | Emit canonical capability manifest schema | feature | abi/wasi | implementation-ready | P0 | none | docs define a canonical manifest schema with `schema_version`, `target`, `standalone`, `wasi`, `node_host`, and `capa... |
 | 004 | Reclassify compile-only compatibility tests | test | tests/coverage | implementation-ready | P0 | none | Tests such as class/module/Node API compile-only checks can make compatibility look more advanced than it is. Build s... |
 | 005 | Add fine-grained unsupported feature breakdown | infra | scripts/coverage | implementation-ready | P0 | none | `UnsupportedSyntax:423` is not actionable. The project needs feature-level breakdown such as class, import, regexp li... |
+| 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | implementation-ready | P2 | none | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) |
 <!-- generated:ready:end -->
 
 ## Blocked queue

@@ -31,6 +31,18 @@ MSG
   if command -v column &>/dev/null; then
     column -s $'\t' -t <<'TABLE'
 check-scripts	Bash -n on scripts/*.sh (syntax)
+check-fast-gate	fmt + scripts + issues + coverage matrix + nextest (see script --help)
+check-manifest-imports	Manifest JSON imports vs wasm import section (needs wasm-tools, jq)
+check-test-records-schema	Validate TestRecord JSONL lines (stdin or file)
+check-fixture-catalog	Fixtures/ top-level layout rules (kebab-case dirs only)
+check-architecture-rules	Lightweight crate boundary checks (cargo tree)
+check-compiler-diagnostics	No panic! in backend/runtime/main.rs
+check-harness-installation	Full harness baseline: P0 tools + nextest + all project gates
+check-toolchain	Verify rust/node/iwasm/wasm-tools/ast-grep and search tools exist
+check-fixture-differential	Node vs iwasm: runs nextest m2_node_diff
+check-host-deny	Standalone fixtures must not emit wasm (import "host" ...)
+check-runtimefn-invariants	Unit tests: runtime_link_plan + runtime_fn invariants
+check-wasm-validation	Build sample fixtures; wasm-tools validate
 check-issue-index	Fail if issues/index.md is stale or queue tables are wrong
 check-issue-queue	Mechanical invariants: ids, done checkboxes, paths, index+tables
 update-issue-index	Regenerate index tables (add -- --check to verify only)
@@ -50,6 +62,18 @@ TABLE
   else
     cat <<'FALL'
   check-scripts              Bash -n on scripts/*.sh (syntax)
+  check-fast-gate            fmt + scripts + issues + coverage matrix + nextest
+  check-manifest-imports     manifest vs wasm imports (wasm-tools + jq)
+  check-test-records-schema  TestRecord JSONL schema gate
+  check-fixture-catalog      fixtures/ top-level layout rules
+  check-architecture-rules   crate boundary (shared must not depend on cli)
+  check-compiler-diagnostics no panic! in backend/runtime/main
+  check-harness-installation  full P0+ gates baseline
+  check-toolchain             required CLI tools
+  check-fixture-differential  m2 node/wasm diff (nextest)
+  check-host-deny             no (import "host") in standalone fixtures
+  check-runtimefn-invariants    runtime link plan unit tests
+  check-wasm-validation         wasm-tools validate on samples
   check-issue-index         Fail if issues/index.md is stale or queue tables are wrong
   check-issue-queue         Mechanical invariants: ids, paths, index+tables
   update-issue-index        Regenerate index tables (add -- --check to verify only)
@@ -81,6 +105,18 @@ shift
 
 case "$target" in
   check-scripts) exec bash "${repo_root}/scripts/check_scripts.sh" "$@" ;;
+  check-fast-gate) exec bash "${repo_root}/scripts/check_fast_gate.sh" "$@" ;;
+  check-manifest-imports) exec bash "${repo_root}/scripts/check_manifest_imports.sh" "$@" ;;
+  check-test-records-schema) exec bash "${repo_root}/scripts/check_test_records_schema.sh" "$@" ;;
+  check-fixture-catalog) exec bash "${repo_root}/scripts/check_fixture_catalog.sh" "$@" ;;
+  check-architecture-rules) exec bash "${repo_root}/scripts/check_architecture_rules.sh" "$@" ;;
+  check-compiler-diagnostics) exec bash "${repo_root}/scripts/check_compiler_diagnostics.sh" "$@" ;;
+  check-harness-installation) exec bash "${repo_root}/scripts/check_harness_installation.sh" "$@" ;;
+  check-toolchain) exec bash "${repo_root}/scripts/check_toolchain.sh" "$@" ;;
+  check-fixture-differential) exec bash "${repo_root}/scripts/check_fixture_differential.sh" "$@" ;;
+  check-host-deny) exec bash "${repo_root}/scripts/check_host_deny.sh" "$@" ;;
+  check-runtimefn-invariants) exec bash "${repo_root}/scripts/check_runtimefn_invariants.sh" "$@" ;;
+  check-wasm-validation) exec bash "${repo_root}/scripts/check_wasm_validation.sh" "$@" ;;
   check-issue-index) exec bash "${repo_root}/scripts/check_issue_index.sh" "$@" ;;
   check-issue-queue) exec bash "${repo_root}/scripts/check_issue_queue.sh" "$@" ;;
   update-issue-index) exec bash "${repo_root}/scripts/update_issue_index.sh" "$@" ;;
