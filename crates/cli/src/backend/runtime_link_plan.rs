@@ -4,17 +4,22 @@ use crate::ir::lowered::{
     FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, LoweredUnaryOp,
 };
 
-use super::runtime_fn::{Capability, HostImport, RuntimeFn};
+use super::runtime_fn::{Capability, HostImport, RuntimeFn, RuntimeGlobal};
 
 #[derive(Debug, Default, Clone)]
 pub(crate) struct RuntimeLinkPlan {
     required_runtime: BTreeSet<RuntimeFn>,
+    required_globals: BTreeSet<RuntimeGlobal>,
     required_imports: BTreeSet<HostImport>,
     required_capabilities: BTreeSet<Capability>,
     required_runtime_strings: BTreeSet<&'static str>,
 }
 
 impl RuntimeLinkPlan {
+    pub(crate) const fn manifest_target(&self) -> &'static str {
+        "wasm32-wasi-p1"
+    }
+
     pub(crate) fn from_program(program: &LoweredProgram) -> Self {
         let mut plan = Self::default();
         plan.collect_required_runtime_stmts(&program.top_level_statements);
@@ -35,6 +40,10 @@ impl RuntimeLinkPlan {
 
     pub(crate) fn required_imports(&self) -> &BTreeSet<HostImport> {
         &self.required_imports
+    }
+
+    pub(crate) fn required_globals(&self) -> &BTreeSet<RuntimeGlobal> {
+        &self.required_globals
     }
 
     pub(crate) fn required_capabilities(&self) -> &BTreeSet<Capability> {
@@ -66,6 +75,9 @@ impl RuntimeLinkPlan {
 
     fn populate_derived_sets(&mut self) {
         for runtime_fn in &self.required_runtime {
+            for global in runtime_fn.globals() {
+                self.required_globals.insert(*global);
+            }
             for import in runtime_fn.spec().imports {
                 self.required_imports.insert(*import);
             }
@@ -308,7 +320,7 @@ mod tests {
     use std::collections::BTreeSet;
 
     use crate::backend::emit_wat;
-    use crate::backend::runtime_fn::{Capability, HostImport, RuntimeFn};
+    use crate::backend::runtime_fn::{Capability, HostImport, RuntimeFn, RuntimeGlobal};
     use crate::ir::lowered::lower_program;
 
     use super::RuntimeLinkPlan;
@@ -480,6 +492,41 @@ mod tests {
         assert!(
             plan.required_capabilities()
                 .contains(&Capability::StdinRead)
+        );
+    }
+
+    #[test]
+    fn property_get_ic_derives_ic_globals() {
+        let plan = RuntimeLinkPlan::from_required_runtime_for_tests(&[RuntimeFn::PropertyGetIc]);
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::IcPropObjBase)
+        );
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::IcPropKeyPtr)
+        );
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::IcPropKeyLen)
+        );
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::IcPropValue)
+        );
+    }
+
+    #[test]
+    fn module_runtime_derives_module_globals() {
+        let program = lowered("let m = require(\"./mod\");");
+        let plan = RuntimeLinkPlan::from_program(&program);
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::ModuleCache)
+        );
+        assert!(
+            plan.required_globals()
+                .contains(&RuntimeGlobal::CurrentModuleId)
         );
     }
 }

@@ -6,8 +6,7 @@ use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
 use crate::{DiagCode, Diagnostic};
 
-use super::RuntimeFn;
-use super::runtime_fn::HostImport;
+use super::runtime_fn::RuntimeGlobal;
 use super::runtime_link_plan::RuntimeLinkPlan;
 
 pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
@@ -60,23 +59,7 @@ impl<'a> WatEmitter<'a> {
             "  (global $heap (mut i32) (i32.const {}))\n",
             Layout::HEAP_START,
         ));
-        if self
-            .link_plan
-            .required_runtime_functions()
-            .contains(&RuntimeFn::PropertyGetIc)
-        {
-            wat.push_str("  (global $ic_prop_obj_base (mut i32) (i32.const 0))\n");
-            wat.push_str("  (global $ic_prop_key_ptr (mut i32) (i32.const 0))\n");
-            wat.push_str("  (global $ic_prop_key_len (mut i32) (i32.const 0))\n");
-            wat.push_str(&format!(
-                "  (global $ic_prop_value (mut i32) (i32.const {}))\n",
-                ValueTag::UNDEFINED,
-            ));
-        }
-        if self.module_runtime_enabled() {
-            wat.push_str("  (global $module_cache (mut i32) (i32.const 0))\n");
-            wat.push_str("  (global $current_module_id (mut i32) (i32.const 0))\n");
-        }
+        self.emit_required_globals(&mut wat);
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
         self.emit_functions(&mut wat);
@@ -215,10 +198,6 @@ impl<'a> WatEmitter<'a> {
         Ok(())
     }
 
-    fn requires_host_import(&self, import: HostImport) -> bool {
-        self.link_plan.required_imports().contains(&import)
-    }
-
     fn emit_imports_from_catalog(&self, wat: &mut String) {
         // Emit all required imports using catalog as single source of truth
         for import in self.link_plan.required_imports() {
@@ -240,6 +219,16 @@ impl<'a> WatEmitter<'a> {
             wat.push_str(&format!(
                 "  (import \"{}\" \"{}\" (func {}{}))\n",
                 spec.module, spec.name, spec.wat_symbol, sig
+            ));
+        }
+    }
+
+    fn emit_required_globals(&self, wat: &mut String) {
+        for global in self.link_plan.required_globals() {
+            wat.push_str(&format!(
+                "  (global {} (mut i32) (i32.const {}))\n",
+                global.symbol(),
+                global.initial_value(),
             ));
         }
     }
@@ -491,10 +480,9 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn module_runtime_enabled(&self) -> bool {
-        let required = self.link_plan.required_runtime_functions();
-        required.contains(&RuntimeFn::ModuleRequire)
-            || required.contains(&RuntimeFn::ModuleExportsSet)
-            || required.contains(&RuntimeFn::ModuleExportsAssign)
+        self.link_plan
+            .required_globals()
+            .contains(&RuntimeGlobal::ModuleCache)
     }
 }
 

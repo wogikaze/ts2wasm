@@ -1,5 +1,6 @@
 use crate::ir::builtin::BuiltinId;
 use crate::runtime::consts::RuntimeString;
+use crate::runtime::value::ValueTag;
 
 /// ABI contract type for host imports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -310,6 +311,40 @@ pub(crate) enum RuntimeResult {
     EffectOnly,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
+pub(crate) enum RuntimeGlobal {
+    IcPropObjBase,
+    IcPropKeyPtr,
+    IcPropKeyLen,
+    IcPropValue,
+    ModuleCache,
+    CurrentModuleId,
+}
+
+impl RuntimeGlobal {
+    pub(crate) const fn symbol(self) -> &'static str {
+        match self {
+            Self::IcPropObjBase => "$ic_prop_obj_base",
+            Self::IcPropKeyPtr => "$ic_prop_key_ptr",
+            Self::IcPropKeyLen => "$ic_prop_key_len",
+            Self::IcPropValue => "$ic_prop_value",
+            Self::ModuleCache => "$module_cache",
+            Self::CurrentModuleId => "$current_module_id",
+        }
+    }
+
+    pub(crate) const fn initial_value(self) -> i32 {
+        match self {
+            Self::IcPropValue => ValueTag::UNDEFINED,
+            Self::IcPropObjBase
+            | Self::IcPropKeyPtr
+            | Self::IcPropKeyLen
+            | Self::ModuleCache
+            | Self::CurrentModuleId => 0,
+        }
+    }
+}
+
 pub(crate) struct RuntimeSpec {
     pub symbol: &'static str,
     pub deps: &'static [RuntimeFn],
@@ -320,9 +355,19 @@ pub(crate) struct RuntimeSpec {
 }
 
 const NO_DEPS: &[RuntimeFn] = &[];
+const NO_GLOBALS: &[RuntimeGlobal] = &[];
 const NO_IMPORTS: &[HostImport] = &[];
 const NO_CAPS: &[Capability] = &[];
 const NO_RUNTIME_STRINGS: &[&str] = &[];
+
+const GLOBALS_PROPERTY_GET_IC: &[RuntimeGlobal] = &[
+    RuntimeGlobal::IcPropObjBase,
+    RuntimeGlobal::IcPropKeyPtr,
+    RuntimeGlobal::IcPropKeyLen,
+    RuntimeGlobal::IcPropValue,
+];
+const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
+    &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
 
 const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
@@ -963,6 +1008,16 @@ impl RuntimeFn {
 
     pub(crate) const fn symbol(self) -> &'static str {
         self.spec().symbol
+    }
+
+    pub(crate) const fn globals(self) -> &'static [RuntimeGlobal] {
+        match self {
+            Self::PropertyGetIc => GLOBALS_PROPERTY_GET_IC,
+            Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
+                GLOBALS_MODULE_RUNTIME
+            }
+            _ => NO_GLOBALS,
+        }
     }
 
     pub(crate) const fn result(self) -> RuntimeResult {
