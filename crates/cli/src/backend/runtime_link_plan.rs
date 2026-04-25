@@ -194,10 +194,42 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(left);
                 self.collect_required_runtime_expr(right);
                 match op {
-                    LoweredBinaryOp::Add => self.add_required_runtime(RuntimeFn::Add),
-                    LoweredBinaryOp::Subtract => self.add_required_runtime(RuntimeFn::Sub),
-                    LoweredBinaryOp::Less => self.add_required_runtime(RuntimeFn::Less),
-                    LoweredBinaryOp::Greater => self.add_required_runtime(RuntimeFn::Greater),
+                    LoweredBinaryOp::Add => {
+                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
+                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::AddFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::Add);
+                        }
+                    }
+                    LoweredBinaryOp::Subtract => {
+                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
+                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::SubFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::Sub);
+                        }
+                    }
+                    LoweredBinaryOp::Less => {
+                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
+                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::LessFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::Less);
+                        }
+                    }
+                    LoweredBinaryOp::Greater => {
+                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
+                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::GreaterFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::Greater);
+                        }
+                    }
                     LoweredBinaryOp::StrictEqual => {
                         self.add_required_runtime(RuntimeFn::StrictEqual)
                     }
@@ -241,7 +273,7 @@ impl RuntimeLinkPlan {
                 }
             }
             LoweredExpr::PropertyGet { obj, .. } => {
-                self.add_required_runtime(RuntimeFn::PropertyGet);
+                self.add_required_runtime(RuntimeFn::PropertyGetIc);
                 self.collect_required_runtime_expr(obj);
             }
             LoweredExpr::PropertySet { object, value, .. } => {

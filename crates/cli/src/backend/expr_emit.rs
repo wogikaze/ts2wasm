@@ -1,6 +1,8 @@
 use super::RuntimeFn;
 use super::emitter::WatEmitter;
-use crate::ir::lowered::{FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp};
+use crate::ir::lowered::{
+    FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp,
+};
 use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
 
@@ -52,18 +54,62 @@ impl WatEmitter<'_> {
                 }
             }
             LoweredExpr::Binary { left, op, right } => {
-                self.emit_expr(wat, left, indent);
-                self.emit_expr(wat, right, indent);
-                let runtime_fn = match op {
-                    LoweredBinaryOp::Add => RuntimeFn::Add,
-                    LoweredBinaryOp::Subtract => RuntimeFn::Sub,
-                    LoweredBinaryOp::Less => RuntimeFn::Less,
-                    LoweredBinaryOp::Greater => RuntimeFn::Greater,
-                    LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
-                    LoweredBinaryOp::And => RuntimeFn::And,
-                    LoweredBinaryOp::Or => RuntimeFn::Or,
-                };
-                wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                let left_ty = left.inferred_type();
+                let right_ty = right.inferred_type();
+                match op {
+                    LoweredBinaryOp::Add
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent);
+                        self.emit_expr(wat, right, indent);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::AddFast.symbol()));
+                    }
+                    LoweredBinaryOp::Add
+                        if left_ty == InferredType::String && right_ty == InferredType::String =>
+                    {
+                        self.emit_expr(wat, left, indent);
+                        self.emit_expr(wat, right, indent);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Concat.symbol()));
+                    }
+                    LoweredBinaryOp::Subtract
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent);
+                        self.emit_expr(wat, right, indent);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::SubFast.symbol()));
+                    }
+                    LoweredBinaryOp::Less
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent);
+                        self.emit_expr(wat, right, indent);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::LessFast.symbol()));
+                    }
+                    LoweredBinaryOp::Greater
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent);
+                        self.emit_expr(wat, right, indent);
+                        wat.push_str(&format!(
+                            "{pad}(call {})\n",
+                            RuntimeFn::GreaterFast.symbol()
+                        ));
+                    }
+                    _ => {
+                        self.emit_expr(wat, left, indent);
+                        self.emit_expr(wat, right, indent);
+                        let runtime_fn = match op {
+                            LoweredBinaryOp::Add => RuntimeFn::Add,
+                            LoweredBinaryOp::Subtract => RuntimeFn::Sub,
+                            LoweredBinaryOp::Less => RuntimeFn::Less,
+                            LoweredBinaryOp::Greater => RuntimeFn::Greater,
+                            LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
+                            LoweredBinaryOp::And => RuntimeFn::And,
+                            LoweredBinaryOp::Or => RuntimeFn::Or,
+                        };
+                        wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                    }
+                }
             }
             LoweredExpr::Call { kind, args } => {
                 for arg in args {
@@ -175,7 +221,7 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
                 wat.push_str(&format!(
                     "{pad}(call {})\n",
-                    RuntimeFn::PropertyGet.symbol()
+                    RuntimeFn::PropertyGetIc.symbol()
                 ));
             }
             LoweredExpr::MethodCall {

@@ -94,6 +94,19 @@ impl<'a> WatEmitter<'a> {
             "  (global $heap (mut i32) (i32.const {}))\n",
             Layout::HEAP_START,
         ));
+        if self
+            .link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::PropertyGetIc)
+        {
+            wat.push_str("  (global $ic_prop_obj_base (mut i32) (i32.const 0))\n");
+            wat.push_str("  (global $ic_prop_key_ptr (mut i32) (i32.const 0))\n");
+            wat.push_str("  (global $ic_prop_key_len (mut i32) (i32.const 0))\n");
+            wat.push_str(&format!(
+                "  (global $ic_prop_value (mut i32) (i32.const {}))\n",
+                ValueTag::UNDEFINED,
+            ));
+        }
         if self.module_runtime_enabled() {
             wat.push_str("  (global $module_cache (mut i32) (i32.const 0))\n");
             wat.push_str("  (global $current_module_id (mut i32) (i32.const 0))\n");

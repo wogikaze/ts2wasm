@@ -208,6 +208,52 @@ pub(crate) enum LoweredUnaryOp {
     Negate,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum InferredType {
+    Number,
+    String,
+    Boolean,
+    Unknown,
+}
+
+impl LoweredExpr {
+    pub(crate) fn inferred_type(&self) -> InferredType {
+        match self {
+            Self::Number(_) => InferredType::Number,
+            Self::String(_) => InferredType::String,
+            Self::Bool(_) => InferredType::Boolean,
+            Self::Unary { op, expr } => match op {
+                LoweredUnaryOp::Negate if expr.inferred_type() == InferredType::Number => {
+                    InferredType::Number
+                }
+                LoweredUnaryOp::Not => InferredType::Boolean,
+                _ => InferredType::Unknown,
+            },
+            Self::Binary { left, op, right } => match op {
+                LoweredBinaryOp::Add => match (left.inferred_type(), right.inferred_type()) {
+                    (InferredType::Number, InferredType::Number) => InferredType::Number,
+                    (InferredType::String, InferredType::String) => InferredType::String,
+                    _ => InferredType::Unknown,
+                },
+                LoweredBinaryOp::Subtract => {
+                    if left.inferred_type() == InferredType::Number
+                        && right.inferred_type() == InferredType::Number
+                    {
+                        InferredType::Number
+                    } else {
+                        InferredType::Unknown
+                    }
+                }
+                LoweredBinaryOp::Less | LoweredBinaryOp::Greater | LoweredBinaryOp::StrictEqual => {
+                    InferredType::Boolean
+                }
+                LoweredBinaryOp::And | LoweredBinaryOp::Or => InferredType::Unknown,
+            },
+            _ => InferredType::Unknown,
+        }
+    }
+}
+
 pub(crate) fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let class_parents = collect_class_parents(program);
@@ -1521,7 +1567,9 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
 
 #[cfg(test)]
 mod tests {
-    use super::{FunctionCallKind, LoweredExpr, LoweredStmt, lower_program, validate_lowered};
+    use super::{
+        FunctionCallKind, InferredType, LoweredExpr, LoweredStmt, lower_program, validate_lowered,
+    };
     use crate::ir::builtin::{BuiltinId, BuiltinResult};
 
     fn parse_and_resolve(source: &str) -> Vec<crate::ir::builtin_resolved::ResolvedStmt> {
@@ -1657,5 +1705,35 @@ mod tests {
             }
             other => panic!("unexpected lowered statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn inferred_type_marks_number_addition_as_number() {
+        let expr = LoweredExpr::Binary {
+            left: Box::new(LoweredExpr::Number(1)),
+            op: super::LoweredBinaryOp::Add,
+            right: Box::new(LoweredExpr::Number(2)),
+        };
+        assert_eq!(expr.inferred_type(), InferredType::Number);
+    }
+
+    #[test]
+    fn inferred_type_marks_string_addition_as_string() {
+        let expr = LoweredExpr::Binary {
+            left: Box::new(LoweredExpr::String("a".to_owned())),
+            op: super::LoweredBinaryOp::Add,
+            right: Box::new(LoweredExpr::String("b".to_owned())),
+        };
+        assert_eq!(expr.inferred_type(), InferredType::String);
+    }
+
+    #[test]
+    fn inferred_type_falls_back_to_unknown_for_mixed_add() {
+        let expr = LoweredExpr::Binary {
+            left: Box::new(LoweredExpr::String("a".to_owned())),
+            op: super::LoweredBinaryOp::Add,
+            right: Box::new(LoweredExpr::Number(1)),
+        };
+        assert_eq!(expr.inferred_type(), InferredType::Unknown);
     }
 }

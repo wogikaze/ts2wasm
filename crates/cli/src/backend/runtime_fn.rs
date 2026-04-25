@@ -15,10 +15,14 @@ pub(crate) enum RuntimeFn {
     Concat,
     IsString,
     Add,
+    AddFast,
     Sub,
+    SubFast,
     Negate,
     Less,
+    LessFast,
     Greater,
+    GreaterFast,
     StrictEqual,
     And,
     Or,
@@ -32,6 +36,8 @@ pub(crate) enum RuntimeFn {
     GetLength,
     /// Linear-scan property lookup on a heap object.
     PropertyGet,
+    /// One-entry inline cache wrapper around `PropertyGet`.
+    PropertyGetIc,
     /// Set or append a property on a heap object.
     PropertySet,
     /// M10: String methods
@@ -153,6 +159,10 @@ const LOG_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto]
 const STRING_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto];
 const ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
+const ADD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Add];
+const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];
+const LESS_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Less];
+const GREATER_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Greater];
 const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::StringEqual];
 const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
@@ -343,9 +353,25 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::AddFast => RuntimeSpec {
+                symbol: "$add_fast",
+                deps: ADD_FAST_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::Sub => RuntimeSpec {
                 symbol: "$sub",
                 deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SubFast => RuntimeSpec {
+                symbol: "$sub_fast",
+                deps: SUB_FAST_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -367,9 +393,25 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::LessFast => RuntimeSpec {
+                symbol: "$less_fast",
+                deps: LESS_FAST_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::Greater => RuntimeSpec {
                 symbol: "$greater",
                 deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::GreaterFast => RuntimeSpec {
+                symbol: "$greater_fast",
+                deps: GREATER_FAST_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -434,6 +476,14 @@ impl RuntimeFn {
             Self::PropertyGet => RuntimeSpec {
                 symbol: "$property_get",
                 deps: &[Self::MemEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::PropertyGetIc => RuntimeSpec {
+                symbol: "$property_get_ic",
+                deps: &[Self::PropertyGet, Self::MemEqual],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -763,10 +813,14 @@ impl RuntimeFn {
             Self::Concat,
             Self::IsString,
             Self::Add,
+            Self::AddFast,
             Self::Sub,
+            Self::SubFast,
             Self::Negate,
             Self::Less,
+            Self::LessFast,
             Self::Greater,
+            Self::GreaterFast,
             Self::StrictEqual,
             Self::And,
             Self::Or,
@@ -775,6 +829,7 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
+            Self::PropertyGetIc,
             Self::PropertySet,
             // String methods
             Self::StringCharAt,
@@ -836,10 +891,14 @@ impl RuntimeFn {
             Self::Concat,
             Self::IsString,
             Self::Add,
+            Self::AddFast,
             Self::Sub,
+            Self::SubFast,
             Self::Negate,
             Self::Less,
+            Self::LessFast,
             Self::Greater,
+            Self::GreaterFast,
             Self::StrictEqual,
             Self::And,
             Self::Or,
@@ -848,6 +907,7 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
+            Self::PropertyGetIc,
             Self::PropertySet,
             // String methods
             Self::StringCharAt,

@@ -28,10 +28,14 @@ impl WatEmitter<'_> {
                 RuntimeFn::Concat => self.emit_concat(wat),
                 RuntimeFn::IsString => self.emit_is_string(wat),
                 RuntimeFn::Add => self.emit_add(wat),
+                RuntimeFn::AddFast => self.emit_add_fast(wat),
                 RuntimeFn::Sub => self.emit_sub(wat),
+                RuntimeFn::SubFast => self.emit_sub_fast(wat),
                 RuntimeFn::Negate => self.emit_negate(wat),
                 RuntimeFn::Less => self.emit_less(wat),
+                RuntimeFn::LessFast => self.emit_less_fast(wat),
                 RuntimeFn::Greater => self.emit_greater(wat),
+                RuntimeFn::GreaterFast => self.emit_greater_fast(wat),
                 RuntimeFn::StrictEqual => self.emit_strict_equal(wat),
                 RuntimeFn::And => self.emit_and(wat),
                 RuntimeFn::Or => self.emit_or(wat),
@@ -40,6 +44,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
                 RuntimeFn::GetLength => self.emit_get_length(wat),
                 RuntimeFn::PropertyGet => self.emit_property_get(wat),
+                RuntimeFn::PropertyGetIc => self.emit_property_get_ic(wat),
                 RuntimeFn::PropertySet => self.emit_property_set(wat),
                 RuntimeFn::StringCharAt => self.emit_string_char_at(wat),
                 RuntimeFn::StringSubstring => self.emit_string_substring(wat),
@@ -473,6 +478,30 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_add_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $add_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then
+        (return
+          (i32.or
+            (i32.shl
+              (i32.add
+                (i32.shr_s (local.get $a) (i32.const {number_shift}))
+                (i32.shr_s (local.get $b) (i32.const {number_shift})))
+              (i32.const {number_shift}))
+            (i32.const {number_tag})))))
+    (call $add (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
     fn emit_sub(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -485,6 +514,30 @@ impl WatEmitter<'_> {
 "#,
             number_shift = ValueTag::NUMBER_SHIFT,
             number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    fn emit_sub_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $sub_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then
+        (return
+          (i32.or
+            (i32.shl
+              (i32.sub
+                (i32.shr_s (local.get $a) (i32.const {number_shift}))
+                (i32.shr_s (local.get $b) (i32.const {number_shift})))
+              (i32.const {number_shift}))
+            (i32.const {number_tag})))))
+    (call $sub (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
         ));
     }
 
@@ -518,6 +571,31 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_less_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $less_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then
+        (return
+          (if (result i32)
+            (i32.lt_s
+              (i32.shr_s (local.get $a) (i32.const {number_shift}))
+              (i32.shr_s (local.get $b) (i32.const {number_shift})))
+            (then (i32.const {true_tag}))
+            (else (i32.const {false_tag}))))))
+    (call $less (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
     fn emit_greater(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -527,6 +605,31 @@ impl WatEmitter<'_> {
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
 "#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_greater_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $greater_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then
+        (return
+          (if (result i32)
+            (i32.gt_s
+              (i32.shr_s (local.get $a) (i32.const {number_shift}))
+              (i32.shr_s (local.get $b) (i32.const {number_shift})))
+            (then (i32.const {true_tag}))
+            (else (i32.const {false_tag}))))))
+    (call $greater (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
             number_shift = ValueTag::NUMBER_SHIFT,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
@@ -680,6 +783,42 @@ impl WatEmitter<'_> {
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_property_get_ic(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $property_get_ic (param $obj i32) (param $key_ptr i32) (param $key_len i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $value i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+        (if (i32.and
+              (i32.eq (local.get $base) (global.get $ic_prop_obj_base))
+              (i32.eq (local.get $key_len) (global.get $ic_prop_key_len)))
+          (then
+            (if (call $mem_equal (local.get $key_ptr) (global.get $ic_prop_key_ptr) (local.get $key_len))
+              (then (return (global.get $ic_prop_value))))))))
+    (local.set $value
+      (call $property_get (local.get $obj) (local.get $key_ptr) (local.get $key_len)))
+    (if (i32.and
+          (i32.eq (local.get $tag) (i32.const {object_tag}))
+          (i32.ne (local.get $value) (i32.const {undefined})))
+      (then
+        (global.set $ic_prop_obj_base (i32.and (local.get $obj) (i32.const {heap_mask})))
+        (global.set $ic_prop_key_ptr (local.get $key_ptr))
+        (global.set $ic_prop_key_len (local.get $key_len))
+        (global.set $ic_prop_value (local.get $value))))
+    (local.get $value))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
             undefined = ValueTag::UNDEFINED,
         ));
     }
