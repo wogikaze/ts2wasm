@@ -32,8 +32,8 @@ description: タスク完了時に「最初に失敗した内容」と「最終�
    照合先と最低限の検索:
    ```
    # skill 重複（global）
-   ls ~/.claude/skills/
-   Grep "<キー>" ~/.claude/skills/*/SKILL.md
+   ls .agents/skills/
+   Grep "<キー>" .agents/skills/*/SKILL.md
 
    # CLAUDE.md 重複
    Grep "<キー>" ~/.claude/CLAUDE.md
@@ -100,7 +100,6 @@ digraph classify {
 理由を括弧書きで必ず添える（将来の自分が edge case を判断できるように）。
 
 ### 新規 skill
-`writing-skills`（superpowers）の最小テンプレに従う:
 ```markdown
 ---
 name: <kebab-case>
@@ -243,9 +242,3 @@ message: Set/Map のサイズは .size プロパティを使う。
 - **理由を書かない**: ルールの根拠が残らず、将来の自分がなぜそれを守るのか判断できなくなる → 必ず `Why:` を添える
 - **勝手に書き出す**: ユーザー承認なしに CLAUDE.md や skill を更新する → 必ず提案 → 承認 → 書き出し の順を守る
 - **失敗の言語化を省く**: 「最終解は X」だけ書いて、なぜ初手で詰まったかを残さない → 失敗側の記述が無いと、将来の自分は同じ落とし穴にまた落ちる
-
-## 関連 skill
-
-- `superpowers:writing-skills` — 新規 skill を書くときのテンプレと TDD フロー
-- `ast-grep-practice` — lint ルール化する場合の書き方とテスト
-- `update-config` — settings.json / permissions の変更が必要な場合
