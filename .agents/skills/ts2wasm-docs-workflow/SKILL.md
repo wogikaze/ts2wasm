@@ -321,18 +321,18 @@ Before finalizing a docs cleanup, run targeted searches.
 Recommended commands:
 
 ```sh
-ig -n "TODO|FIXME|not yet|currently|temporary|workaround|future|planned|later|roadmap|blocked|unsupported" docs README.md
-ig -n "M[0-9]+|phase|milestone" docs README.md
-ig -n "will|should eventually|in the future" docs README.md
-ig -n "current-state|Current state|Known divergence" docs README.md issues
+rg -n "TODO|FIXME|not yet|currently|temporary|workaround|future|planned|later|roadmap|blocked|unsupported" docs README.md
+rg -n "M[0-9]+|phase|milestone" docs README.md
+rg -n "will|should eventually|in the future" docs README.md
+rg -n "current-state|Current state|Known divergence" docs README.md issues
 ```
 
 For code contract docs, also search the code/tests:
 
 ```sh
-ig -n "TestRecord|suite|status|unsupported|blocked|skip-with-reason" crates scripts docs
-ig -n "capability|manifest|RuntimeLinkPlan|fd_read|fd_write" crates scripts docs
-ig -n "fixtures/" crates scripts docs issues
+rg -n "TestRecord|suite|status|unsupported|blocked|skip-with-reason" crates scripts docs
+rg -n "capability|manifest|RuntimeLinkPlan|fd_read|fd_write" crates scripts docs
+rg -n "fixtures/" crates scripts docs issues
 ```
 
 Use `ast-grep` when checking structural code contracts.
@@ -355,7 +355,7 @@ cargo fmt --all --check
 For docs-only changes, run at least:
 
 ```sh
-ig -n "TODO|FIXME|not yet|currently|temporary|workaround|future|planned|later|roadmap|blocked|unsupported" docs README.md
+rg -n "TODO|FIXME|not yet|currently|temporary|workaround|future|planned|later|roadmap|blocked|unsupported" docs README.md
 ```
 
 When docs mention scripts or generated reports, also run:

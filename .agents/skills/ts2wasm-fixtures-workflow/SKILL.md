@@ -39,12 +39,11 @@ Out of scope:
 Prefer tools in this order:
 
 1. `ast-grep` / `sg` for structural searches in Rust, TypeScript, JavaScript, JSON, YAML, and other supported languages.
-2. `ig` for broad text/path searches, literal fixture path searches, and shell/doc scans.
-3. `rg` only as a fallback when `ig` is unavailable or when the environment already standardizes on `rg`.
+2. `rg` (ripgrep) for broad text/path searches, literal fixture path searches, and shell/doc scans.
 
 Do not use plain text grep when the question is structurally about code shape, such as `TestRecord` construction, fixture helper calls, or Rust test registration.
 
-Use `ig` for:
+Use `rg` for:
 
 - old fixture path references
 - old directory names
@@ -141,12 +140,12 @@ Avoid:
 
 Before changing fixture paths, build the impact list.
 
-Run broad text/path searches with `ig`:
+Run broad text/path searches with `rg`:
 
 ```bash
-ig 'fixtures/<old-path>|<old-dir>/' crates scripts docs README.md AGENTS.md .github artifacts
-ig '<old-file-name>|<old-dir>' crates scripts docs README.md AGENTS.md .github artifacts
-ig 'fixtures/' crates/cli/tests scripts docs README.md AGENTS.md .github artifacts
+rg -n 'fixtures/<old-path>|<old-dir>/' crates scripts docs README.md AGENTS.md .github artifacts
+rg -n '<old-file-name>|<old-dir>' crates scripts docs README.md AGENTS.md .github artifacts
+rg -n 'fixtures/' crates/cli/tests scripts docs README.md AGENTS.md .github artifacts
 ```
 
 Run structural Rust searches with `sg`:
@@ -165,17 +164,17 @@ For YAML workflow path references, prefer structured search first:
 sg run --lang yaml -p 'fixtures/**' .github/workflows
 ```
 
-If the structural query is too narrow or invalid for the target file type, fall back to `ig`:
+If the structural query is too narrow or invalid for the target file type, fall back to `rg`:
 
 ```bash
-ig 'fixtures/' .github/workflows
+rg -n 'fixtures/' .github/workflows
 ```
 
 For broad migrations, also run:
 
 ```bash
 find fixtures -type f | sort
-ig 'fixtures/' crates/cli/tests scripts docs README.md AGENTS.md .github artifacts
+rg -n 'fixtures/' crates/cli/tests scripts docs README.md AGENTS.md .github artifacts
 sg run --lang rust -p 'TestRecord { $$$ }' crates/cli/tests crates/shared/src
 ```
 
@@ -335,11 +334,11 @@ Do not run reference corpus scripts for ordinary project fixture edits unless th
 
 After any move or rename, run searches that should return zero old references.
 
-Use `ig` for literal old path checks:
+Use `rg` for literal old path checks:
 
 ```bash
-ig 'fixtures/<old-path>|<old-dir>/' crates scripts docs README.md AGENTS.md .github artifacts
-ig 'suite: "fixtures/<old-dir>|suite = "fixtures/<old-dir>' crates
+rg -n 'fixtures/<old-path>|<old-dir>/' crates scripts docs README.md AGENTS.md .github artifacts
+rg -n 'suite: "fixtures/<old-dir>|suite = "fixtures/<old-dir>' crates
 ```
 
 Use `sg` for structural verification in Rust tests:
@@ -355,11 +354,9 @@ For broad migrations, run a consistency scan:
 
 ```bash
 find fixtures -maxdepth 2 -type f | sort
-ig 'fixtures/' crates/cli/tests scripts docs README.md AGENTS.md .github artifacts
+rg -n 'fixtures/' crates/cli/tests scripts docs README.md AGENTS.md .github artifacts
 sg run --lang rust -p 'TestRecord { $$$ }' crates/cli/tests crates/shared/src
 ```
-
-If `ig` is unavailable in the execution environment, use `rg` as a fallback and explicitly report that fallback in the output checklist.
 
 ## Common Traps
 
@@ -375,7 +372,6 @@ If `ig` is unavailable in the execution environment, use `rg` as a fallback and 
 - Unsupported fixture lacks `reason` or `tracking`.
 - Stdin/env/fs fixture has an implicit host contract that tests do not reproduce.
 - Text search is used where `sg` would catch structural call sites more reliably.
-- `rg` is used by habit even though `ig` is available.
 
 ## Output Checklist
 
@@ -387,10 +383,10 @@ Every fixture workflow result must report:
 4. Script files touched only for path synchronization, if any.
 5. Docs or CI files updated, if any.
 6. Validation commands and results.
-7. `ig` gate results for old paths after rename/migration.
+7. `rg` gate results for old paths after rename/migration.
 8. `sg` structural gate results for Rust fixture references.
 9. Intentional non-updated areas and reason.
-10. Tooling limitations, such as missing `ig`, `sg`, or `iwasm`, if applicable.
+10. Tooling limitations, such as missing `rg`, `sg`, or `iwasm`, if applicable.
 
 ## Handoff Packet
 
@@ -428,11 +424,10 @@ Validation:
 - iwasm-dependent checks:
 
 Search gates:
-- ig old fixture path references:
-- ig old suite references:
+- rg old fixture path references:
+- rg old suite references:
 - sg TestRecord structural scan:
 - sg fixture helper call scan:
-- rg fallback used: yes/no
 
 Risks:
 - Runtime behavior changed:

@@ -28,6 +28,21 @@ TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず
 
 ## Development Init
 
+### Nix（推奨・ツールの共有）
+
+Nix が入っている場合は、リポジトリの devshell で Rust / Node / `iwasm` / よく使う CLI をまとめて揃えられる。
+
+- **Flakes あり**: `nix develop`
+- **Flakes なし / 従来どおり**: `nix-shell`（ルートの `shell.nix`）
+
+devshell に含まれる主なもの: `rustc` / `cargo` / `rustfmt` / `clippy` / `cargo-nextest` / `nodejs`（`npm` 同梱）/ `git` / `wamr`（`iwasm`）/ `ripgrep` / `ast-grep`。定義は `nix/devshell.nix`。
+
+nixpkgs の版は `nix/nixpkgs-tarball.nix` の `builtins.fetchTarball` で固定している。コミットやハッシュを上げる手順は同ファイル先頭のコメントに従う（`sha256` は tarball の生バイトではなく展開後向けなので、`nix-prefetch-url --unpack` や評価時の `got:` を使う）。
+
+Flakes で `nix develop` する場合、評価対象の Nix ファイルは **Git に追跡されている必要がある**（未 `git add` のファイルは見えない）。
+
+### リポジトリ初期化（Nix の有無に共通）
+
 ```bash
 # git clone reference
 cat <<'EOF' | xargs -P 6 -n 2 sh -c 'git clone "$0" "$1" --depth 1'           
@@ -46,14 +61,18 @@ EOF
 
 # install repo-managed git hooks
 scripts/install_git_hooks.sh
-
-# install tools
-npm install --global @ast-grep/cli
-curl -fsSL https://raw.githubusercontent.com/PythonicNinja/trigrep/master/scripts/install.sh | bash
-curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
-
-
-
 ```
+
+### 手動でツールを入れる場合（Nix を使わないとき）
+
+`ast-grep` / `cargo-nextest` / `rg`（ripgrep。多くのディストリでは `ripgrep` パッケージ）などを自分の環境に入れる例。
+
+```bash
+npm install --global @ast-grep/cli
+curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
+# ripgrep は OS のパッケージマネージャで入れる（例: apt install ripgrep, brew install ripgrep）
+```
+
+`iwasm`（WAMR）は OS のパッージマやソースビルドで用意する。`cargo` / `rustc` は [rustup](https://rustup.rs/) 等で揃える。
 
 `pre-commit` では `cargo fmt --all --check` を強制する。hook を有効にするには init 時に `scripts/install_git_hooks.sh` を実行する。

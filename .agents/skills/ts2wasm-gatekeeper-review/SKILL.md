@@ -54,14 +54,14 @@ If runtime/backend/WASI/differential changed, also run one of:
 
 ## 3) Grep Gate (regression traps)
 
-Run（検索は `ig` を優先。未導入なら `rg`。他 skill と同様に `ig -n '<pattern>' <path>` 形式）:
+Run（テキスト検索は `rg -n '<pattern>' <path>` 形式）:
 
-- ig -n 'as_console_log_call' crates/cli/src
-- ig -n 'property == "length"' crates/cli/src/ir/lowered.rs
-- ig -n 'fd_write|fd_read' crates/cli/src/backend
-- ig -n 'RuntimeString::.*intern|intern_required_runtime_strings' crates/cli/src/backend
-- ig -n 'span: None' crates/cli/src
-- ig -n 'unwrap\(|expect\(|panic!' crates/cli/src
+- rg -n 'as_console_log_call' crates/cli/src
+- rg -n 'property == "length"' crates/cli/src/ir/lowered.rs
+- rg -n 'fd_write|fd_read' crates/cli/src/backend
+- rg -n 'RuntimeString::.*intern|intern_required_runtime_strings' crates/cli/src/backend
+- rg -n 'span: None' crates/cli/src
+- rg -n 'unwrap\(|expect\(|panic!' crates/cli/src
 
 Default judgment:
 

@@ -17,10 +17,13 @@
 
 ## 2) 最初期セットアップ
 
+Nix を使う場合は README の「Development Init → Nix」に従い、`nix develop` または `nix-shell` で devshell に入ってから次を実行する（`cargo` / `iwasm` / `cargo-nextest` / `ast-grep` / `rg` は devshell に含まれる）。
+
 ```bash
-# 前提確認
+# 前提確認（devshell 外なら各自で cargo / iwasm / rg 等を用意）
 which cargo
 which iwasm
+which rg
 
 # 整形チェック
 cargo fmt --all --check
@@ -29,7 +32,7 @@ cargo fmt --all --check
 cargo nextest run
 ```
 
-検索は ig を優先し、未導入なら rg を使う。
+テキスト検索は `rg`（ripgrep）を使う。Nix devshell では `ripgrep` が入る。
 
 ## 3) ファイル構成（要点）
 
@@ -60,6 +63,7 @@ crates/
 
 - docs/: 設計・仕様ドキュメント
 - fixtures/: feature group 単位のテストフィクスチャ（workstream 名ではなく意味領域で管理）
+- nix/: Nix devshell（`nix/nixpkgs-tarball.nix` で nixpkgs を `builtins.fetchTarball` 固定、`nix/devshell.nix` でパッケージ一覧）
 - scripts/: テスト/カバレッジ/検証スクリプト
 - artifacts/coverage/: 生成カバレッジ成果物
 - reference/: 外部参照資料（原則 read-only）
