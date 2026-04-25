@@ -6,6 +6,9 @@ on:
       - crates/cli/**
       - scripts/reference_coverage.sh
       - scripts/update_coverage_matrix.sh
+      - scripts/test262_runner.sh
+      - scripts/test_differential_reporter.sh
+      - scripts/test_regression_gate.sh
       - docs/16-coverage-matrix.md
       - .github/workflows/reference-coverage.yml
   schedule:
@@ -45,6 +48,46 @@ jobs:
       - name: Run coverage delta gate
         run: |
           scripts/check_coverage_gate.sh /tmp/base-coverage-matrix.md docs/16-coverage-matrix.md
+
+  test262-gate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install wabt
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+
+      - name: Install iwasm (WAMR)
+        run: |
+          wget https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-linux-x86_64.tar.gz
+          tar -xzf iwasm-2.4.3-linux-x86_64.tar.gz
+          sudo mv iwasm /usr/local/bin/
+          chmod +x /usr/local/bin/iwasm
+
+      - name: Run test262 runner with sample
+        run: |
+          chmod +x scripts/test262_runner.sh scripts/test_differential_reporter.sh scripts/test_regression_gate.sh
+          scripts/test262_runner.sh --sample 50 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+
+      - name: Run regression gate
+        run: |
+          scripts/test_regression_gate.sh test262-results.jsonl
+
+      - name: Upload test262 results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test262-results
+          path: |
+            test262-results.jsonl
+            test262-report.html
+            test262-report.md
 
   coverage-ramp:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
