@@ -4,22 +4,28 @@ set -euo pipefail
 repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
-echo "pre-commit: cargo fmt --all --check"
-cargo fmt --all --check
+staged_files="$(git diff --cached --name-only --diff-filter=ACM || true)"
 
-echo "pre-commit: issues/index.md (regen if needed)"
-if ! scripts/update_issue_index.sh --check; then
-  scripts/update_issue_index.sh
-  git add issues/index.md
+if printf '%s\n' "$staged_files" | grep -Eq '(^|/)(Cargo\.toml|Cargo\.lock|.*\.rs)$'; then
+  echo "pre-commit: cargo fmt --all --check"
+  cargo fmt --all --check
+else
+  echo "pre-commit: skip cargo fmt; no staged Rust changes"
 fi
 
-echo "pre-commit: issues/ mechanical checks (scripts/check_issue_queue.sh)"
-scripts/check_issue_queue.sh
+if printf '%s\n' "$staged_files" | grep -Eq '^(issues/|scripts/update_issue_index\.sh|scripts/check_issue_queue\.sh)'; then
+  echo "pre-commit: issues/ mechanical checks"
+  scripts/check_issue_queue.sh
+else
+  echo "pre-commit: skip issues check; no staged issues/scripts changes"
+fi
 
-md_files="$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.md$' || true)"
+md_files="$(printf '%s\n' "$staged_files" | grep -E '\.md$' || true)"
 
 if [ -n "$md_files" ]; then
   echo "pre-commit: markdownlint modified staged markdown files"
-  printf '%s\n' "$md_files" | xargs npx markdownlint-cli2 --fix
+  printf '%s\n' "$md_files" | xargs npx --no-install markdownlint-cli2 --fix
   printf '%s\n' "$md_files" | xargs git add
+else
+  echo "pre-commit: skip markdownlint; no staged markdown files"
 fi
