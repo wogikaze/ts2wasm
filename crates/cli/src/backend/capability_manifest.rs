@@ -1,6 +1,5 @@
 use crate::ir::lowered::LoweredProgram;
 
-use super::runtime_fn::{Capability, HostImport, RuntimeFn};
 use super::runtime_link_plan::RuntimeLinkPlan;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -15,17 +14,17 @@ impl CapabilityManifest {
         let imports = plan
             .required_imports()
             .iter()
-            .map(|import| host_import_name(*import).to_owned())
+            .map(|import| import.manifest_name().to_owned())
             .collect();
         let capabilities = plan
             .required_capabilities()
             .iter()
-            .map(|capability| capability_name(*capability).to_owned())
+            .map(|capability| capability.manifest_name().to_owned())
             .collect();
         let runtime = plan
             .required_runtime_functions()
             .iter()
-            .map(|runtime_fn| runtime_name(*runtime_fn).to_owned())
+            .map(|runtime_fn| runtime_fn.manifest_name().to_owned())
             .collect();
         Self {
             imports,
@@ -47,112 +46,6 @@ impl CapabilityManifest {
 pub(crate) fn emit_capability_manifest_json(program: &LoweredProgram) -> String {
     let plan = RuntimeLinkPlan::from_program(program);
     CapabilityManifest::from_link_plan(&plan).to_json()
-}
-
-fn host_import_name(import: HostImport) -> &'static str {
-    match import {
-        HostImport::FdRead => "wasi_snapshot_preview1.fd_read",
-        HostImport::FdWrite => "wasi_snapshot_preview1.fd_write",
-        HostImport::FsReadFileSync => "host.fs.readFileSync",
-        HostImport::FsWriteFileSync => "host.fs.writeFileSync",
-        HostImport::FsAppendFileSync => "host.fs.appendFileSync",
-        HostImport::ProcessArgv => "host.process.argv",
-        HostImport::ProcessEnv => "host.process.env",
-        HostImport::ProcessExit => "host.process.exit",
-        HostImport::PathJoin => "host.path.join",
-        HostImport::PathResolve => "host.path.resolve",
-        HostImport::PathBasename => "host.path.basename",
-        HostImport::PathDirname => "host.path.dirname",
-        HostImport::CryptoRandomBytes => "host.crypto.randomBytes",
-    }
-}
-
-fn capability_name(capability: Capability) -> &'static str {
-    match capability {
-        Capability::StdinRead => "stdin.read",
-        Capability::StdoutWrite => "stdout.write",
-        Capability::HostFsReadFileSync => "host.fs.readFileSync",
-        Capability::HostFsWriteFileSync => "host.fs.writeFileSync",
-        Capability::HostFsAppendFileSync => "host.fs.appendFileSync",
-        Capability::HostProcessArgv => "host.process.argv",
-        Capability::HostProcessEnv => "host.process.env",
-        Capability::HostProcessExit => "host.process.exit",
-        Capability::HostPathJoin => "host.path.join",
-        Capability::HostPathResolve => "host.path.resolve",
-        Capability::HostPathBasename => "host.path.basename",
-        Capability::HostPathDirname => "host.path.dirname",
-        Capability::HostCryptoRandomBytes => "host.crypto.randomBytes",
-    }
-}
-
-fn runtime_name(runtime_fn: RuntimeFn) -> &'static str {
-    match runtime_fn {
-        RuntimeFn::ReadStdinUtf8 => "read_stdin_utf8",
-        RuntimeFn::Write => "write",
-        RuntimeFn::Copy => "copy",
-        RuntimeFn::ValueToStringInto => "value_to_string_into",
-        RuntimeFn::Log => "log",
-        RuntimeFn::TruthyBool => "truthy_bool",
-        RuntimeFn::Not => "not",
-        RuntimeFn::StringEqual => "string_equal",
-        RuntimeFn::Concat => "concat",
-        RuntimeFn::IsString => "is_string",
-        RuntimeFn::Add => "add",
-        RuntimeFn::AddFast => "add_fast",
-        RuntimeFn::Sub => "sub",
-        RuntimeFn::SubFast => "sub_fast",
-        RuntimeFn::Negate => "negate",
-        RuntimeFn::Less => "less",
-        RuntimeFn::LessFast => "less_fast",
-        RuntimeFn::Greater => "greater",
-        RuntimeFn::GreaterFast => "greater_fast",
-        RuntimeFn::StrictEqual => "strict_equal",
-        RuntimeFn::And => "and",
-        RuntimeFn::Or => "or",
-        RuntimeFn::AllocHeap => "alloc_heap",
-        RuntimeFn::MemEqual => "mem_equal",
-        RuntimeFn::ArrayGet => "array_get",
-        RuntimeFn::GetLength => "get_length",
-        RuntimeFn::PropertyGet => "property_get",
-        RuntimeFn::PropertyGetIc => "property_get_ic",
-        RuntimeFn::PropertySet => "property_set",
-        RuntimeFn::StringCharAt => "string_char_at",
-        RuntimeFn::StringSubstring => "string_substring",
-        RuntimeFn::StringSlice => "string_slice",
-        RuntimeFn::StringIndexOf => "string_index_of",
-        RuntimeFn::StringSplit => "string_split",
-        RuntimeFn::ArrayPush => "array_push",
-        RuntimeFn::ArrayPop => "array_pop",
-        RuntimeFn::ArraySlice => "array_slice",
-        RuntimeFn::ArrayConcat => "array_concat",
-        RuntimeFn::ArrayJoin => "array_join",
-        RuntimeFn::ArrayReverse => "array_reverse",
-        RuntimeFn::ObjectKeys => "object_keys",
-        RuntimeFn::ObjectValues => "object_values",
-        RuntimeFn::ObjectEntries => "object_entries",
-        RuntimeFn::MathFloor => "math_floor",
-        RuntimeFn::MathCeil => "math_ceil",
-        RuntimeFn::MathRound => "math_round",
-        RuntimeFn::MathAbs => "math_abs",
-        RuntimeFn::MathMax => "math_max",
-        RuntimeFn::MathMin => "math_min",
-        RuntimeFn::JsonStringify => "json_stringify",
-        RuntimeFn::JsonParse => "json_parse",
-        RuntimeFn::ModuleRequire => "module_require",
-        RuntimeFn::ModuleExportsSet => "module_exports_set",
-        RuntimeFn::ModuleExportsAssign => "module_exports_assign",
-        RuntimeFn::FsReadFileSync => "fs_read_file_sync",
-        RuntimeFn::FsWriteFileSync => "fs_write_file_sync",
-        RuntimeFn::FsAppendFileSync => "fs_append_file_sync",
-        RuntimeFn::ProcessArgv => "process_argv",
-        RuntimeFn::ProcessEnv => "process_env",
-        RuntimeFn::ProcessExit => "process_exit",
-        RuntimeFn::PathJoin => "path_join",
-        RuntimeFn::PathResolve => "path_resolve",
-        RuntimeFn::PathBasename => "path_basename",
-        RuntimeFn::PathDirname => "path_dirname",
-        RuntimeFn::CryptoRandomBytes => "crypto_random_bytes",
-    }
 }
 
 fn json_array(values: &[String]) -> String {

@@ -1,6 +1,23 @@
 use crate::ir::builtin::BuiltinId;
 use crate::runtime::consts::RuntimeString;
 
+/// ABI contract type for host imports.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) enum HostAbi {
+    WasiPreview1,
+    NodeShim,
+    InternalHost,
+}
+
+/// Complete metadata for a host import binding.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct HostImportSpec {
+    pub module: &'static str,
+    pub name: &'static str,
+    pub wat_symbol: &'static str,
+    pub abi: HostAbi,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum RuntimeFn {
     /// M6-1 skeleton for stdin path. Real UTF-8 decode/runtime behavior is added in later M6 slices.
@@ -114,6 +131,111 @@ pub(crate) enum HostImport {
     CryptoRandomBytes,
 }
 
+impl HostImport {
+    /// Get the complete metadata for this host import (single source of truth).
+    pub(crate) const fn spec(self) -> HostImportSpec {
+        match self {
+            Self::FdRead => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "fd_read",
+                wat_symbol: "$import_fd_read",
+                abi: HostAbi::WasiPreview1,
+            },
+            Self::FdWrite => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "fd_write",
+                wat_symbol: "$import_fd_write",
+                abi: HostAbi::WasiPreview1,
+            },
+            Self::FsReadFileSync => HostImportSpec {
+                module: "host",
+                name: "fs.readFileSync",
+                wat_symbol: "$import_fs_read_file_sync",
+                abi: HostAbi::NodeShim,
+            },
+            Self::FsWriteFileSync => HostImportSpec {
+                module: "host",
+                name: "fs.writeFileSync",
+                wat_symbol: "$import_fs_write_file_sync",
+                abi: HostAbi::NodeShim,
+            },
+            Self::FsAppendFileSync => HostImportSpec {
+                module: "host",
+                name: "fs.appendFileSync",
+                wat_symbol: "$import_fs_append_file_sync",
+                abi: HostAbi::NodeShim,
+            },
+            Self::ProcessArgv => HostImportSpec {
+                module: "host",
+                name: "process.argv",
+                wat_symbol: "$import_process_argv",
+                abi: HostAbi::NodeShim,
+            },
+            Self::ProcessEnv => HostImportSpec {
+                module: "host",
+                name: "process.env",
+                wat_symbol: "$import_process_env",
+                abi: HostAbi::NodeShim,
+            },
+            Self::ProcessExit => HostImportSpec {
+                module: "host",
+                name: "process.exit",
+                wat_symbol: "$import_process_exit",
+                abi: HostAbi::NodeShim,
+            },
+            Self::PathJoin => HostImportSpec {
+                module: "host",
+                name: "path.join",
+                wat_symbol: "$import_path_join",
+                abi: HostAbi::NodeShim,
+            },
+            Self::PathResolve => HostImportSpec {
+                module: "host",
+                name: "path.resolve",
+                wat_symbol: "$import_path_resolve",
+                abi: HostAbi::NodeShim,
+            },
+            Self::PathBasename => HostImportSpec {
+                module: "host",
+                name: "path.basename",
+                wat_symbol: "$import_path_basename",
+                abi: HostAbi::NodeShim,
+            },
+            Self::PathDirname => HostImportSpec {
+                module: "host",
+                name: "path.dirname",
+                wat_symbol: "$import_path_dirname",
+                abi: HostAbi::NodeShim,
+            },
+            Self::CryptoRandomBytes => HostImportSpec {
+                module: "host",
+                name: "crypto.randomBytes",
+                wat_symbol: "$import_crypto_random_bytes",
+                abi: HostAbi::NodeShim,
+            },
+        }
+    }
+
+    /// Get the flat import name for manifest (derived from spec).
+    pub(crate) const fn manifest_name(self) -> &'static str {
+        match self {
+            Self::FdRead => "wasi_snapshot_preview1.fd_read",
+            Self::FdWrite => "wasi_snapshot_preview1.fd_write",
+            Self::FsReadFileSync => "host.fs.readFileSync",
+            Self::FsWriteFileSync => "host.fs.writeFileSync",
+            Self::FsAppendFileSync => "host.fs.appendFileSync",
+            Self::ProcessArgv => "host.process.argv",
+            Self::ProcessEnv => "host.process.env",
+            Self::ProcessExit => "host.process.exit",
+            Self::PathJoin => "host.path.join",
+            Self::PathResolve => "host.path.resolve",
+            Self::PathBasename => "host.path.basename",
+            Self::PathDirname => "host.path.dirname",
+            Self::CryptoRandomBytes => "host.crypto.randomBytes",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum Capability {
     StdinRead,
@@ -129,6 +251,27 @@ pub(crate) enum Capability {
     HostPathBasename,
     HostPathDirname,
     HostCryptoRandomBytes,
+}
+
+impl Capability {
+    /// Get the manifest name for this capability (derived from catalog).
+    pub(crate) const fn manifest_name(self) -> &'static str {
+        match self {
+            Self::StdinRead => "stdin.read",
+            Self::StdoutWrite => "stdout.write",
+            Self::HostFsReadFileSync => "host.fs.readFileSync",
+            Self::HostFsWriteFileSync => "host.fs.writeFileSync",
+            Self::HostFsAppendFileSync => "host.fs.appendFileSync",
+            Self::HostProcessArgv => "host.process.argv",
+            Self::HostProcessEnv => "host.process.env",
+            Self::HostProcessExit => "host.process.exit",
+            Self::HostPathJoin => "host.path.join",
+            Self::HostPathResolve => "host.path.resolve",
+            Self::HostPathBasename => "host.path.basename",
+            Self::HostPathDirname => "host.path.dirname",
+            Self::HostCryptoRandomBytes => "host.crypto.randomBytes",
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -798,6 +941,78 @@ impl RuntimeFn {
 
     pub(crate) const fn is_value(self) -> bool {
         matches!(self.result(), RuntimeResult::Value)
+    }
+
+    /// Get the manifest name for this runtime function (derived from symbol).
+    /// This is not const because it matches on strings.
+    pub(crate) fn manifest_name(self) -> &'static str {
+        match self {
+            Self::ReadStdinUtf8 => "read_stdin_utf8",
+            Self::Write => "write",
+            Self::Copy => "copy",
+            Self::ValueToStringInto => "value_to_string_into",
+            Self::Log => "log",
+            Self::TruthyBool => "truthy_bool",
+            Self::Not => "not",
+            Self::StringEqual => "string_equal",
+            Self::Concat => "concat",
+            Self::IsString => "is_string",
+            Self::Add => "add",
+            Self::AddFast => "add_fast",
+            Self::Sub => "sub",
+            Self::SubFast => "sub_fast",
+            Self::Negate => "negate",
+            Self::Less => "less",
+            Self::LessFast => "less_fast",
+            Self::Greater => "greater",
+            Self::GreaterFast => "greater_fast",
+            Self::StrictEqual => "strict_equal",
+            Self::And => "and",
+            Self::Or => "or",
+            Self::AllocHeap => "alloc_heap",
+            Self::MemEqual => "mem_equal",
+            Self::ArrayGet => "array_get",
+            Self::GetLength => "get_length",
+            Self::PropertyGet => "property_get",
+            Self::PropertyGetIc => "property_get_ic",
+            Self::PropertySet => "property_set",
+            Self::StringCharAt => "string_char_at",
+            Self::StringSubstring => "string_substring",
+            Self::StringSlice => "string_slice",
+            Self::StringIndexOf => "string_index_of",
+            Self::StringSplit => "string_split",
+            Self::ArrayPush => "array_push",
+            Self::ArrayPop => "array_pop",
+            Self::ArraySlice => "array_slice",
+            Self::ArrayConcat => "array_concat",
+            Self::ArrayJoin => "array_join",
+            Self::ArrayReverse => "array_reverse",
+            Self::ObjectKeys => "object_keys",
+            Self::ObjectValues => "object_values",
+            Self::ObjectEntries => "object_entries",
+            Self::MathFloor => "math_floor",
+            Self::MathCeil => "math_ceil",
+            Self::MathRound => "math_round",
+            Self::MathAbs => "math_abs",
+            Self::MathMax => "math_max",
+            Self::MathMin => "math_min",
+            Self::JsonStringify => "json_stringify",
+            Self::JsonParse => "json_parse",
+            Self::ModuleRequire => "module_require",
+            Self::ModuleExportsSet => "module_exports_set",
+            Self::ModuleExportsAssign => "module_exports_assign",
+            Self::FsReadFileSync => "fs_read_file_sync",
+            Self::FsWriteFileSync => "fs_write_file_sync",
+            Self::FsAppendFileSync => "fs_append_file_sync",
+            Self::ProcessArgv => "process_argv",
+            Self::ProcessEnv => "process_env",
+            Self::ProcessExit => "process_exit",
+            Self::PathJoin => "path_join",
+            Self::PathResolve => "path_resolve",
+            Self::PathBasename => "path_basename",
+            Self::PathDirname => "path_dirname",
+            Self::CryptoRandomBytes => "crypto_random_bytes",
+        }
     }
 
     pub(crate) const fn emission_order() -> &'static [RuntimeFn] {
