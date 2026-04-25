@@ -20,6 +20,7 @@
 | `docs/13-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 | なし | 新規追加 |
 | `docs/14-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI | なし | 新規追加 |
 | `docs/15-coverage-matrix.md` | reference coverage の運用ポリシーと gate 基準 | `docs/06` の coverage 方針を運用化 | generated artifact 参照 |
+| `docs/16-commit-and-push-policy.md` | commit/push 方針、agent rule | なし | 新規追加 |
 | `current-state.md` | 現在の実装事実、未実装範囲、検証状況 | なし | status tracking |
 
 ## Source-of-truth boundaries（責務の切り分け）
