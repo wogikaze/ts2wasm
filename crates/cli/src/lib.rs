@@ -137,6 +137,8 @@ enum Token {
     Null,
     Undefined,
     Let,
+    Const,
+    Var,
     Function,
     Return,
     If,
@@ -148,6 +150,9 @@ enum Token {
     Bang,
     StrictEqual,
     Equal,
+    AndAnd,
+    OrOr,
+    Greater,
     LeftParen,
     RightParen,
     LeftBrace,
@@ -231,6 +236,16 @@ impl<'a> Lexer<'a> {
                         },
                     });
                 }
+                '>' => {
+                    self.advance_char();
+                    tokens.push(SpannedToken {
+                        kind: Token::Greater,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    });
+                }
                 '=' => {
                     self.advance_char();
                     if self.peek_char() == Some('=') {
@@ -261,6 +276,50 @@ impl<'a> Lexer<'a> {
                                 start,
                                 end: self.cursor,
                             },
+                        });
+                    }
+                }
+                '&' => {
+                    self.advance_char();
+                    if self.peek_char() == Some('&') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::AndAnd,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "unsupported operator: &".to_owned(),
+                            span: Some(Span {
+                                start,
+                                end: self.cursor,
+                            }),
+                        });
+                    }
+                }
+                '|' => {
+                    self.advance_char();
+                    if self.peek_char() == Some('|') {
+                        self.advance_char();
+                        tokens.push(SpannedToken {
+                            kind: Token::OrOr,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    } else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "unsupported operator: |".to_owned(),
+                            span: Some(Span {
+                                start,
+                                end: self.cursor,
+                            }),
                         });
                     }
                 }
@@ -527,6 +586,8 @@ impl<'a> Lexer<'a> {
         }
         let kind = match &self.source[start..self.cursor] {
             "let" => Token::Let,
+            "const" => Token::Const,
+            "var" => Token::Var,
             "function" => Token::Function,
             "return" => Token::Return,
             "if" => Token::If,
@@ -702,12 +763,16 @@ enum BinaryOp {
     Add,
     Subtract,
     Less,
+    Greater,
     StrictEqual,
+    And,
+    Or,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum UnaryOp {
     Not,
+    Negate,
 }
 
 struct Parser {
@@ -731,6 +796,8 @@ impl Parser {
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
             Some(Token::Let) => self.let_statement(),
+            Some(Token::Const) => self.let_statement(), // const is treated like let for now
+            Some(Token::Var) => self.let_statement(),   // var is treated like let for now
             Some(Token::Function) => self.function_statement(),
             Some(Token::If) => self.if_statement(),
             Some(Token::While) => self.while_statement(),
@@ -755,7 +822,19 @@ impl Parser {
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
-        let start = self.expect(TokenKind::Let)?;
+        let start = match self.advance() {
+            Some(SpannedToken {
+                kind: Token::Let | Token::Const | Token::Var,
+                span,
+            }) => span,
+            other => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("expected let/const/var, got {other:?}"),
+                    span: self.peek_span(),
+                });
+            }
+        };
         let (name, _) = self.expect_ident()?;
         self.expect(TokenKind::Equal)?;
         let expr = self.expression()?;
@@ -889,7 +968,43 @@ impl Parser {
     }
 
     fn expression(&mut self) -> Result<Expr, Diagnostic> {
-        self.equality()
+        self.logical_or()
+    }
+
+    fn logical_or(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.logical_and()?;
+        while self.consume(TokenKind::OrOr) {
+            let right = self.logical_and()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op: BinaryOp::Or,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
+    }
+
+    fn logical_and(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.equality()?;
+        while self.consume(TokenKind::AndAnd) {
+            let right = self.equality()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op: BinaryOp::And,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
     }
 
     fn equality(&mut self) -> Result<Expr, Diagnostic> {
@@ -921,6 +1036,19 @@ impl Parser {
             expr = Expr::Binary {
                 left: Box::new(expr),
                 op: BinaryOp::Less,
+                right: Box::new(right),
+                span,
+            };
+        }
+        while self.consume(TokenKind::Greater) {
+            let right = self.term()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op: BinaryOp::Greater,
                 right: Box::new(right),
                 span,
             };
@@ -963,6 +1091,20 @@ impl Parser {
                 expr: Box::new(expr),
                 span: Span {
                     start: bang_span.start,
+                    end,
+                },
+            })
+        } else if let Some(_plus_span) = self.consume_span(TokenKind::Plus) {
+            // Unary + is a no-op in JavaScript (just evaluates the expression)
+            self.unary()
+        } else if let Some(minus_span) = self.consume_span(TokenKind::Minus) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Unary {
+                op: UnaryOp::Negate,
+                expr: Box::new(expr),
+                span: Span {
+                    start: minus_span.start,
                     end,
                 },
             })
@@ -1197,6 +1339,8 @@ impl Parser {
 #[derive(Debug, Clone, Copy)]
 enum TokenKind {
     Let,
+    Const,
+    Var,
     Function,
     Return,
     If,
@@ -1208,6 +1352,9 @@ enum TokenKind {
     Bang,
     StrictEqual,
     Equal,
+    AndAnd,
+    OrOr,
+    Greater,
     LeftParen,
     RightParen,
     LeftBrace,
@@ -1225,6 +1372,8 @@ impl TokenKind {
         matches!(
             (self, token),
             (Self::Let, Token::Let)
+                | (Self::Const, Token::Const)
+                | (Self::Var, Token::Var)
                 | (Self::Function, Token::Function)
                 | (Self::Return, Token::Return)
                 | (Self::If, Token::If)
@@ -1236,6 +1385,9 @@ impl TokenKind {
                 | (Self::Bang, Token::Bang)
                 | (Self::StrictEqual, Token::StrictEqual)
                 | (Self::Equal, Token::Equal)
+                | (Self::AndAnd, Token::AndAnd)
+                | (Self::OrOr, Token::OrOr)
+                | (Self::Greater, Token::Greater)
                 | (Self::LeftParen, Token::LeftParen)
                 | (Self::RightParen, Token::RightParen)
                 | (Self::LeftBrace, Token::LeftBrace)
@@ -1498,9 +1650,35 @@ mod tests {
     }
 
     #[test]
-    fn rejects_unsupported_statement() {
-        let error = parse_program("const x = 1;").unwrap_err();
-        assert_eq!(error.code, DiagCode::UnsupportedSyntax);
+    fn parses_const_statement() {
+        let program = parse_program("const x = 1;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "x");
+                match expr {
+                    Expr::Number { value, .. } => assert_eq!(*value, 1),
+                    _ => panic!("expected number expression"),
+                }
+            }
+            other => panic!("unexpected stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_var_statement() {
+        let program = parse_program("var x = 1;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "x");
+                match expr {
+                    Expr::Number { value, .. } => assert_eq!(*value, 1),
+                    _ => panic!("expected number expression"),
+                }
+            }
+            other => panic!("unexpected stmt: {other:?}"),
+        }
     }
 
     #[test]
@@ -1537,5 +1715,59 @@ mod tests {
         let lowered = ir::lowered::lower_program(&resolved).unwrap();
         ensure_runtime_feature_gates(&lowered)
             .expect("gate must pass after M6-3b-1 enables runtime");
+    }
+
+    #[test]
+    fn parses_logical_and_operator() {
+        let program = parse_program("let x = 1 && 2;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "x");
+                match expr {
+                    Expr::Binary { op, .. } => {
+                        assert!(matches!(op, BinaryOp::And));
+                    }
+                    _ => panic!("expected binary expression"),
+                }
+            }
+            other => panic!("unexpected stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_logical_or_operator() {
+        let program = parse_program("let x = 1 || 2;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "x");
+                match expr {
+                    Expr::Binary { op, .. } => {
+                        assert!(matches!(op, BinaryOp::Or));
+                    }
+                    _ => panic!("expected binary expression"),
+                }
+            }
+            other => panic!("unexpected stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_greater_than_operator() {
+        let program = parse_program("let x = 5 > 3;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "x");
+                match expr {
+                    Expr::Binary { op, .. } => {
+                        assert!(matches!(op, BinaryOp::Greater));
+                    }
+                    _ => panic!("expected binary expression"),
+                }
+            }
+            other => panic!("unexpected stmt: {other:?}"),
+        }
     }
 }
