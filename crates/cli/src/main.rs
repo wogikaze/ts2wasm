@@ -24,7 +24,9 @@ fn run() -> Result<(), String> {
             .map_err(|e| e.to_string())
         }
         [command, input, flag, output, emit_flag, manifest]
-            if command == "build" && flag == "-o" && emit_flag == "--emit-capabilities" =>
+            if command == "build"
+                && flag == "-o"
+                && matches!(emit_flag.as_str(), "--emit-manifest" | "--emit-capabilities") =>
         {
             ts2wasm_cli::build_file_with_options(
                 &PathBuf::from(input),
@@ -34,7 +36,7 @@ fn run() -> Result<(), String> {
             .map_err(|e| e.to_string())
         }
         _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-capabilities <output.cap.json>]"
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>]\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
                 .to_owned(),
         ),
     }

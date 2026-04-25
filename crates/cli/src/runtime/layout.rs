@@ -5,6 +5,7 @@ impl Layout {
     /// WebAssembly page size in bytes.
     pub const WASM_PAGE_SIZE: u32 = 64 * 1024;
     /// Initial memory pages reserved for runtime scratch + heap + stdin read path.
+    /// Current guarantee scope: enough for one max-size stdin allocation from HEAP_START.
     pub const MEMORY_MIN_PAGES: u32 = 2;
     /// First byte offset used for the static string data segment table.
     pub const DATA_START: u32 = 256;
@@ -104,12 +105,12 @@ mod tests {
     }
 
     #[test]
-    fn initial_memory_pages_cover_max_stdin_heap_allocation() {
+    fn initial_memory_pages_cover_single_max_stdin_heap_allocation_from_heap_start() {
         let bytes = Layout::MEMORY_MIN_PAGES * Layout::WASM_PAGE_SIZE;
         let max_alloc = Layout::HEAP_START + Layout::STRING_HEADER_SIZE + Layout::STDIN_READ_LIMIT;
         assert!(
             max_alloc <= bytes,
-            "initial memory ({bytes} bytes) must cover max stdin allocation ({max_alloc} bytes)"
+            "initial memory ({bytes} bytes) must cover one max stdin allocation from HEAP_START ({max_alloc} bytes)"
         );
     }
 

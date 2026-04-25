@@ -235,7 +235,7 @@ impl<'a> WatEmitter<'a> {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,
                 message: format!(
-                    "max stdin heap allocation ({max_stdin_heap_allocation}) exceeds initial memory bytes ({initial_memory_bytes})"
+                    "single max stdin heap allocation from HEAP_START ({max_stdin_heap_allocation}) exceeds initial memory bytes ({initial_memory_bytes})"
                 ),
                 span: None,
             });

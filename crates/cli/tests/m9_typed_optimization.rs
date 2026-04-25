@@ -30,7 +30,7 @@ fn compile_with_manifest(fixture: &str) -> (std::path::PathBuf, std::path::PathB
         .arg(&input)
         .arg("-o")
         .arg(&output)
-        .arg("--emit-capabilities")
+        .arg("--emit-manifest")
         .arg(&manifest)
         .output()
         .expect("failed to execute ts2wasm");
