@@ -2,6 +2,45 @@
 
 各プロジェクトのGitHubリポジトリで見るべきファイルを構造化。
 
+## Specifications
+
+### ECMAScript (JavaScript)
+
+- Spec: <https://tc39.es/ecma262/>
+- Key files:
+  - 仕様全体 - ECMA-262 言語仕様
+  - Annex B - Webブラウザ互換性
+  - Annex C - 正規表現
+- Additional resources:
+  - TC39 Proposals: <https://github.com/tc39/proposals>
+  - MDN Web Docs: <https://developer.mozilla.org/en-US/docs/Web/JavaScript>
+
+### TypeScript
+
+- Spec: <https://github.com/microsoft/TypeScript/blob/main/doc/spec-ARCHITECTURE.md>
+- Key files:
+  - `doc/spec-ARCHITECTURE.md` - 言語仕様
+  - `doc/spec.md` - 詳細仕様
+- Additional resources:
+  - TypeScript Handbook: <https://www.typescriptlang.org/docs/handbook/intro.html>
+  - TypeScript Playground: <https://www.typescriptlang.org/play>
+
+### WebAssembly Spec
+
+- Repo: <https://github.com/WebAssembly/spec>
+- Key files:
+  - `README.md` - 概要
+  - `core/` - Core spec
+  - `js-api/` - JavaScript API spec
+
+### test262
+
+- Repo: <https://github.com/tc39/test262>
+- Key files:
+  - `README.md` - 概要
+  - `test/` - テストケース
+  - `tools/` - テストツール
+
 ## WebAssembly
 
 ### wasm-micro-runtime (WAMR)

@@ -21,6 +21,8 @@
 | `docs/14-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI | なし | 新規追加 |
 | `docs/15-coverage-matrix.md` | reference coverage の運用ポリシーと gate 基準 | `docs/06` の coverage 方針を運用化 | generated artifact 参照 |
 | `docs/16-commit-and-push-policy.md` | commit/push 方針、agent rule | なし | 新規追加 |
+| `docs/language-reference/javascript-features.md` | JavaScript 構文・機能の対応方針と実装状況 | ECMA-262 仕様に基づく機能一覧 | 新規追加 |
+| `docs/language-reference/typescript-features.md` | TypeScript 構文・機能の対応方針と実装状況 | TypeScript Handbook に基づく機能一覧 | 新規追加 |
 | `current-state.md` | 現在の実装事実、未実装範囲、検証状況 | なし | status tracking |
 
 ## Source-of-truth boundaries（責務の切り分け）
