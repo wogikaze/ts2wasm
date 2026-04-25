@@ -61,9 +61,9 @@ Gate:
 <!-- coverage-table:start -->
 | suite | denominator | executed | coverage% | pass | fail | unsupported | blocked | skip-with-reason | unsupported (DiagCode breakdown) | status | evidence |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
-| test262 | 53444 | 200 | 0.37 | 0 | 0 | 200 | 0 | 0 | UnsupportedSyntax:144,UnresolvedName:51,UnresolvedFunction:5 | in-progress | `scripts/reference_coverage.sh test262 --limit 200` |
-| TypeScript compiler cases | 6419 | 120 | 1.87 | 0 | 0 | 120 | 0 | 0 | UnsupportedSyntax:120 | in-progress | `scripts/reference_coverage.sh tsc --limit 120` |
-| typescript-go testdata | 165 | 80 | 48.48 | 3 | 0 | 77 | 0 | 0 | UnsupportedSyntax:77 | in-progress | `scripts/reference_coverage.sh tsgo --limit 80` |
+| test262 | 53444 | 450 | 0.84 | 0 | 0 | 450 | 0 | 0 | UnsupportedSyntax:389,UnresolvedName:56,UnresolvedFunction:5 | in-progress | `scripts/reference_coverage.sh test262 --limit 450` |
+| TypeScript compiler cases | 6419 | 270 | 4.21 | 4 | 0 | 266 | 0 | 0 | UnsupportedSyntax:264,UnresolvedName:2 | in-progress | `scripts/reference_coverage.sh tsc --limit 270` |
+| typescript-go testdata | 165 | 165 | 100.00 | 4 | 0 | 161 | 0 | 0 | UnsupportedSyntax:160,UnresolvedFunction:1 | in-progress | `scripts/reference_coverage.sh tsgo --limit 165` |
 <!-- coverage-table:end -->
 
 ## 計測スクリプト
