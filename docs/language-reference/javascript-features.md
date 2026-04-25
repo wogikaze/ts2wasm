@@ -10,6 +10,116 @@
 | TC39 Proposals | <https://github.com/tc39/proposals> | 提案段階の機能 |
 | MDN Web Docs | <https://developer.mozilla.org/en-US/docs/Web/JavaScript> | 実用的なリファレンス |
 
+## ECMAScript 仕様詳細
+
+### ECMA-262 構成
+
+| セクション | 内容 | 関連機能 |
+|---|---|---|
+| Clause 5 | Notational Conventions | 仕様表記法 |
+| Clause 6 | ECMAScript Data Types and Values | 型システム |
+| Clause 7 | Abstract Operations | 抽象操作 |
+| Clause 8 | ECMAScript Executable Code and Execution Contexts | 実行コンテキスト |
+| Clause 9 | Ordinary and Exotic Objects Behaviours | オブジェクト挙動 |
+| Clause 10 | ECMAScript Language: Source Code | ソースコード |
+| Clause 11 | ECMAScript Language: Lexical Grammar | 字句解析 |
+| Clause 12 | ECMAScript Language: Expressions | 式 |
+| Clause 13 | ECMAScript Language: Statements | 文 |
+| Clause 14 | ECMAScript Language: Functions and Classes | 関数とクラス |
+| Clause 15 | ECMAScript Language: Built-in Objects | 組み込みオブジェクト |
+| Clause 16 | ECMAScript Language: Errors and Exceptions | エラーと例外 |
+| Clause 17 | ECMAScript Language: Built-in Functions and Properties | 組み込み関数とプロパティ |
+| Clause 18 | ECMAScript Language: Global Object | グローバルオブジェクト |
+| Clause 19 | ECMAScript Language: Scripts and Modules | スクリプトとモジュール |
+| Annex A | Annex B: Additional ECMAScript Features for Web Browsers | Webブラウザ互換性 |
+| Annex C | The Strict Mode of ECMAScript | 厳格モード |
+
+### 抽象操作 (Abstract Operations)
+
+| 操作 | 説明 | 実装関連 |
+|---|---|---|
+| `ToBoolean` | 値を boolean に変換 | truthiness 判定 |
+| `ToNumber` | 値を number に変換 | 数値変換 |
+| `ToString` | 値を string に変換 | 文字列変換 |
+| `ToPrimitive` | 値をプリミティブに変換 | プリミティブ変換 |
+| `ToObject` | 値を object に変換 | オブジェクト変換 |
+| `Equals` | 抽象等価比較 (`==`) | `==` 演算子 |
+| `StrictEquals` | 厳密等価比較 (`===`) | `===` 演算子 |
+| `SameValue` | 同値比較 (`Object.is`) | `Object.is` |
+| `SameValueZero` | 同値比較 (Map/Set 用) | Map/Set キー比較 |
+| `Get` | プロパティ取得 | プロパティアクセス |
+| `Set` | プロパティ設定 | プロパティ代入 |
+| `HasProperty` | プロパティ存在確認 | `in` 演算子 |
+| `Delete` | プロパティ削除 | `delete` 演算子 |
+| `Call` | 関数呼び出し | 関数呼び出し |
+| `Construct` | コンストラクタ呼び出し | `new` 演算子 |
+| `CreateArrayFromList` | 配列作成 | 配列リテラル |
+| `CreateObject` | オブジェクト作成 | オブジェクトリテラル |
+| `OrdinaryObjectCreate` | 通常オブジェクト作成 | オブジェクト作成 |
+| `ArrayCreate` | 配列オブジェクト作成 | 配列作成 |
+| `StringCreate` | 文字列オブジェクト作成 | 文字列作成 |
+| `FunctionCreate` | 関数オブジェクト作成 | 関数作成 |
+| `IteratorCreate` | イテレータ作成 | for-of |
+| `GeneratorCreate` | ジェネレータ作成 | ジェネレータ関数 |
+
+### 実行コンテキスト (Execution Contexts)
+
+| コンテキスト | 説明 | 実装関連 |
+|---|---|---|
+| Global Execution Context | グローバルスコープ | グローバル変数 |
+| Function Execution Context | 関数スコープ | ローカル変数、arguments |
+| Module Execution Context | モジュールスコープ | モジュール変数 |
+| Realm | レルム（グローバルオブジェクトの集合） | グローバルオブジェクト |
+| Lexical Environment | 字句環境（変数環境） | 変数スコープ |
+| Environment Record | 環境レコード | 変数ストレージ |
+| Variable Environment | 変数環境（var 用） | var 変数 |
+| Lexical Environment | 字句環境（let/const 用） | let/const 変数 |
+
+### オブジェクト内部スロット (Internal Slots)
+
+| スロット | 説明 | 対象 |
+|---|---|---|
+| `[[Prototype]]` | プロトタイプオブジェクト | すべてのオブジェクト |
+| `[[Extensible]]` | 拡張可能フラグ | すべてのオブジェクト |
+| `[[OwnPropertyKeys]]` | 独自プロパティキー | すべてのオブジェクト |
+| `[[GetOwnProperty]]` | 独自プロパティ取得 | すべてのオブジェクト |
+| `[[DefineOwnProperty]]` | 独自プロパティ定義 | すべてのオブジェクト |
+| `[[Set]]` | プロパティ設定 | すべてのオブジェクト |
+| `[[Get]]` | プロパティ取得 | すべてのオブジェクト |
+| `[[HasProperty]]` | プロパティ存在確認 | すべてのオブジェクト |
+| `[[Delete]]` | プロパティ削除 | すべてのオブジェクト |
+| `[[Call]]` | 関数呼び出し | 関数オブジェクト |
+| `[[Construct]]` | コンストラクタ呼び出し | コンストラクタ |
+| `[[Environment]]` | 字句環境 | 関数オブジェクト |
+| `[[FormalParameters]]` | 仮引数リスト | 関数オブジェクト |
+| `[[Code]]` | 関数コード | 関数オブジェクト |
+| `[[Realm]]` | レルム | 関数オブジェクト |
+| `[[ScriptOrModule]]` | スクリプトまたはモジュール | 関数オブジェクト |
+| `[[FunctionKind]]` | 関数種別 | 関数オブジェクト |
+| `[[ConstructorKind]]` | コンストラクタ種別 | コンストラクタ |
+| `[[HomeObject]]` | ホームオブジェクト | メソッド |
+| `[[StringData]]` | 文字列データ | String オブジェクト |
+| `[[NumberData]]` | 数値データ | Number オブジェクト |
+| `[[BooleanData]] | 真偽値データ | Boolean オブジェクト |
+| `[[DateValue]]` | 日時値 | Date オブジェクト |
+| `[[RegExpMatcher]]` | 正規表現マッチャー | RegExp オブジェクト |
+| `[[TypedArrayName]]` | 型付き配列名 | TypedArray |
+| `[[TypedArrayLength]]` | 型付き配列長 | TypedArray |
+| `[[TypedArrayByteLength]]` | 型付き配列バイト長 | TypedArray |
+| `[[TypedArrayByteOffset]]` | 型付き配列バイトオフセット | TypedArray |
+| `[[ViewedArrayBuffer]]` | 参照 ArrayBuffer | TypedArray |
+| `[[ArrayBufferData]]` | ArrayBuffer データ | ArrayBuffer |
+| `[[ArrayBufferByteLength]]` | ArrayBuffer バイト長 | ArrayBuffer |
+| `[[MapData]]` | マップデータ | Map |
+| `[[SetData]]` | セットデータ | Set |
+| `[[WeakMapData]]` | ウィークマップデータ | WeakMap |
+| `[[WeakSetData]]` | ウィークセットデータ | WeakSet |
+| `[[PromiseState]] | プロミス状態 | Promise |
+| `[[PromiseResult]]` | プロミス結果 | Promise |
+| `[[PromiseFulfillReactions]]` | 履行反応 | Promise |
+| `[[PromiseRejectReactions]]` | 拒絶反応 | Promise |
+| `[[PromiseIsHandled]]` | ハンドル済みフラグ | Promise |
+
 ## 値と型
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 |
