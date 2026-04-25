@@ -100,9 +100,9 @@ $check_p scripts/check_determinism.sh
 echo "" >&2
 echo "== required repo gates (script files) ==" >&2
 for f in \
-  scripts/check_scripts.sh \
+  scripts/check/shell-syntax.sh \
   scripts/check_issue_queue.sh \
-  scripts/update_coverage_matrix.sh \
+  scripts/gen/coverage-matrix.sh \
   scripts/check_fast_gate.sh \
   scripts/check_manifest_imports.sh \
   scripts/check_test_records_schema.sh \

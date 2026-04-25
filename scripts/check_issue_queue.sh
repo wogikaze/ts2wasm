@@ -21,17 +21,17 @@ errors=0
 
 err() { echo "check_issue_queue: $*" >&2; errors=1; }
 
-# --- Id from filename: NNN-stuff.md -> 000
+# --- Id from filename: NNN-stuff.md -> 000, NNNa-stuff.md -> 017a
 id_from_basename() {
   local b="$1"
-  if [[ "$b" =~ ^([0-9]{3})- ]]; then
+  if [[ "$b" =~ ^([0-9]{3}[a-z]?)- ]]; then
     echo "${BASH_REMATCH[1]}"
   else
     echo ""
   fi
 }
 
-# --- Id from file body: **ID**: 010 or id: 010 (first 40 lines, yaml or markdown)
+# --- Id from file body: **ID**: 010 or 017a, or id: 010 (first 40 lines, yaml or markdown)
 id_from_body() {
   local f="$1"
   local line idl
@@ -45,12 +45,17 @@ id_from_body() {
   done < <(head -n 50 "$f")
 
   while IFS= read -r line; do
-    if [[ "$line" =~ ^(id|ID):[[:space:]]*\"?([0-9]+)\"? ]]; then
+    if [[ "$line" =~ ^(id|ID):[[:space:]]*\"?([0-9]+[a-z]?)\"? ]]; then
       idl="${BASH_REMATCH[2]}"
       idl="${idl//$'\r'/}"
       idl="${idl//[[:space:]]/}"
       if [[ -n "$idl" ]]; then
-        printf '%03d' $((10#$idl))
+        # If it's a numeric-only ID, zero-pad to 3 digits
+        if [[ "$idl" =~ ^[0-9]+$ ]]; then
+          printf '%03d' $((10#$idl))
+        else
+          echo "$idl"
+        fi
         return 0
       fi
     fi
@@ -59,7 +64,7 @@ id_from_body() {
   echo ""
 }
 
-# --- issues using NNN-*.md
+# --- issues using NNN-*.md or NNNa-*.md
 collect_ids_in_dir() {
   local d="$1"
   local f base tid
@@ -67,7 +72,7 @@ collect_ids_in_dir() {
   for f in "$d"/*.md; do
     [[ -f "$f" ]] || continue
     base="$(basename "$f")"
-    if [[ ! "$base" =~ ^[0-9]{3}- ]]; then
+    if [[ ! "$base" =~ ^[0-9]{3}[a-z]?- ]]; then
       continue
     fi
     id_from_basename "$base"
@@ -107,15 +112,20 @@ check_id_matches_body() {
   for f in "$dir"/*.md; do
     [[ -f "$f" ]] || continue
     base="$(basename "$f")"
-    [[ "$base" =~ ^[0-9]{3}- ]] || continue
+    [[ "$base" =~ ^[0-9]{3}[a-z]?- ]] || continue
     f_id="$(id_from_basename "$base")"
     b_id="$(id_from_body "$f")"
     if [[ -z "$b_id" ]]; then
       err "$f: missing **ID** or id: in header (expected id $f_id matching filename)"
       continue
     fi
-    b_id="$(printf '%03d' $((10#$b_id)))"
-    f_id="$(printf '%03d' $((10#$f_id)))"
+    # For numeric-only IDs, zero-pad to 3 digits for comparison
+    if [[ "$f_id" =~ ^[0-9]+$ ]]; then
+      f_id="$(printf '%03d' $((10#$f_id)))"
+    fi
+    if [[ "$b_id" =~ ^[0-9]+$ ]]; then
+      b_id="$(printf '%03d' $((10#$b_id)))"
+    fi
     if [[ "$b_id" != "$f_id" ]]; then
       err "$f: id mismatch: filename $f_id vs body $b_id"
     fi
@@ -137,7 +147,7 @@ check_done_unchecked() {
   done
 }
 
-# --- Depends on references
+# --- Depends on references (supports NNN and NNNa formats)
 depend_ids_from_file() {
   local f="$1"
   local raw
@@ -148,10 +158,12 @@ depend_ids_from_file() {
   fi
   local t
   for t in $raw; do
-    t="${t//[^0-9]/}"
-    if [[ -n "$t" ]]; then
-      printf '%03d' $((10#$t))
-      echo
+    # Extract ID (numeric only or with letter suffix)
+    if [[ "$t" =~ ^([0-9]{3}[a-z]?)$ ]]; then
+      echo "${BASH_REMATCH[1]}"
+    elif [[ "$t" =~ ^([0-9]+)[a-z]?$ ]]; then
+      # Zero-pad numeric-only IDs
+      printf '%03d' $((10#${BASH_REMATCH[1]}))
     fi
   done
 }
@@ -170,6 +182,55 @@ check_depends_resolvable() {
         err "$f: **Depends on** id $d has no matching issues/open/${d}-*.md or issues/done/${d}-*.md"
       fi
     done < <(depend_ids_from_file "$f")
+  done
+}
+
+# --- Check sub-issue validity: no duplicate sub-ids within same parent, parent exists
+check_sub_issue_validity() {
+  local dir="$1"
+  local f base parent_id sub_id
+  local -A parent_map
+  local -A sub_map
+
+  shopt -s nullglob
+  for f in "$dir"/*.md; do
+    [[ -f "$f" ]] || continue
+    base="$(basename "$f")"
+    [[ "$base" =~ ^[0-9]{3}[a-z]?- ]] || continue
+    local full_id
+    full_id="$(id_from_basename "$base")"
+
+    # Check if this is a sub-issue (has letter suffix)
+    if [[ "$full_id" =~ ^([0-9]{3})([a-z])$ ]]; then
+      parent_id="${BASH_REMATCH[1]}"
+      sub_id="${BASH_REMATCH[2]}"
+      local key="${parent_id}_${sub_id}"
+      if [[ -n "${sub_map[$key]:-}" ]]; then
+        err "$f: duplicate sub-issue id $full_id (conflicts with ${sub_map[$key]})"
+      else
+        sub_map[$key]="$f"
+      fi
+      # Track that this parent has sub-issues
+      parent_map[$parent_id]=1
+    fi
+  done
+
+  # Check that parent issues exist for all sub-issues
+  for parent_id in "${!parent_map[@]}"; do
+    local parent_found=0
+    for f in "$dir"/*.md issues/done/*.md; do
+      [[ -f "$f" ]] || continue
+      base="$(basename "$f")"
+      local pid
+      pid="$(id_from_basename "$base")"
+      if [[ "$pid" == "$parent_id" ]]; then
+        parent_found=1
+        break
+      fi
+    done
+    if [[ "$parent_found" -eq 0 ]]; then
+      err "sub-issues exist for parent $parent_id but parent issue not found in open/ or done/"
+    fi
   done
 }
 
@@ -233,6 +294,8 @@ check_open_done_collision
 check_id_matches_body "issues/open"
 check_id_matches_body "issues/done"
 check_done_unchecked
+check_sub_issue_validity "issues/open"
+check_sub_issue_validity "issues/done"
 check_depends_resolvable
 check_paths_in_issues
 json_ok

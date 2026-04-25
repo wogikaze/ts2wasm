@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/reference_coverage.sh <suite> [--limit N]
+  scripts/run/reference-coverage.sh <suite> [--limit N]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -44,8 +44,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
+_ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/common.sh
+source "${_ts2wasm_entry_dir}/../lib/common.sh"
+cd "$TS2WASM_REPO_ROOT"
+repo_root="$TS2WASM_REPO_ROOT"
 
 case "$suite" in
   test262)

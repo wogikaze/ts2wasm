@@ -1,13 +1,18 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Stream G: Test262 Runner with differential comparison
 #
 # Usage:
-#   ./scripts/test262_runner.sh [--sample N] [--category PATTERN] [--jobs N] > test262-results.jsonl
+#   scripts/run/test262.sh [--sample N] [--category PATTERN] [--jobs N] > test262-results.jsonl
 #
 # Compiles each test262 file, runs with iwasm, and compares output against Node.js reference.
 # Outputs one TestRecord per line in JSON Lines format.
 
 set -euo pipefail
+
+_ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/common.sh
+source "${_ts2wasm_entry_dir}/../lib/common.sh"
+cd "$TS2WASM_REPO_ROOT"
 
 SAMPLE=""
 CATEGORY_PATTERN="."

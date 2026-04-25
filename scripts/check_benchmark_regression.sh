@@ -22,4 +22,4 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-echo "check_benchmark_regression: OK (no baseline gate yet; use scripts/benchmark_tracker.sh for data)" >&2
+echo "check_benchmark_regression: OK (no baseline gate yet; use scripts/perf/benchmark-tracker.sh for data)" >&2

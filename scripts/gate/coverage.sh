@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/check_coverage_gate.sh <base-doc> <current-doc>
+  scripts/gate/coverage.sh <base-doc> <current-doc>
 
 Checks:
   - executed count must not decrease per suite

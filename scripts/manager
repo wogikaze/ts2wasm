@@ -117,8 +117,8 @@ case "$target" in
   check-host-deny) exec bash "${repo_root}/scripts/check_host_deny.sh" "$@" ;;
   check-runtimefn-invariants) exec bash "${repo_root}/scripts/check_runtimefn_invariants.sh" "$@" ;;
   check-wasm-validation) exec bash "${repo_root}/scripts/check_wasm_validation.sh" "$@" ;;
-  check-issue-index) exec bash "${repo_root}/scripts/check_issue_index.sh" "$@" ;;
-  check-issue-queue) exec bash "${repo_root}/scripts/check_issue_queue.sh" "$@" ;;
+  check-issue-index) exec python3 "${repo_root}/scripts/check_issue_queue.py" "$@" ;;
+  check-issue-queue) exec python3 "${repo_root}/scripts/check_issue_queue.py" "$@" ;;
   update-issue-index) exec bash "${repo_root}/scripts/update_issue_index.sh" "$@" ;;
   install-hooks) exec bash "${repo_root}/scripts/dev/install-git-hooks.sh" "$@" ;;
   check-coverage-gate) exec bash "${repo_root}/scripts/gate/coverage.sh" "$@" ;;

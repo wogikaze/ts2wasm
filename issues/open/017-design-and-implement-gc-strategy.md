@@ -14,19 +14,20 @@ Problem: Current runtime has no GC. Long-running programs and programs with clos
 
 Scope:
 
-- Design heap object header with type tag, mark bit, size, and field layout.
-- Implement initial mark-and-sweep GC or arena allocator.
-- Add GC trigger points (allocation threshold, explicit collection).
-- Add test fixtures for closure escape and long-running patterns.
-- Document GC strategy in runtime ABI docs.
+This is a parent issue coordinating GC work. Sub-issues:
+- 017a: Design GC strategy (design-ready)
+- 017b: Implement GC (implementation-ready, depends on 017a)
+
+Out of scope:
+
+- Design and implementation are tracked in sub-issues.
 
 Acceptance Criteria:
 
-- [ ] Heap object header is defined and used.
-- [ ] Initial GC implementation prevents memory leaks in test fixtures.
-- [ ] GC trigger points are defined and functional.
+- [ ] 017a (design) is complete.
+- [ ] 017b (implementation) is complete.
+- [ ] GC prevents memory leaks in test fixtures.
 - [ ] Node differential test passes for GC-relevant fixtures.
-- [ ] GC strategy is documented in docs/14-runtime-abi.md.
 
 Validation:
 

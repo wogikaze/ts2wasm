@@ -79,7 +79,7 @@ for f in "${open_files[@]}"; do
   [[ "$(basename "$f")" == ".gitkeep" ]] && continue
   base="$(basename "$f" .md)"
   id="$(grep -m1 '^\*\*ID\*\*:' "$f" 2>/dev/null | sed 's/^\*\*ID\*\*: *//' | sed 's/[[:space:]]*$//' || true)"
-  if [[ -z "$id" && "$base" =~ ^([0-9]+)- ]]; then
+  if [[ -z "$id" && "$base" =~ ^([0-9]{3}[a-z]?)- ]]; then
     id="${BASH_REMATCH[1]}"
   fi
   [[ -n "$id" ]] || continue
@@ -101,7 +101,7 @@ awk_fence_skip_ids_in_ready_blocked() {
     /<!-- generated:ready:end -->/ { r = 0; next }
     /<!-- generated:blocked:start -->/ { b = 1; next }
     /<!-- generated:blocked:end -->/ { b = 0; next }
-    (r == 1 || b == 1) && $0 ~ /^\| [[:digit:]]+ \|/ {
+    (r == 1 || b == 1) && $0 ~ /^\| [[:digit:]]+[a-z]? \|/ {
       split($0, a, "|")
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", a[2])
       if (a[2] != "") print a[2]
@@ -109,7 +109,7 @@ awk_fence_skip_ids_in_ready_blocked() {
   ' issues/index.md
 }
 
-mapfile -t in_index < <(awk_fence_skip_ids_in_ready_blocked | LC_ALL=C sort -n -u)
+mapfile -t in_index < <(awk_fence_skip_ids_in_ready_blocked | LC_ALL=C sort -V -u)
 
 declare -A seen
 for x in "${in_index[@]}"; do
@@ -135,12 +135,12 @@ mapfile -t ready_ids < <(
     fence == 1 { next }
     /<!-- generated:ready:start -->/ { r = 1; next }
     /<!-- generated:ready:end -->/ { r = 0; next }
-    r == 1 && $0 ~ /^\| [[:digit:]]+ \|/ {
+    r == 1 && $0 ~ /^\| [[:digit:]]+[a-z]? \|/ {
       split($0, a, "|")
       gsub(/^[[:space:]]+|[[:space:]]+$/, "", a[2])
       if (a[2] != "") print a[2]
     }
-  ' issues/index.md | LC_ALL=C sort -n -u
+  ' issues/index.md | LC_ALL=C sort -V -u
 )
 
 ready_count=${#ready_ids[@]}
@@ -151,7 +151,7 @@ blocked_count=$(
     fence == 1 { next }
     /<!-- generated:blocked:start -->/ { b = 1; next }
     /<!-- generated:blocked:end -->/ { b = 0; next }
-    b == 1 && $0 ~ /^\| [[:digit:]]+ \|/ { c++ }
+    b == 1 && $0 ~ /^\| [[:digit:]]+[a-z]? \|/ { c++ }
     END { print c + 0 }
   ' issues/index.md
 )

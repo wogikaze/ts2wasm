@@ -41,8 +41,15 @@ Issue files are the source of truth for work items. The generated section below 
 | 014 | Implement dynamic property key support | feature | runtime/semantics | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupp... |
 | 016 | Implement prototype and method call support | feature | runtime/semantics | 014 | Prototype chain lookup and method calls are not implemented. Currently diagnosed as `unsupported-... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memor... |
+| 017a | Design GC strategy | feature | runtime/memory | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memor... |
+| 017b | Implement GC strategy | feature | runtime/memory | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory le... |
 | 019 | Integrate TypeScript parser/checker | feature | frontend | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 spec... |
+| 019a | Integrate TypeScript compiler API for type checking | feature | frontend | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 spec... |
+| 019b | Extract type information for optimization hints | feature | frontend | 019a | TypeScript compiler API is integrated in 019a but type information is not yet extracted for optim... |
 | 020 | Implement generic JavaScript semantic IR | feature | ir/semantics | 019 | Generic JavaScript semantic IR is not implemented. Current IR is minimal and tied to specific low... |
+| 020a | Design JavaScript semantic IR | feature | ir/semantics | 019 | Generic JavaScript semantic IR is not designed. Current IR is minimal and tied to specific loweri... |
+| 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | 020a | IR design is complete in 020a but IR lowering from TypeScript AST is not implemented. |
+| 020c | Add IR validation passes and document contracts | feature | ir/semantics | 020b | IR lowering is implemented in 020b but validation passes and contract documentation are missing. |
 | 021 | Implement full wasm backend | feature | backend | 008, 020 | Full wasm backend is not implemented. Current implementation is WAT-centric. docs/04 specifies in... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. do... |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | 002, 003 | host-deny / capability manifest "auditable E2E" is planned but not implemented. docs/06 specifies... |

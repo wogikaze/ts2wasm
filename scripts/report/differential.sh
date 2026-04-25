@@ -1,14 +1,19 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Stream G: Differential Test Reporter
 #
 # Usage:
-#   ./scripts/test262_runner.sh | ./scripts/test_differential_reporter.sh [--html FILE] [--markdown FILE]
+#   scripts/run/test262.sh | scripts/report/differential.sh [--html FILE] [--markdown FILE]
 #
 # Reads JSONL test records from stdin and generates:
 # - HTML report with summary table and failure details
 # - Markdown report with grouped results
 
 set -euo pipefail
+
+_ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/common.sh
+source "${_ts2wasm_entry_dir}/../lib/common.sh"
+cd "$TS2WASM_REPO_ROOT"
 
 HTML_FILE="/tmp/test262-report.html"
 MD_FILE="/tmp/test262-report.md"

@@ -2,7 +2,7 @@
 # Stream G: Performance Baseline Tracker (optional)
 #
 # Usage:
-#   scripts/benchmark_tracker.sh [--output path/to/benchmark-results.json]
+#   scripts/perf/benchmark-tracker.sh [--output path/to/benchmark-results.json]
 #
 # Tracks per-build metrics:
 # - Wasm file size (bytes)
@@ -11,8 +11,10 @@
 
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
+_ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/common.sh
+source "${_ts2wasm_entry_dir}/../lib/common.sh"
+cd "$TS2WASM_REPO_ROOT"
 
 OUTPUT_FILE="benchmark-results.json"
 if [[ "${1:-}" == "--output" && -n "${2:-}" ]]; then

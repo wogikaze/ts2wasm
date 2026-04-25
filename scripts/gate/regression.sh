@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Stream G: Regression Gate for Coverage Tracking
 #
 # Usage:
-#   ./scripts/test_regression_gate.sh test262-results.jsonl [--baseline baseline.json]
+#   scripts/gate/regression.sh test262-results.jsonl [--baseline baseline.json]
 #
 # Compares current test results against baseline to detect regressions:
 # - Fail if pass count decreases
@@ -11,9 +11,14 @@
 
 set -euo pipefail
 
+_ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=../lib/common.sh
+source "${_ts2wasm_entry_dir}/../lib/common.sh"
+cd "$TS2WASM_REPO_ROOT"
+
 usage() {
     cat <<'EOF'
-Usage: scripts/test_regression_gate.sh <results.jsonl> [--baseline FILE]
+Usage: scripts/gate/regression.sh <results.jsonl> [--baseline FILE]
 EOF
 }
 

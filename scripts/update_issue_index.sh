@@ -133,7 +133,7 @@ sorted_issue_paths() {
   printf '%s\n' "${files[@]}" | LC_ALL=C sort
 }
 
-# Collect open issue IDs (numeric) from issues/open/*.md
+# Collect open issue IDs (numeric or sub-issue like 017a) from issues/open/*.md
 collect_open_ids() {
   local f id
   while IFS= read -r f; do
@@ -141,7 +141,7 @@ collect_open_ids() {
     id="$(issue_id_from_file "$f")"
     [[ -n "$id" ]] || continue
     echo "$id"
-  done < <(sorted_issue_paths issues/open) | LC_ALL=C sort -n -u
+  done < <(sorted_issue_paths issues/open) | LC_ALL=C sort -V -u
 }
 
 # True (exit 0) if id is in the open set (bash 5+).
@@ -184,7 +184,7 @@ compute_blocked_ids() {
     if [[ "$blocked" -eq 1 ]]; then
       echo "$id"
     fi
-  done < <(sorted_issue_paths issues/open) | LC_ALL=C sort -n -u
+  done < <(sorted_issue_paths issues/open) | LC_ALL=C sort -V -u
 }
 
 render_ready_table() {

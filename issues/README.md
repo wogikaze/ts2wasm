@@ -85,6 +85,28 @@ One issue should be small enough to hand to an agent.
 
 Large work should be split into multiple issues rather than kept as one giant checklist.
 
+## Sub-issues
+
+For large features that require multiple phases (e.g., design then implementation), use sub-issue IDs:
+
+- **Format**: `NNNa`, `NNNb`, `NNNc` (e.g., `017a`, `017b`)
+- **Parent issue**: `NNN` (numeric only, e.g., `017`)
+- **Filename**: `NNNa-short-title.md` (e.g., `017a-design-gc-strategy.md`)
+- **Requirements**:
+  - Parent issue must exist in `issues/open/` or `issues/done/`
+  - No duplicate sub-issue IDs within the same parent (e.g., only one `017a`)
+  - Sub-issues can depend on parent or other sub-issues
+  - Validation scripts enforce parent existence and uniqueness
+
+Use sub-issues when:
+- A feature requires separate design and implementation phases
+- A large refactor can be split into incremental steps
+- Dependencies between phases are clear and linear
+
+Do not use sub-issues for:
+- Unrelated features (use separate numeric IDs instead)
+- Minor follow-up tasks (create separate issues with new numeric IDs)
+
 ### 2. Work
 
 During work:

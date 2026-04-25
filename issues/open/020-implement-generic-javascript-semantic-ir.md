@@ -14,18 +14,20 @@ Problem: Generic JavaScript semantic IR is not implemented. Current IR is minima
 
 Scope:
 
-- Design IR with JS semantics instructions (truthiness, `===`, `+`, etc.).
-- Implement IR lowering from TypeScript AST.
-- Add validation passes for IR invariants.
-- Document IR contracts in docs/13-ir-contracts.md.
-- Add fixtures for IR-level semantics.
+This is a parent issue coordinating IR work. Sub-issues:
+- 020a: Design IR with JS semantics instructions (design-ready)
+- 020b: Implement IR lowering from TypeScript AST (implementation-ready, depends on 020a)
+- 020c: Add validation passes and document contracts (implementation-ready, depends on 020b)
+
+Out of scope:
+
+- Design, implementation, and validation are tracked in sub-issues.
 
 Acceptance Criteria:
 
-- [ ] IR design includes JS semantics instructions.
-- [ ] TypeScript AST lowers to semantic IR correctly.
-- [ ] IR validation passes catch contract violations.
-- [ ] IR contracts are documented in docs/13-ir-contracts.md.
+- [ ] 020a (design) is complete.
+- [ ] 020b (implementation) is complete.
+- [ ] 020c (validation) is complete.
 - [ ] Node differential test passes for IR-level fixtures.
 
 Validation:

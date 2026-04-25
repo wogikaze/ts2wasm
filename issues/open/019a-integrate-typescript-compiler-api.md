@@ -1,9 +1,9 @@
-# Integrate TypeScript parser/checker
+# Integrate TypeScript compiler API for type checking
 
 **Status**: open
 **Created**: 2026-04-26
 **Updated**: 2026-04-26
-**ID**: 019
+**ID**: 019a
 **Type**: feature
 **Area**: frontend
 **Priority**: P1
@@ -14,20 +14,21 @@ Problem: TypeScript parser/checker integration is not implemented. Current parse
 
 Scope:
 
-This is a parent issue coordinating TypeScript integration work. Sub-issues:
-- 019a: Integrate TypeScript compiler API for type checking (implementation-ready)
-- 019b: Extract type information for optimization hints (implementation-ready, depends on 019a)
+- Integrate TypeScript compiler API for type checking.
+- Use tsc as oracle for diagnostics and type information.
+- Propagate diagnostics from tsc correctly.
+- Maintain separation from full tsc dependency (production compiler does not require tsc at runtime).
 
 Out of scope:
 
-- Integration details are tracked in sub-issues.
+- Type information extraction for optimization hints (see 019b)
 
 Acceptance Criteria:
 
-- [ ] 019a (basic integration) is complete.
-- [ ] 019b (optimization hints) is complete.
-- [ ] TypeScript compiler API is integrated.
+- [ ] TypeScript compiler API is integrated for type checking.
+- [ ] Diagnostics from tsc are propagated correctly.
 - [ ] Production compiler does not require tsc at runtime.
+- [ ] Basic type checking works for TypeScript fixtures.
 
 Validation:
 
