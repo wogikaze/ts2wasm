@@ -7,4 +7,10 @@ cd "$repo_root"
 echo "pre-commit: cargo fmt --all --check"
 cargo fmt --all --check
 
-npx markdownlint-cli2 "**/*.md" "#reference" --fix
+md_files="$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.md$' || true)"
+
+if [ -n "$md_files" ]; then
+  echo "pre-commit: markdownlint modified staged markdown files"
+  printf '%s\n' "$md_files" | xargs npx markdownlint-cli2 --fix
+  printf '%s\n' "$md_files" | xargs git add
+fi
