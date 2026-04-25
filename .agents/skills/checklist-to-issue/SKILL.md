@@ -1,9 +1,39 @@
 ---
 name: checklist-to-issue
-description: >
-  Use when release or verification checklists in docs must map 1:1 to tracked issues. Typically
-  invoked from false-done audit. Not for normal doc wording edits without checklist tracking gaps.
+description: Use when mapping checklist items in docs to tracked issues. Ensures 1:1 mapping between verifiable items and issues.
 ---
+
+## When to use
+
+Typically invoked from `false-done-audit` when a doc checklist item is found without a corresponding issue.
+
+## Example Usage
+
+### Before: Checklist item without tracking issue
+
+```markdown
+## Implementation Checklist
+- [ ] Add heap OOM check
+- [ ] Add memory limit enforcement
+```
+
+### After: Create tracking issues
+
+```bash
+# Create issue for each checklist item
+cp issues/templates/issue.md issues/open/013-implement-heap-oom-check.md
+# Fill in: ID: 013, Problem: Heap OOM check needed, ...
+cp issues/templates/issue.md issues/open/014-add-memory-limit-enforcement.md
+# Fill in: ID: 014, Problem: Memory limit enforcement needed, ...
+mise run update-issue-index
+```
+
+### Commands run
+
+```bash
+mise run update-issue-index
+mise run check-issue-queue
+```
 
 # Checklist → issue
 

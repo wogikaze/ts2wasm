@@ -1,10 +1,41 @@
 ---
 name: post-wave-orchestration
-description: >
-  Use after a false-done audit wave: classify residual work, sync issue index, split diffs,
-  optionally commit orchestration-only changes, and decide next wave. Complements
-  false-done-audit; respect repo policy for commits and safety.
----
+description: Use after false-done audit wave. Classifies residual work, syncs issue index, splits diffs, decides next wave. Orchestration-only.
+
+## Prohibitions
+
+- Do not implement product features in this skill. This is orchestration-only.
+- Do not create issues without audit evidence.
+- Do not skip issue-state-sync after reopening issues.
+
+## Example Usage
+
+### Before: Audit ends without orchestration
+
+```bash
+# Audit completes, issues reopened
+# No residual work classification
+# No next wave decision
+# Audit run terminates
+```
+
+### After: Post-wave orchestration
+
+```bash
+# Classify residual work (parent-owned vs new issues)
+# Sync issue index
+mise run update-issue-index
+# Decide next wave (continue or escalate)
+# If continue: select next Ready issue
+# If escalate: document blockers for human review
+```
+
+### Commands run
+
+```bash
+mise run update-issue-index
+mise run check-issue-queue
+```
 
 # Post-wave orchestration
 

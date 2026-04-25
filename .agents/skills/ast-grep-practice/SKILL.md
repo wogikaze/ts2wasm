@@ -1,11 +1,32 @@
 ---
 name: ast-grep-practice
-description: Guide for operating ast-grep as a project lint tool. Covers sgconfig.yml configuration, fix/rewrite rules, constraints, transform, testing, CI integration, and how to choose between ast-grep and existing linters. Use when writing rules in ast-grep that general-purpose linters cannot express.
+description: Use for ast-grep lint rules when general-purpose linters cannot express patterns. Covers config, rules, testing, CI integration.
 ---
 
 # ast-grep Practice
 
 Complement general-purpose lint tools (ESLint, oxlint, Biome, clippy, etc.) with ast-grep for patterns they cannot express. Always prefer reproducible static rules over natural-language prompts.
+
+## Table of Contents
+
+- [Mise: run before you close the task](#mise-run-before-you-close-the-task-required-for-in-repo-work)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Principles](#principles)
+- [Choosing between ast-grep and existing linters](#choosing-between-ast-grep-and-existing-linters)
+- [Project setup](#project-setup)
+- [Rule file structure](#rule-file-structure)
+- [Metavariable pitfalls](#metavariable-pitfalls)
+- [fix (auto-fix)](#fix-auto-fix)
+- [constraints](#constraints)
+- [transform](#transform)
+- [utils (utility rules)](#utils-utility-rules)
+- [Testing](#testing)
+- [CI integration](#ci-integration)
+- [Looking up kind names](#looking-up-kind-names)
+- [Practical rule examples](#practical-rule-examples)
+- [Related Skills](#related-skills)
+- [References](#references)
 
 ## Mise: run before you close the task (required for in-repo work)
 
@@ -673,6 +694,11 @@ fix: logger.info($$$ARGS)
 files:
   - "src/**"
 ```
+
+## Related Skills
+
+- docs-workflow: for documentation changes that reference ast-grep rules
+- scripts-workflow: for script changes that invoke ast-grep
 
 ## References
 

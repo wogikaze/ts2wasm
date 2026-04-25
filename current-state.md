@@ -73,6 +73,7 @@ scripts/gen/coverage-matrix.sh
 
 ## Known blockers / gaps
 
+- **Crates module migration**: Code still in `crates/cli/src/` needs migration to target crates (frontend, ir, runtime-abi, backend-wasm). Only skeleton structure is in place.
 - TypeScript parser/checker integration は未実装
 - 汎用 JavaScript semantic IR は未実装
 - full wasm backend は未実装（現状は WAT 中心）
@@ -97,37 +98,39 @@ scripts/gen/coverage-matrix.sh
 - **緊急度**: 高 (即時対応)、中 (次回更新時)、低 (将来検討)
 - **影響**: 高 (プロジェクト成功に致命的)、中 (主要機能に影響)、低 (軽微)
 
-## Next legal slice（実装単位の候補）
+## Next Priority Steps
 
-次に取り込みやすい縦スライスは、`docs/11` の workstream 順と open issue を優先する。具体的な ticket は `issues/` を参照。ここでは「次の一行」だけ固定しない（更新コストを避けるため）。
+Based on current open issues and workstream progress, the next priority slices are:
 
-## Next Priority Slice（優先度順の具体的な次ステップ）
+1. **P0 - Capability Manifest**: issues/open/002-emit-canonical-capability-manifest-schema.md
+   - Emit capability manifest as JSON output
+   - Validate manifest against emitted WAT imports
 
-AI エージェントや自律開発ループでのタスク選択のため、現在の Ready queue から優先度順に以下を推奨。
+2. **P0 - Computed Property Semantics**: issues/open/012-fix-computed-property-semantics-bug.md
+   - Fix computed property access to work on all objects
+   - Add differential test for computed property
 
-1. **issues/open/002-emit-canonical-capability-manifest-schema.md** (P0)
-   - capability manifest schema の正本を定義
-   - Gate C の前提条件
+3. **P0 - Heap OOM Check**: issues/open/013-implement-heap-oom-check.md
+   - Runtime safety critical
+   - Memory safety related
 
-2. **issues/open/012-fix-computed-property-semantics-bug.md** (P0)
-   - 意味論バグ修正
-   - 既存 fixture で再現可能
+4. **P0 - Reclassify Compile-only Tests**: issues/open/004-reclassify-compile-only-compatibility-tests.md
+   - Improve coverage measurement accuracy
+   - Prerequisite for Gate D
 
-3. **issues/open/013-implement-heap-oom-check.md** (P0)
-   - runtime safety critical
-   - memory safety 関連
+5. **P1 - Frontend Module Extraction**: issues/open/010-extract-frontend-module-from-crates-cli.md
+   - Extract frontend module from crates/cli
+   - Establish clear frontend/semantic/backend boundaries
 
-4. **issues/open/004-reclassify-compile-only-compatibility-tests.md** (P0)
-   - coverage 測定の正確性改善
-   - Gate D の前提条件
+6. **P1 - TypeScript Parser Integration**: issues/open/019-integrate-typescript-parser-checker.md
+   - Integrate TypeScript compiler API
+   - Extract type information for optimization
 
-5. **issues/open/005-add-fine-grained-unsupported-feature-breakdown.md** (P0)
-   - coverage breakdown の改善
-   - 機能レベルのトラッキング
+7. **P1 - IR Validation Passes**: issues/open/020c-add-ir-validation-passes-and-document-contracts.md
+   - Add IR validation passes
+   - Document IR contracts
 
-6. **issues/open/010-extract-frontend-module-from-crates-cli.md** (P1)
-   - frontend モジュールの分離
-   - TypeScript integration の前提
+See issues/index.md for complete issue queue and status.
 
 ## Current Policy
 

@@ -1,11 +1,28 @@
 ---
 name: scripts-workflow
-description: "Use when adding or editing scripts under scripts/ in this repository. Trigger phrases: add script, edit script, update script, benchmark script, coverage script, regression gate script, reporter script, reference coverage script."
+description: Use when adding/editing scripts under scripts/. Covers layout conventions, shell rules, output contracts, validation.
 ---
 
 # Scripts workflow
 
 **Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`. **Layout (first tier):** `scripts/check/` (static, non-destructive), `scripts/gate/` (pass/fail), `scripts/gen/` (refresh tracked generated artifacts), `scripts/run/` (execute/measure), `scripts/report/` (human-facing formatting), `scripts/perf/` (benchmarks), `scripts/dev/` (local setup), `scripts/lib/` (sourced helpers only; not executed). Deprecated top-level names may remain as thin `exec` wrappers during migration. **Harness baseline:** `scripts/check_harness_installation.sh` inventories toolchain + P0 `check_*.sh` and runs the rest of the project gates; optional strict Rust warnings: `TS2WASM_NEXTEST_DENY_WARNINGS=1` (see `issues/open/011-*.md` until the tree is clean).
+
+## Table of Contents
+
+- [Mise: run before you merge a script change](#mise-run-before-you-merge-a-script-change-required)
+- [Scope](#scope)
+- [Core Rules](#core-rules)
+- [Fixture Boundary Rules](#fixture-boundary-rules)
+- [Input Selection Rules](#input-selection-rules)
+- [Output Contract Rules](#output-contract-rules)
+- [Temporary File and Artifact Rules](#temporary-file-and-artifact-rules)
+- [Hermeticity and Reproducibility Rules](#hermeticity-and-reproducibility-rules)
+- [Regression Gate Rules](#regression-gate-rules)
+- [Script Change Classification](#script-change-classification)
+- [Validation](#validation)
+- [Common Traps](#common-traps)
+- [Output Checklist](#output-checklist)
+- [Related Skills](#related-skills)
 
 ## Mise: run before you merge a script change (required)
 
@@ -246,6 +263,12 @@ When the touched script consumes fixtures, also run at least one fixture-heavy o
 - Reference corpus missing locally is treated as all-pass
 - Parallel jobs produce nondeterministic machine-readable output
 - Benchmark script changes measurement conditions without recording metadata
+
+## Related Skills
+
+- fixtures-workflow: for fixture path updates when scripts reference fixtures
+- docs-workflow: for documentation updates when script contracts change
+- issues-workflow: for tracking script behavior changes
 
 ## Output Checklist
 

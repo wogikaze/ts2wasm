@@ -1,6 +1,6 @@
 ---
 name: issues-workflow
-description: "Use when adding, closing, moving, splitting, or reclassifying issues under issues/, or when fixing the issue index generator."
+description: Use when adding/closing/moving/splitting/reclassifying issues under issues/. Regenerates index after any issue lifecycle change.
 ---
 
 # Issues workflow
@@ -32,3 +32,34 @@ Use when adding, closing, moving, splitting, or reclassifying issues under `issu
 ## Related skills
 
 - **False-done / done-queue audit:** `.agents/skills/false-done-audit/SKILL.md`（監査本体）· `issue-state-sync/` · `checklist-to-issue/` · `post-wave-orchestration/` — **明示の監査依頼時のみ**。通常の issue 編集では使わない。
+
+## Example Usage
+
+### Before: Creating a new issue manually
+
+```markdown
+---
+id: 025
+title: Fix memory leak
+type: bug
+---
+```
+
+### After: Use template and run sync
+
+```bash
+# Copy from issues/templates/issue.md
+cp issues/templates/issue.md issues/open/025-fix-memory-leak.md
+# Fill in required fields
+# Run sync commands
+mise run update-issue-index
+mise run check-issue-queue
+```
+
+### Commands run
+
+```bash
+mise run update-issue-index
+mise run check-issue-index
+mise run check-issue-queue
+```

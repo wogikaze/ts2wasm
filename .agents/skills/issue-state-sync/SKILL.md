@@ -1,9 +1,6 @@
 ---
 name: issue-state-sync
-description: >
-  Use after audit-driven issue moves (open/done), new issues, or ID/dependency edits: regenerate
-  issues/index.md, run queue checks, keep filenames and **ID** consistent. Part of false-done audit;
-  not for arbitrary repo edits.
+description: Use after audit-driven issue moves, new issues, or ID/dependency edits. Regenerates issues/index.md from issue files.
 ---
 
 # Issue state sync
@@ -50,3 +47,31 @@ scripts/check_issue_queue.sh
 
 - index の表だけ直して issue ファイルを更新しない。
 - 監査で reopen したのに index 生成をスキップして完了報告する。
+
+## Example Usage
+
+### Before: Moving an issue from done to open
+
+```bash
+# Manual file move without index update
+git mv issues/done/012-fix-bug.md issues/open/012-fix-bug.md
+# Status changed to open in file
+```
+
+### After: Run sync commands
+
+```bash
+scripts/update_issue_index.sh
+scripts/update_issue_index.sh --check
+scripts/check_issue_index.sh
+scripts/check_issue_queue.sh
+# Index regenerated, queue validated
+```
+
+### Commands run
+
+```bash
+mise run update-issue-index
+mise run check-issue-index
+mise run check-issue-queue
+```

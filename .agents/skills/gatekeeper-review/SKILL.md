@@ -1,6 +1,6 @@
 ---
 name: gatekeeper-review
-description: "Use when acting as a gatekeeper/reviewer for PRs to this repository, agent outputs, or autopilot results before mainline merge. Trigger phrases: review as gatekeeper, merge gate check, runtime/backend checklist, grep gate, handoff packet."
+description: Use when acting as gatekeeper/reviewer for PRs or agent outputs. Covers sources of truth, required commands, reject conditions, domain checklists.
 ---
 
 # Gatekeeper review
@@ -45,14 +45,23 @@ Produce a merge decision based on explicit gates, not intuition.
 Reject immediately if any of these appear:
 
 - Parser judges builtin/API/host capability.
+  **理由**: Parserは構文のみを担当すべき。意味論判断はBuiltinResolverの責務。
 - Resolver/Lowering knows host imports.
+  **理由**: セマンティック層はホスト依存を知るべきではない。RuntimeLinkPlanが責務。
 - Backend does name resolution/builtin discovery/arity checks.
+  **理由**: バックエンドはIRをWATに変換するのみ。名前解決は上位層の責務。
 - RuntimeFn/HostImport/Capability additions without required catalog + tests + docs.
+  **理由**: ランタイム拡張はカタログ・テスト・ドキュメントが三位一体で必要。
 - Runtime strings are unconditional.
+  **理由**: ランタイム文字列はcapability manifest経由で条件付きインポートすべき。
 - fd_write/fd_read are always imported.
+  **理由**: I/Oはcapability manifestで宣言されたもののみインポートすべき。
 - New source-origin diagnostics with span: None.
+  **理由**: span: Noneはデバッグ不可能。全ての診断に位置情報が必要。
 - Docs gate is removed to make progress look complete.
+  **理由**: ドキュメントゲート削除は隠蔽であり、プロジェクト整合性を損なう。
 - Gate / workstream 進捗が実装・テスト・artifact なしで doc-only になっている。
+  **理由**: doc-only進捗は偽の完了。実装・テスト・artifactが揃ってこそ進捗。
 
 ## 2) First Command Set (always run)
 

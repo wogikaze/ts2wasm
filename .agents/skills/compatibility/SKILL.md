@@ -1,6 +1,6 @@
 ---
 name: compatibility
-description: Use when changing TypeScript/ECMAScript compatibility, runtime semantics, WASI capability lowering, Node.js host fallback, or AssemblyScript boundary rules in this compiler.
+description: Use for TypeScript/ECMAScript compatibility changes. Defines decision order for semantic compatibility, WASI lowering, Node fallback.
 ---
 
 # Language compatibility
@@ -38,3 +38,35 @@ mise run nextest
 ## Test Expectations
 
 Every compatibility change needs a classified test status: `pass`, `fail`, `unsupported`, `blocked`, or `skip-with-reason`.
+
+## Related Skills
+
+- milestone: for vertical slice implementation
+- gatekeeper-review: for merge gate verification
+- docs-workflow: for updating compatibility docs
+
+## Example Usage
+
+### Before: Adding a new compatibility feature
+
+```typescript
+// Fixtures/builtins-and-io/stdin.ts
+process.stdin.read();
+```
+
+### After: Verify with test status
+
+```bash
+mise run nextest
+# Test status: pass (Node.js parity confirmed)
+# Update docs/05-compatibility-and-semantics.md with supported feature
+```
+
+### Commands run
+
+```bash
+mise run fmt
+mise run clippy
+mise run nextest
+mise run test262 -- --sample 50 --jobs 4
+```

@@ -1,6 +1,6 @@
 ---
 name: retrospective-codify
-description: タスク完了時に「最初に失敗した内容」と「最終的に通った解法」を対応付け、最初に知っておくべきだった知見を ast-grep ルール / skill / CLAUDE.md ルールのいずれかに言語化する。試行錯誤の末にたどり着いた解や、同じ落とし穴を将来の自分（または別エージェント）に繰り返させたくないときに使う。ユーザーから「今回の学びをルール化して」「skill にして」「lint に落として」と指示されたとき、またはタスク終了時に学びを棚卸しする場面で起動する。
+description: Use when codifying learnings from completed tasks into rules, skills, or CLAUDE.md.
 ---
 
 # Retrospective Codify
@@ -260,3 +260,9 @@ message: Set/Map のサイズは .size プロパティを使う。
 - **理由を書かない**: ルールの根拠が残らず、将来の自分がなぜそれを守るのか判断できなくなる → 必ず `Why:` を添える
 - **勝手に書き出す**: ユーザー承認なしに CLAUDE.md や skill を更新する → 必ず提案 → 承認 → 書き出し の順を守る
 - **失敗の言語化を省く**: 「最終解は X」だけ書いて、なぜ初手で詰まったかを残さない → 失敗側の記述が無いと、将来の自分は同じ落とし穴にまた落ちる
+
+## Related Skills
+
+- ast-grep-practice: for creating ast-grep rules from learnings
+- docs-workflow: for updating documentation with learnings
+- issues-workflow: for tracking improvement work

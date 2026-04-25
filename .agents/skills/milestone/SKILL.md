@@ -1,11 +1,22 @@
 ---
 name: milestone
-description: Use when implementing vertical slices, updating shared definitions in docs/11, or deciding the next compiler/runtime work bounded by gates (historical name "milestone"; prefer workstreams/gates in new text).
+description: Use for vertical slice implementation and shared definition updates. Uses docs/11 as canonical source for goals, workstreams, gates.
 ---
 
 # Vertical slice workflow
 
 Use `docs/11-shared-definitions.md` as the canonical source for project goal、workstreams、gates、test status schema、capability manifest、and benchmark policy.
+
+## Success Criteria
+
+A vertical slice is considered complete when:
+- The smallest implementation change turns the gate condition into executable code, schema, or tests
+- Docs and implementation are aligned in the same change
+- All required gates (fmt, nextest, clippy, check-repo-smoke) pass
+- If reference coverage or benchmark policy changed, reference-coverage check passes
+- Shared definitions in crates/shared are updated with tests
+- The slice is vertical (not broad abstraction)
+- current-state.md is updated if implementation state changed
 
 ## Mise: run before you finish a slice (required)
 
@@ -40,3 +51,42 @@ Shared schema and ABI definitions live next to documentation in `docs/11`.
 ## Runner policy
 
 `iwasm` is installed and should be treated as a required execution gate when wasm output is in scope. Development may add faster local checks later, but merge readiness should include the `iwasm` path when runtime behavior is claimed.
+
+## Related Skills
+
+- compatibility: for semantic compatibility changes
+- gatekeeper-review: for merge gate verification
+- docs-workflow: for updating shared definitions docs
+
+## Example Usage
+
+### Before: Implementing a vertical slice without docs alignment
+
+```rust
+// Implement feature in crates/cli
+fn new_feature() { ... }
+// No docs update, no shared definition change
+```
+
+### After: Vertical slice with docs alignment
+
+```rust
+// Implement feature in crates/cli
+fn new_feature() { ... }
+// Update docs/11-shared-definitions.md with new gate condition
+// Add tests to crates/shared/
+// Run all gates
+mise run fmt
+mise run nextest
+mise run clippy
+mise run check-repo-smoke
+```
+
+### Commands run
+
+```bash
+mise run fmt
+mise run nextest
+mise run clippy
+mise run check-repo-smoke
+```

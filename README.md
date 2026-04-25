@@ -2,15 +2,15 @@
 
 ## Project Success Criteria
 
-このプロジェクトが成功した状態を以下のように定義する。
+This project is considered successful when:
+- TypeScript/JavaScript assets can be compiled to WASM without Node.js dependency
+- Generated WASM runs correctly in iwasm (WAMR runtime)
+- Differential testing against Node.js shows semantic equivalence for supported features
+- Capability manifest provides auditable security model
+- Reference coverage meets gate thresholds defined in docs/15-coverage-matrix.md
+- All gates (fmt, nextest, check-repo-smoke) pass consistently
 
-- TypeScript/JavaScript 資産を WASM に変換し、iwasm で実行可能
-- Node.js との differential testing で semantic equivalence を確認
-- capability manifest による監査可能なセキュリティモデル
-- test262 / TypeScript corpus の実行カバレッジが目標レベルに到達
-- standalone 対象プログラムが Node host import なしで動く
-
-詳細な成功条件は `docs/08-roadmap-and-success.md` を参照。
+See docs/08-roadmap-and-success.md for detailed success criteria.
 
 ## Project position
 

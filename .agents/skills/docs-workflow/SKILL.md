@@ -1,11 +1,29 @@
 ---
 name: docs-workflow
-description: "Use when adding, editing, auditing, splitting, deleting, or reorganizing docs under docs/ in this repository. Trigger phrases: update docs, edit docs, docs audit, current-state, roadmap cleanup, remove stale docs, move TODO to issue, project goal docs, architecture docs."
+description: Use when adding/editing docs under docs/. Enforces state separation between final-state docs, current-state, issues, and historical state.
 ---
 
 # Docs workflow
 
 Use this skill only for documentation changes under docs/ and README-level documentation changes.
+
+## Table of Contents
+
+- [Mise: run before you finish](#mise-run-before-you-finish-required-if-you-touched-paths-under-verification)
+- [Core Policy](#core-policy)
+- [State Separation Rules](#state-separation-rules)
+  - [Final-state docs](#final-state-docs)
+  - [current-state.md](#current-state-md)
+  - [Issues](#issues)
+  - [Historical state](#historical-state)
+- [Document Type Rules](#document-type-rules)
+- [README Rules](#readme-rules)
+- [Cleanup Procedure](#cleanup-procedure)
+- [Required Searches](#required-searches)
+- [Validation](#validation)
+- [Common Traps](#common-traps)
+- [Output Checklist](#output-checklist)
+- [Related Skills](#related-skills)
 
 ## Mise: run before you finish (required if you touched paths under verification)
 
@@ -398,6 +416,13 @@ A smaller impacted test set is acceptable only if the final report names exactly
 - `unsupported` and `blocked` are described as passing coverage.
 - Current-state facts are updated without a date or validation command.
 - Docs cleanup changes project policy without updating coding standard or issues.
+
+## Related Skills
+
+- fixtures-workflow: for fixture path updates when docs reference fixtures
+- scripts-workflow: for script command updates when docs reference scripts
+- issues-workflow: for moving TODOs from docs to issues
+- checklist-to-issue: for converting checklist items to issues
 
 ## Output Checklist
 

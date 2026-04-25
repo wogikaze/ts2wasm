@@ -1,9 +1,6 @@
 ---
 name: false-done-audit
-description: >
-  Orchestrator-only: audit issues/done for false-done, reopen with evidence, classify work, and
-  require missing future-work issues. Do not use for normal implementation. Trigger only on
-  explicit audit phrases (see “Activation”).
+description: Audit issues/done for false-done, classify work, reopen with evidence, require missing future-work issues. Trigger on explicit audit phrases.
 ---
 
 # False-done audit (orchestrator)

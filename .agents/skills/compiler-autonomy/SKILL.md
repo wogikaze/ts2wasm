@@ -1,11 +1,21 @@
 ---
 name: compiler-autonomy
-description: "Use for autonomous / agent compiler-dev runs: FSM, current_task.json, verification reports, failure pattern DB, and re-prevention. Read workflows/compiler_dev_fsm.md at repo .agents/ root."
+description: Use for autonomous compiler-dev runs. Covers FSM, current_task.json, verification reports, failure pattern DB, re-prevention.
 ---
 
 # Compiler dev autonomy
 
 This skill is the **thin entry** for the autonomous build/test loop. The authoritative contract is large; it lives in the workflow + state files, not in this `SKILL.md` alone.
+
+## Success Criteria
+
+The autonomous loop is considered complete when:
+- FSM state transition is validated against workflow rules
+- current_task.json is updated with verification results
+- All required gates (fmt, nextest, check-issue-queue) pass
+- Test report is generated and saved to reports/runs/
+- Failure patterns are recorded in failure pattern DB if applicable
+- Cycle report is written with evidence and next steps
 
 ## Mise: run before you exit VERIFY* / report RETRO (required)
 
@@ -29,8 +39,43 @@ This skill is the **thin entry** for the autonomous build/test loop. The authori
 - Example `test_report`: `../../state/examples/test_report.json`
 - Run output location: `reports/runs/<run_id>/test_report.json` (repo root)
 
-## Related skills
+## Related Skills
 
-- `milestone` for roadmap / vertical slices
-- `gatekeeper-review` for merge gates
-- `scripts-workflow` for adding automation that implements a guard
+- milestone: for roadmap / vertical slices
+- gatekeeper-review: for merge gates
+- scripts-workflow: for adding automation that implements a guard
+- issue-state-sync: for syncing issue state after autonomous runs
+
+## Example Usage
+
+### Before: Manual autonomous run
+
+```bash
+# Run tests manually
+cargo nextest run
+# Check fmt manually
+cargo fmt --all --check
+# No cycle report generated
+```
+
+### After: Follow autonomous loop
+
+```bash
+# Read current_task.json for FSM state
+# Run required gates
+mise run fmt
+mise run nextest
+mise run check-issue-queue
+# Generate test report to reports/runs/<run_id>/test_report.json
+# Write cycle report with evidence
+# Update current_task.json with verification results
+```
+
+### Commands run
+
+```bash
+mise run fmt
+mise run nextest
+mise run check-issue-queue
+mise run check-repo-smoke
+```

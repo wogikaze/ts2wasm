@@ -1,11 +1,32 @@
 ---
 name: fixtures-workflow
-description: "Use when adding, editing, moving, or renaming fixtures under fixtures/ in this repository. Trigger phrases: add fixture, edit fixture, rename fixture, migrate fixtures, fixture path update, fixture reference sync."
+description: Use when adding/editing/moving/renaming fixtures under fixtures/. Covers naming rules, content rules, inventory, reference updates.
 ---
 
 # Fixtures workflow
 
 Use this skill when a change touches `fixtures/**` or fixture path references caused by a `fixtures/**` change.
+
+## Table of Contents
+
+- [Mise: run before you finish](#mise-run-before-you-finish-required)
+- [Scope](#scope)
+- [Search Tool Policy](#search-tool-policy)
+- [Boundary With Scripts Workflow](#boundary-with-scripts-workflow)
+- [Naming Rules](#naming-rules)
+- [Fixture Content Rules](#fixture-content-rules)
+- [Required Inventory Pass](#required-inventory-pass)
+- [Required Reference Update Pass](#required-reference-update-pass)
+- [Path and Suite Invariants](#path-and-suite-invariants)
+- [Add Fixture Workflow](#add-fixture-workflow)
+- [Edit Fixture Workflow](#edit-fixture-workflow)
+- [Rename or Move Fixture Workflow](#rename-or-move-fixture-workflow)
+- [Validation](#validation)
+- [Grep Gates](#grep-gates)
+- [Common Traps](#common-traps)
+- [Output Checklist](#output-checklist)
+- [Handoff Packet](#handoff-packet)
+- [Related Skills](#related-skills)
 
 ## Mise: run before you finish (required)
 
@@ -381,6 +402,12 @@ sg run --lang rust -p 'TestRecord { $$$ }' crates/cli/tests crates/shared/src
 - Unsupported fixture lacks `reason` or `tracking`.
 - Stdin/env/fs fixture has an implicit host contract that tests do not reproduce.
 - Text search is used where `sg` would catch structural call sites more reliably.
+
+## Related Skills
+
+- scripts-workflow: for script behavior changes when fixture paths change
+- docs-workflow: for documentation updates when fixture taxonomy changes
+- issues-workflow: for tracking fixture migration work
 
 ## Output Checklist
 
