@@ -74,7 +74,21 @@ cargo run -q -p ts2wasm-cli -- build "$fixture" -o "$wasm" --emit-manifest "$man
 manifest_imports="$tmpd/manifest.imports"
 wasm_imports="$tmpd/wasm.imports"
 
-jq -r '.imports[] | "\(.module)\t\(.name)"' "$manifest" | LC_ALL=C sort -u >"$manifest_imports"
+# Extract imports from canonical manifest schema
+# WASI imports: map boolean flags to actual WASI import names
+# Node host imports: extract from node_host.imports array
+{
+  # Extract WASI imports
+  jq -r '
+    if .wasi.stdout == true then "wasi_snapshot_preview1\tfd_write" else empty end,
+    if .wasi.stdin == true then "wasi_snapshot_preview1\tfd_read" else empty end,
+    if .wasi.stderr == true then "wasi_snapshot_preview1\tfd_write" else empty end
+  ' "$manifest"
+  # Extract Node host imports
+  jq -r '
+    (.node_host.imports // [] | .[]) | split(".") | select(length >= 2) | "\(.[0])\t\(.[1])"
+  ' "$manifest"
+} | LC_ALL=C sort -u >"$manifest_imports"
 
 wasm-tools print "$wasm" | sed -n 's/^[[:space:]]*(import "\([^"]*\)" "\([^"]*\)".*/\1\t\2/p' | LC_ALL=C sort -u >"$wasm_imports"
 
