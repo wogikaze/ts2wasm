@@ -31,6 +31,10 @@ cargo nextest run
 
 ## 3) ファイル構成（要点）
 
+**Current layout（このリポジトリの現状）**: 実装の大半は `crates/cli` に集約されている。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi`, `crates/backend-wasm` はアーカイブ/プレースホルダが多く、空ディレクトリや `.gitkeep` のみの場合がある。
+
+**Target layout（分割先の意図）**:
+
 ```text
 crates/
  shared/
@@ -53,7 +57,7 @@ crates/
 ```
 
 - docs/: 設計・仕様ドキュメント
-- fixtures/: workstream 別テストフィクスチャ（feature group 単位で管理）
+- fixtures/: feature group 単位のテストフィクスチャ（workstream 名ではなく意味領域で管理）
 - scripts/: テスト/カバレッジ/検証スクリプト
 - artifacts/coverage/: 生成カバレッジ成果物
 - reference/: 外部参照資料（原則 read-only）

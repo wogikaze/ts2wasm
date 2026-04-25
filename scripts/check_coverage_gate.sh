@@ -8,6 +8,8 @@ Usage:
 
 Checks:
   - executed count must not decrease per suite
+  - build_pass count must not decrease per suite
+  - semantic_pass count must not decrease per suite
   - fail count must not increase per suite
 USAGE
 }
@@ -51,17 +53,31 @@ extract_col() {
 status=0
 for suite in "test262" "TypeScript compiler cases" "typescript-go testdata"; do
   base_executed="$(extract_col "$base_doc" "$suite" 4)"
-  base_fail="$(extract_col "$base_doc" "$suite" 7)"
+  base_build_pass="$(extract_col "$base_doc" "$suite" 7)"
+  base_semantic_pass="$(extract_col "$base_doc" "$suite" 8)"
+  base_fail="$(extract_col "$base_doc" "$suite" 9)"
   current_executed="$(extract_col "$current_doc" "$suite" 4)"
-  current_fail="$(extract_col "$current_doc" "$suite" 7)"
+  current_build_pass="$(extract_col "$current_doc" "$suite" 7)"
+  current_semantic_pass="$(extract_col "$current_doc" "$suite" 8)"
+  current_fail="$(extract_col "$current_doc" "$suite" 9)"
 
-  if [[ -z "$base_executed" || -z "$base_fail" || -z "$current_executed" || -z "$current_fail" ]]; then
+  if [[ -z "$base_executed" || -z "$base_build_pass" || -z "$base_semantic_pass" || -z "$base_fail" || -z "$current_executed" || -z "$current_build_pass" || -z "$current_semantic_pass" || -z "$current_fail" ]]; then
     echo "warning: incomplete coverage row for suite: $suite" >&2
     continue
   fi
 
   if (( current_executed < base_executed )); then
     echo "gate failure: executed decreased for $suite ($base_executed -> $current_executed)" >&2
+    status=1
+  fi
+
+  if (( current_build_pass < base_build_pass )); then
+    echo "gate failure: build_pass decreased for $suite ($base_build_pass -> $current_build_pass)" >&2
+    status=1
+  fi
+
+  if (( current_semantic_pass < base_semantic_pass )); then
+    echo "gate failure: semantic_pass decreased for $suite ($base_semantic_pass -> $current_semantic_pass)" >&2
     status=1
   fi
 

@@ -8,8 +8,10 @@ description: "Use when acting as a gatekeeper/reviewer for ts2wasm PRs, agent ou
 Use this skill when deciding whether a change is safe to merge into mainline.
 
 Primary source of truth:
+- docs/11-shared-definitions.md（workstreams、gates、test status schema、capability / benchmark policy）
 - docs/13-coding-standard.md, section 19 (Gatekeeper Checklist)
 - docs/13-coding-standard.md, section 20 (priority context)
+- current-state.md（実装の現在地と代表コマンド）
 
 ## Goal
 
@@ -31,7 +33,7 @@ Reject immediately if any of these appear:
 - fd_write/fd_read are always imported.
 - New source-origin diagnostics with span: None.
 - Docs gate is removed to make progress look complete.
-- Milestone advancement is doc-only without debt repayment.
+- Gate / workstream 進捗が実装・テスト・artifact なしで doc-only になっている。
 
 ## 2) First Command Set (always run)
 
@@ -42,23 +44,23 @@ Run these first:
 - git diff --stat HEAD~1..HEAD
 - git show --name-only --oneline HEAD
 - cargo fmt --all --check
-- cargo test
+- cargo nextest run
 
 If runtime/backend/WASI/differential changed, also run one of:
 
-- cargo test -- --include-ignored
+- cargo nextest run（該当 filterset / パッケージがあればそれを使用）
 - project-defined iwasm differential suite
 
 ## 3) Grep Gate (regression traps)
 
-Run:
+Run（検索は `ig` を優先。未導入なら `rg`。他 skill と同様に `ig -n '<pattern>' <path>` 形式）:
 
-- rg "as_console_log_call" crates/cli/src
-- rg 'property == "length"' crates/cli/src/ir/lowered.rs
-- rg 'fd_write|fd_read' crates/cli/src/backend -g'*.rs'
-- rg 'RuntimeString::.*intern|intern_required_runtime_strings' crates/cli/src/backend
-- rg 'span: None' crates/cli/src
-- rg 'unwrap\(|expect\(|panic!' crates/cli/src
+- ig -n 'as_console_log_call' crates/cli/src
+- ig -n 'property == "length"' crates/cli/src/ir/lowered.rs
+- ig -n 'fd_write|fd_read' crates/cli/src/backend
+- ig -n 'RuntimeString::.*intern|intern_required_runtime_strings' crates/cli/src/backend
+- ig -n 'span: None' crates/cli/src
+- ig -n 'unwrap\(|expect\(|panic!' crates/cli/src
 
 Default judgment:
 
@@ -156,7 +158,8 @@ Commits:
 
 Validation:
 - cargo fmt --all --check: pass/fail
-- cargo test: pass/fail
+- cargo nextest run: pass/fail
+- scripts/update_coverage_matrix.sh --check: pass/fail/not applicable
 - iwasm differential: pass/fail/not applicable
 - grep gate:
   - as_console_log_call: 0/non-zero
@@ -181,4 +184,4 @@ Known unrelated working tree changes:
 
 - Be strict on phase separation and linker ownership.
 - Prefer rejecting incomplete slices over merging hidden debt.
-- Do not mark milestone progress as done unless implementation + tests + docs all exist.
+- Do not mark gate / workstream progress as done unless implementation + tests + docs + generated artifacts (where applicable) all exist.

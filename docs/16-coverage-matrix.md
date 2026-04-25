@@ -9,7 +9,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 
 - coverage 行は reference suite 単位で更新する（test262、TypeScript tests、typescript-go など）。
 - 分母は原則 `reference/<suite>` 配下のファイル数またはテストケース数で固定し、算出コマンドを `evidence` に残す。
-- 分子は `pass` 件数とする。`unsupported` / `blocked` / `skip-with-reason` は内訳として別管理し、coverage の分子には含めない。
+- 分子は `build_pass` と `semantic_pass` を別列で記録する。`unsupported` / `blocked` / `skip-with-reason` は内訳として別管理し、いずれの coverage% の分子にも含めない。
 - gate 判定に影響する変更時は、影響する suite 行の `executed` と status 内訳を同時に更新する。
 - `executed` は段階的に増やす。1 回の更新あたり `test262:+50`、`tsc:+30`、`tsgo:+20` を基本ステップとする。
 - `unsupported (DiagCode breakdown)` 列で優先実装対象を可視化する（例: `UnsupportedSyntax:120`）。
@@ -27,7 +27,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 - PR では coverage gate (`scripts/update_coverage_matrix.sh --check`) を実行し、matrix 未更新を失敗扱いにする。
 - PR では base branch 比較 gate も実行し、`executed` 減少と `fail` 増加を失敗扱いにする。
 - 定期実行では ramp ステップで executed を拡大し、`artifacts/coverage/reference-coverage-matrix.md` 更新 PR を自動作成する。
-- この dashboard の `coverage%` は `(pass / denominator) * 100` で計算する。
+- この dashboard の `build_coverage%` は `(build_pass / denominator) * 100`、`semantic_coverage%` は `(semantic_pass / denominator) * 100` で計算する。
 - 実測 table は generated artifact に分離し、`artifacts/coverage/reference-coverage-matrix.md` を正とする。
 
 ## Metric Definitions
@@ -37,14 +37,24 @@ Executed:
 - 実際に `scripts/reference_coverage.sh` で走らせた件数。
 - full corpus 件数ではなく、現在の ramp limit までの実行数を表す。
 
-Pass:
+Build-pass:
 
-- `ts2wasm build` が成功した件数。
-- 必要に応じて後続の execution gate を別途追加するが、現在の coverage table ではまず build 成功を pass とする。
+- `ts2wasm build` が成功した件数（wasm ファイルが生成された）。
+- build-pass は「コンパイルが通った」ことを示すのみで、実行結果の正しさを保証しない。
+- 対外的な coverage claim で build-pass を「conformance」と表現することは禁止する。
+
+Semantic-pass:
+
+- `ts2wasm build` が成功し、かつ `iwasm` 実行結果が Node.js reference と一致した件数。
+- test262 conformance を主張するには semantic-pass の分子/分母を使う。
+- coverage table には `build_pass` と `semantic_pass` を別列として管理する。
+- 現在の test262 semantic-pass は `artifacts/coverage/reference-coverage-matrix.md` の `semantic_pass` 列を参照する。
 
 Coverage%:
 
-- `coverage% = pass / denominator * 100`。
+- `build_coverage% = build_pass / denominator * 100`。
+- `semantic_coverage% = semantic_pass / denominator * 100`。
+- 外部向け conformance 報告には `semantic_coverage%` を使う。
 - `unsupported` / `blocked` / `skip-with-reason` は coverage の分子には含めない。
 
 Unsupported:
@@ -62,6 +72,7 @@ Gate:
 - fail count must not increase
 - executed count must not decrease
 - `artifacts/coverage/reference-coverage-matrix.md` must match `scripts/update_coverage_matrix.sh --check` output
+- build_pass と semantic_pass が別列として記録されていること
 
 Generated table:
 
@@ -79,12 +90,13 @@ This section tracks test262 coverage using the Stream G test infrastructure.
 
 実行コマンドと計測運用手順は `AGENTS.md` を参照する。
 
-### Test Status Classification
+### Test Status Classification (align with `build_pass` / `semantic_pass`)
 
-- **Pass**: Test compiles successfully and output matches Node.js reference
-- **Fail**: Test compiles but output differs from Node.js reference
-- **Unsupported**: Compiler diagnostic indicates unsupported feature (e.g., `UnsupportedSyntax`, `UnresolvedName`)
-- **Blocked**: Runtime or I/O failure during execution
+- **Build-pass**: `ts2wasm build` が成功し wasm が生成された（`build_pass` 列に集計）。
+- **Semantic-pass**: build-pass に加え、`iwasm` の stdout が Node.js reference と一致した（`semantic_pass` 列に集計。Node/iwasm が無い環境では `semantic_enabled=0` となり semantic-pass は増えない）。
+- **Fail**: コンパイラ内部不整合・`InvariantViolation` など、ビルド失敗のうち unsupported/blocked に分類されないもの。
+- **Unsupported**: 未対応機能など、compiler diagnostic として終了したもの（`UnsupportedSyntax`, `UnresolvedName` など）。
+- **Blocked**: `BackendIo`、タイムアウト、実行時 I/O 失敗など。
 
 ### Current Test262 Sample Results
 
@@ -109,6 +121,6 @@ The coverage matrix above shows test262 execution counts. For detailed test resu
 
 - reference suite の分母が変わっていないか確認したか
 - 変更対象 suite の `executed` と status 内訳を `artifacts/coverage/reference-coverage-matrix.md` に反映したか
-- `coverage%` の再計算を反映したか
+- `build_coverage%` / `semantic_coverage%` の再計算を反映したか
 - `unsupported (DiagCode breakdown)` が最新の実行結果を反映しているか
 - 必要なら `current-state.md` と整合したか

@@ -962,7 +962,7 @@ unsupported argument form の diagnostic を追加した
 Lowering の扱いを明示した
 runtime に接続する場合は RuntimeFn catalog に接続した
 runtime に接続しない場合は compile-time gate で止めた
-docs/05 または docs/12 に subset semantics を記録した
+docs/05 または current-state.md に subset semantics を記録した
 ```
 
 Parser に builtin special form を追加していたら reject する。
@@ -1112,7 +1112,7 @@ Risk:
 - Manifest schema changed: yes/no
 
 Docs:
-- docs/12 updated: yes/no
+- current-state.md updated: yes/no
 - docs/15 updated if ABI changed: yes/no
 - docs/09 updated if capability changed: yes/no
 
@@ -1120,21 +1120,21 @@ Known unrelated working tree changes:
 - <file>
 ```
 
-### 19.12 Milestone advance gate
+### 19.12 Gate advance gate
 
-次 milestone に進む前に、docs/12 の gate を確認する。
+次の gate 進行前に、current-state.md と docs/11-shared-definitions.md の gate 定義を確認する。
 
 ```text
 done と書かれた項目は実装と test があること
-deferred と書かれた項目を無視して次 milestone に進まないこと
-Next milestone target を書き換えるだけの変更をしないこと
+deferred と書かれた項目を無視して次 gate に進まないこと
+Gate 定義を書き換えるだけの変更をしないこと
 ```
 
-次 milestone に進める条件:
+次 gate に進める条件:
 
 ```text
-current milestone の acceptance tests が通っている
-docs/12 の gate が done
+current gate の acceptance tests が通っている
+current-state.md が実装状態を正確に反映している
 runtime/backend/capability 変更なら manifest と linker tests がある
 unsupported / limitation が docs に残っている
 未実装を実装済みのように書いていない

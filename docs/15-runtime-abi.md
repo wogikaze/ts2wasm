@@ -10,6 +10,8 @@
 M0 では JavaScript の値を `i32` の tagged encoding として表現する。
 これは意図的な **M0 small-int subset** であり、JS 全体の `number` セマンティクスではない。
 
+> **論理 ABI との関係**: `docs/04-compiler-architecture-and-runtime.md` の論理 ABI では `jsval` を `i64` として定義し、`crates/shared/src/abi.rs` の `AbiType::JsVal` もそれに従う。M0 の `i32` RawValue はその論理 ABI への bridge が未実装な過渡期実装である。backend は M0 `i32` wire 表現と論理 `i64` ABI を混在させてはならない。
+
 ```text
 i32 tagged value (RawValue):
 

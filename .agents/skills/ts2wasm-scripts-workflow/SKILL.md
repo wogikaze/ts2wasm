@@ -186,10 +186,10 @@ Use the strictest relevant validation group below.
 Always run:
 
 - cargo fmt --all --check
-- scripts/check_scripts.sh
+- scripts/check_scripts.sh（`bash -n` のみ。syntax OK は runtime OK を意味しない）
 - bash -n <touched-script>
 
-Run the touched script with a representative command.
+Run the touched script with a representative command（`check_scripts.sh` はこれに代わらない）。
 
 Examples:
 

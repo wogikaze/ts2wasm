@@ -1,3 +1,8 @@
+/// Wasm linear-module representation of a JavaScript value in the M0 pipeline: always
+/// **i32** tagged bits (`ValueTag`). This is not interchangeable with logical ABI
+/// `AbiType::JsVal` (`i64`); see `docs/15-runtime-abi.md` and `crates/shared::AbiType`.
+pub type M0WasmTaggedValue = i32;
+
 /// Value tag encoding for the `i32` tagged-value representation.
 ///
 /// Encoding summary:
@@ -41,7 +46,7 @@ impl ValueTag {
     pub const NUMBER_PAYLOAD_MAX: i32 = i32::MAX >> Self::NUMBER_SHIFT;
 
     /// Encode a small signed integer as a tagged i32 value.
-    pub fn encode_number(n: i32) -> i32 {
+    pub fn encode_number(n: i32) -> M0WasmTaggedValue {
         (n << Self::NUMBER_SHIFT) | Self::NUMBER
     }
 

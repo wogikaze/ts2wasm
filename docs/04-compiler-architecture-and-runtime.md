@@ -49,6 +49,8 @@ compiler と runtime の境界を曖昧にすると、lowering と emitter が�
 
 ABI 名は論理名であり、実際の export/import 名は `ts2wasm.rt.*` に正規化する。初期 core wasm backend では `jsval` を `i64` tagged value、`ptr` / `len` / `index` を `i32` として扱う。heap object は linear memory 内の 32-bit offset を payload として持つ。将来 Wasm GC backend を追加しても、compiler IR は同じ論理 ABI を呼び、backend が表現を差し替える。
 
+> **M0 実装との差分**: `docs/15-runtime-abi.md` が定める M0 RawValue は `i32` tagged encoding を使う。これは M0 small-int subset として意図的に制限したものであり、この logical ABI の `i64` jsval とは別概念である。M0 では `crates/shared/src/abi.rs` の `AbiType::JsVal` が論理型 (`i64`) を表し、`crates/cli/src/runtime/value.rs` が M0 の実 wire 表現 (`i32`) を保持する。backend が `i64` logical ABI と M0 `i32` 実装を混在させることは禁止する。M0 からの移行時は、logical ABI への bridge を backend 層に置く。
+
 | ABI type | wasm representation | 意味 |
 |---|---|---|
 | `jsval` | `i64` | JS 値。immediate tag または heap ref payload |

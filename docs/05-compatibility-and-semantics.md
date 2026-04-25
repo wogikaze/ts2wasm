@@ -92,7 +92,7 @@ M5 で実装した array と object の semantics 要件を記録する。
 > **M5 は P0 技術負債を残した prototype extension である。**
 > RuntimeLinkPlan の WatEmitter 分離、AST node span 導入、BuiltinResolver pass 分離、
 > capability manifest 出力は未完。これらは M5 完了宣言の前提条件ではなく、
-> M6 移行前に返済すべき P0 として `docs/12` に記録する。
+> M6 移行前に返済すべき P0 として `current-state.md` に記録する。
 
 ## Standard idiom semantics
 

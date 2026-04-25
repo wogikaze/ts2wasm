@@ -13,7 +13,8 @@ Suites:
 
 Notes:
   - This script classifies compile outcomes using ts2wasm diagnostics.
-  - pass: build succeeded
+  - build_pass: build succeeded
+  - semantic_pass: build succeeded and iwasm stdout exactly matches Node.js stdout
   - unsupported: source/compiler diagnostics except internal/backend failures
   - blocked: stderr contains [BackendIo] or command timeout
   - fail: internal compiler failures such as [InvariantViolation]
@@ -72,12 +73,19 @@ if [[ "$limit" -gt 0 ]]; then
 fi
 
 executed=0
-pass_count=0
 fail_count=0
 unsupported_count=0
 blocked_count=0
 skip_count=0
 declare -A unsupported_diag_counts
+
+semantic_enabled=0
+if command -v node >/dev/null 2>&1 && command -v iwasm >/dev/null 2>&1; then
+  semantic_enabled=1
+fi
+
+build_pass_count=0
+semantic_pass_count=0
 
 tmp_dir="$(mktemp -d /tmp/ts2wasm-refcov-XXXXXX)"
 trap 'rm -rf "$tmp_dir"' EXIT
@@ -95,7 +103,23 @@ for file in "${files[@]}"; do
   set -e
 
   if [[ $rc -eq 0 ]]; then
-    pass_count=$((pass_count + 1))
+    build_pass_count=$((build_pass_count + 1))
+
+    if [[ "$semantic_enabled" -eq 1 ]]; then
+      node_out="$tmp_dir/node.out"
+      wasm_out="$tmp_dir/wasm.out"
+
+      set +e
+      timeout 8s node "$file" >"$node_out" 2>/dev/null
+      node_rc=$?
+      timeout 8s iwasm "$out_wasm" >"$wasm_out" 2>/dev/null
+      wasm_rc=$?
+      set -e
+
+      if [[ $node_rc -eq 0 && $wasm_rc -eq 0 ]] && cmp -s "$node_out" "$wasm_out"; then
+        semantic_pass_count=$((semantic_pass_count + 1))
+      fi
+    fi
     continue
   fi
 
@@ -130,16 +154,24 @@ fi
 
 coverage_percent="0.00"
 if [[ "$denominator" -gt 0 ]]; then
-  coverage_percent="$(awk -v p="$pass_count" -v d="$denominator" 'BEGIN { printf "%.2f", (p / d) * 100 }')"
+  coverage_percent="$(awk -v p="$build_pass_count" -v d="$denominator" 'BEGIN { printf "%.2f", (p / d) * 100 }')"
+fi
+
+semantic_coverage_percent="0.00"
+if [[ "$denominator" -gt 0 ]]; then
+  semantic_coverage_percent="$(awk -v p="$semantic_pass_count" -v d="$denominator" 'BEGIN { printf "%.2f", (p / d) * 100 }')"
 fi
 
 printf 'suite=%s\n' "$suite"
 printf 'denominator=%s\n' "$denominator"
 printf 'executed=%s\n' "$executed"
 printf 'coverage_percent=%s\n' "$coverage_percent"
-printf 'pass=%s\n' "$pass_count"
+printf 'semantic_coverage_percent=%s\n' "$semantic_coverage_percent"
+printf 'build_pass=%s\n' "$build_pass_count"
+printf 'semantic_pass=%s\n' "$semantic_pass_count"
 printf 'fail=%s\n' "$fail_count"
 printf 'unsupported=%s\n' "$unsupported_count"
 printf 'blocked=%s\n' "$blocked_count"
 printf 'skip_with_reason=%s\n' "$skip_count"
 printf 'unsupported_diagcodes=%s\n' "$unsupported_diagcodes"
+printf 'semantic_enabled=%s\n' "$semantic_enabled"

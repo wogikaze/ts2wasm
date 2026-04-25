@@ -1,56 +1,66 @@
 # Issues Index
 
-This directory tracks work queue and completion status.
+This file is the human entrypoint for the issue queue.
 
-## Organization
+Issue files are the source of truth for work items. The generated section below may be replaced by a script or pasted manually from a generated report.
 
-- **`open/`** - Active work items waiting to be completed
-- **`done/`** - Completed work for reference and history
+## Reading rules
 
-## Issue Format
+- Start with `Ready queue`.
+- Check `Blocked queue` only after ready work is exhausted.
+- Do not use `done/` as current project truth.
+- For docs work, verify whether the issue updates final-state docs, `docs/current-state.md`, or follow-up issues.
+- For implementation work, verify acceptance criteria and validation commands before starting.
 
-Each issue is a markdown file with machine-readable header fields plus human-readable sections:
+## Ready queue
 
-```markdown
-# [TITLE]
+<!-- generated:ready:start -->
+| ID | Title | Type | Area | Class | Priority | Depends on | Summary |
+|---:|---|---|---|---|---|---|---|
+| — | No ready issues yet | — | — | — | — | — | Create issues from `issues/templates/issue.md` |
+<!-- generated:ready:end -->
 
-**Status**: open | done
-**Created**: YYYY-MM-DD
-**Updated**: YYYY-MM-DD
-**ID**: 001
-**Depends on**: none | 001, 002
-**Orchestration class**: implementation-ready | design-ready | verification-ready | blocked-by-upstream | unsupported-in-this-run
-**Orchestration upstream**: — | free-form (e.g. `#039`, `external:037`)
+## Blocked queue
 
-## Summary
-Brief description of what needs to be done.
+<!-- generated:blocked:start -->
+| ID | Title | Type | Area | Blocker | Summary |
+|---:|---|---|---|---|---|
+| — | No blocked issues yet | — | — | — | — |
+<!-- generated:blocked:end -->
 
-## Acceptance Criteria
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
+## Done queue
 
-## Notes
-Any context, blockers, or implementation notes.
+<!-- generated:done:start -->
+| ID | Title | Type | Area | Completed evidence |
+|---:|---|---|---|---|
+| — | No completed issues yet | — | — | — |
+<!-- generated:done:end -->
+
+## Index generation contract
+
+A future generator may replace only the regions between these markers:
+
+```text
+<!-- generated:ready:start -->
+<!-- generated:ready:end -->
+
+<!-- generated:blocked:start -->
+<!-- generated:blocked:end -->
+
+<!-- generated:done:start -->
+<!-- generated:done:end -->
 ```
 
-The generator reads these exact header fields. `Depends on` must contain comma-separated numeric IDs or `none`.
+Do not put hand-written policy text inside generated regions.
 
-Generated artifacts:
-- `issues/open/index.md` — dependency-aware issue index (includes orchestration columns when set in issue headers)
-- `issues/open/index-meta.json` — machine-readable export (deps, acceptance counts, orchestration)
-- `issues/open/dependency-graph.md` — Mermaid graph + adjacency lists
-- `python3 scripts/gen/generate-issue-index.py` — entrypoint for regeneration
+## Manual update checklist
 
-## Workflow
+When adding, completing, or blocking an issue:
 
-1. Add new issues to `open/`
-2. Reference in AGENTS.md as active focus
-3. When verification passes and work is complete, move to `done/`
-4. Maintain timestamp consistency for traceability
-
-## Queue Operations
-
-- **Start work**: Note in issue, update status
-- **Blocked**: Document reason in Notes section
-- **Complete**: Move file to `done/` with completion timestamp
+- [ ] issue file is in the correct directory
+- [ ] frontmatter is updated
+- [ ] dependencies are reflected in the ready/blocked queue
+- [ ] done issue has completion evidence
+- [ ] follow-up work is represented as a separate open issue
+- [ ] final-state docs do not contain future TODOs
+- [ ] current implementation gaps are in `docs/current-state.md`

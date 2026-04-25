@@ -1,3 +1,9 @@
+/// Logical runtime ABI types for imports/exports described in `docs/15-runtime-abi.md`.
+///
+/// `JsVal` uses wasm text type `i64` here. Generated M0 user wasm still passes **tagged
+/// JavaScript values as i32** inside the module body (`crates/cli` `M0WasmTaggedValue`);
+/// any bridge between i32 tagged values and i64 `JsVal` at import boundaries must be
+/// explicit and tested—do not widen/narrow implicitly.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AbiType {
     JsVal,
@@ -160,8 +166,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn jsval_is_i64_for_core_wasm_backend() {
+    fn jsval_is_i64_logical_repr_distinct_from_m0_i32_body() {
         assert_eq!(AbiType::JsVal.wasm_repr(), "i64");
+        assert_eq!(AbiType::Bool.wasm_repr(), "i32");
+        assert_eq!(AbiType::Ptr.wasm_repr(), "i32");
+        assert_eq!(AbiType::F64.wasm_repr(), "f64");
     }
 
     #[test]

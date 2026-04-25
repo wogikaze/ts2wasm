@@ -50,6 +50,7 @@ scripts/install_git_hooks.sh
 # install tools
 npm install --global @ast-grep/cli
 curl -fsSL https://raw.githubusercontent.com/PythonicNinja/trigrep/master/scripts/install.sh | bash
+curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.cargo}/bin
 
 
 

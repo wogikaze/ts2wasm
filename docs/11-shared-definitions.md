@@ -107,3 +107,32 @@ CLI の optimization level と semantic safety mode は別概念として扱う�
 ## Benchmark policy
 
 性能比較は、測定条件を固定して継続的に記録する。少なくとも benchmark 名、input size、target、runner version、cold/warm 区分、iteration count、median、p95、peak memory、wasm size、host call count を記録する。
+
+## Workstreams
+
+本プロジェクトは以下の workstream を並行して進める。gate 判定は各 workstream が独立して進められるが、下流 workstream は上流の gate を前提とする。
+
+| ID | Name | 概要 |
+|---|---|---|
+| W0 | Runtime substrate | linear memory、value representation (RawValue)、WAT/wasm emission の基盤。iwasm で実行可能な最小 wasm を出せる状態を維持する |
+| W1 | Standalone WASI execution | console.log / fd_write / stdin の WASI lowering。Node host 不要で実行できる最小プログラムを通す |
+| W2 | JS semantic core | truthiness、`===`、`+`、number/string semantics、operator 優先度、関数呼び出し、`undefined`/`null` の JS 意味論 |
+| W3 | Data model | object literal、array、property get/set、string heap object、length、index |
+| W4 | Control / module / class | closure、exception、destructuring、module import/export、class / prototype |
+| W5 | Differential testing and coverage | test262 / TypeScript corpus の executed ramp、Node differential、status schema 運用、`artifacts/coverage/reference-coverage-matrix.md` の継続更新 |
+| W6 | Host capability boundary | capability manifest 出力、standalone vs host-required 分類、host import の条件化 |
+| W7 | Optimization | typed fast path、packed array、benchmark gate、correctness-preserving 最適化 |
+
+## Gates
+
+gate は workstream の完了条件ではなく、「次の判断を下すために必要な証拠が揃っているか」を判定する基準である。gate を満たした場合のみ、その先へ進む判断ができる。gate を削除・スキップして進行可能に見せることは禁止する。
+
+| Gate | 前提 workstream | 成立条件 |
+|---|---|---|
+| A | W0, W1 | 単一ファイル TS/JS が WASI wasm に変換でき、`iwasm` 実行が成功する。`cargo nextest run` がすべて通る |
+| B | W0, W1, W2 | curated fixture セット全件で Node.js との stdout 差分がゼロ。differential test が CI で運用されている |
+| C | W1, W6 | `--emit-manifest` が capability manifest JSON を出力する。manifest と実際の wasm import が一致することを検証するテストがある |
+| D | W5 | test262 の executed count が 100 件以上。`artifacts/coverage/reference-coverage-matrix.md` が最新。`scripts/update_coverage_matrix.sh --check` が通る |
+| E | W2, W3, W5 | test262 の build-pass count が 50 件以上、かつ semantic-pass (Node differential 一致) count が 20 件以上。build-pass と semantic-pass が分離して集計されている |
+| F | W1, W3, W6 | standalone 対象プログラムが Node host import なしで動く。`--emit-manifest` で `standalone: true` が出力される。host-deny test が通る |
+| G | W7 | benchmark suite が固定されている。`scripts/benchmark_tracker.sh` が median / p95 / wasm_size を記録する。前回比で regression が出た場合に gate が落ちる |

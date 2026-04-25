@@ -60,9 +60,9 @@ Audit では、少なくとも次を確認する。
 | preopen verification | filesystem access が許可された preopen 内に収まることを検証する |
 | security review | filesystem/env/network/crypto/timer capability を一覧化する |
 
-## P0-3 manifest output (current subset)
+## P0-3 manifest output (current subset, transitional)
 
-P0-3 では、`RuntimeLinkPlan` から最小 capability manifest を生成し、CLI から JSON として出力できるようにする。
+> **注意**: 以下は M5/P0-3 時点の過渡期 schema である。canonical な capability manifest schema は `docs/11-shared-definitions.md` の "Capability manifest schema" を正とする。この subset schema は将来 canonical schema に置き換えられる。`--emit-manifest` が canonical schema を出力するようになった時点でこのセクションは削除する。
 
 ```bash
 ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
@@ -70,7 +70,7 @@ ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
 
 `--emit-capabilities` は互換の deprecated alias として当面維持する。
 
-Current schema (M5 subset):
+Current transitional schema (P0-3 subset):
 
 ```json
 {
