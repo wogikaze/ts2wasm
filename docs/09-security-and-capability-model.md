@@ -60,9 +60,9 @@ Audit では、少なくとも次を確認する。
 | preopen verification | filesystem access が許可された preopen 内に収まることを検証する |
 | security review | filesystem/env/network/crypto/timer capability を一覧化する |
 
-## P0-3 manifest output (current subset, transitional)
+## Manifest CLI output（subset, transitional）
 
-> **注意**: 以下は M5/P0-3 時点の過渡期 schema である。canonical な capability manifest schema は `docs/11-shared-definitions.md` の "Capability manifest schema" を正とする。この subset schema は将来 canonical schema に置き換えられる。`--emit-manifest` が canonical schema を出力するようになった時点でこのセクションは削除する。
+> **注意**: 以下は `--emit-manifest` がまだ canonical schema のみを出せない段階での subset である。canonical な capability manifest schema は `docs/11-shared-definitions.md` の "Capability manifest schema" を正とする。CLI が常に canonical を出力するようになったら、この transitional 説明と example は削除する。
 
 ```bash
 ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
@@ -70,7 +70,7 @@ ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
 
 `--emit-capabilities` は互換の deprecated alias として当面維持する。
 
-Current transitional schema (P0-3 subset):
+Current transitional schema（subset）:
 
 ```json
 {
@@ -86,7 +86,7 @@ Current transitional schema (P0-3 subset):
 
 `runtime` 配列の順序は意味を持たない。監査・差分比較の安定化のため、固定順（現在は安定化された列挙順）で出力する。
 
-P0-3 時点では `fd_read` や stdin runtime は含めない。M6-1 で `fd_read` 経路を同じ `RuntimeLinkPlan -> manifest` 導線に追加した。
+初期の `--emit-manifest` 実装では `fd_read` や stdin runtime を含めない場合がある。stdin を含む `fd_read` 経路は `RuntimeLinkPlan -> manifest` と同一導線で追加し、subset と canonical の差分をテストで固定する。
 
 ## Host shim trimming
 

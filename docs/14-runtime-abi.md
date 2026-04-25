@@ -3,14 +3,14 @@
 このドキュメントは ts2wasm の runtime ABI を定める。
 `RawValue` の tagged representation、heap レイアウト、`RuntimeFn` カタログ、host import ABI を定義する。
 
-## M0 Value Representation
+## Tagged i32 value representation（small-int subset）
 
 ### RawValue (i32 tagged encoding)
 
-M0 では JavaScript の値を `i32` の tagged encoding として表現する。
-これは意図的な **M0 small-int subset** であり、JS 全体の `number` セマンティクスではない。
+現行パイプラインでは JavaScript の値を wasm モジュール内で `i32` の tagged encoding として表現する。
+これは意図的な **small-int subset** であり、JS 全体の `number` セマンティクスではない。
 
-> **論理 ABI との関係**: `docs/04-compiler-architecture-and-runtime.md` の論理 ABI では `jsval` を `i64` として定義し、`crates/shared/src/abi.rs` の `AbiType::JsVal` もそれに従う。M0 の `i32` RawValue はその論理 ABI への bridge が未実装な過渡期実装である。backend は M0 `i32` wire 表現と論理 `i64` ABI を混在させてはならない。
+> **論理 ABI との関係**: `docs/04-compiler-architecture-and-runtime.md` の論理 ABI では `jsval` を `i64` として定義し、`crates/shared/src/abi.rs` の `AbiType::JsVal` もそれに従う。`i32` RawValue は wasm 本体の wire 表現であり、論理 `i64` との変換は明示的な bridge のみで行う。backend は wire と論理表現を暗黙に混在させてはならない。
 
 ```text
 i32 tagged value (RawValue):
@@ -84,8 +84,8 @@ length を読むには: `len = i32.load(ptr)`
 
 ## RuntimeFn Catalog
 
-runtime 関数は `RuntimeFn` カタログとして管理する（M1 以降に実装）。
-M0 では巨大な WAT template として `runtime_builder.rs` に存在するが、将来は以下の形に移行する。
+runtime 関数は `RuntimeFn` カタログとして管理する（catalog 化が完了すれば linker が単一導線になる）。
+現状は巨大な WAT template として `runtime_builder.rs` に存在するが、以下の形へ移行する。
 
 ```rust
 pub struct RuntimeFn {
@@ -101,12 +101,12 @@ pub struct RuntimeFn {
 
 `console.log` を使っていない program には `$log`, `$write`, `fd_write` を含めない。
 `+` 演算子を使っていない program には `$add`, `$concat` を含めない。
-これは `RuntimeFn.deps` と `RuntimeFn.capabilities` を静的に解析することで実現する（M1 以降）。
+これは `RuntimeFn.deps` と `RuntimeFn.capabilities` を静的に解析することで実現する。
 
 ## Host Import ABI
 
 host import は capability manifest から生成する。
-backend が直接 import 文字列を持つことは禁止（M2 以降）。
+backend が直接 import 文字列を持つことは禁止（`RuntimeLinkPlan` 由来に限定する）。
 
 ### API 分類
 

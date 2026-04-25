@@ -68,9 +68,9 @@ TypeScript 型は、最適化のヒントであって別言語への opt-in で�
 | `with`          | 初期非対応、診断必須                                |
 | Proxy           | 初期非対応、object model 安定後に検討                 |
 
-## M5 実装済み array/object semantics
+## Array / object semantics（実装済み範囲）
 
-M5 で実装した array と object の semantics 要件を記録する。
+現行 lowering がカバーする array と object の semantics 要件を記録する。
 
 | 機能 | 実装状態 | 備考 |
 |---|---|---|
@@ -82,17 +82,15 @@ M5 で実装した array と object の semantics 要件を記録する。
 | data property read `obj.key` | 実装済み | reverse scan; last duplicate key wins (JS 仕様) |
 | dynamic property key | 未実装 | `unsupported-dynamic-property` |
 | prototype / method call | 未実装 | `unsupported-method-call` / `unsupported-prototype` |
-| non-ASCII string literal | 意図的に非対応 | M5 は ASCII-only; `DiagCode::UnsupportedSyntax` |
+| non-ASCII string literal | 意図的に非対応 | 当面 ASCII-only; `DiagCode::UnsupportedSyntax` |
 | object literal key (string literal) | 未実装 | `{key: v}` の key は identifier only; `{"x": v}` は parse error |
 | `obj["key"]` computed property | 意味論バグ | `$array_get` 経由になり object tag check で `undefined` を返す; JS semantics 不正 |
 | heap OOM check | 未実装 | `$alloc_heap` は memory.size を検査しない; 大きな allocation は未定義動作 |
 
 `$property_get` の reverse scan により、`{a:1, a:2}.a === 2` が成立する (JS 仕様準拠)。
 
-> **M5 は P0 技術負債を残した prototype extension である。**
-> RuntimeLinkPlan の WatEmitter 分離、AST node span 導入、BuiltinResolver pass 分離、
-> capability manifest 出力は未完。これらは M5 完了宣言の前提条件ではなく、
-> M6 移行前に返済すべき P0 として `current-state.md` に記録する。
+> **残タスク**: RuntimeLinkPlan と WatEmitter の分離、AST に一貫した `Span`、BuiltinResolver pass の整理、
+> capability manifest の本番出力などは、`current-state.md` と `docs/11-shared-definitions.md` の gate / issue で追跡する。
 
 ## Standard idiom semantics
 

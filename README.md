@@ -21,10 +21,10 @@ TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず
 | `docs/10-related-projects.md` | QuickJS、AssemblyScript、Emscripten、Javy、tsc などとの比較 |
 | `docs/11-shared-definitions.md` | test status schema、capability manifest、optimization mode、benchmark policy |
 | `current-state.md` | 現在の実装事実、未実装範囲、検証状況（root 管理） |
-| `docs/13-coding-standard.md` | Rust コード規約。panic 禁止、Diagnostic、Span、IR variant 追加、backend WAT 直書き禁止、RuntimeFn catalog |
-| `docs/14-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 |
-| `docs/15-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI |
-| `docs/16-coverage-matrix.md` | coverage 運用ポリシーと gate 判定基準 |
+| `docs/12-coding-standard.md` | Rust コード規約。panic 禁止、Diagnostic、Span、IR variant 追加、backend WAT 直書き禁止、RuntimeFn catalog |
+| `docs/13-ir-contracts.md` | AST / HIR / MIR / Wasm IR の責務と不変条件。validate_* の仕様 |
+| `docs/14-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI |
+| `docs/15-coverage-matrix.md` | coverage 運用ポリシーと gate 判定基準 |
 
 ## Development Init
 

@@ -4,7 +4,7 @@
 
 ## 実装ロードマップ
 
-本プロジェクトは一本道の milestone を進めるのではなく、複数 workstream を並行して進める。優先順位は `docs/11-shared-definitions.md` の gate で判定する。
+本プロジェクトは単一の直列ロードマップだけに従うのではなく、複数 workstream を並行して進める。優先順位は `docs/11-shared-definitions.md` の gate で判定する。
 
 - W0 Runtime substrate と W1 Standalone WASI execution を先行し、generated wasm が iwasm で観測可能な振る舞いを出せる状態を維持する。
 - W2 JS semantic core と W3 Data model は differential test を前提に拡張し、Node との差分を status schema で分類する。

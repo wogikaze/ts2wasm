@@ -10,7 +10,7 @@ Last updated: 2026-04-26
 
 - **Gate A（テスト）**: `cargo fmt --all --check` と `cargo nextest run`（フル suite。重いテストを分離する場合は `docs/11` の filterset 方針に従う）。
 - **Gate D（coverage artifact）**: `scripts/update_coverage_matrix.sh --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
-- **その他（B–C, E–G）**: ポリシーと checklist は `docs/11` / `docs/13` に記載。証拠コマンドは下記「Last verified commands」。
+- **その他（B–C, E–G）**: ポリシーと checklist は `docs/11` / `docs/12-coding-standard.md`（§19）に記載。証拠コマンドは下記「Last verified commands」。
 
 ## Last verified commands（代表）
 
@@ -51,7 +51,7 @@ scripts/update_coverage_matrix.sh
 ## Reference coverage（測定の正本）
 
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
-- ポリシーと列定義: `docs/16-coverage-matrix.md`
+- ポリシーと列定義: `docs/15-coverage-matrix.md`
 - 列 `build_pass` / `semantic_pass` は `scripts/reference_coverage.sh` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
 
 ## Implemented (high-level)

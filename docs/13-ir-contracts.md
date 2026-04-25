@@ -17,19 +17,19 @@ BuiltinResolved AST (現在の semantic 前段)
   `console.log` / `.length` / property / computed index の意味付けを持つ。
   まだ LocalId / FuncId には解決されていない。
 
-HIR (High-level IR) — 未実装、M1 以降
+HIR (High-level IR) — 未実装（予定）
   名前解決済み。JS semantic operation を保持する。
   型情報の一部（typeof, instanceof など）を持ちうる。
 
-MIR (Mid-level IR / Runtime IR) — 未実装、M2 以降
+MIR (Mid-level IR / Runtime IR) — 未実装（予定）
   runtime ABI 呼び出しに寄せた表現。
   RawValue / HeapPtr を直接扱う。
 
-Wasm IR — 未実装、M2 以降
+Wasm IR — 未実装（予定）
   wasm local / function / import / memory / data segment に直接対応。
   wasm-encoder や WasmFunc builder の入力形式。
 
-LoweredProgram (現在の中間形式、M0)
+LoweredProgram（現在の lowering 出力）
   NameResolver + Lowering が Resolved 表現を LocalId / FuncId に解決した後の表現。
   backend が AST を直接参照しないための隔離層。
   HIR / MIR の分割が完了するまでの暫定形式。
@@ -45,11 +45,11 @@ LoweredProgram (現在の中間形式、M0)
 
 ### 不変条件
 
-* すべての node は `Span { start, end }` を持つ（M1 以降）。
-  M0 では Span なしを許容するが、新規 node は Span を持つこと。
-* parser は入力の構文エラーを `Vec<Diagnostic>` で返す。`panic!` しない（M1 以降）。
+* すべての node は `Span { start, end }` を持つことを目標とする。
+  現状では Span なしを許容するが、新規 node は Span を持つこと。
+* parser は入力の構文エラーを `Vec<Diagnostic>` で返す。`panic!` しない。
 
-### validate_ast の仕様（M1 以降）
+### validate_ast の仕様（追加予定）
 
 ```rust
 pub fn validate_ast(ast: &[Stmt]) -> Result<(), Vec<Diagnostic>>
@@ -57,11 +57,11 @@ pub fn validate_ast(ast: &[Stmt]) -> Result<(), Vec<Diagnostic>>
 
 検査内容:
 
-| 検査 | Diagnostic code | M0/M1 |
+| 検査 | Diagnostic code | 状態 |
 |---|---|---|
-| top-level `return` が `_start` に入らないか | `InvalidTopLevelReturn` | M1 |
-| 関数定義の重複 | `DuplicateFunction` | M1 |
-| サポート外構文（for, class, try 等） | `UnsupportedSyntax` | M0 |
+| top-level `return` が `_start` に入らないか | `InvalidTopLevelReturn` | 予定 |
+| 関数定義の重複 | `DuplicateFunction` | 予定 |
+| サポート外構文（for, class, try 等） | `UnsupportedSyntax` | 現状 |
 
 ### BuiltinResolved AST
 
@@ -95,7 +95,7 @@ Expr::Index { object: Box<Expr>, index: Box<Expr> }
 
 `console.log(x)` かどうかは BuiltinResolver だけが判断する。
 
-## HIR — High-level IR（M1 以降）
+## HIR — High-level IR（予定）
 
 ### 責務
 
@@ -112,7 +112,7 @@ Expr::Index { object: Box<Expr>, index: Box<Expr> }
   runtime lowering で `RuntimeFn::Add` に落とす（静的分岐しない）。
 * すべての node は `Span` を持つ。
 
-### validate_hir の仕様（M1 以降）
+### validate_hir の仕様（予定）
 
 ```rust
 pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>>
@@ -127,7 +127,7 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>>
 | top-level return | `InvalidTopLevelReturn` |
 | duplicate function | `DuplicateFunction` |
 
-## LoweredProgram — M0 中間形式
+## LoweredProgram — 現在の lowering 中間形式
 
 ### 責務
 
@@ -187,10 +187,10 @@ pub struct Resolver {
 ```
 
 * `lower_program` を呼んだ後、`LoweredProgram` の不変条件をすべて満たす。
-* scope が存在しない名前は `Err(Diagnostic { code: UnresolvedName })` を返す（M1 以降）。
-  M0 では panic せず、将来のエラー対応の準備として `None` を返す。
+* scope が存在しない名前は `Err(Diagnostic { code: UnresolvedName })` を返すことを目標とする。
+  現状では panic せず、将来のエラー対応の準備として `None` を返す場合がある。
 
-## MIR — Mid-level IR（M2 以降）
+## MIR — Mid-level IR（予定）
 
 ### 責務
 
@@ -204,7 +204,7 @@ pub struct Resolver {
 * JS の動的分岐（`typeof`, `instanceof` など）は runtime call に変換済み。
 * `RawValue` は `runtime/value.rs` で定義された tagged encoding のみ。
 
-## Wasm IR（M2 以降）
+## Wasm IR（予定）
 
 ### 責務
 

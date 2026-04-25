@@ -9,9 +9,11 @@
 - docs/04-compiler-architecture-and-runtime.md: compiler/runtime アーキテクチャ
 - docs/05-compatibility-and-semantics.md: 互換性と意味論
 - docs/06-testing-and-coverage.md: テスト方針
-- docs/11-shared-definitions.md: shared 定義
-- docs/14-ir-contracts.md: IR 契約
-- docs/15-runtime-abi.md: runtime ABI
+- docs/11-shared-definitions.md: shared 定義（workstreams / gates）
+- docs/12-coding-standard.md: Rust 実装規約とゲートキーパー checklist
+- docs/13-ir-contracts.md: IR 契約
+- docs/14-runtime-abi.md: runtime ABI
+- docs/15-coverage-matrix.md: reference coverage 運用と列定義
 
 ## 2) 最初期セットアップ
 

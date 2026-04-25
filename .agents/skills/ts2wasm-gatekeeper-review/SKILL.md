@@ -9,8 +9,8 @@ Use this skill when deciding whether a change is safe to merge into mainline.
 
 Primary source of truth:
 - docs/11-shared-definitions.md（workstreams、gates、test status schema、capability / benchmark policy）
-- docs/13-coding-standard.md, section 19 (Gatekeeper Checklist)
-- docs/13-coding-standard.md, section 20 (priority context)
+- docs/12-coding-standard.md, section 19 (Gatekeeper Checklist)
+- docs/12-coding-standard.md, section 20 (priority context)
 - current-state.md（実装の現在地と代表コマンド）
 
 ## Goal
@@ -81,7 +81,7 @@ Must include:
 - RuntimeLinkPlan tests.
 - capability manifest tests.
 - differential tests if behavior changed.
-- current-state.md and docs/15 updates.
+- current-state.md and docs/14 updates.
 
 ### HostImport/Capability addition
 
@@ -106,7 +106,7 @@ Must include:
 ### Memory layout changes
 
 Must include:
-- docs/15 consistency.
+- docs/14 consistency.
 - validate_memory_layout updates for every new fixed region.
 - ordered inequalities enforced:
   - static data end <= SCRATCH_OFFSET
@@ -131,7 +131,7 @@ Minimum candidates:
 - docs/09-security-and-capability-model.md
 - docs/11-shared-definitions.md
 - current-state.md
-- docs/15-runtime-abi.md
+- docs/14-runtime-abi.md
 
 ## 7) Output Contract (what reviewer must deliver)
 
@@ -174,7 +174,7 @@ Risk:
 
 Docs:
 - current-state.md updated: yes/no
-- docs/15 updated if ABI changed: yes/no
+- docs/14 updated if ABI changed: yes/no
 - docs/09 updated if capability changed: yes/no
 
 Known unrelated working tree changes:

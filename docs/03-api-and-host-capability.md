@@ -25,7 +25,7 @@ Node.js 併用 API は、WASI 単体では扱いにくいものを対象にす�
 
 | API / idiom                        | 実行方法                                       | Node.js host 必要性 |
 | ---------------------------------- | ------------------------------------------ | ---------------: |
-| `fs.readFileSync(0, "utf8")`       | WASI `fd_read` + WASM runtime bytes-backed string (M6 現状) |               不要 |
+| `fs.readFileSync(0, "utf8")`       | WASI `fd_read` + WASM runtime bytes-backed string（stdin 経路の現状実装） |               不要 |
 | `fs.readFileSync("/path", "utf8")` | WASI preopen dir 経由の file read             |          条件付きで不要 |
 | `console.log(...)`                 | WASI `fd_write`                            |               不要 |
 | `process.argv`                     | WASI args                                  |               不要 |

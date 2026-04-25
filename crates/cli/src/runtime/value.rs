@@ -1,7 +1,7 @@
-/// Wasm linear-module representation of a JavaScript value in the M0 pipeline: always
+/// Wasm linear-module representation of a JavaScript value in the current small-int pipeline: always
 /// **i32** tagged bits (`ValueTag`). This is not interchangeable with logical ABI
-/// `AbiType::JsVal` (`i64`); see `docs/15-runtime-abi.md` and `crates/shared::AbiType`.
-pub type M0WasmTaggedValue = i32;
+/// `AbiType::JsVal` (`i64`); see `docs/14-runtime-abi.md` and `crates/shared::AbiType`.
+pub type WasmTaggedJsWire = i32;
 
 /// Value tag encoding for the `i32` tagged-value representation.
 ///
@@ -40,17 +40,17 @@ impl ValueTag {
     pub const HEAP_MASK: i32 = -8;
     /// Right-shift / left-shift amount used to pack/unpack the number payload.
     pub const NUMBER_SHIFT: i32 = 3;
-    /// Inclusive minimum payload representable in M0 tagged-int encoding.
+    /// Inclusive minimum payload representable in small-int tagged encoding.
     pub const NUMBER_PAYLOAD_MIN: i32 = i32::MIN >> Self::NUMBER_SHIFT;
-    /// Inclusive maximum payload representable in M0 tagged-int encoding.
+    /// Inclusive maximum payload representable in small-int tagged encoding.
     pub const NUMBER_PAYLOAD_MAX: i32 = i32::MAX >> Self::NUMBER_SHIFT;
 
     /// Encode a small signed integer as a tagged i32 value.
-    pub fn encode_number(n: i32) -> M0WasmTaggedValue {
+    pub fn encode_number(n: i32) -> WasmTaggedJsWire {
         (n << Self::NUMBER_SHIFT) | Self::NUMBER
     }
 
-    /// Returns true when `n` can be represented by the M0 tagged-int payload.
+    /// Returns true when `n` can be represented by the small-int tagged payload.
     pub fn can_encode_number(n: i32) -> bool {
         (Self::NUMBER_PAYLOAD_MIN..=Self::NUMBER_PAYLOAD_MAX).contains(&n)
     }

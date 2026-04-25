@@ -13,7 +13,7 @@ const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
 ///
 /// All compiler phases (Lexer / Parser / Resolver / Lowering / Backend)
 /// must return `Result<T, Diagnostic>` rather than panicking or returning
-/// unstructured `String` errors. See `docs/13-coding-standard.md` §1–2.
+/// unstructured `String` errors. See `docs/12-coding-standard.md` §1–2.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Span {
     pub start: usize,
@@ -40,7 +40,7 @@ impl std::fmt::Display for Diagnostic {
     }
 }
 
-/// Error codes for compiler diagnostics. See `docs/13-coding-standard.md` §2.
+/// Error codes for compiler diagnostics. See `docs/12-coding-standard.md` §2.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DiagCode {
     /// A name referenced in source was not declared in any enclosing scope.
@@ -53,7 +53,7 @@ pub enum DiagCode {
     DuplicateLocal,
     /// Two parameters share the same name in the same function parameter list.
     DuplicateParameter,
-    /// A number literal is outside M0 tagged-small-int range.
+    /// A number literal is outside small-int tagged range.
     NumberOutOfRange,
     /// A function call passes the wrong number of arguments.
     ArityMismatch,
@@ -430,7 +430,7 @@ impl<'a> Lexer<'a> {
                         } else {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
-                                message: "M3 supports === but not ==".to_owned(),
+                                message: "this subset supports === but not ==".to_owned(),
                                 span: Some(Span {
                                     start: self.cursor.saturating_sub(2),
                                     end: self.cursor,

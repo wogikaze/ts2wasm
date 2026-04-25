@@ -1,7 +1,7 @@
-/// Logical runtime ABI types for imports/exports described in `docs/15-runtime-abi.md`.
+/// Logical runtime ABI types for imports/exports described in `docs/14-runtime-abi.md`.
 ///
-/// `JsVal` uses wasm text type `i64` here. Generated M0 user wasm still passes **tagged
-/// JavaScript values as i32** inside the module body (`crates/cli` `M0WasmTaggedValue`);
+/// `JsVal` uses wasm text type `i64` here. Generated user wasm still passes tagged
+/// JavaScript values as i32 inside the module body (`crates/cli` `WasmTaggedJsWire`);
 /// any bridge between i32 tagged values and i64 `JsVal` at import boundaries must be
 /// explicit and tested—do not widen/narrow implicitly.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

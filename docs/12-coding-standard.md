@@ -82,7 +82,7 @@ wat.push_str(&format!("(i32.const {})\n", value));
 移行期間の例外:
 
 ```text
-legacy WAT backend の既存関数を触る場合のみ許可。
+既存 WAT backend の関数を触る場合のみ、当面は raw string 編集を許可する。
 ただし新規 runtime helper を巨大 raw string として追加してはいけない。
 関数単位に分割し、linker / WAT / differential test を追加する。
 ```
@@ -270,7 +270,7 @@ BuiltinCall
 
 は source span を持つ。
 
-### 1.9 M0 small-int を JS number のように扱った
+### 1.9 small-int subset を JS number のように扱った
 
 過去の問題:
 
@@ -286,10 +286,10 @@ number range check がなかった
 ValueTag::can_encode_number
 NumberOutOfRange diagnostic
 Node differential test
-M0 small-int 制約の docs 記載
+small-int subset 制約の docs 記載
 ```
 
-M0 数値表現:
+small-int subset の数値表現:
 
 ```text
 対応:
@@ -700,10 +700,10 @@ backend / runtime builder が layout constants を直接使う場合は、`Layou
 機能追加は compatibility level を持つ。
 
 ```text
-M0: single-file JS subset, small-int, function, let, if, while, console.log
-M1: builtin resolver separation, richer API subset
-M2: structured data subset
-M3: broader JS semantics tests
+initial subset: single-file JS、small-int、function、let/if/while、console.log
+resolver workstream: BuiltinResolver 分離と WASI-safe API 拡張
+data-model workstream: array/object/heap-backed string
+semantic tests: fixture corpus と differential oracle の拡大
 ```
 
 unsupported case は silent fallback しない。
@@ -712,8 +712,8 @@ unsupported case は silent fallback しない。
 return Err(Diagnostic {
     span,
     code: DiagCode::UnsupportedSyntax,
-    message: "object literal is not supported in M0".to_owned(),
-    notes: vec!["planned for M2".to_owned()],
+    message: "object literal is not supported in this subset".to_owned(),
+    notes: vec!["tracked as object-literals work".to_owned()],
 });
 ```
 
@@ -746,7 +746,7 @@ Runtime semantics:
 
 Backend emission:
   wasm validation
-  WAT/import snapshot during legacy period
+  WAT/import snapshot（typed writer 移行までの回帰用）
 ```
 
 必須 linker tests:
@@ -857,7 +857,7 @@ runtime string を無条件 intern している
 fd_write / fd_read など host import が常時 import されている
 source 起因 Diagnostic に span: None を新規追加している
 既存 docs の gate を削除して進行可能に見せている
-「次 milestone に進む」と docs だけ書き換えて、負債を返済していない
+「次 gate に進んだ」と docs だけ書き換えて、負債を返済していない
 ```
 
 ### 19.2 差分レビューの最初に見るコマンド
@@ -925,7 +925,7 @@ RuntimeLinkPlan test を追加した
 capability manifest test を追加した
 behavior が変わる場合は Node vs wasm/iwasm differential test を追加した
 current-state.md を更新した
-docs/15-runtime-abi.md を更新した
+docs/14-runtime-abi.md を更新した
 ```
 
 1つでも欠けたら reject する。
@@ -994,7 +994,7 @@ manifest が RuntimeLinkPlan と別ロジックで imports/capabilities を決�
 Layout / heap / scratch / stdin buffer / data segment に触る PR は、以下を確認する。
 
 ```text
-Layout constants が docs/15-runtime-abi.md と一致している
+Layout constants が docs/14-runtime-abi.md と一致している
 static data end <= SCRATCH_OFFSET
 SCRATCH_OFFSET + SCRATCH_SIZE <= next fixed buffer
 fixed buffer end <= HEAP_START
@@ -1039,7 +1039,7 @@ memory layout
 host import
 capability
 manifest schema
-milestone gate
+merge gate（`docs/11` の Gate 定義）
 unsupported feature set
 test policy
 ```
@@ -1051,7 +1051,7 @@ docs/05-compatibility-and-semantics.md
 docs/09-security-and-capability-model.md
 docs/11-shared-definitions.md
 current-state.md
-docs/15-runtime-abi.md
+docs/14-runtime-abi.md
 ```
 
 docs の gate を削除して進行可能にする変更は reject する。gate を満たした場合のみ、status を done に更新する。

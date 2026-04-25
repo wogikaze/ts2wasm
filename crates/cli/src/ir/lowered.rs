@@ -503,7 +503,7 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<R
         }
     }
     // Instance methods resolved by method name.
-    // Type-precise dispatch is deferred; this keeps M6 fixtures compiling.
+    // Type-precise dispatch is deferred; this keeps typed-optimization fixtures compiling.
     match method {
         "charAt" => Some(RuntimeFn::StringCharAt),
         "substring" => Some(RuntimeFn::StringSubstring),
@@ -1193,7 +1193,7 @@ fn class_maps(
 /// - `LocalId` values that are out of range for their enclosing scope
 /// - Call arity mismatches
 ///
-/// See `docs/14-ir-contracts.md` § validate_lowered.
+/// See `docs/13-ir-contracts.md` § validate_lowered.
 pub(crate) fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>> {
     let mut errors = Vec::new();
     let num_funcs = program.functions.len();
@@ -1425,7 +1425,7 @@ fn validate_expr(
                 errors.push(Diagnostic {
                     code: DiagCode::NumberOutOfRange,
                     message: format!(
-                        "number literal {n} is out of M0 tagged-int range ({MIN}..={MAX})",
+                        "number literal {n} is out of small-int tagged range ({MIN}..={MAX})",
                         MIN = ValueTag::NUMBER_PAYLOAD_MIN,
                         MAX = ValueTag::NUMBER_PAYLOAD_MAX,
                     ),
