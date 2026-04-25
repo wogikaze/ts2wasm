@@ -125,38 +125,32 @@ impl WatEmitter<'_> {
                     }
                 }
             }
-            LoweredExpr::ArrayNew {
-                elements,
-                base_local,
-                elem_temp,
-            } => {
+            LoweredExpr::ArrayNew { elements } => {
+                let temps = self.heap_builder_temps();
                 let elem_count = elements.len();
                 let size = Layout::ARRAY_HEADER_SIZE + (elem_count as u32) * 4;
                 wat.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    local_index(*base_local),
+                    temps.base_local,
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
                 wat.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
-                    elem_count,
+                    temps.base_local, elem_count,
                 ));
                 for (i, elem) in elements.iter().enumerate() {
                     let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
                     self.emit_expr(wat, elem, indent);
-                    wat.push_str(&format!("{pad}(local.set {})\n", local_index(*elem_temp),));
+                    wat.push_str(&format!("{pad}(local.set {})\n", temps.value_local,));
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        local_index(*base_local),
-                        offset,
-                        local_index(*elem_temp),
+                        temps.base_local, offset, temps.value_local,
                     ));
                 }
                 wat.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
+                    temps.base_local,
                     ValueTag::ARRAY_TAG,
                 ));
             }
@@ -169,24 +163,20 @@ impl WatEmitter<'_> {
                 self.emit_expr(wat, inner, indent);
                 wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
             }
-            LoweredExpr::ObjectNew {
-                props,
-                base_local,
-                val_temp,
-            } => {
+            LoweredExpr::ObjectNew { props } => {
+                let temps = self.heap_builder_temps();
                 let prop_count = props.len();
                 let size =
                     Layout::OBJECT_HEADER_SIZE + (prop_count as u32) * Layout::OBJECT_ENTRY_SIZE;
                 wat.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    local_index(*base_local),
+                    temps.base_local,
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
                 wat.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
-                    prop_count,
+                    temps.base_local, prop_count,
                 ));
                 for (i, (key, val)) in props.iter().enumerate() {
                     let entry_offset =
@@ -194,22 +184,20 @@ impl WatEmitter<'_> {
                     let key_raw = self.string_value(key);
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                        local_index(*base_local),
-                        entry_offset,
-                        key_raw,
+                        temps.base_local, entry_offset, key_raw,
                     ));
                     self.emit_expr(wat, val, indent);
-                    wat.push_str(&format!("{pad}(local.set {})\n", local_index(*val_temp),));
+                    wat.push_str(&format!("{pad}(local.set {})\n", temps.value_local,));
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        local_index(*base_local),
+                        temps.base_local,
                         entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        local_index(*val_temp),
+                        temps.value_local,
                     ));
                 }
                 wat.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
+                    temps.base_local,
                     ValueTag::OBJECT_TAG,
                 ));
             }

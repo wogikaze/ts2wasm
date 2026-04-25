@@ -134,13 +134,10 @@ pub(crate) enum LoweredExpr {
         kind: FunctionCallKind,
         args: Vec<LoweredExpr>,
     },
-    /// Array literal — allocates on heap; `base_local` is a compiler-allocated
-    /// temp used to hold the heap base pointer during construction;
-    /// `elem_temp` holds each element value during i32.store.
+    /// Array literal — allocates on heap.
+    /// Backend-managed temporary locals are not part of Lowered IR.
     ArrayNew {
         elements: Vec<LoweredExpr>,
-        base_local: LocalId,
-        elem_temp: LocalId,
     },
     /// Array index access: `arr[index]`.
     ArrayGet {
@@ -149,13 +146,11 @@ pub(crate) enum LoweredExpr {
     },
     /// `.length` on arrays or strings.
     GetLength(Box<LoweredExpr>),
-    /// Object literal — allocates on heap; `base_local` is a compiler-allocated
-    /// temp.  `val_temp` holds each property value during i32.store.
+    /// Object literal — allocates on heap.
     /// Keys are stored as raw interned-string RawValues.
+    /// Backend-managed temporary locals are not part of Lowered IR.
     ObjectNew {
         props: Vec<(String, LoweredExpr)>,
-        base_local: LocalId,
-        val_temp: LocalId,
     },
     /// Data property read: `obj.key`.
     PropertyGet {
@@ -909,30 +904,18 @@ impl<'a> Resolver<'a> {
                 index: Box::new(self.lower_expr(index)?),
             }),
             ResolvedExpr::Array(elements) => {
-                let base_local = self.alloc_temp();
-                let elem_temp = self.alloc_temp();
                 let lowered = elements
                     .iter()
                     .map(|e| self.lower_expr(e))
                     .collect::<Result<Vec<_>, _>>()?;
-                Ok(LoweredExpr::ArrayNew {
-                    elements: lowered,
-                    base_local,
-                    elem_temp,
-                })
+                Ok(LoweredExpr::ArrayNew { elements: lowered })
             }
             ResolvedExpr::Object(props) => {
-                let base_local = self.alloc_temp();
-                let val_temp = self.alloc_temp();
                 let lowered = props
                     .iter()
                     .map(|(k, v)| Ok((k.clone(), self.lower_expr(v)?)))
                     .collect::<Result<Vec<_>, _>>()?;
-                Ok(LoweredExpr::ObjectNew {
-                    props: lowered,
-                    base_local,
-                    val_temp,
-                })
+                Ok(LoweredExpr::ObjectNew { props: lowered })
             }
             ResolvedExpr::MethodCall {
                 object,
@@ -1516,13 +1499,7 @@ fn validate_expr(
                 }
             }
         }
-        LoweredExpr::ArrayNew {
-            elements,
-            base_local,
-            elem_temp,
-        } => {
-            check_local_id(*base_local, local_count, errors);
-            check_local_id(*elem_temp, local_count, errors);
+        LoweredExpr::ArrayNew { elements } => {
             for elem in elements {
                 validate_expr(elem, local_count, num_funcs, program, errors, true);
             }
@@ -1534,13 +1511,7 @@ fn validate_expr(
         LoweredExpr::GetLength(expr) => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::ObjectNew {
-            props,
-            base_local,
-            val_temp,
-        } => {
-            check_local_id(*base_local, local_count, errors);
-            check_local_id(*val_temp, local_count, errors);
+        LoweredExpr::ObjectNew { props } => {
             for (_, val) in props {
                 validate_expr(val, local_count, num_funcs, program, errors, true);
             }
