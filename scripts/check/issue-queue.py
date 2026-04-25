@@ -33,6 +33,19 @@ MD_ID_RE = re.compile(r"^\*\*ID\*\*:\s*(.+?)\s*$", re.M)
 YAML_ID_RE = re.compile(r"^(?:id|ID):\s*\"?([0-9]+[a-z]?)\"?\s*$", re.M)
 DEPENDS_RE = re.compile(r"^\*\*Depends on\*\*:\s*(.*?)\s*$", re.M)
 YAML_DEPENDS_RE = re.compile(r"^(?:depends_on|Depends on):\s*\[(.*?)\]\s*$", re.M)
+
+FIELD_ALIASES = {
+    "ID": ["id", "ID"],
+    "Title": ["title", "Title"],
+    "Status": ["status", "Status"],
+    "Type": ["type", "Type"],
+    "Area": ["area", "Area"],
+    "Priority": ["priority", "Priority"],
+    "Depends on": ["depends_on", "Depends on"],
+    "Orchestration class": ["class", "orchestration_class", "Orchestration class"],
+    "Orchestration upstream": ["upstream", "orchestration_upstream", "Orchestration upstream"],
+}
+
 PATH_RE = re.compile(r"`((?:crates|docs|fixtures|scripts|reference|issues|reports|\.github|\.agents|artifacts)/[^` ]+)")
 
 PATH_PREFIXES = (
@@ -112,8 +125,23 @@ def issue_field(text: str, field: str) -> str:
 
 
 def issue_title(text: str) -> str:
+    # Extract YAML frontmatter section (between --- markers)
+    lines = text.splitlines()
+    frontmatter_lines = []
+    in_frontmatter = False
+    for line in lines[:30]:
+        if line.strip() == "---":
+            if in_frontmatter:
+                break
+            in_frontmatter = True
+            continue
+        if in_frontmatter:
+            frontmatter_lines.append(line)
+    
+    frontmatter_text = "\n".join(frontmatter_lines)
+    
     # Try YAML frontmatter title first
-    m = re.search(r'^title:\s*"?(.+?)"?\s*$', text, re.M)
+    m = re.search(r'^[ \t]*title:[ \t]*"?(.+?)"?\s*$', frontmatter_text, re.M)
     if m:
         return m.group(1).strip().strip('"')
     # Fallback to Markdown H1

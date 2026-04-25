@@ -12,5 +12,8 @@ dist/
 # rust
 target/
 
+# python
+__pycache__/
+
 # local generated artifacts
 tmp/

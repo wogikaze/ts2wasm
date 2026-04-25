@@ -97,7 +97,7 @@ Issue files are the source of truth for work items. The generated section below 
 
 ## Index generation contract
 
-Run `scripts/manager update-issue-index` after adding, closing, or moving issues. CI and agents should run `scripts/manager update-issue-index -- --check` and `scripts/manager check-issue-index`.
+Run `scripts/manager update-issue-index` after adding, closing, or moving issues. CI and agents should run `scripts/manager update-issue-index --check` and `scripts/manager check-issue-index`.
 
 A future generator replaces only the regions between the `<!-- generated:*:start -->` / `<!-- generated:*:end -->` markers.
 
@@ -109,7 +109,7 @@ When adding, completing, or blocking an issue:
 
 - [ ] issue file is in the correct directory
 - [ ] frontmatter is updated
-- [ ] dependencies are reflected by re-running `scripts/update_issue_index.sh`
+- [ ] dependencies are reflected by re-running `scripts/manager update-issue-index`
 - [ ] done issue has completion evidence
 - [ ] follow-up work is represented as a separate open issue
 - [ ] final-state docs do not contain future TODOs
