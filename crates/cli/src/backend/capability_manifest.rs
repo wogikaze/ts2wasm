@@ -53,6 +53,17 @@ fn host_import_name(import: HostImport) -> &'static str {
     match import {
         HostImport::FdRead => "wasi_snapshot_preview1.fd_read",
         HostImport::FdWrite => "wasi_snapshot_preview1.fd_write",
+        HostImport::FsReadFileSync => "host.fs.readFileSync",
+        HostImport::FsWriteFileSync => "host.fs.writeFileSync",
+        HostImport::FsAppendFileSync => "host.fs.appendFileSync",
+        HostImport::ProcessArgv => "host.process.argv",
+        HostImport::ProcessEnv => "host.process.env",
+        HostImport::ProcessExit => "host.process.exit",
+        HostImport::PathJoin => "host.path.join",
+        HostImport::PathResolve => "host.path.resolve",
+        HostImport::PathBasename => "host.path.basename",
+        HostImport::PathDirname => "host.path.dirname",
+        HostImport::CryptoRandomBytes => "host.crypto.randomBytes",
     }
 }
 
@@ -60,6 +71,17 @@ fn capability_name(capability: Capability) -> &'static str {
     match capability {
         Capability::StdinRead => "stdin.read",
         Capability::StdoutWrite => "stdout.write",
+        Capability::HostFsReadFileSync => "host.fs.readFileSync",
+        Capability::HostFsWriteFileSync => "host.fs.writeFileSync",
+        Capability::HostFsAppendFileSync => "host.fs.appendFileSync",
+        Capability::HostProcessArgv => "host.process.argv",
+        Capability::HostProcessEnv => "host.process.env",
+        Capability::HostProcessExit => "host.process.exit",
+        Capability::HostPathJoin => "host.path.join",
+        Capability::HostPathResolve => "host.path.resolve",
+        Capability::HostPathBasename => "host.path.basename",
+        Capability::HostPathDirname => "host.path.dirname",
+        Capability::HostCryptoRandomBytes => "host.crypto.randomBytes",
     }
 }
 
@@ -114,6 +136,17 @@ fn runtime_name(runtime_fn: RuntimeFn) -> &'static str {
         RuntimeFn::ModuleRequire => "module_require",
         RuntimeFn::ModuleExportsSet => "module_exports_set",
         RuntimeFn::ModuleExportsAssign => "module_exports_assign",
+        RuntimeFn::FsReadFileSync => "fs_read_file_sync",
+        RuntimeFn::FsWriteFileSync => "fs_write_file_sync",
+        RuntimeFn::FsAppendFileSync => "fs_append_file_sync",
+        RuntimeFn::ProcessArgv => "process_argv",
+        RuntimeFn::ProcessEnv => "process_env",
+        RuntimeFn::ProcessExit => "process_exit",
+        RuntimeFn::PathJoin => "path_join",
+        RuntimeFn::PathResolve => "path_resolve",
+        RuntimeFn::PathBasename => "path_basename",
+        RuntimeFn::PathDirname => "path_dirname",
+        RuntimeFn::CryptoRandomBytes => "crypto_random_bytes",
     }
 }
 

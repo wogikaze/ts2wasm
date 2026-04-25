@@ -5,6 +5,7 @@ use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
 use crate::{DiagCode, Diagnostic};
 
+use super::RuntimeFn;
 use super::runtime_fn::HostImport;
 use super::runtime_link_plan::RuntimeLinkPlan;
 
@@ -49,13 +50,53 @@ impl<'a> WatEmitter<'a> {
         if self.requires_host_import(HostImport::FdWrite) {
             wat.push_str("  (import \"wasi_snapshot_preview1\" \"fd_write\" (func $fd_write (param i32 i32 i32 i32) (result i32)))\n");
         }
+        if self.requires_host_import(HostImport::FsReadFileSync) {
+            wat.push_str("  (import \"host\" \"fs.readFileSync\" (func $host_fs_read_file_sync (param i32 i32) (result i32)))\n");
+        }
+        if self.requires_host_import(HostImport::FsWriteFileSync) {
+            wat.push_str("  (import \"host\" \"fs.writeFileSync\" (func $host_fs_write_file_sync (param i32 i32)))\n");
+        }
+        if self.requires_host_import(HostImport::FsAppendFileSync) {
+            wat.push_str("  (import \"host\" \"fs.appendFileSync\" (func $host_fs_append_file_sync (param i32 i32)))\n");
+        }
+        if self.requires_host_import(HostImport::ProcessArgv) {
+            wat.push_str(
+                "  (import \"host\" \"process.argv\" (func $host_process_argv (result i32)))\n",
+            );
+        }
+        if self.requires_host_import(HostImport::ProcessEnv) {
+            wat.push_str(
+                "  (import \"host\" \"process.env\" (func $host_process_env (result i32)))\n",
+            );
+        }
+        if self.requires_host_import(HostImport::ProcessExit) {
+            wat.push_str(
+                "  (import \"host\" \"process.exit\" (func $host_process_exit (param i32)))\n",
+            );
+        }
+        if self.requires_host_import(HostImport::PathJoin) {
+            wat.push_str("  (import \"host\" \"path.join\" (func $host_path_join (param i32 i32) (result i32)))\n");
+        }
+        if self.requires_host_import(HostImport::PathResolve) {
+            wat.push_str("  (import \"host\" \"path.resolve\" (func $host_path_resolve (param i32) (result i32)))\n");
+        }
+        if self.requires_host_import(HostImport::PathBasename) {
+            wat.push_str("  (import \"host\" \"path.basename\" (func $host_path_basename (param i32) (result i32)))\n");
+        }
+        if self.requires_host_import(HostImport::PathDirname) {
+            wat.push_str("  (import \"host\" \"path.dirname\" (func $host_path_dirname (param i32) (result i32)))\n");
+        }
+        if self.requires_host_import(HostImport::CryptoRandomBytes) {
+            wat.push_str("  (import \"host\" \"crypto.randomBytes\" (func $host_crypto_random_bytes (param i32) (result i32)))\n");
+        }
         wat.push_str("  (memory (export \"memory\") 1)\n");
         wat.push_str(&format!(
             "  (global $heap (mut i32) (i32.const {}))\n",
             Layout::HEAP_START,
         ));
-        if !self.program.modules.is_empty() {
+        if self.module_runtime_enabled() {
             wat.push_str("  (global $module_cache (mut i32) (i32.const 0))\n");
+            wat.push_str("  (global $current_module_id (mut i32) (i32.const 0))\n");
         }
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
@@ -395,22 +436,26 @@ impl<'a> WatEmitter<'a> {
 
     fn emit_start(&self, wat: &mut String) {
         wat.push_str("  (func $_start (export \"_start\")\n");
-        let extra_locals = if self.program.modules.is_empty() {
-            0
-        } else {
-            1
-        };
+        let extra_locals = if self.module_runtime_enabled() { 1 } else { 0 };
         for _ in 0..self.program.top_level_locals.len() + extra_locals {
             wat.push_str("    (local i32)\n");
         }
-        if !self.program.modules.is_empty() {
+        if self.module_runtime_enabled() {
             let cache_size = Layout::MODULE_CACHE_MAX as u32 * Layout::MODULE_CACHE_ENTRY_SIZE;
             wat.push_str(&format!(
                 "    (global.set $module_cache (call $alloc_heap (i32.const {cache_size})))\n",
             ));
+            wat.push_str("    (global.set $current_module_id (i32.const 0))\n");
         }
         self.emit_top_level_statements(wat, 4);
         wat.push_str("  )\n");
+    }
+
+    fn module_runtime_enabled(&self) -> bool {
+        let required = self.link_plan.required_runtime_functions();
+        required.contains(&RuntimeFn::ModuleRequire)
+            || required.contains(&RuntimeFn::ModuleExportsSet)
+            || required.contains(&RuntimeFn::ModuleExportsAssign)
     }
 }
 

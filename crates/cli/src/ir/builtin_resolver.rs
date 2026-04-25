@@ -30,19 +30,10 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                             expr: Box::new(resolve_expr(value)?),
                         });
                     }
-                }
-                if let Expr::Member {
-                    object: module_expr,
-                    property: prop_name,
-                    ..
-                } = object.as_ref()
-                {
-                    if let Expr::Ident { name, .. } = module_expr.as_ref() {
-                        if name == "module" && prop_name == "exports" {
-                            return Ok(ResolvedStmt::ModuleExportsAssign {
-                                expr: Box::new(resolve_expr(value)?),
-                            });
-                        }
+                    if name == "module" && property == "exports" {
+                        return Ok(ResolvedStmt::ModuleExportsAssign {
+                            expr: Box::new(resolve_expr(value)?),
+                        });
                     }
                 }
             }
@@ -357,6 +348,29 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Member {
             object, property, ..
         } => {
+            if let Expr::Ident { name, .. } = object.as_ref() {
+                if name == "process" {
+                    return match property.as_str() {
+                        "argv" => Ok(ResolvedExpr::BuiltinCall {
+                            builtin: BuiltinId::ProcessArgv,
+                            args: Vec::new(),
+                        }),
+                        "env" => Ok(ResolvedExpr::BuiltinCall {
+                            builtin: BuiltinId::ProcessEnv,
+                            args: Vec::new(),
+                        }),
+                        _ => Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "process.{} is not supported in this milestone",
+                                property
+                            ),
+                            span: span_of_expr(expr),
+                        }),
+                    };
+                }
+            }
+
             let resolved_object = Box::new(resolve_expr(object)?);
             if property == "length" {
                 Ok(ResolvedExpr::BuiltinProperty {
@@ -454,52 +468,113 @@ fn resolve_builtin_call(
         return Ok(None);
     };
 
-    let Expr::Ident {
+    if let Expr::Ident {
         name: object_name, ..
     } = object.as_ref()
-    else {
-        if is_require_fs_read_file_sync_callee(callee) {
-            validate_read_stdin_utf8_args(call_args, callee)?;
-            return Ok(Some(BuiltinId::ReadStdinUtf8));
+    {
+        if object_name == "console" {
+            return if property == "log" {
+                Ok(Some(BuiltinId::ConsoleLog))
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("console.{} is not supported in this milestone", property),
+                    span: span_of_expr(callee),
+                })
+            };
         }
-        return Ok(None);
-    };
+        if object_name == "process" {
+            return if property == "exit" {
+                Ok(Some(BuiltinId::ProcessExit))
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("process.{} is not supported in this milestone", property),
+                    span: span_of_expr(callee),
+                })
+            };
+        }
+    }
 
-    if object_name == "console" && property == "log" {
-        return Ok(Some(BuiltinId::ConsoleLog));
+    if let Some(builtin) = resolve_require_module_builtin(object.as_ref(), property, call_args)? {
+        return Ok(Some(builtin));
     }
 
     Ok(None)
 }
 
-fn is_require_fs_read_file_sync_callee(callee: &Expr) -> bool {
-    let Expr::Member {
-        object, property, ..
-    } = callee
-    else {
-        return false;
-    };
-    if property != "readFileSync" {
-        return false;
-    }
+fn resolve_require_module_builtin(
+    object: &Expr,
+    property: &str,
+    call_args: &[Expr],
+) -> Result<Option<BuiltinId>, Diagnostic> {
     let Expr::Call {
         callee: require_callee,
-        args,
+        args: require_args,
         ..
-    } = object.as_ref()
+    } = object
     else {
-        return false;
+        return Ok(None);
     };
     let Expr::Ident {
         name: require_name, ..
     } = require_callee.as_ref()
     else {
-        return false;
+        return Ok(None);
     };
     if require_name != "require" {
-        return false;
+        return Ok(None);
     }
-    matches!(args.as_slice(), [Expr::String { value, .. }] if value == "fs")
+    let module_name = match require_args.as_slice() {
+        [Expr::String { value, .. }] => value.as_str(),
+        _ => return Ok(None),
+    };
+
+    let builtin = match (module_name, property) {
+        ("fs", "readFileSync") => {
+            if matches!(call_args.first(), Some(Expr::Number { .. })) {
+                validate_read_stdin_utf8_args(call_args, object)?;
+                BuiltinId::ReadStdinUtf8
+            } else {
+                BuiltinId::FsReadFileSync
+            }
+        }
+        ("fs", "writeFileSync") => BuiltinId::FsWriteFileSync,
+        ("fs", "appendFileSync") => BuiltinId::FsAppendFileSync,
+        ("path", "join") => BuiltinId::PathJoin,
+        ("path", "resolve") => BuiltinId::PathResolve,
+        ("path", "basename") => BuiltinId::PathBasename,
+        ("path", "dirname") => BuiltinId::PathDirname,
+        ("crypto", "randomBytes") => BuiltinId::CryptoRandomBytes,
+        ("fs", unsupported)
+        | ("path", unsupported)
+        | ("crypto", unsupported)
+        | ("util", unsupported) => {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "require(\"{}\").{} is not supported in this milestone",
+                    module_name, unsupported
+                ),
+                span: span_of_expr(object),
+            });
+        }
+        _ => return Ok(None),
+    };
+
+    if !matches!(builtin, BuiltinId::ReadStdinUtf8) && call_args.len() != builtin.expected_arity() {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "builtin call expects {} arguments, got {}",
+                builtin.expected_arity(),
+                call_args.len()
+            ),
+            span: span_of_expr(object),
+        });
+    }
+
+    Ok(Some(builtin))
 }
 
 fn validate_read_stdin_utf8_args(args: &[Expr], callee: &Expr) -> Result<(), Diagnostic> {
@@ -660,9 +735,60 @@ mod tests {
     fn non_fs_read_file_sync_is_not_misclassified() {
         let program =
             crate::parse_program("let s = require(\"path\").readFileSync(0, \"utf8\");").unwrap();
+        let err = resolve_builtins(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("require(\"path\").readFileSync"));
+    }
+
+    #[test]
+    fn process_argv_resolves_to_builtin_call() {
+        let program = crate::parse_program("let a = process.argv;").unwrap();
         let resolved = resolve_builtins(&program).unwrap();
         match &resolved[0] {
-            ResolvedStmt::Let(_, ResolvedExpr::MethodCall { .. }) => {}
+            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
+                assert_eq!(*builtin, BuiltinId::ProcessArgv);
+                assert!(args.is_empty());
+            }
+            other => panic!("unexpected resolved stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn process_exit_resolves_to_builtin_call() {
+        let program = crate::parse_program("process.exit(0);").unwrap();
+        let resolved = resolve_builtins(&program).unwrap();
+        match &resolved[0] {
+            ResolvedStmt::Expr(ResolvedExpr::BuiltinCall { builtin, args }) => {
+                assert_eq!(*builtin, BuiltinId::ProcessExit);
+                assert_eq!(args.len(), 1);
+            }
+            other => panic!("unexpected resolved stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn path_join_resolves_to_builtin_call() {
+        let program =
+            crate::parse_program("let p = require(\"path\").join(\"a\", \"b\");").unwrap();
+        let resolved = resolve_builtins(&program).unwrap();
+        match &resolved[0] {
+            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
+                assert_eq!(*builtin, BuiltinId::PathJoin);
+                assert_eq!(args.len(), 2);
+            }
+            other => panic!("unexpected resolved stmt: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn crypto_random_bytes_resolves_to_builtin_call() {
+        let program = crate::parse_program("let b = require(\"crypto\").randomBytes(16);").unwrap();
+        let resolved = resolve_builtins(&program).unwrap();
+        match &resolved[0] {
+            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
+                assert_eq!(*builtin, BuiltinId::CryptoRandomBytes);
+                assert_eq!(args.len(), 1);
+            }
             other => panic!("unexpected resolved stmt: {other:?}"),
         }
     }

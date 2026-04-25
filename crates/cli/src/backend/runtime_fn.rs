@@ -67,18 +67,62 @@ pub(crate) enum RuntimeFn {
     ModuleExportsSet,
     /// Module system: module.exports = value — replace exports object.
     ModuleExportsAssign,
+    /// Node fs.readFileSync(path, encoding)
+    FsReadFileSync,
+    /// Node fs.writeFileSync(path, data)
+    FsWriteFileSync,
+    /// Node fs.appendFileSync(path, data)
+    FsAppendFileSync,
+    /// Node process.argv
+    ProcessArgv,
+    /// Node process.env
+    ProcessEnv,
+    /// Node process.exit(code)
+    ProcessExit,
+    /// Node path.join(a, b)
+    PathJoin,
+    /// Node path.resolve(path)
+    PathResolve,
+    /// Node path.basename(path)
+    PathBasename,
+    /// Node path.dirname(path)
+    PathDirname,
+    /// Node crypto.randomBytes(size)
+    CryptoRandomBytes,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum HostImport {
     FdRead,
     FdWrite,
+    FsReadFileSync,
+    FsWriteFileSync,
+    FsAppendFileSync,
+    ProcessArgv,
+    ProcessEnv,
+    ProcessExit,
+    PathJoin,
+    PathResolve,
+    PathBasename,
+    PathDirname,
+    CryptoRandomBytes,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum Capability {
     StdinRead,
     StdoutWrite,
+    HostFsReadFileSync,
+    HostFsWriteFileSync,
+    HostFsAppendFileSync,
+    HostProcessArgv,
+    HostProcessEnv,
+    HostProcessExit,
+    HostPathJoin,
+    HostPathResolve,
+    HostPathBasename,
+    HostPathDirname,
+    HostCryptoRandomBytes,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -115,8 +159,30 @@ const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
+const IMPORT_FS_READ_FILE_SYNC: &[HostImport] = &[HostImport::FsReadFileSync];
+const IMPORT_FS_WRITE_FILE_SYNC: &[HostImport] = &[HostImport::FsWriteFileSync];
+const IMPORT_FS_APPEND_FILE_SYNC: &[HostImport] = &[HostImport::FsAppendFileSync];
+const IMPORT_PROCESS_ARGV: &[HostImport] = &[HostImport::ProcessArgv];
+const IMPORT_PROCESS_ENV: &[HostImport] = &[HostImport::ProcessEnv];
+const IMPORT_PROCESS_EXIT: &[HostImport] = &[HostImport::ProcessExit];
+const IMPORT_PATH_JOIN: &[HostImport] = &[HostImport::PathJoin];
+const IMPORT_PATH_RESOLVE: &[HostImport] = &[HostImport::PathResolve];
+const IMPORT_PATH_BASENAME: &[HostImport] = &[HostImport::PathBasename];
+const IMPORT_PATH_DIRNAME: &[HostImport] = &[HostImport::PathDirname];
+const IMPORT_CRYPTO_RANDOM_BYTES: &[HostImport] = &[HostImport::CryptoRandomBytes];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
+const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
+const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
+const CAP_HOST_FS_APPEND_FILE_SYNC: &[Capability] = &[Capability::HostFsAppendFileSync];
+const CAP_HOST_PROCESS_ARGV: &[Capability] = &[Capability::HostProcessArgv];
+const CAP_HOST_PROCESS_ENV: &[Capability] = &[Capability::HostProcessEnv];
+const CAP_HOST_PROCESS_EXIT: &[Capability] = &[Capability::HostProcessExit];
+const CAP_HOST_PATH_JOIN: &[Capability] = &[Capability::HostPathJoin];
+const CAP_HOST_PATH_RESOLVE: &[Capability] = &[Capability::HostPathResolve];
+const CAP_HOST_PATH_BASENAME: &[Capability] = &[Capability::HostPathBasename];
+const CAP_HOST_PATH_DIRNAME: &[Capability] = &[Capability::HostPathDirname];
+const CAP_HOST_CRYPTO_RANDOM_BYTES: &[Capability] = &[Capability::HostCryptoRandomBytes];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,
@@ -173,6 +239,17 @@ impl RuntimeFn {
         match builtin {
             BuiltinId::ConsoleLog => Self::Log,
             BuiltinId::ReadStdinUtf8 => Self::ReadStdinUtf8,
+            BuiltinId::FsReadFileSync => Self::FsReadFileSync,
+            BuiltinId::FsWriteFileSync => Self::FsWriteFileSync,
+            BuiltinId::FsAppendFileSync => Self::FsAppendFileSync,
+            BuiltinId::ProcessArgv => Self::ProcessArgv,
+            BuiltinId::ProcessEnv => Self::ProcessEnv,
+            BuiltinId::ProcessExit => Self::ProcessExit,
+            BuiltinId::PathJoin => Self::PathJoin,
+            BuiltinId::PathResolve => Self::PathResolve,
+            BuiltinId::PathBasename => Self::PathBasename,
+            BuiltinId::PathDirname => Self::PathDirname,
+            BuiltinId::CryptoRandomBytes => Self::CryptoRandomBytes,
         }
     }
 
@@ -548,7 +625,7 @@ impl RuntimeFn {
             },
             Self::ModuleRequire => RuntimeSpec {
                 symbol: "$module_require",
-                deps: &[Self::AllocHeap, Self::PropertyGet, Self::MemEqual],
+                deps: &[Self::AllocHeap],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -556,12 +633,7 @@ impl RuntimeFn {
             },
             Self::ModuleExportsSet => RuntimeSpec {
                 symbol: "$module_exports_set",
-                deps: &[
-                    Self::AllocHeap,
-                    Self::PropertyGet,
-                    Self::Copy,
-                    Self::MemEqual,
-                ],
+                deps: &[Self::AllocHeap, Self::PropertySet],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -569,11 +641,99 @@ impl RuntimeFn {
             },
             Self::ModuleExportsAssign => RuntimeSpec {
                 symbol: "$module_exports_assign",
-                deps: &[Self::AllocHeap],
+                deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::EffectOnly,
+            },
+            Self::FsReadFileSync => RuntimeSpec {
+                symbol: "$fs_read_file_sync",
+                deps: NO_DEPS,
+                imports: IMPORT_FS_READ_FILE_SYNC,
+                capability: CAP_HOST_FS_READ_FILE_SYNC,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::FsWriteFileSync => RuntimeSpec {
+                symbol: "$fs_write_file_sync",
+                deps: NO_DEPS,
+                imports: IMPORT_FS_WRITE_FILE_SYNC,
+                capability: CAP_HOST_FS_WRITE_FILE_SYNC,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::FsAppendFileSync => RuntimeSpec {
+                symbol: "$fs_append_file_sync",
+                deps: NO_DEPS,
+                imports: IMPORT_FS_APPEND_FILE_SYNC,
+                capability: CAP_HOST_FS_APPEND_FILE_SYNC,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ProcessArgv => RuntimeSpec {
+                symbol: "$process_argv",
+                deps: NO_DEPS,
+                imports: IMPORT_PROCESS_ARGV,
+                capability: CAP_HOST_PROCESS_ARGV,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ProcessEnv => RuntimeSpec {
+                symbol: "$process_env",
+                deps: NO_DEPS,
+                imports: IMPORT_PROCESS_ENV,
+                capability: CAP_HOST_PROCESS_ENV,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ProcessExit => RuntimeSpec {
+                symbol: "$process_exit",
+                deps: NO_DEPS,
+                imports: IMPORT_PROCESS_EXIT,
+                capability: CAP_HOST_PROCESS_EXIT,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
+            Self::PathJoin => RuntimeSpec {
+                symbol: "$path_join",
+                deps: NO_DEPS,
+                imports: IMPORT_PATH_JOIN,
+                capability: CAP_HOST_PATH_JOIN,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::PathResolve => RuntimeSpec {
+                symbol: "$path_resolve",
+                deps: NO_DEPS,
+                imports: IMPORT_PATH_RESOLVE,
+                capability: CAP_HOST_PATH_RESOLVE,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::PathBasename => RuntimeSpec {
+                symbol: "$path_basename",
+                deps: NO_DEPS,
+                imports: IMPORT_PATH_BASENAME,
+                capability: CAP_HOST_PATH_BASENAME,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::PathDirname => RuntimeSpec {
+                symbol: "$path_dirname",
+                deps: NO_DEPS,
+                imports: IMPORT_PATH_DIRNAME,
+                capability: CAP_HOST_PATH_DIRNAME,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::CryptoRandomBytes => RuntimeSpec {
+                symbol: "$crypto_random_bytes",
+                deps: NO_DEPS,
+                imports: IMPORT_CRYPTO_RANDOM_BYTES,
+                capability: CAP_HOST_CRYPTO_RANDOM_BYTES,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
             },
         }
     }
@@ -647,6 +807,18 @@ impl RuntimeFn {
             Self::ModuleRequire,
             Self::ModuleExportsSet,
             Self::ModuleExportsAssign,
+            // Node host wrappers
+            Self::FsReadFileSync,
+            Self::FsWriteFileSync,
+            Self::FsAppendFileSync,
+            Self::ProcessArgv,
+            Self::ProcessEnv,
+            Self::ProcessExit,
+            Self::PathJoin,
+            Self::PathResolve,
+            Self::PathBasename,
+            Self::PathDirname,
+            Self::CryptoRandomBytes,
         ]
     }
 
@@ -708,6 +880,18 @@ impl RuntimeFn {
             Self::ModuleRequire,
             Self::ModuleExportsSet,
             Self::ModuleExportsAssign,
+            // Node host wrappers
+            Self::FsReadFileSync,
+            Self::FsWriteFileSync,
+            Self::FsAppendFileSync,
+            Self::ProcessArgv,
+            Self::ProcessEnv,
+            Self::ProcessExit,
+            Self::PathJoin,
+            Self::PathResolve,
+            Self::PathBasename,
+            Self::PathDirname,
+            Self::CryptoRandomBytes,
         ]
     }
 }

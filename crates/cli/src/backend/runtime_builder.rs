@@ -66,6 +66,17 @@ impl WatEmitter<'_> {
                 RuntimeFn::ModuleRequire => self.emit_module_require(wat),
                 RuntimeFn::ModuleExportsSet => self.emit_module_exports_set(wat),
                 RuntimeFn::ModuleExportsAssign => self.emit_module_exports_assign(wat),
+                RuntimeFn::FsReadFileSync => self.emit_fs_read_file_sync(wat),
+                RuntimeFn::FsWriteFileSync => self.emit_fs_write_file_sync(wat),
+                RuntimeFn::FsAppendFileSync => self.emit_fs_append_file_sync(wat),
+                RuntimeFn::ProcessArgv => self.emit_process_argv(wat),
+                RuntimeFn::ProcessEnv => self.emit_process_env(wat),
+                RuntimeFn::ProcessExit => self.emit_process_exit(wat),
+                RuntimeFn::PathJoin => self.emit_path_join(wat),
+                RuntimeFn::PathResolve => self.emit_path_resolve(wat),
+                RuntimeFn::PathBasename => self.emit_path_basename(wat),
+                RuntimeFn::PathDirname => self.emit_path_dirname(wat),
+                RuntimeFn::CryptoRandomBytes => self.emit_crypto_random_bytes(wat),
             }
         }
     }
@@ -1632,15 +1643,25 @@ impl WatEmitter<'_> {
   (func $module_require (param $id i32) (result i32)
     (local $entry i32)
     (local $loaded i32)
+    (local $exports i32)
     (local.set $entry (i32.add (global.get $module_cache) (i32.mul (local.get $id) (i32.const {entry_size}))))
     (local.set $loaded (i32.load (local.get $entry)))
     (if (i32.eqz (local.get $loaded))
-      (then (return (i32.const {undefined}))))
+      (then
+        ;; Initialize an empty exports object once for this module ID.
+        (local.set $exports (call $alloc_heap (i32.const {empty_obj_size})))
+        (i32.store (local.get $exports) (i32.const {zero}))
+        (i32.store (i32.add (local.get $entry) (i32.const {value_offset}))
+          (i32.or (local.get $exports) (i32.const {object_tag})))
+        (i32.store (local.get $entry) (i32.const {one}))))
     (i32.load (i32.add (local.get $entry) (i32.const {value_offset}))))
 "#,
             entry_size = entry_size,
+            empty_obj_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE),
             value_offset = 4,
-            undefined = ValueTag::UNDEFINED,
+            object_tag = ValueTag::OBJECT,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -1649,10 +1670,34 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $module_exports_set (param $key_ptr i32) (param $key_len i32) (param $value i32)
-    (drop (local.get $key_ptr))
-    (drop (local.get $key_len))
-    (drop (local.get $value)))
+    (local $entry i32)
+    (local $loaded i32)
+    (local $exports i32)
+    (local.set $entry
+      (i32.add
+        (global.get $module_cache)
+        (i32.mul (global.get $current_module_id) (i32.const {entry_size}))))
+    (local.set $loaded (i32.load (local.get $entry)))
+    (if (i32.eqz (local.get $loaded))
+      (then
+        (local.set $exports (call $alloc_heap (i32.const {empty_obj_size})))
+        (i32.store (local.get $exports) (i32.const {zero}))
+        (i32.store (i32.add (local.get $entry) (i32.const {value_offset}))
+          (i32.or (local.get $exports) (i32.const {object_tag})))
+        (i32.store (local.get $entry) (i32.const {one}))))
+    (drop
+      (call $property_set
+        (i32.load (i32.add (local.get $entry) (i32.const {value_offset})))
+        (local.get $key_ptr)
+        (local.get $key_len)
+        (local.get $value))))
 "#,
+            entry_size = Layout::MODULE_CACHE_ENTRY_SIZE,
+            empty_obj_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE),
+            value_offset = 4,
+            object_tag = ValueTag::OBJECT,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -1661,8 +1706,120 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $module_exports_assign (param $value i32)
-    (drop (local.get $value)))
+    (local $entry i32)
+    (local.set $entry
+      (i32.add
+      (global.get $module_cache)
+      (i32.mul (global.get $current_module_id) (i32.const {entry_size}))))
+    (i32.store (i32.add (local.get $entry) (i32.const {value_offset})) (local.get $value))
+    (i32.store (local.get $entry) (i32.const {one})))
 "#,
+            entry_size = Layout::MODULE_CACHE_ENTRY_SIZE,
+            value_offset = 4,
+            one = RuntimeConst::ONE,
         ));
+    }
+
+    fn emit_fs_read_file_sync(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $fs_read_file_sync (param $path i32) (param $encoding i32) (result i32)
+    (call $host_fs_read_file_sync (local.get $path) (local.get $encoding)))
+  "#,
+        );
+    }
+
+    fn emit_fs_write_file_sync(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+    (func $fs_write_file_sync (param $path i32) (param $data i32) (result i32)
+    (call $host_fs_write_file_sync (local.get $path) (local.get $data))
+    (i32.const {undefined}))
+  "#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_fs_append_file_sync(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+    (func $fs_append_file_sync (param $path i32) (param $data i32) (result i32)
+    (call $host_fs_append_file_sync (local.get $path) (local.get $data))
+    (i32.const {undefined}))
+  "#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_process_argv(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $process_argv (result i32)
+    (call $host_process_argv))
+  "#,
+        );
+    }
+
+    fn emit_process_env(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $process_env (result i32)
+    (call $host_process_env))
+  "#,
+        );
+    }
+
+    fn emit_process_exit(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $process_exit (param $code i32)
+    (call $host_process_exit (local.get $code)))
+  "#,
+        );
+    }
+
+    fn emit_path_join(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $path_join (param $a i32) (param $b i32) (result i32)
+    (call $host_path_join (local.get $a) (local.get $b)))
+  "#,
+        );
+    }
+
+    fn emit_path_resolve(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $path_resolve (param $path i32) (result i32)
+    (call $host_path_resolve (local.get $path)))
+  "#,
+        );
+    }
+
+    fn emit_path_basename(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $path_basename (param $path i32) (result i32)
+    (call $host_path_basename (local.get $path)))
+  "#,
+        );
+    }
+
+    fn emit_path_dirname(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $path_dirname (param $path i32) (result i32)
+    (call $host_path_dirname (local.get $path)))
+  "#,
+        );
+    }
+
+    fn emit_crypto_random_bytes(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $crypto_random_bytes (param $size i32) (result i32)
+    (call $host_crypto_random_bytes (local.get $size)))
+  "#,
+        );
     }
 }
