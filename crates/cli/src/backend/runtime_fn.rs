@@ -1,6 +1,5 @@
 use crate::ir::builtin::BuiltinId;
 use crate::runtime::consts::RuntimeString;
-use crate::runtime::value::ValueTag;
 
 /// ABI contract type for host imports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -25,8 +24,8 @@ pub(crate) struct HostImportSpec {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum RuntimeFn {
-    /// M6-1 skeleton for stdin path. Real UTF-8 decode/runtime behavior is added in later M6 slices.
-    ReadStdinUtf8,
+    /// M6-1 stdin path returns a byte-backed string; full UTF-8 decode is a later slice.
+    ReadStdinBytes,
     Write,
     Copy,
     ValueToStringInto,
@@ -58,8 +57,6 @@ pub(crate) enum RuntimeFn {
     GetLength,
     /// Linear-scan property lookup on a heap object.
     PropertyGet,
-    /// One-entry inline cache wrapper around `PropertyGet`.
-    PropertyGetIc,
     /// Set or append a property on a heap object.
     PropertySet,
     /// M10: String methods
@@ -313,10 +310,6 @@ pub(crate) enum RuntimeResult {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum RuntimeGlobal {
-    IcPropObjBase,
-    IcPropKeyPtr,
-    IcPropKeyLen,
-    IcPropValue,
     ModuleCache,
     CurrentModuleId,
 }
@@ -324,10 +317,6 @@ pub(crate) enum RuntimeGlobal {
 impl RuntimeGlobal {
     pub(crate) const fn symbol(self) -> &'static str {
         match self {
-            Self::IcPropObjBase => "$ic_prop_obj_base",
-            Self::IcPropKeyPtr => "$ic_prop_key_ptr",
-            Self::IcPropKeyLen => "$ic_prop_key_len",
-            Self::IcPropValue => "$ic_prop_value",
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
         }
@@ -335,12 +324,7 @@ impl RuntimeGlobal {
 
     pub(crate) const fn initial_value(self) -> i32 {
         match self {
-            Self::IcPropValue => ValueTag::UNDEFINED,
-            Self::IcPropObjBase
-            | Self::IcPropKeyPtr
-            | Self::IcPropKeyLen
-            | Self::ModuleCache
-            | Self::CurrentModuleId => 0,
+            Self::ModuleCache | Self::CurrentModuleId => 0,
         }
     }
 }
@@ -360,12 +344,6 @@ const NO_IMPORTS: &[HostImport] = &[];
 const NO_CAPS: &[Capability] = &[];
 const NO_RUNTIME_STRINGS: &[&str] = &[];
 
-const GLOBALS_PROPERTY_GET_IC: &[RuntimeGlobal] = &[
-    RuntimeGlobal::IcPropObjBase,
-    RuntimeGlobal::IcPropKeyPtr,
-    RuntimeGlobal::IcPropKeyLen,
-    RuntimeGlobal::IcPropValue,
-];
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
 
@@ -466,7 +444,7 @@ impl RuntimeFn {
     pub(crate) const fn from_builtin(builtin: BuiltinId) -> Self {
         match builtin {
             BuiltinId::ConsoleLog => Self::Log,
-            BuiltinId::ReadStdinUtf8 => Self::ReadStdinUtf8,
+            BuiltinId::ReadStdinUtf8 => Self::ReadStdinBytes,
             BuiltinId::FsReadFileSync => Self::FsReadFileSync,
             BuiltinId::FsWriteFileSync => Self::FsWriteFileSync,
             BuiltinId::FsAppendFileSync => Self::FsAppendFileSync,
@@ -483,8 +461,8 @@ impl RuntimeFn {
 
     pub(crate) const fn spec(self) -> RuntimeSpec {
         match self {
-            Self::ReadStdinUtf8 => RuntimeSpec {
-                symbol: "$read_stdin_utf8",
+            Self::ReadStdinBytes => RuntimeSpec {
+                symbol: "$read_stdin_bytes",
                 deps: READ_STDIN_DEPS,
                 imports: IMPORT_FD_READ,
                 capability: CAP_STDIN_READ,
@@ -694,14 +672,6 @@ impl RuntimeFn {
             Self::PropertyGet => RuntimeSpec {
                 symbol: "$property_get",
                 deps: &[Self::MemEqual],
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::Value,
-            },
-            Self::PropertyGetIc => RuntimeSpec {
-                symbol: "$property_get_ic",
-                deps: &[Self::PropertyGet, Self::MemEqual],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1012,7 +982,6 @@ impl RuntimeFn {
 
     pub(crate) const fn globals(self) -> &'static [RuntimeGlobal] {
         match self {
-            Self::PropertyGetIc => GLOBALS_PROPERTY_GET_IC,
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 GLOBALS_MODULE_RUNTIME
             }
@@ -1032,7 +1001,7 @@ impl RuntimeFn {
     /// This is not const because it matches on strings.
     pub(crate) fn manifest_name(self) -> &'static str {
         match self {
-            Self::ReadStdinUtf8 => "read_stdin_utf8",
+            Self::ReadStdinBytes => "read_stdin_bytes",
             Self::Write => "write",
             Self::Copy => "copy",
             Self::ValueToStringInto => "value_to_string_into",
@@ -1059,7 +1028,6 @@ impl RuntimeFn {
             Self::ArrayGet => "array_get",
             Self::GetLength => "get_length",
             Self::PropertyGet => "property_get",
-            Self::PropertyGetIc => "property_get_ic",
             Self::PropertySet => "property_set",
             Self::StringCharAt => "string_char_at",
             Self::StringSubstring => "string_substring",
@@ -1102,7 +1070,7 @@ impl RuntimeFn {
 
     pub(crate) const fn emission_order() -> &'static [RuntimeFn] {
         &[
-            Self::ReadStdinUtf8,
+            Self::ReadStdinBytes,
             Self::Write,
             Self::Copy,
             Self::ValueToStringInto,
@@ -1129,7 +1097,6 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
-            Self::PropertyGetIc,
             Self::PropertySet,
             // String methods
             Self::StringCharAt,
@@ -1180,7 +1147,7 @@ impl RuntimeFn {
     #[cfg(test)]
     pub(crate) const fn all() -> &'static [RuntimeFn] {
         &[
-            Self::ReadStdinUtf8,
+            Self::ReadStdinBytes,
             Self::Write,
             Self::Copy,
             Self::ValueToStringInto,
@@ -1207,7 +1174,6 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
-            Self::PropertyGetIc,
             Self::PropertySet,
             // String methods
             Self::StringCharAt,

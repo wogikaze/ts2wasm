@@ -7,7 +7,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-const ENABLE_READ_STDIN_UTF8_RUNTIME: bool = true;
+const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
 
 /// Structured diagnostic emitted by compiler phases.
 ///
@@ -107,13 +107,13 @@ pub fn build_file_with_options(
 }
 
 fn ensure_runtime_feature_gates(lowered: &ir::lowered::LoweredProgram) -> Result<(), Diagnostic> {
-    if ENABLE_READ_STDIN_UTF8_RUNTIME {
+    if ENABLE_READ_STDIN_BYTES_RUNTIME {
         return Ok(());
     }
-    if backend::program_requires_read_stdin_utf8_runtime(lowered) {
+    if backend::program_requires_read_stdin_bytes_runtime(lowered) {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: "require(\"fs\").readFileSync(0, \"utf8\") is lowered but runtime execution is disabled in M6-3a"
+            message: "require(\"fs\").readFileSync(0, \"utf8\") is lowered to byte-backed runtime path, but runtime execution is disabled"
                 .to_owned(),
             span: None,
         });
@@ -3066,7 +3066,7 @@ mod tests {
     }
 
     #[test]
-    fn m6_3b_1_runtime_gate_permits_read_stdin_utf8_execution_path() {
+    fn m6_3b_1_runtime_gate_permits_read_stdin_bytes_execution_path() {
         let ast = parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
         let resolved = ir::builtin_resolver::resolve_builtins(&ast).unwrap();
         let lowered = ir::lowered::lower_program(&resolved).unwrap();

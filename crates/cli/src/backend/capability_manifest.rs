@@ -2,7 +2,7 @@ use serde::Serialize;
 
 use crate::ir::lowered::LoweredProgram;
 
-use super::runtime_fn::HostAbi;
+use super::runtime_fn::{Capability, HostAbi};
 use super::runtime_link_plan::RuntimeLinkPlan;
 
 #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
@@ -23,6 +23,9 @@ pub(crate) struct ImportV1 {
 #[derive(Debug, Clone, Serialize, PartialEq, Eq, PartialOrd, Ord)]
 pub(crate) struct CapabilityV1 {
     pub kind: String,
+    pub resource: String,
+    pub effect: String,
+    pub policy: String,
 }
 
 impl ManifestV1 {
@@ -49,9 +52,7 @@ impl ManifestV1 {
         let mut capabilities: Vec<CapabilityV1> = plan
             .required_capabilities()
             .iter()
-            .map(|cap| CapabilityV1 {
-                kind: cap.manifest_name().to_owned(),
-            })
+            .map(|cap| capability_entry(*cap))
             .collect();
         capabilities.sort();
 
@@ -74,6 +75,62 @@ impl ManifestV1 {
             .expect("ManifestV1 should always serialize to valid JSON");
         out.push('\n');
         out
+    }
+}
+
+fn capability_entry(cap: Capability) -> CapabilityV1 {
+    match cap {
+        Capability::StdinRead => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "stdin".to_owned(),
+            effect: "read".to_owned(),
+            policy: "wasi-preview1".to_owned(),
+        },
+        Capability::StdoutWrite => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "stdout".to_owned(),
+            effect: "write".to_owned(),
+            policy: "wasi-preview1".to_owned(),
+        },
+        Capability::HostFsReadFileSync => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "filesystem".to_owned(),
+            effect: "read".to_owned(),
+            policy: "host-defined".to_owned(),
+        },
+        Capability::HostFsWriteFileSync | Capability::HostFsAppendFileSync => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "filesystem".to_owned(),
+            effect: "write".to_owned(),
+            policy: "host-defined".to_owned(),
+        },
+        Capability::HostProcessArgv | Capability::HostProcessEnv => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "process".to_owned(),
+            effect: "read".to_owned(),
+            policy: "host-defined".to_owned(),
+        },
+        Capability::HostProcessExit => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "process".to_owned(),
+            effect: "terminate".to_owned(),
+            policy: "host-defined".to_owned(),
+        },
+        Capability::HostPathJoin
+        | Capability::HostPathResolve
+        | Capability::HostPathBasename
+        | Capability::HostPathDirname => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "path".to_owned(),
+            effect: "read".to_owned(),
+            policy: "host-defined".to_owned(),
+        },
+        Capability::HostCryptoRandomBytes => CapabilityV1 {
+            kind: cap.manifest_name().to_owned(),
+            resource: "random".to_owned(),
+            effect: "read".to_owned(),
+            policy: "host-defined".to_owned(),
+        },
     }
 }
 
@@ -139,6 +196,24 @@ mod tests {
             .collect()
     }
 
+    fn capability_fields(json: &Value, kind: &str) -> Option<(String, String, String)> {
+        json.get("capabilities")
+            .and_then(Value::as_array)
+            .and_then(|caps| {
+                caps.iter().find_map(|cap| {
+                    let cap_kind = cap.get("kind").and_then(Value::as_str)?;
+                    if cap_kind != kind {
+                        return None;
+                    }
+                    Some((
+                        cap.get("resource")?.as_str()?.to_owned(),
+                        cap.get("effect")?.as_str()?.to_owned(),
+                        cap.get("policy")?.as_str()?.to_owned(),
+                    ))
+                })
+            })
+    }
+
     #[test]
     fn manifest_v1_console_log_exact_sets() {
         let program = lowered("console.log(1);");
@@ -168,6 +243,11 @@ mod tests {
         let json = parse_json(&emit_manifest_v1_json(&program));
 
         assert_eq!(
+            json.get("target").and_then(Value::as_str),
+            Some("wasm32-wasi-p1+node-shim")
+        );
+
+        assert_eq!(
             import_set(&json),
             BTreeSet::from([
                 (
@@ -188,6 +268,15 @@ mod tests {
                 String::from("host.fs.readFileSync"),
                 String::from("stdout.write"),
             ])
+        );
+
+        assert_eq!(
+            capability_fields(&json, "host.fs.readFileSync"),
+            Some((
+                String::from("filesystem"),
+                String::from("read"),
+                String::from("host-defined")
+            ))
         );
     }
 

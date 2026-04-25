@@ -4,20 +4,34 @@ use crate::ir::lowered::{
     FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, LoweredUnaryOp,
 };
 
-use super::runtime_fn::{Capability, HostImport, RuntimeFn, RuntimeGlobal};
+use super::runtime_fn::{Capability, HostAbi, HostImport, RuntimeFn, RuntimeGlobal};
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct RuntimeLinkPlan {
     required_runtime: BTreeSet<RuntimeFn>,
     required_globals: BTreeSet<RuntimeGlobal>,
     required_imports: BTreeSet<HostImport>,
     required_capabilities: BTreeSet<Capability>,
     required_runtime_strings: BTreeSet<&'static str>,
+    manifest_target: &'static str,
+}
+
+impl Default for RuntimeLinkPlan {
+    fn default() -> Self {
+        Self {
+            required_runtime: BTreeSet::new(),
+            required_globals: BTreeSet::new(),
+            required_imports: BTreeSet::new(),
+            required_capabilities: BTreeSet::new(),
+            required_runtime_strings: BTreeSet::new(),
+            manifest_target: "wasm32-wasi-p1",
+        }
+    }
 }
 
 impl RuntimeLinkPlan {
     pub(crate) const fn manifest_target(&self) -> &'static str {
-        "wasm32-wasi-p1"
+        self.manifest_target
     }
 
     pub(crate) fn from_program(program: &LoweredProgram) -> Self {
@@ -88,6 +102,16 @@ impl RuntimeLinkPlan {
                 self.required_runtime_strings.insert(*value);
             }
         }
+
+        self.manifest_target = if self
+            .required_imports
+            .iter()
+            .any(|import| matches!(import.spec().abi, HostAbi::NodeShim))
+        {
+            "wasm32-wasi-p1+node-shim"
+        } else {
+            "wasm32-wasi-p1"
+        };
     }
 
     fn collect_required_runtime_stmts(&mut self, statements: &[LoweredStmt]) {
@@ -285,8 +309,6 @@ impl RuntimeLinkPlan {
                 }
             }
             LoweredExpr::PropertyGet { obj, .. } => {
-                // TODO(P2-Correctness): Use PropertyGetIc only after object semantics proven.
-                // Currently using PropertyGet (non-IC version) to validate correctness first.
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
             }
@@ -472,7 +494,7 @@ mod tests {
 
     #[test]
     fn m6_stdin_skeleton_runtime_derives_fd_read_and_stdin_capability() {
-        let plan = RuntimeLinkPlan::from_required_runtime_for_tests(&[RuntimeFn::ReadStdinUtf8]);
+        let plan = RuntimeLinkPlan::from_required_runtime_for_tests(&[RuntimeFn::ReadStdinBytes]);
         assert!(plan.required_imports().contains(&HostImport::FdRead));
         assert!(
             plan.required_capabilities()
@@ -486,33 +508,12 @@ mod tests {
         let plan = RuntimeLinkPlan::from_program(&program);
         assert!(
             plan.required_runtime_functions()
-                .contains(&RuntimeFn::ReadStdinUtf8)
+                .contains(&RuntimeFn::ReadStdinBytes)
         );
         assert!(plan.required_imports().contains(&HostImport::FdRead));
         assert!(
             plan.required_capabilities()
                 .contains(&Capability::StdinRead)
-        );
-    }
-
-    #[test]
-    fn property_get_ic_derives_ic_globals() {
-        let plan = RuntimeLinkPlan::from_required_runtime_for_tests(&[RuntimeFn::PropertyGetIc]);
-        assert!(
-            plan.required_globals()
-                .contains(&RuntimeGlobal::IcPropObjBase)
-        );
-        assert!(
-            plan.required_globals()
-                .contains(&RuntimeGlobal::IcPropKeyPtr)
-        );
-        assert!(
-            plan.required_globals()
-                .contains(&RuntimeGlobal::IcPropKeyLen)
-        );
-        assert!(
-            plan.required_globals()
-                .contains(&RuntimeGlobal::IcPropValue)
         );
     }
 

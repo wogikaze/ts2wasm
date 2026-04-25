@@ -1519,6 +1519,19 @@ fn validate_expr(
         LoweredExpr::PropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
         }
+        LoweredExpr::MethodCall { object, args, .. } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            for arg in args {
+                validate_expr(arg, local_count, num_funcs, program, errors, true);
+            }
+            errors.push(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "MethodCall must be resolved before backend; residual MethodCall is unsupported"
+                        .to_owned(),
+                span: None,
+            });
+        }
         _ => {}
     }
 }
