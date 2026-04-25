@@ -24,30 +24,30 @@ fn assert_fixture_compiles(fixture_path: &str) {
 
 #[test]
 fn class_basic_compiles() {
-    assert_fixture_compiles("m8/class-basic.ts");
+    assert_fixture_compiles("classes-and-inheritance/class-basic.ts");
 }
 
 #[test]
 fn class_extends_compiles() {
-    assert_fixture_compiles("m8/class-extends.ts");
+    assert_fixture_compiles("classes-and-inheritance/class-extends.ts");
 }
 
 #[test]
 fn new_expression_compiles() {
-    assert_fixture_compiles("m8/new-expression.ts");
+    assert_fixture_compiles("classes-and-inheritance/new-expression.ts");
 }
 
 #[test]
 fn class_static_compiles() {
-    assert_fixture_compiles("m8/class-static.ts");
+    assert_fixture_compiles("classes-and-inheritance/class-static.ts");
 }
 
 #[test]
 fn class_super_compiles() {
-    assert_fixture_compiles("m8/class-super.ts");
+    assert_fixture_compiles("classes-and-inheritance/class-super.ts");
 }
 
 #[test]
 fn class_super_method_compiles() {
-    assert_fixture_compiles("m8/class-super-method.ts");
+    assert_fixture_compiles("classes-and-inheritance/class-super-method.ts");
 }

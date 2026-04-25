@@ -68,65 +68,65 @@ fn assert_fixture_compiles(fixture_path: &str) {
 
 #[test]
 fn try_catch_compiles() {
-    assert_fixture_compiles("m7/try-catch.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/try-catch.ts");
 }
 
 #[test]
 fn try_finally_compiles() {
-    assert_fixture_compiles("m7/try-finally.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/try-finally.ts");
 }
 
 #[test]
 fn try_catch_finally_compiles() {
-    assert_fixture_compiles("m7/try-catch-finally.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/try-catch-finally.ts");
 }
 
 // ─── Switch / Case / Default ──────────────────────────────────────────────
 
 #[test]
 fn switch_case_compiles() {
-    assert_fixture_compiles("m7/switch-case.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/switch-case.ts");
 }
 
 // ─── Do-While ─────────────────────────────────────────────────────────────
 
 #[test]
 fn do_while_compiles() {
-    assert_fixture_compiles("m7/do-while.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/do-while.ts");
 }
 
 // ─── For Loop ─────────────────────────────────────────────────────────────
 
 #[test]
 fn for_loop_compiles() {
-    assert_fixture_compiles("m7/for-loop.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/for-loop.ts");
 }
 
 #[test]
 fn for_in_compiles() {
-    assert_fixture_compiles("m7/for-in.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/for-in.ts");
 }
 
 #[test]
 fn for_of_compiles() {
-    assert_fixture_compiles("m7/for-of.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/for-of.ts");
 }
 
 // ─── While with Break/Continue ────────────────────────────────────────────
 
 #[test]
 fn while_break_compiles() {
-    assert_fixture_compiles("m7/while-break.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/while-break.ts");
 }
 
 #[test]
 fn while_continue_compiles() {
-    assert_fixture_compiles("m7/while-continue.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/while-continue.ts");
 }
 
 // ─── Throw ────────────────────────────────────────────────────────────────
 
 #[test]
 fn throw_test262_compiles() {
-    assert_fixture_compiles("m7/throw-test262.ts");
+    assert_fixture_compiles("control-flow-and-exceptions/throw-test262.ts");
 }

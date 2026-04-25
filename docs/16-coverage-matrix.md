@@ -97,7 +97,7 @@ The coverage matrix above shows test262 execution counts. For detailed test resu
 
 | suite | files | result | note |
 |---|---:|---|---|
-| project fixtures (`fixtures/m1,m2,m3,m5`) | 19 | pass | これは reference coverage の分子には含めない |
+| project fixtures (`fixtures/basics-hello,primitives-control-flow,core-semantics,arrays-objects`) | 19 | pass | これは reference coverage の分子には含めない |
 
 ## Gate 連携ルール
 

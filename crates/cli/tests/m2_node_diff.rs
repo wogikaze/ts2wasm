@@ -8,11 +8,11 @@ use ts2wasm_shared::{TestRecord, TestStatus};
 #[test]
 fn m2_fixtures_match_node_output_under_iwasm() {
     for fixture in [
-        "fixtures/m2/number.ts",
-        "fixtures/m2/string.ts",
-        "fixtures/m2/boolean-if.ts",
-        "fixtures/m2/while.ts",
-        "fixtures/m2/function.ts",
+        "fixtures/primitives-control-flow/number.ts",
+        "fixtures/primitives-control-flow/string.ts",
+        "fixtures/primitives-control-flow/boolean-if.ts",
+        "fixtures/primitives-control-flow/while.ts",
+        "fixtures/primitives-control-flow/function.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -21,11 +21,11 @@ fn m2_fixtures_match_node_output_under_iwasm() {
 #[test]
 fn m3_semantic_fixtures_match_node_output_under_iwasm() {
     for fixture in [
-        "fixtures/m3/null-undefined.ts",
-        "fixtures/m3/truthiness.ts",
-        "fixtures/m3/strict-equal.ts",
-        "fixtures/m3/plus.ts",
-        "fixtures/m3/number-stringify.ts",
+        "fixtures/core-semantics/null-undefined.ts",
+        "fixtures/core-semantics/truthiness.ts",
+        "fixtures/core-semantics/strict-equal.ts",
+        "fixtures/core-semantics/plus.ts",
+        "fixtures/core-semantics/number-stringify.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -34,9 +34,9 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
 #[test]
 fn m5_array_object_fixtures_match_node_output_under_iwasm() {
     for fixture in [
-        "fixtures/m5/array.ts",
-        "fixtures/m5/string-length.ts",
-        "fixtures/m5/object.ts",
+        "fixtures/arrays-objects/array.ts",
+        "fixtures/arrays-objects/string-length.ts",
+        "fixtures/arrays-objects/object.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -46,13 +46,13 @@ fn m5_array_object_fixtures_match_node_output_under_iwasm() {
 fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         // tag-check safety: out-of-bounds array access → undefined
-        "fixtures/m5/array-oob.ts",
+        "fixtures/arrays-objects/array-oob.ts",
         // tag-check safety: non-number index on array → undefined
-        "fixtures/m5/array-nonnumber-index.ts",
+        "fixtures/arrays-objects/array-nonnumber-index.ts",
         // tag-check safety: .length on number and plain object → undefined
-        "fixtures/m5/length-tag.ts",
+        "fixtures/arrays-objects/length-tag.ts",
         // duplicate-key semantics: last key wins → 2
-        "fixtures/m5/object-dup-key.ts",
+        "fixtures/arrays-objects/object-dup-key.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -271,17 +271,17 @@ fn extract_diag_code(stderr: &str) -> String {
 
 #[test]
 fn m6_stdin_fixture_matches_node_output_under_iwasm() {
-    assert_stdin_fixture_matches_node("fixtures/m6/stdin.ts", b"hello");
+    assert_stdin_fixture_matches_node("fixtures/builtins-and-io/stdin.ts", b"hello");
 }
 
 #[test]
 fn differential_test_runner_classifies_fixtures() {
     // Test the differential test runner with various fixtures
     let fixtures = vec![
-        "fixtures/m2/number.ts",
-        "fixtures/m2/string.ts",
-        "fixtures/m3/null-undefined.ts",
-        "fixtures/m5/array.ts",
+        "fixtures/primitives-control-flow/number.ts",
+        "fixtures/primitives-control-flow/string.ts",
+        "fixtures/core-semantics/null-undefined.ts",
+        "fixtures/arrays-objects/array.ts",
     ];
 
     for fixture in fixtures {

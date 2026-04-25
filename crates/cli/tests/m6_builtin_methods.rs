@@ -41,7 +41,7 @@ fn run_fixture(path: &str) -> Result<String, String> {
 
 #[test]
 fn math_floor_method_emits() {
-    let result = run_fixture("m6/math-floor.ts");
+    let result = run_fixture("builtins-and-io/math-floor.ts");
     assert!(
         result.is_ok(),
         "Math.floor should compile: {:?}",
@@ -51,7 +51,7 @@ fn math_floor_method_emits() {
 
 #[test]
 fn math_ceil_method_emits() {
-    let result = run_fixture("m6/math-ceil.ts");
+    let result = run_fixture("builtins-and-io/math-ceil.ts");
     assert!(
         result.is_ok(),
         "Math.ceil should compile: {:?}",
@@ -61,7 +61,7 @@ fn math_ceil_method_emits() {
 
 #[test]
 fn math_round_method_emits() {
-    let result = run_fixture("m6/math-round.ts");
+    let result = run_fixture("builtins-and-io/math-round.ts");
     assert!(
         result.is_ok(),
         "Math.round should compile: {:?}",
@@ -71,7 +71,7 @@ fn math_round_method_emits() {
 
 #[test]
 fn math_abs_method_emits() {
-    let result = run_fixture("m6/math-abs.ts");
+    let result = run_fixture("builtins-and-io/math-abs.ts");
     assert!(
         result.is_ok(),
         "Math.abs should compile: {:?}",
@@ -81,7 +81,7 @@ fn math_abs_method_emits() {
 
 #[test]
 fn math_max_method_emits() {
-    let result = run_fixture("m6/math-max.ts");
+    let result = run_fixture("builtins-and-io/math-max.ts");
     assert!(
         result.is_ok(),
         "Math.max should compile: {:?}",
@@ -91,7 +91,7 @@ fn math_max_method_emits() {
 
 #[test]
 fn math_min_method_emits() {
-    let result = run_fixture("m6/math-min.ts");
+    let result = run_fixture("builtins-and-io/math-min.ts");
     assert!(
         result.is_ok(),
         "Math.min should compile: {:?}",
@@ -101,7 +101,7 @@ fn math_min_method_emits() {
 
 #[test]
 fn object_keys_method_emits() {
-    let result = run_fixture("m6/object-keys.ts");
+    let result = run_fixture("builtins-and-io/object-keys.ts");
     assert!(
         result.is_ok(),
         "Object.keys should compile: {:?}",
@@ -111,7 +111,7 @@ fn object_keys_method_emits() {
 
 #[test]
 fn object_values_method_emits() {
-    let result = run_fixture("m6/object-values.ts");
+    let result = run_fixture("builtins-and-io/object-values.ts");
     assert!(
         result.is_ok(),
         "Object.values should compile: {:?}",
@@ -121,7 +121,7 @@ fn object_values_method_emits() {
 
 #[test]
 fn object_entries_method_emits() {
-    let result = run_fixture("m6/object-entries.ts");
+    let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(
         result.is_ok(),
         "Object.entries should compile: {:?}",
@@ -131,7 +131,7 @@ fn object_entries_method_emits() {
 
 #[test]
 fn json_stringify_method_emits() {
-    let result = run_fixture("m6/json-stringify.ts");
+    let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
         result.is_ok(),
         "JSON.stringify should compile: {:?}",
@@ -141,7 +141,7 @@ fn json_stringify_method_emits() {
 
 #[test]
 fn json_parse_method_emits() {
-    let result = run_fixture("m6/json-parse.ts");
+    let result = run_fixture("builtins-and-io/json-parse.ts");
     assert!(
         result.is_ok(),
         "JSON.parse should compile: {:?}",
@@ -153,7 +153,7 @@ fn json_parse_method_emits() {
 fn math_methods_classify_as_supported() {
     // Verify that Math methods are properly resolved to RuntimeFn variants
     let _ = TestRecord {
-        suite: "fixtures/m6".to_owned(),
+        suite: "fixtures/builtins-and-io".to_owned(),
         case: "math-floor.ts".to_owned(),
         target: "wasm32-wasi".to_owned(),
         status: TestStatus::Pass,
@@ -167,7 +167,7 @@ fn math_methods_classify_as_supported() {
 #[test]
 fn object_methods_classify_as_supported() {
     let _ = TestRecord {
-        suite: "fixtures/m6".to_owned(),
+        suite: "fixtures/builtins-and-io".to_owned(),
         case: "object-keys.ts".to_owned(),
         target: "wasm32-wasi".to_owned(),
         status: TestStatus::Pass,
@@ -181,7 +181,7 @@ fn object_methods_classify_as_supported() {
 #[test]
 fn json_methods_classify_as_supported() {
     let _ = TestRecord {
-        suite: "fixtures/m6".to_owned(),
+        suite: "fixtures/builtins-and-io".to_owned(),
         case: "json-stringify.ts".to_owned(),
         target: "wasm32-wasi".to_owned(),
         status: TestStatus::Pass,
@@ -196,7 +196,7 @@ fn json_methods_classify_as_supported() {
 
 #[test]
 fn string_char_at_method_emits() {
-    let result = run_fixture("m6/string-char-at.ts");
+    let result = run_fixture("builtins-and-io/string-char-at.ts");
     assert!(
         result.is_ok(),
         "String.charAt should compile: {:?}",
@@ -206,7 +206,7 @@ fn string_char_at_method_emits() {
 
 #[test]
 fn string_substring_method_emits() {
-    let result = run_fixture("m6/string-substring.ts");
+    let result = run_fixture("builtins-and-io/string-substring.ts");
     assert!(
         result.is_ok(),
         "String.substring should compile: {:?}",
@@ -216,7 +216,7 @@ fn string_substring_method_emits() {
 
 #[test]
 fn string_slice_method_emits() {
-    let result = run_fixture("m6/string-slice.ts");
+    let result = run_fixture("builtins-and-io/string-slice.ts");
     assert!(
         result.is_ok(),
         "String.slice should compile: {:?}",
@@ -226,7 +226,7 @@ fn string_slice_method_emits() {
 
 #[test]
 fn string_index_of_method_emits() {
-    let result = run_fixture("m6/string-index-of.ts");
+    let result = run_fixture("builtins-and-io/string-index-of.ts");
     assert!(
         result.is_ok(),
         "String.indexOf should compile: {:?}",
@@ -236,7 +236,7 @@ fn string_index_of_method_emits() {
 
 #[test]
 fn string_split_method_emits() {
-    let result = run_fixture("m6/string-split.ts");
+    let result = run_fixture("builtins-and-io/string-split.ts");
     assert!(
         result.is_ok(),
         "String.split should compile: {:?}",
@@ -248,7 +248,7 @@ fn string_split_method_emits() {
 
 #[test]
 fn array_push_method_emits() {
-    let result = run_fixture("m6/array-push.ts");
+    let result = run_fixture("builtins-and-io/array-push.ts");
     assert!(
         result.is_ok(),
         "Array.push should compile: {:?}",
@@ -258,7 +258,7 @@ fn array_push_method_emits() {
 
 #[test]
 fn array_pop_method_emits() {
-    let result = run_fixture("m6/array-pop.ts");
+    let result = run_fixture("builtins-and-io/array-pop.ts");
     assert!(
         result.is_ok(),
         "Array.pop should compile: {:?}",
@@ -268,7 +268,7 @@ fn array_pop_method_emits() {
 
 #[test]
 fn array_slice_method_emits() {
-    let result = run_fixture("m6/array-slice.ts");
+    let result = run_fixture("builtins-and-io/array-slice.ts");
     assert!(
         result.is_ok(),
         "Array.slice should compile: {:?}",
@@ -278,7 +278,7 @@ fn array_slice_method_emits() {
 
 #[test]
 fn array_concat_method_emits() {
-    let result = run_fixture("m6/array-concat.ts");
+    let result = run_fixture("builtins-and-io/array-concat.ts");
     assert!(
         result.is_ok(),
         "Array.concat should compile: {:?}",
@@ -288,7 +288,7 @@ fn array_concat_method_emits() {
 
 #[test]
 fn array_join_method_emits() {
-    let result = run_fixture("m6/array-join.ts");
+    let result = run_fixture("builtins-and-io/array-join.ts");
     assert!(
         result.is_ok(),
         "Array.join should compile: {:?}",
@@ -298,7 +298,7 @@ fn array_join_method_emits() {
 
 #[test]
 fn array_reverse_method_emits() {
-    let result = run_fixture("m6/array-reverse.ts");
+    let result = run_fixture("builtins-and-io/array-reverse.ts");
     assert!(
         result.is_ok(),
         "Array.reverse should compile: {:?}",
@@ -311,7 +311,7 @@ fn array_reverse_method_emits() {
 #[test]
 fn string_methods_classify_as_supported() {
     let _ = TestRecord {
-        suite: "fixtures/m6".to_owned(),
+        suite: "fixtures/builtins-and-io".to_owned(),
         case: "string-char-at.ts".to_owned(),
         target: "wasm32-wasi".to_owned(),
         status: TestStatus::Pass,
@@ -325,7 +325,7 @@ fn string_methods_classify_as_supported() {
 #[test]
 fn array_methods_classify_as_supported() {
     let _ = TestRecord {
-        suite: "fixtures/m6".to_owned(),
+        suite: "fixtures/builtins-and-io".to_owned(),
         case: "array-push.ts".to_owned(),
         target: "wasm32-wasi".to_owned(),
         status: TestStatus::Pass,

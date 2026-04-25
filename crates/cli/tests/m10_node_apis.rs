@@ -24,40 +24,40 @@ fn assert_fixture_compiles(fixture_path: &str) {
 
 #[test]
 fn fs_read_compiles() {
-    assert_fixture_compiles("m10/fs-read.ts");
+    assert_fixture_compiles("node-apis/fs-read.ts");
 }
 
 #[test]
 fn fs_write_compiles() {
-    assert_fixture_compiles("m10/fs-write.ts");
+    assert_fixture_compiles("node-apis/fs-write.ts");
 }
 
 #[test]
 fn fs_append_compiles() {
-    assert_fixture_compiles("m10/fs-append.ts");
+    assert_fixture_compiles("node-apis/fs-append.ts");
 }
 
 #[test]
 fn process_argv_compiles() {
-    assert_fixture_compiles("m10/process-argv.ts");
+    assert_fixture_compiles("node-apis/process-argv.ts");
 }
 
 #[test]
 fn process_env_compiles() {
-    assert_fixture_compiles("m10/process-env.ts");
+    assert_fixture_compiles("node-apis/process-env.ts");
 }
 
 #[test]
 fn path_join_compiles() {
-    assert_fixture_compiles("m10/path-join.ts");
+    assert_fixture_compiles("node-apis/path-join.ts");
 }
 
 #[test]
 fn path_resolve_compiles() {
-    assert_fixture_compiles("m10/path-resolve.ts");
+    assert_fixture_compiles("node-apis/path-resolve.ts");
 }
 
 #[test]
 fn crypto_random_bytes_compiles() {
-    assert_fixture_compiles("m10/crypto-random-bytes.ts");
+    assert_fixture_compiles("node-apis/crypto-random-bytes.ts");
 }

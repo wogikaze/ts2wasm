@@ -38,27 +38,27 @@ fn compile_fixture(fixture: &str) -> std::path::PathBuf {
 
 #[test]
 fn require_cache_compiles() {
-    compile_fixture("m9/require-cache.ts");
+    compile_fixture("modules-and-typed-optimizations/require-cache.ts");
 }
 
 #[test]
 fn require_relative_compiles() {
-    compile_fixture("m9/require-relative.ts");
+    compile_fixture("modules-and-typed-optimizations/require-relative.ts");
 }
 
 #[test]
 fn exports_assign_compiles() {
-    compile_fixture("m9/exports-assign.ts");
+    compile_fixture("modules-and-typed-optimizations/exports-assign.ts");
 }
 
 #[test]
 fn module_exports_assign_compiles() {
-    compile_fixture("m9/module-exports-assign.ts");
+    compile_fixture("modules-and-typed-optimizations/module-exports-assign.ts");
 }
 
 #[test]
 fn require_cache_reuses_same_object_at_runtime() {
-    let output = compile_fixture("m9/require-cache.ts");
+    let output = compile_fixture("modules-and-typed-optimizations/require-cache.ts");
     let run = Command::new("iwasm")
         .arg(&output)
         .output()

@@ -121,7 +121,7 @@ mod tests {
 
     fn record(status: TestStatus) -> TestRecord {
         TestRecord {
-            suite: "fixtures/m0".to_owned(),
+            suite: "fixtures/shared-schema".to_owned(),
             case: "manifest".to_owned(),
             target: "wasm32-wasi".to_owned(),
             status,

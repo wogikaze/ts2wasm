@@ -25,12 +25,12 @@ fi
 # Collect metrics
 declare -A METRICS
 
-# 1. Wasm file size (build fixtures/m5/object.ts)
+# 1. Wasm file size (build fixtures/arrays-objects/object.ts)
 echo "Measuring wasm file size..." >&2
 local wasm_file=$(mktemp "$TMP_DIR/test-XXXXXX.wasm")
 
 START_TIME=$(date +%s%N)
-cargo run -q -p ts2wasm-cli -- build fixtures/m5/object.ts -o "$wasm_file" 2>&1
+cargo run -q -p ts2wasm-cli -- build fixtures/arrays-objects/object.ts -o "$wasm_file" 2>&1
 END_TIME=$(date +%s%N)
 
 METRICS["compile_time_ms"]=$(( (END_TIME - START_TIME) / 1000000 ))
@@ -42,7 +42,7 @@ echo "  Compile time: ${METRICS[compile_time_ms]} ms" >&2
 # 2. Execution time (measure first fixture)
 echo "Measuring execution time..." >&2
 EXEC_TIMES=()
-for fixture in fixtures/m5/array.ts fixtures/m5/object.ts fixtures/m5/string-length.ts; do
+for fixture in fixtures/arrays-objects/array.ts fixtures/arrays-objects/object.ts fixtures/arrays-objects/string-length.ts; do
     [ -f "$fixture" ] || continue
     
     local test_wasm=$(mktemp "$TMP_DIR/exec-XXXXXX.wasm")

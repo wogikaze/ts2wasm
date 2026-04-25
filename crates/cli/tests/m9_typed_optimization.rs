@@ -63,7 +63,7 @@ fn manifest_runtime_entries(path: &std::path::Path) -> Vec<String> {
 
 #[test]
 fn typed_add_runtime_equivalence() {
-    let (wasm, _) = compile_with_manifest("m9/typed-add.ts");
+    let (wasm, _) = compile_with_manifest("modules-and-typed-optimizations/typed-add.ts");
     let run = Command::new("iwasm")
         .arg(&wasm)
         .output()
@@ -80,14 +80,15 @@ fn typed_add_runtime_equivalence() {
 
 #[test]
 fn typed_add_uses_fast_runtime_path() {
-    let (_, manifest_path) = compile_with_manifest("m9/typed-add.ts");
+    let (_, manifest_path) = compile_with_manifest("modules-and-typed-optimizations/typed-add.ts");
     let runtime = manifest_runtime_entries(&manifest_path);
     assert!(runtime.iter().any(|entry| entry == "add_fast"));
 }
 
 #[test]
 fn property_get_uses_inline_cache_runtime() {
-    let (wasm, manifest_path) = compile_with_manifest("m9/property-ic.ts");
+    let (wasm, manifest_path) =
+        compile_with_manifest("modules-and-typed-optimizations/property-ic.ts");
     let runtime = manifest_runtime_entries(&manifest_path);
     // TODO(P2-Correctness): PropertyGetIc optimization disabled until object correctness proven.
     // Verify base property_get is used instead.
