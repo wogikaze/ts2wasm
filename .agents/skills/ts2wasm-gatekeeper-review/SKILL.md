@@ -1,6 +1,6 @@
 ---
 name: ts2wasm-gatekeeper-review
-description: Use when acting as a gatekeeper/reviewer for ts2wasm PRs, agent outputs, or autopilot results before mainline merge. Trigger phrases: review as gatekeeper, merge gate check, runtime/backend checklist, grep gate, handoff packet.
+description: "Use when acting as a gatekeeper/reviewer for ts2wasm PRs, agent outputs, or autopilot results before mainline merge. Trigger phrases: review as gatekeeper, merge gate check, runtime/backend checklist, grep gate, handoff packet."
 ---
 
 # ts2wasm Gatekeeper Review Workflow

@@ -1,3 +1,8 @@
+---
+name: m10-stream-e
+description: Use when implementing M10 Stream E module system foundations, including require parsing, module linking, resolution, caching, exports, module.exports, and builtin module capability detection in ts2wasm.
+---
+
 # Stream E: Module System Foundations
 
 ## Goal

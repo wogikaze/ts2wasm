@@ -1,3 +1,8 @@
+---
+name: m10-stream-f
+description: Use when implementing M10 Stream F Node.js API integration through manifest-driven host imports for fs, process, path, util, crypto, and related capability documentation in ts2wasm.
+---
+
 # Stream F: Node.js API Integration
 
 ## Goal

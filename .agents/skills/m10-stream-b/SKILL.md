@@ -1,3 +1,8 @@
+---
+name: m10-stream-b
+description: Use when implementing M10 Stream B built-in function work for String, Array, Object, Math, JSON runtime functions, builtin resolution, WAT emission, and fixtures in ts2wasm.
+---
+
 # Stream B: Built-in Functions (Core Methods)
 
 ## Goal

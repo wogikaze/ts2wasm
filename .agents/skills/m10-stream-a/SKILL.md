@@ -1,3 +1,8 @@
+---
+name: m10-stream-a
+description: Use when implementing M10 Stream A parser and lexer frontier work for TypeScript and ECMAScript keywords, operators, AST parsing, and parser-only tests in ts2wasm.
+---
+
 # Stream A: Parser/Lexer Frontier (Keywords & Operators)
 
 ## Goal

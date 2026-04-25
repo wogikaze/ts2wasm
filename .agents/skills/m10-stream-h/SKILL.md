@@ -1,3 +1,8 @@
+---
+name: m10-stream-h
+description: Use when implementing M10 Stream H performance and type-driven optimization foundations, including TypeScript type extraction, simple inference, fast paths, inline caching, and monomorphic optimizations in ts2wasm.
+---
+
 # Stream H: Performance & Type-Driven Optimization (M9 foundations)
 
 ## Goal

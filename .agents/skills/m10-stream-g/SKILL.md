@@ -1,3 +1,8 @@
+---
+name: m10-stream-g
+description: Use when implementing M10 Stream G test infrastructure and coverage tracking for test262, TypeScript, typescript-go, differential reporting, coverage matrix updates, and regression gates in ts2wasm.
+---
+
 # Stream G: Test Infrastructure & Coverage Tracking
 
 ## Goal

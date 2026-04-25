@@ -1,3 +1,8 @@
+---
+name: m10-stream-c
+description: Use when implementing M10 Stream C control-flow and statement extensions, including try-catch-finally, switch, for variants, do-while, break, continue, throw lowering, and runtime support in ts2wasm.
+---
+
 # Stream C: Control Flow & Statement Extensions
 
 ## Goal

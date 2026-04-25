@@ -1,3 +1,8 @@
+---
+name: m10-stream-d
+description: Use when implementing M10 Stream D OOP foundations, including class declarations, constructors, instance and static methods, new expressions, this binding, extends, and basic super support in ts2wasm.
+---
+
 # Stream D: OOP Foundations (Classes, Constructors, Methods)
 
 ## Goal
