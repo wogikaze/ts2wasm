@@ -1,4 +1,5 @@
 use super::RuntimeFn;
+use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
 use crate::ir::lowered::{
     FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp,
@@ -19,7 +20,13 @@ impl WatEmitter<'_> {
         }
     }
 
-    pub(super) fn emit_expr(&self, wat: &mut String, expr: &LoweredExpr, indent: usize) {
+    pub(super) fn emit_expr(
+        &self,
+        wat: &mut String,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
         let pad = " ".repeat(indent);
         match expr {
             LoweredExpr::Number(value) => wat.push_str(&format!(
@@ -43,7 +50,7 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
             }
             LoweredExpr::Unary { op, expr } => {
-                self.emit_expr(wat, expr, indent);
+                self.emit_expr(wat, expr, indent, frame);
                 match op {
                     LoweredUnaryOp::Not => {
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Not.symbol()))
@@ -60,44 +67,44 @@ impl WatEmitter<'_> {
                     LoweredBinaryOp::Add
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent);
-                        self.emit_expr(wat, right, indent);
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::AddFast.symbol()));
                     }
                     LoweredBinaryOp::Add
                         if left_ty == InferredType::String && right_ty == InferredType::String =>
                     {
-                        self.emit_expr(wat, left, indent);
-                        self.emit_expr(wat, right, indent);
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Concat.symbol()));
                     }
                     LoweredBinaryOp::Subtract
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent);
-                        self.emit_expr(wat, right, indent);
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::SubFast.symbol()));
                     }
                     LoweredBinaryOp::Less
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent);
-                        self.emit_expr(wat, right, indent);
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::LessFast.symbol()));
                     }
                     LoweredBinaryOp::Greater
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
-                        self.emit_expr(wat, left, indent);
-                        self.emit_expr(wat, right, indent);
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!(
                             "{pad}(call {})\n",
                             RuntimeFn::GreaterFast.symbol()
                         ));
                     }
                     _ => {
-                        self.emit_expr(wat, left, indent);
-                        self.emit_expr(wat, right, indent);
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
                         let runtime_fn = match op {
                             LoweredBinaryOp::Add => RuntimeFn::Add,
                             LoweredBinaryOp::Subtract => RuntimeFn::Sub,
@@ -113,7 +120,7 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::Call { kind, args } => {
                 for arg in args {
-                    self.emit_expr(wat, arg, indent);
+                    self.emit_expr(wat, arg, indent, frame);
                 }
                 match kind {
                     FunctionCallKind::User(func_id) => {
@@ -126,57 +133,59 @@ impl WatEmitter<'_> {
                 }
             }
             LoweredExpr::ArrayNew { elements } => {
-                let temps = self.heap_builder_temps();
                 let elem_count = elements.len();
                 let size = Layout::ARRAY_HEADER_SIZE + (elem_count as u32) * 4;
                 wat.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    temps.base_local,
+                    frame.heap_base_tmp(),
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
                 wat.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    temps.base_local, elem_count,
+                    frame.heap_base_tmp(),
+                    elem_count,
                 ));
                 for (i, elem) in elements.iter().enumerate() {
                     let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
-                    self.emit_expr(wat, elem, indent);
-                    wat.push_str(&format!("{pad}(local.set {})\n", temps.value_local,));
+                    self.emit_expr(wat, elem, indent, frame);
+                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp(),));
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        temps.base_local, offset, temps.value_local,
+                        frame.heap_base_tmp(),
+                        offset,
+                        frame.heap_value_tmp(),
                     ));
                 }
                 wat.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    temps.base_local,
+                    frame.heap_base_tmp(),
                     ValueTag::ARRAY_TAG,
                 ));
             }
             LoweredExpr::ArrayGet { arr, index } => {
-                self.emit_expr(wat, arr, indent);
-                self.emit_expr(wat, index, indent);
+                self.emit_expr(wat, arr, indent, frame);
+                self.emit_expr(wat, index, indent, frame);
                 wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ArrayGet.symbol()));
             }
             LoweredExpr::GetLength(inner) => {
-                self.emit_expr(wat, inner, indent);
+                self.emit_expr(wat, inner, indent, frame);
                 wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
             }
             LoweredExpr::ObjectNew { props } => {
-                let temps = self.heap_builder_temps();
                 let prop_count = props.len();
                 let size =
                     Layout::OBJECT_HEADER_SIZE + (prop_count as u32) * Layout::OBJECT_ENTRY_SIZE;
                 wat.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    temps.base_local,
+                    frame.heap_base_tmp(),
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
                 wat.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    temps.base_local, prop_count,
+                    frame.heap_base_tmp(),
+                    prop_count,
                 ));
                 for (i, (key, val)) in props.iter().enumerate() {
                     let entry_offset =
@@ -184,27 +193,29 @@ impl WatEmitter<'_> {
                     let key_raw = self.string_value(key);
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
-                        temps.base_local, entry_offset, key_raw,
+                        frame.heap_base_tmp(),
+                        entry_offset,
+                        key_raw,
                     ));
-                    self.emit_expr(wat, val, indent);
-                    wat.push_str(&format!("{pad}(local.set {})\n", temps.value_local,));
+                    self.emit_expr(wat, val, indent, frame);
+                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp(),));
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        temps.base_local,
+                        frame.heap_base_tmp(),
                         entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        temps.value_local,
+                        frame.heap_value_tmp(),
                     ));
                 }
                 wat.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    temps.base_local,
+                    frame.heap_base_tmp(),
                     ValueTag::OBJECT_TAG,
                 ));
             }
             LoweredExpr::PropertyGet { obj, key } => {
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.ascii_string_len(key);
-                self.emit_expr(wat, obj, indent);
+                self.emit_expr(wat, obj, indent, frame);
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
                 wat.push_str(&format!(
@@ -213,28 +224,26 @@ impl WatEmitter<'_> {
                 ));
             }
             LoweredExpr::MethodCall {
-                object,
+                object: _,
                 method: _,
                 args: _,
             } => {
-                // Placeholder for method calls - will be implemented in Phase 3
-                // Note: built-in methods should be lowered to RuntimeCall before reaching here
-                wat.push_str(&format!("{pad};; TODO: implement method call\n"));
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                // Lowering/validation should reject residual MethodCall before backend.
+                wat.push_str(&format!("{pad}(unreachable)\n"));
             }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
                 for arg in args {
-                    self.emit_expr(wat, &arg, indent);
+                    self.emit_expr(wat, &arg, indent, frame);
                 }
                 wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
             }
             LoweredExpr::PropertySet { object, key, value } => {
-                self.emit_expr(wat, object, indent);
+                self.emit_expr(wat, object, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.ascii_string_len(key);
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
-                self.emit_expr(wat, value, indent);
+                self.emit_expr(wat, value, indent, frame);
                 wat.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertySet.symbol(),
@@ -272,7 +281,7 @@ impl WatEmitter<'_> {
                     ValueTag::OBJECT,
                 ));
                 for arg in args {
-                    self.emit_expr(wat, arg, indent);
+                    self.emit_expr(wat, arg, indent, frame);
                 }
                 wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
                 wat.push_str(&format!("{pad}(drop)\n"));

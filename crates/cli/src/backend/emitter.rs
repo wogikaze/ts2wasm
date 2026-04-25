@@ -1,4 +1,3 @@
-use std::cell::RefCell;
 use std::collections::HashMap;
 
 use crate::ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
@@ -19,13 +18,33 @@ pub(super) struct WatEmitter<'a> {
     pub(super) strings: HashMap<String, u32>,
     pub(super) string_data: Vec<(u32, String)>,
     pub(super) next_data_offset: u32,
-    heap_builder_temps: RefCell<Option<HeapBuilderTemps>>,
 }
 
 #[derive(Debug, Clone, Copy)]
-pub(super) struct HeapBuilderTemps {
-    pub(super) base_local: usize,
-    pub(super) value_local: usize,
+pub(super) struct LocalFrame {
+    pub(super) user_local_count: usize,
+    pub(super) backend_base: usize,
+}
+
+impl LocalFrame {
+    pub(super) fn new(user_local_count: usize) -> Self {
+        Self {
+            user_local_count,
+            backend_base: user_local_count,
+        }
+    }
+
+    pub(super) const fn total_local_count(self) -> usize {
+        self.user_local_count + 2
+    }
+
+    pub(super) const fn heap_base_tmp(self) -> usize {
+        self.backend_base
+    }
+
+    pub(super) const fn heap_value_tmp(self) -> usize {
+        self.backend_base + 1
+    }
 }
 
 impl<'a> WatEmitter<'a> {
@@ -37,7 +56,6 @@ impl<'a> WatEmitter<'a> {
             strings: HashMap::new(),
             string_data: Vec::new(),
             next_data_offset: Layout::DATA_START,
-            heap_builder_temps: RefCell::new(None),
         };
         emitter.intern_required_runtime_strings();
         emitter.collect_program_strings(&program.top_level_statements);
@@ -54,7 +72,10 @@ impl<'a> WatEmitter<'a> {
         wat.push_str("(module\n");
         // Emit all required imports from catalog (single source of truth)
         self.emit_imports_from_catalog(&mut wat);
-        wat.push_str("  (memory (export \"memory\") 1)\n");
+        wat.push_str(&format!(
+            "  (memory (export \"memory\") {})\n",
+            Layout::MEMORY_MIN_PAGES,
+        ));
         wat.push_str(&format!(
             "  (global $heap (mut i32) (i32.const {}))\n",
             Layout::HEAP_START,
@@ -191,6 +212,30 @@ impl<'a> WatEmitter<'a> {
                     "HEAP_START ({}) must be {}-byte aligned for RawValue heap tags",
                     Layout::HEAP_START,
                     Layout::ALIGN
+                ),
+                span: None,
+            });
+        }
+        let max_stdin_heap_allocation = Layout::HEAP_START
+            .checked_add(Layout::STRING_HEADER_SIZE)
+            .and_then(|base| base.checked_add(Layout::STDIN_READ_LIMIT))
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "stdin heap allocation overflow while validating memory layout".to_owned(),
+                span: None,
+            })?;
+        let initial_memory_bytes = Layout::MEMORY_MIN_PAGES
+            .checked_mul(Layout::WASM_PAGE_SIZE)
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "memory page byte size overflow while validating memory layout".to_owned(),
+                span: None,
+            })?;
+        if max_stdin_heap_allocation > initial_memory_bytes {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "max stdin heap allocation ({max_stdin_heap_allocation}) exceeds initial memory bytes ({initial_memory_bytes})"
                 ),
                 span: None,
             });
@@ -420,17 +465,12 @@ impl<'a> WatEmitter<'a> {
             for _ in &function.locals {
                 wat.push_str("    (local i32)\n");
             }
-            // Two backend-owned temporaries for ArrayNew/ObjectNew construction.
+            let frame = LocalFrame::new(function.params.len() + function.locals.len());
+            // Backend-owned temporaries for ArrayNew/ObjectNew construction.
             wat.push_str("    (local i32)\n");
             wat.push_str("    (local i32)\n");
-            let temp_base = function.params.len() + function.locals.len();
-            self.set_heap_builder_temps(HeapBuilderTemps {
-                base_local: temp_base,
-                value_local: temp_base + 1,
-            });
             let mut loop_ctx = super::stmt_emit::LoopContext::Root;
-            self.emit_statements(wat, &function.body, 4, &mut loop_ctx);
-            self.clear_heap_builder_temps();
+            self.emit_statements(wat, &function.body, 4, &mut loop_ctx, &frame);
             wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
             wat.push_str("  )\n");
         }
@@ -439,14 +479,10 @@ impl<'a> WatEmitter<'a> {
     fn emit_start(&self, wat: &mut String) {
         wat.push_str("  (func $_start (export \"_start\")\n");
         let extra_locals = if self.module_runtime_enabled() { 1 } else { 0 };
-        let top_level_local_count = self.program.top_level_locals.len() + extra_locals;
-        for _ in 0..top_level_local_count + 2 {
+        let frame = LocalFrame::new(self.program.top_level_locals.len() + extra_locals);
+        for _ in 0..frame.total_local_count() {
             wat.push_str("    (local i32)\n");
         }
-        self.set_heap_builder_temps(HeapBuilderTemps {
-            base_local: top_level_local_count,
-            value_local: top_level_local_count + 1,
-        });
         if self.module_runtime_enabled() {
             let cache_size = Layout::MODULE_CACHE_MAX as u32 * Layout::MODULE_CACHE_ENTRY_SIZE;
             wat.push_str(&format!(
@@ -454,29 +490,8 @@ impl<'a> WatEmitter<'a> {
             ));
             wat.push_str("    (global.set $current_module_id (i32.const 0))\n");
         }
-        self.emit_top_level_statements(wat, 4);
-        self.clear_heap_builder_temps();
+        self.emit_top_level_statements(wat, 4, &frame);
         wat.push_str("  )\n");
-    }
-
-    pub(super) fn heap_builder_temps(&self) -> HeapBuilderTemps {
-        self.heap_builder_temps
-            .borrow()
-            .as_ref()
-            .copied()
-            // Safe fallback for defensive robustness; normal paths set scope temps.
-            .unwrap_or(HeapBuilderTemps {
-                base_local: 0,
-                value_local: 1,
-            })
-    }
-
-    fn set_heap_builder_temps(&self, temps: HeapBuilderTemps) {
-        *self.heap_builder_temps.borrow_mut() = Some(temps);
-    }
-
-    fn clear_heap_builder_temps(&self) {
-        *self.heap_builder_temps.borrow_mut() = None;
     }
 
     fn module_runtime_enabled(&self) -> bool {
