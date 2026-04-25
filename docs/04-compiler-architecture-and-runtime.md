@@ -12,7 +12,9 @@ Semantic layer では、TypeScript の型注釈、推論結果、制御フロー
 
 Lowering では、TypeScript / JavaScript の意味論を WASM に落としやすい IR に変換する。ここで重要になるのは、JavaScript の値表現、truthiness、`undefined`、`null`、number、string、object、array、function、closure、prototype、class、exception の扱いである。単純な型付き言語よりも runtime の責任が大きいため、IR には JS semantics を表現できる命令を持たせる。
 
-WASM backend は、IR から `.wasm` を生成する。初期は linear memory ベースで実装し、iwasm で動くことを優先する。値表現は論理的な `jsval` を基本とし、初期 core wasm では `i64` tagged value、heap ref では 32-bit offset payload を使う。runtime heap に object / string / array / closure を置く。将来的に Wasm GC backend を追加する場合も、IR は共有する。
+WASM backend は、IR から `.wasm` を生成する。初期は linear memory ベースで実装し、iwasm で動くことを優先する。値表現は論理的な `jsval` を基本とし、初期 core wasm では `i64` tagged value、heap ref では 32-bit offset payload を使う。runtime heap に object / string / array / closure を置く。
+
+wasm-tools は既に Wasm GC、reference-types、function-references、multi-memory、multi-value、SIMD、tail-call、threads などの提案を実装しており（多くは Stage 4+）、WAMR も multi-thread、AOT/JIT をサポートしている。将来的に Wasm GC backend を追加する場合も、IR は共有する。
 
 ## 値表現
 

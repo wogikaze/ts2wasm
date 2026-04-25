@@ -18,6 +18,8 @@
 | `wasi.filesystem.read` | `fs.readFileSync(path)` | requires preopen policy |
 | `wasi.filesystem.write` | file write | requires explicit permission |
 | `wasi.random` | random bytes via WASI | requires random policy |
+| `wasi.network` | socket API (Berkeley/Posix Socket) | WAMR で WASI 経由実行可能 |
+| `wasi.threads` | multi-thread / wasi-threads | WAMR で WASI 経由実行可能 |
 | `host.timer` | `setTimeout` | Node host required |
 | `host.crypto` | `crypto.randomBytes` | Node host or WASI random policy required |
 | `host.http` | `fetch` / network | Node host or future WASI capability required |

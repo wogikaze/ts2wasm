@@ -55,6 +55,8 @@ TypeScript 型は、最適化のヒントであって別言語への opt-in で�
 
 対応方針として、まず通常の TypeScript コードでよく使われる範囲を正確に実装する。`eval` や `with` のような最適化を破壊する機能は、最初から最重要扱いにはしない。ただし、仕様から削除はしない。明示的に `unsupported-dynamic-code` として扱う。
 
+WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサポートしており、WASI 経由でネットワーク機能や並列処理も実行可能である。wasm-tools は既に Wasm GC、reference-types、function-references、multi-memory、multi-value、SIMD、tail-call、threads などの提案を実装しており（多くは Stage 4+）、これらを活用することでより効率的な実装が可能になる。
+
 | 機能              | 方針                                        |
 | --------------- | ----------------------------------------- |
 | `this`          | call site ごとに receiver を明示して IR に落とす      |

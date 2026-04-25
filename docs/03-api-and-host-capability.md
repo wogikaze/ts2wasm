@@ -8,7 +8,11 @@ API は「standalone で動く API」と「Node.js host が必要な API」に�
 
 standalone で動く API は、WASI と WASM runtime だけで実行する。標準入出力、基本的なファイル読み書き、引数、環境変数、文字列処理、数値処理、配列、Map / Set の基本操作、JSON、TextEncoder / TextDecoder の基礎部分はこの領域に入る。
 
-Node.js 併用 API は、WASI 単体では扱いにくいものを対象にする。`process`、Node 固有の `fs` 挙動、`Buffer`、`crypto`、`path` の細部、イベントループ、タイマー、非同期 I/O、ネットワークなどが該当する。ただし、これらも「Node.js で全部処理する」のではなく、WASM 側から必要な host function を呼ぶ形にする。
+WAMR は WASI libc-wasi library (~21.4K) を提供し、WASI Preview 1 の標準機能をサポートしている。また multi-thread、socket API (Berkeley/Posix Socket) もサポートしており、ネットワーク機能も WASI 経由で実行可能である。
+
+Node.js 併用 API は、WASI 単体では扱いにくいものを対象にする。`process`、Node 固有の `fs` 挙動、`Buffer`、`crypto`、`path` の細部、イベントループ、タイマー、非同期 I/O などが該当する。ただし、これらも「Node.js で全部処理する」のではなく、WASM 側から必要な host function を呼ぶ形にする。
+
+将来的に Component Model / WIT を採用する場合、jco は WASI Preview 2/3 shim を提供しており、より型付きの host interface が可能になる。wasm-bindgen は Web IDL bindings 提案を目指しており、JavaScript shims を経由せずに直接 DOM メソッドを呼べる可能性がある。
 
 | API 領域  | standalone WASI | Node host 併用 | 方針                                        |
 | ------- | --------------: | -----------: | ----------------------------------------- |
@@ -21,7 +25,7 @@ Node.js 併用 API は、WASI 単体では扱いにくいものを対象にす�
 | Buffer  |      runtime 実装 |     必要に応じて併用 | `Uint8Array` との関係を明確化                     |
 | crypto  |             難しい |           併用 | WASI random と Node crypto を分離             |
 | timer   |             難しい |           併用 | event loop 設計後に対応                         |
-| network |             非初期 |           併用 | host capability として扱う                     |
+| network |       WASI 対応可能 |           併用 | WAMR socket API で WASI 経由実行可能          |
 
 | API / idiom                        | 実行方法                                       | Node.js host 必要性 |
 | ---------------------------------- | ------------------------------------------ | ---------------: |

@@ -18,9 +18,11 @@
 
 第一ターゲットは WASI 対応の core wasm とする。iwasm での実行を重視するため、初期段階では Wasm GC や Component Model に強く依存しすぎない。線形メモリ上に JS 値表現を実装し、WASI の `fd_read`、`fd_write`、ファイル API、環境変数、引数などを扱う。
 
+WAMR (wasm-micro-runtime) は W3C Wasm MVP 完全準拠で、WASI 対応、multi-thread、socket API、JIT/AOT をサポートしている。バイナリサイズも小さく（fast interpreter ~58.9K, AOT ~29.4K）、組み込み環境に適している。
+
 第二ターゲットとして、Node.js host 付き WASM を用意する。このターゲットでは、WASI だけでは表現しにくい API を Node.js import として補う。`process` 全体の完全互換、一部の `fs`、`path` の Node 固有差分、`Buffer` の Node 固有 API、タイマー、非同期処理などはこの層で段階的に扱う。`process.argv` と `process.env` の基本読み取りは、まず WASI args / environ に対応付ける。
 
-第三ターゲットとして、将来的に Wasm GC / Component Model / WIT を利用したより型付きの host interface を検討する。ただし、これは初期の iwasm 実行可能性を壊さない範囲で進める。iwasm で動く `.wasm` と、より高機能な runtime 向け `.wasm` は、同じ compiler pipeline から別 backend として出す。
+第三ターゲットとして、将来的に Wasm GC / Component Model / WIT を利用したより型付きの host interface を検討する。wasm-tools は既に Component Model を実装しており（Stage 4+ではないがデフォルト有効）、jco は JavaScript/TypeScript から Components をビルドし、ES modules に transpile できる。ただし、これは初期の iwasm 実行可能性を壊さない範囲で進める。iwasm で動く `.wasm` と、より高機能な runtime 向け `.wasm` は、同じ compiler pipeline から別 backend として出す。
 
 ## Target matrix
 
