@@ -6,6 +6,33 @@
 
 コンパイラは、frontend、semantic layer、lowering、runtime binding、wasm backend の五段階に分ける。
 
+### Compiler Pipeline Visualization
+
+```mermaid
+graph LR
+  Source[TS/JS Source] --> Parser[Parser]
+  Parser --> AST[AST]
+  AST --> ASTValidator[AST Validator]
+  ASTValidator --> NameResolver[NameResolver]
+  NameResolver --> BuiltinResolver[BuiltinResolver]
+  BuiltinResolver --> Lowering[Lowering]
+  Lowering --> LoweredIR[Lowered IR]
+  LoweredIR --> ValidateLowered[validate_lowered]
+  ValidateLowered --> RuntimeLinkPlan[RuntimeLinkPlan]
+  RuntimeLinkPlan --> Backend[Backend]
+  Backend --> WASM[WASM]
+
+  subgraph "Runtime ABI"
+    RuntimeFn[RuntimeFn Catalog]
+    HostImport[Host Import]
+    Capability[Capability Manifest]
+  end
+
+  RuntimeLinkPlan --> RuntimeFn
+  RuntimeLinkPlan --> HostImport
+  RuntimeLinkPlan --> Capability
+```
+
 Frontend は TypeScript / JavaScript の構文を読む。初期段階では既存 parser を oracle として使ってよいが、本体を Node.js の TypeScript compiler API に完全依存させる設計にはしない。`tsc` の parser / checker は比較対象、テスト oracle、差分検出のために利用する。プロダクションの変換器は、最終的には WASM に向いた IR を持つ独自 pipeline として成立させる。
 
 Semantic layer では、TypeScript の型注釈、推論結果、制御フロー、スコープ、symbol、module 解決を扱う。TypeScript の型システムを完全再実装するのは重いが、型情報を無視すると最適化も診断も弱くなる。したがって、初期段階では型を「実行に必要な情報」と「診断に必要な情報」に分ける。実行に必要な情報は優先して compiler pipeline に取り込み、診断互換は段階的に強化する。

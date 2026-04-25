@@ -185,3 +185,103 @@ An issue is done only when:
 - `current-state.md` and issues are synchronized
 - no hidden TODOs remain in final-state docs
 - remaining risks are explicit
+
+## Example Issues
+
+### Good example
+
+```markdown
+---
+id: 012
+title: Fix computed property semantics bug
+type: bug
+area: runtime/semantics
+class: implementation-ready
+priority: P0
+depends_on: none
+---
+
+## Summary
+
+`obj["key"]` computed property access currently uses `$array_get` which performs an array tag check and returns `undefined` for non-array objects. This violates JavaScript semantics where computed property access should work on all objects.
+
+## Desired final state
+
+Computed property access works correctly on all objects, matching Node.js behavior.
+
+## Scope
+
+- Fix runtime property access logic
+- Add differential test for computed property access
+- Update current-state.md
+
+## Affected paths
+
+- `crates/cli/src/runtime/value.rs`
+- `crates/cli/src/runtime/object.rs`
+- `fixtures/core-semantics/computed-property.ts`
+- `current-state.md`
+
+## Acceptance criteria
+
+- [ ] Computed property access returns correct value for object keys
+- [ ] Differential test passes against Node.js
+- [ ] No regression in array access
+
+## Validation
+
+```bash
+cargo nextest run
+# Differential test for computed property
+node fixtures/core-semantics/computed-property.ts > expected.txt
+iwasm fixtures/core-semantics/computed-property.wasm > actual.txt
+diff expected.txt actual.txt
+```
+
+## Docs / current-state / issue sync
+
+- Update current-state.md to reflect fixed semantics
+- No follow-up issues needed
+
+```
+
+### Bad example
+
+```markdown
+---
+id: 999
+title: Fix various bugs
+type: bug
+area: runtime
+class: implementation-ready
+priority: P1
+depends_on: none
+---
+
+## Summary
+
+Fix some runtime bugs and improve performance.
+
+## Desired final state
+
+Runtime works better.
+
+## Scope
+
+- Fix bugs
+- Optimize
+
+## Acceptance criteria
+
+- [ ] Fix bugs
+- [ ] Make it faster
+```
+
+**Why this is bad**:
+- Title is vague ("various bugs")
+- Summary lacks specific problem description
+- Scope is not bounded
+- Acceptance criteria are not testable
+- No validation commands
+- No affected paths
+- No docs sync plan

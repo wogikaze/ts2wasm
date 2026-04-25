@@ -38,6 +38,8 @@ runtime helper の選択
 
 これらが emitter 内で同時に決まっていた。
 
+**理由**: emitterに責務を集中させると、変更の影響範囲が広がり、テストが困難になる。責務分離により、各phaseを独立してテスト可能にする。
+
 禁止:
 
 ```text
@@ -72,6 +74,8 @@ stack discipline が人力
 runtime_builder が巨大文字列化
 ```
 
+**理由**: 文字列操作は型安全ではなく、括弧ミスやstack disciplineのエラーが実行時まで発見されない。typed writerによりコンパイル時に検出可能にする。
+
 禁止:
 
 ```rust
@@ -103,6 +107,8 @@ Stmt::ConsoleLog
 console / log keyword 化
 console.log だけ parser で特別扱い
 ```
+
+**理由**: parserにAPI特別扱いを入れると、新しいAPIごとにparserを修正する必要があり、拡張性が低下する。BuiltinResolverで統一的に扱うべき。
 
 禁止:
 
@@ -147,6 +153,8 @@ RuntimeLinkPlan:
 RuntimeFn::symbol() だけがあり、deps/imports/capabilities/runtime_strings/result がなかった
 ```
 
+**理由**: symbolだけでは依存関係やcapability追跡が不可能。RuntimeSpecにより依存関係を明示し、linkerとmanifest生成を自動化する。
+
 必須:
 
 ```rust
@@ -180,6 +188,8 @@ differential test if behavior changes
 console.log なしでも undefined/null/true/false/newline が data segment に入る
 ```
 
+**理由**: 不要なruntime stringを含めると、WASMサイズが無駄に増大し、standalone要件を満たせなくなる。必要なものだけinternする。
+
 禁止:
 
 ```text
@@ -203,6 +213,8 @@ user string literal とは区別可能にする
 console.log を使わない program でも fd_write import が入る
 ```
 
+**理由**: 不要なhost importがあると、standalone実行要件を満たせず、security auditも困難になる。必要時のみimportする。
+
 禁止:
 
 ```text
@@ -224,6 +236,8 @@ RuntimeFn::spec().imports
 ```text
 Capability::StdoutWrite は型としてあるが、監査可能な出力がない
 ```
+
+**理由**: capability型だけでは監査不可能。manifestとしてJSON出力することで、security auditとgate検証を可能にする。
 
 必須:
 
@@ -250,6 +264,8 @@ manifest 例:
 SpannedToken はあるが Expr / Stmt が span を持たない
 lowering / validation diagnostic が span: None になる
 ```
+
+**理由**: spanがないとエラー箇所の特定が不可能になり、ユーザー体験が著しく低下する。すべてのsource-derived nodeにspanを持たせる。
 
 禁止:
 
@@ -279,6 +295,8 @@ ValueTag は small-int なのに JavaScript number として説明した
 number range check がなかった
 多桁/負数 stringify が壊れていた
 ```
+
+**理由**: 表現範囲を超える値を扱うとundefined behaviorになる。range checkとdiagnosticにより、安全境界を明確にする。
 
 必須:
 
@@ -313,6 +331,8 @@ small-int subset の数値表現:
 ```text
 Node vs iwasm の stdout は見るが、runtime linker の中身を見ない
 ```
+
+**理由**: 出力結果だけでは内部構造の正しさを保証できない。linker structure testにより、依存関係とimport生成を検証する。
 
 必須テスト:
 
