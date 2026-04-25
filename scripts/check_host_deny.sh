@@ -18,6 +18,8 @@ if ! command -v wasm-tools >/dev/null 2>&1; then
 fi
 
 # Default: subset aligned with m2 "pure" path + tiny hello; extend as the compiler grows.
+# Optional:  scripts/check_host_deny.sh  fixtures/a.ts  fixtures/b.ts
+#   or  TS2WASM_HOST_FREE_FIXTURES="f1 f2"
 default_list=(
   fixtures/basics-hello/hello.ts
   fixtures/primitives-control-flow/number.ts
@@ -26,7 +28,9 @@ default_list=(
   fixtures/core-semantics/strict-equal.ts
   fixtures/arrays-objects/object.ts
 )
-if [[ -n "${TS2WASM_HOST_FREE_FIXTURES:-}" ]]; then
+if [[ $# -gt 0 ]]; then
+  DEFAULT_FIXTURES=("$@")
+elif [[ -n "${TS2WASM_HOST_FREE_FIXTURES:-}" ]]; then
   # shellcheck disable=SC2206
   DEFAULT_FIXTURES=($TS2WASM_HOST_FREE_FIXTURES)
 else

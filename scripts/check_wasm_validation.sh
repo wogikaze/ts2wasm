@@ -14,12 +14,15 @@ if ! command -v wasm-tools >/dev/null 2>&1; then
   exit 1
 fi
 
+# Optional:  scripts/check_wasm_validation.sh  path/to/a.ts [more.ts ...]
 default_list=(
   fixtures/basics-hello/hello.ts
   fixtures/primitives-control-flow/number.ts
   fixtures/arrays-objects/object.ts
 )
-if [[ -n "${TS2WASM_VALIDATE_FIXTURES:-}" ]]; then
+if [[ $# -gt 0 ]]; then
+  VFIX=("$@")
+elif [[ -n "${TS2WASM_VALIDATE_FIXTURES:-}" ]]; then
   # shellcheck disable=SC2206
   VFIX=($TS2WASM_VALIDATE_FIXTURES)
 else

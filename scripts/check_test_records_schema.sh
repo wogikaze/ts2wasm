@@ -11,10 +11,12 @@
 # Dependencies: bash, jq
 set -euo pipefail
 
+_self="${BASH_SOURCE[0]}"
 usage() {
   cat <<'USAGE'
 Usage:
   scripts/check_test_records_schema.sh [file.jsonl|-]
+  scripts/check_test_records_schema.sh --self-test
 
 One JSON object per line. Each line must include suite, case, target, status.
 status must be one of: pass fail unsupported blocked skip-with-reason
@@ -26,6 +28,15 @@ USAGE
 
 if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
   usage
+  exit 0
+fi
+
+if [[ "${1:-}" == "--self-test" ]]; then
+  {
+    echo '{"suite":"self","case":"pass","target":"wasm","status":"pass"}'
+    echo '{"suite":"self","case":"unsup","target":"node","status":"unsupported","reason":"r","tracking":"t"}'
+  } | bash "$_self" -
+  echo "check_test_records_schema: self-test OK" >&2
   exit 0
 fi
 

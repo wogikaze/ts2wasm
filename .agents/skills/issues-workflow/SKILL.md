@@ -28,3 +28,7 @@ Use when adding, closing, moving, splitting, or reclassifying issues under `issu
 
 - Claiming the queue is empty while `issues/open/*.md` still has work items.
 - Referring to `docs/current-state.md`; use `current-state.md` at the repository root (see `issues/README.md`).
+
+## Related skills
+
+- **False-done / done-queue audit:** `.agents/skills/false-done-audit/SKILL.md`（監査本体）· `issue-state-sync/` · `checklist-to-issue/` · `post-wave-orchestration/` — **明示の監査依頼時のみ**。通常の issue 編集では使わない。

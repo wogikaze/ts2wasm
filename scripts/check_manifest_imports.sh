@@ -9,25 +9,38 @@
 # Dependencies: cargo, wasm-tools, jq, mktemp, bash
 set -euo pipefail
 
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
 usage() {
   cat <<'USAGE'
 Usage:
   scripts/check_manifest_imports.sh [--fixture PATH.ts]
+  scripts/check_manifest_imports.sh PATH.ts
+
+A single path ending in .ts may be given without --fixture.
+Default fixture: fixtures/basics-hello/hello.ts
 
 Fails if manifest import (module,name) pairs differ from wasm import section.
 USAGE
 }
 
+if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 0
+fi
+
 fixture="fixtures/basics-hello/hello.ts"
+# Optional positional:  scripts/check_manifest_imports.sh  fixtures/foo.ts
+if [[ -n "${1:-}" && "$1" == *.ts && -f "$1" && "$1" != --* ]]; then
+  fixture="$1"
+  shift
+fi
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --fixture)
       fixture="${2:?--fixture requires a path}"
       shift 2
-      ;;
-    -h|--help)
-      usage
-      exit 0
       ;;
     *)
       echo "unknown option: $1" >&2
@@ -36,9 +49,6 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
-
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
 
 for c in cargo wasm-tools jq mktemp; do
   command -v "$c" >/dev/null 2>&1 || {
