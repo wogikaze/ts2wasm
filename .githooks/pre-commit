@@ -6,3 +6,5 @@ cd "$repo_root"
 
 echo "pre-commit: cargo fmt --all --check"
 cargo fmt --all --check
+
+npx markdownlint-cli2 "**/*.md" "#reference" --fix

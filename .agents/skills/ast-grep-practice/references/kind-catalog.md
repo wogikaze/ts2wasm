@@ -119,4 +119,4 @@ ast-grep run --pattern 'YOUR_CODE' --lang typescript --debug-query=cst
 ## 参照
 
 - 公式 Tree-sitter grammar: 各言語の `tree-sitter-<lang>` リポジトリ `grammar.js` の rule 名がそのまま kind 名
-- ast-grep playground: https://ast-grep.github.io/playground.html （ブラウザで pattern を試して kind を確認）
+- ast-grep playground: <https://ast-grep.github.io/playground.html> （ブラウザで pattern を試して kind を確認）

@@ -8,6 +8,7 @@ description: "Use when acting as a gatekeeper/reviewer for ts2wasm PRs, agent ou
 Use this skill when deciding whether a change is safe to merge into mainline.
 
 Primary source of truth:
+
 - docs/11-shared-definitions.md（workstreams、gates、test status schema、capability / benchmark policy）
 - docs/12-coding-standard.md, section 19 (Gatekeeper Checklist)
 - docs/12-coding-standard.md, section 20 (priority context)
@@ -75,6 +76,7 @@ Apply only those relevant to touched scope.
 ### RuntimeFn addition
 
 Must include:
+
 - RuntimeFn variant + RuntimeSpec + deps/imports/capability/runtime_strings/result.
 - emission_order + all updates.
 - runtime_builder emit function.
@@ -86,6 +88,7 @@ Must include:
 ### HostImport/Capability addition
 
 Must include:
+
 - enums and RuntimeSpec wiring.
 - RuntimeLinkPlan required_imports/required_capabilities tests.
 - manifest JSON tests.
@@ -95,6 +98,7 @@ Must include:
 ### Builtin addition
 
 Must include:
+
 - ir/builtin contract.
 - BuiltinResolver source pattern.
 - arity/result contract.
@@ -106,6 +110,7 @@ Must include:
 ### Memory layout changes
 
 Must include:
+
 - docs/14 consistency.
 - validate_memory_layout updates for every new fixed region.
 - ordered inequalities enforced:
@@ -118,6 +123,7 @@ Must include:
 ## 5) RuntimeLinkPlan Gate
 
 Require all of these:
+
 - RuntimeLinkPlan collects required_runtime.
 - imports/capabilities/runtime_strings derived from RuntimeSpec.
 - WatEmitter does not compute dependency closure by hand.
@@ -127,6 +133,7 @@ Require all of these:
 
 If semantics/ABI/layout/capability/unsupported set changed, docs must be updated in the same slice.
 Minimum candidates:
+
 - docs/05-compatibility-and-semantics.md
 - docs/09-security-and-capability-model.md
 - docs/11-shared-definitions.md
@@ -149,14 +156,17 @@ Use this exact structure:
 Gate handoff
 
 Scope:
+
 - Implemented:
 - Not implemented:
 
 Commits:
+
 - <hash> <title>
 - <hash> <title>
 
 Validation:
+
 - cargo fmt --all --check: pass/fail
 - cargo nextest run: pass/fail
 - scripts/update_coverage_matrix.sh --check: pass/fail/not applicable
@@ -167,17 +177,20 @@ Validation:
   - source diagnostic span None added: no/yes
 
 Risk:
+
 - Runtime behavior changed: yes/no
 - Host import changed: yes/no
 - Memory layout changed: yes/no
 - Manifest schema changed: yes/no
 
 Docs:
+
 - current-state.md updated: yes/no
 - docs/14 updated if ABI changed: yes/no
 - docs/09 updated if capability changed: yes/no
 
 Known unrelated working tree changes:
+
 - <file>
 
 ## 9) Review Mindset

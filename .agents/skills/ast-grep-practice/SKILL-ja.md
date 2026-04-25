@@ -79,6 +79,7 @@ ast-grep scan src/                    # プロジェクトスキャン
 | プロジェクト固有の構造制約 | ast-grep |
 
 ast-grep を使うべきサイン:
+
 - 既存ルールの設定だけでは表現できない
 - AST の親子・兄弟関係に依存する
 - 自動書き換え（migration）が必要
@@ -260,6 +261,7 @@ ast-grep run --pattern 'oldFunc($$$ARGS)' --rewrite 'newFunc($$$ARGS)' --lang ty
 メタ変数に追加条件を付ける。`$ARG` のみ対象（`$$$ARGS` は不可）。ルールマッチ後にフィルタされる。
 
 **constraints と構造制約 (has/inside/not) の使い分け**:
+
 - **メタ変数の中身** に条件を付けたい → `constraints`（例: `$METHOD` が `get` / `set` / `delete` のいずれか）
 - **パターンの外側・内側の構造** に条件を付けたい → `has` / `inside` / `not` / `precedes` / `follows`（例: 特定の親要素の内側、特定の子要素を持つ）
 - パターン自体に具体的リテラルを書ける場合はそれが最もシンプル（`pattern: new Set($X)` で Set 存在を担保）
@@ -376,6 +378,7 @@ severity: warning
 ## テスト
 
 テストには 2 系統ある。混同しない:
+
 - **分類テスト** (`test --skip-snapshot-tests`): `valid` / `invalid` に並べたコードが正しく分類されるかだけを確認。CI で回すのはこちら。
 - **スナップショットテスト** (`test` / `test -U`): invalid コードへのマッチ位置や fix 適用結果を snapshot として固定し、回帰を検出。初回は `-U` で生成、以降は人間レビュー。CI 前に一度通す。
 
@@ -408,6 +411,7 @@ ast-grep test --interactive
 ```
 
 テスト結果:
+
 - `.` : パス
 - `N` : ノイジー (false positive — valid コードにマッチ)
 - `M` : ミッシング (false negative — invalid コードにマッチしない)
@@ -452,6 +456,7 @@ dev 環境とツールを揃える（プロジェクトで pnpm を使うなら 
 ```
 
 **severity と終了コード**:
+
 - `ast-grep scan` はデフォルトで `error` severity が 1 件でもあれば非ゼロ終了
 - `--error` を付けると `warning` / `hint` でも非ゼロ終了させられる（CI で warning も落としたい場合）
 - `--error=error` のように severity を指定して段階的に厳しくすることも可能
@@ -671,8 +676,8 @@ files:
 
 ### 公式
 
-- ast-grep docs: https://ast-grep.github.io/
-- Rule reference: https://ast-grep.github.io/reference/yaml.html
-- sgconfig: https://ast-grep.github.io/reference/sgconfig.html
-- Playground: https://ast-grep.github.io/playground.html
-- Rule catalog: https://ast-grep.github.io/catalog/
+- ast-grep docs: <https://ast-grep.github.io/>
+- Rule reference: <https://ast-grep.github.io/reference/yaml.html>
+- sgconfig: <https://ast-grep.github.io/reference/sgconfig.html>
+- Playground: <https://ast-grep.github.io/playground.html>
+- Rule catalog: <https://ast-grep.github.io/catalog/>

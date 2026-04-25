@@ -13,6 +13,7 @@
 Problem: A manifest is only useful as a gate if it matches emitted WAT/wasm imports. The current project needs a test that cross-checks the manifest and the actual imports.
 
 Scope:
+
 - Add helper to extract WAT imports from emitted text.
 - Verify `console.log` uses `fd_write` and manifest says stdout is required.
 - Verify `fs.readFileSync(0, "utf8")` uses `fd_read` and manifest says stdin is required.
@@ -20,14 +21,15 @@ Scope:
 - Verify Node shim fixtures mark `node_host.required = true`.
 
 Acceptance Criteria:
+
 - [ ] Manifest WASI imports match WAT imports.
 - [ ] Standalone target fails the test if host imports leak in.
 - [ ] Node-host-required cases are explicitly represented.
 - [ ] Test names can be used as Gate C/F evidence.
 
 Validation:
+
 ```sh
 cargo fmt --all --check
 cargo nextest run -E 'test(manifest)'
 ```
-

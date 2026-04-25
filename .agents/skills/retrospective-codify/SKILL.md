@@ -14,6 +14,7 @@ description: タスク完了時に「最初に失敗した内容」と「最終�
 - 同種のタスクを将来また行う可能性があるとき
 
 使わない場面:
+
 - 一発で通った単純なタスク（抽出する学びがない）
 - プロジェクト固有の一回限りの対応（コミットメッセージで十分）
 
@@ -30,6 +31,7 @@ description: タスク完了時に「最初に失敗した内容」と「最終�
    検索キー候補は気付きから 2 〜 3 語抽出する（ツール名・API 名・症状語・対義語）。例: 気付きが「pnpm v10 を使う」なら `pnpm`, `packageManager`, `lockfile`。
 
    照合先と最低限の検索:
+
    ```
    # skill 重複（global）
    ls .agents/skills/
@@ -84,22 +86,27 @@ digraph classify {
 **ast-grep を優先する原則**: 静的に検出可能なものはプロンプトやドキュメントに書かず、必ず `ast-grep` ルールにする（ユーザーの global ルール）。
 
 **CLAUDE.md の書き出し先**:
+
 - 言語横断・ツール横断の一般則 → `~/.claude/CLAUDE.md`
 - 特定リポジトリ限定 → そのリポジトリの `CLAUDE.md`
 
 ## 出力テンプレート
 
 ### ast-grep ルール
+
 `ast-grep-practice` skill を参照。`rules/` ディレクトリに YAML を追加し、`rule-tests/` に valid / invalid ペアを必ず書く。
 
 ### CLAUDE.md への追記
+
 ```markdown
 # <既存セクションに追記>
 - <命令形の 1 文>（理由: <短い根拠>）
 ```
+
 理由を括弧書きで必ず添える（将来の自分が edge case を判断できるように）。
 
 ### 新規 skill
+
 ```markdown
 ---
 name: <kebab-case>
@@ -123,6 +130,7 @@ description: Use when <具体的な状況> / <症状>
 - 気付き: `Set` / `Map` のサイズ取得は `.size` プロパティを使う。`Array.from(...).length` は構文レベルで検出可能。
 
 → `rules/no-array-from-size.yml` を追加:
+
 ```yaml
 id: no-array-from-size
 language: TypeScript
@@ -139,6 +147,7 @@ message: Set/Map のサイズは .size プロパティを使う。
 - 気付き: pnpm はバージョン差で lockfile が変わる。常に v10 以上を使う。
 
 → `~/.claude/CLAUDE.md` の「ツール」節に追記:
+
 ```markdown
 - pnpm は v10 以上を使う（理由: lockfile 形式が v9 以前と非互換で CI 差分が出る）
 ```
@@ -199,6 +208,7 @@ message: Set/Map のサイズは .size プロパティを使う。
 ```
 
 **書式ルール:**
+
 - 学びが 1 つなら `### 学び N` 見出しは省き、Retrospective ブロックを 1 つだけ書く
 - 「採用候補」「重複検出」「不採用」のいずれかが空ならその節ごと省く（"なし" 行は書かない）
 - 各提案行末に「学び N 由来」を必ず書く（複数学びを跨ぐ場合は「学び 1, 3 由来」のように列挙して良い）

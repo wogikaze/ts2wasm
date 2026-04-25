@@ -127,16 +127,16 @@ Future work belongs in `issues/`.
 
 Use issues for:
 
-* TODOs
-* milestones
-* implementation slices
-* missing feature work
-* known bugs
-* cleanup work
-* blocked work
-* deferred design decisions
-* acceptance criteria
-* validation commands
+- TODOs
+- milestones
+- implementation slices
+- missing feature work
+- known bugs
+- cleanup work
+- blocked work
+- deferred design decisions
+- acceptance criteria
+- validation commands
 
 A docs change that finds future work must either:
 
@@ -154,10 +154,10 @@ Do not preserve old implementation descriptions “for context” in normal docs
 
 Allowed historical material:
 
-* ADRs that record accepted or rejected design decisions
-* migration notes that are still needed by users
-* changelog entries if the project has a changelog
-* issue discussion in issue files
+- ADRs that record accepted or rejected design decisions
+- migration notes that are still needed by users
+- changelog entries if the project has a changelog
+- issue discussion in issue files
 
 Rules:
 
@@ -187,11 +187,11 @@ Each docs page should have one primary type.
 
 Do not mix:
 
-* architecture + TODO list
-* reference + progress log
-* current state + final design
-* roadmap + implementation notes
-* coding standard + issue backlog
+- architecture + TODO list
+- reference + progress log
+- current state + final design
+- roadmap + implementation notes
+- coding standard + issue backlog
 
 ## README Rules
 
@@ -199,21 +199,21 @@ README should be a project entrypoint.
 
 README may contain:
 
-* one-paragraph project definition
-* build/test quickstart
-* docs index
-* current stability warning
-* link to `docs/current-state.md`
-* link to issues
+- one-paragraph project definition
+- build/test quickstart
+- docs index
+- current stability warning
+- link to `docs/current-state.md`
+- link to issues
 
 README must not contain:
 
-* long roadmap
-* stale milestone table
-* detailed architecture
-* feature TODO list
-* old benchmark claims
-* duplicated current-state details
+- long roadmap
+- stale milestone table
+- detailed architecture
+- feature TODO list
+- old benchmark claims
+- duplicated current-state details
 
 ## Cleanup Procedure
 
@@ -223,11 +223,11 @@ When editing docs, run this audit mentally and mechanically.
 
 For each changed paragraph, classify it as:
 
-* final-state contract
-* current-state fact
-* future task
-* historical note
-* rationale
+- final-state contract
+- current-state fact
+- future task
+- historical note
+- rationale
 
 Then move it:
 
@@ -252,21 +252,21 @@ Any TODO-like text in docs must be converted into an issue.
 
 Search patterns:
 
-* `TODO`
-* `FIXME`
-* `not yet`
-* `currently`
-* `temporary`
-* `workaround`
-* `future`
-* `planned`
-* `will`
-* `later`
-* `M[0-9]`
-* `phase`
-* `roadmap`
-* `blocked`
-* `unsupported`
+- `TODO`
+- `FIXME`
+- `not yet`
+- `currently`
+- `temporary`
+- `workaround`
+- `future`
+- `planned`
+- `will`
+- `later`
+- `M[0-9]`
+- `phase`
+- `roadmap`
+- `blocked`
+- `unsupported`
 
 Issue file should include:
 
@@ -288,8 +288,8 @@ Issue file should include:
 
 After issue creation, replace the docs TODO with either:
 
-* final-state text, or
-* a short current-state entry in `docs/current-state.md`
+- final-state text, or
+- a short current-state entry in `docs/current-state.md`
 
 Do not leave both.
 
@@ -374,21 +374,21 @@ A smaller impacted test set is acceptable only if the final report names exactly
 
 ## Common Traps
 
-* README becomes a second roadmap.
-* Architecture docs describe current partial implementation.
-* `current-state.md` becomes a permanent junk drawer.
-* TODO remains in docs after issue creation.
-* Old milestone tables remain because they “might be useful”.
-* A final-state doc says “will” when it should state the contract directly.
-* Current limitation is written into the architecture as if it is design.
-* Issue text is copied into docs instead of linked.
-* Docs claim coverage support that scripts/tests do not enforce.
-* A stale fixture path remains in docs after fixture migration.
-* A stale script command remains in docs after script option changes.
-* Historical rejected design remains next to accepted design.
-* `unsupported` and `blocked` are described as passing coverage.
-* Current-state facts are updated without a date or validation command.
-* Docs cleanup changes project policy without updating coding standard or issues.
+- README becomes a second roadmap.
+- Architecture docs describe current partial implementation.
+- `current-state.md` becomes a permanent junk drawer.
+- TODO remains in docs after issue creation.
+- Old milestone tables remain because they “might be useful”.
+- A final-state doc says “will” when it should state the contract directly.
+- Current limitation is written into the architecture as if it is design.
+- Issue text is copied into docs instead of linked.
+- Docs claim coverage support that scripts/tests do not enforce.
+- A stale fixture path remains in docs after fixture migration.
+- A stale script command remains in docs after script option changes.
+- Historical rejected design remains next to accepted design.
+- `unsupported` and `blocked` are described as passing coverage.
+- Current-state facts are updated without a date or validation command.
+- Docs cleanup changes project policy without updating coding standard or issues.
 
 ## Output Checklist
 

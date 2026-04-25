@@ -79,6 +79,7 @@ ast-grep scan src/                    # scan project
 | Project-specific structural constraints | ast-grep |
 
 Signs that ast-grep is the right choice:
+
 - The rule cannot be expressed by configuring existing rules
 - It depends on parent/child/sibling AST relationships
 - Automatic rewriting (migration) is required
@@ -260,6 +261,7 @@ ast-grep run --pattern 'oldFunc($$$ARGS)' --rewrite 'newFunc($$$ARGS)' --lang ty
 Add extra conditions to metavariables. Only `$ARG` is supported (`$$$ARGS` is not). It filters matches after the rule matches.
 
 **Choosing between constraints and structural constraints (has/inside/not)**:
+
 - You want to constrain **the contents of a metavariable** → `constraints` (e.g. `$METHOD` is one of `get` / `set` / `delete`)
 - You want to constrain **the structure outside or inside the pattern** → `has` / `inside` / `not` / `precedes` / `follows` (e.g. inside a specific parent, or having a specific child)
 - If you can write the concrete literal directly in the pattern, that is the simplest (`pattern: new Set($X)` guarantees Set is present)
@@ -376,6 +378,7 @@ severity: warning
 ## Testing
 
 There are two kinds of tests. Do not conflate them:
+
 - **Classification test** (`test --skip-snapshot-tests`): only verifies that the code listed under `valid` / `invalid` is classified correctly. This is the one to run in CI.
 - **Snapshot test** (`test` / `test -U`): pins the match positions and fix results on invalid code as snapshots and detects regressions. Generate for the first time with `-U`, then have humans review afterwards. Run at least once before CI.
 
@@ -408,6 +411,7 @@ ast-grep test --interactive
 ```
 
 Test result markers:
+
 - `.` : pass
 - `N` : noisy (false positive — matches valid code)
 - `M` : missing (false negative — fails to match invalid code)
@@ -452,6 +456,7 @@ Align tools with the dev environment (use pnpm in CI if the project uses pnpm, n
 ```
 
 **severity and exit codes**:
+
 - `ast-grep scan` exits non-zero by default if at least one finding has `error` severity
 - Passing `--error` makes `warning` / `hint` also cause non-zero exit (use when CI should fail on warnings too)
 - You can specify a severity like `--error=error` to tighten gradually
@@ -672,8 +677,8 @@ files:
 
 ### Official
 
-- ast-grep docs: https://ast-grep.github.io/
-- Rule reference: https://ast-grep.github.io/reference/yaml.html
-- sgconfig: https://ast-grep.github.io/reference/sgconfig.html
-- Playground: https://ast-grep.github.io/playground.html
-- Rule catalog: https://ast-grep.github.io/catalog/
+- ast-grep docs: <https://ast-grep.github.io/>
+- Rule reference: <https://ast-grep.github.io/reference/yaml.html>
+- sgconfig: <https://ast-grep.github.io/reference/sgconfig.html>
+- Playground: <https://ast-grep.github.io/playground.html>
+- Rule catalog: <https://ast-grep.github.io/catalog/>

@@ -101,6 +101,7 @@ This section tracks test262 coverage using the Stream G test infrastructure.
 ### Current Test262 Sample Results
 
 The coverage matrix above shows test262 execution counts. For detailed test results, see the Stream G artifacts:
+
 - `test262-results.jsonl`: Machine-readable test records (JSONL format)
 - `test262-report.html`: Human-readable HTML report with category breakdown
 - `test262-report.md`: Markdown version of the report

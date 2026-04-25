@@ -40,6 +40,7 @@
 Full rules in `AGENTS.md` § Compiler Code Rules and `docs/04-compiler-architecture-and-runtime.md` § Compiler Code Rules.
 
 Key prohibitions:
+
 - Backend must only read `LoweredIR` — never `Ast`, `Stmt`, or `Expr`
 - No `format!`-assembled WAT in production backend
 - No raw opcode bytes (`bytes.push(0x41)`) in new code
