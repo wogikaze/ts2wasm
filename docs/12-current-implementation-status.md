@@ -312,3 +312,83 @@ Scope limitations (ASCII-only, M6-3b):
 - Byte values `>= 0x80` in stdin are undefined behaviour; no validation or trap is added for non-ASCII bytes.
 - A single `readFileSync(0, "utf8")` call reads at most 64 KiB. Programs that produce more stdin are unsupported.
 - Multiple calls to `readFileSync(0, "utf8")` in one program are not blocked but will read the remainder of fd 0 on each call.
+
+## Stream G: Test Infrastructure and Coverage Tracking
+
+Implemented in this slice:
+
+**Phase 1: Test status schema enhancement**
+- Enhanced `TestRecord` struct in `crates/shared/src/test_status.rs` with `expected` and `actual` fields for differential testing.
+- Added `to_json_line()` serialization method for JSONL output format (one JSON object per line).
+- Added `escape_json_string()` helper for proper JSON escaping of output containing newlines, quotes, and special characters.
+- Extended validation tests to verify serialization and escaping behavior.
+
+**Phase 2: Comprehensive test262 runner**
+- Created `scripts/test262_runner.sh`: iterates through test262 files by category.
+- For each test: compiles with `ts2wasm-cli build`, runs with `iwasm`, captures output/stderr/exit code.
+- Supports `--sample N` option to limit test count for rapid iteration.
+- Supports `--category PATTERN` to filter by syntax category (expressions, statements, etc.).
+- Outputs one `TestRecord` JSON object per line to stdout (JSONL format).
+- Categorizes results by DiagCode (UnsupportedSyntax, UnresolvedName, RuntimeError, etc.).
+- Accumulates summary counts: pass, fail, unsupported, blocked.
+
+**Phase 3: Differential test reporter**
+- Created `scripts/test_differential_reporter.sh`: reads JSONL test records from stdin.
+- Groups results by status: pass, fail, unsupported, blocked.
+- For fail cases: shows side-by-side expected vs actual output in collapsible HTML details.
+- For unsupported: extracts and groups by DiagCode and reason.
+- Generates two output formats:
+  - HTML report (`test262-report.html`): summary table with category breakdown, expandable failure/unsupported details.
+  - Markdown report (`test262-report.md`): category matrix with pass/fail/unsupported counts and pass rate percentages.
+- Both reports include summary metrics: pass count, pass rate, total executed tests.
+
+**Phase 4: Coverage matrix integration**
+- Added "Stream G: Test Infrastructure and Coverage Tracking" section to `docs/12-current-implementation-status.md`.
+- Documents test262 runner capabilities, reporter format, and regression gate.
+- Provides baseline for tracking test262 coverage breakdown by category over time.
+
+**Phase 5: Regression gate**
+- Created `scripts/test_regression_gate.sh`: compares current results against baseline.
+- Checks: pass count must not decrease, fail count must not increase (new failures = regression).
+- Checks: unsupported count should not increase (new blockers).
+- Saves current results as new baseline in `test262-baseline.json` for next comparison.
+- Fails CI if any gate is triggered; passes if all metrics are stable or improving.
+- Exception handling: future version can accept issue ID to allow intentional regressions.
+
+**Phase 6: Performance baseline tracking (optional)**
+- Created `scripts/benchmark_tracker.sh`: measures and tracks per-build metrics.
+- Collects: wasm file size (bytes), compilation time (seconds), average execution time (ms).
+- Appends record with git commit, branch, timestamp to `benchmark-results.json` (append-only).
+- Used for performance trending and build-size monitoring.
+
+**Phase 8: Test infrastructure validation**
+- Created `crates/cli/tests/test_infrastructure.rs`: integration tests for test status schema.
+- Tests verify: JSON serialization, JSON escaping (quotes/newlines), multiple record format.
+- Tests validate: record state machine (pass/fail don't need reason; unsupported requires reason+tracking).
+- Tests ensure fixtures exist: `fixtures/test-infrastructure/pass-fixture.ts`, `fail-fixture.ts`, `unsupported-fixture.ts`.
+
+**Output artifacts**:
+- `test262-results.jsonl`: machine-readable test results (one record per line).
+- `test262-report.html`: human-readable HTML summary with category breakdown.
+- `test262-report.md`: Markdown version of same report.
+- `test262-baseline.json`: regression gate baseline (version-controlled or CI artifact).
+- `benchmark-results.json`: historical performance metrics (optional, CI artifact).
+
+**Coverage measurement workflow**:
+```bash
+# Run first 100 tests per category, generate report
+scripts/test262_runner.sh --sample 100 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+
+# Check for regressions (will create baseline on first run)
+scripts/test_regression_gate.sh test262-results.jsonl
+
+# Optional: track performance metrics
+scripts/benchmark_tracker.sh
+```
+
+**Current limitations**:
+- Test262 runner is sample-based for CI speed (default: all files, --sample N to limit).
+- DiagCode extraction is simple text matching; not all compile error types are categorized yet.
+- Differential reporter groups by DiagCode reason but doesn't yet highlight the most-blocking features.
+- Baseline comparison is file-based; future versions could integrate with GitHub PR comments.
+- Performance tracking is optional and doesn't block M10 gate.
