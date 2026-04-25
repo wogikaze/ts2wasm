@@ -1,5 +1,5 @@
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) enum BuiltinId {
+pub enum BuiltinId {
     ConsoleLog,
     ReadStdinUtf8,
     FsReadFileSync,
@@ -16,19 +16,19 @@ pub(crate) enum BuiltinId {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) enum BuiltinPropertyId {
+pub enum BuiltinPropertyId {
     Length,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum BuiltinResult {
+pub enum BuiltinResult {
     Value,
     EffectOnly,
 }
 
 impl BuiltinId {
-    pub(crate) const fn expected_arity(self) -> usize {
+    pub const fn expected_arity(self) -> usize {
         match self {
             Self::ConsoleLog => 1,
             Self::ReadStdinUtf8 => 0,
@@ -46,7 +46,7 @@ impl BuiltinId {
         }
     }
 
-    pub(crate) const fn result(self) -> BuiltinResult {
+    pub const fn result(self) -> BuiltinResult {
         match self {
             Self::ConsoleLog => BuiltinResult::EffectOnly,
             Self::ReadStdinUtf8 => BuiltinResult::Value,

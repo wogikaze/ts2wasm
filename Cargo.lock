@@ -87,17 +87,55 @@ dependencies = [
 ]
 
 [[package]]
+name = "ts2wasm-backend-wasm"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "ts2wasm-ir",
+ "ts2wasm-runtime-abi",
+ "ts2wasm-shared",
+]
+
+[[package]]
 name = "ts2wasm-cli"
 version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+ "ts2wasm-frontend",
+ "ts2wasm-ir",
+ "ts2wasm-runtime-abi",
  "ts2wasm-shared",
 ]
 
 [[package]]
+name = "ts2wasm-frontend"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-shared",
+]
+
+[[package]]
+name = "ts2wasm-ir"
+version = "0.1.0"
+dependencies = [
+ "ts2wasm-frontend",
+ "ts2wasm-runtime-abi",
+ "ts2wasm-shared",
+]
+
+[[package]]
+name = "ts2wasm-runtime-abi"
+version = "0.1.0"
+
+[[package]]
 name = "ts2wasm-shared"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "unicode-ident"

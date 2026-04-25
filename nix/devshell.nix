@@ -15,6 +15,7 @@ pkgs.mkShell {
       wamr
       ripgrep
       jq
+      mold
     ])
     ++ [
       # Hyphenated pname; `with pkgs; [ ast-grep ]` would parse as subtraction.

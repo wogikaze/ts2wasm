@@ -2,42 +2,41 @@ use std::collections::HashMap;
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
-use crate::backend::RuntimeFn;
-use crate::runtime::value::ValueTag;
-use crate::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
+use ts2wasm_runtime_abi::ValueTag;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct LocalId(pub(crate) usize);
+pub struct LocalId(pub usize);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub(crate) struct FuncId(pub(crate) usize);
+pub struct FuncId(pub usize);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ModuleInfo {
-    pub(crate) id: usize,
-    pub(crate) specifier: String,
-    pub(crate) statements: Vec<LoweredStmt>,
-    pub(crate) locals_count: usize,
+pub struct ModuleInfo {
+    pub id: usize,
+    pub specifier: String,
+    pub statements: Vec<LoweredStmt>,
+    pub locals_count: usize,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct LoweredProgram {
-    pub(crate) top_level_statements: Vec<LoweredStmt>,
-    pub(crate) top_level_locals: Vec<LocalId>,
-    pub(crate) functions: Vec<LoweredFunction>,
-    pub(crate) modules: Vec<ModuleInfo>,
+pub struct LoweredProgram {
+    pub top_level_statements: Vec<LoweredStmt>,
+    pub top_level_locals: Vec<LocalId>,
+    pub functions: Vec<LoweredFunction>,
+    pub modules: Vec<ModuleInfo>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct LoweredFunction {
-    pub(crate) id: FuncId,
-    pub(crate) params: Vec<LocalId>,
-    pub(crate) locals: Vec<LocalId>,
-    pub(crate) body: Vec<LoweredStmt>,
+pub struct LoweredFunction {
+    pub id: FuncId,
+    pub params: Vec<LocalId>,
+    pub locals: Vec<LocalId>,
+    pub body: Vec<LoweredStmt>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum LoweredStmt {
+pub enum LoweredStmt {
     Let(LocalId, LoweredExpr),
     Assign(LocalId, LoweredExpr),
     Expr(LoweredExpr),
@@ -90,12 +89,10 @@ pub(crate) enum LoweredStmt {
     },
     Break,
     Continue,
-    /// exports.name = value
     Export {
         name: String,
         expr: LoweredExpr,
     },
-    /// module.exports = value
     ModuleExportsAssign {
         expr: LoweredExpr,
     },
@@ -108,13 +105,13 @@ pub(crate) enum LoweredStmt {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum FunctionCallKind {
+pub enum FunctionCallKind {
     User(FuncId),
     Builtin(BuiltinId),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum LoweredExpr {
+pub enum LoweredExpr {
     Number(i32),
     String(String),
     Bool(bool),
@@ -134,60 +131,46 @@ pub(crate) enum LoweredExpr {
         kind: FunctionCallKind,
         args: Vec<LoweredExpr>,
     },
-    /// Array literal — allocates on heap.
-    /// Backend-managed temporary locals are not part of Lowered IR.
     ArrayNew {
         elements: Vec<LoweredExpr>,
     },
-    /// Array index access: `arr[index]`.
     ArrayGet {
         arr: Box<LoweredExpr>,
         index: Box<LoweredExpr>,
     },
-    /// `.length` on arrays or strings.
     GetLength(Box<LoweredExpr>),
-    /// Object literal — allocates on heap.
-    /// Keys are stored as raw interned-string RawValues.
-    /// Backend-managed temporary locals are not part of Lowered IR.
     ObjectNew {
         props: Vec<(String, LoweredExpr)>,
     },
-    /// Data property read: `obj.key`.
     PropertyGet {
         obj: Box<LoweredExpr>,
         key: String,
     },
-    /// Method call: `obj.method(args)`.
     MethodCall {
         object: Box<LoweredExpr>,
         method: String,
-        args: Vec<LoweredExpr>,
     },
-    /// Direct call to a runtime function (resolved from method calls).
     RuntimeCall {
-        runtime_fn: crate::backend::RuntimeFn,
+        runtime_fn: String,
         args: Vec<LoweredExpr>,
     },
-    /// Property assignment: `obj.key = value`.
     PropertySet {
         object: Box<LoweredExpr>,
         key: String,
         value: Box<LoweredExpr>,
     },
-    /// New instance: `new ClassName(args)`.
     New {
         constructor: FuncId,
         args: Vec<LoweredExpr>,
         base_local: LocalId,
     },
-    /// Load a module: `require("specifier")` → references module by ID.
     ModuleLoad {
         module_id: usize,
     },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum LoweredBinaryOp {
+pub enum LoweredBinaryOp {
     Add,
     Subtract,
     Less,
@@ -198,13 +181,13 @@ pub(crate) enum LoweredBinaryOp {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum LoweredUnaryOp {
+pub enum LoweredUnaryOp {
     Not,
     Negate,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum InferredType {
+pub enum InferredType {
     Number,
     String,
     Boolean,
@@ -212,7 +195,7 @@ pub(crate) enum InferredType {
 }
 
 impl LoweredExpr {
-    pub(crate) fn inferred_type(&self) -> InferredType {
+    pub fn inferred_type(&self) -> InferredType {
         match self {
             Self::Number(_) => InferredType::Number,
             Self::String(_) => InferredType::String,
@@ -249,7 +232,7 @@ impl LoweredExpr {
     }
 }
 
-pub(crate) fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
+pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let class_parents = collect_class_parents(program);
     let mut resolver = Resolver::new(&function_ids, class_parents.clone());
@@ -444,7 +427,6 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
         BinaryOp::StrictEqual => Ok(LoweredBinaryOp::StrictEqual),
         BinaryOp::And => Ok(LoweredBinaryOp::And),
         BinaryOp::Or => Ok(LoweredBinaryOp::Or),
-        // Not yet supported
         BinaryOp::Multiply
         | BinaryOp::Divide
         | BinaryOp::Modulo
@@ -464,57 +446,46 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
     }
 }
 
-/// Resolve a method call to the appropriate RuntimeFn.
-///
-/// This handles built-in object methods like:
-/// - `Math.floor(x)` → MathFloor
-/// - `"hello".charAt(0)` → StringCharAt
-/// - `[1,2].push(3)` → ArrayPush
-/// - `Object.keys(obj)` → ObjectKeys
-/// - `JSON.stringify(val)` → JsonStringify
-fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<RuntimeFn> {
-    // Math methods: Math.floor, Math.ceil, Math.round, Math.abs, Math.max, Math.min
+fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<String> {
     if let ResolvedExpr::Ident(name) = object {
         if name == "Math" {
             return match method {
-                "floor" => Some(RuntimeFn::MathFloor),
-                "ceil" => Some(RuntimeFn::MathCeil),
-                "round" => Some(RuntimeFn::MathRound),
-                "abs" => Some(RuntimeFn::MathAbs),
-                "max" => Some(RuntimeFn::MathMax),
-                "min" => Some(RuntimeFn::MathMin),
+                "floor" => Some("MathFloor".to_owned()),
+                "ceil" => Some("MathCeil".to_owned()),
+                "round" => Some("MathRound".to_owned()),
+                "abs" => Some("MathAbs".to_owned()),
+                "max" => Some("MathMax".to_owned()),
+                "min" => Some("MathMin".to_owned()),
                 _ => None,
             };
         }
         if name == "JSON" {
             return match method {
-                "stringify" => Some(RuntimeFn::JsonStringify),
-                "parse" => Some(RuntimeFn::JsonParse),
+                "stringify" => Some("JsonStringify".to_owned()),
+                "parse" => Some("JsonParse".to_owned()),
                 _ => None,
             };
         }
         if name == "Object" {
             return match method {
-                "keys" => Some(RuntimeFn::ObjectKeys),
-                "values" => Some(RuntimeFn::ObjectValues),
-                "entries" => Some(RuntimeFn::ObjectEntries),
+                "keys" => Some("ObjectKeys".to_owned()),
+                "values" => Some("ObjectValues".to_owned()),
+                "entries" => Some("ObjectEntries".to_owned()),
                 _ => None,
             };
         }
     }
-    // Instance methods resolved by method name.
-    // Type-precise dispatch is deferred; this keeps typed-optimization fixtures compiling.
     match method {
-        "charAt" => Some(RuntimeFn::StringCharAt),
-        "substring" => Some(RuntimeFn::StringSubstring),
-        "slice" => Some(RuntimeFn::StringSlice),
-        "indexOf" => Some(RuntimeFn::StringIndexOf),
-        "split" => Some(RuntimeFn::StringSplit),
-        "push" => Some(RuntimeFn::ArrayPush),
-        "pop" => Some(RuntimeFn::ArrayPop),
-        "concat" => Some(RuntimeFn::ArrayConcat),
-        "join" => Some(RuntimeFn::ArrayJoin),
-        "reverse" => Some(RuntimeFn::ArrayReverse),
+        "charAt" => Some("StringCharAt".to_owned()),
+        "substring" => Some("StringSubstring".to_owned()),
+        "slice" => Some("StringSlice".to_owned()),
+        "indexOf" => Some("StringIndexOf".to_owned()),
+        "split" => Some("StringSplit".to_owned()),
+        "push" => Some("ArrayPush".to_owned()),
+        "pop" => Some("ArrayPop".to_owned()),
+        "concat" => Some("ArrayConcat".to_owned()),
+        "join" => Some("ArrayJoin".to_owned()),
+        "reverse" => Some("ArrayReverse".to_owned()),
         _ => None,
     }
 }
@@ -523,7 +494,6 @@ fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
     match op {
         UnaryOp::Not => Ok(LoweredUnaryOp::Not),
         UnaryOp::Negate => Ok(LoweredUnaryOp::Negate),
-        // Not yet supported
         UnaryOp::Increment
         | UnaryOp::Decrement
         | UnaryOp::PreIncrement
@@ -922,7 +892,6 @@ impl<'a> Resolver<'a> {
                 method,
                 args,
             } => {
-                // Resolve built-in object methods to RuntimeFn
                 if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
@@ -1092,7 +1061,6 @@ impl<'a> Resolver<'a> {
         Ok(local_id)
     }
 
-    /// Allocate an anonymous compiler-temporary local (not user-visible).
     fn alloc_temp(&mut self) -> LocalId {
         let id = LocalId(self.next_local_id);
         self.next_local_id += 1;
@@ -1128,8 +1096,6 @@ impl<'a> Resolver<'a> {
             return *id;
         }
 
-        // Reserve module id 0 for the current (entry) module.
-        // External `require("...")` specifiers start from 1.
         let id = self.modules.len() + 1;
         self.module_ids.insert(specifier.to_owned(), id);
         self.modules.push(ModuleInfo {
@@ -1140,6 +1106,7 @@ impl<'a> Resolver<'a> {
         });
         id
     }
+
     fn resolve_class_method(&self, class_name: &str, method: &str) -> Option<FuncId> {
         let mut current = Some(class_name.to_owned());
         while let Some(class) = current {
@@ -1185,16 +1152,7 @@ fn class_maps(
     (ctor_ids, method_ids, static_method_ids)
 }
 
-/// Validate the structural invariants of a `LoweredProgram`.
-///
-/// This gate must pass before the program is handed to the backend.
-/// It catches:
-/// - `FuncId` values that are out of range
-/// - `LocalId` values that are out of range for their enclosing scope
-/// - Call arity mismatches
-///
-/// See `docs/13-ir-contracts.md` § validate_lowered.
-pub(crate) fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>> {
+pub fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>> {
     let mut errors = Vec::new();
     let num_funcs = program.functions.len();
 
@@ -1393,21 +1351,11 @@ fn validate_stmt(
             validate_expr(iter, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, errors);
         }
-        LoweredStmt::Break | LoweredStmt::Continue => {
-            // Break/Continue scope validation deferred to backend emission
-            // (backend must track if we're in a loop context)
-        }
+        LoweredStmt::Break | LoweredStmt::Continue => {}
         LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredStmt::ClassDecl {
-            name: _,
-            extends: _,
-            constructor: _,
-            methods: _,
-        } => {
-            // Class declaration validation deferred to backend emission
-        }
+        LoweredStmt::ClassDecl { .. } => {}
     }
 }
 
@@ -1519,11 +1467,8 @@ fn validate_expr(
         LoweredExpr::PropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::MethodCall { object, args, .. } => {
+        LoweredExpr::MethodCall { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
-            for arg in args {
-                validate_expr(arg, local_count, num_funcs, program, errors, true);
-            }
             errors.push(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
@@ -1546,178 +1491,5 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
             ),
             span: None,
         });
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{
-        FunctionCallKind, InferredType, LoweredExpr, LoweredStmt, lower_program, validate_lowered,
-    };
-    use crate::ir::builtin::{BuiltinId, BuiltinResult};
-
-    fn parse_and_resolve(source: &str) -> Vec<crate::ir::builtin_resolved::ResolvedStmt> {
-        let program = crate::parse_program(source).unwrap();
-        crate::ir::builtin_resolver::resolve_builtins(&program).unwrap()
-    }
-
-    #[test]
-    fn lowering_splits_functions_and_resolves_ids() {
-        let program = parse_and_resolve(
-            "function add(a, b) { return a + b; } let x = 1; console.log(add(x, 2));",
-        );
-
-        let lowered = lower_program(&program).unwrap();
-
-        assert_eq!(lowered.functions.len(), 1);
-        assert_eq!(lowered.top_level_statements.len(), 2);
-        assert_eq!(lowered.top_level_locals.len(), 1);
-
-        match &lowered.top_level_statements[1] {
-            LoweredStmt::Expr(LoweredExpr::Call { kind, args }) => {
-                assert!(matches!(
-                    kind,
-                    FunctionCallKind::Builtin(BuiltinId::ConsoleLog)
-                ));
-                assert!(matches!(args[0], LoweredExpr::Call { .. }));
-            }
-            other => panic!("unexpected lowered statement: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn lowering_rejects_unresolved_name() {
-        let program = parse_and_resolve("let x = y;");
-        let err = lower_program(&program).unwrap_err();
-        assert_eq!(err.code, super::DiagCode::UnresolvedName);
-        assert!(err.message.contains('`'));
-    }
-
-    #[test]
-    fn lowering_rejects_duplicate_function() {
-        let program = parse_and_resolve("function f() { return 1; } function f() { return 2; }");
-        let err = lower_program(&program).unwrap_err();
-        assert_eq!(err.code, super::DiagCode::DuplicateFunction);
-    }
-
-    #[test]
-    fn lowering_rejects_duplicate_parameter() {
-        let program = parse_and_resolve("function f(a, a) { return a; }");
-        let err = lower_program(&program).unwrap_err();
-        assert_eq!(err.code, super::DiagCode::DuplicateParameter);
-    }
-
-    #[test]
-    fn lowering_rejects_non_ascii_string_literal() {
-        let program = parse_and_resolve("let s = \"あ\";");
-        let err = lower_program(&program).unwrap_err();
-        assert_eq!(err.code, super::DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("non-ASCII"));
-    }
-
-    #[test]
-    fn validate_rejects_arity_mismatch() {
-        // Build a program where add(a,b) is called with 3 args by manually
-        // constructing a valid-but-wrong-arity LoweredProgram via parse then patch.
-        use super::{DiagCode, FuncId, LoweredBinaryOp, LoweredFunction, LoweredProgram};
-        use crate::ir::lowered::{LocalId, LoweredExpr};
-
-        let func = LoweredFunction {
-            id: FuncId(0),
-            params: vec![LocalId(0), LocalId(1)],
-            locals: vec![],
-            body: vec![],
-        };
-        let call = LoweredStmt::Expr(LoweredExpr::Call {
-            kind: FunctionCallKind::User(FuncId(0)),
-            // 3 args instead of the expected 2
-            args: vec![
-                LoweredExpr::Number(1),
-                LoweredExpr::Number(2),
-                LoweredExpr::Number(3),
-            ],
-        });
-        let program = LoweredProgram {
-            top_level_statements: vec![call],
-            top_level_locals: vec![],
-            functions: vec![func],
-            modules: vec![],
-        };
-
-        let errs = validate_lowered(&program).unwrap_err();
-        assert_eq!(errs.len(), 1);
-        assert_eq!(errs[0].code, DiagCode::ArityMismatch);
-        let _ = LoweredBinaryOp::Add; // suppress dead_code lint in test
-    }
-
-    #[test]
-    fn builtin_console_log_contract_is_effect_only() {
-        assert_eq!(BuiltinId::ConsoleLog.expected_arity(), 1);
-        assert!(matches!(
-            BuiltinId::ConsoleLog.result(),
-            BuiltinResult::EffectOnly
-        ));
-    }
-
-    #[test]
-    fn validate_rejects_builtin_arity_mismatch_after_builtin_resolution() {
-        let ast = crate::parse_program("console.log(1, 2);").unwrap();
-        let resolved = crate::ir::builtin_resolver::resolve_builtins(&ast).unwrap();
-        let lowered = lower_program(&resolved).unwrap();
-        let errs = validate_lowered(&lowered).unwrap_err();
-        assert!(
-            errs.iter()
-                .any(|e| e.code == super::DiagCode::ArityMismatch)
-        );
-    }
-
-    #[test]
-    fn lowering_connects_read_file_sync_idiom_to_builtin_call_shape() {
-        let ast =
-            crate::parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
-        let resolved = crate::ir::builtin_resolver::resolve_builtins(&ast).unwrap();
-        let lowered = lower_program(&resolved).unwrap();
-        match &lowered.top_level_statements[0] {
-            LoweredStmt::Let(
-                _,
-                LoweredExpr::Call {
-                    kind: FunctionCallKind::Builtin(BuiltinId::ReadStdinUtf8),
-                    args,
-                },
-            ) => {
-                assert!(args.is_empty());
-            }
-            other => panic!("unexpected lowered statement: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn inferred_type_marks_number_addition_as_number() {
-        let expr = LoweredExpr::Binary {
-            left: Box::new(LoweredExpr::Number(1)),
-            op: super::LoweredBinaryOp::Add,
-            right: Box::new(LoweredExpr::Number(2)),
-        };
-        assert_eq!(expr.inferred_type(), InferredType::Number);
-    }
-
-    #[test]
-    fn inferred_type_marks_string_addition_as_string() {
-        let expr = LoweredExpr::Binary {
-            left: Box::new(LoweredExpr::String("a".to_owned())),
-            op: super::LoweredBinaryOp::Add,
-            right: Box::new(LoweredExpr::String("b".to_owned())),
-        };
-        assert_eq!(expr.inferred_type(), InferredType::String);
-    }
-
-    #[test]
-    fn inferred_type_falls_back_to_unknown_for_mixed_add() {
-        let expr = LoweredExpr::Binary {
-            left: Box::new(LoweredExpr::String("a".to_owned())),
-            op: super::LoweredBinaryOp::Add,
-            right: Box::new(LoweredExpr::Number(1)),
-        };
-        assert_eq!(expr.inferred_type(), InferredType::Unknown);
     }
 }

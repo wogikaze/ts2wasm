@@ -1,11 +1,11 @@
 use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
 use super::runtime_fn::RuntimeFn;
-use crate::ir::lowered::LocalId;
-use crate::ir::lowered::LoweredStmt;
-use crate::runtime::layout::Layout;
-use crate::runtime::value::ValueTag;
 use std::cell::RefCell;
+use ts2wasm_ir::lowered::LocalId;
+use ts2wasm_ir::lowered::LoweredStmt;
+use ts2wasm_runtime_abi::Layout;
+use ts2wasm_runtime_abi::ValueTag;
 
 thread_local! {
     static LABEL_COUNTER: RefCell<usize> = RefCell::new(0);

@@ -1,6 +1,6 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
-use crate::ir::lowered::{
+use ts2wasm_ir::lowered::{
     FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, LoweredUnaryOp,
 };
 
@@ -14,6 +14,7 @@ pub(crate) struct RuntimeLinkPlan {
     required_capabilities: BTreeSet<Capability>,
     required_runtime_strings: BTreeSet<&'static str>,
     manifest_target: &'static str,
+    capability_reasons: BTreeMap<String, Vec<String>>,
 }
 
 impl Default for RuntimeLinkPlan {
@@ -25,6 +26,7 @@ impl Default for RuntimeLinkPlan {
             required_capabilities: BTreeSet::new(),
             required_runtime_strings: BTreeSet::new(),
             manifest_target: "wasm32-wasi-p1",
+            capability_reasons: BTreeMap::new(),
         }
     }
 }
@@ -68,6 +70,17 @@ impl RuntimeLinkPlan {
         &self.required_runtime_strings
     }
 
+    pub(crate) fn capability_reasons(&self) -> &BTreeMap<String, Vec<String>> {
+        &self.capability_reasons
+    }
+
+    pub(crate) fn add_capability_reason(&mut self, capability_key: String, reason: String) {
+        self.capability_reasons
+            .entry(capability_key)
+            .or_default()
+            .push(reason);
+    }
+
     #[cfg(test)]
     pub(crate) fn from_required_runtime_for_tests(required: &[RuntimeFn]) -> Self {
         let mut plan = Self::default();
@@ -88,6 +101,9 @@ impl RuntimeLinkPlan {
     }
 
     fn populate_derived_sets(&mut self) {
+        // Collect capability reasons first to avoid borrow conflicts
+        let mut capability_reasons_to_add: Vec<(String, String)> = Vec::new();
+
         for runtime_fn in &self.required_runtime {
             for global in runtime_fn.globals() {
                 self.required_globals.insert(*global);
@@ -97,10 +113,21 @@ impl RuntimeLinkPlan {
             }
             for capability in runtime_fn.spec().capability {
                 self.required_capabilities.insert(*capability);
+                // Collect capability reason based on the runtime function
+                let reason = format!(
+                    "required by runtime function: {}",
+                    runtime_fn.manifest_name()
+                );
+                capability_reasons_to_add.push((capability.manifest_name().to_owned(), reason));
             }
             for value in runtime_fn.spec().runtime_strings {
                 self.required_runtime_strings.insert(*value);
             }
+        }
+
+        // Add collected capability reasons
+        for (key, reason) in capability_reasons_to_add {
+            self.add_capability_reason(key, reason);
         }
 
         self.manifest_target = if self
@@ -231,8 +258,8 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(right);
                 match op {
                     LoweredBinaryOp::Add => {
-                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
-                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                         {
                             self.add_required_runtime(RuntimeFn::AddFast);
                         } else {
@@ -240,8 +267,8 @@ impl RuntimeLinkPlan {
                         }
                     }
                     LoweredBinaryOp::Subtract => {
-                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
-                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                         {
                             self.add_required_runtime(RuntimeFn::SubFast);
                         } else {
@@ -249,8 +276,8 @@ impl RuntimeLinkPlan {
                         }
                     }
                     LoweredBinaryOp::Less => {
-                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
-                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                         {
                             self.add_required_runtime(RuntimeFn::LessFast);
                         } else {
@@ -258,8 +285,8 @@ impl RuntimeLinkPlan {
                         }
                     }
                     LoweredBinaryOp::Greater => {
-                        if left.inferred_type() == crate::ir::lowered::InferredType::Number
-                            && right.inferred_type() == crate::ir::lowered::InferredType::Number
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                         {
                             self.add_required_runtime(RuntimeFn::GreaterFast);
                         } else {
@@ -328,7 +355,9 @@ impl RuntimeLinkPlan {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
             }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
-                self.add_required_runtime(*runtime_fn);
+                if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(runtime_fn) {
+                    self.add_required_runtime(runtime_fn_enum);
+                }
                 for arg in args {
                     self.collect_required_runtime_expr(arg);
                 }
@@ -343,13 +372,13 @@ mod tests {
 
     use crate::backend::emit_wat;
     use crate::backend::runtime_fn::{Capability, HostImport, RuntimeFn, RuntimeGlobal};
-    use crate::ir::lowered::lower_program;
+    use ts2wasm_ir::lowered::lower_program;
 
     use super::RuntimeLinkPlan;
 
-    fn lowered(source: &str) -> crate::ir::lowered::LoweredProgram {
+    fn lowered(source: &str) -> ts2wasm_ir::lowered::LoweredProgram {
         let program = crate::parse_program(source).expect("parse failed");
-        let resolved = crate::ir::builtin_resolver::resolve_builtins(&program)
+        let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&program)
             .expect("builtin resolution failed");
         lower_program(&resolved).expect("lowering failed")
     }
@@ -383,11 +412,11 @@ mod tests {
         );
         assert!(
             plan.required_runtime_strings()
-                .contains(&crate::runtime::consts::RuntimeString::NEWLINE)
+                .contains(&ts2wasm_runtime_abi::RuntimeString::NEWLINE)
         );
         assert!(
             plan.required_runtime_strings()
-                .contains(&crate::runtime::consts::RuntimeString::UNDEFINED)
+                .contains(&ts2wasm_runtime_abi::RuntimeString::UNDEFINED)
         );
     }
 
@@ -440,12 +469,12 @@ mod tests {
         assert!(
             !plan
                 .required_runtime_strings()
-                .contains(&crate::runtime::consts::RuntimeString::UNDEFINED)
+                .contains(&ts2wasm_runtime_abi::RuntimeString::UNDEFINED)
         );
         assert!(
             !plan
                 .required_runtime_strings()
-                .contains(&crate::runtime::consts::RuntimeString::NEWLINE)
+                .contains(&ts2wasm_runtime_abi::RuntimeString::NEWLINE)
         );
     }
 

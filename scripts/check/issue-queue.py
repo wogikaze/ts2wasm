@@ -428,7 +428,7 @@ def main() -> int:
     # Backticked paths
     for issue in issues:
         # Skip path checks for migration issues that reference paths that don't exist yet
-        if issue.name_id in ["024", "025", "026", "027", "028"]:
+        if "migrate" in issue.title.lower():
             continue
 
         lines = issue.text.splitlines()

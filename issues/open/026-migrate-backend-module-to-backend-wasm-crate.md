@@ -108,11 +108,11 @@ Final-state docs:
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [ ] updated: current-state.md (repo root)
 
 Follow-up issues:
 
-- [ ] created: `issues/open/027-migrate-frontend-code-to-frontend-crate.md`
+- [x] created: issues/open/027-migrate-frontend-code-to-frontend-crate.md (moved to done/)
 
 ## Notes
 

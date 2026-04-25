@@ -1,6 +1,7 @@
+use serde::Serialize;
 use std::collections::BTreeMap;
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CapabilityManifest {
     pub schema_version: u32,
     pub target: String,
@@ -63,9 +64,16 @@ impl CapabilityManifest {
             .or_default()
             .push(reason.into());
     }
+
+    pub fn to_json(&self) -> String {
+        let mut out = serde_json::to_string_pretty(self)
+            .expect("CapabilityManifest should always serialize to valid JSON");
+        out.push('\n');
+        out
+    }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
 pub struct WasiCapabilities {
     pub stdin: bool,
     pub stdout: bool,
@@ -76,14 +84,14 @@ pub struct WasiCapabilities {
     pub random: bool,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
 pub struct FilesystemCapabilities {
     pub read: Vec<String>,
     pub write: Vec<String>,
     pub preopens: Vec<String>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
 pub struct NodeHostCapabilities {
     pub required: bool,
     pub imports: Vec<String>,

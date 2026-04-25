@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
-use crate::ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
-use crate::runtime::layout::Layout;
-use crate::runtime::value::ValueTag;
 use crate::{DiagCode, Diagnostic};
+use ts2wasm_ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
+use ts2wasm_runtime_abi::Layout;
+use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::RuntimeGlobal;
 use super::runtime_link_plan::RuntimeLinkPlan;
@@ -430,11 +430,8 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(obj);
                 self.intern_string(key);
             }
-            LoweredExpr::MethodCall { object, args, .. } => {
+            LoweredExpr::MethodCall { object, .. } => {
                 self.collect_expr_strings(object);
-                for arg in args {
-                    self.collect_expr_strings(arg);
-                }
             }
             LoweredExpr::PropertySet { object, key, value } => {
                 self.collect_expr_strings(object);

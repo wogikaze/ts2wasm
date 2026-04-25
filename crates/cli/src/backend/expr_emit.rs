@@ -1,11 +1,11 @@
 use super::RuntimeFn;
 use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
-use crate::ir::lowered::{
+use ts2wasm_ir::lowered::{
     FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp,
 };
-use crate::runtime::layout::Layout;
-use crate::runtime::value::ValueTag;
+use ts2wasm_runtime_abi::Layout;
+use ts2wasm_runtime_abi::ValueTag;
 
 use super::emitter::function_symbol;
 
@@ -226,7 +226,6 @@ impl WatEmitter<'_> {
             LoweredExpr::MethodCall {
                 object: _,
                 method: _,
-                args: _,
             } => {
                 // Lowering/validation should reject residual MethodCall before backend.
                 wat.push_str(&format!("{pad}(unreachable)\n"));
@@ -235,7 +234,10 @@ impl WatEmitter<'_> {
                 for arg in args {
                     self.emit_expr(wat, &arg, indent, frame);
                 }
-                wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                let fn_name = super::runtime_fn::runtime_fn_from_name(runtime_fn)
+                    .map(|f| f.symbol())
+                    .unwrap_or_else(|| runtime_fn.as_str());
+                wat.push_str(&format!("{pad}(call {})\n", fn_name));
             }
             LoweredExpr::PropertySet { object, key, value } => {
                 self.emit_expr(wat, object, indent, frame);

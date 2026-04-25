@@ -1,6 +1,6 @@
 use super::emitter::WatEmitter;
-use crate::runtime::{layout::Layout, value::ValueTag};
 use crate::{align_to, wat_bytes};
+use ts2wasm_runtime_abi::{Layout, ValueTag};
 
 impl WatEmitter<'_> {
     pub(super) fn intern_string(&mut self, value: &str) -> u32 {

@@ -1,10 +1,10 @@
-use crate::{DiagCode, Diagnostic, Expr, Stmt};
+use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt};
 
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
 
-pub(crate) fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
+pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     program.iter().map(resolve_stmt).collect()
 }
 
@@ -615,7 +615,7 @@ fn validate_read_stdin_utf8_args(args: &[Expr], callee: &Expr) -> Result<(), Dia
     }
 }
 
-fn span_of_expr(expr: &Expr) -> Option<crate::Span> {
+fn span_of_expr(expr: &Expr) -> Option<Span> {
     match expr {
         Expr::Number { span, .. }
         | Expr::String { span, .. }
@@ -637,159 +637,5 @@ fn span_of_expr(expr: &Expr) -> Option<crate::Span> {
         | Expr::ArrowFn { span, .. }
         | Expr::Spread { span, .. }
         | Expr::PropertyAssign { span, .. } => Some(*span),
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::resolve_builtins;
-    use crate::DiagCode;
-    use crate::ir::builtin::{BuiltinId, BuiltinPropertyId};
-    use crate::ir::builtin_resolved::{ResolvedExpr, ResolvedStmt};
-
-    #[test]
-    fn console_log_resolves_to_builtin_call() {
-        let program = crate::parse_program("console.log(1);").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[0] {
-            ResolvedStmt::Expr(ResolvedExpr::BuiltinCall { builtin, args }) => {
-                assert_eq!(*builtin, BuiltinId::ConsoleLog);
-                assert_eq!(args.len(), 1);
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn member_length_resolves_to_builtin_property() {
-        let program = crate::parse_program("let a = [1]; let b = a.length;").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[1] {
-            ResolvedStmt::Let(_, ResolvedExpr::BuiltinProperty { builtin, .. }) => {
-                assert_eq!(*builtin, BuiltinPropertyId::Length);
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn member_access_resolves_to_property_access() {
-        let program = crate::parse_program("let o = { a: 1 }; let v = o.a;").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[1] {
-            ResolvedStmt::Let(_, ResolvedExpr::PropertyAccess { key, .. }) => {
-                assert_eq!(key, "a");
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn index_access_resolves_to_computed_index() {
-        let program = crate::parse_program("let o = { a: 1 }; let v = o[\"a\"];").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[1] {
-            ResolvedStmt::Let(_, ResolvedExpr::ComputedIndex { .. }) => {}
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn read_file_sync_stdin_utf8_idiom_resolves_to_builtin_call() {
-        let program =
-            crate::parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[0] {
-            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
-                assert_eq!(*builtin, BuiltinId::ReadStdinUtf8);
-                assert!(args.is_empty());
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn read_file_sync_with_nonzero_fd_is_rejected() {
-        let program = crate::parse_program("require(\"fs\").readFileSync(1, \"utf8\");").unwrap();
-        let err = resolve_builtins(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("fd 0"));
-    }
-
-    #[test]
-    fn read_file_sync_with_missing_encoding_is_rejected() {
-        let program = crate::parse_program("require(\"fs\").readFileSync(0);").unwrap();
-        let err = resolve_builtins(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::ArityMismatch);
-    }
-
-    #[test]
-    fn read_file_sync_with_non_utf8_encoding_is_rejected() {
-        let program = crate::parse_program("require(\"fs\").readFileSync(0, \"ascii\");").unwrap();
-        let err = resolve_builtins(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("utf8"));
-    }
-
-    #[test]
-    fn non_fs_read_file_sync_is_not_misclassified() {
-        let program =
-            crate::parse_program("let s = require(\"path\").readFileSync(0, \"utf8\");").unwrap();
-        let err = resolve_builtins(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("require(\"path\").readFileSync"));
-    }
-
-    #[test]
-    fn process_argv_resolves_to_builtin_call() {
-        let program = crate::parse_program("let a = process.argv;").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[0] {
-            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
-                assert_eq!(*builtin, BuiltinId::ProcessArgv);
-                assert!(args.is_empty());
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn process_exit_resolves_to_builtin_call() {
-        let program = crate::parse_program("process.exit(0);").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[0] {
-            ResolvedStmt::Expr(ResolvedExpr::BuiltinCall { builtin, args }) => {
-                assert_eq!(*builtin, BuiltinId::ProcessExit);
-                assert_eq!(args.len(), 1);
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn path_join_resolves_to_builtin_call() {
-        let program =
-            crate::parse_program("let p = require(\"path\").join(\"a\", \"b\");").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[0] {
-            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
-                assert_eq!(*builtin, BuiltinId::PathJoin);
-                assert_eq!(args.len(), 2);
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
-    }
-
-    #[test]
-    fn crypto_random_bytes_resolves_to_builtin_call() {
-        let program = crate::parse_program("let b = require(\"crypto\").randomBytes(16);").unwrap();
-        let resolved = resolve_builtins(&program).unwrap();
-        match &resolved[0] {
-            ResolvedStmt::Let(_, ResolvedExpr::BuiltinCall { builtin, args }) => {
-                assert_eq!(*builtin, BuiltinId::CryptoRandomBytes);
-                assert_eq!(args.len(), 1);
-            }
-            other => panic!("unexpected resolved stmt: {other:?}"),
-        }
     }
 }

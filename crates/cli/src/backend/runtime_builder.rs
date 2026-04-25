@@ -1,6 +1,6 @@
 use super::emitter::WatEmitter;
 use super::runtime_fn::RuntimeFn;
-use crate::runtime::{
+use ts2wasm_runtime_abi::{
     consts::{RuntimeConst, RuntimeString},
     layout::Layout,
     value::ValueTag,
@@ -1739,7 +1739,7 @@ impl WatEmitter<'_> {
 
     /// Emit `$module_require(id: i32) → i32`.
     fn emit_module_require(&self, wat: &mut String) {
-        let entry_size = crate::runtime::layout::Layout::MODULE_CACHE_ENTRY_SIZE;
+        let entry_size = ts2wasm_runtime_abi::Layout::MODULE_CACHE_ENTRY_SIZE;
         wat.push_str(&format!(
             r#"
   (func $module_require (param $id i32) (result i32)

@@ -1,5 +1,5 @@
-use crate::ir::builtin::BuiltinId;
-use crate::runtime::consts::RuntimeString;
+use ts2wasm_ir::builtin::BuiltinId;
+use ts2wasm_runtime_abi::RuntimeString;
 
 /// ABI contract type for host imports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -261,6 +261,33 @@ impl HostImport {
             Self::PathDirname => "host.path.dirname",
             Self::CryptoRandomBytes => "host.crypto.randomBytes",
         }
+    }
+}
+
+pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
+    match name {
+        "MathFloor" => Some(RuntimeFn::MathFloor),
+        "MathCeil" => Some(RuntimeFn::MathCeil),
+        "MathRound" => Some(RuntimeFn::MathRound),
+        "MathAbs" => Some(RuntimeFn::MathAbs),
+        "MathMax" => Some(RuntimeFn::MathMax),
+        "MathMin" => Some(RuntimeFn::MathMin),
+        "JsonStringify" => Some(RuntimeFn::JsonStringify),
+        "JsonParse" => Some(RuntimeFn::JsonParse),
+        "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
+        "ObjectValues" => Some(RuntimeFn::ObjectValues),
+        "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
+        "StringCharAt" => Some(RuntimeFn::StringCharAt),
+        "StringSubstring" => Some(RuntimeFn::StringSubstring),
+        "StringSlice" => Some(RuntimeFn::StringSlice),
+        "StringIndexOf" => Some(RuntimeFn::StringIndexOf),
+        "StringSplit" => Some(RuntimeFn::StringSplit),
+        "ArrayPush" => Some(RuntimeFn::ArrayPush),
+        "ArrayPop" => Some(RuntimeFn::ArrayPop),
+        "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
+        "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
+        "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
+        _ => None,
     }
 }
 

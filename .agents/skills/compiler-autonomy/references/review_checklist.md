@@ -23,3 +23,9 @@
 
 - [ ] Issue (if any) can record exact commands to reproduce verification
 - [ ] `reports/runs/<run_id>/test_report.json` will be produced (or a recorded reason not to) before closing
+
+## Capability manifest schema
+
+- [ ] Capability manifest uses canonical schema from `crates/shared/src/capability.rs::CapabilityManifest`
+- [ ] Output includes `schema_version`, `target`, `standalone`, `wasi`, `node_host`, `capability_reasons`
+- [ ] No transitional `ManifestV1` format with `imports/capabilities/runtime` arrays

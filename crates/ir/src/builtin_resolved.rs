@@ -1,9 +1,9 @@
-use crate::{BinaryOp, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, UnaryOp};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum ResolvedStmt {
+pub enum ResolvedStmt {
     Let(String, ResolvedExpr),
     Assign(String, ResolvedExpr),
     Expr(ResolvedExpr),
@@ -72,14 +72,14 @@ pub(crate) enum ResolvedStmt {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ClassMethod {
-    pub(crate) name: String,
-    pub(crate) params: Vec<String>,
-    pub(crate) body: Vec<ResolvedStmt>,
+pub struct ClassMethod {
+    pub name: String,
+    pub params: Vec<String>,
+    pub body: Vec<ResolvedStmt>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) enum ResolvedExpr {
+pub enum ResolvedExpr {
     Number(i32),
     String(String),
     Bool(bool),

@@ -1,71 +1,17 @@
 mod backend;
-mod ir;
-mod runtime;
 
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+use ts2wasm_frontend::{
+    BinaryOp, DiagCode, Diagnostic, Expr, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
+};
+use ts2wasm_ir::builtin_resolver;
+use ts2wasm_ir::lowered;
+
 const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
-
-/// Structured diagnostic emitted by compiler phases.
-///
-/// All compiler phases (Lexer / Parser / Resolver / Lowering / Backend)
-/// must return `Result<T, Diagnostic>` rather than panicking or returning
-/// unstructured `String` errors. See `docs/12-coding-standard.md` §1–2.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct Span {
-    pub start: usize,
-    pub end: usize,
-}
-
-#[derive(Debug, Clone)]
-pub struct Diagnostic {
-    pub code: DiagCode,
-    pub message: String,
-    pub span: Option<Span>,
-}
-
-impl std::fmt::Display for Diagnostic {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self.span {
-            Some(span) => write!(
-                f,
-                "[{:?}] {} at {}..{}",
-                self.code, self.message, span.start, span.end
-            ),
-            None => write!(f, "[{:?}] {}", self.code, self.message),
-        }
-    }
-}
-
-/// Error codes for compiler diagnostics. See `docs/12-coding-standard.md` §2.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum DiagCode {
-    /// A name referenced in source was not declared in any enclosing scope.
-    UnresolvedName,
-    /// A function called in source was not declared in the program.
-    UnresolvedFunction,
-    /// Two functions share the same name in the same program.
-    DuplicateFunction,
-    /// Two local bindings share the same name in the same lexical scope.
-    DuplicateLocal,
-    /// Two parameters share the same name in the same function parameter list.
-    DuplicateParameter,
-    /// A number literal is outside small-int tagged range.
-    NumberOutOfRange,
-    /// A function call passes the wrong number of arguments.
-    ArityMismatch,
-    /// `return` is used in top-level script scope.
-    InvalidTopLevelReturn,
-    /// A lowered IR node violates a structural invariant — this is a compiler bug.
-    InvariantViolation,
-    /// Source uses syntax that is not supported in the current milestone.
-    UnsupportedSyntax,
-    /// I/O or command execution failure at the backend boundary.
-    BackendIo,
-}
 
 pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
     build_file_with_options(input, output, None)
@@ -84,9 +30,9 @@ pub fn build_file_with_options(
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
-    let resolved = ir::builtin_resolver::resolve_builtins(&program)?;
-    let lowered = ir::lowered::lower_program(&resolved)?;
-    ir::lowered::validate_lowered(&lowered).map_err(|errs| {
+    let resolved = builtin_resolver::resolve_builtins(&program)?;
+    let lowered = lowered::lower_program(&resolved)?;
+    lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
             code: DiagCode::InvariantViolation,
             message: "validate_lowered failed with empty diagnostic list".to_owned(),
@@ -106,7 +52,7 @@ pub fn build_file_with_options(
     write_wasm_from_wat(&wat, output)
 }
 
-fn ensure_runtime_feature_gates(lowered: &ir::lowered::LoweredProgram) -> Result<(), Diagnostic> {
+fn ensure_runtime_feature_gates(lowered: &lowered::LoweredProgram) -> Result<(), Diagnostic> {
     if ENABLE_READ_STDIN_BYTES_RUNTIME {
         return Ok(());
     }
@@ -121,108 +67,9 @@ fn ensure_runtime_feature_gates(lowered: &ir::lowered::LoweredProgram) -> Result
     Ok(())
 }
 
-#[cfg(test)]
-fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
+pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
     Parser::new(tokens).parse_program()
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum Token {
-    Ident(String),
-    Number(i32),
-    String(String),
-    True,
-    False,
-    Null,
-    Undefined,
-    Let,
-    Const,
-    Var,
-    Function,
-    Return,
-    If,
-    Else,
-    While,
-    // New keywords for OOP and control flow
-    This,
-    Class,
-    Try,
-    Catch,
-    Throw,
-    Finally,
-    Extends,
-    Super,
-    Static,
-    Async,
-    Await,
-    Import,
-    Export,
-    Default,
-    Case,
-    Do,
-    For,
-    In,
-    Of,
-    New,
-    TypeOf,
-    InstanceOf,
-    Void,
-    Delete,
-    Switch,
-    Break,
-    Continue,
-    // Operators
-    Plus,
-    Minus,
-    Less,
-    Bang,
-    StrictEqual,
-    Equal,
-    AndAnd,
-    OrOr,
-    Greater,
-    Power,
-    Increment,
-    Decrement,
-    PlusEqual,
-    MinusEqual,
-    StarEqual,
-    SlashEqual,
-    PercentEqual,
-    PowerEqual,
-    Percent,
-    Slash,
-    Star,
-    Ampersand,
-    Pipe,
-    Caret,
-    Tilde,
-    LeftShift,
-    RightShift,
-    UnsignedRightShift,
-    Question,
-    Spread,
-    Arrow,
-    OptionalChain,
-    NullishCoalesce,
-    // Delimiters
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    LeftBracket,
-    RightBracket,
-    Comma,
-    Colon,
-    Dot,
-    Semicolon,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct SpannedToken {
-    kind: Token,
-    span: Span,
 }
 
 struct Lexer<'a> {
@@ -938,280 +785,6 @@ impl<'a> Lexer<'a> {
         self.cursor += ch.len_utf8();
         Some(ch)
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum Stmt {
-    Let {
-        name: String,
-        expr: Expr,
-        span: Span,
-    },
-    Assign {
-        name: String,
-        expr: Expr,
-        span: Span,
-    },
-    Expr {
-        expr: Expr,
-        span: Span,
-    },
-    If {
-        condition: Expr,
-        then_body: Vec<Stmt>,
-        else_body: Vec<Stmt>,
-        span: Span,
-    },
-    While {
-        condition: Expr,
-        body: Vec<Stmt>,
-        span: Span,
-    },
-    Function {
-        name: String,
-        params: Vec<String>,
-        body: Vec<Stmt>,
-        span: Span,
-    },
-    Return {
-        expr: Expr,
-        span: Span,
-    },
-    ClassDecl {
-        name: String,
-        extends: Option<Box<Expr>>,
-        body: Vec<Stmt>,
-        span: Span,
-    },
-    TryCatch {
-        try_block: Vec<Stmt>,
-        catch_param: Option<String>,
-        catch_block: Option<Vec<Stmt>>,
-        finally_block: Option<Vec<Stmt>>,
-        span: Span,
-    },
-    Throw {
-        expr: Expr,
-        span: Span,
-    },
-    Switch {
-        expr: Expr,
-        cases: Vec<(Option<Expr>, Vec<Stmt>)>,
-        span: Span,
-    },
-    DoWhile {
-        body: Vec<Stmt>,
-        condition: Expr,
-        span: Span,
-    },
-    For {
-        init: Option<Box<Stmt>>,
-        condition: Option<Expr>,
-        update: Option<Expr>,
-        body: Vec<Stmt>,
-        span: Span,
-    },
-    ForIn {
-        var: String,
-        iter: Expr,
-        body: Vec<Stmt>,
-        span: Span,
-    },
-    ForOf {
-        var: String,
-        iter: Expr,
-        body: Vec<Stmt>,
-        span: Span,
-    },
-    Break {
-        span: Span,
-    },
-    Continue {
-        span: Span,
-    },
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum Expr {
-    Number {
-        value: i32,
-        span: Span,
-    },
-    String {
-        value: String,
-        span: Span,
-    },
-    Bool {
-        value: bool,
-        span: Span,
-    },
-    Null {
-        span: Span,
-    },
-    Undefined {
-        span: Span,
-    },
-    Ident {
-        name: String,
-        span: Span,
-    },
-    Unary {
-        op: UnaryOp,
-        expr: Box<Expr>,
-        span: Span,
-    },
-    Binary {
-        left: Box<Expr>,
-        op: BinaryOp,
-        right: Box<Expr>,
-        span: Span,
-    },
-    Member {
-        object: Box<Expr>,
-        property: String,
-        span: Span,
-    },
-    Call {
-        callee: Box<Expr>,
-        args: Vec<Expr>,
-        span: Span,
-    },
-    Array {
-        elements: Vec<Expr>,
-        span: Span,
-    },
-    Object {
-        props: Vec<(String, Expr)>,
-        span: Span,
-    },
-    Index {
-        object: Box<Expr>,
-        index: Box<Expr>,
-        span: Span,
-    },
-    New {
-        expr: Box<Expr>,
-        args: Vec<Expr>,
-        span: Span,
-    },
-    TypeOf {
-        expr: Box<Expr>,
-        span: Span,
-    },
-    InstanceOf {
-        expr: Box<Expr>,
-        type_expr: Box<Expr>,
-        span: Span,
-    },
-    Ternary {
-        condition: Box<Expr>,
-        then_expr: Box<Expr>,
-        else_expr: Box<Expr>,
-        span: Span,
-    },
-    ArrowFn {
-        params: Vec<String>,
-        body: Box<Expr>,
-        span: Span,
-    },
-    Spread {
-        expr: Box<Expr>,
-        span: Span,
-    },
-    PropertyAssign {
-        object: Box<Expr>,
-        property: String,
-        value: Box<Expr>,
-        span: Span,
-    },
-}
-
-impl Stmt {
-    fn span(&self) -> Span {
-        match self {
-            Self::Let { span, .. }
-            | Self::Assign { span, .. }
-            | Self::Expr { span, .. }
-            | Self::If { span, .. }
-            | Self::While { span, .. }
-            | Self::Function { span, .. }
-            | Self::Return { span, .. }
-            | Self::ClassDecl { span, .. }
-            | Self::TryCatch { span, .. }
-            | Self::Throw { span, .. }
-            | Self::Switch { span, .. }
-            | Self::DoWhile { span, .. }
-            | Self::For { span, .. }
-            | Self::ForIn { span, .. }
-            | Self::ForOf { span, .. }
-            | Self::Break { span }
-            | Self::Continue { span } => *span,
-        }
-    }
-}
-
-impl Expr {
-    fn span(&self) -> Span {
-        match self {
-            Self::Number { span, .. }
-            | Self::String { span, .. }
-            | Self::Bool { span, .. }
-            | Self::Null { span }
-            | Self::Undefined { span }
-            | Self::Ident { span, .. }
-            | Self::Unary { span, .. }
-            | Self::Binary { span, .. }
-            | Self::Member { span, .. }
-            | Self::Call { span, .. }
-            | Self::Array { span, .. }
-            | Self::Object { span, .. }
-            | Self::Index { span, .. }
-            | Self::New { span, .. }
-            | Self::TypeOf { span, .. }
-            | Self::InstanceOf { span, .. }
-            | Self::Ternary { span, .. }
-            | Self::ArrowFn { span, .. }
-            | Self::Spread { span, .. }
-            | Self::PropertyAssign { span, .. } => *span,
-        }
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum BinaryOp {
-    Add,
-    Subtract,
-    Less,
-    Greater,
-    StrictEqual,
-    And,
-    Or,
-    Multiply,
-    Divide,
-    Modulo,
-    Power,
-    BitwiseAnd,
-    BitwiseOr,
-    BitwiseXor,
-    LeftShift,
-    RightShift,
-    UnsignedRightShift,
-    In,
-    InstanceOf,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum UnaryOp {
-    Not,
-    Negate,
-    Increment,
-    Decrement,
-    PreIncrement,
-    PreDecrement,
-    TypeOf,
-    BitwiseNot,
-    Delete,
-    Void,
 }
 
 struct Parser {
@@ -2543,172 +2116,6 @@ impl Parser {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
-enum TokenKind {
-    Let,
-    Const,
-    Var,
-    Function,
-    Return,
-    If,
-    Else,
-    While,
-    Class,
-    Try,
-    Catch,
-    Throw,
-    Finally,
-    Extends,
-    Super,
-    Static,
-    Async,
-    Await,
-    Import,
-    Export,
-    Default,
-    Case,
-    Do,
-    For,
-    In,
-    Of,
-    New,
-    TypeOf,
-    InstanceOf,
-    Void,
-    Delete,
-    Switch,
-    Break,
-    Continue,
-    Plus,
-    Minus,
-    Less,
-    Bang,
-    StrictEqual,
-    Equal,
-    AndAnd,
-    OrOr,
-    Greater,
-    Power,
-    Increment,
-    Decrement,
-    PlusEqual,
-    MinusEqual,
-    StarEqual,
-    SlashEqual,
-    PercentEqual,
-    PowerEqual,
-    Percent,
-    Slash,
-    Star,
-    Ampersand,
-    Pipe,
-    Caret,
-    Tilde,
-    LeftShift,
-    RightShift,
-    UnsignedRightShift,
-    Question,
-    Spread,
-    Arrow,
-    OptionalChain,
-    NullishCoalesce,
-    LeftParen,
-    RightParen,
-    LeftBrace,
-    RightBrace,
-    LeftBracket,
-    RightBracket,
-    Comma,
-    Colon,
-    Dot,
-    Semicolon,
-}
-
-impl TokenKind {
-    fn matches(self, token: &Token) -> bool {
-        matches!(
-            (self, token),
-            (Self::Let, Token::Let)
-                | (Self::Const, Token::Const)
-                | (Self::Var, Token::Var)
-                | (Self::Function, Token::Function)
-                | (Self::Return, Token::Return)
-                | (Self::If, Token::If)
-                | (Self::Else, Token::Else)
-                | (Self::While, Token::While)
-                | (Self::Class, Token::Class)
-                | (Self::Try, Token::Try)
-                | (Self::Catch, Token::Catch)
-                | (Self::Throw, Token::Throw)
-                | (Self::Finally, Token::Finally)
-                | (Self::Extends, Token::Extends)
-                | (Self::Super, Token::Super)
-                | (Self::Static, Token::Static)
-                | (Self::Async, Token::Async)
-                | (Self::Await, Token::Await)
-                | (Self::Import, Token::Import)
-                | (Self::Export, Token::Export)
-                | (Self::Default, Token::Default)
-                | (Self::Case, Token::Case)
-                | (Self::Do, Token::Do)
-                | (Self::For, Token::For)
-                | (Self::In, Token::In)
-                | (Self::Of, Token::Of)
-                | (Self::New, Token::New)
-                | (Self::TypeOf, Token::TypeOf)
-                | (Self::InstanceOf, Token::InstanceOf)
-                | (Self::Void, Token::Void)
-                | (Self::Delete, Token::Delete)
-                | (Self::Switch, Token::Switch)
-                | (Self::Break, Token::Break)
-                | (Self::Continue, Token::Continue)
-                | (Self::Plus, Token::Plus)
-                | (Self::Minus, Token::Minus)
-                | (Self::Less, Token::Less)
-                | (Self::Bang, Token::Bang)
-                | (Self::StrictEqual, Token::StrictEqual)
-                | (Self::Equal, Token::Equal)
-                | (Self::AndAnd, Token::AndAnd)
-                | (Self::OrOr, Token::OrOr)
-                | (Self::Greater, Token::Greater)
-                | (Self::Power, Token::Power)
-                | (Self::Increment, Token::Increment)
-                | (Self::Decrement, Token::Decrement)
-                | (Self::PlusEqual, Token::PlusEqual)
-                | (Self::MinusEqual, Token::MinusEqual)
-                | (Self::StarEqual, Token::StarEqual)
-                | (Self::SlashEqual, Token::SlashEqual)
-                | (Self::PercentEqual, Token::PercentEqual)
-                | (Self::PowerEqual, Token::PowerEqual)
-                | (Self::Percent, Token::Percent)
-                | (Self::Slash, Token::Slash)
-                | (Self::Star, Token::Star)
-                | (Self::Ampersand, Token::Ampersand)
-                | (Self::Pipe, Token::Pipe)
-                | (Self::Caret, Token::Caret)
-                | (Self::Tilde, Token::Tilde)
-                | (Self::LeftShift, Token::LeftShift)
-                | (Self::RightShift, Token::RightShift)
-                | (Self::UnsignedRightShift, Token::UnsignedRightShift)
-                | (Self::Question, Token::Question)
-                | (Self::Spread, Token::Spread)
-                | (Self::Arrow, Token::Arrow)
-                | (Self::OptionalChain, Token::OptionalChain)
-                | (Self::NullishCoalesce, Token::NullishCoalesce)
-                | (Self::LeftParen, Token::LeftParen)
-                | (Self::RightParen, Token::RightParen)
-                | (Self::LeftBrace, Token::LeftBrace)
-                | (Self::RightBrace, Token::RightBrace)
-                | (Self::LeftBracket, Token::LeftBracket)
-                | (Self::RightBracket, Token::RightBracket)
-                | (Self::Comma, Token::Comma)
-                | (Self::Colon, Token::Colon)
-                | (Self::Dot, Token::Dot)
-                | (Self::Semicolon, Token::Semicolon)
-        )
-    }
-}
-
 fn validate_ast(program: &[Stmt]) -> Result<(), Diagnostic> {
     let mut top_functions = HashMap::new();
     let mut top_scope = HashMap::new();
@@ -3068,8 +2475,8 @@ mod tests {
     #[test]
     fn m6_3b_1_runtime_gate_permits_read_stdin_bytes_execution_path() {
         let ast = parse_program("let s = require(\"fs\").readFileSync(0, \"utf8\");").unwrap();
-        let resolved = ir::builtin_resolver::resolve_builtins(&ast).unwrap();
-        let lowered = ir::lowered::lower_program(&resolved).unwrap();
+        let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&ast).unwrap();
+        let lowered = ts2wasm_ir::lowered::lower_program(&resolved).unwrap();
         ensure_runtime_feature_gates(&lowered)
             .expect("gate must pass after M6-3b-1 enables runtime");
     }
