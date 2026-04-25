@@ -187,7 +187,7 @@ The following architectural requirements are tracked from the M5 prototype phase
 | RuntimeLinkPlan — separate from WatEmitter | done | RuntimeLinkPlan is isolated from WatEmitter and used as the backend link-plan input |
 | AST node span — all `Expr`/`Stmt` carry source span | done | Parser now builds span-bearing `Expr`/`Stmt`; AST validation diagnostics (e.g. duplicate local, top-level return, nested function) report source spans |
 | BuiltinResolver pass — separate from Resolver/lowering | done | Builtin resolution is a distinct phase (`builtin_resolver`) and lowering consumes `Resolved*` IR |
-| Capability manifest output | done | `--emit-capabilities` emits JSON from `RuntimeLinkPlan` (`imports`/`capabilities`/`runtime`); currently covers `fd_write` path |
+| Capability manifest output | done | `--emit-manifest` emits structured ManifestV1 JSON from `RuntimeLinkPlan` (`target`/`imports`/`capabilities`/`runtime`); `--emit-capabilities` is a deprecated alias |
 
 These items must be resolved before M6 work begins. They are P0 because they block safe extension of the compiler and could mask regressions.
 
@@ -209,8 +209,8 @@ Current gate status: 4 / 4 complete. P0 debt gate is implemented; M6 remains pau
 Implemented in this slice:
 
 - Added `HostImport::FdRead` and `Capability::StdinRead` to runtime catalog.
-- Added `RuntimeFn::ReadStdinUtf8` placeholder so `RuntimeLinkPlan -> manifest` can carry stdin read intent.
-- `--emit-capabilities` can now emit `wasi_snapshot_preview1.fd_read` and `stdin.read` when stdin runtime is required.
+- Added `RuntimeFn::ReadStdinBytes` placeholder so `RuntimeLinkPlan -> manifest` can carry stdin read intent.
+- `--emit-manifest` can now emit `wasi_snapshot_preview1.fd_read` and `stdin.read` when stdin runtime is required.
 
 Not implemented in this slice:
 
@@ -234,9 +234,9 @@ Not implemented in this slice:
 
 Implemented in this slice:
 
-- `require("fs").readFileSync(0, "utf8")` idiom now lowers to `Builtin(ReadStdinUtf8)` call shape.
-- Link-plan/manifest tests confirm source-driven lowering carries `ReadStdinUtf8` -> `fd_read`/`stdin.read` requirements.
-- Build pipeline has a compile-time runtime gate (`ENABLE_READ_STDIN_UTF8_RUNTIME = false`) so lowered stdin-read paths fail before WAT/wasm emission.
+- `require("fs").readFileSync(0, "utf8")` idiom now lowers to a stdin-read builtin call shape.
+- Link-plan/manifest tests confirm source-driven lowering carries stdin-read runtime -> `fd_read`/`stdin.read` requirements.
+- Build pipeline has a compile-time runtime gate (`ENABLE_READ_STDIN_BYTES_RUNTIME`) for stdin-read execution path control.
 - Runtime gate decision is queried from `RuntimeLinkPlan` requirements instead of ad-hoc lowered-tree traversal in `lib.rs`.
 
 Production-path note:
@@ -284,17 +284,17 @@ Implemented in this slice:
 
 Not implemented in this slice:
 
-- `$read_stdin_utf8` fd_read runtime body.
+- `$read_stdin_bytes` fd_read runtime body.
 - fd_read loop and EOF handling.
 - UTF-8 decode / non-ASCII byte handling.
-- `ENABLE_READ_STDIN_UTF8_RUNTIME` gate activation.
+- `ENABLE_READ_STDIN_BYTES_RUNTIME` gate activation.
 - stdin differential fixture execution.
 
 ## M6 runtime implementation (M6-3b-1) — complete
 
 Implemented in this slice:
 
-- `$read_stdin_utf8` fully implemented in `runtime_builder.rs` as an `fd_read` loop:
+- `$read_stdin_bytes` fully implemented in `runtime_builder.rs` as an `fd_read` loop:
   - Pre-allocates `STRING_HEADER_SIZE + STDIN_READ_LIMIT` (65540) bytes on the heap via `$alloc_heap`.
   - Fixes iovec buf pointer to `STDIN_BUFFER_OFFSET` (1792); iterates in `STDIN_BUFFER_SIZE` (256-byte) chunks.
   - Traps (`unreachable`) on non-zero `fd_read` errno.
@@ -302,8 +302,8 @@ Implemented in this slice:
   - Copies each chunk from the staging buffer into the heap data area via `$copy`.
   - Writes the i32 byte-length header at the heap base.
   - Returns `base | STRING_TAG` (6) as a tagged string value.
-- `ReadStdinUtf8` deps updated to `[AllocHeap, Copy]` — transitive link plan resolution now works correctly.
-- `ENABLE_READ_STDIN_UTF8_RUNTIME` gate set to `true`.
+- `ReadStdinBytes` deps updated to `[AllocHeap, Copy]` — transitive link plan resolution now works correctly.
+- `ENABLE_READ_STDIN_BYTES_RUNTIME` gate set to `true`.
 - `fixtures/m6/stdin.ts` added: reads stdin, logs the string.
 - M6 differential integration test added: pipes `"hello"` to both Node.js and iwasm and compares stdout.
 
@@ -312,6 +312,14 @@ Scope limitations (ASCII-only, M6-3b):
 - Byte values `>= 0x80` in stdin are undefined behaviour; no validation or trap is added for non-ASCII bytes.
 - A single `readFileSync(0, "utf8")` call reads at most 64 KiB. Programs that produce more stdin are unsupported.
 - Multiple calls to `readFileSync(0, "utf8")` in one program are not blocked but will read the remainder of fd 0 on each call.
+- Current return semantics are bytes-backed strings; UTF-8 decode and JS UTF-16 string semantics are not yet implemented.
+
+Current memory policy (M6-3b):
+
+- Initial linear memory: `MEMORY_MIN_PAGES = 2`.
+- Allocator policy: bump-only (`$alloc_heap`), no `memory.grow`.
+- OOM policy: no graceful OOM diagnostic yet (`$alloc_heap` bounds check is pending).
+- Current layout validation guarantee: only `HEAP_START + STRING_HEADER_SIZE + STDIN_READ_LIMIT` (single max stdin allocation from initial heap base) fits in initial memory.
 
 ## Stream G: Test Infrastructure and Coverage Tracking
 

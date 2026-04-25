@@ -65,8 +65,10 @@ Audit では、少なくとも次を確認する。
 P0-3 では、`RuntimeLinkPlan` から最小 capability manifest を生成し、CLI から JSON として出力できるようにする。
 
 ```bash
-ts2wasm build input.ts -o out.wasm --emit-capabilities out.cap.json
+ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
 ```
+
+`--emit-capabilities` は互換の deprecated alias として当面維持する。
 
 Current schema (M5 subset):
 

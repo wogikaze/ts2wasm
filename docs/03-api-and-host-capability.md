@@ -25,7 +25,7 @@ Node.js 併用 API は、WASI 単体では扱いにくいものを対象にす�
 
 | API / idiom                        | 実行方法                                       | Node.js host 必要性 |
 | ---------------------------------- | ------------------------------------------ | ---------------: |
-| `fs.readFileSync(0, "utf8")`       | WASI `fd_read` + WASM runtime UTF-8 decode |               不要 |
+| `fs.readFileSync(0, "utf8")`       | WASI `fd_read` + WASM runtime bytes-backed string (M6 現状) |               不要 |
 | `fs.readFileSync("/path", "utf8")` | WASI preopen dir 経由の file read             |          条件付きで不要 |
 | `console.log(...)`                 | WASI `fd_write`                            |               不要 |
 | `process.argv`                     | WASI args                                  |               不要 |
@@ -41,7 +41,7 @@ Node.js 併用 API は、WASI 単体では扱いにくいものを対象にす�
 
 本プロジェクトでは、Node.js の API 名で書かれているコードであっても、必ず Node.js host を必要とするとは限らない。`fs.readFileSync(0, "utf8")`、`console.log`、`process.argv`、`process.env` のような idiom は、WASI の標準機能に対応付けられるため、Node.js なしで `.wasm` 単体実行できる。
 
-この場合、`require("fs")` を実行時に Node.js の module system へ渡すのではなく、compiler が builtin module として解決する。`readFileSync(0, "utf8")` は WASI `fd_read` に lowering され、UTF-8 decoding は WASM runtime 側で行う。
+この場合、`require("fs")` を実行時に Node.js の module system へ渡すのではなく、compiler が builtin module として解決する。`readFileSync(0, "utf8")` は WASI `fd_read` に lowering され、現段階では bytes-backed string として返す（UTF-8 decode / UTF-16 semantics は後続対応）。
 
 したがって、次のコードは Node.js host なしで実行できる対象に含める。
 
