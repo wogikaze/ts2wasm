@@ -15,51 +15,36 @@
 #   Human messages on stderr. No machine-readable stdout contract.
 set -euo pipefail
 
-usage() {
-  cat <<'USAGE'
-Usage:
-  scripts/update_issue_index.sh [--check]
+_ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/common.sh
+source "${_ts2wasm_entry_dir}/lib/common.sh"
+# This script is in scripts/ directly, so repo root is one level up
+TS2WASM_REPO_ROOT="$(cd "${_ts2wasm_entry_dir}/.." && pwd)"
+export TS2WASM_REPO_ROOT
+cd "$TS2WASM_REPO_ROOT"
 
-Options:
-  --check   Write to a temp file and fail if issues/index.md would change.
-  -h, --help
+ts2wasm_require_cmds awk cat cmp cp diff grep mktemp mv sed sort xargs
 
-Dependencies: bash, awk, cat, cmp, cp, diff, grep, mktemp, mv, sed, sort, xargs
-
-Human status is printed to stderr. Exit 0 on success, nonzero on error or stale --check.
-USAGE
-}
-
-require_cmds() {
-  local c
-  for c in awk cat cmp cp diff grep mktemp mv sed sort xargs; do
-    command -v "$c" >/dev/null 2>&1 || {
-      echo "error: required command not found: $c" >&2
-      exit 1
-    }
-  done
-}
-
-check_mode=0
-if [[ $# -gt 0 ]]; then
-  case "$1" in
-    --check) check_mode=1 ;;
-    -h|--help)
-      usage
+if ts2wasm_parse_common_args "$@"; then
+  :
+else
+  case $? in
+    1)
+      ts2wasm_usage "scripts/update_issue_index.sh" \
+        "Regenerate the marked regions in issues/index.md from issues/open/*.md and issues/done/*.md." \
+        "Dependencies: bash, awk, cat, cmp, cp, diff, grep, mktemp, mv, sed, sort, xargs" \
+        "Human status is printed to stderr. Exit 0 on success, nonzero on error or stale --check."
       exit 0
       ;;
-    *)
-      echo "unknown option: $1" >&2
-      usage
+    2)
+      ts2wasm_usage "scripts/update_issue_index.sh" \
+        "Regenerate the marked regions in issues/index.md from issues/open/*.md and issues/done/*.md."
       exit 1
       ;;
   esac
 fi
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
-
-require_cmds
+check_mode="$TS2WASM_CHECK_MODE"
 
 index_path="issues/index.md"
 if [[ ! -f "$index_path" ]]; then
@@ -355,13 +340,13 @@ mv "${tmp_index}.tmp" "$tmp_index"
 
 if [[ "$check_mode" -eq 1 ]]; then
   if ! cmp -s "$index_path" "$tmp_index"; then
-    echo "issues/index.md is stale; run scripts/update_issue_index.sh" >&2
+    ts2wasm_log "issues/index.md is stale; run scripts/update_issue_index.sh"
     diff -u "$index_path" "$tmp_index" >&2 || true
     exit 1
   fi
-  echo "issues/index.md OK (up to date)" >&2
+  ts2wasm_log "issues/index.md OK (up to date)"
   exit 0
 fi
 
 cp "$tmp_index" "$index_path"
-echo "Updated $index_path" >&2
+ts2wasm_log "Updated $index_path"

@@ -37,3 +37,80 @@ ts2wasm_require_cmd() {
   done
   return 0
 }
+
+# Require multiple commands with a single error message.
+ts2wasm_require_cmds() {
+  local c
+  for c in "$@"; do
+    if ! command -v "$c" >/dev/null 2>&1; then
+      printf '%s\n' "error: required command not found: $c" >&2
+      return 1
+    fi
+  done
+  return 0
+}
+
+# Standard usage function template.
+# Usage: ts2wasm_usage "script-name" "description" [additional_lines...]
+ts2wasm_usage() {
+  local script_name="$1"
+  local description="$2"
+  shift 2
+  cat <<USAGE
+Usage:
+  $script_name [options]
+
+$description
+
+Options:
+  --check   Compare against current state and fail if it would change.
+  -h, --help
+USAGE
+  if [[ $# -gt 0 ]]; then
+    printf '\n%s\n' "$@"
+  fi
+}
+
+# Parse common arguments (--check, --help).
+# Sets global variables: TS2WASM_CHECK_MODE, TS2WASM_SHOW_HELP.
+# Returns 0 if parsing succeeded, 1 if help was requested (caller should exit 0).
+ts2wasm_parse_common_args() {
+  TS2WASM_CHECK_MODE=0
+  TS2WASM_SHOW_HELP=0
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --check)
+        TS2WASM_CHECK_MODE=1
+        ;;
+      -h|--help)
+        TS2WASM_SHOW_HELP=1
+        return 1
+        ;;
+      *)
+        printf '%s\n' "unknown option: $1" >&2
+        return 2
+        ;;
+    esac
+    shift
+  done
+  return 0
+}
+
+# Standard check mode comparison.
+# Usage: ts2wasm_check_file "file-path" "stale-message"
+ts2wasm_check_file() {
+  local file="$1"
+  local stale_msg="$2"
+  local tmp_file
+  tmp_file="$(mktemp)"
+  trap 'rm -f "$tmp_file"' RETURN
+
+  if ! cmp -s "$file" "$tmp_file"; then
+    printf '%s\n' "$stale_msg" >&2
+    diff -u "$file" "$tmp_file" >&2 || true
+    return 1
+  fi
+  printf '%s\n' "$file OK (up to date)" >&2
+  return 0
+}

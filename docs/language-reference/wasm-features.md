@@ -92,65 +92,65 @@
 
 ## Stage 4+ 提案（wasm-tools 実装済み）
 
-| 提案 | Stage | 対応方針 | 実装状況 |
-|---|---|---|---|
-| annotations | Stage 4 | デバッグ情報 | 未実装 |
-| branch-hinting | Stage 4 | 分岐ヒント | 未実装 |
-| bulk-memory | Stage 4 | メモリ操作 | 未実装 |
-| component-model | (例外) | Component Model / WIT | 将来対応 |
-| exception-handling | Stage 4 | 例外処理 | 未実装 |
-| extended-const | Stage 4 | 定数拡張 | 未実装 |
-| extended-name-section | (例外) | 名前セクション拡張 | 未実装 |
-| function-references | Stage 4 | 関数参照 | 未実装 |
-| gc | Stage 4 | ガベージコレクション | 将来対応 |
-| memory64 | Stage 4 | 64-bit メモリ | 未実装 |
-| multi-memory | Stage 4 | 複数メモリ | 未実装 |
-| multi-value | Stage 4 | 複数戻り値 | 未実装 |
-| mutable-global | Stage 4 | 可変グローバル | 未実装 |
-| reference-types | Stage 4 | 参照型 | 未実装 |
-| relaxed-simd | Stage 4 | SIMD 拡張 | 未実装 |
-| saturating-float-to-int | Stage 4 | 浮動小数点→整数変換 | 未実装 |
-| sign-extension-ops | Stage 4 | 符号拡張 | 未実装 |
-| simd | Stage 4 | SIMD | 未実装 |
-| tail-call | Stage 4 | 末尾再帰最適化 | 未実装 |
-| threads | Stage 4 | スレッド | WAMR で WASI 経由実行可能 |
-| wat-numeric-values | (例外) | WAT 数値表現 | 未実装 |
+| 提案 | Stage | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| annotations | Stage 4 | デバッグ情報 | 未実装 | P3 | - |
+| branch-hinting | Stage 4 | 分岐ヒント | 未実装 | P3 | - |
+| bulk-memory | Stage 4 | メモリ操作 | 未実装 | P2 | - |
+| component-model | (例外) | Component Model / WIT | 将来対応 | 将来検討 | - |
+| exception-handling | Stage 4 | 例外処理 | 未実装 | P2 | - |
+| extended-const | Stage 4 | 定数拡張 | 未実装 | P3 | - |
+| extended-name-section | (例外) | 名前セクション拡張 | 未実装 | P3 | - |
+| function-references | Stage 4 | 関数参照 | 未実装 | P2 | - |
+| gc | Stage 4 | ガベージコレクション | 将来対応 | 将来検討 | - |
+| memory64 | Stage 4 | 64-bit メモリ | 未実装 | P3 | - |
+| multi-memory | Stage 4 | 複数メモリ | 未実装 | P3 | - |
+| multi-value | Stage 4 | 複数戻り値 | 未実装 | P2 | - |
+| mutable-global | Stage 4 | 可変グローバル | 未実装 | P2 | - |
+| reference-types | Stage 4 | 参照型 | 未実装 | P2 | - |
+| relaxed-simd | Stage 4 | SIMD 拡張 | 未実装 | P3 | - |
+| saturating-float-to-int | Stage 4 | 浮動小数点→整数変換 | 未実装 | P3 | - |
+| sign-extension-ops | Stage 4 | 符号拡張 | 未実装 | P3 | - |
+| simd | Stage 4 | SIMD | 未実装 | P3 | - |
+| tail-call | Stage 4 | 末尾再帰最適化 | 未実装 | P3 | - |
+| threads | Stage 4 | スレッド | WAMR で WASI 経由実行可能 | P2 | - |
+| wat-numeric-values | (例外) | WAT 数値表現 | 未実装 | P3 | - |
 
 ## Stage 4 未満提案（wasm-tools 実装済み）
 
-| 提案 | Stage | 対応方針 | 実装状況 |
-|---|---|---|---|
-| custom-page-sizes | Stage 3 | カスタムページサイズ | 未実装 |
-| memory-control | Stage 3 | メモリ制御 | 未実装 |
-| shared-everything-threads | Stage 3 | 共有スレッド | 未実装 |
-| stack-switching | Stage 2 | スタック切り替え | 未実装 |
-| wide-arithmetic | Stage 1 | 広域演算 | 未実装 |
+| 提案 | Stage | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| custom-page-sizes | Stage 3 | カスタムページサイズ | 未実装 | P3 | - |
+| memory-control | Stage 3 | メモリ制御 | 未実装 | P3 | - |
+| shared-everything-threads | Stage 3 | 共有スレッド | 未実装 | P3 | - |
+| stack-switching | Stage 2 | スタック切り替え | 未実装 | 将来検討 | - |
+| wide-arithmetic | Stage 1 | 広域演算 | 未実装 | 将来検討 | - |
 
 ## Core WebAssembly (MVP)
 
-| 機能 | 対応方針 | 実装状況 |
-|---|---|---|
-| 値型 (i32, i64, f32, f64) | 基本型 | 実装済み |
-| 制御フロー (if, block, loop, br) | 制御構造 | 実装済み |
-| 関数呼び出し (call, call_indirect) | 関数呼び出し | 実装済み |
-| ローカル変数 (local.get, local.set, local.tee) | 変数 | 実装済み |
-| グローバル変数 (global.get, global.set) | グローバル | 未実装 |
-| メモリ操作 (memory.load, memory.store) | メモリアクセス | 実装済み |
-| 線形メモリ (memory) | メモリ管理 | 実装済み |
-| テーブル (table) | 関数テーブル | 未実装 |
-| インポート/エクスポート (import, export) | モジュール境界 | 実装済み |
-| 開始関数 (start) | 初期化 | 未実装 |
-| データセクション (data) | 静的データ | 未実装 |
-| 要素セクション (elem) | 静的テーブル初期化 | 未実装 |
+| 機能 | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|
+| 値型 (i32, i64, f32, f64) | 基本型 | 実装済み | - | - |
+| 制御フロー (if, block, loop, br) | 制御構造 | 実装済み | - | - |
+| 関数呼び出し (call, call_indirect) | 関数呼び出し | 実装済み | - | - |
+| ローカル変数 (local.get, local.set, local.tee) | 変数 | 実装済み | - | - |
+| グローバル変数 (global.get, global.set) | グローバル | 未実装 | P2 | - |
+| メモリ操作 (memory.load, memory.store) | メモリアクセス | 実装済み | - | - |
+| 線形メモリ (memory) | メモリ管理 | 実装済み | - | - |
+| テーブル (table) | 関数テーブル | 未実装 | P2 | - |
+| インポート/エクスポート (import, export) | モジュール境界 | 実装済み | - | - |
+| 開始関数 (start) | 初期化 | 未実装 | P2 | - |
+| データセクション (data) | 静的データ | 未実装 | P2 | - |
+| 要素セクション (elem) | 静的テーブル初期化 | 未実装 | P2 | - |
 
 ## Component Model / WIT
 
-| 機能 | 対応方針 | 実装状況 |
-|---|---|---|
-| Component Model | 型付き host interface | 将来対応 |
-| WIT (WebAssembly Interface Types) | インターフェース定義 | 将来対応 |
-| jco transpile | JS/TS → Components | 将来対応 |
-| WASI Preview 2/3 | 新世代 WASI | 将来対応 |
+| 機能 | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|
+| Component Model | 型付き host interface | 将来対応 | 将来検討 | - |
+| WIT (WebAssembly Interface Types) | インターフェース定義 | 将来対応 | 将来検討 | - |
+| jco transpile | JS/TS → Components | 将来対応 | 将来検討 | - |
+| WASI Preview 2/3 | 新世代 WASI | 将来対応 | 将来検討 | - |
 
 ## 実装方針の原則
 

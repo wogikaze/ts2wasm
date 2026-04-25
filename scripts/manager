@@ -50,6 +50,7 @@ install-hooks	Install .githooks (fmt, markdown, issues) via git config core.hook
 check-coverage-gate	Compare two coverage matrix docs (args: see script --help)
 update-coverage-matrix	Refresh reference coverage table (args: see script --help)
 reference-coverage	Run reference test suite for coverage (args: see script --help)
+coverage-report	Generate language coverage report from language-reference (args: --format text|markdown)
 benchmark-tracker	Append build/fixture performance metrics to JSON
 test262	Run test262 harness (stdout JSONL; args: see script --help)
 test-differential-reporter	HTML/Markdown report from test262 JSONL (stdin; args optional)
@@ -81,6 +82,7 @@ TABLE
   check-coverage-gate        Compare two coverage matrix docs
   update-coverage-matrix     Refresh reference coverage table
   reference-coverage         Reference suite coverage runner
+  coverage-report            Language coverage report from language-reference
   benchmark-tracker          Performance metrics JSON
   test262                    test262 JSONL to stdout
   test-differential-reporter Report from test262 JSONL (stdin)
@@ -122,8 +124,9 @@ case "$target" in
   update-issue-index) exec bash "${repo_root}/scripts/update_issue_index.sh" "$@" ;;
   install-hooks) exec bash "${repo_root}/scripts/dev/install-git-hooks.sh" "$@" ;;
   check-coverage-gate) exec bash "${repo_root}/scripts/gate/coverage.sh" "$@" ;;
-  update-coverage-matrix) exec bash "${repo_root}/scripts/gen/coverage-matrix.sh" "$@" ;;
+  update-coverage-matrix) exec python3 "${repo_root}/scripts/gen/coverage-matrix.py" "$@" ;;
   reference-coverage) exec bash "${repo_root}/scripts/run/reference-coverage.sh" "$@" ;;
+  coverage-report) exec bash "${repo_root}/scripts/gen/coverage-report.sh" "$@" ;;
   benchmark-tracker) exec bash "${repo_root}/scripts/perf/benchmark-tracker.sh" "$@" ;;
   test262) exec bash "${repo_root}/scripts/run/test262.sh" "$@" ;;
   test-differential-reporter) exec bash "${repo_root}/scripts/report/differential.sh" "$@" ;;

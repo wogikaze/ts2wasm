@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/run/reference-coverage.sh <suite> [--limit N]
+  scripts/run/reference-coverage.sh <suite> [--limit N] [--json]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -18,6 +18,7 @@ Notes:
   - unsupported: source/compiler diagnostics except internal/backend failures
   - blocked: stderr contains [BackendIo] or command timeout
   - fail: internal compiler failures such as [InvariantViolation]
+  - --json: output results as JSON instead of key=value pairs
 USAGE
 }
 
@@ -30,11 +31,16 @@ suite="$1"
 shift
 
 limit=0
+json_output=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --limit)
       limit="${2:-}"
       shift 2
+      ;;
+    --json)
+      json_output=1
+      shift
       ;;
     *)
       echo "unknown option: $1" >&2
@@ -165,16 +171,51 @@ if [[ "$denominator" -gt 0 ]]; then
   semantic_coverage_percent="$(awk -v p="$semantic_pass_count" -v d="$denominator" 'BEGIN { printf "%.2f", (p / d) * 100 }')"
 fi
 
-printf 'suite=%s\n' "$suite"
-printf 'denominator=%s\n' "$denominator"
-printf 'executed=%s\n' "$executed"
-printf 'coverage_percent=%s\n' "$coverage_percent"
-printf 'semantic_coverage_percent=%s\n' "$semantic_coverage_percent"
-printf 'build_pass=%s\n' "$build_pass_count"
-printf 'semantic_pass=%s\n' "$semantic_pass_count"
-printf 'fail=%s\n' "$fail_count"
-printf 'unsupported=%s\n' "$unsupported_count"
-printf 'blocked=%s\n' "$blocked_count"
-printf 'skip_with_reason=%s\n' "$skip_count"
-printf 'unsupported_diagcodes=%s\n' "$unsupported_diagcodes"
-printf 'semantic_enabled=%s\n' "$semantic_enabled"
+if [[ "$json_output" -eq 1 ]]; then
+  # Build unsupported_diagcodes as JSON object
+  diag_json="{"
+  first=1
+  for code in "${!unsupported_diag_counts[@]}"; do
+    if [[ $first -eq 1 ]]; then
+      first=0
+    else
+      diag_json+=","
+    fi
+    diag_json+="\"$code\":${unsupported_diag_counts[$code]}"
+  done
+  diag_json+="}"
+
+  cat <<JSON
+{
+  "suite": "$suite",
+  "suite_name": "$suite",
+  "denominator": $denominator,
+  "executed": $executed,
+  "build_coverage_percent": "$coverage_percent",
+  "semantic_coverage_percent": "$semantic_coverage_percent",
+  "build_pass": $build_pass_count,
+  "semantic_pass": $semantic_pass_count,
+  "fail": $fail_count,
+  "unsupported": $unsupported_count,
+  "blocked": $blocked_count,
+  "skip_with_reason": $skip_count,
+  "unsupported_diagcodes": $diag_json,
+  "status": "in-progress",
+  "evidence": "scripts/run/reference-coverage.sh $suite --limit $limit"
+}
+JSON
+else
+  printf 'suite=%s\n' "$suite"
+  printf 'denominator=%s\n' "$denominator"
+  printf 'executed=%s\n' "$executed"
+  printf 'coverage_percent=%s\n' "$coverage_percent"
+  printf 'semantic_coverage_percent=%s\n' "$semantic_coverage_percent"
+  printf 'build_pass=%s\n' "$build_pass_count"
+  printf 'semantic_pass=%s\n' "$semantic_pass_count"
+  printf 'fail=%s\n' "$fail_count"
+  printf 'unsupported=%s\n' "$unsupported_count"
+  printf 'blocked=%s\n' "$blocked_count"
+  printf 'skip_with_reason=%s\n' "$skip_count"
+  printf 'unsupported_diagcodes=%s\n' "$unsupported_diagcodes"
+  printf 'semantic_enabled=%s\n' "$semantic_enabled"
+fi

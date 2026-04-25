@@ -1,45 +1,30 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-usage() {
-  cat <<'USAGE'
-Usage:
-  scripts/gen/coverage-matrix.sh [--check]
-
-Behavior:
-  - Reads current executed counts from artifacts/coverage/reference-coverage-matrix.md
-  - Increases per-suite limits by fixed step each run (ramp-up)
-  - Re-runs reference coverage sampling for each suite
-  - Rewrites the coverage table rows in artifacts/coverage/reference-coverage-matrix.md
-
-Options:
-  --check   Do not keep edits; fail if artifacts/coverage/reference-coverage-matrix.md is stale.
-USAGE
-}
-
-check_mode=0
-if [[ $# -gt 0 ]]; then
-  case "$1" in
-    --check)
-      check_mode=1
-      ;;
-    -h|--help)
-      usage
-      exit 0
-      ;;
-    *)
-      echo "unknown option: $1" >&2
-      usage
-      exit 1
-      ;;
-  esac
-fi
-
 _ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../lib/common.sh
 source "${_ts2wasm_entry_dir}/../lib/common.sh"
 cd "$TS2WASM_REPO_ROOT"
 repo_root="$TS2WASM_REPO_ROOT"
+
+if ts2wasm_parse_common_args "$@"; then
+  :
+else
+  case $? in
+    1)
+      ts2wasm_usage "scripts/gen/coverage-matrix.sh" \
+        "Reads current executed counts from artifacts/coverage/reference-coverage-matrix.md, increases per-suite limits by fixed step each run (ramp-up), re-runs reference coverage sampling for each suite, and rewrites the coverage table rows."
+      exit 0
+      ;;
+    2)
+      ts2wasm_usage "scripts/gen/coverage-matrix.sh" \
+        "Reads current executed counts from artifacts/coverage/reference-coverage-matrix.md and rewrites the coverage table rows."
+      exit 1
+      ;;
+  esac
+fi
+
+check_mode="$TS2WASM_CHECK_MODE"
 
 doc_file="artifacts/coverage/reference-coverage-matrix.md"
 if [[ ! -f "$doc_file" ]]; then
@@ -166,13 +151,13 @@ awk -v r1="$row_test262" -v r2="$row_tsc" -v r3="$row_tsgo" '
 
 if [[ "$check_mode" -eq 1 ]]; then
   if ! cmp -s "$doc_file" "$tmp_file"; then
-    echo "coverage matrix is stale; run scripts/gen/coverage-matrix.sh and commit $doc_file" >&2
+    ts2wasm_log "coverage matrix is stale; run scripts/gen/coverage-matrix.sh and commit $doc_file"
     diff -u "$doc_file" "$tmp_file" >&2 || true
     exit 1
   fi
-  echo "coverage matrix OK (up to date)" >&2
+  ts2wasm_log "coverage matrix OK (up to date)"
 else
   mv "$tmp_file" "$doc_file"
   trap - EXIT
-  echo "updated $doc_file" >&2
+  ts2wasm_log "updated $doc_file"
 fi

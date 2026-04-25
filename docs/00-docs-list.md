@@ -27,6 +27,49 @@
 | `docs/language-reference/wasi-features.md` | WASI 機能の対応方針と実装状況 | WASI Preview 1/2 に基づく機能一覧 | 新規追加 |
 | `current-state.md` | 現在の実装事実、未実装範囲、検証状況 | なし | status tracking |
 
+## Language reference tracking
+
+`docs/language-reference/*.md` は仕様カバレッジの全体像をトラックするマップであり、個別の実装作業は `issues/` で管理する。
+
+### language-reference テーブルの列
+
+各機能テーブルには以下の列を含む:
+
+| 列 | 説明 |
+|---|---|
+| 機能 | 仕様上の機能名 |
+| 仕様/TypeScript/Stage | 対応する仕様バージョン |
+| 対応方針 | 実装アプローチ |
+| 実装状況 | `実装済み` / `未実装` / `将来対応` / `将来検討` |
+| 優先度 | `P0` / `P1` / `P2` / `P3` / `将来検討` / `-` (実装済みは `-`) |
+| Issue ID | 具体的実装 issue の ID (存在する場合のみ) |
+
+### 優先度の定義
+
+優先度の詳細は `docs/11-shared-definitions.md` の「Feature priority guidelines」を参照。
+
+### language-reference と issues の連携
+
+- language-reference は仕様カバレッジの全体像を提供
+- 具体的実装作業は issues でトラック
+- 実装作業を開始する際:
+  1. language-reference で対象機能を特定
+  2. 必要なら優先度を設定
+  3. 実装用 issue を作成
+  4. language-reference の Issue ID 列にリンク
+
+### 進捗レポート
+
+`scripts/manager coverage-report` または `mise run coverage-report` でカバレッジレポートを生成:
+
+```bash
+# テキスト形式 (デフォルト)
+scripts/manager coverage-report
+
+# Markdown 形式
+scripts/manager coverage-report -- --format markdown
+```
+
 ## Source-of-truth boundaries（責務の切り分け）
 
 | 種別 | 正本 | 個別 doc / artifact の役割 |

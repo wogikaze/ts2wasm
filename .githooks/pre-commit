@@ -13,9 +13,9 @@ else
   echo "pre-commit: skip cargo fmt; no staged Rust changes"
 fi
 
-if printf '%s\n' "$staged_files" | grep -Eq '^(issues/|scripts/update_issue_index\.sh|scripts/check_issue_queue\.sh)'; then
+if printf '%s\n' "$staged_files" | grep -Eq '^(issues/|scripts/update_issue_index\.sh|scripts/check/issue-queue\.py)'; then
   echo "pre-commit: issues/ mechanical checks"
-  scripts/check_issue_queue.sh
+  python3 scripts/check/issue-queue.py
 else
   echo "pre-commit: skip issues check; no staged issues/scripts changes"
 fi

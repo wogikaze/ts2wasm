@@ -31,6 +31,10 @@ run = "scripts/manager update-coverage-matrix"
 description = "Run reference-based coverage (see script for args)"
 run = "scripts/manager reference-coverage"
 
+[tasks."coverage-report"]
+description = "Generate language coverage report from language-reference (args: --format text|markdown)"
+run = "scripts/manager coverage-report"
+
 [tasks.benchmark-tracker]
 description = "Append build/fixture performance metrics to JSON"
 run = "scripts/manager benchmark-tracker"

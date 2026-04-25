@@ -6,7 +6,7 @@ Do not edit manually.
 <!-- coverage-table:start -->
 | suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | fail | unsupported | blocked | skip-with-reason | unsupported (DiagCode breakdown) | status | evidence |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|
-| test262 | 53444 | 500 | 0.00 | 0.00 | 0 | 0 | 0 | 500 | 0 | 0 | UnsupportedSyntax:423,UnresolvedName:72,UnresolvedFunction:5 | in-progress | `scripts/run/reference-coverage.sh test262 --limit 500` |
-| TypeScript compiler cases | 6419 | 300 | 0.09 | 0.08 | 6 | 5 | 0 | 294 | 0 | 0 | UnsupportedSyntax:287,UnresolvedName:7 | in-progress | `scripts/run/reference-coverage.sh tsc --limit 300` |
-| typescript-go testdata | 165 | 165 | 4.85 | 3.64 | 8 | 6 | 0 | 157 | 0 | 0 | UnsupportedSyntax:155,UnresolvedFunction:1,UnresolvedName:1 | in-progress | `scripts/run/reference-coverage.sh tsgo --limit 165` |
+| test262 | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | in-progress | `scripts/run/reference-coverage.sh test262 --limit 50` |
+| TypeScript compiler cases | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | in-progress | `scripts/run/reference-coverage.sh tsc --limit 30` |
+| typescript-go testdata | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | in-progress | `scripts/run/reference-coverage.sh tsgo --limit 20` |
 <!-- coverage-table:end -->

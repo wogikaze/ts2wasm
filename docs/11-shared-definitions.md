@@ -108,6 +108,28 @@ CLI の optimization level と semantic safety mode は別概念として扱う�
 
 性能比較は、測定条件を固定して継続的に記録する。少なくとも benchmark 名、input size、target、runner version、cold/warm 区分、iteration count、median、p95、peak memory、wasm size、host call count を記録する。
 
+## Feature priority guidelines
+
+`docs/language-reference/*.md` の優先度列で使用する優先度の定義。
+
+| 優先度 | 定義 | 例 |
+|---|---|---|
+| **P0** | 緊急: 意味論バグ修正、基本型・制御フローの未実装、セキュリティ関連 | computed property semantics bug (issue 012)、heap OOM check |
+| **P1** | 高: よく使われる構文、基本ビルトイン、WASI 基本機能 | switch/while/break、string methods、Map/Set、class、import/export |
+| **P2** | 中: 高度な機能、TypeScript 型システム、Stage 4+ WASM 提案 | Promise/async/await、TypeScript 型解析、multi-value、reference-types |
+| **P3** | 低: レガシー機能、将来技術、最適化系 | eval/with、Component Model、WASI Preview 2、SIMD |
+| **将来検討** | 将来対応または Stage 4 未満の提案 | Component Model、stack-switching、wide-arithmetic |
+| **-** | 実装済み (優先度なし) | すべての実装済み機能 |
+
+### 優先度付けの原則
+
+1. **意味論正確性優先**: 意味論バグは P0
+2. **広く使われる機能**: よく使われる構文・ビルトインは P1
+3. **段階的実装**: 基本機能 → 高度な機能 → 将来技術の順
+4. **WASM 段階**: MVP → Stage 4+ → Stage 4 未満
+5. **TypeScript は P2 基本方針**: 型情報は最適化と診断に活用するが、実行時消去されるため P2
+6. **セキュリティ関連**: capability boundary、host-deny は P0/P1
+
 ## Workstreams
 
 本プロジェクトは以下の workstream を並行して進める。gate 判定は各 workstream が独立して進められるが、下流 workstream は上流の gate を前提とする。

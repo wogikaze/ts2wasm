@@ -1,5 +1,5 @@
 ---
-name: compiler-dev-autonomy
+name: compiler-autonomy
 description: "Use for autonomous / agent compiler-dev runs: FSM, current_task.json, verification reports, failure pattern DB, and re-prevention. Read workflows/compiler_dev_fsm.md at repo .agents/ root."
 ---
 

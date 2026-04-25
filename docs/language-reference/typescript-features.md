@@ -151,128 +151,128 @@
 
 ## 型システム
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| 基本型 (`string`, `number`, `boolean`) | ES3 | 型注釈として解析 | 未実装 |
-| 配列型 `string[]` | ES3 | 型注釈として解析 | 未実装 |
-| タプル型 `[string, number]` | ES3 | 型注釈として解析 | 未実装 |
-| オブジェクト型 `{x: number}` | ES3 | 型注釈として解析 | 未実装 |
-| Union 型 `string \| number` | ES3 | 型注釈として解析 | 未実装 |
-| Intersection 型 `A & B` | ES3 | 型注釈として解析 | 未実装 |
-| Literal 型 `"hello"` | ES3 | 型注釈として解析 | 未実装 |
-| `any` | ES3 | 型チェック無効化 | 未実装 |
-| `unknown` | ES3 | 型安全な any | 未実装 |
-| `never` | ES3 | 到達不能型 | 未実装 |
-| `void` | ES3 | 戻り値なし | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| 基本型 (`string`, `number`, `boolean`) | ES3 | 型注釈として解析 | 未実装 | P2 | - |
+| 配列型 `string[]` | ES3 | 型注釈として解析 | 未実装 | P2 | - |
+| タプル型 `[string, number]` | ES3 | 型注釈として解析 | 未実装 | P2 | - |
+| オブジェクト型 `{x: number}` | ES3 | 型注釈として解析 | 未実装 | P2 | - |
+| Union 型 `string \| number` | ES3 | 型注釈として解析 | 未実装 | P2 | - |
+| Intersection 型 `A & B` | ES3 | 型注釈として解析 | 未実装 | P2 | - |
+| Literal 型 `"hello"` | ES3 | 型注釈として解析 | 未実装 | P2 | - |
+| `any` | ES3 | 型チェック無効化 | 未実装 | P2 | - |
+| `unknown` | ES3 | 型安全な any | 未実装 | P2 | - |
+| `never` | ES3 | 到達不能型 | 未実装 | P2 | - |
+| `void` | ES3 | 戻り値なし | 未実装 | P2 | - |
 
 ## 型アノテーション
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| 変数アノテーション `let x: number` | ES3 | 型情報を解析 | 未実装 |
-| 関数パラメータ `fn(x: number)` | ES3 | 型情報を解析 | 未実装 |
-| 戻り値型 `fn(): number` | ES3 | 型情報を解析 | 未実装 |
-| アロー関数 `(x: number): number => x` | ES3 | 型情報を解析 | 未実装 |
-| オブジェクトリテラル型 `{x: number}` | ES3 | 型情報を解析 | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| 変数アノテーション `let x: number` | ES3 | 型情報を解析 | 未実装 | P2 | - |
+| 関数パラメータ `fn(x: number)` | ES3 | 型情報を解析 | 未実装 | P2 | - |
+| 戻り値型 `fn(): number` | ES3 | 型情報を解析 | 未実装 | P2 | - |
+| アロー関数 `(x: number): number => x` | ES3 | 型情報を解析 | 未実装 | P2 | - |
+| オブジェクトリテラル型 `{x: number}` | ES3 | 型情報を解析 | 未実装 | P2 | - |
 
 ## インターフェースと型エイリアス
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| `interface` | ES3 | type-only parse | 未実装 |
-| `type` alias | ES3 | type-only parse | 未実装 |
-| 継承 `interface A extends B` | ES3 | type-only parse | 未実装 |
-| 宣言マージ | ES3 | type-only parse | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| `interface` | ES3 | type-only parse | 未実装 | P2 | - |
+| `type` alias | ES3 | type-only parse | 未実装 | P2 | - |
+| 継承 `interface A extends B` | ES3 | type-only parse | 未実装 | P2 | - |
+| 宣言マージ | ES3 | type-only parse | 未実装 | P2 | - |
 
 ## ジェネリクス
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| ジェネリック関数 `fn<T>(x: T): T` | ES3 | erased type syntax | 未実装 |
-| ジェネリッククラス `class C<T>` | ES3 | erased type syntax | 未実装 |
-| ジェネリック型エイリアス `type Pair<T> = [T, T]` | ES3 | erased type syntax | 未実装 |
-| 制約 `T extends U` | ES3 | 型情報による最適化 | 未実装 |
-| デフォルト型引数 `T = string` | ES3 | erased type syntax | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| ジェネリック関数 `fn<T>(x: T): T` | ES3 | erased type syntax | 未実装 | P2 | - |
+| ジェネリッククラス `class C<T>` | ES3 | erased type syntax | 未実装 | P2 | - |
+| ジェネリック型エイリアス `type Pair<T> = [T, T]` | ES3 | erased type syntax | 未実装 | P2 | - |
+| 制約 `T extends U` | ES3 | 型情報による最適化 | 未実装 | P2 | - |
+| デフォルト型引数 `T = string` | ES3 | erased type syntax | 未実装 | P2 | - |
 
 ## 列挙型
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| numeric enum | ES3 | numeric enum subset | 未実装 |
-| string enum | ES3 | string enum | 未実装 |
-| const enum | ES3 | const enum | 未実装 |
-| enum メンバーアクセス | ES3 | プロパティアクセス | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| numeric enum | ES3 | numeric enum subset | 未実装 | P2 | - |
+| string enum | ES3 | string enum | 未実装 | P2 | - |
+| const enum | ES3 | const enum | 未実装 | P2 | - |
+| enum メンバーアクセス | ES3 | プロパティアクセス | 未実装 | P2 | - |
 
 ## 名前空間
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| `namespace` | ES3 | 未実装 (unsupported-namespace) | 未実装 |
-| `module` (namespace alias) | ES3 | 未実装 | 未実装 |
-| 宣言マージ | ES3 | 未実装 | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| `namespace` | ES3 | 未実装 (unsupported-namespace) | 未実装 | P3 | - |
+| `module` (namespace alias) | ES3 | 未実装 | 未実装 | P3 | - |
+| 宣言マージ | ES3 | 未実装 | 未実装 | P3 | - |
 
 ## デコレータ
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| クラスデコレータ | ES5 | 未実装 | 未実装 |
-| メソッドデコレータ | ES5 | 未実装 | 未実装 |
-| アクセサデコレータ | ES5 | 未実装 | 未実装 |
-| プロパティデコレータ | ES5 | 未実装 | 未実装 |
-| パラメータデコレータ | ES5 | 未実装 | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| クラスデコレータ | ES5 | 未実装 | 未実装 | P3 | - |
+| メソッドデコレータ | ES5 | 未実装 | 未実装 | P3 | - |
+| アクセサデコレータ | ES5 | 未実装 | 未実装 | P3 | - |
+| プロパティデコレータ | ES5 | 未実装 | 未実装 | P3 | - |
+| パラメータデコレータ | ES5 | 未実装 | 未実装 | P3 | - |
 
 ## 高度な型
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| Conditional types `T extends U ? X : Y` | ES3 | 型情報による最適化 | 未実装 |
-| Mapped types `{ [K in keyof T]: U }` | ES3 | 型情報による最適化 | 未実装 |
-| Keyof type `keyof T` | ES3 | 型情報による最適化 | 未実装 |
-| Infer type `infer R` | ES3 | 型情報による最適化 | 未実装 |
-| Template literal types `` `hello${T}` `` | ES3 | 型情報による最適化 | 未実装 |
-| Utility types (`Partial`, `Required`, etc.) | ES3 | 型情報による最適化 | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| Conditional types `T extends U ? X : Y` | ES3 | 型情報による最適化 | 未実装 | P2 | - |
+| Mapped types `{ [K in keyof T]: U }` | ES3 | 型情報による最適化 | 未実装 | P2 | - |
+| Keyof type `keyof T` | ES3 | 型情報による最適化 | 未実装 | P2 | - |
+| Infer type `infer R` | ES3 | 型情報による最適化 | 未実装 | P2 | - |
+| Template literal types `` `hello${T}` `` | ES3 | 型情報による最適化 | 未実装 | P2 | - |
+| Utility types (`Partial`, `Required`, etc.) | ES3 | 型情報による最適化 | 未実装 | P2 | - |
 
 ## 型アサーションとキャスト
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| 型アサーション `x as T` | ES3 | 型チェック無効化 | 未実装 |
-| 角括弧キャスト `<T>x` | ES3 | 型チェック無効化 | 未実装 |
-| const assertion `x as const` | ES3 | リテラル型推論 | 未実装 |
-| Non-null assertion `x!` | ES3 | null/undefined チェック無効化 | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| 型アサーション `x as T` | ES3 | 型チェック無効化 | 未実装 | P2 | - |
+| 角括弧キャスト `<T>x` | ES3 | 型チェック無効化 | 未実装 | P2 | - |
+| const assertion `x as const` | ES3 | リテラル型推論 | 未実装 | P2 | - |
+| Non-null assertion `x!` | ES3 | null/undefined チェック無効化 | 未実装 | P2 | - |
 
 ## 型ガード
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| `typeof` ガード `typeof x === "string"` | ES3 | 型 narrowing | 未実装 |
-| `instanceof` ガード `x instanceof C` | ES3 | 型 narrowing | 未実装 |
-| カスタム型ガード `x is T` | ES3 | 型 narrowing | 未実装 |
-| 判別可能ユニオン | ES3 | 型 narrowing | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| `typeof` ガード `typeof x === "string"` | ES3 | 型 narrowing | 未実装 | P2 | - |
+| `instanceof` ガード `x instanceof C` | ES3 | 型 narrowing | 未実装 | P2 | - |
+| カスタム型ガード `x is T` | ES3 | 型 narrowing | 未実装 | P2 | - |
+| 判別可能ユニオン | ES3 | 型 narrowing | 未実装 | P2 | - |
 
 ## モジュール
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| `import` / `export` | ES6 | single file only → relative static import/export | 未実装 |
-| `import type` | ES6 | type-only import | 未実装 |
-| `export type` | ES6 | type-only export | 未実装 |
-| `import = require()` | CommonJS | compile-time builtin resolution | 未実装 |
-| `export =` | CommonJS | CommonJS export | 未実装 |
-| `declare module` | ES3 | ambient module | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| `import` / `export` | ES6 | single file only → relative static import/export | 未実装 | P1 | - |
+| `import type` | ES6 | type-only import | 未実装 | P2 | - |
+| `export type` | ES6 | type-only export | 未実装 | P2 | - |
+| `import = require()` | CommonJS | compile-time builtin resolution | 未実装 | P2 | - |
+| `export =` | CommonJS | CommonJS export | 未実装 | P2 | - |
+| `declare module` | ES3 | ambient module | 未実装 | P2 | - |
 
 ## その他
 
-| 機能 | TypeScript | 対応方針 | 実装状況 |
-|---|---|---|---|
-| 型推論 | ES3 | 型情報を推論 | 未実装 |
-| 型エラー診断 | ES3 | 型エラーを報告 | 未実装 |
-| `strict` モード | ES3 | 厳密な型チェック | 未実装 |
-| `--noImplicitAny` | ES3 | any 暗黙禁止 | 未実装 |
-| `--strictNullChecks` | ES3 | null/undefined 厳密チェック | 未実装 |
-| `--strictFunctionTypes` | ES3 | 関数型厳密チェック | 未実装 |
-| Triple-slash directives | ES3 | コンパイラ指示 | 未実装 |
-| `tsconfig.json` | ES3 | コンパイラ設定 | 未実装 |
+| 機能 | TypeScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
+|---|---|---|---|---|---|
+| 型推論 | ES3 | 型情報を推論 | 未実装 | P2 | - |
+| 型エラー診断 | ES3 | 型エラーを報告 | 未実装 | P2 | - |
+| `strict` モード | ES3 | 厳密な型チェック | 未実装 | P2 | - |
+| `--noImplicitAny` | ES3 | any 暗黙禁止 | 未実装 | P2 | - |
+| `--strictNullChecks` | ES3 | null/undefined 厳密チェック | 未実装 | P2 | - |
+| `--strictFunctionTypes` | ES3 | 関数型厳密チェック | 未実装 | P2 | - |
+| Triple-slash directives | ES3 | コンパイラ指示 | 未実装 | P2 | - |
+| `tsconfig.json` | ES3 | コンパイラ設定 | 未実装 | P2 | - |
 
 ## 実装方針の原則
 

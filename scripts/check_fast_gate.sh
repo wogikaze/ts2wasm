@@ -10,23 +10,13 @@
 # Dependencies: cargo, bash (see nested scripts for cargo-nextest, jq, etc.)
 set -euo pipefail
 
-usage() {
-  cat <<'USAGE'
-Usage:
-  scripts/check_fast_gate.sh [--skip-nextest]
-
-Runs:
-  cargo fmt --all --check
-  scripts/check/shell-syntax.sh
-  scripts/check_issue_queue.sh
-  scripts/gen/coverage-matrix.sh --check
-  cargo nextest run   (unless skipped)
-
-Options:
-  --skip-nextest   Skip cargo nextest (faster; use in pre-push with targeted tests).
-  -h, --help
-USAGE
-}
+_ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=scripts/lib/common.sh
+source "${_ts2wasm_entry_dir}/lib/common.sh"
+# This script is in scripts/ directly, so repo root is one level up
+TS2WASM_REPO_ROOT="$(cd "${_ts2wasm_entry_dir}/.." && pwd)"
+export TS2WASM_REPO_ROOT
+cd "$TS2WASM_REPO_ROOT"
 
 skip_nextest=0
 if [[ ${TS2WASM_FAST_GATE_SKIP_NEXTEST:-0} == 1 ]]; then
@@ -37,42 +27,38 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-nextest) skip_nextest=1 ;;
     -h|--help)
-      usage
+      ts2wasm_usage "scripts/check_fast_gate.sh" \
+        "Runs cargo fmt --all --check, scripts/check/shell-syntax.sh, scripts/check_issue_queue.py, scripts/gen/coverage-matrix.py --check, and cargo nextest run (unless skipped)." \
+        "Options:" \
+        "  --skip-nextest   Skip cargo nextest (faster; use in pre-push with targeted tests)."
       exit 0
       ;;
     *)
-      echo "unknown option: $1" >&2
-      usage
+      ts2wasm_log "unknown option: $1"
+      ts2wasm_usage "scripts/check_fast_gate.sh" \
+        "Runs cargo fmt --all --check, scripts/check/shell-syntax.sh, scripts/check_issue_queue.py, scripts/gen/coverage-matrix.py --check, and cargo nextest run (unless skipped)."
       exit 1
       ;;
   esac
   shift
 done
 
-repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
-
-for c in cargo bash; do
-  command -v "$c" >/dev/null 2>&1 || {
-    echo "check_fast_gate: missing required command: $c" >&2
-    exit 1
-  }
-done
+ts2wasm_require_cmds cargo bash
 
 run() {
-  echo "check_fast_gate: $*" >&2
+  ts2wasm_log "check_fast_gate: $*"
   "$@"
 }
 
 run cargo fmt --all --check
-run bash "${repo_root}/scripts/check/shell-syntax.sh"
-run bash "${repo_root}/scripts/check_issue_queue.sh"
-run bash "${repo_root}/scripts/gen/coverage-matrix.sh" --check
+run bash "${TS2WASM_REPO_ROOT}/scripts/check/shell-syntax.sh"
+run python3 "${TS2WASM_REPO_ROOT}/scripts/check/issue-queue.py"
+run python3 "${TS2WASM_REPO_ROOT}/scripts/gen/coverage-matrix.py" --check
 
 if [[ "$skip_nextest" -eq 0 ]]; then
   run cargo nextest run
 else
-  echo "check_fast_gate: skipping cargo nextest (--skip-nextest)" >&2
+  ts2wasm_log "check_fast_gate: skipping cargo nextest (--skip-nextest)"
 fi
 
-echo "check_fast_gate: OK" >&2
+ts2wasm_log "check_fast_gate: OK"

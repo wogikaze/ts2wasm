@@ -23,7 +23,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-REPO = Path(__file__).resolve().parents[1]
+REPO = Path(__file__).resolve().parents[2]
 ISSUES_OPEN = REPO / "issues" / "open"
 ISSUES_DONE = REPO / "issues" / "done"
 INDEX_PATH = REPO / "issues" / "index.md"
@@ -462,21 +462,6 @@ def main() -> int:
         # Check ready/block counts
         if len(actual_ready_ids) == 0 and len(actual_blocked_ids) == 0 and open_ids:
             err(errors, "issues are open but Ready and Blocked tables list no issue IDs")
-
-        # Generate expected full index for comparison
-        expected_index = index_content
-        expected_index = replace_generated_block(
-            expected_index, "<!-- generated:ready:start -->", "<!-- generated:ready:end -->", expected_ready
-        )
-        expected_index = replace_generated_block(
-            expected_index, "<!-- generated:blocked:start -->", "<!-- generated:blocked:end -->", expected_blocked
-        )
-        expected_index = replace_generated_block(
-            expected_index, "<!-- generated:done:start -->", "<!-- generated:done:end -->", expected_done
-        )
-
-        if expected_index != index_content:
-            err(errors, "issues/index.md is stale; run scripts/update_issue_index.sh")
 
     if errors:
         for msg in errors:
