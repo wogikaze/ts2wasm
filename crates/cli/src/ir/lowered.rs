@@ -1,7 +1,8 @@
 use std::collections::HashMap;
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
-use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
+use crate::backend::RuntimeFn;
 use crate::runtime::value::ValueTag;
 use crate::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
 
@@ -41,6 +42,44 @@ pub(crate) enum LoweredStmt {
         body: Vec<LoweredStmt>,
     },
     Return(LoweredExpr),
+    TryCatch {
+        try_body: Vec<LoweredStmt>,
+        catch_var: Option<LocalId>,
+        catch_body: Option<Vec<LoweredStmt>>,
+        finally_body: Option<Vec<LoweredStmt>>,
+    },
+    Switch {
+        expr: LoweredExpr,
+        cases: Vec<(Option<LoweredExpr>, Vec<LoweredStmt>)>,
+    },
+    DoWhile {
+        body: Vec<LoweredStmt>,
+        condition: LoweredExpr,
+    },
+    For {
+        init: Option<Box<LoweredStmt>>,
+        condition: Option<LoweredExpr>,
+        update: Option<LoweredExpr>,
+        body: Vec<LoweredStmt>,
+    },
+    ForIn {
+        var: LocalId,
+        iter: LoweredExpr,
+        body: Vec<LoweredStmt>,
+    },
+    ForOf {
+        var: LocalId,
+        iter: LoweredExpr,
+        body: Vec<LoweredStmt>,
+    },
+    Break,
+    Continue,
+    ClassDecl {
+        name: String,
+        extends: Option<String>,
+        constructor: Option<(Vec<LocalId>, Vec<LoweredStmt>)>,
+        methods: Vec<(String, Vec<LocalId>, Vec<LoweredStmt>)>,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -97,6 +136,28 @@ pub(crate) enum LoweredExpr {
     PropertyGet {
         obj: Box<LoweredExpr>,
         key: String,
+    },
+    /// Method call: `obj.method(args)`.
+    MethodCall {
+        object: Box<LoweredExpr>,
+        method: String,
+        args: Vec<LoweredExpr>,
+    },
+    /// Direct call to a runtime function (resolved from method calls).
+    RuntimeCall {
+        runtime_fn: crate::backend::RuntimeFn,
+        args: Vec<LoweredExpr>,
+    },
+    /// Property assignment: `obj.key = value`.
+    PropertySet {
+        object: Box<LoweredExpr>,
+        key: String,
+        value: Box<LoweredExpr>,
+    },
+    /// New instance: `new ClassName(args)`.
+    New {
+        class_name: String,
+        args: Vec<LoweredExpr>,
     },
 }
 
@@ -205,6 +266,47 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
             span: None,
         }),
     }
+}
+
+/// Resolve a method call to the appropriate RuntimeFn.
+///
+/// This handles built-in object methods like:
+/// - `Math.floor(x)` → MathFloor
+/// - `"hello".charAt(0)` → StringCharAt
+/// - `[1,2].push(3)` → ArrayPush
+/// - `Object.keys(obj)` → ObjectKeys
+/// - `JSON.stringify(val)` → JsonStringify
+fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<RuntimeFn> {
+    // Math methods: Math.floor, Math.ceil, Math.round, Math.abs, Math.max, Math.min
+    if let ResolvedExpr::Ident(name) = object {
+        if name == "Math" {
+            return match method {
+                "floor" => Some(RuntimeFn::MathFloor),
+                "ceil" => Some(RuntimeFn::MathCeil),
+                "round" => Some(RuntimeFn::MathRound),
+                "abs" => Some(RuntimeFn::MathAbs),
+                "max" => Some(RuntimeFn::MathMax),
+                "min" => Some(RuntimeFn::MathMin),
+                _ => None,
+            };
+        }
+        if name == "JSON" {
+            return match method {
+                "stringify" => Some(RuntimeFn::JsonStringify),
+                "parse" => Some(RuntimeFn::JsonParse),
+                _ => None,
+            };
+        }
+        if name == "Object" {
+            return match method {
+                "keys" => Some(RuntimeFn::ObjectKeys),
+                "values" => Some(RuntimeFn::ObjectValues),
+                "entries" => Some(RuntimeFn::ObjectEntries),
+                _ => None,
+            };
+        }
+    }
+    None
 }
 
 fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
@@ -329,6 +431,95 @@ impl<'a> Resolver<'a> {
                     .to_owned(),
                 span: None,
             }),
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_param,
+                catch_block,
+                finally_block,
+            } => {
+                let catch_var = if let Some(param) = catch_param {
+                    Some(self.declare_local(param)?)
+                } else {
+                    None
+                };
+                Ok(LoweredStmt::TryCatch {
+                    try_body: self.lower_nested_block(try_block)?,
+                    catch_var,
+                    catch_body: catch_block
+                        .as_ref()
+                        .map(|b| self.lower_nested_block(b))
+                        .transpose()?,
+                    finally_body: finally_block
+                        .as_ref()
+                        .map(|b| self.lower_nested_block(b))
+                        .transpose()?,
+                })
+            }
+            ResolvedStmt::Throw(expr) => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "throw statements not yet supported in this milestone".to_owned(),
+                span: None,
+            }),
+            ResolvedStmt::Switch { expr, cases } => {
+                let resolved_cases = cases
+                    .iter()
+                    .map(|(cond, body)| {
+                        Ok((
+                            cond.as_ref().map(|e| self.lower_expr(e)).transpose()?,
+                            self.lower_nested_block(body)?,
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredStmt::Switch {
+                    expr: self.lower_expr(expr)?,
+                    cases: resolved_cases,
+                })
+            }
+            ResolvedStmt::DoWhile { body, condition } => Ok(LoweredStmt::DoWhile {
+                body: self.lower_nested_block(body)?,
+                condition: self.lower_expr(condition)?,
+            }),
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                let resolved_init = if let Some(i) = init {
+                    Some(Box::new(self.lower_stmt(i)?))
+                } else {
+                    None
+                };
+                Ok(LoweredStmt::For {
+                    init: resolved_init,
+                    condition: condition.as_ref().map(|c| self.lower_expr(c)).transpose()?,
+                    update: update.as_ref().map(|u| self.lower_expr(u)).transpose()?,
+                    body: self.lower_nested_block(body)?,
+                })
+            }
+            ResolvedStmt::ForIn { var, iter, body } => {
+                let var_id = self.declare_local(var)?;
+                Ok(LoweredStmt::ForIn {
+                    var: var_id,
+                    iter: self.lower_expr(iter)?,
+                    body: self.lower_nested_block(body)?,
+                })
+            }
+            ResolvedStmt::ForOf { var, iter, body } => {
+                let var_id = self.declare_local(var)?;
+                Ok(LoweredStmt::ForOf {
+                    var: var_id,
+                    iter: self.lower_expr(iter)?,
+                    body: self.lower_nested_block(body)?,
+                })
+            }
+            ResolvedStmt::Break => Ok(LoweredStmt::Break),
+            ResolvedStmt::Continue => Ok(LoweredStmt::Continue),
+            ResolvedStmt::ClassDecl { .. } => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "class declarations not yet supported in lowering".to_owned(),
+                span: None,
+            }),
         }
     }
 
@@ -426,6 +617,53 @@ impl<'a> Resolver<'a> {
                     props: lowered,
                     base_local,
                     val_temp,
+                })
+            }
+            ResolvedExpr::MethodCall {
+                object,
+                method,
+                args,
+            } => {
+                // Resolve built-in object methods to RuntimeFn
+                if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                    let lowered_args = args
+                        .iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn,
+                        args: lowered_args,
+                    })
+                } else {
+                    // Unsupported method call
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("method `{}` not yet implemented", method),
+                        span: None,
+                    })
+                }
+            }
+            ResolvedExpr::PropertyAssign {
+                object: _,
+                key: _,
+                value: _,
+            } => {
+                // Placeholder for property assignment - will be implemented in Phase 3
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "property assignment not yet implemented".to_owned(),
+                    span: None,
+                })
+            }
+            ResolvedExpr::New {
+                class_name: _,
+                args: _,
+            } => {
+                // Placeholder for constructor calls - will be implemented in Phase D
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "constructor calls not yet implemented".to_owned(),
+                    span: None,
                 })
             }
         }
@@ -599,6 +837,82 @@ fn validate_stmt(
         LoweredStmt::While { condition, body } => {
             validate_expr(condition, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, errors);
+        }
+        LoweredStmt::TryCatch {
+            try_body,
+            catch_var,
+            catch_body,
+            finally_body,
+        } => {
+            validate_stmts(try_body, local_count, num_funcs, program, errors);
+            if let Some(var_id) = catch_var {
+                check_local_id(*var_id, local_count, errors);
+            }
+            if let Some(body) = catch_body {
+                validate_stmts(body, local_count, num_funcs, program, errors);
+            }
+            if let Some(body) = finally_body {
+                validate_stmts(body, local_count, num_funcs, program, errors);
+            }
+            if catch_body.is_none() && finally_body.is_none() {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "try-catch must have at least a catch or finally block".to_owned(),
+                    span: None,
+                });
+            }
+        }
+        LoweredStmt::Switch { expr, cases } => {
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+            for (cond, body) in cases {
+                if let Some(c) = cond {
+                    validate_expr(c, local_count, num_funcs, program, errors, true);
+                }
+                validate_stmts(body, local_count, num_funcs, program, errors);
+            }
+        }
+        LoweredStmt::DoWhile { body, condition } => {
+            validate_stmts(body, local_count, num_funcs, program, errors);
+            validate_expr(condition, local_count, num_funcs, program, errors, true);
+        }
+        LoweredStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            if let Some(i) = init {
+                validate_stmt(i, local_count, num_funcs, program, errors);
+            }
+            if let Some(c) = condition {
+                validate_expr(c, local_count, num_funcs, program, errors, true);
+            }
+            if let Some(u) = update {
+                validate_expr(u, local_count, num_funcs, program, errors, true);
+            }
+            validate_stmts(body, local_count, num_funcs, program, errors);
+        }
+        LoweredStmt::ForIn { var, iter, body } => {
+            check_local_id(*var, local_count, errors);
+            validate_expr(iter, local_count, num_funcs, program, errors, true);
+            validate_stmts(body, local_count, num_funcs, program, errors);
+        }
+        LoweredStmt::ForOf { var, iter, body } => {
+            check_local_id(*var, local_count, errors);
+            validate_expr(iter, local_count, num_funcs, program, errors, true);
+            validate_stmts(body, local_count, num_funcs, program, errors);
+        }
+        LoweredStmt::Break | LoweredStmt::Continue => {
+            // Break/Continue scope validation deferred to backend emission
+            // (backend must track if we're in a loop context)
+        }
+        LoweredStmt::ClassDecl {
+            name: _,
+            extends: _,
+            constructor: _,
+            methods: _,
+        } => {
+            // Class declaration validation deferred to backend emission
         }
     }
 }

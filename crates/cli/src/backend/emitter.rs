@@ -235,6 +235,62 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(condition);
                 self.collect_program_strings(body);
             }
+            LoweredStmt::TryCatch {
+                try_body,
+                catch_body,
+                finally_body,
+                ..
+            } => {
+                self.collect_program_strings(try_body);
+                if let Some(body) = catch_body {
+                    self.collect_program_strings(body);
+                }
+                if let Some(body) = finally_body {
+                    self.collect_program_strings(body);
+                }
+            }
+            LoweredStmt::Switch { expr, cases } => {
+                self.collect_expr_strings(expr);
+                for (cond, body) in cases {
+                    if let Some(cond_expr) = cond {
+                        self.collect_expr_strings(cond_expr);
+                    }
+                    self.collect_program_strings(body);
+                }
+            }
+            LoweredStmt::DoWhile { body, condition } => {
+                self.collect_program_strings(body);
+                self.collect_expr_strings(condition);
+            }
+            LoweredStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init_stmt) = init {
+                    self.collect_statement_strings(init_stmt);
+                }
+                if let Some(cond) = condition {
+                    self.collect_expr_strings(cond);
+                }
+                if let Some(upd) = update {
+                    self.collect_expr_strings(upd);
+                }
+                self.collect_program_strings(body);
+            }
+            LoweredStmt::ForIn { var: _, iter, body } => {
+                self.collect_expr_strings(iter);
+                self.collect_program_strings(body);
+            }
+            LoweredStmt::ForOf { var: _, iter, body } => {
+                self.collect_expr_strings(iter);
+                self.collect_program_strings(body);
+            }
+            LoweredStmt::Break | LoweredStmt::Continue => {}
+            LoweredStmt::ClassDecl { .. } => {
+                // Class declarations should not appear in lowered program
+            }
         }
     }
 
@@ -280,6 +336,27 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(obj);
                 self.intern_string(key);
             }
+            LoweredExpr::MethodCall { object, args, .. } => {
+                self.collect_expr_strings(object);
+                for arg in args {
+                    self.collect_expr_strings(arg);
+                }
+            }
+            LoweredExpr::PropertySet { object, key, value } => {
+                self.collect_expr_strings(object);
+                self.intern_string(key);
+                self.collect_expr_strings(value);
+            }
+            LoweredExpr::New { args, .. } => {
+                for arg in args {
+                    self.collect_expr_strings(arg);
+                }
+            }
+            LoweredExpr::RuntimeCall { args, .. } => {
+                for arg in args {
+                    self.collect_expr_strings(arg);
+                }
+            }
         }
     }
 
@@ -293,7 +370,8 @@ impl<'a> WatEmitter<'a> {
             for _ in &function.locals {
                 wat.push_str("    (local i32)\n");
             }
-            self.emit_statements(wat, &function.body, 4);
+            let mut loop_ctx = super::stmt_emit::LoopContext::Root;
+            self.emit_statements(wat, &function.body, 4, &mut loop_ctx);
             wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
             wat.push_str("  )\n");
         }

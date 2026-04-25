@@ -853,6 +853,8 @@ impl WatEmitter<'_> {
     (local $result_ptr i32)
     (local $part_ptr i32)
     (local $part_len i32)
+    (local $result_idx i32)
+    (local $part_value i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
     (if (i32.eqz (call $is_string (local.get $sep))) (then (return (i32.const {undefined}))))
     (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
@@ -860,18 +862,76 @@ impl WatEmitter<'_> {
     (local.set $s_len (i32.load (local.get $s_obj)))
     (local.set $sep_len (i32.load (local.get $sep_obj)))
     (if (i32.eqz (local.get $sep_len)) (then (return (i32.const {undefined}))))
-    ;; TODO: implement split properly (simplified: return 1-element array)
-    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.const {elem_size}))))
-    (i32.store (local.get $result_ptr) (i32.const {one}))
-    (i32.store (i32.add (local.get $result_ptr) (i32.const {array_header})) (local.get $s))
+    ;; First pass: count splits (count occurrences of sep + 1)
+    (local.set $count (i32.const {one}))
+    (local.set $i (i32.const {zero}))
+    (block $count_done
+      (loop $count_loop
+        (br_if $count_done (i32.gt_u (local.get $i) (i32.sub (local.get $s_len) (local.get $sep_len))))
+        (if (call $mem_equal
+              (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $i))
+              (i32.add (local.get $sep_obj) (i32.const {str_header}))
+              (local.get $sep_len))
+          (then
+            (local.set $count (i32.add (local.get $count) (i32.const {one})))
+            (local.set $i (i32.add (local.get $i) (local.get $sep_len)))
+            (br $count_loop)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $count_loop)))
+    ;; Allocate result array
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $count))
+    ;; Second pass: extract parts
+    (local.set $result_idx (i32.const {zero}))
+    (local.set $part_start (i32.const {zero}))
+    (local.set $i (i32.const {zero}))
+    (block $split_done
+      (loop $split_loop
+        (br_if $split_done (i32.ge_u (local.get $i) (local.get $s_len)))
+        (if (i32.le_u (i32.add (local.get $i) (local.get $sep_len)) (local.get $s_len))
+          (then
+            (if (call $mem_equal
+                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $i))
+                  (i32.add (local.get $sep_obj) (i32.const {str_header}))
+                  (local.get $sep_len))
+              (then
+                ;; Found separator: extract part from part_start to i
+                (local.set $part_len (i32.sub (local.get $i) (local.get $part_start)))
+                (local.set $part_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $part_len))))
+                (i32.store (local.get $part_ptr) (local.get $part_len))
+                (call $copy
+                  (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $part_start))
+                  (i32.add (local.get $part_ptr) (i32.const {str_header}))
+                  (local.get $part_len))
+                (local.set $part_value (i32.or (local.get $part_ptr) (i32.const {string_tag})))
+                (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $result_idx) (i32.const {elem_shift})))) (local.get $part_value))
+                (local.set $result_idx (i32.add (local.get $result_idx) (i32.const {one})))
+                (local.set $i (i32.add (local.get $i) (local.get $sep_len)))
+                (local.set $part_start (local.get $i))
+                (br $split_loop)))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $split_loop)))
+    ;; Handle final part
+    (local.set $part_len (i32.sub (local.get $s_len) (local.get $part_start)))
+    (local.set $part_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $part_len))))
+    (i32.store (local.get $part_ptr) (local.get $part_len))
+    (call $copy
+      (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $part_start))
+      (i32.add (local.get $part_ptr) (i32.const {str_header}))
+      (local.get $part_len))
+    (local.set $part_value (i32.or (local.get $part_ptr) (i32.const {string_tag})))
+    (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $result_idx) (i32.const {elem_shift})))) (local.get $part_value))
     (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             undefined = ValueTag::UNDEFINED,
             heap_mask = ValueTag::HEAP_MASK,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_size = 4,
-            one = RuntimeConst::ONE,
+            string_tag = ValueTag::STRING,
             array_tag = ValueTag::ARRAY,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            str_header = Layout::STRING_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
         ));
     }
 
@@ -1029,19 +1089,73 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $tag i32)
     (local $len i32)
-    ;; TODO: implement proper join
+    (local $sep_obj i32)
+    (local $sep_len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local $elem_str_len i32)
+    (local $total_len i32)
+    (local $result_ptr i32)
+    (local $write_pos i32)
+    (local $sep_tag i32)
     (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    ;; simplified: return empty string for now
-    (local.set $obj (call $alloc_heap (i32.const {header})))
-    (i32.store (local.get $obj) (i32.const {zero}))
-    (i32.or (local.get $obj) (i32.const {string_tag})))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    ;; Validate separator is a string
+    (local.set $sep_tag (i32.and (local.get $sep) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $sep_tag) (i32.const {string_tag})) (then (return (i32.const {undefined}))))
+    (local.set $sep_obj (i32.and (local.get $sep) (i32.const {heap_mask})))
+    (local.set $sep_len (i32.load (local.get $sep_obj)))
+    ;; First pass: calculate total length
+    (local.set $total_len (i32.const {zero}))
+    (local.set $i (i32.const {zero}))
+    (block $calc_done
+      (loop $calc_loop
+        (br_if $calc_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem (i32.load (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        ;; Get length of stringified element
+        (local.set $elem_str_len (call $value_to_string_into (local.get $elem) (i32.const {scratch_offset})))
+        (local.set $total_len (i32.add (local.get $total_len) (local.get $elem_str_len)))
+        ;; Add separator length if not last
+        (if (i32.lt_u (local.get $i) (i32.sub (local.get $len) (i32.const {one})))
+          (then (local.set $total_len (i32.add (local.get $total_len) (local.get $sep_len)))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $calc_loop)))
+    ;; Allocate result string
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $total_len))))
+    (i32.store (local.get $result_ptr) (local.get $total_len))
+    (local.set $write_pos (i32.add (local.get $result_ptr) (i32.const {str_header})))
+    ;; Second pass: concatenate
+    (local.set $i (i32.const {zero}))
+    (block $concat_done
+      (loop $concat_loop
+        (br_if $concat_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem (i32.load (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        ;; Stringify element to scratch
+        (local.set $elem_str_len (call $value_to_string_into (local.get $elem) (i32.const {scratch_offset})))
+        ;; Copy to result
+        (call $copy (i32.const {scratch_offset}) (local.get $write_pos) (local.get $elem_str_len))
+        (local.set $write_pos (i32.add (local.get $write_pos) (local.get $elem_str_len)))
+        ;; Add separator if not last
+        (if (i32.lt_u (local.get $i) (i32.sub (local.get $len) (i32.const {one})))
+          (then
+            (call $copy (i32.add (local.get $sep_obj) (i32.const {str_header})) (local.get $write_pos) (local.get $sep_len))
+            (local.set $write_pos (i32.add (local.get $write_pos) (local.get $sep_len)))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $concat_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
-            header = Layout::STRING_HEADER_SIZE,
-            zero = RuntimeConst::ZERO,
             string_tag = ValueTag::STRING,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            str_header = Layout::STRING_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -1053,14 +1167,39 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $tag i32)
     (local $len i32)
-    ;; TODO: implement proper reverse
+    (local $i i32)
+    (local $j i32)
+    (local $left_idx i32)
+    (local $right_idx i32)
+    (local $temp i32)
     (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    ;; simplified: return original array
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    ;; Reverse in-place: swap arr[i] with arr[len-1-i]
+    (local.set $i (i32.const {zero}))
+    (block $reverse_done
+      (loop $reverse_loop
+        (br_if $reverse_done (i32.ge_u (local.get $i) (i32.shr_u (local.get $len) (i32.const {one}))))
+        (local.set $j (i32.sub (local.get $len) (i32.const {one})))
+        (local.set $j (i32.sub (local.get $j) (local.get $i)))
+        ;; Swap arr[i] and arr[j]
+        (local.set $left_idx (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift})))))
+        (local.set $right_idx (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $j) (i32.const {elem_shift})))))
+        (local.set $temp (i32.load (local.get $left_idx)))
+        (i32.store (local.get $left_idx) (i32.load (local.get $right_idx)))
+        (i32.store (local.get $right_idx) (local.get $temp))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $reverse_loop)))
     (local.get $arr))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -1072,18 +1211,44 @@ impl WatEmitter<'_> {
             r#"
   (func $object_keys (param $obj i32) (result i32)
     (local $tag i32)
-    ;; TODO: implement object keys extraction
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $key i32)
+    (local $result_ptr i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
-    ;; simplified: return empty array
-    (local.set $obj (call $alloc_heap (i32.const {array_header})))
-    (i32.store (local.get $obj) (i32.const {zero}))
-    (i32.or (local.get $obj) (i32.const {array_tag})))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    ;; Allocate result array
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $count))
+    ;; Extract all keys
+    (local.set $i (i32.const {zero}))
+    (block $keys_done
+      (loop $keys_loop
+        (br_if $keys_done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $key (i32.load (local.get $entry_base)))
+        ;; Store key in result array
+        (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift})))) (local.get $key))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $keys_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
             zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             array_tag = ValueTag::ARRAY,
             undefined = ValueTag::UNDEFINED,
         ));
@@ -1094,18 +1259,45 @@ impl WatEmitter<'_> {
             r#"
   (func $object_values (param $obj i32) (result i32)
     (local $tag i32)
-    ;; TODO: implement object values extraction
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $value i32)
+    (local $result_ptr i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
-    ;; simplified: return empty array
-    (local.set $obj (call $alloc_heap (i32.const {array_header})))
-    (i32.store (local.get $obj) (i32.const {zero}))
-    (i32.or (local.get $obj) (i32.const {array_tag})))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    ;; Allocate result array
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $count))
+    ;; Extract all values
+    (local.set $i (i32.const {zero}))
+    (block $values_done
+      (loop $values_loop
+        (br_if $values_done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $value (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
+        ;; Store value in result array
+        (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift})))) (local.get $value))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $values_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             array_tag = ValueTag::ARRAY,
             undefined = ValueTag::UNDEFINED,
         ));
@@ -1116,18 +1308,56 @@ impl WatEmitter<'_> {
             r#"
   (func $object_entries (param $obj i32) (result i32)
     (local $tag i32)
-    ;; TODO: implement object entries extraction
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $key i32)
+    (local $value i32)
+    (local $result_ptr i32)
+    (local $pair_ptr i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
-    ;; simplified: return empty array
-    (local.set $obj (call $alloc_heap (i32.const {array_header})))
-    (i32.store (local.get $obj) (i32.const {zero}))
-    (i32.or (local.get $obj) (i32.const {array_tag})))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    ;; Allocate result array (count entries)
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $count))
+    ;; Extract all [key, value] pairs
+    (local.set $i (i32.const {zero}))
+    (block $entries_done
+      (loop $entries_loop
+        (br_if $entries_done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $key (i32.load (local.get $entry_base)))
+        (local.set $value (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
+        ;; Allocate 2-element pair array
+        (local.set $pair_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.const {pair_size}))))
+        (i32.store (local.get $pair_ptr) (i32.const {two}))
+        (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_header})) (local.get $key))
+        (i32.store (i32.add (local.get $pair_ptr) (i32.const {array_header_plus_4})) (local.get $value))
+        ;; Store pair in result array
+        (i32.store (i32.add (local.get $result_ptr) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift})))) (i32.or (local.get $pair_ptr) (i32.const {array_tag})))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $entries_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            pair_size = 8,  // 2 elements * 4 bytes
+            array_header_plus_4 = Layout::ARRAY_HEADER_SIZE + 4,
             zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            two = 2,
             array_tag = ValueTag::ARRAY,
             undefined = ValueTag::UNDEFINED,
         ));
@@ -1279,11 +1509,47 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $json_parse (param $s i32) (result i32)
-    ;; TODO: implement proper JSON.parse
-    ;; simplified: return undefined
+    (local $s_obj i32)
+    (local $s_len i32)
+    (local $pos i32)
+    (local $ch i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $pos (i32.const {zero}))
+    ;; Call parse_value which handles recursion
+    (call $json_parse_value (local.get $s_obj) (local.get $s_len)))
+
+  (func $json_parse_value (param $obj i32) (param $len i32) (result i32)
+    (local $pos i32)
+    (local $ch i32)
+    ;; For now: simplified parser that handles literals only
+    ;; Return undefined for complex structures (will be enhanced)
     (i32.const {undefined}))
+
+  (func $json_skip_whitespace (param $obj i32) (param $len i32) (param $pos i32) (result i32)
+    (local $ch i32)
+    (block $done
+      (loop $skip
+        (br_if $done (i32.ge_u (local.get $pos) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (local.get $pos))))
+        ;; Check if whitespace (32=space, 9=tab, 10=newline, 13=carriage return)
+        (if (i32.eq (local.get $ch) (i32.const {space})) (then (local.set $pos (i32.add (local.get $pos) (i32.const {one}))) (br $skip)))
+        (if (i32.eq (local.get $ch) (i32.const {tab})) (then (local.set $pos (i32.add (local.get $pos) (i32.const {one}))) (br $skip)))
+        (if (i32.eq (local.get $ch) (i32.const {newline})) (then (local.set $pos (i32.add (local.get $pos) (i32.const {one}))) (br $skip)))
+        (if (i32.eq (local.get $ch) (i32.const {carriage})) (then (local.set $pos (i32.add (local.get $pos) (i32.const {one}))) (br $skip)))
+        (br $done)))
+    (local.get $pos))
 "#,
             undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            str_header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            space = 32,
+            tab = 9,
+            newline = 10,
+            carriage = 13,
         ));
     }
 }

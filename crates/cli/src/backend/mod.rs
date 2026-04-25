@@ -11,6 +11,7 @@ use crate::ir::lowered::LoweredProgram;
 
 pub(crate) use capability_manifest::emit_capability_manifest_json;
 pub(crate) use emitter::emit_wat;
+pub(crate) use runtime_fn::RuntimeFn;
 
 pub(crate) fn program_requires_read_stdin_utf8_runtime(program: &LoweredProgram) -> bool {
     runtime_link_plan::RuntimeLinkPlan::from_program(program)

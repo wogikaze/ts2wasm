@@ -22,6 +22,53 @@ pub(crate) enum ResolvedStmt {
         params: Vec<String>,
         body: Vec<ResolvedStmt>,
     },
+    TryCatch {
+        try_block: Vec<ResolvedStmt>,
+        catch_param: Option<String>,
+        catch_block: Option<Vec<ResolvedStmt>>,
+        finally_block: Option<Vec<ResolvedStmt>>,
+    },
+    Throw(ResolvedExpr),
+    Switch {
+        expr: ResolvedExpr,
+        cases: Vec<(Option<ResolvedExpr>, Vec<ResolvedStmt>)>,
+    },
+    DoWhile {
+        body: Vec<ResolvedStmt>,
+        condition: ResolvedExpr,
+    },
+    For {
+        init: Option<Box<ResolvedStmt>>,
+        condition: Option<ResolvedExpr>,
+        update: Option<ResolvedExpr>,
+        body: Vec<ResolvedStmt>,
+    },
+    ForIn {
+        var: String,
+        iter: ResolvedExpr,
+        body: Vec<ResolvedStmt>,
+    },
+    ForOf {
+        var: String,
+        iter: ResolvedExpr,
+        body: Vec<ResolvedStmt>,
+    },
+    Break,
+    Continue,
+    ClassDecl {
+        name: String,
+        extends: Option<String>,
+        constructor: Option<(Vec<String>, Vec<ResolvedStmt>)>,
+        methods: Vec<ClassMethod>,
+        statics: Vec<(String, ResolvedExpr)>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ClassMethod {
+    pub(crate) name: String,
+    pub(crate) params: Vec<String>,
+    pub(crate) body: Vec<ResolvedStmt>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -62,5 +109,19 @@ pub(crate) enum ResolvedExpr {
     PropertyAccess {
         object: Box<ResolvedExpr>,
         key: String,
+    },
+    MethodCall {
+        object: Box<ResolvedExpr>,
+        method: String,
+        args: Vec<ResolvedExpr>,
+    },
+    PropertyAssign {
+        object: Box<ResolvedExpr>,
+        key: String,
+        value: Box<ResolvedExpr>,
+    },
+    New {
+        class_name: String,
+        args: Vec<ResolvedExpr>,
     },
 }

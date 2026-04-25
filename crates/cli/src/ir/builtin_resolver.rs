@@ -2,7 +2,7 @@ use crate::{DiagCode, Diagnostic, Expr, Stmt};
 
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
-use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
 
 pub(crate) fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     program.iter().map(resolve_stmt).collect()
@@ -51,21 +51,196 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
-        // New statement types (not yet supported in resolver)
-        Stmt::ClassDecl { span, .. }
-        | Stmt::TryCatch { span, .. }
-        | Stmt::Throw { span, .. }
-        | Stmt::Switch { span, .. }
-        | Stmt::DoWhile { span, .. }
-        | Stmt::For { span, .. }
-        | Stmt::ForIn { span, .. }
-        | Stmt::ForOf { span, .. }
-        | Stmt::Break { span }
-        | Stmt::Continue { span } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "statement type not yet supported in builtin resolver".to_owned(),
-            span: Some(*span),
+        Stmt::ClassDecl {
+            name,
+            extends,
+            body,
+            ..
+        } => {
+            // Parse extends (must be an identifier for now)
+            let extends_name = match extends {
+                Some(ext_expr) => match ext_expr.as_ref() {
+                    Expr::Ident { name: parent, .. } => Some(parent.clone()),
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "only simple inheritance (extends ClassName) is supported"
+                                .to_owned(),
+                            span: None,
+                        });
+                    }
+                },
+                None => None,
+            };
+
+            // Parse class body to extract constructor and methods
+            let mut constructor = None;
+            let mut methods = Vec::new();
+            let mut statics = Vec::new();
+
+            for stmt in body {
+                match stmt {
+                    // Constructor method (identified by being a Function named "constructor")
+                    Stmt::Function {
+                        name: method_name,
+                        params,
+                        body: method_body,
+                        ..
+                    } if method_name == "constructor" => {
+                        if constructor.is_some() {
+                            return Err(Diagnostic {
+                                code: DiagCode::DuplicateFunction,
+                                message: "duplicate constructor definition".to_owned(),
+                                span: None,
+                            });
+                        }
+                        let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<
+                            Vec<_>,
+                            _,
+                        >>(
+                        )?;
+                        constructor = Some((params.clone(), resolved_body));
+                    }
+                    // Regular methods
+                    Stmt::Function {
+                        name: method_name,
+                        params,
+                        body: method_body,
+                        ..
+                    } => {
+                        let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<
+                            Vec<_>,
+                            _,
+                        >>(
+                        )?;
+                        methods.push(ClassMethod {
+                            name: method_name.clone(),
+                            params: params.clone(),
+                            body: resolved_body,
+                        });
+                    }
+                    // Static members (for now, we'll just skip them - not yet supported)
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "class body may only contain methods and constructors"
+                                .to_owned(),
+                            span: None,
+                        });
+                    }
+                }
+            }
+
+            Ok(ResolvedStmt::ClassDecl {
+                name: name.clone(),
+                extends: extends_name,
+                constructor,
+                methods,
+                statics,
+            })
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_param,
+            catch_block,
+            finally_block,
+            ..
+        } => Ok(ResolvedStmt::TryCatch {
+            try_block: try_block
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
+            catch_param: catch_param.clone(),
+            catch_block: catch_block
+                .as_ref()
+                .map(|b| b.iter().map(resolve_stmt).collect::<Result<Vec<_>, _>>())
+                .transpose()?,
+            finally_block: finally_block
+                .as_ref()
+                .map(|b| b.iter().map(resolve_stmt).collect::<Result<Vec<_>, _>>())
+                .transpose()?,
         }),
+        Stmt::Throw { expr, .. } => Ok(ResolvedStmt::Throw(resolve_expr(expr)?)),
+        Stmt::Switch { expr, cases, .. } => {
+            let resolved_cases = cases
+                .iter()
+                .map(|(cond, body)| {
+                    Ok((
+                        cond.as_ref().map(resolve_expr).transpose()?,
+                        body.iter()
+                            .map(resolve_stmt)
+                            .collect::<Result<Vec<_>, _>>()?,
+                    ))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(ResolvedStmt::Switch {
+                expr: resolve_expr(expr)?,
+                cases: resolved_cases,
+            })
+        }
+        Stmt::DoWhile {
+            body, condition, ..
+        } => Ok(ResolvedStmt::DoWhile {
+            body: body
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
+            condition: resolve_expr(condition)?,
+        }),
+        Stmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            let resolved_init = if let Some(i) = init {
+                Some(Box::new(resolve_stmt(i)?))
+            } else {
+                None
+            };
+            let resolved_condition = if let Some(cond) = condition {
+                Some(resolve_expr(cond)?)
+            } else {
+                None
+            };
+            let resolved_update = if let Some(upd) = update {
+                Some(resolve_expr(upd)?)
+            } else {
+                None
+            };
+            Ok(ResolvedStmt::For {
+                init: resolved_init,
+                condition: resolved_condition,
+                update: resolved_update,
+                body: body
+                    .iter()
+                    .map(resolve_stmt)
+                    .collect::<Result<Vec<_>, _>>()?,
+            })
+        }
+        Stmt::ForIn {
+            var, iter, body, ..
+        } => Ok(ResolvedStmt::ForIn {
+            var: var.clone(),
+            iter: resolve_expr(iter)?,
+            body: body
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
+        }),
+        Stmt::ForOf {
+            var, iter, body, ..
+        } => Ok(ResolvedStmt::ForOf {
+            var: var.clone(),
+            iter: resolve_expr(iter)?,
+            body: body
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
+        }),
+        Stmt::Break { .. } => Ok(ResolvedStmt::Break),
+        Stmt::Continue { .. } => Ok(ResolvedStmt::Continue),
     }
 }
 
@@ -142,9 +317,34 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             object: Box::new(resolve_expr(object)?),
             index: Box::new(resolve_expr(index)?),
         }),
+        Expr::New {
+            expr: new_expr,
+            args,
+            ..
+        } => {
+            // Extract class name from identifier
+            if let Expr::Ident {
+                name: class_name, ..
+            } = new_expr.as_ref()
+            {
+                let resolved_args = args
+                    .iter()
+                    .map(resolve_expr)
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(ResolvedExpr::New {
+                    class_name: class_name.clone(),
+                    args: resolved_args,
+                })
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "only new ClassName(...) is supported".to_owned(),
+                    span: None,
+                })
+            }
+        }
         // New expression types (not yet supported in resolver)
-        Expr::New { span, .. }
-        | Expr::TypeOf { span, .. }
+        Expr::TypeOf { span, .. }
         | Expr::InstanceOf { span, .. }
         | Expr::Ternary { span, .. }
         | Expr::ArrowFn { span, .. }

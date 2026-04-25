@@ -96,6 +96,59 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                     self.collect_required_runtime_stmts(body);
                 }
+                LoweredStmt::TryCatch {
+                    try_body,
+                    catch_var: _,
+                    catch_body,
+                    finally_body,
+                } => {
+                    self.collect_required_runtime_stmts(try_body);
+                    if let Some(body) = catch_body {
+                        self.collect_required_runtime_stmts(body);
+                    }
+                    if let Some(body) = finally_body {
+                        self.collect_required_runtime_stmts(body);
+                    }
+                }
+                LoweredStmt::Switch { expr, cases } => {
+                    self.collect_required_runtime_expr(expr);
+                    for (_, case_body) in cases {
+                        self.collect_required_runtime_stmts(case_body);
+                    }
+                }
+                LoweredStmt::DoWhile { body, condition } => {
+                    self.collect_required_runtime_expr(condition);
+                    self.add_required_runtime(RuntimeFn::TruthyBool);
+                    self.collect_required_runtime_stmts(body);
+                }
+                LoweredStmt::For {
+                    init,
+                    condition,
+                    update,
+                    body,
+                } => {
+                    if let Some(stmt) = init {
+                        self.collect_required_runtime_stmts(&[stmt.as_ref().clone()]);
+                    }
+                    if let Some(expr) = condition {
+                        self.collect_required_runtime_expr(&expr);
+                        self.add_required_runtime(RuntimeFn::TruthyBool);
+                    }
+                    if let Some(expr) = update {
+                        self.collect_required_runtime_expr(&expr);
+                    }
+                    self.collect_required_runtime_stmts(body);
+                }
+                LoweredStmt::ForIn { var: _, iter, body } => {
+                    self.collect_required_runtime_expr(iter);
+                    self.collect_required_runtime_stmts(body);
+                }
+                LoweredStmt::ForOf { var: _, iter, body } => {
+                    self.collect_required_runtime_expr(iter);
+                    self.collect_required_runtime_stmts(body);
+                }
+                LoweredStmt::Break | LoweredStmt::Continue => {}
+                LoweredStmt::ClassDecl { .. } => {}
             }
         }
     }
@@ -162,6 +215,15 @@ impl RuntimeLinkPlan {
             LoweredExpr::PropertyGet { obj, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
+            }
+            LoweredExpr::MethodCall { .. }
+            | LoweredExpr::PropertySet { .. }
+            | LoweredExpr::New { .. } => {}
+            LoweredExpr::RuntimeCall { runtime_fn, args } => {
+                self.add_required_runtime(*runtime_fn);
+                for arg in args {
+                    self.collect_required_runtime_expr(arg);
+                }
             }
         }
     }

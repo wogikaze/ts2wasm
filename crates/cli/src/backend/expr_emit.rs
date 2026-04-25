@@ -1,5 +1,5 @@
+use super::RuntimeFn;
 use super::emitter::WatEmitter;
-use super::runtime_fn::RuntimeFn;
 use crate::ir::lowered::{FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp};
 use crate::runtime::layout::Layout;
 use crate::runtime::value::ValueTag;
@@ -177,6 +177,41 @@ impl WatEmitter<'_> {
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyGet.symbol()
                 ));
+            }
+            LoweredExpr::MethodCall {
+                object,
+                method: _,
+                args: _,
+            } => {
+                // Placeholder for method calls - will be implemented in Phase 3
+                // Note: built-in methods should be lowered to RuntimeCall before reaching here
+                wat.push_str(&format!("{pad};; TODO: implement method call\n"));
+                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+            }
+            LoweredExpr::RuntimeCall { runtime_fn, args } => {
+                for arg in args {
+                    self.emit_expr(wat, &arg, indent);
+                }
+                wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+            }
+            LoweredExpr::PropertySet {
+                object,
+                key: _,
+                value,
+            } => {
+                // Placeholder for property assignment - will be implemented in Phase 3
+                wat.push_str(&format!("{pad};; TODO: implement property set\n"));
+                self.emit_expr(wat, object, indent);
+                self.emit_expr(wat, value, indent);
+                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+            }
+            LoweredExpr::New { args, .. } => {
+                // Placeholder for constructor calls - will be implemented in Phase D
+                for arg in args {
+                    self.emit_expr(wat, arg, indent);
+                }
+                wat.push_str(&format!("{pad};; TODO: implement constructor\n"));
+                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
             }
         }
     }
