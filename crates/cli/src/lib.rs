@@ -1728,6 +1728,13 @@ impl Parser {
                 if matches!(self.peek(), Some(Token::Ident(_))) {
                     self.advance();
                     _param_count += 1;
+                    if !self.consume(TokenKind::Comma) {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
             if self.consume(TokenKind::RightParen) && self.consume(TokenKind::Arrow) {
                 true
             } else {
