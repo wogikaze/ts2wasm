@@ -51,9 +51,9 @@ run() {
 }
 
 run cargo fmt --all --check
-run bash "${TS2WASM_REPO_ROOT}/scripts/check/shell-syntax.sh"
-run python3 "${TS2WASM_REPO_ROOT}/scripts/check/issue-queue.py"
-run python3 "${TS2WASM_REPO_ROOT}/scripts/gen/coverage-matrix.py" --check
+run bash "${repo_root}/scripts/check/shell-syntax.sh"
+run python3 "${repo_root}/scripts/check/issue-queue.py"
+run python3 "${repo_root}/scripts/gen/coverage-matrix.py" --check
 
 if [[ "$skip_nextest" -eq 0 ]]; then
   run cargo nextest run

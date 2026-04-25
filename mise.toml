@@ -109,6 +109,18 @@ run = "scripts/manager check-runtimefn-invariants"
 description = "wasm-tools validate on representative build outputs"
 run = "scripts/manager check-wasm-validation"
 
+[tasks."check-issue-queue"]
+description = "Mechanical invariants: ids, paths, index+tables"
+run = "scripts/manager check-issue-queue"
+
+[tasks."check-test-records-schema"]
+description = "Validate TestRecord JSONL lines (stdin or file)"
+run = "scripts/manager check-test-records-schema"
+
+[tasks."check-fixture-differential"]
+description = "Node vs iwasm: runs nextest m2_node_diff"
+run = "scripts/manager check-fixture-differential"
+
 [tasks.manager]
 description = "Print script manager help (list all commands)"
 run = "scripts/manager help"

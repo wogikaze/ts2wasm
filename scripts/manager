@@ -107,26 +107,25 @@ shift
 
 case "$target" in
   check-scripts) exec bash "${repo_root}/scripts/check/shell-syntax.sh" "$@" ;;
-  check-fast-gate) exec bash "${repo_root}/scripts/check_fast_gate.sh" "$@" ;;
-  check-manifest-imports) exec bash "${repo_root}/scripts/check_manifest_imports.sh" "$@" ;;
-  check-test-records-schema) exec bash "${repo_root}/scripts/check_test_records_schema.sh" "$@" ;;
-  check-fixture-catalog) exec bash "${repo_root}/scripts/check_fixture_catalog.sh" "$@" ;;
-  check-architecture-rules) exec bash "${repo_root}/scripts/check_architecture_rules.sh" "$@" ;;
-  check-compiler-diagnostics) exec bash "${repo_root}/scripts/check_compiler_diagnostics.sh" "$@" ;;
-  check-harness-installation) exec bash "${repo_root}/scripts/check_harness_installation.sh" "$@" ;;
-  check-toolchain) exec bash "${repo_root}/scripts/check_toolchain.sh" "$@" ;;
-  check-fixture-differential) exec bash "${repo_root}/scripts/check_fixture_differential.sh" "$@" ;;
-  check-host-deny) exec bash "${repo_root}/scripts/check_host_deny.sh" "$@" ;;
-  check-runtimefn-invariants) exec bash "${repo_root}/scripts/check_runtimefn_invariants.sh" "$@" ;;
-  check-wasm-validation) exec bash "${repo_root}/scripts/check_wasm_validation.sh" "$@" ;;
-  check-issue-index) exec python3 "${repo_root}/scripts/check_issue_queue.py" "$@" ;;
-  check-issue-queue) exec python3 "${repo_root}/scripts/check_issue_queue.py" "$@" ;;
-  update-issue-index) exec bash "${repo_root}/scripts/update_issue_index.sh" "$@" ;;
+  check-fast-gate) exec bash "${repo_root}/scripts/gate/fast-gate.sh" "$@" ;;
+  check-manifest-imports) exec bash "${repo_root}/scripts/check/manifest-imports.sh" "$@" ;;
+  check-test-records-schema) exec bash "${repo_root}/scripts/check/test-records-schema.sh" "$@" ;;
+  check-fixture-catalog) exec bash "${repo_root}/scripts/check/fixture-catalog.sh" "$@" ;;
+  check-architecture-rules) exec bash "${repo_root}/scripts/check/architecture-rules.sh" "$@" ;;
+  check-compiler-diagnostics) exec bash "${repo_root}/scripts/check/compiler-diagnostics.sh" "$@" ;;
+  check-harness-installation) exec bash "${repo_root}/scripts/check/harness-installation.sh" "$@" ;;
+  check-toolchain) exec bash "${repo_root}/scripts/check/toolchain.sh" "$@" ;;
+  check-fixture-differential) exec bash "${repo_root}/scripts/check/fixture-differential.sh" "$@" ;;
+  check-host-deny) exec bash "${repo_root}/scripts/check/host-deny.sh" "$@" ;;
+  check-runtimefn-invariants) exec bash "${repo_root}/scripts/check/runtimefn-invariants.sh" "$@" ;;
+  check-wasm-validation) exec bash "${repo_root}/scripts/check/wasm-validation.sh" "$@" ;;
+  check-issue-index) exec python3 "${repo_root}/scripts/check/issue-queue.py" "$@" ;;
+  check-issue-queue) exec python3 "${repo_root}/scripts/check/issue-queue.py" "$@" ;;
+  update-issue-index) exec bash "${repo_root}/scripts/gen/update-issue-index.sh" "$@" ;;
   install-hooks) exec bash "${repo_root}/scripts/dev/install-git-hooks.sh" "$@" ;;
   check-coverage-gate) exec bash "${repo_root}/scripts/gate/coverage.sh" "$@" ;;
   update-coverage-matrix) exec python3 "${repo_root}/scripts/gen/coverage-matrix.py" "$@" ;;
   reference-coverage) exec bash "${repo_root}/scripts/run/reference-coverage.sh" "$@" ;;
-  coverage-report) exec bash "${repo_root}/scripts/gen/coverage-report.sh" "$@" ;;
   benchmark-tracker) exec bash "${repo_root}/scripts/perf/benchmark-tracker.sh" "$@" ;;
   test262) exec bash "${repo_root}/scripts/run/test262.sh" "$@" ;;
   test-differential-reporter) exec bash "${repo_root}/scripts/report/differential.sh" "$@" ;;
@@ -137,7 +136,7 @@ case "$target" in
   check-repo-smoke)
     cargo fmt --all --check
     bash "${repo_root}/scripts/check/shell-syntax.sh"
-    bash "${repo_root}/scripts/check_issue_queue.sh"
+    python3 "${repo_root}/scripts/check/issue-queue.py"
     ;;
   *)
     echo "Unknown command: $target" >&2
