@@ -392,3 +392,30 @@ scripts/benchmark_tracker.sh
 - Differential reporter groups by DiagCode reason but doesn't yet highlight the most-blocking features.
 - Baseline comparison is file-based; future versions could integrate with GitHub PR comments.
 - Performance tracking is optional and doesn't block M10 gate.
+
+## M10 Stream F status (Node host APIs)
+
+Implemented in this slice:
+
+- BuiltinResolver recognizes Node host API call shapes for:
+  - `require("fs").readFileSync(path, encoding)`
+  - `require("fs").writeFileSync(path, data)`
+  - `require("fs").appendFileSync(path, data)`
+  - `process.argv`, `process.env`, `process.exit(code)`
+  - `require("path").join(a, b)`, `resolve(path)`, `basename(path)`, `dirname(path)`
+  - `require("crypto").randomBytes(size)`
+- Runtime catalog includes dedicated `RuntimeFn` wrappers and host import requirements for each API.
+- WAT emitter declares function-level host imports under module `host` with function names matching Node API paths.
+- Capability manifest now emits host-scoped entries such as:
+  - imports: `host.fs.readFileSync`, `host.process.env`, `host.path.join`, ...
+  - capabilities: `host.fs.readFileSync`, `host.process.exit`, `host.crypto.randomBytes`, ...
+- Added M10 compile fixtures and integration tests:
+  - `fixtures/m10/*.ts`
+  - `crates/cli/tests/m10_node_apis.rs`
+
+Current limitations:
+
+- Host API wrappers are compile/runtime-import integration only; behavior depends on the embedding host implementation.
+- `path.join` currently supports two arguments in this milestone.
+- `util.*` and `crypto.createHash` are not implemented.
+- Async Node APIs (Promise/callback forms) are out of scope.
