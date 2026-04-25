@@ -63,9 +63,11 @@ mise run update-coverage-matrix
 
 ## Implemented (high-level)
 
-- minimal parser/frontend（`crates/cli`）
-- WAT/WASM emitter と runtime subset（`crates/cli`）
+- minimal parser/frontend（`crates/frontend` - 実装済み）
+- WAT/WASM emitter と runtime subset（`crates/cli` - `crates/backend-wasm` へ移行中）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
+- IR crate（`crates/ir` - 実装済み）: resolved/lowered IR
+- runtime-abi crate（`crates/runtime-abi` - 実装済み）: RawValue/layout/ABI
 - reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run check-coverage`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
 - issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `mise run update-issue-index` が生成、`mise run check-issue-index` で整合検証）
@@ -73,7 +75,7 @@ mise run update-coverage-matrix
 
 ## Known blockers / gaps
 
-- **Crates module migration**: Code still in `crates/cli/src/` needs migration to target crates (frontend, ir, runtime-abi, backend-wasm). Only skeleton structure is in place.
+- **Crates module migration**: `crates/runtime-abi`, `crates/ir`, `crates/frontend` は実装済み。`crates/backend-wasm` への移行が進行中（issue 026）。
 - TypeScript parser/checker integration は未実装
 - 汎用 JavaScript semantic IR は未実装
 - full wasm backend は未実装（現状は WAT 中心）

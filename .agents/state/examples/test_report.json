@@ -1,10 +1,17 @@
 {
   "run_id": "2026-04-26T02-30-00",
   "task_id": "WB-042",
+  "git": {
+    "sha": "abc1234",
+    "exit_code": 0,
+    "changed_files": [],
+    "commits": [{"sha": "abc1234", "message": "example"}]
+  },
   "commands": [
     {
       "cmd": "cargo test",
       "status": "pass",
+      "exit_code": 0,
       "elapsed_ms": 12345
     }
   ],

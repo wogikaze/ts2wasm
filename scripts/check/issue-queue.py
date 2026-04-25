@@ -32,6 +32,7 @@ ID_FROM_NAME_RE = re.compile(r"^([0-9]{3}[a-z]?)-")
 MD_ID_RE = re.compile(r"^\*\*ID\*\*:\s*(.+?)\s*$", re.M)
 YAML_ID_RE = re.compile(r"^(?:id|ID):\s*\"?([0-9]+[a-z]?)\"?\s*$", re.M)
 DEPENDS_RE = re.compile(r"^\*\*Depends on\*\*:\s*(.*?)\s*$", re.M)
+YAML_DEPENDS_RE = re.compile(r"^(?:depends_on|Depends on):\s*\[(.*?)\]\s*$", re.M)
 PATH_RE = re.compile(r"`((?:crates|docs|fixtures|scripts|reference|issues|reports|\.github|\.agents|artifacts)/[^` ]+)")
 
 PATH_PREFIXES = (
@@ -90,17 +91,56 @@ def id_from_body(text: str) -> str:
 
 
 def issue_field(text: str, field: str) -> str:
-    pattern = re.compile(rf"^\*\*{re.escape(field)}\*\*:\s*(.+)$", re.M)
-    m = pattern.search(text)
+    # Map common display names to YAML frontmatter keys
+    yaml_key_map = {
+        "Type": "type",
+        "Area": "area",
+        "Orchestration class": "class",
+        "Priority": "priority",
+    }
+    # Try YAML frontmatter key (exact lower-case key)
+    yaml_key = yaml_key_map.get(field, field.lower())
+    yaml_pattern = re.compile(rf"^{re.escape(yaml_key)}:\s*\"?(.+?)\"?\s*$", re.M)
+    m = yaml_pattern.search(text)
+    if m:
+        return m.group(1).strip().strip('"')
+
+    # Fallback to Markdown format
+    md_pattern = re.compile(rf"^\*\*{re.escape(field)}\*\*:\s*(.+)$", re.M)
+    m = md_pattern.search(text)
     return m.group(1).strip() if m else ""
 
 
 def issue_title(text: str) -> str:
+    # Try YAML frontmatter title first
+    m = re.search(r'^title:\s*"?(.+?)"?\s*$', text, re.M)
+    if m:
+        return m.group(1).strip().strip('"')
+    # Fallback to Markdown H1
     m = re.match(r"^#\s+(.+)$", text, re.M)
     return m.group(1).strip() if m else ""
 
 
 def depends_from_text(text: str) -> list[str]:
+    # Try YAML format first
+    m = YAML_DEPENDS_RE.search(text)
+    if m:
+        raw = m.group(1).replace("\r", "").replace(",", " ").strip()
+        if raw in {"", "none", "None", "[]"}:
+            return []
+        ids: list[str] = []
+        for token in raw.split():
+            m3 = re.fullmatch(r"([0-9]{3}[a-z]?)", token)
+            if m3:
+                ids.append(m3.group(1))
+                continue
+            m_any = re.fullmatch(r"([0-9]+)([a-z]?)", token)
+            if m_any:
+                n, suffix = m_any.groups()
+                ids.append(f"{int(n):03d}{suffix}")
+        return ids
+    
+    # Fallback to Markdown format
     m = DEPENDS_RE.search(text)
     if not m:
         return []

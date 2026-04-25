@@ -5,14 +5,16 @@ on:
     paths:
       - "crates/**"
       - "fixtures/**"
-      - "scripts/check_fixture_differential.sh"
+      - "scripts/check/fixture-differential.sh"
+      - "scripts/manager"
   push:
     branches:
       - master
     paths:
       - "crates/**"
       - "fixtures/**"
-      - "scripts/check_fixture_differential.sh"
+      - "scripts/check/fixture-differential.sh"
+      - "scripts/manager"
   workflow_dispatch:
 
 jobs:
@@ -45,4 +47,4 @@ jobs:
       - name: Fixture differential check
         run: |
           cd "${GITHUB_WORKSPACE}"
-          ./scripts/check/fixture-differential.sh
+          ./scripts/manager check-fixture-differential

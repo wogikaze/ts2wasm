@@ -4,18 +4,18 @@ on:
   pull_request:
     paths:
       - "issues/**"
-      - "scripts/check_issue_index.sh"
-      - "scripts/check_issue_queue.sh"
-      - "scripts/update_issue_index.sh"
+      - "scripts/check/issue-queue.py"
+      - "scripts/gen/update-issue-index.sh"
+      - "scripts/manager"
       - ".githooks/pre-commit"
   push:
     branches:
       - master
     paths:
       - "issues/**"
-      - "scripts/check_issue_index.sh"
-      - "scripts/check_issue_queue.sh"
-      - "scripts/update_issue_index.sh"
+      - "scripts/check/issue-queue.py"
+      - "scripts/gen/update-issue-index.sh"
+      - "scripts/manager"
   schedule:
     - cron: "17 4 * * 1" # weekly Monday 04:17 UTC
   workflow_dispatch:
@@ -30,4 +30,4 @@ jobs:
       - name: Issue queue invariants
         run: |
           cd "${GITHUB_WORKSPACE}"
-          ./scripts/check/issue-queue.py
+          ./scripts/manager check-issue-queue

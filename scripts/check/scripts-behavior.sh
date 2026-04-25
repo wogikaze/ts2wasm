@@ -4,7 +4,7 @@
 # Usage: scripts/check_scripts_behavior.sh
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
 if ! bash "${repo_root}/scripts/manager" help | head -n 3 | grep -q ts2wasm; then

@@ -6,7 +6,7 @@
 # Dependencies: cargo, wasm-tools
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
 if ! command -v wasm-tools >/dev/null 2>&1; then

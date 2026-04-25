@@ -6,7 +6,7 @@
 # Uses: cargo test (not nextest) for simple filter on internal module path.
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
 if ! command -v cargo >/dev/null 2>&1; then

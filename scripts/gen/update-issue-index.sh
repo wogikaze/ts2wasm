@@ -52,16 +52,43 @@ if [[ ! -f "$index_path" ]]; then
   exit 1
 fi
 
-# Read a **Field**: value line from an issue markdown file.
+# Read a **Field**: value line from an issue markdown file (YAML or Markdown format).
 issue_field() {
   local file="$1"
   local field="$2"
+  local yaml_field="$field"
+  
+  # Map Markdown field names to YAML field names
+  case "$field" in
+    "Orchestration class") yaml_field="class" ;;
+    "Depends on") yaml_field="depends_on" ;;
+    "Type") yaml_field="type" ;;
+    "Area") yaml_field="area" ;;
+    "Priority") yaml_field="priority" ;;
+  esac
+  
+  # Try YAML format first - check first 20 lines for YAML field
+  local yaml_value
+  yaml_value=$(head -20 "$file" | grep -i "^[[:space:]]*${yaml_field}:" | sed "s/^[[:space:]]*${yaml_field}:[[:space:]]*//I" | tr -d '"' | tr -d '[]' | sed 's/[[:space:]]*$//' || true)
+  if [[ -n "$yaml_value" ]]; then
+    echo "$yaml_value"
+    return
+  fi
+  # Fallback to Markdown format
   grep -m1 "^\*\*${field}\*\*:" "$file" 2>/dev/null | sed "s/^\*\*${field}\*\*: *//" | sed 's/[[:space:]]*$//' || true
 }
 
-# First markdown H1 title in the file.
+# First markdown H1 title in the file, or YAML title field.
 issue_title() {
   local file="$1"
+  # Try YAML title: first
+  local yaml_title
+  yaml_title=$(head -20 "$file" | grep -i "^[[:space:]]*title:" | sed 's/^[[:space:]]*title:[[:space:]]*//I' | tr -d '"' | sed 's/[[:space:]]*$//' || true)
+  if [[ -n "$yaml_title" ]]; then
+    echo "$yaml_title"
+    return
+  fi
+  # Fallback to H1 header
   grep -m1 '^# ' "$file" 2>/dev/null | sed 's/^# //' || true
 }
 
@@ -76,30 +103,43 @@ issue_problem_summary() {
   echo "$line"
 }
 
-# Numeric ID from **ID**:, leading digits in filename, then YAML `id:` (last resort).
+# Numeric ID from YAML `id:`, **ID**:, leading digits in filename.
 issue_id_from_file() {
   local file="$1"
   local id base
-  id="$(issue_field "$file" "ID")"
+  # Try YAML id: first
+  id="$(grep -m1 '^[[:space:]]*id:' "$file" 2>/dev/null | sed 's/^[[:space:]]*id:[[:space:]]*//' | tr -d '"' | sed 's/[[:space:]]*$//' || true)"
   if [[ -n "$id" ]]; then
     echo "$id"
     return
   fi
+  # Try Markdown **ID**:
+  id="$(grep -m1 "^\*\*ID\*\*:" "$file" 2>/dev/null | sed "s/^\*\*ID\*\*: *//" | sed 's/[[:space:]]*$//' || true)"
+  if [[ -n "$id" ]]; then
+    echo "$id"
+    return
+  fi
+  # Fallback to filename
   base="$(basename "$file" .md)"
   if [[ "$base" =~ ^([0-9]+)- ]]; then
     echo "${BASH_REMATCH[1]}"
     return
   fi
-  id="$(grep -m1 '^id:' "$file" 2>/dev/null | sed 's/^id:[[:space:]]*//' | tr -d '"' || true)"
-  echo "${id:-}"
+  echo ""
 }
 
-# Split **Depends on**: "none" | "001" | "002, 003" into space-separated IDs (empty if none).
+# Split **Depends on**: or depends_on: into space-separated IDs (empty if none).
 parse_depends_ids() {
   local raw="$1"
+  # Handle YAML array format: [001, 002]
+  if [[ "$raw" =~ ^\[.*\]$ ]]; then
+    raw="${raw#[}"
+    raw="${raw%]}"
+  fi
   raw="${raw//,/ }"
+  raw="${raw//]/ }"
   raw="$(echo "$raw" | xargs)"
-  if [[ -z "$raw" || "$raw" == "none" ]]; then
+  if [[ -z "$raw" || "$raw" == "none" || "$raw" == "[]" ]]; then
     echo ""
     return
   fi
@@ -142,6 +182,19 @@ id_in_list() {
   return 1
 }
 
+# Get depends_on IDs from issue file (YAML or Markdown format).
+issue_depends_from_file() {
+  local file="$1"
+  local raw=""
+  # Try YAML depends_on: first - check first 20 lines
+  raw="$(head -20 "$file" | grep -i "^[[:space:]]*depends_on:" | sed 's/^[[:space:]]*depends_on:[[:space:]]*//I' | tr -d '[]' || true)"
+  if [[ -z "$raw" ]]; then
+    # Fallback to Markdown **Depends on**:
+    raw="$(grep -m1 "^\*\*Depends on\*\*:" "$file" 2>/dev/null | sed "s/^\*\*Depends on\*\*: *//" || true)"
+  fi
+  parse_depends_ids "$raw"
+}
+
 # Compute blocked open IDs: blocked if class is blocked OR any dependency is still open.
 compute_blocked_ids() {
   local -a open_ids
@@ -153,7 +206,7 @@ compute_blocked_ids() {
     id="$(issue_id_from_file "$f")"
     [[ -n "$id" ]] || continue
     class="$(issue_field "$f" "Orchestration class" | tr '[:upper:]' '[:lower:]' | xargs)"
-    deps_raw="$(issue_field "$f" "Depends on")"
+    deps_raw="$(issue_depends_from_file "$f")"
     blocked=0
     if [[ "$class" == "blocked" ]]; then
       blocked=1

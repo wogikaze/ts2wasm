@@ -4,7 +4,7 @@
 # Usage: scripts/check_agent_policy.sh
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
 if [[ -d .githooks ]]; then

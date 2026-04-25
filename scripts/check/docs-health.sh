@@ -4,7 +4,7 @@
 # Usage: scripts/check_docs_health.sh
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
 if [[ ! -d docs ]]; then

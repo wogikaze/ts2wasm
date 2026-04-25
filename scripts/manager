@@ -43,6 +43,7 @@ check-fixture-differential	Node vs iwasm: runs nextest m2_node_diff
 check-host-deny	Standalone fixtures must not emit wasm (import "host" ...)
 check-runtimefn-invariants	Unit tests: runtime_link_plan + runtime_fn invariants
 check-wasm-validation	Build sample fixtures; wasm-tools validate
+check-agent-state	Validate .agents/state JSON files against schemas
 check-issue-index	Fail if issues/index.md is stale or queue tables are wrong
 check-issue-queue	Mechanical invariants: ids, done checkboxes, paths, index+tables
 update-issue-index	Regenerate index tables (add -- --check to verify only)
@@ -75,6 +76,7 @@ TABLE
   check-host-deny             no (import "host") in standalone fixtures
   check-runtimefn-invariants    runtime link plan unit tests
   check-wasm-validation         wasm-tools validate on samples
+  check-agent-state            Validate .agents/state JSON files against schemas
   check-issue-index         Fail if issues/index.md is stale or queue tables are wrong
   check-issue-queue         Mechanical invariants: ids, paths, index+tables
   update-issue-index        Regenerate index tables (add -- --check to verify only)
@@ -119,6 +121,7 @@ case "$target" in
   check-host-deny) exec bash "${repo_root}/scripts/check/host-deny.sh" "$@" ;;
   check-runtimefn-invariants) exec bash "${repo_root}/scripts/check/runtimefn-invariants.sh" "$@" ;;
   check-wasm-validation) exec bash "${repo_root}/scripts/check/wasm-validation.sh" "$@" ;;
+  check-agent-state) exec python3 "${repo_root}/scripts/check/agent-state.py" "$@" ;;
   check-issue-index) exec python3 "${repo_root}/scripts/check/issue-queue.py" "$@" ;;
   check-issue-queue) exec python3 "${repo_root}/scripts/check/issue-queue.py" "$@" ;;
   update-issue-index) exec bash "${repo_root}/scripts/gen/update-issue-index.sh" "$@" ;;

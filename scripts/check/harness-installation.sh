@@ -10,7 +10,7 @@
 #   scripts/check_harness_installation.sh
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
 fail=0
@@ -76,11 +76,11 @@ cargo nextest --version >/dev/null 2>&1 && ok "cargo nextest" || bad "cargo next
 echo "" >&2
 echo "== P0 harness (must exist) ==" >&2
 for f in \
-  scripts/check_toolchain.sh \
-  scripts/check_fixture_differential.sh \
-  scripts/check_host_deny.sh \
-  scripts/check_runtimefn_invariants.sh \
-  scripts/check_wasm_validation.sh; do
+  scripts/check/toolchain.sh \
+  scripts/check/fixture-differential.sh \
+  scripts/check/host-deny.sh \
+  scripts/check/runtimefn-invariants.sh \
+  scripts/check/wasm-validation.sh; do
   need_exec_required "$f"
 done
 
@@ -91,39 +91,39 @@ if [[ "${REQUIRE_ALL_HARNESSES:-0}" == "1" ]]; then
 else
   check_p=need_exec_optional
 fi
-$check_p scripts/check_docs_health.sh
-$check_p scripts/check_agent_policy.sh
-$check_p scripts/check_benchmark_regression.sh
-$check_p scripts/check_scripts_behavior.sh
-$check_p scripts/check_determinism.sh
+$check_p scripts/check/docs-health.sh
+$check_p scripts/check/agent-policy.sh
+$check_p scripts/check/benchmark-regression.sh
+$check_p scripts/check/scripts-behavior.sh
+$check_p scripts/check/determinism.sh
 
 echo "" >&2
 echo "== required repo gates (script files) ==" >&2
 for f in \
   scripts/check/shell-syntax.sh \
-  scripts/check_issue_queue.sh \
-  scripts/gen/coverage-matrix.sh \
-  scripts/check_fast_gate.sh \
-  scripts/check_manifest_imports.sh \
-  scripts/check_test_records_schema.sh \
-  scripts/check_fixture_catalog.sh \
-  scripts/check_architecture_rules.sh \
-  scripts/check_compiler_diagnostics.sh; do
+  scripts/check/issue-queue.py \
+  scripts/gen/coverage-matrix.py \
+  scripts/gate/fast-gate.sh \
+  scripts/check/manifest-imports.sh \
+  scripts/check/test-records-schema.sh \
+  scripts/check/fixture-catalog.sh \
+  scripts/check/architecture-rules.sh \
+  scripts/check/compiler-diagnostics.sh; do
   need_exec_required "$f"
 done
 
 echo "" >&2
 echo "== run P0 harnesses ==" >&2
-run_check "P0: check_toolchain" bash scripts/check_toolchain.sh
-run_check "P0: check_fixture_differential" bash scripts/check_fixture_differential.sh
-run_check "P0: check_host_deny" bash scripts/check_host_deny.sh
-run_check "P0: check_runtimefn_invariants" bash scripts/check_runtimefn_invariants.sh
-run_check "P0: check_wasm_validation" bash scripts/check_wasm_validation.sh
+run_check "P0: check_toolchain" bash scripts/check/toolchain.sh
+run_check "P0: check_fixture_differential" bash scripts/check/fixture-differential.sh
+run_check "P0: check_host_deny" bash scripts/check/host-deny.sh
+run_check "P0: check_runtimefn_invariants" bash scripts/check/runtimefn-invariants.sh
+run_check "P0: check_wasm_validation" bash scripts/check/wasm-validation.sh
 
 echo "" >&2
 echo "== run aggregate gates (fast gate without nextest first) ==" >&2
 # fmt + scripts + issues + coverage matrix (nextest run separately so we can flag RUSTFLAGS once)
-run_check "check_fast_gate --skip-nextest" bash scripts/check_fast_gate.sh --skip-nextest
+run_check "check_fast_gate --skip-nextest" bash scripts/gate/fast-gate.sh --skip-nextest
 
 if [[ "${TS2WASM_NEXTEST_DENY_WARNINGS:-0}" == "1" ]]; then
   echo "harness: TS2WASM_NEXTEST_DENY_WARNINGS=1 (RUSTFLAGS=-D warnings)" >&2
@@ -135,11 +135,11 @@ fi
 
 echo "" >&2
 echo "== additional custom harnesses ==" >&2
-run_check "check_manifest_imports" bash scripts/check_manifest_imports.sh
-run_check "check_test_records_schema (empty)" bash -c ': | scripts/check_test_records_schema.sh'
-run_check "check_fixture_catalog" bash scripts/check_fixture_catalog.sh
-run_check "check_architecture_rules" bash scripts/check_architecture_rules.sh
-run_check "check_compiler_diagnostics" bash scripts/check_compiler_diagnostics.sh
+run_check "check_manifest_imports" bash scripts/check/manifest-imports.sh
+run_check "check_test_records_schema (empty)" bash -c ': | scripts/check/test-records-schema.sh'
+run_check "check_fixture_catalog" bash scripts/check/fixture-catalog.sh
+run_check "check_architecture_rules" bash scripts/check/architecture-rules.sh
+run_check "check_compiler_diagnostics" bash scripts/check/compiler-diagnostics.sh
 
 echo "" >&2
 if [[ "$fail" -eq 0 ]]; then

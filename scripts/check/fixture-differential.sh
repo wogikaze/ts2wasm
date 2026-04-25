@@ -6,7 +6,7 @@
 # Dependencies: cargo, nextest, node, ts2wasm binary (via nextest build)
 set -euo pipefail
 
-repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"
 cd "$repo_root"
 
 for c in cargo node iwasm; do

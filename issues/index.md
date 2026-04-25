@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 014 | Implement dynamic property key support | feature | runtime/semantics | implementation-ready | P1 | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupported-dynamic-proper... |
 | 015 | Implement object literal string key support | feature | parser/semantics | implementation-ready | P1 | none | Object literal with string literal keys `{"x": v}` is not implemented. Currently only identifier keys `{x: v}` are su... |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | implementation-ready | P1 | none | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
-| 026 |  |  |  |  |  |  |  |
+| 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -59,7 +59,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:done:start -->
 | ID | Title | Type | Area | Completed evidence |
 |---:|---|---|---|---|
-| 000 | Short imperative title | feature | frontend | see `issues/done/000-sample-issue.md` |
+| 000 | Short imperative title | feature | bug | refactor | docs | test | infra | cleanup | spike | frontend | ir | runtime | abi | wasi | cli | fixtures | scripts | docs | tests | coverage | reference | see `issues/done/000-sample-issue.md` |
 | 001 | Fix issue infrastructure and current-state path references | infra | issues/docs | see `issues/done/001-fix-issue-infrastructure-and-current-state-path-references.md` |
 | 002 | Emit canonical capability manifest schema | feature | abi/wasi | see `issues/done/002-emit-canonical-capability-manifest-schema.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
@@ -70,7 +70,7 @@ Issue files are the source of truth for work items. The generated section below 
 
 ## Index generation contract
 
-Run `mise run update-issue-index` after adding, closing, or moving issues. CI and agents should run `mise run update-issue-index --check` and `mise run check-issue-index`.
+Run `scripts/manager update-issue-index` after adding, closing, or moving issues. CI and agents should run `scripts/manager update-issue-index -- --check` and `scripts/manager check-issue-index`.
 
 A future generator may replace only the regions between these markers:
 

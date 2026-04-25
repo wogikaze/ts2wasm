@@ -109,6 +109,10 @@ run = "scripts/manager check-runtimefn-invariants"
 description = "wasm-tools validate on representative build outputs"
 run = "scripts/manager check-wasm-validation"
 
+[tasks."check-agent-state"]
+description = "Validate .agents/state JSON files against schemas"
+run = "scripts/manager check-agent-state"
+
 [tasks."check-issue-queue"]
 description = "Mechanical invariants: ids, paths, index+tables"
 run = "scripts/manager check-issue-queue"

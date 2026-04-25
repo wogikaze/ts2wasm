@@ -44,7 +44,7 @@
       "additionalProperties": false
     },
     "risk": { "type": ["array", "null"], "items": { "type": "string" } },
-    "issue_path": { "type": "string", "description": "Optional path to issues/open or issues/done file" },
+    "issue_path": { "type": ["string", "null"], "description": "Optional path to issues/open or issues/done file" },
     "notes": { "type": "string" }
   },
   "additionalProperties": false
