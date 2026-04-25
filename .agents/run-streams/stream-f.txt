@@ -1,0 +1,26 @@
+# Stream F: Node.js API Integration
+## Goal
+Integrate Node-like APIs via manifest-driven host imports (fs/process/path/crypto subset).
+
+## Context
+- Capability + resolver:
+  - crates/cli/src/backend/capability_manifest.rs
+  - crates/cli/src/ir/builtin_resolver.rs
+- Runtime/backend:
+  - crates/cli/src/backend/runtime_fn.rs
+  - crates/cli/src/backend/runtime_builder.rs
+
+## Tasks
+1. Add/complete RuntimeFn mappings for fs/process/path/crypto targeted APIs
+2. Emit host import calls and enforce capability manifest requirements
+3. Ensure unsupported APIs produce clear diagnostics
+4. Add fixture coverage for each API family
+5. Update docs for capability requirements and limitations
+
+## Validation
+- cargo fmt --all --check
+- cargo test -q
+- optional: targeted fixture runs with iwasm
+
+## Commit guidance
+- Keep capability/documentation updates separate from backend code changes

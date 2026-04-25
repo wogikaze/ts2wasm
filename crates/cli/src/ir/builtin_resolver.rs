@@ -14,7 +14,40 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         Stmt::Assign { name, expr, .. } => {
             Ok(ResolvedStmt::Assign(name.clone(), resolve_expr(expr)?))
         }
-        Stmt::Expr { expr, .. } => Ok(ResolvedStmt::Expr(resolve_expr(expr)?)),
+        Stmt::Expr { expr, .. } => {
+            // Detect exports.X = ... and module.exports = ... patterns
+            if let Expr::PropertyAssign {
+                object,
+                property,
+                value,
+                ..
+            } = expr
+            {
+                if let Expr::Ident { name, .. } = object.as_ref() {
+                    if name == "exports" {
+                        return Ok(ResolvedStmt::Export {
+                            name: property.clone(),
+                            expr: Box::new(resolve_expr(value)?),
+                        });
+                    }
+                }
+                if let Expr::Member {
+                    object: module_expr,
+                    property: prop_name,
+                    ..
+                } = object.as_ref()
+                {
+                    if let Expr::Ident { name, .. } = module_expr.as_ref() {
+                        if name == "module" && prop_name == "exports" {
+                            return Ok(ResolvedStmt::ModuleExportsAssign {
+                                expr: Box::new(resolve_expr(value)?),
+                            });
+                        }
+                    }
+                }
+            }
+            Ok(ResolvedStmt::Expr(resolve_expr(expr)?))
+        }
         Stmt::If {
             condition,
             then_body,
@@ -113,11 +146,20 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                             _,
                         >>(
                         )?;
-                        methods.push(ClassMethod {
-                            name: method_name.clone(),
-                            params: params.clone(),
-                            body: resolved_body,
-                        });
+                        if let Some(stripped) = method_name.strip_prefix("static::") {
+                            statics.push((stripped.to_owned(), ResolvedExpr::Undefined));
+                            methods.push(ClassMethod {
+                                name: method_name.clone(),
+                                params: params.clone(),
+                                body: resolved_body,
+                            });
+                        } else {
+                            methods.push(ClassMethod {
+                                name: method_name.clone(),
+                                params: params.clone(),
+                                body: resolved_body,
+                            });
+                        }
                     }
                     // Static members (for now, we'll just skip them - not yet supported)
                     _ => {
@@ -263,6 +305,24 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op: *op,
             right: Box::new(resolve_expr(right)?),
         }),
+        Expr::Call { callee, args, .. } if is_require_call(callee, args) => {
+            if let [
+                Expr::String {
+                    value: specifier, ..
+                },
+            ] = args.as_slice()
+            {
+                Ok(ResolvedExpr::ModuleLoad {
+                    specifier: specifier.clone(),
+                })
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "require() expects a string literal argument".to_owned(),
+                    span: None,
+                })
+            }
+        }
         Expr::Call { callee, args, .. } => {
             let resolved_args = args
                 .iter()
@@ -277,6 +337,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 Ok(ResolvedExpr::BuiltinCall {
                     builtin,
                     args: builtin_args,
+                })
+            } else if let Expr::Member {
+                object, property, ..
+            } = callee.as_ref()
+            {
+                Ok(ResolvedExpr::MethodCall {
+                    object: Box::new(resolve_expr(object)?),
+                    method: property.clone(),
+                    args: resolved_args,
                 })
             } else {
                 Ok(ResolvedExpr::Call {
@@ -343,6 +412,16 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 })
             }
         }
+        Expr::PropertyAssign {
+            object,
+            property,
+            value,
+            ..
+        } => Ok(ResolvedExpr::PropertyAssign {
+            object: Box::new(resolve_expr(object)?),
+            key: property.clone(),
+            value: Box::new(resolve_expr(value)?),
+        }),
         // New expression types (not yet supported in resolver)
         Expr::TypeOf { span, .. }
         | Expr::InstanceOf { span, .. }
@@ -354,6 +433,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             span: Some(*span),
         }),
     }
+}
+
+/// Check if an expression is a `require("...")` call.
+fn is_require_call(callee: &Expr, args: &[Expr]) -> bool {
+    let Expr::Ident { name, .. } = callee else {
+        return false;
+    };
+    name == "require" && args.len() == 1 && matches!(&args[0], Expr::String { .. })
 }
 
 fn resolve_builtin_call(
@@ -473,7 +560,8 @@ fn span_of_expr(expr: &Expr) -> Option<crate::Span> {
         | Expr::InstanceOf { span, .. }
         | Expr::Ternary { span, .. }
         | Expr::ArrowFn { span, .. }
-        | Expr::Spread { span, .. } => Some(*span),
+        | Expr::Spread { span, .. }
+        | Expr::PropertyAssign { span, .. } => Some(*span),
     }
 }
 
@@ -574,7 +662,7 @@ mod tests {
             crate::parse_program("let s = require(\"path\").readFileSync(0, \"utf8\");").unwrap();
         let resolved = resolve_builtins(&program).unwrap();
         match &resolved[0] {
-            ResolvedStmt::Let(_, ResolvedExpr::Call { .. }) => {}
+            ResolvedStmt::Let(_, ResolvedExpr::MethodCall { .. }) => {}
             other => panic!("unexpected resolved stmt: {other:?}"),
         }
     }

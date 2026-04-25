@@ -40,6 +40,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
                 RuntimeFn::GetLength => self.emit_get_length(wat),
                 RuntimeFn::PropertyGet => self.emit_property_get(wat),
+                RuntimeFn::PropertySet => self.emit_property_set(wat),
                 RuntimeFn::StringCharAt => self.emit_string_char_at(wat),
                 RuntimeFn::StringSubstring => self.emit_string_substring(wat),
                 RuntimeFn::StringSlice => self.emit_string_slice(wat),
@@ -62,6 +63,9 @@ impl WatEmitter<'_> {
                 RuntimeFn::MathMin => self.emit_math_min(wat),
                 RuntimeFn::JsonStringify => self.emit_json_stringify(wat),
                 RuntimeFn::JsonParse => self.emit_json_parse(wat),
+                RuntimeFn::ModuleRequire => self.emit_module_require(wat),
+                RuntimeFn::ModuleExportsSet => self.emit_module_exports_set(wat),
+                RuntimeFn::ModuleExportsAssign => self.emit_module_exports_assign(wat),
             }
         }
     }
@@ -659,6 +663,73 @@ impl WatEmitter<'_> {
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            str_header = Layout::STRING_HEADER_SIZE,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_property_set(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $property_set (param $obj i32) (param $key_ptr i32) (param $key_len i32) (param $value i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $pk_raw i32)
+    (local $pk_ptr i32)
+    (local $pk_len i32)
+    (local $key_obj i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+
+    ;; overwrite existing key first
+    (block $append
+      (loop $scan
+        (br_if $append (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $pk_raw (i32.load (local.get $entry_base)))
+        (local.set $pk_ptr
+          (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+        (local.set $pk_len
+          (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+        (if (i32.eq (local.get $key_len) (local.get $pk_len))
+          (then
+            (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
+              (then
+                (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
+                (return (local.get $value))))))
+        (br $scan)))
+
+    ;; append new key/value (instance objects are preallocated with headroom by new-expression emission)
+    (local.set $entry_base
+      (i32.add (local.get $base)
+        (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
+    (local.set $key_obj (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $key_len))))
+    (i32.store (local.get $key_obj) (local.get $key_len))
+    (call $copy (local.get $key_ptr) (i32.add (local.get $key_obj) (i32.const {str_header})) (local.get $key_len))
+    (i32.store (local.get $entry_base) (i32.or (local.get $key_obj) (i32.const {string_tag})))
+    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
+    (i32.store (local.get $base) (i32.add (local.get $count) (i32.const {one})))
+    (local.get $value))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_tag = ValueTag::STRING,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
@@ -1550,6 +1621,48 @@ impl WatEmitter<'_> {
             tab = 9,
             newline = 10,
             carriage = 13,
+        ));
+    }
+
+    /// Emit `$module_require(id: i32) → i32`.
+    fn emit_module_require(&self, wat: &mut String) {
+        let entry_size = crate::runtime::layout::Layout::MODULE_CACHE_ENTRY_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $module_require (param $id i32) (result i32)
+    (local $entry i32)
+    (local $loaded i32)
+    (local.set $entry (i32.add (global.get $module_cache) (i32.mul (local.get $id) (i32.const {entry_size}))))
+    (local.set $loaded (i32.load (local.get $entry)))
+    (if (i32.eqz (local.get $loaded))
+      (then (return (i32.const {undefined}))))
+    (i32.load (i32.add (local.get $entry) (i32.const {value_offset}))))
+"#,
+            entry_size = entry_size,
+            value_offset = 4,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    /// Emit `$module_exports_set`.
+    fn emit_module_exports_set(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $module_exports_set (param $key_ptr i32) (param $key_len i32) (param $value i32)
+    (drop (local.get $key_ptr))
+    (drop (local.get $key_len))
+    (drop (local.get $value)))
+"#,
+        ));
+    }
+
+    /// Emit `$module_exports_assign`.
+    fn emit_module_exports_assign(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $module_exports_assign (param $value i32)
+    (drop (local.get $value)))
+"#,
         ));
     }
 }

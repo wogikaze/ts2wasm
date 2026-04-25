@@ -54,6 +54,9 @@ impl<'a> WatEmitter<'a> {
             "  (global $heap (mut i32) (i32.const {}))\n",
             Layout::HEAP_START,
         ));
+        if !self.program.modules.is_empty() {
+            wat.push_str("  (global $module_cache (mut i32) (i32.const 0))\n");
+        }
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
         self.emit_functions(&mut wat);
@@ -219,7 +222,8 @@ impl<'a> WatEmitter<'a> {
             LoweredStmt::Let(_, expr)
             | LoweredStmt::Assign(_, expr)
             | LoweredStmt::Expr(expr)
-            | LoweredStmt::Return(expr) => {
+            | LoweredStmt::Return(expr)
+            | LoweredStmt::Throw(expr) => {
                 self.collect_expr_strings(expr);
             }
             LoweredStmt::If {
@@ -279,15 +283,26 @@ impl<'a> WatEmitter<'a> {
                 }
                 self.collect_program_strings(body);
             }
-            LoweredStmt::ForIn { var: _, iter, body } => {
+            LoweredStmt::ForIn {
+                var: _, iter, body, ..
+            } => {
                 self.collect_expr_strings(iter);
                 self.collect_program_strings(body);
             }
-            LoweredStmt::ForOf { var: _, iter, body } => {
+            LoweredStmt::ForOf {
+                var: _, iter, body, ..
+            } => {
                 self.collect_expr_strings(iter);
                 self.collect_program_strings(body);
             }
             LoweredStmt::Break | LoweredStmt::Continue => {}
+            LoweredStmt::Export { name, expr } => {
+                self.intern_string(name);
+                self.collect_expr_strings(expr);
+            }
+            LoweredStmt::ModuleExportsAssign { expr } => {
+                self.collect_expr_strings(expr);
+            }
             LoweredStmt::ClassDecl { .. } => {
                 // Class declarations should not appear in lowered program
             }
@@ -352,6 +367,7 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(arg);
                 }
             }
+            LoweredExpr::ModuleLoad { .. } => {}
             LoweredExpr::RuntimeCall { args, .. } => {
                 for arg in args {
                     self.collect_expr_strings(arg);
@@ -379,8 +395,19 @@ impl<'a> WatEmitter<'a> {
 
     fn emit_start(&self, wat: &mut String) {
         wat.push_str("  (func $_start (export \"_start\")\n");
-        for _ in &self.program.top_level_locals {
+        let extra_locals = if self.program.modules.is_empty() {
+            0
+        } else {
+            1
+        };
+        for _ in 0..self.program.top_level_locals.len() + extra_locals {
             wat.push_str("    (local i32)\n");
+        }
+        if !self.program.modules.is_empty() {
+            let cache_size = Layout::MODULE_CACHE_MAX as u32 * Layout::MODULE_CACHE_ENTRY_SIZE;
+            wat.push_str(&format!(
+                "    (global.set $module_cache (call $alloc_heap (i32.const {cache_size})))\n",
+            ));
         }
         self.emit_top_level_statements(wat, 4);
         wat.push_str("  )\n");

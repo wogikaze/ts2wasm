@@ -2,6 +2,8 @@ use super::emitter::WatEmitter;
 use super::runtime_fn::RuntimeFn;
 use crate::ir::lowered::LocalId;
 use crate::ir::lowered::LoweredStmt;
+use crate::runtime::layout::Layout;
+use crate::runtime::value::ValueTag;
 use std::cell::RefCell;
 
 thread_local! {
@@ -108,6 +110,11 @@ impl WatEmitter<'_> {
                 self.emit_expr(wat, expr, indent);
                 wat.push_str(&format!("{pad}(return)\n"));
             }
+            LoweredStmt::Throw(expr) => {
+                // Exception runtime is not implemented yet; model throw as immediate return.
+                self.emit_expr(wat, expr, indent);
+                wat.push_str(&format!("{pad}(return)\n"));
+            }
             LoweredStmt::DoWhile { body, condition } => {
                 let exit_label = gen_label("do_exit");
                 let loop_label = gen_label("do_loop");
@@ -175,16 +182,168 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}  )\n"));
                 wat.push_str(&format!("{pad})\n"));
             }
-            LoweredStmt::ForIn { var, iter, body } => {
-                // For-in: iterate object keys
-                // Pseudo: for (let k in obj) -> load obj, iterate keys, bind to k, execute body
-                // Simplified for now: compile error
-                wat.push_str(&format!("{pad};; for-in not yet implemented\n"));
+            LoweredStmt::ForIn {
+                var,
+                iter,
+                iter_local,
+                index_local,
+                len_local,
+                body,
+            } => {
+                let exit_label = gen_label("for_in_exit");
+                let loop_label = gen_label("for_in_loop");
+
+                self.emit_expr(wat, iter, indent);
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ObjectKeys.symbol()));
+                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*iter_local)));
+
+                wat.push_str(&format!(
+                    "{pad}(i32.const {})\n",
+                    ValueTag::encode_number(0)
+                ));
+                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*index_local)));
+
+                wat.push_str(&format!("{pad}(local.get {})\n", local_index(*iter_local)));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
+                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*len_local)));
+
+                wat.push_str(&format!("{pad}(block ${}\n", exit_label));
+                wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
+
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*index_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*len_local)
+                ));
+                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Less.symbol()));
+                wat.push_str(&format!(
+                    "{pad}    (call {})\n",
+                    RuntimeFn::TruthyBool.symbol()
+                ));
+                wat.push_str(&format!("{pad}    (i32.eqz)\n"));
+                wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
+
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*iter_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*index_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (call {})\n",
+                    RuntimeFn::ArrayGet.symbol()
+                ));
+                wat.push_str(&format!("{pad}    (local.set {})\n", local_index(*var)));
+
+                let mut new_ctx = LoopContext::Loop {
+                    exit_label: exit_label.clone(),
+                    continue_label: loop_label.clone(),
+                };
+                self.emit_statements(wat, body, indent + 4, &mut new_ctx);
+
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*index_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (i32.const {})\n",
+                    ValueTag::encode_number(1)
+                ));
+                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Add.symbol()));
+                wat.push_str(&format!(
+                    "{pad}    (local.set {})\n",
+                    local_index(*index_local)
+                ));
+
+                wat.push_str(&format!("{pad}    (br ${})\n", loop_label));
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad})\n"));
             }
-            LoweredStmt::ForOf { var, iter, body } => {
-                // For-of: iterate array values
-                // Simplified for now: compile error
-                wat.push_str(&format!("{pad};; for-of not yet implemented\n"));
+            LoweredStmt::ForOf {
+                var,
+                iter,
+                iter_local,
+                index_local,
+                len_local,
+                body,
+            } => {
+                let exit_label = gen_label("for_of_exit");
+                let loop_label = gen_label("for_of_loop");
+
+                self.emit_expr(wat, iter, indent);
+                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*iter_local)));
+
+                wat.push_str(&format!(
+                    "{pad}(i32.const {})\n",
+                    ValueTag::encode_number(0)
+                ));
+                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*index_local)));
+
+                wat.push_str(&format!("{pad}(local.get {})\n", local_index(*iter_local)));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
+                wat.push_str(&format!("{pad}(local.set {})\n", local_index(*len_local)));
+
+                wat.push_str(&format!("{pad}(block ${}\n", exit_label));
+                wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
+
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*index_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*len_local)
+                ));
+                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Less.symbol()));
+                wat.push_str(&format!(
+                    "{pad}    (call {})\n",
+                    RuntimeFn::TruthyBool.symbol()
+                ));
+                wat.push_str(&format!("{pad}    (i32.eqz)\n"));
+                wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
+
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*iter_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*index_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (call {})\n",
+                    RuntimeFn::ArrayGet.symbol()
+                ));
+                wat.push_str(&format!("{pad}    (local.set {})\n", local_index(*var)));
+
+                let mut new_ctx = LoopContext::Loop {
+                    exit_label: exit_label.clone(),
+                    continue_label: loop_label.clone(),
+                };
+                self.emit_statements(wat, body, indent + 4, &mut new_ctx);
+
+                wat.push_str(&format!(
+                    "{pad}    (local.get {})\n",
+                    local_index(*index_local)
+                ));
+                wat.push_str(&format!(
+                    "{pad}    (i32.const {})\n",
+                    ValueTag::encode_number(1)
+                ));
+                wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Add.symbol()));
+                wat.push_str(&format!(
+                    "{pad}    (local.set {})\n",
+                    local_index(*index_local)
+                ));
+
+                wat.push_str(&format!("{pad}    (br ${})\n", loop_label));
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad})\n"));
             }
             LoweredStmt::Break => match loop_ctx {
                 LoopContext::Loop { exit_label, .. } => {
@@ -223,6 +382,7 @@ impl WatEmitter<'_> {
                 // Catch block (for now, just a placeholder)
                 if let Some(body) = catch_body {
                     if let Some(var) = catch_var {
+                        wat.push_str(&format!("{pad}  (i32.const {})\n", ValueTag::UNDEFINED));
                         wat.push_str(&format!("{pad}  (local.set {})\n", local_index(*var)));
                     }
                     self.emit_statements(wat, body, indent + 4, loop_ctx);
@@ -260,6 +420,22 @@ impl WatEmitter<'_> {
                 }
 
                 wat.push_str(&format!("{pad})\n"));
+            }
+            LoweredStmt::Export { name, expr } => {
+                let name_ptr = self.string_offset(name) + Layout::STRING_HEADER_SIZE;
+                let name_len = name.len() as u32;
+                self.emit_expr(wat, expr, indent);
+                wat.push_str(&format!(
+                    "{pad}(i32.const {name_ptr})\n{pad}(i32.const {name_len})\n{pad}(call {})\n",
+                    RuntimeFn::ModuleExportsSet.symbol(),
+                ));
+            }
+            LoweredStmt::ModuleExportsAssign { expr } => {
+                self.emit_expr(wat, expr, indent);
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::ModuleExportsAssign.symbol(),
+                ));
             }
             LoweredStmt::ClassDecl {
                 name: _,

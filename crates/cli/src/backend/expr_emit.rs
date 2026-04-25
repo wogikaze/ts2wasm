@@ -194,24 +194,60 @@ impl WatEmitter<'_> {
                 }
                 wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
             }
-            LoweredExpr::PropertySet {
-                object,
-                key: _,
-                value,
-            } => {
-                // Placeholder for property assignment - will be implemented in Phase 3
-                wat.push_str(&format!("{pad};; TODO: implement property set\n"));
+            LoweredExpr::PropertySet { object, key, value } => {
                 self.emit_expr(wat, object, indent);
+                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+                let key_len = self.ascii_string_len(key);
+                wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
+                wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
                 self.emit_expr(wat, value, indent);
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::PropertySet.symbol(),
+                ));
             }
-            LoweredExpr::New { args, .. } => {
-                // Placeholder for constructor calls - will be implemented in Phase D
+            LoweredExpr::ModuleLoad { module_id } => {
+                wat.push_str(&format!(
+                    "{pad}(call {} (i32.const {}))\n",
+                    RuntimeFn::ModuleRequire.symbol(),
+                    module_id,
+                ));
+            }
+            LoweredExpr::New {
+                constructor,
+                args,
+                base_local,
+            } => {
+                // Pre-allocate an object with room for constructor property writes.
+                let object_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE);
+                wat.push_str(&format!(
+                    "{pad}(local.set {} (call {} (i32.const {})))\n",
+                    local_index(*base_local),
+                    RuntimeFn::AllocHeap.symbol(),
+                    object_size,
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (local.get {}) (i32.const 0))\n",
+                    local_index(*base_local),
+                ));
+
+                // Call constructor with implicit `this` first argument.
+                wat.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    local_index(*base_local),
+                    ValueTag::OBJECT,
+                ));
                 for arg in args {
                     self.emit_expr(wat, arg, indent);
                 }
-                wat.push_str(&format!("{pad};; TODO: implement constructor\n"));
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
+                wat.push_str(&format!("{pad}(drop)\n"));
+
+                wat.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    local_index(*base_local),
+                    ValueTag::OBJECT,
+                ));
             }
         }
     }

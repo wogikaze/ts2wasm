@@ -1,0 +1,24 @@
+# Stream H: Performance & Type-Driven Optimization
+## Goal
+Add conservative type-driven optimizations and fast paths without semantic changes.
+
+## Context
+- Lowering/type info:
+  - crates/cli/src/ir/lowered.rs
+- Backend emission:
+  - crates/cli/src/backend/expr_emit.rs
+  - crates/cli/src/backend/runtime_builder.rs
+
+## Tasks
+1. Introduce simple type info for literals and straightforward arithmetic/string paths
+2. Add guarded fast paths for common typed operations
+3. Add simple inline-cache style optimization for repeated method-call shapes
+4. Ensure polymorphic sites always fallback safely to generic path
+5. Add tests validating behavior equivalence and basic optimization coverage
+
+## Validation
+- cargo fmt --all --check
+- cargo test -q
+
+## Commit guidance
+- Do not mix refactors and behavior changes in the same commit

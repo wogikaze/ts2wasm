@@ -55,6 +55,13 @@ pub(crate) enum ResolvedStmt {
     },
     Break,
     Continue,
+    Export {
+        name: String,
+        expr: Box<ResolvedExpr>,
+    },
+    ModuleExportsAssign {
+        expr: Box<ResolvedExpr>,
+    },
     ClassDecl {
         name: String,
         extends: Option<String>,
@@ -123,5 +130,9 @@ pub(crate) enum ResolvedExpr {
     New {
         class_name: String,
         args: Vec<ResolvedExpr>,
+    },
+    /// A require("specifier") call expression.
+    ModuleLoad {
+        specifier: String,
     },
 }

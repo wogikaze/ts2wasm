@@ -21,6 +21,10 @@ impl RuntimeLinkPlan {
         for function in &program.functions {
             plan.collect_required_runtime_stmts(&function.body);
         }
+        // Module cache initialization requires AllocHeap.
+        if !program.modules.is_empty() {
+            plan.add_required_runtime(RuntimeFn::AllocHeap);
+        }
         plan.populate_derived_sets();
         plan
     }
@@ -80,7 +84,8 @@ impl RuntimeLinkPlan {
                 LoweredStmt::Let(_, expr)
                 | LoweredStmt::Assign(_, expr)
                 | LoweredStmt::Expr(expr)
-                | LoweredStmt::Return(expr) => self.collect_required_runtime_expr(expr),
+                | LoweredStmt::Return(expr)
+                | LoweredStmt::Throw(expr) => self.collect_required_runtime_expr(expr),
                 LoweredStmt::If {
                     condition,
                     then_body,
@@ -139,15 +144,38 @@ impl RuntimeLinkPlan {
                     }
                     self.collect_required_runtime_stmts(body);
                 }
-                LoweredStmt::ForIn { var: _, iter, body } => {
+                LoweredStmt::ForIn {
+                    var: _, iter, body, ..
+                } => {
                     self.collect_required_runtime_expr(iter);
+                    self.add_required_runtime(RuntimeFn::ObjectKeys);
+                    self.add_required_runtime(RuntimeFn::GetLength);
+                    self.add_required_runtime(RuntimeFn::Less);
+                    self.add_required_runtime(RuntimeFn::TruthyBool);
+                    self.add_required_runtime(RuntimeFn::ArrayGet);
+                    self.add_required_runtime(RuntimeFn::Add);
                     self.collect_required_runtime_stmts(body);
                 }
-                LoweredStmt::ForOf { var: _, iter, body } => {
+                LoweredStmt::ForOf {
+                    var: _, iter, body, ..
+                } => {
                     self.collect_required_runtime_expr(iter);
+                    self.add_required_runtime(RuntimeFn::GetLength);
+                    self.add_required_runtime(RuntimeFn::Less);
+                    self.add_required_runtime(RuntimeFn::TruthyBool);
+                    self.add_required_runtime(RuntimeFn::ArrayGet);
+                    self.add_required_runtime(RuntimeFn::Add);
                     self.collect_required_runtime_stmts(body);
                 }
                 LoweredStmt::Break | LoweredStmt::Continue => {}
+                LoweredStmt::Export { expr, .. } => {
+                    self.collect_required_runtime_expr(expr);
+                    self.add_required_runtime(RuntimeFn::ModuleExportsSet);
+                }
+                LoweredStmt::ModuleExportsAssign { expr } => {
+                    self.collect_required_runtime_expr(expr);
+                    self.add_required_runtime(RuntimeFn::ModuleExportsAssign);
+                }
                 LoweredStmt::ClassDecl { .. } => {}
             }
         }
@@ -216,9 +244,21 @@ impl RuntimeLinkPlan {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
             }
-            LoweredExpr::MethodCall { .. }
-            | LoweredExpr::PropertySet { .. }
-            | LoweredExpr::New { .. } => {}
+            LoweredExpr::PropertySet { object, value, .. } => {
+                self.add_required_runtime(RuntimeFn::PropertySet);
+                self.collect_required_runtime_expr(object);
+                self.collect_required_runtime_expr(value);
+            }
+            LoweredExpr::New { args, .. } => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+                for arg in args {
+                    self.collect_required_runtime_expr(arg);
+                }
+            }
+            LoweredExpr::MethodCall { .. } => {}
+            LoweredExpr::ModuleLoad { .. } => {
+                self.add_required_runtime(RuntimeFn::ModuleRequire);
+            }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
                 self.add_required_runtime(*runtime_fn);
                 for arg in args {

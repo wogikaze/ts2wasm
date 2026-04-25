@@ -145,6 +145,7 @@ enum Token {
     Else,
     While,
     // New keywords for OOP and control flow
+    This,
     Class,
     Try,
     Catch,
@@ -876,6 +877,7 @@ impl<'a> Lexer<'a> {
             "null" => Token::Null,
             "undefined" => Token::Undefined,
             // New keywords
+            "this" => Token::This,
             "class" => Token::Class,
             "try" => Token::Try,
             "catch" => Token::Catch,
@@ -1116,6 +1118,12 @@ enum Expr {
         expr: Box<Expr>,
         span: Span,
     },
+    PropertyAssign {
+        object: Box<Expr>,
+        property: String,
+        value: Box<Expr>,
+        span: Span,
+    },
 }
 
 impl Stmt {
@@ -1163,7 +1171,8 @@ impl Expr {
             | Self::InstanceOf { span, .. }
             | Self::Ternary { span, .. }
             | Self::ArrowFn { span, .. }
-            | Self::Spread { span, .. } => *span,
+            | Self::Spread { span, .. }
+            | Self::PropertyAssign { span, .. } => *span,
         }
     }
 }
@@ -1249,6 +1258,43 @@ impl Parser {
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let expr = self.expression()?;
+        if self.consume(TokenKind::Equal) {
+            match &expr {
+                Expr::Member {
+                    object,
+                    property,
+                    span,
+                } if !property.is_empty() => {
+                    let value = self.expression()?;
+                    let semi = self.expect(TokenKind::Semicolon)?;
+                    let member_span = *span;
+                    return Ok(Stmt::Expr {
+                        expr: Expr::PropertyAssign {
+                            object: object.clone(),
+                            property: property.clone(),
+                            value: Box::new(value),
+                            span: Span {
+                                start: member_span.start,
+                                end: semi.end,
+                            },
+                        },
+                        span: Span {
+                            start: member_span.start,
+                            end: semi.end,
+                        },
+                    });
+                }
+                _ => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: String::from(
+                            "left-hand side of assignment must be a property access",
+                        ),
+                        span: Some(expr.span()),
+                    });
+                }
+            }
+        }
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::Expr {
             span: Span {
@@ -1682,7 +1728,55 @@ impl Parser {
             None
         };
 
-        let body = self.block()?;
+        self.expect(TokenKind::LeftBrace)?;
+        let mut body = Vec::new();
+        while !self.consume(TokenKind::RightBrace) {
+            if self.is_at_end() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "unterminated class body".to_owned(),
+                    span: self.prev_span().or_else(|| self.peek_span()),
+                });
+            }
+
+            let is_static = self.consume(TokenKind::Static);
+            let (method_name, method_span) = self.expect_ident()?;
+
+            self.expect(TokenKind::LeftParen)?;
+            let mut params = Vec::new();
+            if !self.consume(TokenKind::RightParen) {
+                loop {
+                    let (param, _) = self.expect_ident()?;
+                    params.push(param);
+                    if self.consume(TokenKind::RightParen) {
+                        break;
+                    }
+                    self.expect(TokenKind::Comma)?;
+                }
+            }
+
+            let method_body = self.block()?;
+            let method_end = method_body
+                .last()
+                .map(|s| s.span().end)
+                .unwrap_or(method_span.end);
+            let parsed_name = if is_static {
+                format!("static::{method_name}")
+            } else {
+                method_name
+            };
+
+            body.push(Stmt::Function {
+                name: parsed_name,
+                params,
+                body: method_body,
+                span: Span {
+                    start: method_span.start,
+                    end: method_end,
+                },
+            });
+        }
+
         let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
 
         Ok(Stmt::ClassDecl {
@@ -2301,6 +2395,20 @@ impl Parser {
                 span,
             }) => Ok(Expr::Ident { name, span }),
             Some(SpannedToken {
+                kind: Token::This,
+                span,
+            }) => Ok(Expr::Ident {
+                name: "this".to_owned(),
+                span,
+            }),
+            Some(SpannedToken {
+                kind: Token::Super,
+                span,
+            }) => Ok(Expr::Ident {
+                name: "super".to_owned(),
+                span,
+            }),
+            Some(SpannedToken {
                 kind: Token::LeftParen,
                 ..
             }) => {
@@ -2652,6 +2760,22 @@ fn validate_block(statements: &[Stmt]) -> Result<(), Diagnostic> {
     Ok(())
 }
 
+fn validate_class_body(statements: &[Stmt]) -> Result<(), Diagnostic> {
+    for stmt in statements {
+        match stmt {
+            Stmt::Function { body, .. } => validate_block(body)?,
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "class body currently supports methods only".to_owned(),
+                    span: Some(stmt.span()),
+                });
+            }
+        }
+    }
+    Ok(())
+}
+
 fn validate_stmt(
     stmt: &Stmt,
     in_top_level: bool,
@@ -2720,7 +2844,7 @@ fn validate_stmt(
             }
             Ok(())
         }
-        Stmt::ClassDecl { body, .. } => validate_block(body),
+        Stmt::ClassDecl { body, .. } => validate_class_body(body),
         Stmt::Expr { .. } => Ok(()),
         Stmt::Function { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
@@ -2735,7 +2859,11 @@ fn validate_stmt(
 }
 
 fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
-    let wat_path = std::env::temp_dir().join(format!("ts2wasm-{}.wat", std::process::id()));
+    use std::sync::atomic::{AtomicU32, Ordering};
+    static WAT_COUNTER: AtomicU32 = AtomicU32::new(0);
+    let unique = WAT_COUNTER.fetch_add(1, Ordering::Relaxed);
+    let wat_path =
+        std::env::temp_dir().join(format!("ts2wasm-{}-{}.wat", std::process::id(), unique));
     fs::write(&wat_path, wat).map_err(|error| Diagnostic {
         code: DiagCode::BackendIo,
         message: format!(

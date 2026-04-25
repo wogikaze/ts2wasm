@@ -88,6 +88,7 @@ fn runtime_name(runtime_fn: RuntimeFn) -> &'static str {
         RuntimeFn::ArrayGet => "array_get",
         RuntimeFn::GetLength => "get_length",
         RuntimeFn::PropertyGet => "property_get",
+        RuntimeFn::PropertySet => "property_set",
         RuntimeFn::StringCharAt => "string_char_at",
         RuntimeFn::StringSubstring => "string_substring",
         RuntimeFn::StringSlice => "string_slice",
@@ -110,6 +111,9 @@ fn runtime_name(runtime_fn: RuntimeFn) -> &'static str {
         RuntimeFn::MathMin => "math_min",
         RuntimeFn::JsonStringify => "json_stringify",
         RuntimeFn::JsonParse => "json_parse",
+        RuntimeFn::ModuleRequire => "module_require",
+        RuntimeFn::ModuleExportsSet => "module_exports_set",
+        RuntimeFn::ModuleExportsAssign => "module_exports_assign",
     }
 }
 

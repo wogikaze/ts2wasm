@@ -32,6 +32,8 @@ pub(crate) enum RuntimeFn {
     GetLength,
     /// Linear-scan property lookup on a heap object.
     PropertyGet,
+    /// Set or append a property on a heap object.
+    PropertySet,
     /// M10: String methods
     StringCharAt,
     StringSubstring,
@@ -59,6 +61,12 @@ pub(crate) enum RuntimeFn {
     /// M10: JSON functions
     JsonStringify,
     JsonParse,
+    /// Module system: require(id) — return cached exports or load module.
+    ModuleRequire,
+    /// Module system: exports.name = value — set a named export.
+    ModuleExportsSet,
+    /// Module system: module.exports = value — replace exports object.
+    ModuleExportsAssign,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -158,7 +166,7 @@ const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
 ];
-const JSON_PARSE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const JSON_PARSE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 
 impl RuntimeFn {
     pub(crate) const fn from_builtin(builtin: BuiltinId) -> Self {
@@ -354,6 +362,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::PropertySet => RuntimeSpec {
+                symbol: "$property_set",
+                deps: &[Self::AllocHeap, Self::Copy, Self::MemEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringCharAt => RuntimeSpec {
                 symbol: "$string_char_at",
                 deps: STRING_CHAR_AT_DEPS,
@@ -530,6 +546,35 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ModuleRequire => RuntimeSpec {
+                symbol: "$module_require",
+                deps: &[Self::AllocHeap, Self::PropertyGet, Self::MemEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ModuleExportsSet => RuntimeSpec {
+                symbol: "$module_exports_set",
+                deps: &[
+                    Self::AllocHeap,
+                    Self::PropertyGet,
+                    Self::Copy,
+                    Self::MemEqual,
+                ],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
+            Self::ModuleExportsAssign => RuntimeSpec {
+                symbol: "$module_exports_assign",
+                deps: &[Self::AllocHeap],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
         }
     }
 
@@ -570,6 +615,7 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
+            Self::PropertySet,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,
@@ -597,6 +643,10 @@ impl RuntimeFn {
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,
+            // Module system functions
+            Self::ModuleRequire,
+            Self::ModuleExportsSet,
+            Self::ModuleExportsAssign,
         ]
     }
 
@@ -626,6 +676,7 @@ impl RuntimeFn {
             Self::ArrayGet,
             Self::GetLength,
             Self::PropertyGet,
+            Self::PropertySet,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,
@@ -653,6 +704,10 @@ impl RuntimeFn {
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,
+            // Module system functions
+            Self::ModuleRequire,
+            Self::ModuleExportsSet,
+            Self::ModuleExportsAssign,
         ]
     }
 }

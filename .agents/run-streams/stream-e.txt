@@ -1,0 +1,25 @@
+# Stream E: Module System Foundations
+## Goal
+Implement require/module linking foundations with CommonJS-style exports and cache.
+
+## Context
+- Resolver/lowering focus:
+  - crates/cli/src/ir/builtin_resolver.rs
+  - crates/cli/src/ir/lowered.rs
+- Backend/runtime focus:
+  - crates/cli/src/backend/runtime_builder.rs
+  - crates/cli/src/backend/emitter.rs
+
+## Tasks
+1. Parse/lower require("...") call forms into module-load IR
+2. Implement module resolution and in-memory module cache behavior
+3. Support exports and module.exports base behavior
+4. Wire module init order and duplicate-load cache semantics
+5. Add fixtures for multiple modules and shared cache behavior
+
+## Validation
+- cargo fmt --all --check
+- cargo test -q
+
+## Commit guidance
+- Separate resolver changes from runtime/backend linking changes

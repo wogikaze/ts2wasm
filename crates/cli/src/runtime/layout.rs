@@ -50,6 +50,12 @@ impl Layout {
     pub const OBJECT_VALUE_OFFSET: u32 = 4;
     /// Size of one property entry in bytes.
     pub const OBJECT_ENTRY_SIZE: u32 = 8;
+
+    // ---- Module cache layout -----------------------------------------------
+    /// Maximum number of concurrently cached modules.
+    pub const MODULE_CACHE_MAX: u32 = 64;
+    /// Size of one module cache entry in bytes (i32 loaded_flag, i32 value).
+    pub const MODULE_CACHE_ENTRY_SIZE: u32 = 8;
 }
 
 #[cfg(test)]
