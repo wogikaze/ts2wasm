@@ -30,5 +30,5 @@ Acceptance Criteria:
 Validation:
 
 ```sh
-grep -RIn "transitional\|未完\|TODO\|deferred\|docs/current-state.md" docs README.md issues
+grep -RIn "transitional\|未完\|TODO\|deferred\|wrong current-state path" docs README.md issues
 ```

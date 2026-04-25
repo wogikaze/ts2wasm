@@ -76,7 +76,7 @@ Future-looking target design is allowed only when written as the accepted intend
 
 Actual implementation status belongs in:
 
-- `docs/current-state.md`
+- `current-state.md` (repository root)
 
 Use this file for:
 
@@ -203,7 +203,7 @@ README may contain:
 - build/test quickstart
 - docs index
 - current stability warning
-- link to `docs/current-state.md`
+- link to `current-state.md` (repository root)
 - link to issues
 
 README must not contain:
@@ -234,7 +234,7 @@ Then move it:
 | Category             | Destination                      |
 | -------------------- | -------------------------------- |
 | final-state contract | appropriate docs page            |
-| current-state fact   | `docs/current-state.md`          |
+| current-state fact   | `current-state.md` (repo root)   |
 | future task          | `issues/`                        |
 | historical note      | delete, ADR, changelog, or issue |
 | rationale            | explanation doc or ADR           |
@@ -289,13 +289,13 @@ Issue file should include:
 After issue creation, replace the docs TODO with either:
 
 - final-state text, or
-- a short current-state entry in `docs/current-state.md`
+- a short current-state entry in `current-state.md` (repo root)
 
 Do not leave both.
 
 ### 4. Sync current-state
 
-If the docs describe final behavior that is not implemented yet, add or update `docs/current-state.md`.
+If the docs describe final behavior that is not implemented yet, add or update `current-state.md` (repo root).
 
 The current-state entry should name the divergence and link to the issue.
 
@@ -312,7 +312,7 @@ Example:
 
 When docs describe script output, TestRecord JSONL, CLI output, or coverage tables, verify that the docs match actual code/tests.
 
-Do not update contract docs based on intention alone unless current divergence is recorded in `docs/current-state.md` and an issue exists.
+Do not update contract docs based on intention alone unless current divergence is recorded in `current-state.md` (repo root) and an issue exists.
 
 ## Required Searches
 

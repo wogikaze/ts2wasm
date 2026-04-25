@@ -7,7 +7,7 @@
 **Type**: test
 **Area**: tests/coverage
 **Priority**: P0
-**Depends on**: 001
+**Depends on**: none
 **Orchestration class**: implementation-ready
 
 Problem: Tests such as class/module/Node API compile-only checks can make compatibility look more advanced than it is. Build success must not be counted as semantic compatibility.

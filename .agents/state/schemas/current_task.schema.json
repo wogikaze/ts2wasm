@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ts2wasm.local/schemas/current_task.json",
+  "title": "current_task",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "status",
+    "scope",
+    "acceptance",
+    "commands",
+    "risk"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "status": {
+      "type": "string",
+      "enum": [
+        "backlog",
+        "selected",
+        "in_progress",
+        "blocked",
+        "verifying",
+        "done",
+        "split"
+      ]
+    },
+    "scope": {
+      "type": "object",
+      "required": ["allowed_files", "forbidden_files"],
+      "properties": {
+        "allowed_files": { "type": "array", "items": { "type": "string" } },
+        "forbidden_files": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": false
+    },
+    "acceptance": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "commands": {
+      "type": "object",
+      "required": ["fast", "full"],
+      "properties": {
+        "fast": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+        "full": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+      },
+      "additionalProperties": false
+    },
+    "risk": { "type": "array", "items": { "type": "string" } },
+    "issue_path": { "type": "string", "description": "Optional path to issues/open or issues/done file" },
+    "notes": { "type": "string" }
+  },
+  "additionalProperties": false
+}

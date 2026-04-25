@@ -11,12 +11,27 @@ Use these locations consistently:
 | Kind of information | Location |
 |---|---|
 | Final project design and intended contracts | `docs/` |
-| Current implementation status and known gaps | `docs/current-state.md` |
+| Current implementation status and known gaps | `current-state.md` (repository root) |
 | Future work | `issues/open/` |
 | Completed work evidence | `issues/done/` |
 | Reusable issue templates | `issues/templates/` |
+| Agent FSM, task/verification state, run reports (machine contract) | `.agents/`, `reports/runs/` |
 
 `done/` is historical evidence only. Do not treat completed issues as the source of current project truth.
+
+## Mechanical checks
+
+`scripts/check_issue_queue.sh` (run locally, in pre-commit, and in CI) fails if:
+
+- the same `NNN-` id appears twice in `issues/open/` or twice in `issues/done/`, or the same `NNN` exists in both trees;
+- a file `NNN-*.md` does not match the `**ID**:` (or yaml `id:`) value in the file;
+- a file under `issues/done/` (except `*sample*` and `000-*`) still contains an unchecked list item (`- [ ]`);
+- a `**Depends on**` id has no `issues/open/NNN-*.md` or `issues/done/NNN-*.md`;
+- a backticked path under `crates/`, `docs/`, `fixtures/`, `scripts/`, `reference/`, `issues/`, `reports/`, `.github/`, `.agents/`, or `artifacts/` points to a path that does not exist (placeholders with `...` and similar are skipped);
+- a JSON file under `.agents/state/` is not valid JSON (when `jq` is installed);
+- `issues/index.md` fails `scripts/check_issue_index.sh` (stale generated tables or an open id missing from Ready/Blocked).
+
+`pre-commit` runs the generator so `issues/index.md` is refreshed and staged when needed, then runs this script.
 
 ## Directory layout
 
@@ -76,7 +91,7 @@ During work:
 
 - keep changes inside `Scope`
 - avoid touching files listed under `Do not touch`
-- update docs/current-state/issues when behavior or status changes
+- update `current-state.md` / issues when behavior or status changes
 - create follow-up issues instead of adding future TODOs to docs
 - avoid recording progress logs inside final-state docs
 
@@ -86,7 +101,7 @@ Before completion:
 
 - all acceptance criteria must be checked
 - validation commands must be run or explicitly recorded under `Not run`
-- docs/current-state/issues sync must be resolved
+- `current-state.md` / issues sync must be resolved
 - remaining risks must be written down
 
 ### 4. Complete
@@ -98,7 +113,7 @@ Before moving:
 - update `updated`
 - fill `Completion evidence`
 - set remaining risks to `none` or a concrete list
-- update `issues/index.md`
+- run `scripts/update_issue_index.sh` (do not hand-edit generated queue tables)
 
 ## Issue classes
 
@@ -136,7 +151,7 @@ Do not put these into normal docs:
 - future milestone promises
 - current implementation limitations
 
-Use `docs/current-state.md` for current facts and `issues/open/` for future work.
+Use `current-state.md` at the repository root for current facts and `issues/open/` for future work.
 
 ## Completion quality bar
 
@@ -145,6 +160,6 @@ An issue is done only when:
 - the desired final state is reached for the issue scope
 - acceptance criteria are checked
 - validation evidence is recorded
-- docs/current-state/issues are synchronized
+- `current-state.md` and issues are synchronized
 - no hidden TODOs remain in final-state docs
 - remaining risks are explicit

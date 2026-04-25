@@ -1,0 +1,23 @@
+{
+  "run_id": "2026-04-26T02-30-00",
+  "task_id": "WB-042",
+  "commands": [
+    {
+      "cmd": "cargo test",
+      "status": "pass",
+      "elapsed_ms": 12345
+    }
+  ],
+  "fixtures": {
+    "passed": 120,
+    "failed": 3,
+    "skipped": 12,
+    "newly_passed": ["expressions/add-number.ts"],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 1.2,
+    "runtime_delta_percent": 0.4
+  }
+}

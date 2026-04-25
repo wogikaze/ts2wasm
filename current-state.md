@@ -21,6 +21,8 @@ cargo fmt --all --check
 cargo nextest run
 scripts/update_coverage_matrix.sh --check
 scripts/check_scripts.sh
+scripts/update_issue_index.sh --check
+scripts/check_issue_index.sh
 ```
 
 reference coverage を更新する場合（実測値を変えるとき）:
@@ -61,6 +63,7 @@ scripts/update_coverage_matrix.sh
 - shared schema crate（`crates/shared`）: ABI/capability/test status
 - reference coverage パイプライン（`scripts/reference_coverage.sh`, `scripts/update_coverage_matrix.sh`, `scripts/check_coverage_gate.sh`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
+- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `scripts/update_issue_index.sh` が生成、`scripts/check_issue_index.sh` で整合検証）
 
 ## Known blockers / gaps
 

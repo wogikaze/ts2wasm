@@ -41,6 +41,10 @@ nixpkgs の版は `nix/nixpkgs-tarball.nix` の `builtins.fetchTarball` で固�
 
 Flakes で `nix develop` する場合、評価対象の Nix ファイルは **Git に追跡されている必要がある**（未 `git add` のファイルは見えない）。
 
+**対話シェルについて**: `nix develop` と対話型の `nix-shell` は、nixpkgs の慣習で **中に入るシェルが bash になる**（普段 zsh でも、ここだけ bash）。zsh のまま同じ環境を使うなら `nix develop -c zsh` や `nix-shell --run zsh`。外側の zsh を替えずに PATH だけ足すなら **direnv**（`use flake` / `use nix`）が向いている。
+
+README などの fenced code（言語タグが `bash` と付いているもの）は、コピー用の例示であってログインシェルを bash に切り替えない。`scripts/*.sh` を走らせたときだけ、そのプロセスが shebang どおり bash になる。
+
 ### リポジトリ初期化（Nix の有無に共通）
 
 ```bash
@@ -73,6 +77,6 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 # ripgrep は OS のパッケージマネージャで入れる（例: apt install ripgrep, brew install ripgrep）
 ```
 
-`iwasm`（WAMR）は OS のパッージマやソースビルドで用意する。`cargo` / `rustc` は [rustup](https://rustup.rs/) 等で揃える。
+`iwasm`（WAMR）は OS のパッージマネージャやソースビルドで用意する。`cargo` / `rustc` は [rustup](https://rustup.rs/) 等で揃える。
 
-`pre-commit` では `cargo fmt --all --check` を強制する。hook を有効にするには init 時に `scripts/install_git_hooks.sh` を実行する。
+`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `scripts/check_issue_queue.sh`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/install_git_hooks.sh` を実行する。

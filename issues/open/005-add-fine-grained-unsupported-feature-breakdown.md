@@ -7,7 +7,7 @@
 **Type**: infra
 **Area**: scripts/coverage
 **Priority**: P0
-**Depends on**: 001
+**Depends on**: none
 **Orchestration class**: implementation-ready
 
 Problem: `UnsupportedSyntax:423` is not actionable. The project needs feature-level breakdown such as class, import, regexp literal, type annotation, destructuring, async, etc.

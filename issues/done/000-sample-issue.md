@@ -1,5 +1,5 @@
 ---
-id: 001
+id: 000
 title: "Short imperative title"
 type: feature | bug | refactor | docs | test | infra | cleanup | spike
 area: frontend | ir | runtime | abi | wasi | cli | fixtures | scripts | docs | tests | coverage | reference
@@ -88,7 +88,7 @@ Final-state docs:
 Current state:
 
 - [ ] not affected
-- [ ] updated: `docs/current-state.md`
+- [ ] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

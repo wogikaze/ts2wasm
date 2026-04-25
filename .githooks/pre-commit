@@ -7,6 +7,15 @@ cd "$repo_root"
 echo "pre-commit: cargo fmt --all --check"
 cargo fmt --all --check
 
+echo "pre-commit: issues/index.md (regen if needed)"
+if ! scripts/update_issue_index.sh --check; then
+  scripts/update_issue_index.sh
+  git add issues/index.md
+fi
+
+echo "pre-commit: issues/ mechanical checks (scripts/check_issue_queue.sh)"
+scripts/check_issue_queue.sh
+
 md_files="$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.md$' || true)"
 
 if [ -n "$md_files" ]; then

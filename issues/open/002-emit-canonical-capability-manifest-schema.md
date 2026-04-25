@@ -7,7 +7,7 @@
 **Type**: feature
 **Area**: abi/wasi
 **Priority**: P0
-**Depends on**: 001
+**Depends on**: none
 **Orchestration class**: implementation-ready
 
 Problem: docs define a canonical manifest schema with `schema_version`, `target`, `standalone`, `wasi`, `node_host`, and `capability_reasons`, but the implementation appears to emit a transitional `target/imports/capabilities/runtime` shape. `crates/shared/src/capability.rs` also overlaps with this responsibility.

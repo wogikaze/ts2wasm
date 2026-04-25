@@ -1,0 +1,31 @@
+name: issues-invariants
+
+on:
+  pull_request:
+    paths:
+      - "issues/**"
+      - "scripts/check_issue_queue.sh"
+      - "scripts/update_issue_index.sh"
+      - ".githooks/pre-commit"
+  push:
+    branches:
+      - master
+    paths:
+      - "issues/**"
+      - "scripts/check_issue_queue.sh"
+      - "scripts/update_issue_index.sh"
+  schedule:
+    - cron: "17 4 * * 1" # weekly Monday 04:17 UTC
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Issue queue invariants
+        run: |
+          cd "${GITHUB_WORKSPACE}"
+          ./scripts/check_issue_queue.sh

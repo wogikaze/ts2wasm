@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "recorded_at": "2026-04-26T00:00:00Z",
+  "git_head": "replace-when-refreshing-baseline",
+  "perf": {
+    "compile_time_baseline_ms": null,
+    "sample_fixture_runtime_baseline_ms": null
+  },
+  "notes": "Refresh intentionally when full gate passes; used to populate test_report.perf deltas."
+}

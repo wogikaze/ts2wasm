@@ -88,7 +88,7 @@ Final-state docs:
 Current state:
 
 - [ ] not affected
-- [ ] updated: `docs/current-state.md`
+- [ ] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 

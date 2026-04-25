@@ -71,6 +71,11 @@ crates/
 ## 4) scripts の使い方（頻用）
 
 ```bash
+# Issue queue index（open/done から Ready/Blocked/Done 表を再生成）
+scripts/update_issue_index.sh
+scripts/update_issue_index.sh --check
+scripts/check_issue_index.sh
+
 # 参照カバレッジ計測
 scripts/reference_coverage.sh test262 --limit 50
 
@@ -95,3 +100,19 @@ scripts/test_regression_gate.sh test262-results.jsonl
 - テストは cargo test ではなく cargo nextest run を使う
 - 変更前後で cargo fmt --all --check を通す
 - docs を更新する場合は、該当トピックの番号付きドキュメントを優先して更新する
+
+## Autonomous development loop
+
+Agents must not start from ad hoc implementation ideas.
+
+1. Read `current-state.md` (repo root), `docs/11-shared-definitions.md`, `docs/12-coding-standard.md`, and `issues/index.md`. If using the autonomy FSM, also read `.agents/workflows/compiler_dev_fsm.md` and `.agents/state/current_task.json`.
+2. If `issues/index.md` is stale or `issues/` invariants are broken, run `scripts/update_issue_index.sh` and `scripts/check_issue_queue.sh` (or fix the underlying issues first).
+3. Select exactly one issue from the Ready queue (or reconcile the queue if it is wrong).
+4. State the target gate and validation commands before editing.
+5. Implement the smallest closeable slice.
+6. Run required validation.
+7. Update docs, `artifacts/`, and `current-state.md` only when facts changed.
+8. Write a short cycle report (issue id, result, commands run, follow-ups).
+9. Create follow-up issues instead of leaving TODOs.
+
+Semantic compatibility rule: build success is not semantic compatibility. Any semantic claim requires Node differential evidence unless the issue is explicitly parser/build-only.
