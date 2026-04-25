@@ -5,6 +5,8 @@ description: "Use when adding or editing scripts under scripts/ in ts2wasm. Trig
 
 # ts2wasm Scripts Workflow
 
+**Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`.
+
 Use this skill only for scripts/ changes.
 
 This skill owns shell script behavior, reliability, CLI contract, and machine-readable output stability.

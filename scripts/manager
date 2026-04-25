@@ -1,0 +1,108 @@
+#!/usr/bin/env bash
+# Single entry to repo scripts. Prefer this or `mise run <task>` (see root mise.toml)
+# so you do not need to open each scripts/*.sh to see flags.
+#
+# Usage (from repository root):
+#   scripts/manager
+#   scripts/manager help
+#   scripts/manager <command> [args to underlying script...]
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${0}")/.." && pwd)"
+cd "$repo_root"
+
+usage() {
+  cat <<'MSG'
+ts2wasm — script manager (one entry; arguments pass through to the underlying .sh)
+
+Usage:
+  scripts/manager [help]
+  scripts/manager <command> [args...]
+
+Examples:
+  scripts/manager check-issue-queue
+  scripts/manager update-issue-index -- --check
+  scripts/manager nextest -- --no-fail-fast
+  ./scripts/test262_runner.sh --sample 5 2>&1 | scripts/manager test-differential-reporter
+
+Commands:
+MSG
+  # column(1) may be missing on minimal systems
+  if command -v column &>/dev/null; then
+    column -s $'\t' -t <<'TABLE'
+check-scripts	Bash -n on scripts/*.sh (syntax)
+check-issue-index	Fail if issues/index.md is stale or queue tables are wrong
+check-issue-queue	Mechanical invariants: ids, done checkboxes, paths, index+tables
+update-issue-index	Regenerate index tables (add -- --check to verify only)
+install-hooks	Install .githooks (fmt, markdown, issues) via git config core.hooksPath
+check-coverage-gate	Compare two coverage matrix docs (args: see script --help)
+update-coverage-matrix	Refresh reference coverage table (args: see script --help)
+reference-coverage	Run reference test suite for coverage (args: see script --help)
+benchmark-tracker	Append build/fixture performance metrics to JSON
+test262	Run test262 harness (stdout JSONL; args: see script --help)
+test-differential-reporter	HTML/Markdown report from test262 JSONL (stdin; args optional)
+test-regression-gate	Gate: regressions in JSONL vs baseline
+fmt	cargo fmt --all --check
+clippy	cargo clippy --all-targets
+nextest	cargo nextest run
+check-repo-smoke	cargo fmt + check-scripts + check-issue-queue (no cargo test)
+TABLE
+  else
+    cat <<'FALL'
+  check-scripts              Bash -n on scripts/*.sh (syntax)
+  check-issue-index         Fail if issues/index.md is stale or queue tables are wrong
+  check-issue-queue         Mechanical invariants: ids, paths, index+tables
+  update-issue-index        Regenerate index tables (add -- --check to verify only)
+  install-hooks             Install .githooks via git config core.hooksPath
+  check-coverage-gate        Compare two coverage matrix docs
+  update-coverage-matrix     Refresh reference coverage table
+  reference-coverage         Reference suite coverage runner
+  benchmark-tracker          Performance metrics JSON
+  test262                    test262 JSONL to stdout
+  test-differential-reporter Report from test262 JSONL (stdin)
+  test-regression-gate       JSONL vs baseline
+  fmt                        cargo fmt --all --check
+  clippy                     cargo clippy --all-targets
+  nextest                    cargo nextest run
+  check-repo-smoke         cargo fmt + check-scripts + check-issue-queue
+FALL
+  fi
+  echo
+  echo "Mise: run \`mise tasks\` / \`mise run <task>\` for the same set (mise optional)."
+  echo "Shell scripts live under scripts/*.sh; this only dispatches to them."
+}
+
+target="${1:-help}"
+if [[ "$target" == "help" || "$target" == "-h" || "$target" == "--help" ]]; then
+  usage
+  exit 0
+fi
+shift
+
+case "$target" in
+  check-scripts) exec bash "${repo_root}/scripts/check_scripts.sh" "$@" ;;
+  check-issue-index) exec bash "${repo_root}/scripts/check_issue_index.sh" "$@" ;;
+  check-issue-queue) exec bash "${repo_root}/scripts/check_issue_queue.sh" "$@" ;;
+  update-issue-index) exec bash "${repo_root}/scripts/update_issue_index.sh" "$@" ;;
+  install-hooks) exec bash "${repo_root}/scripts/install_git_hooks.sh" "$@" ;;
+  check-coverage-gate) exec bash "${repo_root}/scripts/check_coverage_gate.sh" "$@" ;;
+  update-coverage-matrix) exec bash "${repo_root}/scripts/update_coverage_matrix.sh" "$@" ;;
+  reference-coverage) exec bash "${repo_root}/scripts/reference_coverage.sh" "$@" ;;
+  benchmark-tracker) exec bash "${repo_root}/scripts/benchmark_tracker.sh" "$@" ;;
+  test262) exec bash "${repo_root}/scripts/test262_runner.sh" "$@" ;;
+  test-differential-reporter) exec bash "${repo_root}/scripts/test_differential_reporter.sh" "$@" ;;
+  test-regression-gate) exec bash "${repo_root}/scripts/test_regression_gate.sh" "$@" ;;
+  fmt) exec cargo fmt --all --check ;;
+  clippy) exec cargo clippy --all-targets -- "$@" ;;
+  nextest) exec cargo nextest run "$@" ;;
+  check-repo-smoke)
+    cargo fmt --all --check
+    bash "${repo_root}/scripts/check_scripts.sh"
+    bash "${repo_root}/scripts/check_issue_queue.sh"
+    ;;
+  *)
+    echo "Unknown command: $target" >&2
+    echo "Run: scripts/manager help" >&2
+    exit 1
+    ;;
+esac

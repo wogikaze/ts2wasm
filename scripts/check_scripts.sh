@@ -10,11 +10,15 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT_DIR"
 
-echo "Running bash -n on scripts/*.sh"
+echo "Running bash -n on scripts/*.sh and scripts/manager"
 for script in scripts/*.sh; do
     [[ -f "$script" ]] || continue
     bash -n "$script"
     echo "OK: $script"
 done
+if [[ -f scripts/manager ]]; then
+    bash -n scripts/manager
+    echo "OK: scripts/manager"
+fi
 
 echo "All shell syntax checks passed"

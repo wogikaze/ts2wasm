@@ -65,6 +65,10 @@ EOF
 
 # install repo-managed git hooks
 scripts/install_git_hooks.sh
+
+# optional: one entry for all scripts/ without opening each .sh
+# scripts/manager help
+# Install mise (https://mise.jdx.dev) and: mise trust; mise tasks; mise run nextest
 ```
 
 ### 手動でツールを入れる場合（Nix を使わないとき）

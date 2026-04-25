@@ -34,6 +34,10 @@ cargo nextest run
 
 テキスト検索は `rg`（ripgrep）を使う。Nix devshell では `ripgrep` が入る。
 
+### スクリプトの入口
+
+各 `scripts/*.sh` の内容を開かずに使う: ルートで `scripts/manager`（`help` で一覧）。引数はそのまま下位スクリプトに渡る。Mise 利用者は同じ一覧を `mise tasks` / `mise run <task>` でも実行できる。初回のみプロジェクトの `mise trust`（非エージェント向け手順: <https://mise.jdx.dev/cli/trust.html> ）。
+
 ## 3) ファイル構成（要点）
 
 **Current layout（このリポジトリの現状）**: 実装の大半は `crates/cli` に集約されている。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi`, `crates/backend-wasm` はアーカイブ/プレースホルダが多く、空ディレクトリや `.gitkeep` のみの場合がある。
