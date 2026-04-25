@@ -24,14 +24,15 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 - [Output Checklist](#output-checklist)
 - [Related Skills](#related-skills)
 
-## Mise: run before you merge a script change (required)
+## Mise: auto-execute after making changes (required)
 
-**Execute all that apply; do not ship a script change without a green local gate.** First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)). Without `mise`, use `scripts/manager` with the same subcommand.
+**Automatically execute the following after making script changes.** First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)). Without `mise`, use `scripts/manager` with the same subcommand.
 
 - Always: `mise run check-scripts` (plus `mise run fmt` if the script is invoked from tests or the diff touches Rust)
 - `mise run check-repo-smoke` after touching `issues` paths or the manager
 - For coverage/ CI scripts: also run the same command family you would run in `scripts` docs (e.g. `mise run reference-coverage` with a small limit when that script supports it)
 - `mise tasks` to confirm your new `mise run <task>` appears after you add it to `mise.toml`
+- **Auto-commit changes after verification passes** (commit message based on change description)
 
 Use this skill only for scripts/ changes.
 

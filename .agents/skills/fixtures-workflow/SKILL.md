@@ -28,14 +28,15 @@ Use this skill when a change touches `fixtures/**` or fixture path references ca
 - [Handoff Packet](#handoff-packet)
 - [Related Skills](#related-skills)
 
-## Mise: run before you finish (required)
+## Mise: auto-execute after making changes (required)
 
-**You must** run the matching entries below and ensure they pass before calling the work done. Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+**Automatically run the matching entries below after making changes and ensure they pass.** Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
 - `mise run fmt` and `mise run nextest` (minimum)
 - If compiler/runtime/Fixture references change: `mise run clippy` as well
 - `mise run check-repo-smoke` as a light aggregate (fmt + script syntax + `issues` invariants)
 - If reference coverage or fixtures in matrix were affected: `mise run update-coverage-matrix` / `mise run reference-coverage` (see `scripts/` for flags)
+- **Auto-commit changes after verification passes** (commit message based on change description)
 
 This skill is for fixture input files, fixture naming, fixture migration, and fixture reference synchronization. It may update script path references, but it must not redesign script behavior. Use `scripts-workflow` for script logic, script output schema, command-line options, CI script orchestration, or coverage pipeline behavior changes.
 

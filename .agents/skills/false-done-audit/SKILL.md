@@ -150,8 +150,14 @@ description: Audit issues/done for false-done, classify work, reopen with eviden
 
 ## 最終目的（要約）
 
-- `issues/done/` から false-done を除去する  
-- user-facing の虚偽主張を open issue に戻す  
-- repo 上の future work / v1 非対応を open issue 化する  
-- チェックリストの検証可能項目を issue 化する（`checklist-to-issue` skill）  
+- `issues/done/` から false-done を除去する
+- user-facing の虚偽主張を open issue に戻す
+- repo 上の future work / v1 非対応を open issue 化する
+- チェックリストの検証可能項目を issue 化する（`checklist-to-issue` skill）
 - wave 後処理・継続・コミット境界は **`post-wave-orchestration` skill**（repo ポリシーと衝突する場合は人間へ）
+
+## Post-change auto-execution
+
+After making issue changes (reopen, new issue, split), automatically:
+1. Run `mise run update-issue-index` and `mise run check-issue-queue`
+2. Commit changes with auto-generated commit message based on audit findings

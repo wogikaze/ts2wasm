@@ -82,3 +82,9 @@ docs 内チェックリストの **検証可能な項目** は個別 issue と�
 - **Close gate**（何が揃ったら閉じるか）
 - user-visible がある場合は **entrypoint acceptance** を必須
 - チェックリスト由来なら **Checklist item source**（ファイル名・行・アンカー）を本文に書く
+
+## Post-change auto-execution
+
+After creating new issues, automatically:
+1. Run `mise run update-issue-index` and `mise run check-issue-queue`
+2. Commit changes with auto-generated commit message based on checklist item source

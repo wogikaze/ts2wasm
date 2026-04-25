@@ -73,3 +73,9 @@ mise run update-issue-index
 mise run check-issue-index
 mise run check-issue-queue
 ```
+
+## Post-change auto-execution
+
+After syncing issue state (index regeneration, cross-link updates), automatically:
+1. Run `mise run update-issue-index --check` and `mise run check-issue-queue`
+2. Commit changes with auto-generated commit message based on sync operation

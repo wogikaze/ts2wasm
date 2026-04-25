@@ -112,8 +112,14 @@ mise run check-issue-queue
 
 ## 終了条件（監査 run 全体）
 
-- 監査対象の `issues/done/**` をすべて見た  
-- false-done は **reopen 済み**（または同等の follow-up issue 化で主張を分離済み）  
-- future work / v1 非対応で **未作成の open issue が無い**  
-- チェックリストの検証可能項目が **issue 化済み**  
-- `false-done-audit` skill の **必須レポート**を evidence 付きで出した  
+- 監査対象の `issues/done/**` をすべて見た
+- false-done は **reopen 済み**（または同等の follow-up issue 化で主張を分離済み）
+- future work / v1 非対応で **未作成の open issue が無い**
+- チェックリストの検証可能項目が **issue 化済み**
+- `false-done-audit` skill の **必須レポート**を evidence 付きで出した
+
+## Post-change auto-execution
+
+After orchestration changes (issue moves, index sync, residual classification), automatically:
+1. Run `mise run update-issue-index` and `mise run check-issue-queue`
+2. Commit orchestration-state changes with auto-generated commit message based on wave classification  

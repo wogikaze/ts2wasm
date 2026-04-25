@@ -125,3 +125,9 @@ mise run nextest
 mise run check-issue-queue
 mise run check-repo-smoke
 ```
+
+## Post-change auto-execution
+
+After completing issue work (code changes, issue file updates, cycle report), automatically:
+1. Run `mise run fmt`, `mise run nextest`, and `mise run check-issue-queue`
+2. Commit changes with auto-generated commit message based on issue completion evidence
