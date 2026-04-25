@@ -13,6 +13,7 @@ The autonomous loop is considered complete when:
 - FSM state transition is validated against workflow rules
 - current_task.json is updated with verification results
 - All required gates (fmt, nextest, check-issue-queue) pass
+- **All acceptance criteria from the issue are explicitly verified and documented**
 - Test report is generated and saved to reports/runs/
 - Failure patterns are recorded in failure pattern DB if applicable
 - Cycle report is written with evidence and next steps
@@ -24,6 +25,24 @@ The autonomous loop is considered complete when:
 - `current_task.json` または issue が示す `commands.fast` / `commands.full` 相当（通常は少なくとも `mise run fmt` と `mise run nextest`）
 - Issue / index と整合: `mise run check-issue-queue`（`issues` を扱う場合は `mise run update-issue-index` も）
 - 軽い一括: `mise run check-repo-smoke`
+
+## Acceptance Criteria Verification (CRITICAL)
+
+**Before marking VERIFY_FULL as complete, you MUST:**
+
+1. Read the issue's "Acceptance Criteria" section
+2. For each criterion, verify it with explicit evidence:
+   - Run the validation commands from the issue
+   - Check the actual output matches expected behavior
+   - Add test fixtures if required by the issue
+3. Document the verification in decision_log.md with specific evidence
+4. If any criterion is not met, DO NOT mark the task as done
+
+**Common failure modes:**
+- Assuming "tests pass" means "acceptance criteria met"
+- Skipping fixture requirements
+- Not verifying alias behavior (e.g., --emit-capabilities vs --emit-manifest)
+- Leaving unused code (e.g., transitional schemas)
 
 ## Read order
 
