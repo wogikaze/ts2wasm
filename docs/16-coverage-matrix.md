@@ -74,6 +74,37 @@ Gate:
 - `unsupported_diagcodes` を出力し、unsupported の内訳を DiagCode 単位で可視化する。
 - `scripts/update_coverage_matrix.sh` は現在の `executed` を起点にステップ分だけ limit を増やし、表を自動更新する。
 
+## Test262 Coverage
+
+This section tracks test262 coverage using the Stream G test infrastructure.
+
+### Test262 Runner Workflow
+
+```bash
+# Run sample of test262 tests (first 50 per category)
+scripts/test262_runner.sh --sample 50 | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+
+# Check for regressions
+scripts/test_regression_gate.sh test262-results.jsonl
+
+# Run full test262 suite (may take a long time)
+scripts/test262_runner.sh | tee test262-results.jsonl | scripts/test_differential_reporter.sh --html test262-report.html --markdown test262-report.md
+```
+
+### Test Status Classification
+
+- **Pass**: Test compiles successfully and output matches Node.js reference
+- **Fail**: Test compiles but output differs from Node.js reference
+- **Unsupported**: Compiler diagnostic indicates unsupported feature (e.g., `UnsupportedSyntax`, `UnresolvedName`)
+- **Blocked**: Runtime or I/O failure during execution
+
+### Current Test262 Sample Results
+
+The coverage matrix above shows test262 execution counts. For detailed test results, see the Stream G artifacts:
+- `test262-results.jsonl`: Machine-readable test records (JSONL format)
+- `test262-report.html`: Human-readable HTML report with category breakdown
+- `test262-report.md`: Markdown version of the report
+
 ## Internal Smoke (Reference 分母の外)
 
 | suite | files | result | note |
