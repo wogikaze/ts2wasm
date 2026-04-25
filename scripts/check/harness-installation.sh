@@ -7,7 +7,7 @@
 #   TS2WASM_NEXTEST_DENY_WARNINGS=1  —  RUSTFLAGS='-D warnings' (project may fail until #011 is done).
 #
 # Usage:
-#   scripts/check_harness_installation.sh
+#   scripts/check/harness-installation.sh
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"

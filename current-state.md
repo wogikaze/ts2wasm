@@ -63,11 +63,11 @@ mise run update-coverage-matrix
 
 ## Implemented (high-level)
 
-- minimal parser/frontend（`crates/frontend` - 実装済み）
-- WAT/WASM emitter と runtime subset（`crates/cli` - `crates/backend-wasm` へ移行中）
+- minimal parser/frontend（`crates/frontend`）
+- WAT/WASM emitter と runtime subset（`crates/cli`; backend-wasm 移行は issue 026 で進行中）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
-- IR crate（`crates/ir` - 実装済み）: resolved/lowered IR
-- runtime-abi crate（`crates/runtime-abi` - 実装済み）: RawValue/layout/ABI
+- IR crate（`crates/ir`）: resolved/lowered IR
+- runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
 - reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run check-coverage`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
 - issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `mise run update-issue-index` が生成、`mise run check-issue-index` で整合検証）
@@ -75,7 +75,7 @@ mise run update-coverage-matrix
 
 ## Known blockers / gaps
 
-- **Crates module migration**: `crates/runtime-abi`, `crates/ir`, `crates/frontend` は実装済み。`crates/backend-wasm` への移行が進行中（issue 026）。
+- **Crates module migration**: `crates/frontend`, `crates/ir`, `crates/runtime-abi` migrations are complete (issues 024, 025, 027 done). `crates/backend-wasm` migration is in progress (issue 026 open).
 - TypeScript parser/checker integration は未実装
 - 汎用 JavaScript semantic IR は未実装
 - full wasm backend は未実装（現状は WAT 中心）
@@ -102,37 +102,16 @@ mise run update-coverage-matrix
 
 ## Next Priority Steps
 
-Based on current open issues and workstream progress, the next priority slices are:
+See `issues/index.md` for the auto-generated Ready queue and Blocked queue.
+Run `scripts/manager update-issue-index` to refresh after adding, closing, or moving issues.
 
-1. **P0 - Capability Manifest**: issues/open/002-emit-canonical-capability-manifest-schema.md
-   - Emit capability manifest as JSON output
-   - Validate manifest against emitted WAT imports
+The current top Ready items (P0) are typically:
+- capability manifest verification (003)
+- compile-only test reclassification (004)
+- fine-grained unsupported feature breakdown (005)
+- heap OOM check (013)
 
-2. **P0 - Computed Property Semantics**: issues/open/012-fix-computed-property-semantics-bug.md
-   - Fix computed property access to work on all objects
-   - Add differential test for computed property
-
-3. **P0 - Heap OOM Check**: issues/open/013-implement-heap-oom-check.md
-   - Runtime safety critical
-   - Memory safety related
-
-4. **P0 - Reclassify Compile-only Tests**: issues/open/004-reclassify-compile-only-compatibility-tests.md
-   - Improve coverage measurement accuracy
-   - Prerequisite for Gate D
-
-5. **P1 - Frontend Module Extraction**: issues/open/010-extract-frontend-module-from-crates-cli.md
-   - Extract frontend module from crates/cli
-   - Establish clear frontend/semantic/backend boundaries
-
-6. **P1 - TypeScript Parser Integration**: issues/open/019-integrate-typescript-parser-checker.md
-   - Integrate TypeScript compiler API
-   - Extract type information for optimization
-
-7. **P1 - IR Validation Passes**: issues/open/020c-add-ir-validation-passes-and-document-contracts.md
-   - Add IR validation passes
-   - Document IR contracts
-
-See issues/index.md for complete issue queue and status.
+For exact ordering and full queue, refer to the generated table in `issues/index.md`.
 
 ## Current Policy
 

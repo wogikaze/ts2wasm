@@ -30,7 +30,7 @@ cargo nextest run
 
 ## 3) ファイル構成
 
-実装は `crates/cli` に集約。`crates/shared` は共有定義。`crates/runtime-abi` と `crates/ir` は実装済み。`crates/frontend` は実装済み。`crates/backend-wasm` は移行中。
+実装は `crates/cli` に集約。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi` は移行済み（issues 024, 025, 027 done）。`crates/backend-wasm` は issue 026 で進行中。
 
 Target layout: shared (schema/manifest), frontend (lexer/parser/AST), ir (resolved/lowered IR), runtime-abi (RawValue/layout/ABI), backend-wasm (WAT/WASM emission), cli (orchestration)。
 
