@@ -340,10 +340,16 @@ message: Set/Map のサイズは .size プロパティを使う。
 
 ```bash
 # .env から DISCORD_WEBHOOK_URL を読み込み
-scripts/manager discord-report --run-id <run_id>
+cat reports/runs/<run_id>/cycle_report.md | scripts/manager discord-report --run-id <run_id>
 ```
 
-レポート内容は `reports/runs/<run_id>/cycle_report.md` から抽出する。
+または manager 経由:
+
+```bash
+cat reports/runs/<run_id>/cycle_report.md | python scripts/manager.py discord-report --run-id <run_id>
+```
+
+レポート内容は stdin から読み込む。
 
 ## Related Skills
 

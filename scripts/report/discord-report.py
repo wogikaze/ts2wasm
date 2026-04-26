@@ -3,7 +3,7 @@
 Send development loop report to Discord via webhook.
 
 Usage:
-    python scripts/report/discord-report.py --run-id <run_id>
+    cat cycle_report.md | python scripts/report/discord-report.py [--run-id <run_id>]
 """
 
 import argparse
@@ -16,8 +16,7 @@ from typing import Optional
 
 import requests
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
-REPORTS_DIR = REPO_ROOT / "reports" / "runs"
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def load_env() -> dict[str, str]:
@@ -33,14 +32,8 @@ def load_env() -> dict[str, str]:
     return env
 
 
-def parse_cycle_report(run_dir: Path) -> dict[str, str]:
-    """Parse cycle_report.md and extract report fields."""
-    report_file = run_dir / "cycle_report.md"
-    if not report_file.exists():
-        raise FileNotFoundError(f"cycle_report.md not found in {run_dir}")
-
-    content = report_file.read_text()
-
+def parse_cycle_report(content: str) -> dict[str, str]:
+    """Parse cycle report markdown and extract report fields."""
     # Default values
     fields = {
         "status": "N/A",
@@ -80,7 +73,7 @@ def parse_cycle_report(run_dir: Path) -> dict[str, str]:
     return fields
 
 
-def create_discord_embed(fields: dict[str, str], run_id: str) -> dict:
+def create_discord_embed(fields: dict[str, str], run_id: Optional[str]) -> dict:
     """Create Discord embed from report fields."""
     embed = {
         "title": "ts2wasm 開発ループレポート",
@@ -127,10 +120,9 @@ def create_discord_embed(fields: dict[str, str], run_id: str) -> dict:
                 "inline": False,
             },
         ],
-        "footer": {
-            "text": f"run: {run_id}",
-        },
     }
+    if run_id:
+        embed["footer"] = {"text": f"run: {run_id}"}
     return {"embeds": [embed]}
 
 
@@ -147,7 +139,7 @@ def send_discord_webhook(webhook_url: str, embed: dict) -> bool:
 
 def main():
     parser = argparse.ArgumentParser(description="Send development loop report to Discord")
-    parser.add_argument("--run-id", required=True, help="Run ID (e.g., 20260426-120000)")
+    parser.add_argument("--run-id", help="Run ID (e.g., 20260426-120000) for footer")
     parser.add_argument("--dry-run", action="store_true", help="Print embed without sending")
     args = parser.parse_args()
 
@@ -158,18 +150,14 @@ def main():
         print("Error: DISCORD_WEBHOOK_URL not set in .env", file=sys.stderr)
         sys.exit(1)
 
-    # Find run directory
-    run_dir = REPORTS_DIR / args.run_id
-    if not run_dir.exists():
-        print(f"Error: Run directory not found: {run_dir}", file=sys.stderr)
+    # Read markdown from stdin
+    content = sys.stdin.read()
+    if not content:
+        print("Error: No input from stdin", file=sys.stderr)
         sys.exit(1)
 
     # Parse cycle report
-    try:
-        fields = parse_cycle_report(run_dir)
-    except FileNotFoundError as e:
-        print(f"Error: {e}", file=sys.stderr)
-        sys.exit(1)
+    fields = parse_cycle_report(content)
 
     # Create Discord embed
     embed = create_discord_embed(fields, args.run_id)
@@ -181,7 +169,7 @@ def main():
 
     # Send to Discord
     if send_discord_webhook(webhook_url, embed):
-        print(f"Report sent to Discord for run {args.run_id}")
+        print("Report sent to Discord")
         sys.exit(0)
     else:
         sys.exit(1)

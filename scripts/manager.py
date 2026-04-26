@@ -47,7 +47,7 @@ COMMANDS = {
     "test-regression-gate": ("python", "scripts/gate/regression.py"),
     "gen-issues-from-coverage": ("python", "scripts/gen/issues-from-coverage.py"),
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
-    "discord-report": ("python", "scripts/report/discord-report.py"),
+    "discord-report": ("python", "scripts/report/discord-report.py"),  # reads from stdin
     "fmt": ("cargo", "fmt --all --check"),
     "clippy": ("cargo", "clippy --all-targets"),
     "nextest": ("cargo", "nextest run"),

@@ -22,6 +22,3 @@ tmp/
 .ig/
 
 .env
-
-# Development run reports
-reports/runs/
