@@ -127,6 +127,11 @@ pub enum ResolvedExpr {
         key: String,
         value: Box<ResolvedExpr>,
     },
+    PropertyAssignIndexed {
+        object: Box<ResolvedExpr>,
+        index: Box<ResolvedExpr>,
+        value: Box<ResolvedExpr>,
+    },
     New {
         class_name: String,
         args: Vec<ResolvedExpr>,

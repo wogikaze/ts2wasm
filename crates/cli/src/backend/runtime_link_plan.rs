@@ -353,6 +353,17 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(value);
             }
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+            } => {
+                self.add_required_runtime(RuntimeFn::PropertySet);
+                self.add_required_runtime(RuntimeFn::ValueToStringInto);
+                self.collect_required_runtime_expr(object);
+                self.collect_required_runtime_expr(index);
+                self.collect_required_runtime_expr(value);
+            }
             LoweredExpr::New { args, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
                 for arg in args {

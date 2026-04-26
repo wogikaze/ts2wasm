@@ -163,6 +163,11 @@ pub enum LoweredExpr {
         key: String,
         value: Box<LoweredExpr>,
     },
+    PropertySetDynamic {
+        object: Box<LoweredExpr>,
+        index: Box<LoweredExpr>,
+        value: Box<LoweredExpr>,
+    },
     New {
         constructor: FuncId,
         args: Vec<LoweredExpr>,
@@ -866,19 +871,10 @@ impl<'a> Resolver<'a> {
                 key: key.clone(),
             }),
             ResolvedExpr::ComputedIndex { object, index } => {
-                // If the object is a string literal, use StringIndex
-                // Otherwise, use ArrayGet for arrays
-                if matches!(object.as_ref(), ResolvedExpr::String(_)) {
-                    Ok(LoweredExpr::Index {
-                        object: Box::new(self.lower_expr(object)?),
-                        index: Box::new(self.lower_expr(index)?),
-                    })
-                } else {
-                    Ok(LoweredExpr::ArrayGet {
-                        arr: Box::new(self.lower_expr(object)?),
-                        index: Box::new(self.lower_expr(index)?),
-                    })
-                }
+                Ok(LoweredExpr::Index {
+                    object: Box::new(self.lower_expr(object)?),
+                    index: Box::new(self.lower_expr(index)?),
+                })
             }
             ResolvedExpr::Array(elements) => {
                 let lowered = elements
@@ -1022,6 +1018,15 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::PropertyAssign { object, key, value } => Ok(LoweredExpr::PropertySet {
                 object: Box::new(self.lower_expr(object)?),
                 key: key.clone(),
+                value: Box::new(self.lower_expr(value)?),
+            }),
+            ResolvedExpr::PropertyAssignIndexed {
+                object,
+                index,
+                value,
+            } => Ok(LoweredExpr::PropertySetDynamic {
+                object: Box::new(self.lower_expr(object)?),
+                index: Box::new(self.lower_expr(index)?),
                 value: Box::new(self.lower_expr(value)?),
             }),
             ResolvedExpr::New { class_name, args } => {
@@ -1477,6 +1482,23 @@ fn validate_expr(
         }
         LoweredExpr::PropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertySet {
+            object,
+            value,
+            ..
+        } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(value, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+        } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(index, local_count, num_funcs, program, errors, true);
+            validate_expr(value, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::MethodCall { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);

@@ -1,11 +1,50 @@
 {
-  "id": null,
-  "title": null,
-  "status": "done",
-  "issue_path": "issues/done/009-select-first-coverage-improvement-feature-slice.md",
-  "scope": null,
-  "acceptance": null,
-  "commands": null,
-  "risk": null,
-  "notes": "Closed after creating follow-up issue 202-implement-regexp-literal-support.md from coverage data and logging wrapper-based command evidence under reports/runs/20260426-171214308 and 20260426-171517567."
+  "id": "014",
+  "title": "Implement dynamic property key support",
+  "status": "selected",
+  "issue_path": "issues/open/014-implement-dynamic-property-key-support.md",
+  "scope": {
+    "allowed_files": [
+      "crates/frontend/src/ast.rs",
+      "crates/cli/src/lib.rs",
+      "crates/ir/src/builtin_resolved.rs",
+      "crates/ir/src/builtin_resolver.rs",
+      "crates/ir/src/name_resolver.rs",
+      "crates/ir/src/lowered.rs",
+      "crates/cli/src/backend/expr_emit.rs",
+      "crates/cli/src/backend/runtime_link_plan.rs",
+      "crates/cli/src/backend/runtime_fn.rs",
+      "crates/cli/src/backend/runtime_builder.rs",
+      "fixtures/arrays-objects/dynamic-property.ts",
+      "fixtures/arrays-objects/dynamic-property-assignment.ts",
+      "crates/cli/tests/m2_node_diff.rs"
+    ],
+    "forbidden_files": [
+      "crates/cli/src/cli.rs",
+      "crates/shared/src/**"
+    ]
+  },
+  "acceptance": [
+    "object key access via a[variableKey] returns correct value",
+    "object key assignment via a[variableKey] = value updates object property",
+    "array non-number index fixture behavior remains unchanged",
+    "property-access and runtime dependency outputs are exercised in tests"
+  ],
+  "commands": {
+    "fast": [
+      "cargo fmt --all --check",
+      "cargo nextest run m2_node_diff::m5_edge_case_fixtures_match_node_output_under_iwasm -- run"
+    ],
+    "full": [
+      "cargo fmt --all --check",
+      "cargo nextest run",
+      "cargo test -p ts2wasm-cli m2_node_diff::m5_edge_case_fixtures_match_node_output_under_iwasm",
+      "iwasm fixtures/arrays-objects/dynamic-property.wasm"
+    ]
+  },
+  "risk": [
+    "Runtime object/string conversion behavior may differ from existing object/index semantics in edge cases.",
+    "Fixture additions may require updates if dynamic index behavior diverges from strict JS."
+  ],
+  "notes": "Selected per FSM after merge; implementing string-indexed dynamic property support with minimal path through Expr->ResolvedExpr->LoweredExpr and dynamic runtime index conversion."
 }

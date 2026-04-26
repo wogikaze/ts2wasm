@@ -463,6 +463,7 @@ const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const INDEX_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::ValueToStringInto];
 
 // Math function dependencies (no deps)
 const MATH_DEPS: &[RuntimeFn] = &[];
@@ -706,7 +707,7 @@ impl RuntimeFn {
             },
             Self::Index => RuntimeSpec {
                 symbol: "$index",
-                deps: NO_DEPS,
+                deps: INDEX_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,

@@ -447,6 +447,25 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             key: property.clone(),
             value: Box::new(resolve_expr(value)?),
         }),
+        Expr::PropertyAssignIndexed {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            if let Expr::String { value: key, .. } = index.as_ref() {
+                return Ok(ResolvedExpr::PropertyAssign {
+                    object: Box::new(resolve_expr(object)?),
+                    key: key.clone(),
+                    value: Box::new(resolve_expr(value)?),
+                });
+            }
+            Ok(ResolvedExpr::PropertyAssignIndexed {
+                object: Box::new(resolve_expr(object)?),
+                index: Box::new(resolve_expr(index)?),
+                value: Box::new(resolve_expr(value)?),
+            })
+        }
         // New expression types (not yet supported in resolver
         Expr::InstanceOf { span, .. }
         | Expr::Ternary { span, .. }
@@ -650,6 +669,7 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Ternary { span, .. }
         | Expr::ArrowFn { span, .. }
         | Expr::Spread { span, .. }
-        | Expr::PropertyAssign { span, .. } => Some(*span),
+        | Expr::PropertyAssign { span, .. }
+        | Expr::PropertyAssignIndexed { span, .. } => Some(*span),
     }
 }

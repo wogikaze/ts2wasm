@@ -886,6 +886,29 @@ impl Parser {
                         },
                     });
                 }
+                Expr::Index {
+                    object,
+                    index,
+                    span: index_span,
+                } => {
+                    let value = self.expression()?;
+                    let semi = self.expect(TokenKind::Semicolon)?;
+                    return Ok(Stmt::Expr {
+                        expr: Expr::PropertyAssignIndexed {
+                            object: object.clone(),
+                            index: index.clone(),
+                            value: Box::new(value),
+                            span: Span {
+                                start: index_span.start,
+                                end: semi.end,
+                            },
+                        },
+                        span: Span {
+                            start: index_span.start,
+                            end: semi.end,
+                        },
+                    });
+                }
                 _ => {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,

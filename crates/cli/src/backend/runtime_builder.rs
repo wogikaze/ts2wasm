@@ -774,29 +774,48 @@ impl WatEmitter<'_> {
     (local $idx_tag i32)
     (local $base i32)
     (local $i i32)
+    (local $key_len i32)
     (local.set $obj_tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (local.set $idx_tag (i32.and (local.get $idx) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $idx_tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
-    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
-    (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
-    (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
-    ;; String indexing
-    (if (i32.eq (local.get $obj_tag) (i32.const {string_tag}))
+    (if (i32.eq (local.get $idx_tag) (i32.const {number_tag}))
       (then
-        (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {undefined}))))
+        (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+        (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
+        (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
+        ;; String indexing
+        (if (i32.eq (local.get $obj_tag) (i32.const {string_tag}))
+          (then
+            (if (i32.ge_u (local.get $i) (i32.load (local.get $base)))
+              (then (return (i32.const {undefined}))))
+            (return
+              (i32.or
+                (i32.shl
+                  (i32.load8_u
+                    (i32.add
+                      (local.get $base)
+                      (i32.add (i32.const {string_header}) (local.get $i))))
+                  (i32.const {number_shift}))
+                (i32.const {number_tag})))))
+        ;; Array indexing
+        (if (i32.ne (local.get $obj_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+        (if (i32.ge_u (local.get $i) (i32.load (local.get $base)))
+          (then (return (i32.const {undefined}))))
         (return
-          (i32.or
-            (i32.shl
-              (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {string_header}) (local.get $i))))
-              (i32.const {number_shift}))
-            (i32.const {number_tag}))))))
-    ;; Array indexing
-    (if (i32.ne (local.get $obj_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-    (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {undefined}))))
-    (i32.load
-      (i32.add
-        (local.get $base)
-        (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+          (i32.load
+            (i32.add
+              (local.get $base)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift})))))))
+      (else
+        (local.set $key_len (call $value_to_string_into
+          (local.get $idx)
+          (i32.const {scratch_offset})))
+        (return
+          (call $property_get
+            (local.get $obj)
+            (i32.const {scratch_offset})
+            (local.get $key_len)))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             string_tag = ValueTag::STRING,
@@ -809,6 +828,7 @@ impl WatEmitter<'_> {
             string_header = Layout::STRING_HEADER_SIZE,
             array_header = Layout::ARRAY_HEADER_SIZE,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            scratch_offset = Layout::SCRATCH_OFFSET,
         ));
     }
 

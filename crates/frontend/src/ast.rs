@@ -221,6 +221,12 @@ pub enum Expr {
         value: Box<Expr>,
         span: Span,
     },
+    PropertyAssignIndexed {
+        object: Box<Expr>,
+        index: Box<Expr>,
+        value: Box<Expr>,
+        span: Span,
+    },
 }
 
 impl Stmt {
@@ -269,7 +275,8 @@ impl Expr {
             | Self::Ternary { span, .. }
             | Self::ArrowFn { span, .. }
             | Self::Spread { span, .. }
-            | Self::PropertyAssign { span, .. } => *span,
+            | Self::PropertyAssign { span, .. }
+            | Self::PropertyAssignIndexed { span, .. } => *span,
         }
     }
 }

@@ -259,6 +259,29 @@ impl WatEmitter<'_> {
                     RuntimeFn::PropertySet.symbol(),
                 ));
             }
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+            } => {
+                self.emit_expr(wat, object, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
+                self.emit_expr(wat, index, indent, frame);
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::ValueToStringInto.symbol()
+                ));
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
+                self.emit_expr(wat, value, indent, frame);
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::PropertySet.symbol(),
+                ));
+            }
             LoweredExpr::ModuleLoad { module_id } => {
                 wat.push_str(&format!(
                     "{pad}(call {} (i32.const {}))\n",
