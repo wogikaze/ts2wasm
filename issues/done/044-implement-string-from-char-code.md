@@ -78,15 +78,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -96,14 +96,14 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `feat: implement String.fromCharCode and String.prototype.charCodeAt`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run
+result: 207 passed, 4 skipped
+date: 2026-04-26
 ```
 
 Remaining risks:
