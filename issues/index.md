@@ -24,7 +24,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 014 | Implement dynamic property key support | feature | runtime/semantics | implementation-ready | P1 | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupported-dynamic-proper... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 017a | Design GC strategy | feature | runtime/memory | design-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
-| 018 | Implement UTF-8 string support | feature | runtime/semantics | implementation-ready | P1 |  | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
 | 029 | Implement typeof operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement typeof operator |
@@ -236,6 +235,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
 | 013 | Implement heap OOM check | feature | runtime/memory | see file |
 | 015 | Implement object literal string key support | feature | parser/semantics | see file |
+| 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
 | 027 | Migrate frontend code to frontend crate | refactor | frontend | see `issues/done/027-migrate-frontend-code-to-frontend-crate.md` |

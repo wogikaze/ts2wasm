@@ -34,11 +34,7 @@ impl WatEmitter<'_> {
         }
     }
 
-    pub(super) fn ascii_string_len(&self, value: &str) -> u32 {
-        debug_assert!(
-            value.is_ascii(),
-            "ascii_string_len called with non-ASCII: {value:?}"
-        );
+    pub(super) fn string_len(&self, value: &str) -> u32 {
         value.len() as u32
     }
 }

@@ -757,16 +757,7 @@ impl<'a> Resolver<'a> {
     fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
             ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value)),
-            ResolvedExpr::String(value) => {
-                if !value.is_ascii() {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "non-ASCII string literals are not supported in M5".to_owned(),
-                        span: None,
-                    });
-                }
-                Ok(LoweredExpr::String(value.clone()))
-            }
+            ResolvedExpr::String(value) => Ok(LoweredExpr::String(value.clone())),
             ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
             ResolvedExpr::Null => Ok(LoweredExpr::Null),
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),

@@ -61,11 +61,10 @@ fn lowering_rejects_duplicate_parameter() {
 }
 
 #[test]
-fn lowering_rejects_non_ascii_string_literal() {
+fn lowering_accepts_non_ascii_string_literal() {
     let program = parse_and_resolve("let s = \"あ\";");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("non-ASCII"));
+    // Should succeed without error (previously rejected non-ASCII)
+    ts2wasm_ir::lowered::lower_program(&program).unwrap();
 }
 
 #[test]
