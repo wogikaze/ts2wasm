@@ -223,20 +223,20 @@ Run the touched script with a representative command（`shell-syntax.sh` はこ�
 
 Examples:
 
-- mise run reference-coverage -- test262 --limit 1
-- mise run reference-coverage -- tsc --limit 1
-- mise run reference-coverage -- tsgo --limit 1
-- mise run check-coverage-matrix
-- mise run check-fast-gate --skip-nextest
-- mise run check-manifest-imports
-- mise run check-test-records-schema <file.jsonl>
-- mise run check-fixture-catalog
-- mise run check-architecture-rules
-- mise run check-compiler-diagnostics
-- mise run check-coverage <base-doc> <current-doc>
-- mise run test262 -- --sample 1 --jobs 1
-- mise run check-regression <results.jsonl> --baseline <baseline.json>
-- mise run report-differential --markdown <tmp.md> --html <tmp.html>
+- scripts/manager reference-coverage test262 --limit 1
+- scripts/manager reference-coverage tsc --limit 1
+- scripts/manager reference-coverage tsgo --limit 1
+- scripts/manager check-coverage-matrix
+- scripts/manager check-fast-gate --skip-nextest
+- scripts/manager check-manifest-imports
+- scripts/manager check-test-records-schema <file.jsonl>
+- scripts/manager check-fixture-catalog
+- scripts/manager check-architecture-rules
+- scripts/manager check-compiler-diagnostics
+- scripts/manager check-coverage <base-doc> <current-doc>
+- scripts/manager test262 --sample 1 --jobs 1
+- scripts/manager check-regression <results.jsonl> --baseline <baseline.json>
+- scripts/manager report-differential --markdown <tmp.md> --html <tmp.html>
 
 Run tests:
 

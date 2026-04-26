@@ -80,13 +80,13 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 - Run reference-coverage with --detail flag:
 
   ```bash
-  scripts/run/reference-coverage.sh test262 --limit 500 --detail
+  scripts/manager reference-coverage test262 --limit 500 --detail
   ```
 
 - Pipe to gen-issues-from-coverage to auto-generate issues:
 
   ```bash
-  scripts/run/reference-coverage.sh test262 --limit 500 --detail | \
+  scripts/manager reference-coverage test262 --limit 500 --detail | \
     scripts/manager gen-issues-from-coverage --suite test262
   ```
 
