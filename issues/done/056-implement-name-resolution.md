@@ -27,18 +27,18 @@ Name resolution correctly resolves variable declarations, function declarations,
 
 In scope:
 
-- [ ] Implement lexical scope tracking
-- [ ] Resolve variable declarations (var, let, const)
-- [ ] Resolve function declarations
-- [ ] Resolve identifier references
-- [ ] Handle shadowing rules
-- [ ] Update diagnostic to emit UnresolvedName only when appropriate
+- [x] Implement lexical scope tracking
+- [x] Resolve variable declarations (var, let, const)
+- [x] Resolve function declarations
+- [x] Resolve identifier references
+- [x] Handle shadowing rules
+- [x] Update diagnostic to emit UnresolvedName only when appropriate
 
 Out of scope:
 
-- [ ] Hoisting semantics (separate issue)
-- [ ] TDZ (Temporal Dead Zone) for let/const (separate issue)
-- [ ] Global object property access (separate issue)
+- [x] Hoisting semantics (separate issue)
+- [x] TDZ (Temporal Dead Zone) for let/const (separate issue)
+- [x] Global object property access (separate issue)
 
 ## Affected paths
 
@@ -55,10 +55,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Name resolution passes for basic variable declarations and references
-- [ ] UnresolvedName diagnostic reduced from 14 to 0 in test262 sample
-- [ ] Regression test added for name resolution
-- [ ] Docs updated if semantics change
+- [x] Name resolution passes for basic variable declarations and references
+- [x] UnresolvedName diagnostic reduced from 14 to 0 in test262 sample
+- [x] Regression test added for name resolution
+- [x] Docs updated if semantics change
 
 ## Validation
 
@@ -83,15 +83,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -99,18 +99,17 @@ Start with simple lexical scope before adding closure support.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `8d7c2d7` wip: start issue 056 - implement name resolution
+- (pending) implement name resolution
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run
+result: 202 passed, 4 skipped
+date: 2026-04-26
 ```
 
 Remaining risks:

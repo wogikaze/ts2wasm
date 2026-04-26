@@ -10,6 +10,7 @@ use ts2wasm_frontend::{
 };
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
+use ts2wasm_ir::name_resolver;
 
 const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
 
@@ -39,7 +40,8 @@ pub fn build_file_with_host_deny(
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
-    let resolved = builtin_resolver::resolve_builtins(&program)?;
+    let name_resolved = name_resolver::resolve_names(&program)?;
+    let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     let lowered = lowered::lower_program(&resolved)?;
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
