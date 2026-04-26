@@ -114,8 +114,7 @@ python scripts/manager.py help
 
 Some scripts still depend on bash and are not yet available on Windows:
 
-- `check-scripts` - Bash syntax check (not needed on Windows)
-- `check-repo-smoke` - Smoke test (requires bash)
+(None - all high-priority scripts have been migrated to Python)
 
 **Migrated to Python (Windows-compatible):**
 - `check-toolchain` - Toolchain verification
@@ -135,6 +134,8 @@ Some scripts still depend on bash and are not yet available on Windows:
 - `gen-issues-from-coverage` - Issue generation from coverage
 - `update-coverage-matrix` - Coverage matrix update
 - `install-hooks` - Git hooks installation (OS-aware)
+- `check-scripts` - Bash syntax check (skips on Windows if bash unavailable)
+- `check-repo-smoke` - fmt + check-scripts + check-issue-health
 - `check-coverage-gate` - Coverage comparison
 - `coverage-report` - Language coverage report
 - `reference-coverage` - Reference suite coverage runner
@@ -225,9 +226,12 @@ When contributing Windows-specific fixes:
 
 ## Future Improvements
 
-The following bash scripts are planned to be migrated to Python for full Windows support:
+All high-priority scripts have been migrated to Python for Windows support.
 
-- [ ] check-scripts (bash syntax check - may remain Unix-only)
-- [ ] check-repo-smoke (Smoke test)
+Remaining bash scripts (Unix-specific libraries):
+- scripts/lib/common.sh (used by remaining bash scripts)
+- scripts/lib/feature-labels.sh (used by remaining bash scripts)
+
+These libraries are used by a few remaining Unix-specific scripts and may be kept as-is.
 
 See the issue tracker for progress.

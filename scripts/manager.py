@@ -18,7 +18,7 @@ PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable)
 
 # Command mapping: command -> (script_type, script_path, interpreter)
 COMMANDS = {
-    "check-scripts": ("bash", "scripts/check/shell-syntax.sh"),
+    "check-scripts": ("python", "scripts/check/shell-syntax.py"),
     "check-fast-gate": ("python", "scripts/gate/fast-gate.py"),
     "check-manifest-imports": ("python", "scripts/check/manifest-imports.py"),
     "check-test-records-schema": ("python", "scripts/check/test-records-schema.py"),
@@ -145,8 +145,8 @@ def main():
         if result.returncode != 0:
             sys.exit(result.returncode)
         
-        # Run check-scripts
-        result = subprocess.run(["bash", str(REPO_ROOT / "scripts/check/shell-syntax.sh")], cwd=REPO_ROOT)
+        # Run check-scripts (Python version)
+        result = subprocess.run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")], cwd=REPO_ROOT)
         if result.returncode != 0:
             sys.exit(result.returncode)
         

@@ -5,8 +5,8 @@
 
 # Use Python manager for cross-platform support
 [tasks."check-scripts"]
-description = "Bash -n on scripts/**/*.sh (syntax only) [Unix only]"
-run = "bash scripts/manager check-scripts"
+description = "Bash -n on scripts/**/*.sh (syntax only)"
+run = "python scripts/manager.py check-scripts"
 
 [tasks."check-issue-index"]
 description = "Compatibility alias for check-issue-health"
@@ -69,8 +69,8 @@ description = "cargo nextest run (default project test entry)"
 run = "python scripts/manager.py nextest"
 
 [tasks."check-repo-smoke"]
-description = "fmt + check-scripts + check-issue-health (no cargo test) [Unix only]"
-run = "bash scripts/manager check-repo-smoke"
+description = "fmt + check-scripts + check-issue-health (no cargo test)"
+run = "python scripts/manager.py check-repo-smoke"
 
 [tasks."check-fast-gate"]
 description = "fmt + issues + coverage matrix check + nextest (see script --help)"
