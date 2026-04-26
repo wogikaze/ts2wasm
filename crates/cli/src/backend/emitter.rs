@@ -434,12 +434,21 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(obj);
                 self.intern_string(key);
             }
+            LoweredExpr::PropertyGetDynamic { obj, key } => {
+                self.collect_expr_strings(obj);
+                self.collect_expr_strings(key);
+            }
             LoweredExpr::MethodCall { object, .. } => {
                 self.collect_expr_strings(object);
             }
             LoweredExpr::PropertySet { object, key, value } => {
                 self.collect_expr_strings(object);
                 self.intern_string(key);
+                self.collect_expr_strings(value);
+            }
+            LoweredExpr::PropertySetDynamic { object, key, value } => {
+                self.collect_expr_strings(object);
+                self.collect_expr_strings(key);
                 self.collect_expr_strings(value);
             }
             LoweredExpr::New { args, .. } => {

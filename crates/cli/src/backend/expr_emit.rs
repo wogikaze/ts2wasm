@@ -234,6 +234,35 @@ impl WatEmitter<'_> {
                     RuntimeFn::PropertyGet.symbol()
                 ));
             }
+            LoweredExpr::PropertyGetDynamic { obj, key } => {
+                // For dynamic keys, the key is a runtime string value
+                // We need to extract the string pointer and length from the key value
+                // Use heap_base_tmp as temporary storage for the key
+                let tmp = frame.heap_base_tmp();
+                self.emit_expr(wat, key, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", tmp));
+                self.emit_expr(wat, obj, indent, frame);
+                wat.push_str(&format!("{pad}(local.get {})\n", tmp));
+                wat.push_str(&format!(
+                    "{pad}(i32.and (local.get {}) (i32.const {}))\n",
+                    tmp,
+                    ValueTag::HEAP_MASK
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.add (local.get {}) (i32.const {}))\n",
+                    tmp,
+                    Layout::STRING_HEADER_SIZE
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.load (i32.and (local.get {}) (i32.const {})))\n",
+                    tmp,
+                    ValueTag::HEAP_MASK
+                ));
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::PropertyGet.symbol()
+                ));
+            }
             LoweredExpr::MethodCall {
                 object: _,
                 method: _,
@@ -260,6 +289,35 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertySet.symbol(),
+                ));
+            }
+            LoweredExpr::PropertySetDynamic { object, key, value } => {
+                // For dynamic keys, the key is a runtime string value
+                // Use heap_base_tmp as temporary storage for the key
+                let tmp = frame.heap_base_tmp();
+                self.emit_expr(wat, key, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", tmp));
+                self.emit_expr(wat, object, indent, frame);
+                wat.push_str(&format!("{pad}(local.get {})\n", tmp));
+                wat.push_str(&format!(
+                    "{pad}(i32.and (local.get {}) (i32.const {}))\n",
+                    tmp,
+                    ValueTag::HEAP_MASK
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.add (local.get {}) (i32.const {}))\n",
+                    tmp,
+                    Layout::STRING_HEADER_SIZE
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.load (i32.and (local.get {}) (i32.const {})))\n",
+                    tmp,
+                    ValueTag::HEAP_MASK
+                ));
+                self.emit_expr(wat, value, indent, frame);
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::PropertySet.symbol()
                 ));
             }
             LoweredExpr::ModuleLoad { module_id } => {
