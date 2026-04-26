@@ -16,7 +16,7 @@ description = "Regenerate issues/index.md (pass --check to verify only)"
 run = "scripts/manager update-issue-index"
 
 [tasks."gen-issues-from-coverage"]
-description = "Generate issues from reference-coverage --detail output (args: --start-id 061 --suite test262)"
+description = "Generate issues from reference-coverage --detail output (args: --suite test262)"
 run = "python3 scripts/gen/issues-from-coverage.py"
 
 [tasks."install-hooks"]

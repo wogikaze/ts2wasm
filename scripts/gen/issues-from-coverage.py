@@ -264,12 +264,30 @@ Remaining risks:
     return content
 
 
+def find_next_issue_id(output_dir: Path) -> int:
+    """Find the next available issue ID by scanning existing issues."""
+    max_id = 0
+    for file_path in output_dir.glob("*.md"):
+        match = re.match(r'^(\d+)-', file_path.name)
+        if match:
+            issue_id = int(match.group(1))
+            if issue_id > max_id:
+                max_id = issue_id
+    return max_id + 1
+
+
 def main():
     parser = argparse.ArgumentParser(description="Generate issues from coverage detail output")
-    parser.add_argument("--start-id", type=str, default="061", help="Starting issue ID (default: 061)")
+    parser.add_argument("--start-id", type=int, default=None, help="Starting issue ID (auto-detect if not specified)")
     parser.add_argument("--suite", type=str, default="test262", help="Test suite name (default: test262)")
     parser.add_argument("--output-dir", type=str, default="issues/open", help="Output directory (default: issues/open)")
     args = parser.parse_args()
+    
+    # Auto-detect next issue ID if not specified
+    output_dir = Path(args.output_dir)
+    if args.start_id is None:
+        args.start_id = find_next_issue_id(output_dir)
+        print(f"Auto-detected starting issue ID: {args.start_id:03d}", file=sys.stderr)
     
     # Read stdin
     lines = sys.stdin.readlines()
