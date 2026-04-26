@@ -41,7 +41,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 050 | Implement Date | feature | runtime/builtins | implementation-ready | P1 |  | Implement Date |
 | 051 | Implement RegExp | feature | runtime/builtins | implementation-ready | P1 |  | Implement RegExp |
 | 052 | Implement JSON | feature | runtime/builtins | implementation-ready | P1 |  | Implement JSON |
-| 053 | Implement Math | feature | runtime/builtins | implementation-ready | P1 |  | Implement Math |
 | 054 | Implement Error types | feature | runtime/builtins | implementation-ready | P1 |  | Implement Error types |
 | 055 | Implement import and export | feature | frontend/semantics | implementation-ready | P1 |  | Implement import and export |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
@@ -239,6 +238,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
+| 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
