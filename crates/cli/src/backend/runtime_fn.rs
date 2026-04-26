@@ -447,11 +447,19 @@ const VTS_RUNTIME_STRINGS: &[&str] = &[
 const LOG_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NEWLINE];
 
 // String method dependencies
-const STRING_CHAR_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
-const STRING_SUBSTRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
-const STRING_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_SLICE_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
-const STRING_SPLIT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
+];
 const STRING_TRIM_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
