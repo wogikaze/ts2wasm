@@ -1,34 +1,18 @@
 {
-  "status": "in_progress",
-  "issue_id": "058",
-  "issue_title": "Implement equality operators (==, !=, ===, !==)",
-  "started_at": "2026-04-26T17:00:00Z",
+  "status": "idle",
+  "issue_id": null,
+  "issue_title": null,
+  "started_at": null,
   "target_gate": null,
   "scope": {
-    "allowed_files": [
-      "crates/frontend/src/",
-      "crates/cli/src/",
-      "fixtures/"
-    ],
-    "forbidden_files": [
-      "crates/runtime-abi/",
-      "crates/backend-wasm/"
-    ]
+    "allowed_files": [],
+    "forbidden_files": []
   },
-  "acceptance": [
-    "Equality operators pass for basic comparisons",
-    "equality-operator diagnostic reduced to 0 in reference tests",
-    "Regression test added for equality operators",
-    "Docs updated if semantics change"
-  ],
+  "acceptance": [],
   "commands": {
-    "fast": [
-      "cargo fmt --all --check"
-    ],
-    "full": [
-      "cargo nextest run"
-    ]
+    "fast": [],
+    "full": []
   },
   "risk": [],
-  "notes": "P1 issue - implement equality operators (==, !=, ===, !==). Start with strict equality before adding abstract equality with type coercion."
+  "notes": ""
 }
