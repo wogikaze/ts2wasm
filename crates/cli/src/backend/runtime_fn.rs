@@ -70,6 +70,8 @@ pub(crate) enum RuntimeFn {
     PropertySet,
     /// Delete a property from a heap object.
     PropertyDelete,
+    /// Check if a property exists on a heap object.
+    PropertyHas,
     /// M10: String methods
     StringCharAt,
     StringSubstring,
@@ -794,6 +796,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::PropertyHas => RuntimeSpec {
+                symbol: "$property_has",
+                deps: &[Self::MemEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringCharAt => RuntimeSpec {
                 symbol: "$string_char_at",
                 deps: STRING_CHAR_AT_DEPS,
@@ -1192,6 +1202,7 @@ impl RuntimeFn {
             Self::PropertyGet => "property_get",
             Self::PropertySet => "property_set",
             Self::PropertyDelete => "property_delete",
+            Self::PropertyHas => "property_has",
             Self::StringCharAt => "string_char_at",
             Self::StringSubstring => "string_substring",
             Self::StringSlice => "string_slice",
@@ -1270,6 +1281,7 @@ impl RuntimeFn {
             Self::PropertyGet,
             Self::PropertySet,
             Self::PropertyDelete,
+            Self::PropertyHas,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,
@@ -1356,6 +1368,7 @@ impl RuntimeFn {
             Self::PropertyGet,
             Self::PropertySet,
             Self::PropertyDelete,
+            Self::PropertyHas,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,

@@ -127,6 +127,14 @@ pub enum LoweredExpr {
         op: LoweredBinaryOp,
         right: Box<LoweredExpr>,
     },
+    PropertyIn {
+        obj: Box<LoweredExpr>,
+        key: String,
+    },
+    PropertyInDynamic {
+        obj: Box<LoweredExpr>,
+        key: Box<LoweredExpr>,
+    },
     Call {
         kind: FunctionCallKind,
         args: Vec<LoweredExpr>,
@@ -833,11 +841,28 @@ impl<'a> Resolver<'a> {
                     })
                 }
             }
-            ResolvedExpr::Binary { left, op, right } => Ok(LoweredExpr::Binary {
-                left: Box::new(self.lower_expr(left)?),
-                op: lower_binary_op(*op)?,
-                right: Box::new(self.lower_expr(right)?),
-            }),
+            ResolvedExpr::Binary { left, op, right } => {
+                if *op == BinaryOp::In {
+                    // Lower in to PropertyIn or PropertyInDynamic
+                    // key in object -> check if key exists in object
+                    match left.as_ref() {
+                        ResolvedExpr::String(key) => Ok(LoweredExpr::PropertyIn {
+                            obj: Box::new(self.lower_expr(right)?),
+                            key: key.clone(),
+                        }),
+                        _ => Ok(LoweredExpr::PropertyInDynamic {
+                            obj: Box::new(self.lower_expr(right)?),
+                            key: Box::new(self.lower_expr(left)?),
+                        }),
+                    }
+                } else {
+                    Ok(LoweredExpr::Binary {
+                        left: Box::new(self.lower_expr(left)?),
+                        op: lower_binary_op(*op)?,
+                        right: Box::new(self.lower_expr(right)?),
+                    })
+                }
+            }
             ResolvedExpr::Call { callee, args } => {
                 let func_name = match callee.as_ref() {
                     ResolvedExpr::Ident(name) => name,

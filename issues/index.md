@@ -26,7 +26,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
 | 030 | Implement instanceof operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement instanceof operator |
 | 031 | Implement in operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement in operator |
-| 032 | Implement delete operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement delete operator |
 | 036 | Implement arrow function | feature | frontend/semantics | implementation-ready | P1 |  | Implement arrow function |
 | 037 | Implement this binding | feature | runtime/semantics | implementation-ready | P1 |  | Implement this binding |
 | 038 | Implement rest parameters | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameters |
@@ -229,6 +228,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
 | 027 | Migrate frontend code to frontend crate | refactor | frontend | see `issues/done/027-migrate-frontend-code-to-frontend-crate.md` |
 | 029 | Implement typeof operator | feature | runtime/semantics | see `issues/done/029-implement-typeof-operator.md` |
+| 032 | Implement delete operator | feature | runtime/semantics | see `issues/done/032-implement-delete-operator.md` |
 | 033 | Implement switch statement | feature | frontend/semantics | see `issues/done/033-implement-switch-statement.md` |
 | 034 | Implement while and do-while loops | feature | frontend/semantics | see `issues/done/034-implement-while-do-while-loops.md` |
 | 035 | Implement break and continue statements | feature | frontend/semantics | see `issues/done/035-implement-break-continue.md` |

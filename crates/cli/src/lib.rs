@@ -1603,7 +1603,7 @@ impl Parser {
     }
 
     fn equality(&mut self) -> Result<Expr, Diagnostic> {
-        let mut expr = self.comparison()?;
+        let mut expr = self.relational()?;
         while self.consume(TokenKind::StrictEqual)
             || self.consume(TokenKind::EqualEqual)
             || self.consume(TokenKind::BangEqual)
@@ -1618,12 +1618,34 @@ impl Parser {
             } else if self.prev_token_is(Token::StrictNotEqual) {
                 BinaryOp::StrictNotEqual
             } else {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "unexpected token in equality expression".to_owned(),
-                    span: None,
-                });
+                unreachable!()
             };
+            let right = self.relational()?;
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
+    }
+
+    fn relational(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.comparison()?;
+        loop {
+            let op = if self.consume(TokenKind::In) {
+                Some(BinaryOp::In)
+            } else if self.consume(TokenKind::InstanceOf) {
+                Some(BinaryOp::InstanceOf)
+            } else {
+                None
+            };
+            let Some(op) = op else { break };
             let right = self.comparison()?;
             let span = Span {
                 start: expr.span().start,

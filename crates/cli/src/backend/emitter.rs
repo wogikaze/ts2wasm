@@ -411,6 +411,14 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(object);
                 self.collect_expr_strings(key);
             }
+            LoweredExpr::PropertyIn { obj, key } => {
+                self.collect_expr_strings(obj);
+                self.intern_string(key);
+            }
+            LoweredExpr::PropertyInDynamic { obj, key } => {
+                self.collect_expr_strings(obj);
+                self.collect_expr_strings(key);
+            }
             LoweredExpr::Number(_)
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null

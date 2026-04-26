@@ -399,6 +399,15 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyDelete);
             }
+            LoweredExpr::PropertyIn { obj, key: _ } => {
+                self.collect_required_runtime_expr(obj);
+                self.add_required_runtime(RuntimeFn::PropertyHas);
+            }
+            LoweredExpr::PropertyInDynamic { obj, key } => {
+                self.collect_required_runtime_expr(obj);
+                self.collect_required_runtime_expr(key);
+                self.add_required_runtime(RuntimeFn::PropertyHas);
+            }
         }
     }
 }
