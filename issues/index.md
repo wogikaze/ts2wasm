@@ -219,7 +219,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 000 | Short imperative title | feature | bug | refactor | docs | test | infra | cleanup | spike | frontend | ir | runtime | abi | wasi | cli | fixtures | scripts | docs | tests | coverage | reference | see `issues/done/000-sample-issue.md` |
 | 001 | Fix issue infrastructure and current-state path references | infra | issues/docs | see `issues/done/001-fix-issue-infrastructure-and-current-state-path-references.md` |
 | 002 | Emit canonical capability manifest schema | feature | abi/wasi | see `issues/done/002-emit-canonical-capability-manifest-schema.md` |
-| 003 | Verify manifest against emitted WAT imports | test | wasi/tests | see `issues/done/003-verify-manifest-against-emitted-wat-imports.md` |
+| 003 | Verify manifest against emitted WAT imports | test | wasi/tests | see file |
 | 004 | Reclassify compile-only compatibility tests | test | tests/coverage | see file |
 | 005 | Add fine-grained unsupported feature breakdown | infra | scripts/coverage | see `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` |
 | 006 | Remove stale milestone and transitional docs | cleanup | docs | see `issues/done/006-remove-stale-milestone-and-transitional-docs.md` |

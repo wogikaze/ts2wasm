@@ -1,0 +1,56 @@
+{
+  "run_id": "20260426-131806",
+  "task_id": "003",
+  "git": {
+    "sha": "c0fac42",
+    "changed_files": [
+      "issues/index.md",
+      "issues/open/003-verify-manifest-against-emitted-wat-imports.md",
+      "issues/done/003-verify-manifest-against-emitted-wat-imports.md",
+      "scripts/gate/fast-gate.py",
+      "reports/runs/20260426-131806/cycle_report.md",
+      "reports/runs/20260426-131806/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "python scripts/manager.py check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python scripts/manager.py update-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python scripts/manager.py check-repo-smoke",
+      "status": "fail",
+      "exit_code": 1,
+      "notes": "scripts/dev/install-git-hooks.sh has a bash syntax issue"
+    },
+    {
+      "cmd": "python scripts/manager.py check-fast-gate --skip-nextest",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "$env:CARGO_TARGET_DIR=$env:TEMP\\ts2wasm-target; cargo nextest run --filterset \"test(manifest)\"",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 9,
+    "failed": 0,
+    "skipped": 184,
+    "newly_passed": [
+      "ts2wasm-cli::backend::capability_manifest"
+    ],
+    "newly_failed": []
+  },
+  "meta": {
+    "notes": "Issues moved from open to done and index regenerated in this cycle."
+  }
+}
