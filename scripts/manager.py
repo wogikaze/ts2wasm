@@ -46,6 +46,7 @@ COMMANDS = {
     "test-differential-reporter": ("python", "scripts/report/differential.py"),
     "test-regression-gate": ("python", "scripts/gate/regression.py"),
     "gen-issues-from-coverage": ("python", "scripts/gen/issues-from-coverage.py"),
+    "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
     "fmt": ("cargo", "fmt --all --check"),
     "clippy": ("cargo", "clippy --all-targets"),
     "nextest": ("cargo", "nextest run"),
