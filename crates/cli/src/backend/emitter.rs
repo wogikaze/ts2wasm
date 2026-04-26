@@ -425,6 +425,15 @@ impl<'a> WatEmitter<'a> {
                 self.intern_string(key);
                 self.collect_expr_strings(value);
             }
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+            } => {
+                self.collect_expr_strings(object);
+                self.collect_expr_strings(index);
+                self.collect_expr_strings(value);
+            }
             LoweredExpr::New { args, .. } => {
                 for arg in args {
                     self.collect_expr_strings(arg);

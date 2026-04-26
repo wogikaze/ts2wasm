@@ -880,12 +880,10 @@ impl<'a> Resolver<'a> {
                 obj: Box::new(self.lower_expr(object)?),
                 key: key.clone(),
             }),
-            ResolvedExpr::ComputedIndex { object, index } => {
-                Ok(LoweredExpr::Index {
-                    object: Box::new(self.lower_expr(object)?),
-                    index: Box::new(self.lower_expr(index)?),
-                })
-            }
+            ResolvedExpr::ComputedIndex { object, index } => Ok(LoweredExpr::Index {
+                object: Box::new(self.lower_expr(object)?),
+                index: Box::new(self.lower_expr(index)?),
+            }),
             ResolvedExpr::Array(elements) => {
                 let lowered = elements
                     .iter()
@@ -1493,11 +1491,7 @@ fn validate_expr(
         LoweredExpr::PropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
         }
-        LoweredExpr::PropertySet {
-            object,
-            value,
-            ..
-        } => {
+        LoweredExpr::PropertySet { object, value, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             validate_expr(value, local_count, num_funcs, program, errors, true);
         }

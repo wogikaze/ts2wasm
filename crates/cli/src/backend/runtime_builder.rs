@@ -323,7 +323,7 @@ impl WatEmitter<'_> {
         let newline = self.string_offset(RuntimeString::NEWLINE) + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
-    (func $log (param $v i32)
+  (func $log (param $v i32)
     (local $len i32)
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
     (call $write (i32.const {scratch}) (local.get $len))
@@ -850,15 +850,16 @@ impl WatEmitter<'_> {
               (i32.add
                 (i32.const {array_header})
                 (i32.shl (local.get $i) (i32.const {elem_shift})))))))
-      (else
-        (local.set $key_len (call $value_to_string_into
-          (local.get $idx)
-          (i32.const {scratch_offset})))
-        (return
-          (call $property_get
-            (local.get $obj)
-            (i32.const {scratch_offset})
-            (local.get $key_len)))))
+        (else
+          (local.set $key_len (call $value_to_string_into
+            (local.get $idx)
+            (i32.const {scratch_offset})))
+          (return
+            (call $property_get
+              (local.get $obj)
+              (i32.const {scratch_offset})
+              (local.get $key_len)))))
+    (i32.const {undefined}))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             string_tag = ValueTag::STRING,
@@ -936,7 +937,7 @@ impl WatEmitter<'_> {
           (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
         (if (i32.eq (local.get $key_len) (local.get $pk_len))
           (then
-            (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
+                (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
               (then
                 (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))))))
         (br $scan)))
@@ -968,9 +969,45 @@ impl WatEmitter<'_> {
     (local $pk_ptr i32)
     (local $pk_len i32)
     (local $key_obj i32)
+    (local $digit i32)
+    (local $is_array_index i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then
+        (local.set $is_array_index (i32.const 1))
+        (if (i32.eqz (local.get $key_len))
+          (then (local.set $is_array_index (i32.const 0)))
+          (else
+            (local.set $i (i32.const 0))
+            (local.set $count (i32.const 0))
+            (block $parse_done
+              (loop $scan
+                (br_if $parse_done (i32.ge_u (local.get $i) (local.get $key_len)))
+                (local.set $digit (i32.load8_u (i32.add (local.get $key_ptr) (local.get $i))))
+                (if (i32.or (i32.lt_u (local.get $digit) (i32.const 48)) (i32.gt_u (local.get $digit) (i32.const 57)))
+                  (then
+                    (local.set $is_array_index (i32.const 0))
+                    (br $parse_done)))
+                (local.set $digit (i32.sub (local.get $digit) (i32.const 48)))
+                (local.set $count
+                  (i32.add
+                    (i32.mul (local.get $count) (i32.const 10))
+                    (local.get $digit)))
+                (local.set $i (i32.add (local.get $i) (i32.const 1)))
+                (br $scan)))))
+        (if (i32.ne (local.get $is_array_index) (i32.const 0))
+          (then
+            (if (i32.ge_u (local.get $count) (i32.load (local.get $base)))
+              (then (return (i32.const {undefined}))))
+            (i32.store
+              (i32.add (local.get $base)
+                (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift}))))
+              (local.get $value))
+            (return (local.get $value))))
+        (return (i32.const {undefined}))))
+
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $count (i32.load (local.get $base)))
     (local.set $i (local.get $count))
 
@@ -1010,10 +1047,13 @@ impl WatEmitter<'_> {
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
+            array_tag = ValueTag::ARRAY,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
             obj_header = Layout::OBJECT_HEADER_SIZE,
+            array_header = Layout::ARRAY_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,

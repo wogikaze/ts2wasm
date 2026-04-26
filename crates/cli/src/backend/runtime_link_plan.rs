@@ -507,9 +507,15 @@ mod tests {
     fn m5_runtime_linker_collects_array_object_and_length_helpers() {
         let array_get_program = lowered("let x = [1][0];");
         let array_get = RuntimeLinkPlan::from_program(&array_get_program);
-        let array_expected: BTreeSet<_> = [RuntimeFn::AllocHeap, RuntimeFn::ArrayGet]
-            .into_iter()
-            .collect();
+        let array_expected: BTreeSet<_> = [
+            RuntimeFn::AllocHeap,
+            RuntimeFn::Index,
+            RuntimeFn::PropertyGet,
+            RuntimeFn::ValueToStringInto,
+            RuntimeFn::MemEqual,
+        ]
+        .into_iter()
+        .collect();
         assert!(
             array_expected
                 .iter()
