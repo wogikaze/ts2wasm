@@ -30,6 +30,7 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 - Read `docs/11-shared-definitions.md` for workstreams and gates
 - Read `docs/12-coding-standard.md` for coding standards
 - Read `issues/index.md` to see the current issue queue
+- Run `scripts/manager check-agent-state` to validate state files
 
 ### Task Selection (TASK_SELECT state)
 

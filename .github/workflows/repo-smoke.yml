@@ -1,0 +1,41 @@
+name: repo-smoke
+
+on:
+  pull_request:
+    paths:
+      - "scripts/**"
+      - "scripts/manager"
+      - "scripts/manager.py"
+      - ".github/workflows/repo-smoke.yml"
+  push:
+    branches:
+      - master
+    paths:
+      - "scripts/**"
+      - "scripts/manager"
+      - "scripts/manager.py"
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install jsonschema
+        run: |
+          python -m pip install jsonschema
+
+      - name: Run repo smoke check
+        run: |
+          cd "${GITHUB_WORKSPACE}"
+          ./scripts/manager check-repo-smoke
