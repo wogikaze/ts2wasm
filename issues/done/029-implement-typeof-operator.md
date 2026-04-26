@@ -34,10 +34,10 @@ The `typeof` operator is not implemented. It is a fundamental JavaScript operato
 
 In scope:
 
-- [ ] Add `typeof` to lexer/parser
-- [ ] Lower `typeof` expression to runtime call
-- [ ] Implement runtime type tag check
-- [ ] Add fixtures for typeof behavior
+- [x] Add `typeof` to lexer/parser
+- [x] Lower `typeof` expression to runtime call
+- [x] Implement runtime type tag check
+- [x] Add fixtures for typeof behavior
 
 Out of scope:
 
@@ -58,11 +58,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `typeof` expression parses correctly
-- [ ] `typeof` returns correct type strings for all primitive types
-- [ ] `typeof null` returns `"object"` (ECMAScript spec compliance)
-- [ ] Fixtures cover typeof behavior for all types
-- [ ] No regression in existing fixtures
+- [x] `typeof` expression parses correctly
+- [x] `typeof` returns correct type strings for all primitive types
+- [x] `typeof null` returns `"object"` (ECMAScript spec compliance)
+- [x] Fixtures cover typeof behavior for all types
+- [x] No regression in existing fixtures
 
 ## Validation
 
@@ -88,15 +88,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -108,14 +108,22 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- (to be committed)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-26
+
+command: cargo nextest run
+result: 185 tests passed, 4 skipped
+date: 2026-04-26
+
+command: ./target/release/ts2wasm build fixtures/basics-typeof/typeof-test.ts -o /tmp/typeof-test.wasm && iwasm /tmp/typeof-test.wasm
+result: built successfully, output: "undefined"
+date: 2026-04-26
 ```
 
 Remaining risks:
