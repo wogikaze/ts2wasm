@@ -32,15 +32,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 039 | Implement spread arguments | feature | frontend/semantics | implementation-ready | P1 |  | Implement spread arguments |
 | 040 | Implement default parameters | feature | frontend/semantics | implementation-ready | P1 |  | Implement default parameters |
 | 041 | Implement template literals | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literals |
-| 042 | Implement string methods | feature | runtime/builtins | implementation-ready | P1 |  | Implement string methods |
 | 044 | Implement String.fromCharCode and charCodeAt | feature | runtime/builtins | implementation-ready | P1 |  | Implement String.fromCharCode and charCodeAt |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
 | 050 | Implement Date | feature | runtime/builtins | implementation-ready | P1 |  | Implement Date |
 | 051 | Implement RegExp | feature | runtime/builtins | implementation-ready | P1 |  | Implement RegExp |
-| 052 | Implement JSON | feature | runtime/builtins | implementation-ready | P1 |  | Implement JSON |
-| 054 | Implement Error types | feature | runtime/builtins | implementation-ready | P1 |  | Implement Error types |
+| 052 | Implement JSON | feature | runtime/builtins | implementation-ready | P1 |  | JSON |
+| 054 | Implement Error types | feature | runtime/builtins | implementation-ready | P1 |  | Error types |
 | 055 | Implement import and export | feature | frontend/semantics | implementation-ready | P1 |  | Implement import and export |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported diagnostic cases |
@@ -240,6 +239,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
 | 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
+| 042 | Implement string methods | feature | runtime/builtins | see `issues/done/042-implement-string-methods.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

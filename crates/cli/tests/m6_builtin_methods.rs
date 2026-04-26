@@ -184,6 +184,37 @@ fn build_smoke_string_split_method() {
 }
 
 #[test]
+fn string_trim_method_emits() {
+    let result = run_fixture("builtins-and-io/string-trim.ts");
+    assert!(
+        result.is_ok(),
+        "String.trim should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn string_to_upper_case_method_emits() {
+    let result = run_fixture("builtins-and-io/string-to-upper-case.ts");
+    assert!(
+        result.is_ok(),
+        "String.toUpperCase should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn string_to_lower_case_method_emits() {
+    let result = run_fixture("builtins-and-io/string-to-lower-case.ts");
+    assert!(
+        result.is_ok(),
+        "String.toLowerCase should compile: {:?}",
+        result.err()
+    );
+}
+
+// Array method tests
+#[test]
 fn build_smoke_array_push_method() {
     let result = run_fixture("builtins-and-io/array-push.ts");
     assert!(
