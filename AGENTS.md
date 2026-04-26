@@ -43,14 +43,18 @@ docs/: 設計ドキュメント。fixtures/: テストフィクスチャ。scrip
 miseタスク利用推奨（`mise tasks` で一覧）。mise未利用時は `scripts/manager`。
 
 ```bash
+# reference coverage の運用:
+# - check: 集計状態を既存 artifacts と照合して壊れを検知 (`mise run check-coverage-matrix` / `scripts/manager update-coverage-matrix --check`)
+# - ramp: --limit を上げて reference-coverage を再実行し、実行結果から matrix を更新
+
 mise run check-issue-health              # 一括ゲート
 mise run update-issue-index           # issue index更新
 mise run check-manifest-imports       # manifest/wasm import一致確認
-mise run reference-coverage -- test262 --limit 50  # カバレッジ計測
+python scripts/manager.py reference-coverage test262 --limit 50  # カバレッジ計測（ramp）
 mise run update-coverage-matrix       # カバレッジ表更新
 mise run test262 -- --sample 50 --jobs 4  # test262実行
 # Issue追加（カバレッジ結果から自動生成）
-scripts/run/reference-coverage.sh test262 --limit 500 --detail | \
+python scripts/manager.py reference-coverage test262 --limit 500 --detail | \
   mise run gen-issues-from-coverage -- --suite test262
 ```
 

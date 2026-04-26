@@ -9,6 +9,33 @@
 
 ## Log
 
+### 2026-04-26T14:45:00Z — start issue 007
+
+- **When**: 2026-04-26T14:45:00Z
+- **State**: TASK_SELECT
+- **Decision**: Start issue 007 for reference-coverage prerequisite hardening and check/ramp documentation.
+- **Rationale**: Missing external reference suites currently can produce zero-denominator runs without clear remediation, and the coverage workflow documents are inconsistent.
+- **Reversible?**: yes
+- **Follow-up**: issues/open/007-harden-reference-coverage-prerequisites.md
+
+### 2026-04-26T15:25:00Z — verify issue 007
+
+- **When**: 2026-04-26T15:25:00Z
+- **State**: VERIFY_FULL
+- **Decision**: Verified missing-reference detection for test262/tsc/tsgo and documented check/ramp command paths; `update-coverage-matrix --check` is clean. `check-scripts` remains failing due a pre-existing syntax error in `scripts/dev/install-git-hooks.sh`.
+- **Rationale**: Required failure path now exits with actionable clone/fetch guidance before any denominator-zero or matrix-update flow. Manager command docs now describe check vs ramp.
+- **Reversible?**: yes
+- **Follow-up**: none
+
+### 2026-04-26T15:40:00Z — close issue 007
+
+- **When**: 2026-04-26T15:40:00Z
+- **State**: RETRO
+- **Decision**: Closed issue 007 and moved it to `issues/done/007-harden-reference-coverage-prerequisites.md`.
+- **Rationale**: Required acceptance criteria are satisfied for missing-reference messaging and docs updates; issue index regenerated and validated.
+- **Reversible?**: no
+- **Follow-up**: none
+
 ### 2026-04-26T13:30:00Z — start issue 006
 
 - **When**: 2026-04-26T13:30:00Z

@@ -9,10 +9,6 @@ Suites:
   tsc       -> reference/TypeScript/tests/cases/compiler/**/*.ts
   tsgo      -> reference/typescript-go/testdata/tests/**
 
-Modes:
-  --limit 0: Check mode - validates reference repo exists and has files, no execution
-  --limit N: Ramp mode - executes first N files for coverage measurement
-
 Notes:
   - This script classifies compile outcomes using ts2wasm diagnostics.
   - build_pass: build succeeded
@@ -22,14 +18,6 @@ Notes:
   - fail: internal compiler failures such as [InvariantViolation]
   - --json: output results as JSON instead of key=value pairs
   - --detail: output per-file details (file-path: diag-code: feature-label)
-  
-Reference Repository Setup:
-  The script requires reference repositories to be cloned and initialized.
-  If a repository is missing, the script will print exact clone/init commands.
-  
-  Example setup for test262:
-    git clone https://github.com/tc39/test262.git reference/test262
-    cd reference/test262 && git checkout main
 """
 
 import sys
@@ -42,42 +30,69 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
-REFERENCE_REPOS = {
+SUITE_METADATA = {
     "test262": {
-        "path": REPO_ROOT / "reference" / "test262",
+        "name": "test262",
+        "repo_path": REPO_ROOT / "reference" / "test262",
+        "path": REPO_ROOT / "reference" / "test262" / "test",
+        "pattern": "reference/test262/test/**/*.js",
         "clone_cmd": "git clone https://github.com/tc39/test262.git reference/test262",
-        "init_cmd": "cd reference/test262 && git checkout main"
+        "clone_hint": "git clone https://github.com/tc39/test262.git reference/test262",
     },
     "tsc": {
-        "path": REPO_ROOT / "reference" / "TypeScript",
-        "clone_cmd": "git clone https://github.com/microsoft/TypeScript.git reference/TypeScript",
-        "init_cmd": "cd reference/TypeScript && git checkout main"
+        "name": "TypeScript compiler cases",
+        "repo_path": REPO_ROOT / "reference" / "TypeScript",
+        "path": REPO_ROOT / "reference" / "TypeScript" / "tests" / "cases" / "compiler",
+        "pattern": "reference/TypeScript/tests/cases/compiler/**/*.ts",
+        "clone_cmd": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/TypeScript",
+        "clone_hint": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/TypeScript",
     },
     "tsgo": {
-        "path": REPO_ROOT / "reference" / "typescript-go",
-        "clone_cmd": "git clone https://github.com/golang/typescript.git reference/typescript-go",
-        "init_cmd": "cd reference/typescript-go && git checkout main"
-    }
+        "name": "typescript-go testdata",
+        "repo_path": REPO_ROOT / "reference" / "typescript-go",
+        "path": REPO_ROOT / "reference" / "typescript-go" / "testdata" / "tests",
+        "pattern": "reference/typescript-go/testdata/tests/**/*",
+        "clone_cmd": "git clone --depth 1 https://github.com/microsoft/typescript-go.git reference/typescript-go",
+        "clone_hint": "git clone --depth 1 https://github.com/microsoft/typescript-go.git reference/typescript-go",
+    },
 }
 
-def check_reference_repo(suite):
-    """Check if reference repo exists, print helpful error if not."""
-    if suite not in REFERENCE_REPOS:
-        return True  # Unknown suite will be caught later
-    
-    repo_info = REFERENCE_REPOS[suite]
-    repo_path = repo_info["path"]
-    
-    if not repo_path.exists():
-        print(f"Error: Reference repository not found: {repo_path}", file=sys.stderr)
-        print(file=sys.stderr)
-        print("To set up the reference repository, run:", file=sys.stderr)
-        print(f"  {repo_info['clone_cmd']}", file=sys.stderr)
-        print(f"  {repo_info['init_cmd']}", file=sys.stderr)
-        print(file=sys.stderr)
-        return False
-    
-    return True
+def missing_reference_hint(suite_key, config):
+    """Emit clear instructions for restoring missing reference sources."""
+    repo_path = config["repo_path"]
+    pattern = config["pattern"]
+    print(f"reference coverage failed: required {suite_key} source is missing", file=sys.stderr)
+    print("Expected path:", repo_path, file=sys.stderr)
+    print(f"Expected files matching: {pattern}", file=sys.stderr)
+    print("Please initialize reference sources first, for example:", file=sys.stderr)
+    print(f"  {config['clone_hint']}", file=sys.stderr)
+    print("Or resume with an existing shallow checkout:", file=sys.stderr)
+    print(f"  git -C {repo_path} fetch --depth 1 && git -C {repo_path} pull --ff-only", file=sys.stderr)
+    print("After checkout/pull, rerun this command.", file=sys.stderr)
+
+def resolve_suite_paths(suite):
+    """Resolve suite metadata and files, and validate repository presence."""
+    if suite not in SUITE_METADATA:
+        return None, None
+
+    config = SUITE_METADATA[suite]
+    if not config["repo_path"].exists() or not config["path"].exists():
+        missing_reference_hint(suite, config)
+        return None, None
+
+    if suite == "test262":
+        files = sorted(REPO_ROOT.glob(config["pattern"]))
+    elif suite == "tsc":
+        files = sorted((REPO_ROOT / "reference/TypeScript/tests/cases/compiler").glob("**/*.ts"))
+    else:
+        files = sorted((REPO_ROOT / "reference/typescript-go/testdata/tests").rglob("*"))
+        files = [f for f in files if f.is_file()]
+
+    if len(files) == 0:
+        missing_reference_hint(suite, config)
+        return None, None
+
+    return config, files
 
 def usage():
     print("Usage:")
@@ -111,10 +126,6 @@ def main():
     suite = sys.argv[1]
     args = sys.argv[2:]
     
-    # Check reference repo exists early
-    if not check_reference_repo(suite):
-        sys.exit(1)
-    
     limit = None
     json_output = False
     detail_output = False
@@ -142,40 +153,16 @@ def main():
             usage()
             sys.exit(1)
     
-    # Determine file paths based on suite
-    if suite == "test262":
-        file_pattern = "reference/test262/test/**/*.js"
-    elif suite == "tsc":
-        file_pattern = "reference/TypeScript/tests/cases/compiler/**/*.ts"
-    elif suite == "tsgo":
-        file_pattern = "reference/typescript-go/testdata/tests/**/*"
-    else:
+    if suite not in SUITE_METADATA:
         print(f"unknown suite: {suite}", file=sys.stderr)
         usage()
         sys.exit(1)
-    
-    # Find files
-    if suite == "test262":
-        files = sorted(REPO_ROOT.glob("reference/test262/test/**/*.js"))
-    elif suite == "tsc":
-        files = sorted(REPO_ROOT.glob("reference/TypeScript/tests/cases/compiler/**/*.ts"))
-    else:  # tsgo
-        files = sorted((REPO_ROOT / "reference/typescript-go/testdata/tests").rglob("*"))
-        files = [f for f in files if f.is_file()]
+
+    _, files = resolve_suite_paths(suite)
+    if files is None:
+        sys.exit(1)
     
     denominator = len(files)
-    
-    # Prevent denominator-zero issues
-    if denominator == 0:
-        print(f"Error: No files found in reference repository for suite '{suite}'", file=sys.stderr)
-        print(f"Expected path pattern: {file_pattern}", file=sys.stderr)
-        print(file=sys.stderr)
-        print("This may indicate:", file=sys.stderr)
-        print("  1. Reference repository is not properly initialized", file=sys.stderr)
-        print("  2. Reference repository structure has changed", file=sys.stderr)
-        print("  3. Incorrect suite name", file=sys.stderr)
-        print(file=sys.stderr)
-        sys.exit(1)
     
     if limit == 0:
         if json_output:
@@ -195,7 +182,7 @@ def main():
                 "unsupported_diagcodes": {},
                 "unsupported_features": {},
                 "status": "in-progress",
-                "evidence": f"scripts/run/reference-coverage.sh {suite} --limit 0"
+                "evidence": f"python scripts/manager.py reference-coverage {suite} --limit 0"
             }, indent=2))
         else:
             print(f"suite={suite}")
@@ -342,7 +329,7 @@ def main():
             "unsupported_diagcodes": unsupported_diag_counts,
             "unsupported_features": unsupported_feature_counts,
             "status": "in-progress",
-            "evidence": f"scripts/run/reference-coverage.sh {suite} --limit {limit if limit else ''}"
+            "evidence": f"python scripts/manager.py reference-coverage {suite} --limit {limit if limit else ''}".strip()
         }, indent=2))
     else:
         print(f"suite={suite}")
@@ -366,5 +353,4 @@ def main():
                 print(detail)
 
 if __name__ == "__main__":
-    import shutil
     main()

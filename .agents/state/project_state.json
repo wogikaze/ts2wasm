@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "fsm": "SYNC",
-  "updated_at": "2026-04-26T13:42:00Z",
+  "fsm": "RETRO",
   "active_task_id": null,
+  "updated_at": "2026-04-26T15:40:00Z",
   "verify_fast_streak_fails": 0
 }
