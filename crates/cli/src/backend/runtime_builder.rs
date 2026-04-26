@@ -640,15 +640,25 @@ impl WatEmitter<'_> {
             r#"
   (func $alloc_heap (param $size i32) (result i32)
     (local $base i32)
+    (local $new_heap i32)
+    (local $memory_pages i32)
+    (local $memory_bytes i32)
     (local.set $base
       (i32.and
         (i32.add (global.get $heap) (i32.const {align_mask}))
         (i32.const {heap_align})))
-    (global.set $heap (i32.add (local.get $base) (local.get $size)))
+    (local.set $new_heap (i32.add (local.get $base) (local.get $size)))
+    ;; OOM check: verify allocation fits within current memory
+    (local.set $memory_pages (memory.size))
+    (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
+    (if (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))
+      (then (unreachable)))
+    (global.set $heap (local.get $new_heap))
     (local.get $base))
 "#,
             align_mask = Layout::ALIGN_MASK,
             heap_align = ValueTag::HEAP_MASK,
+            page_size = Layout::WASM_PAGE_SIZE,
         ));
     }
 

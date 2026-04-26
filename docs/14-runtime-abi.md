@@ -132,3 +132,9 @@ string alloc 時は以下の手順で行う。
 4. $heap = align_to(base + 4 + len, ALIGN)
 5. return base | STRING_TAG
 ```
+
+### OOM Handling
+
+`$alloc_heap` は `memory.size` を使用して利用可能なメモリをチェックする。
+割り当てが現在のメモリサイズを超える場合、`unreachable` で trap する。
+これにより、大きな割り当てによる未定義動作やメモリ破損を防ぐ。
