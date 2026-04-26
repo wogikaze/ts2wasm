@@ -163,8 +163,7 @@ impl<'a> Lexer<'a> {
             | Some(Token::Case)
             | Some(Token::Do)
             | Some(Token::In)
-            | Some(Token::Of)
-            | Some(Token::InstanceOf) => true,
+            | Some(Token::Of) => true,
             _ => false,
         }
     }
@@ -214,6 +213,39 @@ impl<'a> Lexer<'a> {
         
         Ok(SpannedToken {
             kind: Token::RegExp(regexp_str),
+            span: Span {
+                start,
+                end: self.cursor,
+            },
+        })
+    }
+
+    fn template_literal(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
+        // Skip the opening backtick
+        self.advance_char();
+        
+        let mut literal = String::new();
+        let mut escaped = false;
+        
+        while let Some(ch) = self.peek_char() {
+            if escaped {
+                literal.push(ch);
+                escaped = false;
+            } else if ch == '\\' {
+                literal.push(ch);
+                escaped = true;
+            } else if ch == '`' {
+                // End of template literal
+                self.advance_char();
+                break;
+            } else {
+                literal.push(ch);
+            }
+            self.advance_char();
+        }
+        
+        Ok(SpannedToken {
+            kind: Token::TemplateLiteral(literal),
             span: Span {
                 start,
                 end: self.cursor,
@@ -736,6 +768,10 @@ impl<'a> Lexer<'a> {
                             end: self.cursor,
                         },
                     });
+                }
+                '`' => {
+                    let token = self.template_literal(start)?;
+                    self.add_token(&mut tokens, token);
                 }
                 ';' => {
                     self.advance_char();
@@ -2237,6 +2273,14 @@ impl Parser {
                 kind: Token::String(value),
                 span,
             }) => Ok(Expr::String { value, span }),
+            Some(SpannedToken {
+                kind: Token::TemplateLiteral(value),
+                span,
+            }) => {
+                // For now, treat template literals as simple strings
+                // Full interpolation support will require parsing ${} expressions
+                Ok(Expr::String { value, span })
+            }
             Some(SpannedToken {
                 kind: Token::True,
                 span,
