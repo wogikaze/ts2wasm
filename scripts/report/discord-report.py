@@ -76,54 +76,59 @@ def parse_cycle_report(content: str) -> dict[str, str]:
 def create_discord_embed(fields: dict[str, str], run_id: Optional[str]) -> dict:
     """Create Discord embed from report fields."""
     embed = {
-        "title": "ts2wasm 開発ループレポート",
-        "color": 5814783,  # Blue
-        "fields": [
+        "username": "ts2wasm-dev-loop",
+        "embeds": [
             {
-                "name": "📊 状態",
-                "value": fields["status"][:1024],
-                "inline": False,
-            },
-            {
-                "name": "🎯 目的",
-                "value": fields["purpose"][:1024],
-                "inline": False,
-            },
-            {
-                "name": "🔄 実施内容",
-                "value": fields["actions"][:1024],
-                "inline": False,
-            },
-            {
-                "name": "🧠 判断と根拠",
-                "value": fields["reasoning"][:1024],
-                "inline": False,
-            },
-            {
-                "name": "⚠️ 詰まり・ロス",
-                "value": fields["blockers"][:1024],
-                "inline": False,
-            },
-            {
-                "name": "📉 リスク",
-                "value": fields["risks"][:1024],
-                "inline": False,
-            },
-            {
-                "name": "➡️ 次にやるべきこと",
-                "value": fields["next"][:1024],
-                "inline": False,
-            },
-            {
-                "name": "📌 完了 / 追加",
-                "value": fields["issues"][:1024],
-                "inline": False,
-            },
-        ],
+                "title": "ts2wasm 開発ループレポート",
+                "color": 5814783,  # Blue
+                "fields": [
+                    {
+                        "name": "📊 状態",
+                        "value": fields["status"][:1024],
+                        "inline": False,
+                    },
+                    {
+                        "name": "🎯 目的",
+                        "value": fields["purpose"][:1024],
+                        "inline": False,
+                    },
+                    {
+                        "name": "🔄 実施内容",
+                        "value": fields["actions"][:1024],
+                        "inline": False,
+                    },
+                    {
+                        "name": "🧠 判断と根拠",
+                        "value": fields["reasoning"][:1024],
+                        "inline": False,
+                    },
+                    {
+                        "name": "⚠️ 詰まり・ロス",
+                        "value": fields["blockers"][:1024],
+                        "inline": False,
+                    },
+                    {
+                        "name": "📉 リスク",
+                        "value": fields["risks"][:1024],
+                        "inline": False,
+                    },
+                    {
+                        "name": "➡️ 次にやるべきこと",
+                        "value": fields["next"][:1024],
+                        "inline": False,
+                    },
+                    {
+                        "name": "📌 完了 / 追加",
+                        "value": fields["issues"][:1024],
+                        "inline": False,
+                    },
+                ],
+            }
+        ]
     }
     if run_id:
-        embed["footer"] = {"text": f"run: {run_id}"}
-    return {"embeds": [embed]}
+        embed["embeds"][0]["footer"] = {"text": f"run: {run_id}"}
+    return embed
 
 
 def send_discord_webhook(webhook_url: str, embed: dict) -> bool:
