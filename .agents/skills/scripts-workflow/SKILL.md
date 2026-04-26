@@ -5,11 +5,11 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 
 # Scripts workflow
 
-**Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`. **Layout (first tier):** `scripts/check/` (static, non-destructive), `scripts/gate/` (pass/fail), `scripts/gen/` (refresh tracked generated artifacts), `scripts/run/` (execute/measure), `scripts/report/` (human-facing formatting), `scripts/perf/` (benchmarks), `scripts/dev/` (local setup), `scripts/lib/` (sourced helpers only; not executed). Deprecated top-level names may remain as thin `exec` wrappers during migration. **Harness baseline:** `scripts/check_harness_installation.sh` inventories toolchain + P0 `check_*.sh` and runs the rest of the project gates; optional strict Rust warnings: `TS2WASM_NEXTEST_DENY_WARNINGS=1` (see `issues/open/011-*.md` until the tree is clean).
+**Discovery:** the repo entry is `scripts/manager` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register it in `manager` and a `[tasks.*]` in `mise.toml`. **Layout (first tier):** `scripts/check/` (static, non-destructive), `scripts/gate/` (pass/fail), `scripts/gen/` (refresh tracked generated artifacts), `scripts/run/` (execute/measure), `scripts/report/` (human-facing formatting), `scripts/perf/` (benchmarks), `scripts/dev/` (local setup), `scripts/lib/` (sourced helpers only; not executed). Deprecated top-level names may remain as thin `exec` wrappers during migration. **Harness baseline:** `scripts/manager check-harness-installation` inventories toolchain + P0 checks and runs the rest of the project gates; optional strict Rust warnings: `TS2WASM_NEXTEST_DENY_WARNINGS=1` (see `issues/open/011-*.md` until the tree is clean).
 
 ## Table of Contents
 
-- [Mise: run before you merge a script change](#mise-run-before-you-merge-a-script-change-required)
+- [Manager: auto-execute after making changes](#manager-auto-execute-after-making-changes-required)
 - [Scope](#scope)
 - [Core Rules](#core-rules)
 - [Fixture Boundary Rules](#fixture-boundary-rules)
@@ -24,13 +24,13 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 - [Output Checklist](#output-checklist)
 - [Related Skills](#related-skills)
 
-## Mise: auto-execute after making changes (required)
+## Manager: auto-execute after making changes (required)
 
-**Automatically execute the following after making script changes.** First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)). Without `mise`, use `scripts/manager` with the same subcommand.
+**Automatically execute the following after making script changes.** Use `scripts/manager` as the primary repo entry. `mise run <task>` is optional sugar for the same tasks.
 
-- Always: `mise run check-scripts` (plus `mise run fmt` if the script is invoked from tests or the diff touches Rust)
-- `mise run check-repo-smoke` after touching `issues` paths or the manager
-- For coverage/ CI scripts: also run the same command family you would run in `scripts` docs (e.g. `mise run reference-coverage` with a small limit when that script supports it)
+- Always: `scripts/manager check-scripts` (plus `scripts/manager fmt` if the script is invoked from tests or the diff touches Rust)
+- `scripts/manager check-repo-smoke` after touching `issues` paths or the manager
+- For coverage/ CI scripts: also run the same command family you would run in `scripts` docs (e.g. `scripts/manager reference-coverage` with a small limit when that script supports it)
 - `mise tasks` to confirm your new `mise run <task>` appears after you add it to `mise.toml`
 - **Auto-commit changes after verification passes** (commit message based on change description)
 

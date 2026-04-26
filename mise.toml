@@ -17,7 +17,7 @@ run = "scripts/manager update-issue-index"
 
 [tasks."gen-issues-from-coverage"]
 description = "Generate issues from reference-coverage --detail output (args: --suite test262)"
-run = "python3 scripts/gen/issues-from-coverage.py"
+run = "scripts/manager gen-issues-from-coverage"
 
 [tasks."install-hooks"]
 description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath"

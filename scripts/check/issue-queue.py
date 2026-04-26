@@ -224,6 +224,8 @@ def err(errors: list[str], msg: str) -> None:
 
 
 def should_skip_path(p: str) -> bool:
+    if p.startswith("reference/"):
+        return True
     if "..." in p or "|" in p:
         return True
     if len(p) < 4:

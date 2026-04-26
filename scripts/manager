@@ -56,6 +56,7 @@ benchmark-tracker	Append build/fixture performance metrics to JSON
 test262	Run test262 harness (stdout JSONL; args: see script --help)
 test-differential-reporter	HTML/Markdown report from test262 JSONL (stdin; args optional)
 test-regression-gate	Gate: regressions in JSONL vs baseline
+gen-issues-from-coverage	Generate issues from reference-coverage --detail output
 fmt	cargo fmt --all --check
 clippy	cargo clippy --all-targets
 nextest	cargo nextest run
@@ -89,6 +90,7 @@ TABLE
   test262                    test262 JSONL to stdout
   test-differential-reporter Report from test262 JSONL (stdin)
   test-regression-gate       JSONL vs baseline
+  gen-issues-from-coverage   Generate issues from reference-coverage --detail output
   fmt                        cargo fmt --all --check
   clippy                     cargo clippy --all-targets
   nextest                    cargo nextest run
@@ -134,6 +136,7 @@ case "$target" in
   test262) exec bash "${repo_root}/scripts/run/test262.sh" "$@" ;;
   test-differential-reporter) exec bash "${repo_root}/scripts/report/differential.sh" "$@" ;;
   test-regression-gate) exec bash "${repo_root}/scripts/gate/regression.sh" "$@" ;;
+  gen-issues-from-coverage) exec python3 "${repo_root}/scripts/gen/issues-from-coverage.py" "$@" ;;
   fmt) exec cargo fmt --all --check ;;
   clippy) exec cargo clippy --all-targets -- "$@" ;;
   nextest) exec cargo nextest run "$@" ;;

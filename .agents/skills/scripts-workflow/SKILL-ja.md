@@ -5,11 +5,11 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 
 # スクリプトワークフロー
 
-**発見:** repoエントリは`scripts/manager`とroot `mise.toml`（一覧: `mise tasks`）。使用法を見つけるためにすべての`scripts/*.sh`を読むことを避ける。スクリプトを追加するとき、`manager`と`mise.toml`の`[tasks.*]`に登録。**レイアウト（第1層）:** `scripts/check/`（静的、非破壊）、`scripts/gate/`（pass/fail）、`scripts/gen/`（追跡生成アーティファクトの更新）、`scripts/run/`（実行/測定）、`scripts/report/`（人間向けフォーマット）、`scripts/perf/`（ベンチマーク）、`scripts/dev/`（ローカルセットアップ）、`scripts/lib/`（ソースヘルパーのみ、実行しない）。非推奨のトップレベル名は移行中に薄い`exec`ラッパーとして残る可能性。**ハーネスベースライン:** `scripts/check_harness_installation.sh`はツールチェーン + P0 `check_*.sh`をインベントリし、プロジェクトゲートの残りを実行。オプションの厳格Rust警告: `TS2WASM_NEXTEST_DENY_WARNINGS=1`（ツリーがクリーンになるまで`issues/open/011-*.md`を参照）。
+**発見:** repoエントリは`scripts/manager`とroot `mise.toml`（一覧: `mise tasks`）。使用法を見つけるためにすべての`scripts/*.sh`を読むことを避ける。スクリプトを追加するとき、`manager`と`mise.toml`の`[tasks.*]`に登録。**レイアウト（第1層）:** `scripts/check/`（静的、非破壊）、`scripts/gate/`（pass/fail）、`scripts/gen/`（追跡生成アーティファクトの更新）、`scripts/run/`（実行/測定）、`scripts/report/`（人間向けフォーマット）、`scripts/perf/`（ベンチマーク）、`scripts/dev/`（ローカルセットアップ）、`scripts/lib/`（ソースヘルパーのみ、実行しない）。非推奨のトップレベル名は移行中に薄い`exec`ラッパーとして残る可能性。**ハーネスベースライン:** `scripts/manager check-harness-installation`はツールチェーン + P0 checksをインベントリし、プロジェクトゲートの残りを実行。オプションの厳格Rust警告: `TS2WASM_NEXTEST_DENY_WARNINGS=1`（ツリーがクリーンになるまで`issues/open/011-*.md`を参照）。
 
 ## 目次
 
-- [Mise: スクリプト変更のマージ前に実行](#mise-スクリプト変更のマージ前に実行必須)
+- [Manager: スクリプト変更後に自動実行](#manager-スクリプト変更後に自動実行必須)
 - [スコープ](#スコープ)
 - [コアルール](#コアルール)
 - [フィクスチャ境界ルール](#フィクスチャ境界ルール)
@@ -24,13 +24,13 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 - [出力チェックリスト](#出力チェックリスト)
 - [関連スキル](#関連スキル)
 
-## Mise: スクリプト変更のマージ前に実行（必須）
+## Manager: スクリプト変更後に自動実行（必須）
 
-**該当するすべてを実行。ローカルゲートが緑でないスクリプト変更を出荷しない。** 初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）。`mise`がない場合、`scripts/manager`を同じサブコマンドで使用。
+**該当するすべてを実行。ローカルゲートが緑でないスクリプト変更を出荷しない。** `scripts/manager`を repo 標準入口として使用。`mise run <task>`は同じ task への任意の糖衣。
 
-- 常に: `mise run check-scripts`（スクリプトがテストから呼び出されるか、diffがRustに触れる場合は`mise run fmt`も）
-- `issues`パスまたはmanagerに触れた後: `mise run check-repo-smoke`
-- カバレッジ/CIスクリプトの場合: そのスクリプトの`scripts`ドキュメントで実行するのと同じコマンドファミリーも実行（例: そのスクリプトがサポートする場合、小さなlimitで`mise run reference-coverage`）
+- 常に: `scripts/manager check-scripts`（スクリプトがテストから呼び出されるか、diffがRustに触れる場合は`scripts/manager fmt`も）
+- `issues`パスまたはmanagerに触れた後: `scripts/manager check-repo-smoke`
+- カバレッジ/CIスクリプトの場合: そのスクリプトの`scripts`ドキュメントで実行するのと同じコマンドファミリーも実行（例: そのスクリプトがサポートする場合、小さなlimitで`scripts/manager reference-coverage`）
 - 新しい`mise run <task>`が`mise.toml`に追加した後に現れることを`mise tasks`で確認
 
 このskillはscripts/変更のみに使用。

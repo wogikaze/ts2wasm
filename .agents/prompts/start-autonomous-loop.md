@@ -56,8 +56,8 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 ### Verification (VERIFY state)
 
 - Run all validation commands from the issue
-- `cargo fmt --all --check`
-- `cargo nextest run` (full suite, no filters)
+- `scripts/manager fmt`
+- `scripts/manager nextest` (full suite, no filters)
 - Any fixture-specific tests (e.g., `iwasm fixture.wasm`)
 - Verify all acceptance criteria with evidence
 
@@ -65,7 +65,11 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 
 - Update issue file status to "done" and add completion evidence
 - Move issue file from `issues/open/` to `issues/done/`
-- Run `mise run update-issue-index` to regenerate `issues/index.md`
+- Run `scripts/manager update-issue-index` to regenerate `issues/index.md`
+- Run `scripts/manager update-issue-index --check`
+- Run `scripts/manager check-issue-queue`
+- Run `scripts/manager check-agent-state`
+- Run `scripts/manager check-repo-smoke`
 - Clear `current_task.json` to idle state
 - Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
 - Update failure_patterns.md if new failure pattern discovered
@@ -83,10 +87,10 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 
   ```bash
   scripts/run/reference-coverage.sh test262 --limit 500 --detail | \
-    mise run gen-issues-from-coverage -- --suite test262
+    scripts/manager gen-issues-from-coverage --suite test262
   ```
 
-- Run `mise run update-issue-index` to regenerate `issues/index.md`
+- Run `scripts/manager update-issue-index` to regenerate `issues/index.md`
 
 - Commit changes:
 
@@ -104,12 +108,12 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 ## Critical Requirements
 
 **A loop is NOT complete until:**
-- Full test suite passes (`cargo nextest run` with no filters)
+- Full test suite passes (`scripts/manager nextest` with no filters)
 - Issue file is moved from `issues/open/` to `issues/done/` with updated frontmatter
 - `issues/index.md` is regenerated and verified
 - All acceptance criteria are explicitly verified with evidence
 - **Mechanical guards added** to `failure_patterns.md` or `review_checklist.md` if new patterns discovered
-- **State files validated** with `mise run check-agent-state`
+- **State files validated** with `scripts/manager check-agent-state`
 - **Command outputs saved** to `reports/runs/<run_id>/stdout.log` and `stderr.log`
 
 Do not mark an issue as done without completing these steps.
