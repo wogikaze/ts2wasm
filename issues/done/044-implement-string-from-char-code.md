@@ -3,7 +3,7 @@ id: 044
 title: "Implement String.fromCharCode and charCodeAt"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
@@ -27,9 +27,9 @@ String.fromCharCode and charCodeAt are not implemented. They are essential for c
 
 In scope:
 
-- [ ] Implement String.fromCharCode
-- [ ] Implement String.prototype.charCodeAt
-- [ ] Add fixtures for char code conversion
+- [x] Implement String.fromCharCode
+- [x] Implement String.prototype.charCodeAt
+- [x] Add fixtures for char code conversion
 
 Out of scope:
 
@@ -49,10 +49,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] String.fromCharCode works correctly
-- [ ] String.prototype.charCodeAt works correctly
-- [ ] Fixtures cover char code conversion
-- [ ] No regression in existing fixtures
+- [x] String.fromCharCode works correctly
+- [x] String.prototype.charCodeAt works correctly
+- [x] Fixtures cover char code conversion
+- [x] No regression in existing fixtures
 
 ## Validation
 

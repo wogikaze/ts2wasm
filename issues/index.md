@@ -33,7 +33,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 039 | Implement spread arguments | feature | frontend/semantics | implementation-ready | P1 |  | Implement spread arguments |
 | 040 | Implement default parameters | feature | frontend/semantics | implementation-ready | P1 |  | Implement default parameters |
 | 041 | Implement template literals | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literals |
-| 044 | Implement String.fromCharCode and charCodeAt | feature | runtime/builtins | implementation-ready | P1 |  | Implement String.fromCharCode and charCodeAt |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
