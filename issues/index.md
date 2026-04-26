@@ -17,7 +17,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 008 | Introduce typed WAT writer skeleton | refactor | backend | design-ready | P1 | 003 | Large raw WAT string generation in runtime builder code is a major maintainability risk. A full rewrite is too large,... |
 | 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
 | 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/fronten... |
 | 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | implementation-ready | P2 |  | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) |
@@ -234,6 +233,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 005 | Add fine-grained unsupported feature breakdown | infra | scripts/coverage | see `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` |
 | 006 | Remove stale milestone and transitional docs | cleanup | docs | see file |
 | 007 | Harden reference coverage prerequisites | infra | scripts/reference | see file |
+| 008 | Introduce typed WAT writer skeleton | refactor | backend | see `issues/done/008-introduce-typed-wat-writer-skeleton.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
 | 013 | Implement heap OOM check | feature | runtime/memory | see `issues/done/013-implement-heap-oom-check.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |

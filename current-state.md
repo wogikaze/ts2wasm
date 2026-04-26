@@ -130,10 +130,10 @@ See `issues/index.md` for the auto-generated Ready queue and Blocked queue.
 Run `scripts/manager update-issue-index` to refresh after adding, closing, or moving issues.
 
 The current top Ready items (実務上優先する順) are:
-- Remove stale milestone / transitional docs (006)
-- Heap OOM check (013)
 - Harden reference coverage prerequisites (007)
-- Investigate and classify unknown-unsupported diagnostic cases (060)
+- Introduce typed WAT writer skeleton (008)
+- Select first coverage-improvement feature slice (009)
+- Fix module/extractor wiring for top-level exports (010)
 
 For exact ordering and full queue, refer to the generated table in `issues/index.md`.
 

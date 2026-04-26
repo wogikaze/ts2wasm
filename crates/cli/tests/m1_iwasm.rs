@@ -1,5 +1,12 @@
 use std::fs;
+use std::path::Path;
 use std::process::Command;
+
+fn fixture_path(fixture: &str) -> std::path::PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join(fixture)
+}
 
 #[test]
 fn builds_console_log_hi_and_runs_with_iwasm() {
@@ -34,4 +41,37 @@ fn builds_console_log_hi_and_runs_with_iwasm() {
         String::from_utf8_lossy(&run.stderr)
     );
     assert_eq!(String::from_utf8_lossy(&run.stdout), "hi\n");
+}
+
+#[test]
+fn oom_alloc_check_must_fail_iwasm() {
+    let input = fixture_path("basics-oom/oom-test.ts");
+    assert!(input.exists(), "missing fixture: {:?}", input);
+
+    let output =
+        std::env::temp_dir().join(format!("ts2wasm-m1-oom-check-{}.wasm", std::process::id()));
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        build.status.success(),
+        "build failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let run = Command::new("iwasm").arg(&output).output().unwrap();
+
+    assert!(
+        !run.status.success(),
+        "iwasm unexpectedly succeeded\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.stdout),
+        String::from_utf8_lossy(&run.stderr)
+    );
 }
