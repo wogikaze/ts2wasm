@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check issue queue invariants and index consistency.
+"""Check issue health invariants and index consistency.
 
 Checks:
 - Duplicate IDs within open/done
@@ -12,7 +12,7 @@ Checks:
 - JSON validity in .agents/state
 - Index tables are up to date and consistent
 
-Replaces check_issue_queue.sh and check_issue_index.sh for <1s performance.
+Replaces legacy issue queue/index checks for <1s performance.
 """
 
 from __future__ import annotations
@@ -220,7 +220,7 @@ def load_issues() -> list[Issue]:
 
 
 def err(errors: list[str], msg: str) -> None:
-    errors.append(f"check_issue_queue: {msg}")
+    errors.append(f"check_issue_health: {msg}")
 
 
 def should_skip_path(p: str) -> bool:
@@ -545,10 +545,10 @@ def main() -> int:
     if errors:
         for msg in errors:
             print(msg, file=sys.stderr)
-        print("check_issue_queue: failed (see errors above)", file=sys.stderr)
+        print("check_issue_health: failed (see errors above)", file=sys.stderr)
         return 1
 
-    print("check_issue_queue: OK")
+    print("check_issue_health: OK")
     print("issues/index.md queue OK", file=sys.stderr)
     return 0
 

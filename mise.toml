@@ -77,40 +77,40 @@ description = "fmt + issues + coverage matrix check + nextest (see script --help
 run = "python scripts/manager.py check-fast-gate"
 
 [tasks."check-manifest-imports"]
-description = "Manifest JSON imports vs wasm import section [Unix only]"
-run = "bash scripts/manager check-manifest-imports"
+description = "Manifest JSON imports vs wasm import section"
+run = "python scripts/manager.py check-manifest-imports"
 
 [tasks."check-fixture-catalog"]
-description = "fixtures/ top-level layout rules [Unix only]"
-run = "bash scripts/manager check-fixture-catalog"
+description = "fixtures/ top-level layout rules"
+run = "python scripts/manager.py check-fixture-catalog"
 
 [tasks."check-architecture-rules"]
-description = "Crate boundary smoke (shared must not depend on cli) [Unix only]"
-run = "bash scripts/manager check-architecture-rules"
+description = "Crate boundary smoke (shared must not depend on cli)"
+run = "python scripts/manager.py check-architecture-rules"
 
 [tasks."check-compiler-diagnostics"]
-description = "No panic! in backend/runtime/main.rs [Unix only]"
-run = "bash scripts/manager check-compiler-diagnostics"
+description = "No panic! in backend/runtime/main.rs"
+run = "python scripts/manager.py check-compiler-diagnostics"
 
 [tasks."check-harness-installation"]
-description = "P0 + fast gate + all project check_* harnesses (slow) [Unix only]"
-run = "bash scripts/manager check-harness-installation"
+description = "P0 + fast gate + all project check_* harnesses (slow)"
+run = "python scripts/manager.py check-harness-installation"
 
 [tasks."check-toolchain"]
-description = "Verify required CLI tools (cargo, node, wasm-tools, …) [Unix only]"
-run = "bash scripts/manager check-toolchain"
+description = "Verify required CLI tools (cargo, node, wasm-tools, …)"
+run = "python scripts/manager.py check-toolchain"
 
 [tasks."check-host-deny"]
-description = "Standalone fixtures must not import wasm module name host [Unix only]"
-run = "bash scripts/manager check-host-deny"
+description = "Standalone fixtures must not import wasm module name host"
+run = "python scripts/manager.py check-host-deny"
 
 [tasks."check-runtimefn-invariants"]
-description = "Unit tests for runtime link plan and RuntimeFn invariants [Unix only]"
-run = "bash scripts/manager check-runtimefn-invariants"
+description = "Unit tests for runtime link plan and RuntimeFn invariants"
+run = "python scripts/manager.py check-runtimefn-invariants"
 
 [tasks."check-wasm-validation"]
-description = "wasm-tools validate on representative build outputs [Unix only]"
-run = "bash scripts/manager check-wasm-validation"
+description = "wasm-tools validate on representative build outputs"
+run = "python scripts/manager.py check-wasm-validation"
 
 [tasks."check-agent-state"]
 description = "Validate .agents/state JSON files against schemas"
@@ -121,12 +121,12 @@ description = "Mechanical invariants: ids, paths, index+tables"
 run = "python scripts/manager.py check-issue-health"
 
 [tasks."check-test-records-schema"]
-description = "Validate TestRecord JSONL lines (stdin or file) [Unix only]"
-run = "bash scripts/manager check-test-records-schema"
+description = "Validate TestRecord JSONL lines (stdin or file)"
+run = "python scripts/manager.py check-test-records-schema"
 
 [tasks."check-fixture-differential"]
-description = "Node vs iwasm: runs nextest m2_node_diff [Unix only]"
-run = "bash scripts/manager check-fixture-differential"
+description = "Node vs iwasm: runs nextest m2_node_diff"
+run = "python scripts/manager.py check-fixture-differential"
 
 [tasks.manager]
 description = "Print script manager help (list all commands)"

@@ -115,13 +115,39 @@ python scripts/manager.py help
 Some scripts still depend on bash and are not yet available on Windows:
 
 - `check-scripts` - Bash syntax check (not needed on Windows)
-- `check-manifest-imports` - Requires bash
-- `check-toolchain` - Requires bash
-- `reference-coverage` - Requires bash
-- `test262` - Requires bash
-- Many other check/gate/run scripts
+- `install-hooks` - Git hooks installation (Unix-specific)
+- `check-coverage-gate` - Coverage comparison (requires bash)
+- `reference-coverage` - Reference suite coverage runner (requires bash)
+- `test262` - test262 harness (requires bash)
+- `test-differential-reporter` - HTML/Md report from test262 (requires bash)
+- `test-regression-gate` - Regression gate (requires bash)
+- `coverage-report` - Language coverage report (requires bash)
+- `benchmark-tracker` - Performance metrics (requires bash)
+- `check-repo-smoke` - Smoke test (requires bash)
 
-For full functionality, consider using WSL2. See the main README for WSL setup instructions.
+**Migrated to Python (Windows-compatible):**
+- `check-toolchain` - Toolchain verification
+- `check-manifest-imports` - Manifest vs wasm imports
+- `check-test-records-schema` - TestRecord JSONL validation
+- `check-fixture-catalog` - Fixture layout rules
+- `check-architecture-rules` - Crate boundary checks
+- `check-compiler-diagnostics` - Panic! checks
+- `check-harness-installation` - Harness baseline
+- `check-fixture-differential` - Node vs iwasm differential
+- `check-host-deny` - Host import denial
+- `check-runtimefn-invariants` - Runtime function invariants
+- `check-wasm-validation` - WASM validation
+- `check-agent-state` - Agent state validation
+- `check-issue-health` - Issue health checks
+- `update-issue-index` - Issue index generation
+- `gen-issues-from-coverage` - Issue generation from coverage
+- `update-coverage-matrix` - Coverage matrix update
+- `fmt` - Cargo formatting
+- `clippy` - Cargo linting
+- `nextest` - Test runner
+- `check-fast-gate` - Fast gate (fmt + issues + coverage + tests)
+
+For full functionality including test262 and coverage reports, consider using WSL2. See the main README for WSL setup instructions.
 
 ## Alternative: Using Mise (Experimental)
 
@@ -201,10 +227,14 @@ When contributing Windows-specific fixes:
 
 The following bash scripts are planned to be migrated to Python for full Windows support:
 
-- [ ] check-toolchain
-- [ ] check-manifest-imports
 - [ ] reference-coverage
 - [ ] test262
-- [ ] All remaining check/gate/run scripts
+- [ ] test-differential-reporter
+- [ ] test-regression-gate
+- [ ] coverage-report
+- [ ] benchmark-tracker
+- [ ] check-coverage-gate
+- [ ] install-hooks (Git hooks)
+- [ ] check-scripts (bash syntax check - may remain Unix-only)
 
 See the issue tracker for progress.
