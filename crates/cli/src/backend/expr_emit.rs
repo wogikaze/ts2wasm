@@ -198,9 +198,14 @@ impl WatEmitter<'_> {
                     frame.heap_base_tmp(),
                     prop_count,
                 ));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_PROTOTYPE_OFFSET,
+                ));
                 for (i, (key, val)) in props.iter().enumerate() {
                     let entry_offset =
-                        Layout::OBJECT_HEADER_SIZE + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
+                        Layout::OBJECT_ENTRIES_OFFSET + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
                     let key_raw = self.string_value(key);
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
@@ -308,6 +313,11 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const 0))\n",
                     local_index(*base_local),
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    local_index(*base_local),
+                    Layout::OBJECT_PROTOTYPE_OFFSET,
                 ));
 
                 // Call constructor with implicit `this` first argument.

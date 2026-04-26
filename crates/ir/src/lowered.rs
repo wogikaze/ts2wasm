@@ -615,6 +615,13 @@ impl<'a> Resolver<'a> {
                 .last_mut()
                 .expect("function scope must exist")
                 .insert(param.clone(), local_id);
+            if let Some(current_class) = current_class {
+                if param == "this" {
+                    resolver
+                        .local_classes
+                        .insert(local_id, current_class.to_owned());
+                }
+            }
             param_ids.push(local_id);
         }
 
@@ -644,16 +651,20 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 let lowered = self.lower_expr(expr)?;
-                if let ResolvedExpr::New { class_name, .. } = expr {
-                    self.local_classes.insert(local_id, class_name.clone());
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = expr_class {
+                    self.local_classes.insert(local_id, class_name);
+                } else {
+                    self.local_classes.remove(&local_id);
                 }
                 Ok(LoweredStmt::Let(local_id, lowered))
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
                 let lowered = self.lower_expr(expr)?;
-                if let ResolvedExpr::New { class_name, .. } = expr {
-                    self.local_classes.insert(local_id, class_name.clone());
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = expr_class {
+                    self.local_classes.insert(local_id, class_name);
                 } else {
                     self.local_classes.remove(&local_id);
                 }
@@ -1143,6 +1154,17 @@ impl<'a> Resolver<'a> {
             current = self.class_parents.get(&class).and_then(|p| p.clone());
         }
         None
+    }
+
+    fn infer_class_for_expr(&self, expr: &ResolvedExpr) -> Option<String> {
+        match expr {
+            ResolvedExpr::New { class_name, .. } => Some(class_name.clone()),
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .and_then(|local_id| self.local_classes.get(&local_id).cloned()),
+            _ => None,
+        }
     }
 }
 

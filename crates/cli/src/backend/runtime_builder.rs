@@ -914,8 +914,10 @@ impl WatEmitter<'_> {
   (func $property_get (param $obj i32) (param $key_ptr i32) (param $key_len i32) (result i32)
     (local $tag i32)
     (local $base i32)
+    (local $proto i32)
     (local $count i32)
     (local $i i32)
+    (local $steps i32)
     (local $entry_base i32)
     (local $pk_raw i32)
     (local $pk_ptr i32)
@@ -923,33 +925,47 @@ impl WatEmitter<'_> {
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
-    (local.set $count (i32.load (local.get $base)))
-    (local.set $i (local.get $count))
-    (block $done
-      (loop $scan
-        (br_if $done (i32.eq (local.get $i) (i32.const {zero})))
-        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
-        (local.set $entry_base
-          (i32.add (local.get $base)
-            (i32.add (i32.const {obj_header})
-              (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (local.set $pk_raw (i32.load (local.get $entry_base)))
-        (local.set $pk_ptr
-          (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
-        (local.set $pk_len
-          (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
-        (if (i32.eq (local.get $key_len) (local.get $pk_len))
-          (then
-                (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
+  (block $done
+    (local.set $steps (i32.const 0))
+    (loop $walk
+      (local.set $count (i32.load (local.get $base)))
+      (local.set $i (local.get $count))
+        (block $scan_entries
+          (loop $scan_entries
+            (br_if $scan_entries (i32.eq (local.get $i) (i32.const {zero})))
+            (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+            (local.set $entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
+            (local.set $pk_raw (i32.load (local.get $entry_base)))
+            (local.set $pk_ptr
+              (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+            (local.set $pk_len
+              (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+            (if (i32.eq (local.get $key_len) (local.get $pk_len))
               (then
-                (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))))))
-        (br $scan)))
+                (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
+                  (then
+                    (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off})))))))
+            (br $scan_entries)))
+        (local.set $proto (i32.load (i32.add (local.get $base) (i32.const {obj_proto}))))
+        (if (i32.eqz (local.get $proto))
+          (then (return (i32.const {undefined}))))
+        (if (i32.eq (local.get $base) (local.get $proto))
+          (then (return (i32.const {undefined}))))
+        (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
+        (if (i32.ge_u (local.get $steps) (i32.const 64))
+          (then (return (i32.const {undefined}))))
+        (local.set $base (local.get $proto))
+        (br $walk))))
     (i32.const {undefined}))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
@@ -2030,6 +2046,7 @@ impl WatEmitter<'_> {
         ;; Initialize an empty exports object once for this module ID.
         (local.set $exports (call $alloc_heap (i32.const {empty_obj_size})))
         (i32.store (local.get $exports) (i32.const {zero}))
+        (i32.store (i32.add (local.get $exports) (i32.const {object_proto})) (i32.const {zero}))
         (i32.store (i32.add (local.get $entry) (i32.const {value_offset}))
           (i32.or (local.get $exports) (i32.const {object_tag})))
         (i32.store (local.get $entry) (i32.const {one}))))
@@ -2039,6 +2056,7 @@ impl WatEmitter<'_> {
             empty_obj_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE),
             value_offset = 4,
             object_tag = ValueTag::OBJECT,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             one = RuntimeConst::ONE,
             zero = RuntimeConst::ZERO,
         ));
@@ -2061,6 +2079,7 @@ impl WatEmitter<'_> {
       (then
         (local.set $exports (call $alloc_heap (i32.const {empty_obj_size})))
         (i32.store (local.get $exports) (i32.const {zero}))
+        (i32.store (i32.add (local.get $exports) (i32.const {object_proto})) (i32.const {zero}))
         (i32.store (i32.add (local.get $entry) (i32.const {value_offset}))
           (i32.or (local.get $exports) (i32.const {object_tag})))
         (i32.store (local.get $entry) (i32.const {one}))))
@@ -2075,6 +2094,7 @@ impl WatEmitter<'_> {
             empty_obj_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE),
             value_offset = 4,
             object_tag = ValueTag::OBJECT,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             one = RuntimeConst::ONE,
             zero = RuntimeConst::ZERO,
         ));

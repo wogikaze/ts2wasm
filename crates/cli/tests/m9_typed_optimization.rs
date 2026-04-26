@@ -2,6 +2,11 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+#[path = "common/iwasm_runtime.rs"]
+mod iwasm_runtime;
+
+use iwasm_runtime::run_iwasm_with_timeout;
+
 fn fixture_path(fixture: &str) -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -68,18 +73,22 @@ fn wat_runtime_functions(path: &std::path::Path) -> Vec<String> {
 #[ignore = "Tests depend on transitional manifest schema with 'runtime' field; canonical schema (issue 002) does not include runtime function list. Re-enable after adding runtime function tracking to canonical schema or using WAT inspection."]
 fn typed_add_runtime_equivalence() {
     let (wasm, _) = compile_with_wat("modules-and-typed-optimizations/typed-add.ts");
-    let run = Command::new("iwasm")
-        .arg(&wasm)
-        .output()
-        .expect("failed to execute iwasm");
+    let run =
+        run_iwasm_with_timeout(Command::new("iwasm").arg(&wasm)).expect("failed to execute iwasm");
 
     assert!(
-        run.status.success(),
-        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&run.stdout),
-        String::from_utf8_lossy(&run.stderr)
+        !run.timed_out,
+        "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
     );
-    assert_eq!(String::from_utf8_lossy(&run.stdout), "3\n");
+    assert!(
+        run.output.status.success(),
+        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.output.stdout), "3\n");
 }
 
 #[test]
@@ -100,16 +109,20 @@ fn property_get_uses_inline_cache_runtime() {
     // Verify base property_get is used instead.
     assert!(runtime.iter().any(|entry| entry == "property_get"));
 
-    let run = Command::new("iwasm")
-        .arg(&wasm)
-        .output()
-        .expect("failed to execute iwasm");
+    let run =
+        run_iwasm_with_timeout(Command::new("iwasm").arg(&wasm)).expect("failed to execute iwasm");
 
     assert!(
-        run.status.success(),
-        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&run.stdout),
-        String::from_utf8_lossy(&run.stderr)
+        !run.timed_out,
+        "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
     );
-    assert_eq!(String::from_utf8_lossy(&run.stdout), "20\n");
+    assert!(
+        run.output.status.success(),
+        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.output.stdout), "20\n");
 }

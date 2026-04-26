@@ -2,6 +2,11 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+#[path = "common/iwasm_runtime.rs"]
+mod iwasm_runtime;
+
+use iwasm_runtime::run_iwasm_with_timeout;
+
 fn fixture_path(fixture: &str) -> std::path::PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -32,15 +37,21 @@ fn builds_console_log_hi_and_runs_with_iwasm() {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let run = Command::new("iwasm").arg(&output).output().unwrap();
+    let run = run_iwasm_with_timeout(Command::new("iwasm").arg(&output)).unwrap();
 
     assert!(
-        run.status.success(),
-        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&run.stdout),
-        String::from_utf8_lossy(&run.stderr)
+        !run.timed_out,
+        "iwasm timed out\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
     );
-    assert_eq!(String::from_utf8_lossy(&run.stdout), "hi\n");
+    assert!(
+        run.output.status.success(),
+        "iwasm failed\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&run.output.stdout), "hi\n");
 }
 
 #[test]
@@ -66,12 +77,18 @@ fn oom_alloc_check_must_fail_iwasm() {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let run = Command::new("iwasm").arg(&output).output().unwrap();
+    let run = run_iwasm_with_timeout(Command::new("iwasm").arg(&output)).unwrap();
 
     assert!(
-        !run.status.success(),
+        !run.timed_out,
+        "iwasm timed out unexpectedly\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
+    );
+    assert!(
+        !run.output.status.success(),
         "iwasm unexpectedly succeeded\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&run.stdout),
-        String::from_utf8_lossy(&run.stderr)
+        String::from_utf8_lossy(&run.output.stdout),
+        String::from_utf8_lossy(&run.output.stderr)
     );
 }

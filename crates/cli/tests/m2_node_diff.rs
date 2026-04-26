@@ -6,6 +6,11 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::process::Stdio;
 
+#[path = "common/iwasm_runtime.rs"]
+mod iwasm_runtime;
+
+use iwasm_runtime::{IwasmRunResult, run_iwasm_child_with_timeout, run_iwasm_with_timeout};
+
 use ts2wasm_shared::{TestRecord, TestStatus};
 
 #[test]
@@ -29,6 +34,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/strict-equal.ts",
         "fixtures/core-semantics/plus.ts",
         "fixtures/core-semantics/number-stringify.ts",
+        "fixtures/core-semantics/prototype.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -92,16 +98,23 @@ fn assert_fixture_matches_node(fixture: &str) {
     );
     assert_no_precomputed_stdout(fixture, &output, &node.stdout);
 
-    let iwasm = Command::new("iwasm").arg(&output).output().unwrap();
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
-        iwasm.status.success(),
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        iwasm.output.status.success(),
         "iwasm failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&iwasm.stdout),
-        String::from_utf8_lossy(&iwasm.stderr)
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
     );
 
     assert_eq!(
-        String::from_utf8_lossy(&iwasm.stdout),
+        String::from_utf8_lossy(&iwasm.output.stdout),
         String::from_utf8_lossy(&node.stdout),
         "stdout mismatch for {fixture}"
     );
@@ -239,10 +252,26 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
         }
         Ok(_) => {
             // Build succeeded, run with iwasm
-            let iwasm_result = Command::new("iwasm").arg(&wasm_path).output();
+            let iwasm_result = run_iwasm_with_timeout(Command::new("iwasm").arg(&wasm_path));
 
             match iwasm_result {
-                Ok(output) if !output.status.success() => TestRecord {
+                Ok(IwasmRunResult {
+                    output: _,
+                    timed_out: true,
+                }) => TestRecord {
+                    suite,
+                    case,
+                    target: "wasm32-wasi".to_string(),
+                    status: TestStatus::Fail,
+                    expected: None,
+                    actual: None,
+                    reason: Some("iwasm timed out".to_string()),
+                    tracking: Some("runtime:iwasm-timeout".to_string()),
+                },
+                Ok(IwasmRunResult {
+                    output,
+                    timed_out: false,
+                }) if !output.status.success() => TestRecord {
                     suite,
                     case,
                     target: "wasm32-wasi".to_string(),
@@ -252,7 +281,10 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                     reason: Some("iwasm execution failed".to_string()),
                     tracking: Some("runtime:iwasm-fail".to_string()),
                 },
-                Ok(output) => {
+                Ok(IwasmRunResult {
+                    output,
+                    timed_out: false,
+                }) => {
                     let iwasm_output = String::from_utf8_lossy(&output.stdout).to_string();
 
                     // Compare outputs
@@ -508,7 +540,27 @@ fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
         .spawn()
         .unwrap();
     iwasm.stdin.take().unwrap().write_all(stdin_input).unwrap();
-    let iwasm_out = iwasm.wait_with_output().unwrap();
+    let iwasm_out = run_iwasm_child_with_timeout(iwasm).unwrap();
+
+    if iwasm_out.timed_out {
+        if is_iwasm_stdin_fd_read_blocked(
+            &iwasm_out.output.stdout,
+            &iwasm_out.output.stderr,
+            fixture,
+        ) {
+            eprintln!(
+                "Skipping stdin differential assertion for {fixture} due iwasm stdin-blocker"
+            );
+            return;
+        }
+        panic!(
+            "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&iwasm_out.output.stdout),
+            String::from_utf8_lossy(&iwasm_out.output.stderr)
+        );
+    }
+
+    let iwasm_out = iwasm_out.output;
     if !iwasm_out.status.success() {
         if is_iwasm_stdin_fd_read_blocked(&iwasm_out.stdout, &iwasm_out.stderr, fixture) {
             eprintln!(

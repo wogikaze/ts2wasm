@@ -1,23 +1,24 @@
 {
-  "id": "014",
-  "title": "Implement dynamic property key support",
-  "status": "done",
-  "issue_path": "issues/done/014-implement-dynamic-property-key-support.md",
+  "id": "016",
+  "title": "Implement prototype and method call support",
+  "status": "in_progress",
+  "issue_path": "issues/open/016-implement-prototype-and-method-call-support.md",
   "scope": {
     "allowed_files": [
-      "crates/frontend/src/ast.rs",
-      "crates/cli/src/lib.rs",
-      "crates/ir/src/builtin_resolved.rs",
-      "crates/ir/src/builtin_resolver.rs",
-      "crates/ir/src/name_resolver.rs",
       "crates/ir/src/lowered.rs",
       "crates/cli/src/backend/expr_emit.rs",
-      "crates/cli/src/backend/runtime_link_plan.rs",
-      "crates/cli/src/backend/runtime_fn.rs",
       "crates/cli/src/backend/runtime_builder.rs",
-      "fixtures/arrays-objects/dynamic-property.ts",
-      "fixtures/arrays-objects/dynamic-property-assignment.ts",
-      "crates/cli/tests/m2_node_diff.rs"
+      "crates/runtime-abi/src/layout.rs",
+      "fixtures/classes-and-inheritance/class-basic.ts",
+      "fixtures/classes-and-inheritance/class-extends.ts",
+      "fixtures/classes-and-inheritance/class-super.ts",
+      "fixtures/classes-and-inheritance/class-super-method.ts",
+      "fixtures/classes-and-inheritance/class-static.ts",
+      "fixtures/classes-and-inheritance/new-expression.ts",
+      "crates/cli/tests/m2_node_diff.rs",
+      "crates/cli/tests/m8_oop_classes.rs",
+      "current-state.md",
+      "docs/14-runtime-abi.md"
     ],
     "forbidden_files": [
       "crates/cli/src/cli.rs",
@@ -27,8 +28,10 @@
   "acceptance": [
     "object key access via a[variableKey] returns correct value",
     "object key assignment via a[variableKey] = value updates object property",
-    "array non-number index fixture behavior remains unchanged",
-    "property-access and runtime dependency outputs are exercised in tests"
+    "Prototype chain lookup works for inherited properties.",
+    "Method calls use correct receiver (`this`) binding.",
+    "Node differential test passes for prototype fixtures.",
+    "Diagnostics `unsupported-method-call` and `unsupported-prototype` are removed for supported cases."
   ],
   "commands": {
     "fast": [
@@ -46,5 +49,5 @@
     "Runtime object/string conversion behavior may differ from existing object/index semantics in edge cases.",
     "Fixture additions may require updates if dynamic index behavior diverges from strict JS."
   ],
-  "notes": "Selected per FSM after merge; implementing string-indexed dynamic property support with minimal path through Expr->ResolvedExpr->LoweredExpr and dynamic runtime index conversion."
+  "notes": "Selected for prototype-chain + method-call support in class/object runtime path."
 }
