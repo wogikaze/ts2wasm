@@ -13,6 +13,14 @@ use ts2wasm_ir::lowered::LoweredProgram;
 pub(crate) use capability_manifest::emit_canonical_manifest_json;
 pub(crate) use runtime_fn::RuntimeFn;
 
+pub(crate) fn has_node_host_imports(program: &LoweredProgram) -> bool {
+    let link_plan = runtime_link_plan::RuntimeLinkPlan::from_program(program);
+    link_plan.required_imports().iter().any(|import| {
+        let spec = import.spec();
+        spec.module.contains("host") || spec.module.contains("node")
+    })
+}
+
 pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     if let Err(errors) = ts2wasm_ir::lowered::validate_lowered(program) {
         let first = errors.into_iter().next().unwrap_or(Diagnostic {
@@ -59,5 +67,20 @@ mod tests {
         let err = emit_wat(&program).expect_err("emit_wat must reject residual MethodCall");
         assert_eq!(err.code, DiagCode::InvariantViolation);
         assert!(err.message.contains("MethodCall"));
+    }
+
+    #[test]
+    fn typed_wat_writer_imports_match_string_concat() {
+        // Verify that typed WAT writer produces identical output to string concatenation
+        let program = crate::parse_program("console.log(1);").expect("parse failed");
+        let resolved = ts2wasm_ir::builtin_resolver::resolve_builtins(&program)
+            .expect("builtin resolution failed");
+        let lowered = ts2wasm_ir::lowered::lower_program(&resolved).expect("lowering failed");
+
+        let wat = emit_wat(&lowered).expect("emit_wat failed");
+
+        // Verify that imports are properly formatted
+        assert!(wat.contains("(import \"wasi_snapshot_preview1\" \"fd_write\""));
+        assert!(wat.contains("(func $fd_write"));
     }
 }

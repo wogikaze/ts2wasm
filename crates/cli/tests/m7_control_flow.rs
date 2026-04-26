@@ -6,6 +6,8 @@
 use std::path::Path;
 
 /// Helper to compile a fixture through the full pipeline and check the result.
+/// Kept for future control flow test additions.
+#[allow(dead_code)]
 fn compile_fixture(fixture_path: &str) -> Result<String, String> {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")

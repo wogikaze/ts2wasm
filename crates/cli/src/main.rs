@@ -35,8 +35,35 @@ fn run() -> Result<(), String> {
             )
             .map_err(|e| e.to_string())
         }
+        [command, input, flag, output, host_deny_flag]
+            if command == "build"
+                && flag == "-o"
+                && host_deny_flag == "--host-deny" =>
+        {
+            ts2wasm_cli::build_file_with_host_deny(
+                &PathBuf::from(input),
+                &PathBuf::from(output),
+                None,
+                true,
+            )
+            .map_err(|e| e.to_string())
+        }
+        [command, input, flag, output, emit_flag, manifest, host_deny_flag]
+            if command == "build"
+                && flag == "-o"
+                && matches!(emit_flag.as_str(), "--emit-manifest" | "--emit-capabilities")
+                && host_deny_flag == "--host-deny" =>
+        {
+            ts2wasm_cli::build_file_with_host_deny(
+                &PathBuf::from(input),
+                &PathBuf::from(output),
+                Some(&PathBuf::from(manifest)),
+                true,
+            )
+            .map_err(|e| e.to_string())
+        }
         _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>]\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
                 .to_owned(),
         ),
     }

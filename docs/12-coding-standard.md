@@ -1160,6 +1160,21 @@ unsupported / limitation が docs に残っている
 未実装を実装済みのように書いていない
 ```
 
+### 19.13 WAT generation
+
+新しい WAT 生成コードは、生の文字列連結よりも `wat_writer` モジュールの typed API を優先する。
+
+```text
+OK:
+  WatWriter::new()
+      .add_import(&WatImport::new("module", "name", "$symbol"))
+
+NOT OK:
+  wat.push_str(&format!("  (import \"{}\" \"{}\" (func {}))\n", module, name, symbol))
+```
+
+既存の `runtime_builder.rs` の生の文字列連結は、段階的に typed writer に置換する。
+
 ## 20. 現在の優先順位
 
 次の順で負債を潰す。
@@ -1168,7 +1183,9 @@ unsupported / limitation が docs に残っている
 P0:
   RuntimeLinkPlan を WatEmitter から分離 (done)
   BuiltinResolver pass 分離 (done)
-  capability manifest 出力
+  capability manifest 出力 (done)
+  manifest import verification (done)
+  stale milestone and transitional docs cleanup (done)
   AST node span
 
 P1:
@@ -1176,9 +1193,13 @@ P1:
   raw WAT runtime_builder の段階的置換
   user/runtime string origin 管理
   linker snapshot fixture 化
+  reference coverage prerequisites hardening
+  host-deny and auditable E2E manifest
 
 P2:
   object / array / module
+  frontend module extraction
+  warning-clean tree (RUSTFLAGS=-D warnings)
 ```
 
 object / array / module は、少なくとも BuiltinResolver と AST span が入るまで着手しない。

@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt};
+use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
 
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
@@ -447,15 +447,18 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             key: property.clone(),
             value: Box::new(resolve_expr(value)?),
         }),
-        // New expression types (not yet supported in resolver)
-        Expr::TypeOf { span, .. }
-        | Expr::InstanceOf { span, .. }
+        // New expression types (not yet supported in resolver
+        Expr::InstanceOf { span, .. }
         | Expr::Ternary { span, .. }
         | Expr::ArrowFn { span, .. }
         | Expr::Spread { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "expression type not yet supported in builtin resolver".to_owned(),
             span: Some(*span),
+        }),
+        Expr::TypeOf { expr, .. } => Ok(ResolvedExpr::Unary {
+            op: UnaryOp::TypeOf,
+            expr: Box::new(resolve_expr(expr)?),
         }),
     }
 }

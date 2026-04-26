@@ -22,6 +22,15 @@ pub fn build_file_with_options(
     output: &Path,
     capability_manifest_output: Option<&Path>,
 ) -> Result<(), Diagnostic> {
+    build_file_with_host_deny(input, output, capability_manifest_output, false)
+}
+
+pub fn build_file_with_host_deny(
+    input: &Path,
+    output: &Path,
+    capability_manifest_output: Option<&Path>,
+    host_deny: bool,
+) -> Result<(), Diagnostic> {
     let source = fs::read_to_string(input).map_err(|error| Diagnostic {
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", input.display()),
@@ -40,6 +49,11 @@ pub fn build_file_with_options(
         })
     })?;
     ensure_runtime_feature_gates(&lowered)?;
+
+    if host_deny {
+        validate_host_deny(&lowered)?;
+    }
+
     if let Some(path) = capability_manifest_output {
         let manifest = backend::emit_canonical_manifest_json(&lowered);
         fs::write(path, manifest).map_err(|error| Diagnostic {
@@ -64,6 +78,19 @@ fn ensure_runtime_feature_gates(lowered: &lowered::LoweredProgram) -> Result<(),
             span: None,
         });
     }
+    Ok(())
+}
+
+fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnostic> {
+    // Check if any Node host imports are required
+    if backend::has_node_host_imports(lowered) {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "host-deny mode rejects Node host imports".to_owned(),
+            span: None,
+        });
+    }
+
     Ok(())
 }
 
@@ -1701,6 +1728,9 @@ impl Parser {
         Ok(expr)
     }
 
+    /// Parse term-level expressions (addition/subtraction).
+    /// Kept for future expression parsing extensions.
+    #[allow(dead_code)]
     fn term(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.unary()?;
         loop {
@@ -2667,7 +2697,7 @@ mod tests {
         let program = parse_program("let b = (a & b) | (c ^ d) | ~e;").unwrap();
         assert_eq!(program.len(), 1);
         let span = program[0].span();
-        assert!(span.start >= 0);
+        assert!(span.start < usize::MAX);
     }
 
     #[test]
@@ -2675,7 +2705,7 @@ mod tests {
         let program = parse_program("let s = (a << 2) | (b >> 1) | (c >>> 3);").unwrap();
         assert_eq!(program.len(), 1);
         let span = program[0].span();
-        assert!(span.start >= 0);
+        assert!(span.start < usize::MAX);
     }
 
     #[test]

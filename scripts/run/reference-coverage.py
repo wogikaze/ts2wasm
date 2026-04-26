@@ -9,6 +9,10 @@ Suites:
   tsc       -> reference/TypeScript/tests/cases/compiler/**/*.ts
   tsgo      -> reference/typescript-go/testdata/tests/**
 
+Modes:
+  --limit 0: Check mode - validates reference repo exists and has files, no execution
+  --limit N: Ramp mode - executes first N files for coverage measurement
+
 Notes:
   - This script classifies compile outcomes using ts2wasm diagnostics.
   - build_pass: build succeeded
@@ -18,6 +22,14 @@ Notes:
   - fail: internal compiler failures such as [InvariantViolation]
   - --json: output results as JSON instead of key=value pairs
   - --detail: output per-file details (file-path: diag-code: feature-label)
+  
+Reference Repository Setup:
+  The script requires reference repositories to be cloned and initialized.
+  If a repository is missing, the script will print exact clone/init commands.
+  
+  Example setup for test262:
+    git clone https://github.com/tc39/test262.git reference/test262
+    cd reference/test262 && git checkout main
 """
 
 import sys
@@ -25,9 +37,47 @@ import subprocess
 import json
 import tempfile
 import re
+import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+
+REFERENCE_REPOS = {
+    "test262": {
+        "path": REPO_ROOT / "reference" / "test262",
+        "clone_cmd": "git clone https://github.com/tc39/test262.git reference/test262",
+        "init_cmd": "cd reference/test262 && git checkout main"
+    },
+    "tsc": {
+        "path": REPO_ROOT / "reference" / "TypeScript",
+        "clone_cmd": "git clone https://github.com/microsoft/TypeScript.git reference/TypeScript",
+        "init_cmd": "cd reference/TypeScript && git checkout main"
+    },
+    "tsgo": {
+        "path": REPO_ROOT / "reference" / "typescript-go",
+        "clone_cmd": "git clone https://github.com/golang/typescript.git reference/typescript-go",
+        "init_cmd": "cd reference/typescript-go && git checkout main"
+    }
+}
+
+def check_reference_repo(suite):
+    """Check if reference repo exists, print helpful error if not."""
+    if suite not in REFERENCE_REPOS:
+        return True  # Unknown suite will be caught later
+    
+    repo_info = REFERENCE_REPOS[suite]
+    repo_path = repo_info["path"]
+    
+    if not repo_path.exists():
+        print(f"Error: Reference repository not found: {repo_path}", file=sys.stderr)
+        print(file=sys.stderr)
+        print("To set up the reference repository, run:", file=sys.stderr)
+        print(f"  {repo_info['clone_cmd']}", file=sys.stderr)
+        print(f"  {repo_info['init_cmd']}", file=sys.stderr)
+        print(file=sys.stderr)
+        return False
+    
+    return True
 
 def usage():
     print("Usage:")
@@ -60,6 +110,10 @@ def main():
     
     suite = sys.argv[1]
     args = sys.argv[2:]
+    
+    # Check reference repo exists early
+    if not check_reference_repo(suite):
+        sys.exit(1)
     
     limit = None
     json_output = False
@@ -110,6 +164,18 @@ def main():
         files = [f for f in files if f.is_file()]
     
     denominator = len(files)
+    
+    # Prevent denominator-zero issues
+    if denominator == 0:
+        print(f"Error: No files found in reference repository for suite '{suite}'", file=sys.stderr)
+        print(f"Expected path pattern: {file_pattern}", file=sys.stderr)
+        print(file=sys.stderr)
+        print("This may indicate:", file=sys.stderr)
+        print("  1. Reference repository is not properly initialized", file=sys.stderr)
+        print("  2. Reference repository structure has changed", file=sys.stderr)
+        print("  3. Incorrect suite name", file=sys.stderr)
+        print(file=sys.stderr)
+        sys.exit(1)
     
     if limit == 0:
         if json_output:

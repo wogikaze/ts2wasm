@@ -62,9 +62,7 @@ Audit では、少なくとも次を確認する。
 | preopen verification | filesystem access が許可された preopen 内に収まることを検証する |
 | security review | filesystem/env/network/crypto/timer capability を一覧化する |
 
-## Manifest CLI output（subset, transitional）
-
-> **注意**: 以下は `--emit-manifest` がまだ canonical schema のみを出せない段階での subset である。canonical な capability manifest schema は `docs/11-shared-definitions.md` の "Capability manifest schema" を正とする。CLI が常に canonical を出力するようになったら、この transitional 説明と example は削除する。
+## Manifest CLI output
 
 ```bash
 ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
@@ -72,23 +70,7 @@ ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
 
 `--emit-capabilities` は互換の deprecated alias として当面維持する。
 
-Current transitional schema（subset）:
-
-```json
-{
-  "imports": ["wasi_snapshot_preview1.fd_write"],
-  "capabilities": ["stdout.write"],
-  "runtime": ["copy", "log", "value_to_string_into", "write"]
-}
-```
-
-- `imports`: 実際に link される host import の一覧
-- `capabilities`: import から導出される capability の一覧
-- `runtime`: 依存 closure 展開後の runtime function 一覧
-
-`runtime` 配列の順序は意味を持たない。監査・差分比較の安定化のため、固定順（現在は安定化された列挙順）で出力する。
-
-初期の `--emit-manifest` 実装では `fd_read` や stdin runtime を含めない場合がある。stdin を含む `fd_read` 経路は `RuntimeLinkPlan -> manifest` と同一導線で追加し、subset と canonical の差分をテストで固定する。
+The canonical capability manifest schema is defined in `docs/11-shared-definitions.md` under "Capability manifest schema". The CLI emits this canonical schema with fields including `schema_version`, `target`, `standalone`, `wasi`, `node_host`, and `capability_reasons`.
 
 ## Host shim trimming
 
