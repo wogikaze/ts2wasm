@@ -32,7 +32,7 @@ Use this skill only for documentation changes under docs/ and README-level docum
 - Always: `mise run fmt` (touches `*.md` / Rust in examples)
 - Default smoke: `mise run check-repo-smoke`
 - If docs claim test or compiler behavior: `mise run nextest` (and `mise run clippy` if Rust examples changed)
-- If you edited `issues/` cross-links or agent/issue docs: `mise run check-issue-queue`
+- If you edited `issues/` cross-links or agent/issue docs: `mise run check-issue-health`
 - **Auto-commit changes after verification passes** (commit message based on change description)
 
 This skill enforces a strict separation between:

@@ -21,7 +21,7 @@ Use these locations consistently:
 
 ## Mechanical checks
 
-`scripts/manager check-issue-queue` (run locally, in pre-commit, and in CI) fails if:
+`scripts/manager check-issue-health` (run locally, in pre-commit, and in CI) fails if:
 
 - the same `NNN-` id appears twice in `issues/open/` or twice in `issues/done/`, or the same `NNN` exists in both trees;
 - a file `NNN-*.md` does not match the `**ID**:` (or yaml `id:`) value in the file;

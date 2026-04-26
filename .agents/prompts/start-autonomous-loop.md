@@ -91,7 +91,7 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 3. **Regenerate index and verify**:
    - `scripts/manager update-issue-index` to regenerate `issues/index.md`
    - `scripts/manager update-issue-index --check`
-   - `scripts/manager check-issue-queue`
+   - `scripts/manager check-issue-health`
 
 4. **Docs consistency check** (if docs or manifests were touched):
    - `scripts/check/docs-health.sh`

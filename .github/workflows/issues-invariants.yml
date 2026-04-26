@@ -30,4 +30,4 @@ jobs:
       - name: Issue queue invariants
         run: |
           cd "${GITHUB_WORKSPACE}"
-          ./scripts/manager check-issue-queue
+          ./scripts/manager check-issue-health

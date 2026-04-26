@@ -22,7 +22,7 @@ issue ファイルや index に触ったら、必ず:
 scripts/manager update-issue-index
 scripts/manager update-issue-index --check
 scripts/manager check-issue-index
-scripts/manager check-issue-queue
+scripts/manager check-issue-health
 ```
 
 `mise` を使う場合は `mise run update-issue-index` 等（`mise.toml` / `scripts/manager` 参照）。
@@ -64,7 +64,7 @@ git mv issues/done/012-fix-bug.md issues/open/012-fix-bug.md
 scripts/manager update-issue-index
 scripts/manager update-issue-index --check
 scripts/manager check-issue-index
-scripts/manager check-issue-queue
+scripts/manager check-issue-health
 # index再生成、キュー検証済み
 ```
 
@@ -72,6 +72,5 @@ scripts/manager check-issue-queue
 
 ```bash
 mise run update-issue-index
-mise run check-issue-index
-mise run check-issue-queue
+mise run check-issue-health
 ```

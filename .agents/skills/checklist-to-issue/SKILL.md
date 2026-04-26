@@ -32,7 +32,7 @@ mise run update-issue-index
 
 ```bash
 mise run update-issue-index
-mise run check-issue-queue
+mise run check-issue-health
 ```
 
 # Checklist → issue
@@ -86,5 +86,5 @@ docs 内チェックリストの **検証可能な項目** は個別 issue と�
 ## Post-change auto-execution
 
 After creating new issues, automatically:
-1. Run `mise run update-issue-index` and `mise run check-issue-queue`
+1. Run `mise run update-issue-index` and `mise run check-issue-health`
 2. Commit changes with auto-generated commit message based on checklist item source

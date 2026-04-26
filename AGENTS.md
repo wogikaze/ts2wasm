@@ -41,7 +41,7 @@ docs/: 設計ドキュメント。fixtures/: テストフィクスチャ。scrip
 miseタスク利用推奨（`mise tasks` で一覧）。mise未利用時は `scripts/manager`。
 
 ```bash
-mise run check-fast-gate              # 一括ゲート
+mise run check-issue-health              # 一括ゲート
 mise run update-issue-index           # issue index更新
 mise run check-manifest-imports       # manifest/wasm import一致確認
 mise run reference-coverage -- test262 --limit 50  # カバレッジ計測

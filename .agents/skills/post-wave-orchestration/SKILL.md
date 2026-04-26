@@ -35,7 +35,7 @@ mise run update-issue-index
 
 ```bash
 mise run update-issue-index
-mise run check-issue-queue
+mise run check-issue-health
 ```
 
 # Post-wave orchestration
@@ -121,5 +121,5 @@ mise run check-issue-queue
 ## Post-change auto-execution
 
 After orchestration changes (issue moves, index sync, residual classification), automatically:
-1. Run `mise run update-issue-index` and `mise run check-issue-queue`
+1. Run `mise run update-issue-index` and `mise run check-issue-health`
 2. Commit orchestration-state changes with auto-generated commit message based on wave classification  

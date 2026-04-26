@@ -159,5 +159,5 @@ description: Audit issues/done for false-done, classify work, reopen with eviden
 ## Post-change auto-execution
 
 After making issue changes (reopen, new issue, split), automatically:
-1. Run `mise run update-issue-index` and `mise run check-issue-queue`
+1. Run `mise run update-issue-index` and `mise run check-issue-health`
 2. Commit changes with auto-generated commit message based on audit findings

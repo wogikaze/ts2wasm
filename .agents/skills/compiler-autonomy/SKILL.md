@@ -12,7 +12,7 @@ This skill is the **thin entry** for the autonomous build/test loop. The authori
 The autonomous loop is considered complete when:
 - FSM state transition is validated against workflow rules
 - current_task.json is updated with verification results
-- All required gates (fmt, nextest, check-issue-queue) pass
+- All required gates (fmt, nextest, check-issue-health) pass
 - **All acceptance criteria from the issue are explicitly verified and documented**
 - Test report is generated and saved to reports/runs/
 - Failure patterns are recorded in failure pattern DB if applicable
@@ -24,7 +24,7 @@ The autonomous loop is considered complete when:
 
 - `current_task.json` または issue が示す `commands.fast` / `commands.full` 相当（通常は少なくとも `scripts/manager fmt` と `scripts/manager nextest`）
 - **CRITICAL: Full test suite must pass, not just filtered tests. If `cargo nextest run` fails, you MUST investigate before marking done.**
-- Issue / index と整合: `scripts/manager check-issue-queue`（`issues` を扱う場合は `scripts/manager update-issue-index` も）
+- Issue / index と整合: `scripts/manager check-issue-health`（`issues` を扱う場合は `scripts/manager update-issue-index` も）
 - 軽い一括: `scripts/manager check-repo-smoke`
 
 ## Acceptance Criteria Verification (CRITICAL)
@@ -111,7 +111,7 @@ cargo fmt --all --check
 # Run required gates
 scripts/manager fmt
 scripts/manager nextest
-scripts/manager check-issue-queue
+scripts/manager check-issue-health
 # Generate test report to reports/runs/<run_id>/test_report.json
 # Write cycle report with evidence
 # Update current_task.json with verification results
@@ -122,12 +122,12 @@ scripts/manager check-issue-queue
 ```bash
 scripts/manager fmt
 scripts/manager nextest
-scripts/manager check-issue-queue
+scripts/manager check-issue-health
 scripts/manager check-repo-smoke
 ```
 
 ## Post-change auto-execution
 
 After completing issue work (code changes, issue file updates, cycle report), automatically:
-1. Run `scripts/manager fmt`, `scripts/manager nextest`, and `scripts/manager check-issue-queue`
+1. Run `scripts/manager fmt`, `scripts/manager nextest`, and `scripts/manager check-issue-health`
 2. Commit changes with auto-generated commit message based on issue completion evidence

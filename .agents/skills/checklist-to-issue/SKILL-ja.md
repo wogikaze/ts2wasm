@@ -32,7 +32,7 @@ mise run update-issue-index
 
 ```bash
 mise run update-issue-index
-mise run check-issue-queue
+mise run check-issue-health
 ```
 
 # チェックリスト → issue

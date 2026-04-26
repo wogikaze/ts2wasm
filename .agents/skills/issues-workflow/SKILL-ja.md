@@ -11,8 +11,8 @@ description: issues/以下のissue追加/クローズ/移動/分割/再分類時
 
 **関連する以下のコマンドを実行し通過するまでissue作業を完了と主張しない。** `mise`が利用できない場合、`scripts/manager`を同じサブコマンドで使用（root `mise.toml`を参照）。初回使用時: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
-- `issues/open/`、`issues/done/`、またはindexジェネレータの**任意の**変更後: `mise run update-issue-index`、次に`mise run check-issue-index`と`mise run check-issue-queue`
-- 軽い機械的ゲートのみが必要な場合: `mise run check-repo-smoke`（fmt + `check-scripts` + `check-issue-queue`）
+- `issues/open/`、`issues/done/`、またはindexジェネレータの**任意の**変更後: `mise run update-issue-index`、次に`mise run check-issue-index`と`mise run check-issue-health`
+- 軽い機械的ゲートのみが必要な場合: `mise run check-repo-smoke`（fmt + `check-scripts` + `check-issue-health`）
 
 ## ルール
 
@@ -53,7 +53,7 @@ cp issues/templates/issue.md issues/open/025-fix-memory-leak.md
 # 必須フィールドを記入
 # 同期コマンドを実行
 mise run update-issue-index
-mise run check-issue-queue
+mise run check-issue-health
 ```
 
 ### 実行コマンド
@@ -61,5 +61,5 @@ mise run check-issue-queue
 ```bash
 mise run update-issue-index
 mise run check-issue-index
-mise run check-issue-queue
+mise run check-issue-health
 ```

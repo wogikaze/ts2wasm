@@ -32,7 +32,7 @@ description: docs/以下のドキュメント追加/編集時に使用。最終�
 - 常に: `mise run fmt`（`*.md` / Rustの例に触れるため）
 - デフォルトスモーク: `mise run check-repo-smoke`
 - ドキュメントがテストまたはコンパイラ振る舞いを主張する場合: `mise run nextest`（Rustの例が変更された場合は`mise run clippy`も）
-- `issues/`の相互リンクまたはagent/issueドキュメントを編集した場合: `mise run check-issue-queue`
+- `issues/`の相互リンクまたはagent/issueドキュメントを編集した場合: `mise run check-issue-health`
 
 このskillは以下の厳格な分離を強制:
 

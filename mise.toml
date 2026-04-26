@@ -68,7 +68,7 @@ description = "cargo nextest run (default project test entry)"
 run = "scripts/manager nextest"
 
 [tasks."check-repo-smoke"]
-description = "fmt + check-scripts + check-issue-queue (no cargo test)"
+description = "fmt + check-scripts + check-issue-health (no cargo test)"
 run = "scripts/manager check-repo-smoke"
 
 [tasks."check-fast-gate"]
@@ -117,9 +117,9 @@ run = "scripts/manager check-wasm-validation"
 description = "Validate .agents/state JSON files against schemas"
 run = "scripts/manager check-agent-state"
 
-[tasks."check-issue-queue"]
+[tasks."check-issue-health"]
 description = "Mechanical invariants: ids, paths, index+tables"
-run = "scripts/manager check-issue-queue"
+run = "scripts/manager check-issue-health"
 
 [tasks."check-test-records-schema"]
 description = "Validate TestRecord JSONL lines (stdin or file)"
