@@ -925,41 +925,42 @@ impl WatEmitter<'_> {
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
     (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
-  (block $done
+  (block $walk_done (result i32)
     (local.set $steps (i32.const 0))
     (loop $walk
       (local.set $count (i32.load (local.get $base)))
       (local.set $i (local.get $count))
-        (block $scan_entries
-          (loop $scan_entries
-            (br_if $scan_entries (i32.eq (local.get $i) (i32.const {zero})))
-            (local.set $i (i32.sub (local.get $i) (i32.const {one})))
-            (local.set $entry_base
-              (i32.add (local.get $base)
-                (i32.add (i32.const {obj_header})
-                  (i32.shl (local.get $i) (i32.const {entry_shift})))))
-            (local.set $pk_raw (i32.load (local.get $entry_base)))
-            (local.set $pk_ptr
-              (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
-            (local.set $pk_len
-              (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
-            (if (i32.eq (local.get $key_len) (local.get $pk_len))
-              (then
-                (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
-                  (then
-                    (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off})))))))
-            (br $scan_entries)))
-        (local.set $proto (i32.load (i32.add (local.get $base) (i32.const {obj_proto}))))
-        (if (i32.eqz (local.get $proto))
-          (then (return (i32.const {undefined}))))
-        (if (i32.eq (local.get $base) (local.get $proto))
-          (then (return (i32.const {undefined}))))
-        (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
-        (if (i32.ge_u (local.get $steps) (i32.const 64))
-          (then (return (i32.const {undefined}))))
-        (local.set $base (local.get $proto))
-        (br $walk))))
-    (i32.const {undefined}))
+      (block $scan_done
+        (loop $scan_entries
+          (br_if $scan_done (i32.eq (local.get $i) (i32.const {zero})))
+          (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+          (local.set $entry_base
+            (i32.add (local.get $base)
+              (i32.add (i32.const {obj_header})
+                (i32.shl (local.get $i) (i32.const {entry_shift})))))
+          (local.set $pk_raw (i32.load (local.get $entry_base)))
+          (local.set $pk_ptr
+            (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+          (local.set $pk_len
+            (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+          (if (i32.ne (local.get $key_len) (local.get $pk_len))
+            (then
+              (br $scan_entries)))
+          (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
+            (then
+              (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))))
+          (br $scan_entries)))
+      (local.set $proto (i32.load (i32.add (local.get $base) (i32.const {obj_proto}))))
+      (if (i32.eqz (local.get $proto))
+        (then (return (i32.const {undefined}))))
+      (if (i32.eq (local.get $base) (local.get $proto))
+        (then (return (i32.const {undefined}))))
+      (local.set $steps (i32.add (local.get $steps) (i32.const 1)))
+      (if (i32.ge_u (local.get $steps) (i32.const 64))
+        (then (return (i32.const {undefined}))))
+      (local.set $base (local.get $proto))
+      (br $walk))
+    (i32.const {undefined})))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
