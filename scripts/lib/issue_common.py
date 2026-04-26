@@ -99,6 +99,13 @@ def issue_title(text: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+def issue_problem_summary(text: str) -> str:
+    m = re.search(r"^Problem:[ \t]*(.*)$", text, re.M)
+    if m:
+        return m.group(1).rstrip()
+    return issue_title(text)
+
+
 def depends_from_text(text: str) -> list[str]:
     m = YAML_DEPENDS_RE.search(text)
     if m:
@@ -226,9 +233,7 @@ def render_ready_table(issues: list[Issue], open_ids: set[str], blocked_ids: set
                 continue
 
             title = issue.title.replace("|", "\\|")
-            summary = issue.title.replace("|", "\\|")
-            if len(summary) > 120:
-                summary = summary[:117] + "..."
+            summary = truncate(escape_cell(issue_problem_summary(issue.text)), 120)
 
             lines.append(f"| {id_val} | {title} | {issue.type_val} | {issue.area} | {issue.orch_class} | {issue.priority} | {', '.join(issue.depends) if issue.depends else ''} | {summary} |")
             break
@@ -305,7 +310,6 @@ def replace_generated_block(content: str, start_marker: str, end_marker: str, ne
     result = []
     in_fence = False
     in_block = False
-    block_started = False
 
     for line in lines:
         if line.strip() == "```":
@@ -321,7 +325,6 @@ def replace_generated_block(content: str, start_marker: str, end_marker: str, ne
             result.append(line)
             result.append(new_content)
             in_block = True
-            block_started = True
             continue
 
         if end_marker in line:
@@ -332,4 +335,4 @@ def replace_generated_block(content: str, start_marker: str, end_marker: str, ne
         if not in_block:
             result.append(line)
 
-    return "\n".join(result)
+    return "\n".join(result) + "\n"

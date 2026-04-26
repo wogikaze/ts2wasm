@@ -18,14 +18,14 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 003 | Verify manifest against emitted WAT imports | test | wasi/tests | implementation-ready | P0 | 002 | A manifest is only useful as a gate if it matches emitted WAT/wasm imports. The current project needs a test that cro... |
-| 004 | Reclassify compile-only compatibility tests | test | tests/coverage | implementation-ready | P0 | none | Tests such as class/module/Node API compile-only checks can make compatibility look more advanced than it is. Build s... |
+| 004 | Reclassify compile-only compatibility tests | test | tests/coverage | implementation-ready | P0 |  | Tests such as class/module/Node API compile-only checks can make compatibility look more advanced than it is. Build s... |
 | 007 | Harden reference coverage prerequisites | infra | scripts/reference | implementation-ready | P1 | 005 | Reference coverage scripts depend on external reference repositories. If those repositories are missing, failures can... |
 | 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
-| 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | implementation-ready | P2 | none | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) |
-| 013 | Implement heap OOM check | feature | runtime/memory | implementation-ready | P0 | none | `$alloc_heap` does not check `memory.size` before allocation. Large allocations can cause undefined behavior or memor... |
+| 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | implementation-ready | P2 |  | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) |
+| 013 | Implement heap OOM check | feature | runtime/memory | implementation-ready | P0 |  | `$alloc_heap` does not check `memory.size` before allocation. Large allocations can cause undefined behavior or memor... |
 | 014 | Implement dynamic property key support | feature | runtime/semantics | implementation-ready | P1 | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupported-dynamic-proper... |
-| 015 | Implement object literal string key support | feature | parser/semantics | implementation-ready | P1 | none | Object literal with string literal keys `{"x": v}` is not implemented. Currently only identifier keys `{x: v}` are su... |
-| 018 | Implement UTF-8 string support | feature | runtime/semantics | implementation-ready | P1 | none | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
+| 015 | Implement object literal string key support | feature | parser/semantics | implementation-ready | P1 |  | Object literal with string literal keys `{"x": v}` is not implemented. Currently only identifier keys `{x: v}` are su... |
+| 018 | Implement UTF-8 string support | feature | runtime/semantics | implementation-ready | P1 |  | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
 | 029 | Implement typeof operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement typeof operator |
@@ -206,22 +206,22 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 006 | Remove stale milestone and transitional docs | cleanup | docs | 002,003 | Several docs appear to mix stale milestone notes, transitional manifest schema, and current imple... |
-| 008 | Introduce typed WAT writer skeleton | refactor | backend | 003 | Large raw WAT string generation in runtime builder code is a major maintainability risk. A full r... |
-| 010 | Extract frontend module from crates/cli | refactor | frontend | 003,004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline c... |
-| 016 | Implement prototype and method call support | feature | runtime/semantics | 014 | Prototype chain lookup and method calls are not implemented. Currently diagnosed as `unsupported-... |
-| 017 | Design and implement GC strategy | feature | runtime/memory | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memor... |
-| 017a | Design GC strategy | feature | runtime/memory | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memor... |
-| 017b | Implement GC strategy | feature | runtime/memory | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory le... |
-| 019 | Integrate TypeScript parser/checker | feature | frontend | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 spec... |
-| 019a | Integrate TypeScript compiler API for type checking | feature | frontend | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 spec... |
-| 019b | Extract type information for optimization hints | feature | frontend | 019a | TypeScript compiler API is integrated in 019a but type information is not yet extracted for optim... |
-| 020 | Implement generic JavaScript semantic IR | feature | ir/semantics | 019 | Generic JavaScript semantic IR is not implemented. Current IR is minimal and tied to specific low... |
-| 020a | Design JavaScript semantic IR | feature | ir/semantics | 019 | Generic JavaScript semantic IR is not designed. Current IR is minimal and tied to specific loweri... |
-| 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | 020a | IR design is complete in 020a but IR lowering from TypeScript AST is not implemented. |
-| 020c | Add IR validation passes and document contracts | feature | ir/semantics | 020b | IR lowering is implemented in 020b but validation passes and contract documentation are missing. |
-| 021 | Implement full wasm backend | feature | backend | 008, 020 | Full wasm backend is not implemented. Current implementation is WAT-centric. docs/04 specifies in... |
-| 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | 002, 003 | host-deny / capability manifest "auditable E2E" is planned but not implemented. docs/06 specifies... |
+| 006 | Remove stale milestone and transitional docs | cleanup | docs | 002, 003 | Remove stale milestone and transitional docs |
+| 008 | Introduce typed WAT writer skeleton | refactor | backend | 003 | Introduce typed WAT writer skeleton |
+| 010 | Extract frontend module from crates/cli | refactor | frontend | 003, 004 | Extract frontend module from crates/cli |
+| 016 | Implement prototype and method call support | feature | runtime/semantics | 014 | Implement prototype and method call support |
+| 017 | Design and implement GC strategy | feature | runtime/memory | 013 | Design and implement GC strategy |
+| 017a | Design GC strategy | feature | runtime/memory | 013 | Design GC strategy |
+| 017b | Implement GC strategy | feature | runtime/memory | 017a | Implement GC strategy |
+| 019 | Integrate TypeScript parser/checker | feature | frontend | 010 | Integrate TypeScript parser/checker |
+| 019a | Integrate TypeScript compiler API for type checking | feature | frontend | 010 | Integrate TypeScript compiler API for type checking |
+| 019b | Extract type information for optimization hints | feature | frontend | 019a | Extract type information for optimization hints |
+| 020 | Implement generic JavaScript semantic IR | feature | ir/semantics | 019 | Implement generic JavaScript semantic IR |
+| 020a | Design JavaScript semantic IR | feature | ir/semantics | 019 | Design JavaScript semantic IR |
+| 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | 020a | Implement IR lowering from TypeScript AST |
+| 020c | Add IR validation passes and document contracts | feature | ir/semantics | 020b | Add IR validation passes and document contracts |
+| 021 | Implement full wasm backend | feature | backend | 008, 020 | Implement full wasm backend |
+| 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | 002, 003 | Implement host-deny and auditable E2E manifest |
 | 046 | Implement extends inheritance | feature | runtime/semantics | 045 | Implement extends inheritance |
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 <!-- generated:blocked:end -->

@@ -4,16 +4,12 @@ on:
   pull_request:
     paths:
       - "scripts/**"
-      - "scripts/manager"
-      - "scripts/manager.py"
       - ".github/workflows/repo-smoke.yml"
   push:
     branches:
       - master
     paths:
       - "scripts/**"
-      - "scripts/manager"
-      - "scripts/manager.py"
   workflow_dispatch:
 
 jobs:
