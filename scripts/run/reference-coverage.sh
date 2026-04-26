@@ -4,7 +4,7 @@ set -euo pipefail
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/run/reference-coverage.sh <suite> [--limit N] [--json]
+  scripts/run/reference-coverage.sh <suite> [--limit N] [--json] [--detail]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -19,6 +19,7 @@ Notes:
   - blocked: stderr contains [BackendIo] or command timeout
   - fail: internal compiler failures such as [InvariantViolation]
   - --json: output results as JSON instead of key=value pairs
+  - --detail: output per-file details (file-path: diag-code: feature-label)
 USAGE
 }
 
@@ -32,6 +33,7 @@ shift
 
 limit=""
 json_output=0
+detail_output=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --limit)
@@ -44,6 +46,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --json)
       json_output=1
+      shift
+      ;;
+    --detail)
+      detail_output=1
       shift
       ;;
     *)
@@ -147,6 +153,9 @@ semantic_pass_count=0
 tmp_dir="$(mktemp -d /tmp/ts2wasm-refcov-XXXXXX)"
 trap 'rm -rf "$tmp_dir"' EXIT
 
+# Array to store per-file details for --detail output
+declare -a file_details
+
 for file in "${files[@]}"; do
   [[ -f "$file" ]] || continue
   executed=$((executed + 1))
@@ -177,11 +186,18 @@ for file in "${files[@]}"; do
         semantic_pass_count=$((semantic_pass_count + 1))
       fi
     fi
+
+    if [[ "$detail_output" -eq 1 ]]; then
+      file_details+=("$file: build_pass")
+    fi
     continue
   fi
 
   if [[ $rc -eq 124 ]]; then
     blocked_count=$((blocked_count + 1))
+    if [[ "$detail_output" -eq 1 ]]; then
+      file_details+=("$file: blocked")
+    fi
     continue
   fi
 
@@ -189,8 +205,14 @@ for file in "${files[@]}"; do
 
   if [[ "$diag_code" == "BackendIo" ]]; then
     blocked_count=$((blocked_count + 1))
+    if [[ "$detail_output" -eq 1 ]]; then
+      file_details+=("$file: blocked")
+    fi
   elif [[ "$diag_code" == "InvariantViolation" ]]; then
     fail_count=$((fail_count + 1))
+    if [[ "$detail_output" -eq 1 ]]; then
+      file_details+=("$file: fail: InvariantViolation")
+    fi
   else
     unsupported_count=$((unsupported_count + 1))
     if [[ -z "$diag_code" ]]; then
@@ -199,6 +221,9 @@ for file in "${files[@]}"; do
     feature_label="$(ts2wasm_feature_label "$diag_code" "$err_file" "$file")"
     unsupported_diag_counts["$diag_code"]=$(( ${unsupported_diag_counts["$diag_code"]:-0} + 1 ))
     unsupported_feature_counts["$feature_label"]=$(( ${unsupported_feature_counts["$feature_label"]:-0} + 1 ))
+    if [[ "$detail_output" -eq 1 ]]; then
+      file_details+=("$file: $diag_code: $feature_label")
+    fi
   fi
 done
 
@@ -291,4 +316,11 @@ else
   printf 'unsupported_diagcodes=%s\n' "$unsupported_diagcodes"
   printf 'unsupported_features=%s\n' "$unsupported_features"
   printf 'semantic_enabled=%s\n' "$semantic_enabled"
+
+  if [[ "$detail_output" -eq 1 ]]; then
+    printf '\n# Per-file details\n'
+    for detail in "${file_details[@]}"; do
+      printf '%s\n' "$detail"
+    done
+  fi
 fi
