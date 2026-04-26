@@ -52,6 +52,11 @@ impl WatEmitter<'_> {
                 // For now, emit undefined as a placeholder
                 wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
             }
+            LoweredExpr::ArrowFn { .. } => {
+                // TODO: Arrow function emission not yet implemented (issue #36)
+                // For now, emit undefined as a placeholder
+                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
+            }
             LoweredExpr::Local(local_id) => {
                 wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
             }

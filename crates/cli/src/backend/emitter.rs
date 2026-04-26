@@ -398,7 +398,8 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Null
             | LoweredExpr::Undefined
             | LoweredExpr::This
-            | LoweredExpr::Local(_) => {}
+            | LoweredExpr::Local(_)
+            | LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Binary { left, right, .. } => {
                 self.collect_expr_strings(left);

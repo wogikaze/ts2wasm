@@ -1226,7 +1226,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
                 module_id: self.module_id_for_specifier(specifier),
             }),
-            ResolvedExpr::ArrowFn { params, body } => {
+            ResolvedExpr::ArrowFn { params: _, body: _ } => {
                 // For now, lower arrow function to undefined as placeholder
                 // Full implementation requires closure creation with lexical this capture
                 Ok(LoweredExpr::Undefined)

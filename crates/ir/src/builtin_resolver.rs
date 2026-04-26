@@ -318,20 +318,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { .. } => Ok(ResolvedExpr::This),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
-        Expr::InstanceOf { left, right, .. } => Ok(ResolvedExpr::Binary {
-            left: Box::new(resolve_expr(left)?),
-            op: BinaryOp::InstanceOf,
-            right: Box::new(resolve_expr(right)?),
+        Expr::InstanceOf { span, .. } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "instanceof operator not yet supported".to_owned(),
+            span: Some(*span),
         }),
-        Expr::Ternary {
-            condition,
-            then_expr,
-            else_expr,
-            ..
-        } => Ok(ResolvedExpr::Ternary {
-            condition: Box::new(resolve_expr(condition)?),
-            then_expr: Box::new(resolve_expr(then_expr)?),
-            else_expr: Box::new(resolve_expr(else_expr)?),
+        Expr::Ternary { span, .. } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "ternary operator not yet supported".to_owned(),
+            span: Some(*span),
         }),
         Expr::Unary { op, expr, .. } => Ok(ResolvedExpr::Unary {
             op: *op,
@@ -517,13 +512,6 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op: UnaryOp::TypeOf,
             expr: Box::new(resolve_expr(expr)?),
         }),
-        Expr::InstanceOf { span, .. } | Expr::Ternary { span, .. } | Expr::ArrowFn { span, .. } => {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "expression type not yet supported in builtin resolver".to_owned(),
-                span: Some(*span),
-            })
-        }
     }
 }
 
