@@ -13,6 +13,14 @@ impl Layout {
     pub const ALIGN: u32 = 8;
     pub const ALIGN_MASK: u32 = Self::ALIGN - 1;
     pub const STRING_HEADER_SIZE: u32 = 4;
+    /// Header bytes prepended before each runtime heap block.
+    ///
+    /// Layout (all fields are 32-bit):
+    /// - [0 .. 4): mark/type flags
+    /// - [4 .. 8): aligned body payload size
+    /// - [8 .. 12): allocator list next pointer
+    /// - [12 .. 16): reserved/generation field
+    pub const GC_HEADER_SIZE: u32 = 16;
     pub const HEAP_BUMP_PADDING: u32 = Self::STRING_HEADER_SIZE + Self::ALIGN_MASK;
     /// Initial value of the `$heap` global (base of the dynamic heap).
     pub const HEAP_START: u32 = 2048;
@@ -27,6 +35,24 @@ impl Layout {
     pub const STDIN_BUFFER_SIZE: u32 = 256;
     /// Maximum total bytes that one `readFileSync(0, "utf8")` call may consume (64 KiB).
     pub const STDIN_READ_LIMIT: u32 = 64 * 1024;
+    /// GC trigger: run collection after this many bytes of allocations since last pass.
+    pub const GC_TRIGGER_BYTES: u32 = 4096;
+    /// GC trigger: when used heap exceeds this percentage of current linear-memory size.
+    pub const GC_TRIGGER_USAGE_PERCENT: u32 = 80;
+    /// Percent denominator used for the trigger ratio calculation.
+    pub const PERCENT_DENOMINATOR: u32 = 100;
+
+    /// Heap object flag field offset within GC header.
+    pub const GC_HEADER_FLAGS_OFFSET: u32 = 0;
+    /// Heap object aligned payload-size field offset within GC header.
+    pub const GC_HEADER_BODY_SIZE_OFFSET: u32 = 4;
+    /// Heap object linked-list pointer field offset within GC header.
+    pub const GC_HEADER_SWEEP_NEXT_OFFSET: u32 = 8;
+    /// Heap object reserved field offset within GC header.
+    pub const GC_HEADER_RESERVED_OFFSET: u32 = 12;
+    /// Heap object alignment helper: payload starts immediately after GC header.
+    pub const GC_PAYLOAD_OFFSET: u32 = Self::GC_HEADER_SIZE;
+
     /// Offset of the `buf` pointer field in the `fd_write` iovec record.
     pub const IOVEC_PTR: u32 = 8;
     /// Offset of the `buf_len` field in the `fd_write` iovec record.
@@ -103,6 +129,16 @@ mod tests {
             0,
             "HEAP_START must be ALIGN-aligned so heap pointers are tag-safe"
         );
+    }
+
+    #[test]
+    fn gc_header_size_and_offsets() {
+        assert_eq!(Layout::GC_HEADER_SIZE, 16);
+        assert_eq!(Layout::GC_HEADER_FLAGS_OFFSET, 0);
+        assert_eq!(Layout::GC_HEADER_BODY_SIZE_OFFSET, 4);
+        assert_eq!(Layout::GC_HEADER_SWEEP_NEXT_OFFSET, 8);
+        assert_eq!(Layout::GC_HEADER_RESERVED_OFFSET, 12);
+        assert_eq!(Layout::GC_PAYLOAD_OFFSET, Layout::GC_HEADER_SIZE);
     }
 
     #[test]

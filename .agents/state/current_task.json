@@ -1,11 +1,40 @@
 {
-  "id": null,
-  "title": null,
-  "status": "idle",
-  "issue_path": null,
-  "scope": null,
-  "acceptance": null,
-  "commands": null,
-  "risk": null,
-  "notes": "017a design issue moved to done; docs and issue index synchronized."
+  "id": "017b",
+  "title": "Implement GC strategy",
+  "status": "in_progress",
+  "issue_path": "issues/open/017b-implement-gc-strategy.md",
+  "scope": {
+    "allowed_files": [
+      "issues/open/017b-implement-gc-strategy.md",
+      "crates/cli/src/backend/runtime_builder.rs",
+      "crates/cli/src/backend/runtime_fn.rs",
+      "crates/cli/src/backend/emitter.rs",
+      "crates/runtime-abi/src/layout.rs",
+      "crates/cli/tests/m1_iwasm.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/core-semantics/closure-escape.ts",
+      "docs/14-runtime-abi.md"
+    ],
+    "forbidden_files": []
+  },
+  "acceptance": [
+    "Heap object header is implemented as designed",
+    "GC trigger points are functional",
+    "GC prevents memory leaks in test fixture",
+    "Node differential test passes for GC fixture"
+  ],
+  "commands": {
+    "fast": [
+      "python scripts/manager.py check-fast-gate --skip-nextest",
+      "python scripts/manager.py check-issue-health"
+    ],
+    "full": [
+      "python scripts/manager.py fmt",
+      "python scripts/manager.py nextest"
+    ]
+  },
+  "risk": [
+    "GC requires root-set tracking; without explicit roots, initial implementation may require temporary conservative scope"
+  ],
+  "notes": "Implemented header-layout constants and baseline alloc path changes; partial GC trigger plumbing landed. Next step is mark-sweep body and fixture promotion to pass-path."
 }

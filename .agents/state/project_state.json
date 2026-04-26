@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "fsm": "SYNC",
-  "active_task_id": null,
+  "fsm": "IMPLEMENT",
+  "active_task_id": "017b",
   "updated_at": "2026-04-27T01:10:00Z",
   "verify_fast_streak_fails": 0
 }

@@ -43,7 +43,10 @@ impl WatEmitter<'_> {
                 RuntimeFn::StrictNotEqual => self.emit_strict_not_equal(wat),
                 RuntimeFn::And => self.emit_and(wat),
                 RuntimeFn::Or => self.emit_or(wat),
-                RuntimeFn::AllocHeap => self.emit_alloc_heap(wat),
+                RuntimeFn::AllocHeap => {
+                    self.emit_gc_collect(wat);
+                    self.emit_alloc_heap(wat);
+                }
                 RuntimeFn::MemEqual => self.emit_mem_equal(wat),
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
                 RuntimeFn::Index => self.emit_index(wat),
@@ -518,28 +521,58 @@ impl WatEmitter<'_> {
   (func $concat (param $a i32) (param $b i32) (result i32)
     (local $ptr i32)
     (local $data i32)
+    (local $a_is_string i32)
+    (local $b_is_string i32)
+    (local $a_ptr i32)
+    (local $b_ptr i32)
     (local $len_a i32)
     (local $len_b i32)
-    (local.set $ptr (global.get $heap))
+    (local.set $a_is_string (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {string_tag})))
+    (if (local.get $a_is_string)
+      (then
+        (local.set $a_ptr (i32.and (local.get $a) (i32.const {heap_mask})))
+        (local.set $len_a (i32.load (local.get $a_ptr)))))
+    (if (i32.eqz (local.get $a_is_string))
+      (then
+        (local.set $len_a (call $value_to_string_into (local.get $a) (i32.const {scratch})))))
+    (local.set $b_is_string (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {string_tag})))
+    (if (local.get $b_is_string)
+      (then
+        (local.set $b_ptr (i32.and (local.get $b) (i32.const {heap_mask})))
+        (local.set $len_b (i32.load (local.get $b_ptr)))))
+            (if (i32.eqz (local.get $b_is_string))
+      (then
+        (local.set $len_b (call $value_to_string_into (local.get $b) (i32.const {scratch})))))
+    (local.set $ptr (call $alloc_heap (i32.add (i32.const {string_header_size}) (i32.add (local.get $len_a) (local.get $len_b)))))
     (local.set $data (i32.add (local.get $ptr) (i32.const {string_header_size})))
-    (local.set $len_a (call $value_to_string_into (local.get $a) (local.get $data)))
-    (local.set $len_b
-      (call $value_to_string_into
-        (local.get $b)
-        (i32.add (local.get $data) (local.get $len_a))))
     (i32.store (local.get $ptr) (i32.add (local.get $len_a) (local.get $len_b)))
-    (global.set $heap
-      (i32.and
-        (i32.add
-          (local.get $ptr)
-          (i32.add
-            (i32.add (local.get $len_a) (local.get $len_b))
-            (i32.const {heap_bump_padding})))
-        (i32.const {heap_mask})))
+    (if (local.get $a_is_string)
+      (then
+        (call $copy
+          (i32.add (local.get $a_ptr) (i32.const {string_header_size}))
+          (local.get $data)
+          (local.get $len_a)))
+      (else
+        (call $copy
+          (i32.const {scratch})
+          (local.get $data)
+          (call $value_to_string_into (local.get $a) (i32.const {scratch})))))
+    (if (local.get $b_is_string)
+          (then
+            (call $copy
+              (i32.add (local.get $b_ptr) (i32.const {string_header_size}))
+              (i32.add (local.get $data) (local.get $len_a))
+              (local.get $len_b)))
+      (else
+        (call $copy
+          (i32.const {scratch})
+          (i32.add (local.get $data) (local.get $len_a))
+          (call $value_to_string_into (local.get $b) (i32.const {scratch})))))
     (i32.or (local.get $ptr) (i32.const {string_tag})))
 "#,
             string_header_size = Layout::STRING_HEADER_SIZE,
-            heap_bump_padding = Layout::HEAP_BUMP_PADDING,
+            scratch = Layout::SCRATCH_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
         ));
@@ -731,30 +764,90 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_gc_collect(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $gc_collect
+    (global.set $alloc_bytes_since_last_gc (i32.const 0)))
+"#,
+        ));
+    }
+
     fn emit_alloc_heap(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $alloc_heap (param $size i32) (result i32)
+    (local $obj_base i32)
     (local $base i32)
     (local $new_heap i32)
+    (local $alloc_size i32)
+    (local $aligned_size i32)
     (local $memory_pages i32)
     (local $memory_bytes i32)
-    (local.set $base
+    (local $alloc_since_gc i32)
+    (local $used_limit i32)
+    (local $should_collect i32)
+    (local.set $obj_base
       (i32.and
         (i32.add (global.get $heap) (i32.const {align_mask}))
         (i32.const {heap_align})))
-    (local.set $new_heap (i32.add (local.get $base) (local.get $size)))
+    (local.set $aligned_size
+      (i32.and
+        (i32.add (local.get $size) (i32.const {align_mask}))
+        (i32.const {heap_align})))
+    (local.set $alloc_size (i32.add (local.get $aligned_size) (i32.const {gc_header_size})))
+    (local.set $base (i32.add (local.get $obj_base) (i32.const {gc_header_size})))
+    (local.set $new_heap (i32.add (local.get $obj_base) (local.get $alloc_size)))
+    (local.set $alloc_since_gc
+      (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $alloc_size)))
+    (local.set $memory_bytes
+      (i32.mul (memory.size) (i32.const {page_size})))
+    (local.set $used_limit
+      (i32.div_u
+        (i32.mul (local.get $memory_bytes) (i32.const {gc_trigger_usage_percent}))
+        (i32.const {percent_denom})))
+    (local.set $should_collect
+      (i32.or
+        (i32.ge_u (local.get $alloc_since_gc) (i32.const {gc_trigger_bytes}))
+        (i32.ge_u (local.get $new_heap) (local.get $used_limit))))
+    (if (local.get $should_collect)
+      (then
+        (call $gc_collect)
+        (global.set $alloc_bytes_since_last_gc (i32.const 0))
+        (local.set $obj_base
+          (i32.and
+            (i32.add (global.get $heap) (i32.const {align_mask}))
+            (i32.const {heap_align})))
+        (local.set $base (i32.add (local.get $obj_base) (i32.const {gc_header_size})))
+        (local.set $new_heap (i32.add (local.get $obj_base) (local.get $alloc_size)))))
+
     ;; OOM check: verify allocation fits within current memory
     (local.set $memory_pages (memory.size))
     (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
     (if (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))
       (then (unreachable)))
+
+    (global.set $alloc_bytes_since_last_gc
+      (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $alloc_size)))
+
+    (i32.store (i32.add (local.get $obj_base) (i32.const {gc_header_flags_offset})) (i32.const 0))
+    (i32.store (i32.add (local.get $obj_base) (i32.const {gc_header_body_size_offset})) (local.get $aligned_size))
+    (i32.store (i32.add (local.get $obj_base) (i32.const {gc_header_sweep_next_offset})) (global.get $gc_alloc_list))
+    (global.set $gc_alloc_list (local.get $obj_base))
+
     (global.set $heap (local.get $new_heap))
     (local.get $base))
 "#,
             align_mask = Layout::ALIGN_MASK,
             heap_align = ValueTag::HEAP_MASK,
             page_size = Layout::WASM_PAGE_SIZE,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_trigger_bytes = Layout::GC_TRIGGER_BYTES,
+            gc_trigger_usage_percent = Layout::GC_TRIGGER_USAGE_PERCENT,
+            percent_denom = Layout::PERCENT_DENOMINATOR,
+            gc_header_flags_offset = Layout::GC_HEADER_FLAGS_OFFSET,
+            gc_header_body_size_offset = Layout::GC_HEADER_BODY_SIZE_OFFSET,
+            gc_header_sweep_next_offset = Layout::GC_HEADER_SWEEP_NEXT_OFFSET,
         ));
     }
 

@@ -82,13 +82,13 @@ ptr を取り出すには: `ptr = raw_value & HEAP_MASK`
 length を読むには: `len = i32.load(ptr)`
 文字列バイトは: `ptr + 4` から `len` バイト
 
-## Planned Heap GC strategy (017a)
+## Heap GC strategy (017a, 017b)
 
-This section records the planned GC model for the current runtime. The implementation is not in this issue.
+This section records the GC model selected in 017a and what is currently implemented by 017b.
 
 ### Chosen strategy
 
-**Stop-the-world mark-and-sweep** is selected as the baseline strategy.
+**Stop-the-world mark-and-sweep** is the selected baseline strategy.
 
 Rationale:
 
@@ -96,7 +96,7 @@ Rationale:
 - `arena` は明示的な生存区間が必要で、現行の型付けと実行モデルでは閉じ込めが困難
 - `string`/`array`/`object` が同一ヒープを使う現状では、最初に `mark+list-based sweep` を導入するのが既存 runtime の変更面積を最小化できる
 
-### Planned heap object header
+### Heap object header (implemented in 017b)
 
 GC enabled allocation uses a **separate runtime header** before each heap block.
 ユーザから観測される `RawValue` ポインタは header より `GC_HEADER_SIZE` 分だけ進んだ本体先頭を指す。
@@ -126,23 +126,23 @@ The existing logical payload shape is kept; header is additive.
 
 `object` は既存仕様に合わせて `prototype_ptr` を保持し、`[[Prototype]]` 走査は将来の markフェーズと連携させる。
 
-### GC trigger points
+### GC trigger points (partially implemented in 017b)
 
 `$alloc_heap` は以下のどちらかを満たすと GC を試行する:
 
 - `alloc_bytes_since_last_gc >= 4096`
 - `next_free >= memory.size * 0x80 / 100` （メモリ使用率が 80% を超える）
 
-Pseudo flow:
+Current implementation in 017b:
 
-1. markフェーズ: ルートとして `globals` / `runtime stacks` / `module cache` を走査
-2. sweepフェーズ: 生存フラグがないブロックを `sweep_list` へ回収（空きリストへ）
-3. 回収後に再試行、必要なら `memory.grow`、それでも足りなければ trap
+1. `$alloc_heap` tracks a per-collection budget in `$alloc_bytes_since_last_gc`.
+2. It triggers `$gc_collect` when either allocation budget or usage ratio threshold is exceeded.
+3. `$gc_collect` currently resets allocation accounting and is a placeholder; mark-and-sweep body is pending (see 017b follow-up scope).
 
 ### Safety and compatibility notes
 
-- この設計は最初の実装では stop-the-world 全停止 GC とし、同時実行は対象外
-- mark ビットは各 GC サイクルで反転 bit を使って O(1) リセットする方式を採用（全ヒープ走査の clear を回避）
+- 本実装では mark-and-sweep の本文は未実装。`$gc_collect` は暫定的に budget reset のみを実行。
+- 実装完了後は stop-the-world、single-thread model を前提として mark/sweep を追加する。
 - 文字列 primitive の一時 `scratch` は現在どおり GC 対象外
 
 ## RuntimeFn Catalog

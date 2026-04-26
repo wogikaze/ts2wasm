@@ -358,6 +358,8 @@ pub(crate) enum RuntimeResult {
 pub(crate) enum RuntimeGlobal {
     ModuleCache,
     CurrentModuleId,
+    AllocBytesSinceLastGc,
+    GcAllocListHead,
 }
 
 impl RuntimeGlobal {
@@ -365,12 +367,17 @@ impl RuntimeGlobal {
         match self {
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
+            Self::AllocBytesSinceLastGc => "$alloc_bytes_since_last_gc",
+            Self::GcAllocListHead => "$gc_alloc_list",
         }
     }
 
     pub(crate) const fn initial_value(self) -> i32 {
         match self {
-            Self::ModuleCache | Self::CurrentModuleId => 0,
+            Self::ModuleCache
+            | Self::CurrentModuleId
+            | Self::AllocBytesSinceLastGc
+            | Self::GcAllocListHead => 0,
         }
     }
 }
@@ -392,6 +399,10 @@ const NO_RUNTIME_STRINGS: &[&str] = &[];
 
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
+const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
+    RuntimeGlobal::AllocBytesSinceLastGc,
+    RuntimeGlobal::GcAllocListHead,
+];
 
 const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
@@ -399,7 +410,11 @@ const COPY_DEPS: &[RuntimeFn] = &[];
 const VTS_DEPS: &[RuntimeFn] = &[RuntimeFn::Copy];
 const LOG_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
 const STRING_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
-const CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto];
+const CONCAT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::ValueToStringInto,
+];
 const ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
 const ADD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Add];
 const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];
@@ -1108,6 +1123,7 @@ impl RuntimeFn {
 
     pub(crate) const fn globals(self) -> &'static [RuntimeGlobal] {
         match self {
+            Self::AllocHeap => GLOBALS_ALLOC_HEAP,
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 GLOBALS_MODULE_RUNTIME
             }
