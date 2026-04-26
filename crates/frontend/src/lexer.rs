@@ -5,6 +5,7 @@ pub enum Token {
     Ident(String),
     Number(i32),
     String(String),
+    RegExp(String),
     True,
     False,
     Null,
@@ -185,6 +186,7 @@ pub enum TokenKind {
     Colon,
     Dot,
     Semicolon,
+    RegExp,
 }
 
 impl TokenKind {
@@ -272,6 +274,7 @@ impl TokenKind {
                 | (Self::Colon, Token::Colon)
                 | (Self::Dot, Token::Dot)
                 | (Self::Semicolon, Token::Semicolon)
+                | (Self::RegExp, Token::RegExp(_))
         )
     }
 }

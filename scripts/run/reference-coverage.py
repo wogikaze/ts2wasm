@@ -90,18 +90,117 @@ def usage():
 
 def feature_label(diag_code, err_file, file_path):
     """Generate feature label from diagnostic code and error output."""
-    # Simplified version - in the full script this would use feature-labels.sh
-    # For now, return a generic label based on the diag code
-    if diag_code == "Unknown":
-        return "unknown"
-    # Map common diagnostic codes to features
-    feature_map = {
-        "UnsupportedFeature": "feature-unsupported",
-        "SyntaxError": "syntax",
-        "TypeError": "type-system",
-        "ReferenceError": "runtime",
-    }
-    return feature_map.get(diag_code, diag_code.lower())
+    # Based on scripts/lib/feature-labels.sh
+    
+    # First check diagnostic codes
+    if diag_code == "BackendIo":
+        return "backend-io"
+    elif diag_code == "InvariantViolation":
+        return "invariant-violation"
+    elif diag_code == "UnresolvedName":
+        return "name-resolution"
+    elif diag_code == "UnresolvedFunction":
+        return "function-resolution"
+    elif diag_code == "DuplicateFunction":
+        return "duplicate-function"
+    elif diag_code == "DuplicateLocal":
+        return "duplicate-local"
+    elif diag_code == "DuplicateParameter":
+        return "duplicate-parameter"
+    elif diag_code == "NumberOutOfRange":
+        return "number-range"
+    elif diag_code == "ArityMismatch":
+        return "arity"
+    elif diag_code == "InvalidTopLevelReturn":
+        return "top-level-return"
+    
+    # Check file path for feature detection
+    path_lc = file_path.lower() if file_path else ""
+    
+    if "/built-ins/date/" in path_lc or "/built-ins/date." in path_lc:
+        return "date"
+    elif "/built-ins/function/" in path_lc or "/built-ins/function." in path_lc:
+        return "function"
+    elif "/class/" in path_lc or "/class-" in path_lc or "/classes/" in path_lc:
+        return "class"
+    elif "/module/" in path_lc or "/import/" in path_lc or "/export/" in path_lc:
+        return "import-export"
+    elif "/regexp/" in path_lc or "/regular-expressions/" in path_lc:
+        return "regexp-literal"
+    elif "/async-" in path_lc or "/async/" in path_lc or "/generators/" in path_lc:
+        return "async"
+    elif "/destructuring/" in path_lc:
+        return "destructuring"
+    elif "/template/" in path_lc:
+        return "template-literal"
+    elif "/arrow-function/" in path_lc or "/arrow/" in path_lc:
+        return "arrow-function"
+    elif "/spread/" in path_lc:
+        return "spread"
+    
+    # Check error text for feature detection
+    text = err_file.lower() if err_file else ""
+    
+    if "class " in text:
+        return "class"
+    elif " import " in text or " export " in text or "require(" in text or 'require("' in text:
+        return "import-export"
+    elif "regexp" in text or "regular expression" in text:
+        return "regexp-literal"
+    elif "type annotation" in text or "typescript" in text or "interface " in text or " enum " in text:
+        return "type-annotation"
+    elif "destructur" in text:
+        return "destructuring"
+    elif " async " in text or "await " in text or "generator" in text:
+        return "async"
+    elif "=>" in text or "arrow" in text:
+        return "arrow-function"
+    elif "template" in text:
+        return "template-literal"
+    elif "spread" in text:
+        return "spread"
+    elif "rest parameter" in text or "rest " in text:
+        return "rest-parameter"
+    elif "default parameter" in text or "default " in text:
+        return "default-parameter"
+    elif "switch" in text:
+        return "switch"
+    elif "while" in text or "do-while" in text or " for " in text:
+        return "loop"
+    elif "break" in text or "continue" in text:
+        return "break-continue"
+    elif "dynamic propert" in text or "computed propert" in text or "property access" in text or "property key" in text:
+        return "property-access"
+    elif "string literal key" in text or "object literal" in text:
+        return "object-literal"
+    elif "non-ascii" in text or "utf-8" in text or "utf8" in text:
+        return "utf8-string"
+    elif "==" in text:
+        return "equality-operator"
+    elif "binary operator" in text or "unary operator" in text:
+        return "operator"
+    elif "try statement" in text or "catch" in text or "finally" in text:
+        return "try-catch"
+    elif "new classname" in text or "new " in text:
+        return "new-expression"
+    elif "super" in text:
+        return "super"
+    elif "method" in text:
+        return "method-call"
+    elif "constructor" in text:
+        return "class"
+    elif "unsupported character" in text or "unterminated" in text or "expected " in text or "invalid number literal" in text:
+        return "parser-syntax"
+    elif "only identifier calls" in text:
+        return "call-expression"
+    elif "nested function" in text or "kind: function" in text:
+        return "function"
+    elif "expression type not yet supported" in text:
+        return "unsupported-expression"
+    elif "console." in text or "process." in text or "readfilesync" in text:
+        return "builtin-api"
+    
+    return "unknown-unsupported"
 
 def main():
     if len(sys.argv) < 2:

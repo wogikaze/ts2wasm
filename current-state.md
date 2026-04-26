@@ -43,6 +43,7 @@ mise run update-coverage-matrix
 - 最小 subset の TS/JS を WASI `.wasm` に変換し、`iwasm` 実行が可能。
 - semantic-core の curated fixture は Node differential で一致。
 - data-model の curated fixture（array/object basic）は Node differential で一致。
+- Module cache test now passes (require_cache_reuses_same_object_at_runtime_semantic_diff).
 
 ## Fixture groups（curated / 回帰の目安）
 

@@ -104,11 +104,126 @@ pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
 struct Lexer<'a> {
     source: &'a str,
     cursor: usize,
+    prev_token: Option<Token>,
 }
 
 impl<'a> Lexer<'a> {
     fn new(source: &'a str) -> Self {
-        Self { source, cursor: 0 }
+        Self { source, cursor: 0, prev_token: None }
+    }
+
+    fn is_regexp_context(&self) -> bool {
+        match &self.prev_token {
+            None => true, // Start of file
+            Some(Token::Plus)
+            | Some(Token::Minus)
+            | Some(Token::Star)
+            | Some(Token::Slash)
+            | Some(Token::Percent)
+            | Some(Token::Equal)
+            | Some(Token::StrictEqual)
+            | Some(Token::EqualEqual)
+            | Some(Token::BangEqual)
+            | Some(Token::StrictNotEqual)
+            | Some(Token::Less)
+            | Some(Token::Greater)
+            | Some(Token::AndAnd)
+            | Some(Token::OrOr)
+            | Some(Token::Question)
+            | Some(Token::Comma)
+            | Some(Token::LeftParen)
+            | Some(Token::LeftBrace)
+            | Some(Token::LeftBracket)
+            | Some(Token::Colon)
+            | Some(Token::Return)
+            | Some(Token::If)
+            | Some(Token::Else)
+            | Some(Token::While)
+            | Some(Token::For)
+            | Some(Token::New)
+            | Some(Token::TypeOf)
+            | Some(Token::InstanceOf)
+            | Some(Token::Void)
+            | Some(Token::Delete)
+            | Some(Token::Switch)
+            | Some(Token::Break)
+            | Some(Token::Continue)
+            | Some(Token::Throw)
+            | Some(Token::Try)
+            | Some(Token::Catch)
+            | Some(Token::Finally)
+            | Some(Token::Extends)
+            | Some(Token::Super)
+            | Some(Token::Static)
+            | Some(Token::Async)
+            | Some(Token::Await)
+            | Some(Token::Import)
+            | Some(Token::Export)
+            | Some(Token::Default)
+            | Some(Token::Case)
+            | Some(Token::Do)
+            | Some(Token::In)
+            | Some(Token::Of)
+            | Some(Token::InstanceOf) => true,
+            _ => false,
+        }
+    }
+
+    fn regexp(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
+        // Skip the opening '/'
+        self.advance_char();
+        
+        let mut pattern = String::new();
+        let mut escaped = false;
+        
+        while let Some(ch) = self.peek_char() {
+            if escaped {
+                pattern.push(ch);
+                escaped = false;
+            } else if ch == '\\' {
+                pattern.push(ch);
+                escaped = true;
+            } else if ch == '/' {
+                // End of regexp pattern
+                self.advance_char();
+                break;
+            } else {
+                pattern.push(ch);
+            }
+            self.advance_char();
+        }
+        
+        // Parse flags (if any)
+        let mut flags = String::new();
+        while let Some(ch) = self.peek_char() {
+            match ch {
+                'g' | 'i' | 'm' | 's' | 'u' | 'y' => {
+                    flags.push(ch);
+                    self.advance_char();
+                }
+                _ => break,
+            }
+        }
+        
+        // Combine pattern and flags
+        let mut regexp_str = pattern;
+        if !flags.is_empty() {
+            regexp_str.push('/');
+            regexp_str.push_str(&flags);
+        }
+        
+        Ok(SpannedToken {
+            kind: Token::RegExp(regexp_str),
+            span: Span {
+                start,
+                end: self.cursor,
+            },
+        })
+    }
+
+    fn add_token(&mut self, tokens: &mut Vec<SpannedToken>, token: SpannedToken) {
+        self.prev_token = Some(token.kind.clone());
+        tokens.push(token);
     }
 
     fn tokenize(mut self) -> Result<Vec<SpannedToken>, Diagnostic> {
@@ -123,14 +238,23 @@ impl<'a> Lexer<'a> {
                 ch if ch.is_whitespace() => {
                     self.advance_char();
                 }
-                '0'..='9' => tokens.push(self.number()?),
-                '"' | '\'' => tokens.push(self.string()?),
-                'a'..='z' | 'A'..='Z' | '_' | '$' => tokens.push(self.ident_or_keyword()),
+                 '0'..='9' => {
+                     let token = self.number()?;
+                     self.add_token(&mut tokens, token);
+                 }
+                 '"' | '\'' => {
+                     let token = self.string()?;
+                     self.add_token(&mut tokens, token);
+                 }
+                 'a'..='z' | 'A'..='Z' | '_' | '$' => {
+                     let token = self.ident_or_keyword();
+                     self.add_token(&mut tokens, token);
+                 }
                 '+' => {
                     self.advance_char();
                     if self.peek_char() == Some('+') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Increment,
                             span: Span {
                                 start,
@@ -139,7 +263,7 @@ impl<'a> Lexer<'a> {
                         });
                     } else if self.peek_char() == Some('=') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::PlusEqual,
                             span: Span {
                                 start,
@@ -147,7 +271,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Plus,
                             span: Span {
                                 start,
@@ -160,7 +284,7 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('-') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Decrement,
                             span: Span {
                                 start,
@@ -169,7 +293,7 @@ impl<'a> Lexer<'a> {
                         });
                     } else if self.peek_char() == Some('=') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::MinusEqual,
                             span: Span {
                                 start,
@@ -177,7 +301,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Minus,
                             span: Span {
                                 start,
@@ -192,7 +316,7 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::StrictNotEqual,
                                 span: Span {
                                     start,
@@ -200,7 +324,7 @@ impl<'a> Lexer<'a> {
                                 },
                             });
                         } else {
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::BangEqual,
                                 span: Span {
                                     start,
@@ -209,7 +333,7 @@ impl<'a> Lexer<'a> {
                             });
                         }
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Bang,
                             span: Span {
                                 start,
@@ -224,7 +348,7 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::PowerEqual,
                                 span: Span {
                                     start,
@@ -232,7 +356,7 @@ impl<'a> Lexer<'a> {
                                 },
                             });
                         } else {
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::Power,
                                 span: Span {
                                     start,
@@ -242,7 +366,7 @@ impl<'a> Lexer<'a> {
                         }
                     } else if self.peek_char() == Some('=') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::StarEqual,
                             span: Span {
                                 start,
@@ -250,7 +374,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Star,
                             span: Span {
                                 start,
@@ -263,7 +387,7 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('<') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::LeftShift,
                             span: Span {
                                 start,
@@ -271,7 +395,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Less,
                             span: Span {
                                 start,
@@ -286,7 +410,7 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('>') {
                             self.advance_char();
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::UnsignedRightShift,
                                 span: Span {
                                     start,
@@ -294,7 +418,7 @@ impl<'a> Lexer<'a> {
                                 },
                             });
                         } else {
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::RightShift,
                                 span: Span {
                                     start,
@@ -303,7 +427,7 @@ impl<'a> Lexer<'a> {
                             });
                         }
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Greater,
                             span: Span {
                                 start,
@@ -318,7 +442,7 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::StrictEqual,
                                 span: Span {
                                     start,
@@ -326,7 +450,7 @@ impl<'a> Lexer<'a> {
                                 },
                             });
                         } else {
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::EqualEqual,
                                 span: Span {
                                     start,
@@ -336,7 +460,7 @@ impl<'a> Lexer<'a> {
                         }
                     } else if self.peek_char() == Some('>') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Arrow,
                             span: Span {
                                 start,
@@ -344,7 +468,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Equal,
                             span: Span {
                                 start,
@@ -357,7 +481,7 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('&') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::AndAnd,
                             span: Span {
                                 start,
@@ -365,7 +489,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Ampersand,
                             span: Span {
                                 start,
@@ -378,7 +502,7 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('|') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::OrOr,
                             span: Span {
                                 start,
@@ -386,7 +510,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Pipe,
                             span: Span {
                                 start,
@@ -397,7 +521,7 @@ impl<'a> Lexer<'a> {
                 }
                 '^' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::Caret,
                         span: Span {
                             start,
@@ -407,7 +531,7 @@ impl<'a> Lexer<'a> {
                 }
                 '~' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::Tilde,
                         span: Span {
                             start,
@@ -419,7 +543,7 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('=') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::PercentEqual,
                             span: Span {
                                 start,
@@ -427,7 +551,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Percent,
                             span: Span {
                                 start,
@@ -437,31 +561,37 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 '/' => {
-                    self.advance_char();
-                    if self.peek_char() == Some('=') {
-                        self.advance_char();
-                        tokens.push(SpannedToken {
-                            kind: Token::SlashEqual,
-                            span: Span {
-                                start,
-                                end: self.cursor,
-                            },
-                        });
+                    // Check if this is a regexp literal or division
+                    if self.is_regexp_context() {
+                        let token = self.regexp(start)?;
+                        self.add_token(&mut tokens, token);
                     } else {
-                        tokens.push(SpannedToken {
-                            kind: Token::Slash,
-                            span: Span {
-                                start,
-                                end: self.cursor,
-                            },
-                        });
+                        self.advance_char();
+                        if self.peek_char() == Some('=') {
+                            self.advance_char();
+                            self.add_token(&mut tokens, SpannedToken {
+                                kind: Token::SlashEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        } else {
+                            self.add_token(&mut tokens, SpannedToken {
+                                kind: Token::Slash,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        }
                     }
                 }
                 '?' => {
                     self.advance_char();
                     if self.peek_char() == Some('.') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::OptionalChain,
                             span: Span {
                                 start,
@@ -470,7 +600,7 @@ impl<'a> Lexer<'a> {
                         });
                     } else if self.peek_char() == Some('?') {
                         self.advance_char();
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::NullishCoalesce,
                             span: Span {
                                 start,
@@ -478,7 +608,7 @@ impl<'a> Lexer<'a> {
                             },
                         });
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Question,
                             span: Span {
                                 start,
@@ -493,7 +623,7 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('.') {
                             self.advance_char();
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::DotDotDot,
                                 span: Span {
                                     start,
@@ -502,14 +632,14 @@ impl<'a> Lexer<'a> {
                             });
                         } else {
                             // ".." is not a valid token in our subset, treat as two dots
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::Dot,
                                 span: Span {
                                     start,
                                     end: start + 1,
                                 },
                             });
-                            tokens.push(SpannedToken {
+                            self.add_token(&mut tokens, SpannedToken {
                                 kind: Token::Dot,
                                 span: Span {
                                     start: start + 1,
@@ -518,7 +648,7 @@ impl<'a> Lexer<'a> {
                             });
                         }
                     } else {
-                        tokens.push(SpannedToken {
+                        self.add_token(&mut tokens, SpannedToken {
                             kind: Token::Dot,
                             span: Span {
                                 start,
@@ -529,7 +659,7 @@ impl<'a> Lexer<'a> {
                 }
                 '(' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::LeftParen,
                         span: Span {
                             start,
@@ -539,7 +669,7 @@ impl<'a> Lexer<'a> {
                 }
                 ')' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::RightParen,
                         span: Span {
                             start,
@@ -549,7 +679,7 @@ impl<'a> Lexer<'a> {
                 }
                 '{' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::LeftBrace,
                         span: Span {
                             start,
@@ -559,7 +689,7 @@ impl<'a> Lexer<'a> {
                 }
                 '}' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::RightBrace,
                         span: Span {
                             start,
@@ -569,7 +699,7 @@ impl<'a> Lexer<'a> {
                 }
                 ',' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::Comma,
                         span: Span {
                             start,
@@ -579,7 +709,7 @@ impl<'a> Lexer<'a> {
                 }
                 ':' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::Colon,
                         span: Span {
                             start,
@@ -589,7 +719,7 @@ impl<'a> Lexer<'a> {
                 }
                 '[' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::LeftBracket,
                         span: Span {
                             start,
@@ -599,7 +729,7 @@ impl<'a> Lexer<'a> {
                 }
                 ']' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::RightBracket,
                         span: Span {
                             start,
@@ -609,7 +739,7 @@ impl<'a> Lexer<'a> {
                 }
                 ';' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
+                    self.add_token(&mut tokens, SpannedToken {
                         kind: Token::Semicolon,
                         span: Span {
                             start,
