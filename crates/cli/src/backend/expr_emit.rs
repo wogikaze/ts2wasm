@@ -198,6 +198,13 @@ impl WatEmitter<'_> {
                     frame.heap_base_tmp(),
                     prop_count,
                 ));
+                // Initialize prototype to null (no prototype for plain objects)
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_PROTOTYPE_OFFSET,
+                    ValueTag::NULL,
+                ));
                 for (i, (key, val)) in props.iter().enumerate() {
                     let entry_offset =
                         Layout::OBJECT_HEADER_SIZE + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
