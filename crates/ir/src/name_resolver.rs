@@ -423,6 +423,17 @@ impl NameResolver {
                 value: Box::new(self.resolve_expr(value)?),
                 span: *span,
             }),
+            Expr::IndexAssign {
+                object,
+                index,
+                value,
+                span,
+            } => Ok(Expr::IndexAssign {
+                object: Box::new(self.resolve_expr(object)?),
+                index: Box::new(self.resolve_expr(index)?),
+                value: Box::new(self.resolve_expr(value)?),
+                span: *span,
+            }),
             Expr::InstanceOf {
                 expr,
                 type_expr,
