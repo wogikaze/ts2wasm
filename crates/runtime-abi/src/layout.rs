@@ -58,6 +58,14 @@ impl Layout {
     /// Size of one property entry in bytes.
     pub const OBJECT_ENTRY_SIZE: u32 = 8;
 
+    // ---- GC layout --------------------------------------------------------
+    /// Initial GC threshold in bytes (trigger GC when heap exceeds this).
+    pub const GC_THRESHOLD: u32 = 64 * 1024;
+    /// Bit mask for object type in type_tag field.
+    pub const OBJECT_TYPE_MASK: u32 = 0x7F;
+    /// Mark bit for GC mark phase.
+    pub const GC_MARK_BIT: u32 = 0x80000000;
+
     // ---- Module cache layout -----------------------------------------------
     /// Maximum number of concurrently cached modules.
     pub const MODULE_CACHE_MAX: u32 = 64;

@@ -138,3 +138,86 @@ string alloc 時は以下の手順で行う。
 `$alloc_heap` は `memory.size` を使用して利用可能なメモリをチェックする。
 割り当てが現在のメモリサイズを超える場合、`unreachable` で trap する。
 これにより、大きな割り当てによる未定義動作やメモリ破損を防ぐ。
+
+## GC Strategy
+
+### Choice: Mark-and-Sweep GC
+
+初期実装ではシンプルな mark-and-sweep GC を採用する。
+
+**理由:**
+- 現在の bump allocator からの移行が容易
+- Arena allocator は allocation pattern の大幅な変更が必要
+- 短命プログラム (CLI tools) では GC 頻度が低く、パフォーマンス影響が限定的
+- 将来的に generational GC への移行が可能
+
+### Heap Object Header Design
+
+すべての heap object は以下の header を持つ:
+
+```text
+[offset + 0 .. +4)   : i32 size (バイト数、header を含む)
+[offset + 4 .. +8)   : i32 type_tag (object type と mark bit をエンコード)
+[offset + 8 .. +N)   : type-specific payload
+```
+
+type_tag encoding:
+- bit 0-7: object type (OBJECT, ARRAY, STRING, CLOSURE)
+- bit 31: mark bit (GC mark phase で使用)
+
+定数は `runtime/layout.rs` の `Layout` で定義:
+- `OBJECT_HEADER_SIZE`: 8 (size + type_tag)
+- `OBJECT_TYPE_MASK`: 0x7F
+- `GC_MARK_BIT`: 0x80000000
+
+### GC Trigger Points
+
+GC は以下のタイミングで実行:
+
+1. **Allocation threshold**: `$heap` が `HEAP_START + GC_THRESHOLD` を超えた場合
+   - `GC_THRESHOLD` は初期値として 64KB
+   - threshold は GC 後に動的に調整可能
+
+2. **Explicit collection**: 将来的に `gc()` API を追加可能
+
+### Mark Phase
+
+Mark phase は以下の root set から開始:
+
+1. Global variables (将来の実装)
+2. Stack locals (実行時のスタックフレーム)
+3. Runtime strings (interned strings は GC 対象外)
+
+Mark algorithm:
+
+```
+mark(root):
+  if root is heap object:
+    if not marked:
+      set mark bit
+      for each reference in object:
+        mark(reference)
+```
+
+### Sweep Phase
+
+Sweep phase は heap を走査し、unmarked objects を回収:
+
+```
+sweep():
+  ptr = HEAP_START
+  while ptr < $heap:
+    size = i32.load(ptr)
+    type_tag = i32.load(ptr + 4)
+    if not marked:
+      free(ptr, size)
+    else:
+      clear mark bit
+    ptr += size
+```
+
+### Implementation Notes
+
+- 初期実装では stack locals の追跡は簡略化 (GC 時に stack frame を走査)
+- Interned strings は GC 対象外 (static data segment)
+- 将来的に write barrier を追加して generational GC へ移行可能
