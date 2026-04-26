@@ -15,13 +15,16 @@ from typing import Dict, List, Tuple
 import argparse
 
 
-def parse_detail_output(lines: List[str]) -> Dict[str, List[Tuple[str, str, str]]]:
-    """Parse --detail output and group by directory path.
+def parse_detail_output(lines: List[str], suite: str) -> Dict[str, List[Tuple[str, str, str]]]:
+    """Parse --detail output and group by appropriate strategy.
     
-    Returns: {directory: [(file_path, diag_code, feature_label), ...]}
+    For test262/tsgo: group by feature label (Date, Function, RegExp, etc.)
+    For tsc: group by directory path for finer granularity
+    
+    Returns: {group_key: [(file_path, diag_code, feature_label), ...]}
     """
     in_details = False
-    dir_groups = defaultdict(list)
+    groups = defaultdict(list)
     
     for line in lines:
         if line.startswith("# Per-file details"):
@@ -38,42 +41,84 @@ def parse_detail_output(lines: List[str]) -> Dict[str, List[Tuple[str, str, str]
             diag_code = parts[1]
             feature_label = parts[2]
             
-            # Group by parent directory
-            path_parts = file_path.split("/")
-            if len(path_parts) >= 2:
-                dir_key = "/".join(path_parts[:-1])
+            if suite in ["test262", "tsgo"]:
+                # Group by feature label for test262/tsgo
+                group_key = feature_label
             else:
-                dir_key = "/".join(path_parts)
+                # Group by filename prefix for tsc (finer granularity)
+                # Extract filename without extension
+                filename = file_path.split("/")[-1]
+                # Use first part of filename (before number or underscore) as group key
+                match = re.match(r'^([A-Za-z]+)', filename)
+                if match:
+                    group_key = match.group(1)
+                else:
+                    # Fallback to parent directory
+                    path_parts = file_path.split("/")
+                    if len(path_parts) >= 2:
+                        group_key = "/".join(path_parts[:-1])
+                    else:
+                        group_key = "/".join(path_parts)
             
-            dir_groups[dir_key].append((file_path, diag_code, feature_label))
+            groups[group_key].append((file_path, diag_code, feature_label))
     
-    return dir_groups
+    return groups
 
 
-def dir_to_issue_title(dir_key: str, files: List[Tuple[str, str, str]]) -> str:
-    """Convert directory key to issue title."""
-    # Extract last directory component
-    last_part = dir_key.split("/")[-1]
-    
-    # Convert kebab-case to title case
-    title = last_part.replace("-", " ").replace("_", " ").title()
-    
-    # Add feature context from first file
-    if files:
-        feature_label = files[0][2]
-        return f"Implement {title} ({feature_label})"
-    
-    return f"Implement {title}"
+def group_key_to_title(group_key: str, files: List[Tuple[str, str, str]], suite: str) -> str:
+    """Convert group key to issue title."""
+    if suite in ["test262", "tsgo"]:
+        # Feature label - use existing title map
+        title_map = {
+            "unknown-unsupported": "Investigate and classify unknown-unsupported cases",
+            "parser-syntax": "Implement parser syntax extensions",
+            "name-resolution": "Implement name resolution",
+            "function-resolution": "Implement function resolution",
+            "regexp-literal": "Implement RegExp literal support",
+            "date": "Implement Date object support",
+            "function": "Implement function support",
+            "property-access": "Implement property access support",
+            "unsupported-expression": "Implement unsupported expression types",
+            "equality-operator": "Implement equality operators",
+            "type-annotation": "Implement TypeScript type annotations",
+            "class": "Implement class syntax",
+            "import-export": "Implement import/export module syntax",
+            "async": "Implement async/await support",
+            "destructuring": "Implement destructuring",
+            "template-literal": "Implement template literals",
+            "arrow-function": "Implement arrow functions",
+            "spread": "Implement spread operator",
+            "rest-parameter": "Implement rest parameters",
+            "default-parameter": "Implement default parameters",
+            "switch": "Implement switch statement",
+            "loop": "Implement loop constructs",
+            "break-continue": "Implement break/continue",
+            "object-literal": "Implement object literal enhancements",
+            "utf8-string": "Implement UTF-8 string support",
+            "operator": "Implement operator support",
+            "try-catch": "Implement try-catch-finally",
+            "new-expression": "Implement new expression",
+            "super": "Implement super keyword",
+            "method-call": "Implement method call support",
+            "call-expression": "Implement call expression support",
+            "builtin-api": "Implement built-in API support",
+        }
+        return title_map.get(group_key, f"Implement {group_key} support")
+    else:
+        # Directory key for tsc
+        last_part = group_key.split("/")[-1]
+        title = last_part.replace("-", " ").replace("_", " ").title()
+        return f"Implement {title}"
 
 
 def generate_issue_content(
     issue_id: str,
-    dir_key: str,
+    group_key: str,
     files: List[Tuple[str, str, str]],
     suite: str = "test262"
 ) -> str:
     """Generate issue markdown content."""
-    title = dir_to_issue_title(dir_key, files)
+    title = group_key_to_title(group_key, files, suite)
     count = len(files)
     
     # Get unique feature labels
@@ -91,6 +136,14 @@ def generate_issue_content(
     # Build validation command
     validation_cmd = f"scripts/run/reference-coverage.sh {suite} --limit {count * 2}"
     
+    # Adjust description based on suite
+    if suite in ["test262", "tsgo"]:
+        scope_desc = f"{group_key} feature"
+        problem_desc = f"Reference test results show {count} cases fail with {group_key} diagnostic"
+    else:
+        scope_desc = f"{group_key}"
+        problem_desc = f"Reference test results show {count} cases fail in directory `{group_key}` with diagnostics: {feature_str}"
+    
     content = f"""---
 id: {issue_id}
 title: "{title}"
@@ -106,28 +159,28 @@ updated: 2026-04-26
 
 ## Summary
 
-Implement support for {dir_key} to handle {count} failing test cases in reference tests.
+Implement {scope_desc} to handle {count} failing test cases in reference tests.
 
 ## Problem
 
-Reference test results show {count} cases fail in directory `{dir_key}` with diagnostics: {feature_str}. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+{problem_desc}. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
 ## Desired final state
 
-{dir_key} is correctly implemented according to JavaScript/TypeScript specifications. Related diagnostics are only emitted for genuinely unsupported cases.
+{scope_desc} is correctly implemented according to JavaScript/TypeScript specifications. Related diagnostics are only emitted for genuinely unsupported cases.
 
 ## Scope
 
 In scope:
 
 - [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for {dir_key}
-- [ ] Add fixtures for {dir_key} behavior
+- [ ] Implement semantics for {scope_desc}
+- [ ] Add fixtures for {scope_desc} behavior
 - [ ] Update diagnostics appropriately
 
 Out of scope:
 
-- [ ] Related directories (separate issues)
+- [ ] Related features (separate issues)
 
 ## Affected paths
 
@@ -144,9 +197,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] {dir_key} passes for basic cases
+- [ ] {scope_desc} passes for basic cases
 - [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for {dir_key}
+- [ ] Regression test added for {scope_desc}
 - [ ] Docs updated if semantics change
 
 ## Validation
@@ -222,23 +275,31 @@ def main():
     lines = sys.stdin.readlines()
     
     # Parse detail output
-    dir_groups = parse_detail_output(lines)
+    groups = parse_detail_output(lines, args.suite)
     
     # Generate issues
     output_dir = Path(args.output_dir)
     current_id = int(args.start_id)
     
-    for dir_key, files in sorted(dir_groups.items()):
-        if len(files) < 3:
-            print(f"Skipping {dir_key} (only {len(files)} files)", file=sys.stderr)
+    for group_key, files in sorted(groups.items()):
+        # Lower threshold for tsc to get finer granularity
+        min_files = 1 if args.suite == "tsc" else 3
+        if len(files) < min_files:
+            print(f"Skipping {group_key} (only {len(files)} files)", file=sys.stderr)
             continue
         
         issue_id = f"{current_id:03d}"
-        content = generate_issue_content(issue_id, dir_key, files, args.suite)
+        content = generate_issue_content(issue_id, group_key, files, args.suite)
         
-        # Sanitize directory key for filename
-        safe_dir = dir_key.replace("/", "-").replace("_", "-")
-        output_file = output_dir / f"{issue_id}-implement-{safe_dir}.md"
+        # Sanitize group key for filename
+        if args.suite in ["test262", "tsgo"]:
+            # Feature label - use directly
+            safe_key = group_key.replace("-", "-")
+        else:
+            # Directory key - replace slashes
+            safe_key = group_key.replace("/", "-").replace("_", "-")
+        
+        output_file = output_dir / f"{issue_id}-implement-{safe_key}.md"
         output_file.write_text(content)
         
         print(f"Created {output_file}", file=sys.stderr)

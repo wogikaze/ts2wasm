@@ -58,40 +58,147 @@ Issue files are the source of truth for work items. The generated section below 
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | design-ready | P1 |  | Implement equality operators (==, !=, ===, !==) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported diagnostic cases |
-| 061 | Implement Getyear (name-resolution) | feature | frontend | design-ready | P1 |  | Implement Getyear (name-resolution) |
-| 062 | Implement Setyear (name-resolution) | feature | frontend | design-ready | P1 |  | Implement Setyear (name-resolution) |
-| 063 | Implement Togmtstring (date) | feature | frontend | design-ready | P1 |  | Implement Togmtstring (date) |
-| 064 | Implement Function (function-resolution) | feature | frontend | design-ready | P1 |  | Implement Function (function-resolution) |
-| 065 | Implement Regexp (regexp-literal) | feature | frontend | design-ready | P1 |  | Implement Regexp (regexp-literal) |
-| 066 | Implement Index (regexp-literal) | feature | frontend | design-ready | P1 |  | Implement Index (regexp-literal) |
-| 067 | Implement Input (regexp-literal) | feature | frontend | design-ready | P1 |  | Implement Input (regexp-literal) |
-| 068 | Implement Lastmatch (regexp-literal) | feature | frontend | design-ready | P1 |  | Implement Lastmatch (regexp-literal) |
-| 069 | Implement Lastparen (regexp-literal) | feature | frontend | design-ready | P1 |  | Implement Lastparen (regexp-literal) |
-| 070 | Implement Leftcontext (regexp-literal) | feature | frontend | design-ready | P1 |  | Implement Leftcontext (regexp-literal) |
-| 071 | Implement Rightcontext (regexp-literal) | feature | frontend | design-ready | P1 |  | Implement Rightcontext (regexp-literal) |
-| 072 | Implement Compile (name-resolution) | feature | frontend | design-ready | P1 |  | Implement Compile (name-resolution) |
-| 073 | Implement Anchor (unknown-unsupported) | feature | frontend | design-ready | P1 |  | Implement Anchor (unknown-unsupported) |
-| 074 | Implement Big (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Big (parser-syntax) |
-| 075 | Implement Blink (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Blink (parser-syntax) |
-| 076 | Implement Bold (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Bold (parser-syntax) |
-| 077 | Implement Fixed (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Fixed (parser-syntax) |
-| 078 | Implement Fontcolor (unknown-unsupported) | feature | frontend | design-ready | P1 |  | Implement Fontcolor (unknown-unsupported) |
-| 079 | Implement Fontsize (unknown-unsupported) | feature | frontend | design-ready | P1 |  | Implement Fontsize (unknown-unsupported) |
-| 080 | Implement Italics (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Italics (parser-syntax) |
-| 081 | Implement Link (unknown-unsupported) | feature | frontend | design-ready | P1 |  | Implement Link (unknown-unsupported) |
-| 082 | Implement Small (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Small (parser-syntax) |
-| 083 | Implement Strike (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Strike (parser-syntax) |
-| 084 | Implement Sub (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Sub (parser-syntax) |
-| 085 | Implement Substr (name-resolution) | feature | frontend | design-ready | P1 |  | Implement Substr (name-resolution) |
-| 086 | Implement Sup (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Sup (parser-syntax) |
-| 087 | Implement Trimleft (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Trimleft (parser-syntax) |
-| 088 | Implement Trimright (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Trimright (parser-syntax) |
-| 089 | Implement Escape (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Escape (parser-syntax) |
-| 090 | Implement Unescape (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Unescape (parser-syntax) |
-| 091 | Implement Comments (unknown-unsupported) | feature | frontend | design-ready | P1 |  | Implement Comments (unknown-unsupported) |
-| 092 | Implement Direct (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Direct (parser-syntax) |
-| 093 | Implement Compiler (parser-syntax) | feature | frontend | design-ready | P1 |  | Implement Compiler (parser-syntax) |
-| 094 | Implement Compiler (unknown-unsupported) | feature | frontend | design-ready | P1 |  | Implement Compiler (unknown-unsupported) |
+| 061 | Implement Date object support | feature | frontend | design-ready | P1 |  | Implement Date object support |
+| 062 | Implement function support | feature | frontend | design-ready | P1 |  | Implement function support |
+| 063 | Implement function resolution | feature | frontend | design-ready | P1 |  | Implement function resolution |
+| 064 | Implement name resolution | feature | frontend | design-ready | P1 |  | Implement name resolution |
+| 065 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
+| 066 | Implement RegExp literal support | feature | frontend | design-ready | P1 |  | Implement RegExp literal support |
+| 067 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
+| 068 | Implement unsupported expression types | feature | frontend | design-ready | P1 |  | Implement unsupported expression types |
+| 069 | Implement Apilibcheck | feature | frontend | design-ready | P1 |  | Implement Apilibcheck |
+| 070 | Implement Apisample | feature | frontend | design-ready | P1 |  | Implement Apisample |
+| 071 | Implement Arrowfunctionexpression | feature | frontend | design-ready | P1 |  | Implement Arrowfunctionexpression |
+| 072 | Implement Classdeclaration | feature | frontend | design-ready | P1 |  | Implement Classdeclaration |
+| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | feature | frontend | design-ready | P1 |  | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
+| 074 | Implement Declarationerrorsnoemitonerror | feature | frontend | design-ready | P1 |  | Implement Declarationerrorsnoemitonerror |
+| 075 | Implement Exportassignment | feature | frontend | design-ready | P1 |  | Implement Exportassignment |
+| 076 | Implement Functiondeclaration | feature | frontend | design-ready | P1 |  | Implement Functiondeclaration |
+| 077 | Implement Interfacedeclaration | feature | frontend | design-ready | P1 |  | Implement Interfacedeclaration |
+| 078 | Implement Memberaccessordeclaration | feature | frontend | design-ready | P1 |  | Implement Memberaccessordeclaration |
+| 079 | Implement Parameterlist | feature | frontend | design-ready | P1 |  | Implement Parameterlist |
+| 080 | Implement Systemmoduleforstatementnoinitializer | feature | frontend | design-ready | P1 |  | Implement Systemmoduleforstatementnoinitializer |
+| 081 | Implement Transportstream | feature | frontend | design-ready | P1 |  | Implement Transportstream |
+| 082 | Implement Abstractclassinlocalscope | feature | frontend | design-ready | P1 |  | Implement Abstractclassinlocalscope |
+| 083 | Implement Abstractclassinlocalscopeisabstract | feature | frontend | design-ready | P1 |  | Implement Abstractclassinlocalscopeisabstract |
+| 084 | Implement Abstractclassunioninstantiation | feature | frontend | design-ready | P1 |  | Implement Abstractclassunioninstantiation |
+| 085 | Implement Abstractinterfaceidentifiername | feature | frontend | design-ready | P1 |  | Implement Abstractinterfaceidentifiername |
+| 086 | Implement Abstractpropertybasics | feature | frontend | design-ready | P1 |  | Implement Abstractpropertybasics |
+| 087 | Implement Abstractpropertyinconstructor | feature | frontend | design-ready | P1 |  | Implement Abstractpropertyinconstructor |
+| 088 | Implement Abstractpropertynegative | feature | frontend | design-ready | P1 |  | Implement Abstractpropertynegative |
+| 089 | Implement Acceptsymbolasweaktype | feature | frontend | design-ready | P1 |  | Implement Acceptsymbolasweaktype |
+| 090 | Implement Acceptablealias | feature | frontend | design-ready | P1 |  | Implement Acceptablealias |
+| 091 | Implement Accessinstancememberfromstaticmethod | feature | frontend | design-ready | P1 |  | Implement Accessinstancememberfromstaticmethod |
+| 092 | Implement Accessoverriddenbaseclassmember | feature | frontend | design-ready | P1 |  | Implement Accessoverriddenbaseclassmember |
+| 093 | Implement Accessstaticmemberfrominstancemethod | feature | frontend | design-ready | P1 |  | Implement Accessstaticmemberfrominstancemethod |
+| 094 | Implement Accessoraccidentalcalldiagnostic | feature | frontend | design-ready | P1 |  | Implement Accessoraccidentalcalldiagnostic |
+| 095 | Implement Accessorbodyintypecontext | feature | frontend | design-ready | P1 |  | Implement Accessorbodyintypecontext |
+| 096 | Implement Accessordeclarationemitjs | feature | frontend | design-ready | P1 |  | Implement Accessordeclarationemitjs |
+| 097 | Implement Accessordeclarationemitvisibilityerrors | feature | frontend | design-ready | P1 |  | Implement Accessordeclarationemitvisibilityerrors |
+| 098 | Implement Accessordeclarationorder | feature | frontend | design-ready | P1 |  | Implement Accessordeclarationorder |
+| 099 | Implement Accessorinambientcontextes | feature | frontend | design-ready | P1 |  | Implement Accessorinambientcontextes |
+| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | feature | frontend | design-ready | P1 |  | Implement Accessorinferredreturntypeerrorinreturnstatement |
+| 101 | Implement Accessorparameteraccessibilitymodifier | feature | frontend | design-ready | P1 |  | Implement Accessorparameteraccessibilitymodifier |
+| 102 | Implement Accessorwithinitializer | feature | frontend | design-ready | P1 |  | Implement Accessorwithinitializer |
+| 103 | Implement Accessorwithlineterminator | feature | frontend | design-ready | P1 |  | Implement Accessorwithlineterminator |
+| 104 | Implement Accessorwithrestparam | feature | frontend | design-ready | P1 |  | Implement Accessorwithrestparam |
+| 105 | Implement Accessorwithoutbody | feature | frontend | design-ready | P1 |  | Implement Accessorwithoutbody |
+| 106 | Implement Accessors | feature | frontend | design-ready | P1 |  | Implement Accessors |
+| 107 | Implement Accessorsemit | feature | frontend | design-ready | P1 |  | Implement Accessorsemit |
+| 108 | Implement Accessorsinambientcontext | feature | frontend | design-ready | P1 |  | Implement Accessorsinambientcontext |
+| 109 | Implement Addmorecallsignaturestobasesignature | feature | frontend | design-ready | P1 |  | Implement Addmorecallsignaturestobasesignature |
+| 110 | Implement Addmoreoverloadstobasesignature | feature | frontend | design-ready | P1 |  | Implement Addmoreoverloadstobasesignature |
+| 111 | Implement Aliasassignments | feature | frontend | design-ready | P1 |  | Implement Aliasassignments |
+| 112 | Implement Aliasbug | feature | frontend | design-ready | P1 |  | Implement Aliasbug |
+| 113 | Implement Aliasdoesnotduplicatesignatures | feature | frontend | design-ready | P1 |  | Implement Aliasdoesnotduplicatesignatures |
+| 114 | Implement Aliaserrors | feature | frontend | design-ready | P1 |  | Implement Aliaserrors |
+| 115 | Implement Aliasinaccessiblemodule | feature | frontend | design-ready | P1 |  | Implement Aliasinaccessiblemodule |
+| 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | feature | frontend | design-ready | P1 |  | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
+| 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | feature | frontend | design-ready | P1 |  | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
+| 118 | Implement Aliasonmergedmoduleinterface | feature | frontend | design-ready | P1 |  | Implement Aliasonmergedmoduleinterface |
+| 119 | Implement Aliasusageinaccessorsofclass | feature | frontend | design-ready | P1 |  | Implement Aliasusageinaccessorsofclass |
+| 120 | Implement Aliasusageinarray | feature | frontend | design-ready | P1 |  | Implement Aliasusageinarray |
+| 121 | Implement Aliasusageinfunctionexpression | feature | frontend | design-ready | P1 |  | Implement Aliasusageinfunctionexpression |
+| 122 | Implement Aliasusageingenericfunction | feature | frontend | design-ready | P1 |  | Implement Aliasusageingenericfunction |
+| 123 | Implement Aliasusageinindexerofclass | feature | frontend | design-ready | P1 |  | Implement Aliasusageinindexerofclass |
+| 124 | Implement Aliasusageinobjectliteral | feature | frontend | design-ready | P1 |  | Implement Aliasusageinobjectliteral |
+| 125 | Implement Aliasusageinorexpression | feature | frontend | design-ready | P1 |  | Implement Aliasusageinorexpression |
+| 126 | Implement Aliasusageintypeargumentofextendsclause | feature | frontend | design-ready | P1 |  | Implement Aliasusageintypeargumentofextendsclause |
+| 127 | Implement Aliasusageinvarassignment | feature | frontend | design-ready | P1 |  | Implement Aliasusageinvarassignment |
+| 128 | Implement Aliasusedasnamevalue | feature | frontend | design-ready | P1 |  | Implement Aliasusedasnamevalue |
+| 129 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer | feature | frontend | design-ready | P1 |  | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer |
+| 130 | Implement Aliasesinsystemmodule | feature | frontend | design-ready | P1 |  | Implement Aliasesinsystemmodule |
+| 131 | Implement Allowimportclausestomergewithtypes | feature | frontend | design-ready | P1 |  | Implement Allowimportclausestomergewithtypes |
+| 132 | Implement Allowjsclassthistypecrash | feature | frontend | design-ready | P1 |  | Implement Allowjsclassthistypecrash |
+| 133 | Implement Allowjscrossmonorepopackage | feature | frontend | design-ready | P1 |  | Implement Allowjscrossmonorepopackage |
+| 134 | Implement Allowjscheckjstypeparameternocrash | feature | frontend | design-ready | P1 |  | Implement Allowjscheckjstypeparameternocrash |
+| 135 | Implement Allowsyntheticdefaultimports | feature | frontend | design-ready | P1 |  | Implement Allowsyntheticdefaultimports |
+| 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | feature | frontend | design-ready | P1 |  | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
+| 137 | Implement Alwaysstrictalreadyusestrict | feature | frontend | design-ready | P1 |  | Implement Alwaysstrictalreadyusestrict |
+| 138 | Implement Alwaysstrictmodule | feature | frontend | design-ready | P1 |  | Implement Alwaysstrictmodule |
+| 139 | Implement Alwaysstrictnoimplicitusestrict | feature | frontend | design-ready | P1 |  | Implement Alwaysstrictnoimplicitusestrict |
+| 140 | Implement Ambientclassdeclarationwithextends | feature | frontend | design-ready | P1 |  | Implement Ambientclassdeclarationwithextends |
+| 141 | Implement Ambientclassdeclaredbeforebase | feature | frontend | design-ready | P1 |  | Implement Ambientclassdeclaredbeforebase |
+| 142 | Implement Ambientclassmergesoverloadswithinterface | feature | frontend | design-ready | P1 |  | Implement Ambientclassmergesoverloadswithinterface |
+| 143 | Implement Ambientclassoverloadforfunction | feature | frontend | design-ready | P1 |  | Implement Ambientclassoverloadforfunction |
+| 144 | Implement Ambientconstliterals | feature | frontend | design-ready | P1 |  | Implement Ambientconstliterals |
+| 145 | Implement Ambientenum | feature | frontend | design-ready | P1 |  | Implement Ambientenum |
+| 146 | Implement Ambientenumelementinitializer | feature | frontend | design-ready | P1 |  | Implement Ambientenumelementinitializer |
+| 147 | Implement Ambienterrors | feature | frontend | design-ready | P1 |  | Implement Ambienterrors |
+| 148 | Implement Ambientexportdefaulterrors | feature | frontend | design-ready | P1 |  | Implement Ambientexportdefaulterrors |
+| 149 | Implement Ambientexternalmoduleinanotherexternalmodule | feature | frontend | design-ready | P1 |  | Implement Ambientexternalmoduleinanotherexternalmodule |
+| 150 | Implement Ambientexternalmodulereopen | feature | frontend | design-ready | P1 |  | Implement Ambientexternalmodulereopen |
+| 151 | Implement Ambientexternalmodulewithinternalimportdeclaration | feature | frontend | design-ready | P1 |  | Implement Ambientexternalmodulewithinternalimportdeclaration |
+| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | feature | frontend | design-ready | P1 |  | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration |
+| 153 | Implement Ambientexternalmodulewithrelativemodulename | feature | frontend | design-ready | P1 |  | Implement Ambientexternalmodulewithrelativemodulename |
+| 154 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | feature | frontend | design-ready | P1 |  | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
+| 155 | Implement Ambientfundule | feature | frontend | design-ready | P1 |  | Implement Ambientfundule |
+| 156 | Implement Ambientgetters | feature | frontend | design-ready | P1 |  | Implement Ambientgetters |
+| 157 | Implement Ambientmoduleexports | feature | frontend | design-ready | P1 |  | Implement Ambientmoduleexports |
+| 158 | Implement Ambientmodulewithclassdeclarationwithextends | feature | frontend | design-ready | P1 |  | Implement Ambientmodulewithclassdeclarationwithextends |
+| 159 | Implement Ambientmodulewithtemplateliterals | feature | frontend | design-ready | P1 |  | Implement Ambientmodulewithtemplateliterals |
+| 160 | Implement Ambientmodules | feature | frontend | design-ready | P1 |  | Implement Ambientmodules |
+| 161 | Implement Ambientnamerestrictions | feature | frontend | design-ready | P1 |  | Implement Ambientnamerestrictions |
+| 162 | Implement Ambientpropertydeclarationinjs | feature | frontend | design-ready | P1 |  | Implement Ambientpropertydeclarationinjs |
+| 163 | Implement Ambientrequirefunction | feature | frontend | design-ready | P1 |  | Implement Ambientrequirefunction |
+| 164 | Implement Ambientstatement | feature | frontend | design-ready | P1 |  | Implement Ambientstatement |
+| 165 | Implement Ambientwithstatements | feature | frontend | design-ready | P1 |  | Implement Ambientwithstatements |
+| 166 | Implement Ambiguouscallswherereturntypesagree | feature | frontend | design-ready | P1 |  | Implement Ambiguouscallswherereturntypesagree |
+| 167 | Implement Ambiguousgenericassertion | feature | frontend | design-ready | P1 |  | Implement Ambiguousgenericassertion |
+| 168 | Implement Ambiguousoverload | feature | frontend | design-ready | P1 |  | Implement Ambiguousoverload |
+| 169 | Implement Ambiguousoverloadresolution | feature | frontend | design-ready | P1 |  | Implement Ambiguousoverloadresolution |
+| 170 | Implement Amddeclarationemitnoextradeclare | feature | frontend | design-ready | P1 |  | Implement Amddeclarationemitnoextradeclare |
+| 171 | Implement Amddependencycomment | feature | frontend | design-ready | P1 |  | Implement Amddependencycomment |
+| 172 | Implement Amddependencycommentname | feature | frontend | design-ready | P1 |  | Implement Amddependencycommentname |
+| 173 | Implement Amdlikeinputdeclarationemit | feature | frontend | design-ready | P1 |  | Implement Amdlikeinputdeclarationemit |
+| 174 | Implement Amdmodulebundlenoduplicatedeclarationemitcomments | feature | frontend | design-ready | P1 |  | Implement Amdmodulebundlenoduplicatedeclarationemitcomments |
+| 175 | Implement Amdmoduleconstenumusage | feature | frontend | design-ready | P1 |  | Implement Amdmoduleconstenumusage |
+| 176 | Implement Amdmodulename | feature | frontend | design-ready | P1 |  | Implement Amdmodulename |
+| 177 | Implement Anonclassdeclarationemitisanon | feature | frontend | design-ready | P1 |  | Implement Anonclassdeclarationemitisanon |
+| 178 | Implement Anonterface | feature | frontend | design-ready | P1 |  | Implement Anonterface |
+| 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | feature | frontend | design-ready | P1 |  | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
+| 180 | Implement Anonymousclassexpression | feature | frontend | design-ready | P1 |  | Implement Anonymousclassexpression |
+| 181 | Implement Anonymousmodules | feature | frontend | design-ready | P1 |  | Implement Anonymousmodules |
+| 182 | Implement Anyandunknownhavefalsycomponents | feature | frontend | design-ready | P1 |  | Implement Anyandunknownhavefalsycomponents |
+| 183 | Implement Anyasreturntypefornewoncall | feature | frontend | design-ready | P1 |  | Implement Anyasreturntypefornewoncall |
+| 184 | Implement Anydeclare | feature | frontend | design-ready | P1 |  | Implement Anydeclare |
+| 185 | Implement Anyidenticaltoitself | feature | frontend | design-ready | P1 |  | Implement Anyidenticaltoitself |
+| 186 | Implement Anyindexedaccessarraynoexception | feature | frontend | design-ready | P1 |  | Implement Anyindexedaccessarraynoexception |
+| 187 | Implement Anyinferenceanonymousfunctions | feature | frontend | design-ready | P1 |  | Implement Anyinferenceanonymousfunctions |
+| 188 | Implement Anyisassignabletoobject | feature | frontend | design-ready | P1 |  | Implement Anyisassignabletoobject |
+| 189 | Implement Anyisassignabletovoid | feature | frontend | design-ready | P1 |  | Implement Anyisassignabletovoid |
+| 190 | Implement Anymappedtypeserror | feature | frontend | design-ready | P1 |  | Implement Anymappedtypeserror |
+| 191 | Implement Anyplusany | feature | frontend | design-ready | P1 |  | Implement Anyplusany |
+| 192 | Implement Argsinscope | feature | frontend | design-ready | P1 |  | Implement Argsinscope |
+| 193 | Implement Arguments | feature | frontend | design-ready | P1 |  | Implement Arguments |
+| 194 | Implement Argumentsaspropertyname | feature | frontend | design-ready | P1 |  | Implement Argumentsaspropertyname |
+| 195 | Implement Argumentsbindstofunctionscopeargumentlist | feature | frontend | design-ready | P1 |  | Implement Argumentsbindstofunctionscopeargumentlist |
+| 196 | Implement Argumentsobjectcreatesrestforjs | feature | frontend | design-ready | P1 |  | Implement Argumentsobjectcreatesrestforjs |
+| 197 | Implement Argumentsobjectiterator | feature | frontend | design-ready | P1 |  | Implement Argumentsobjectiterator |
+| 198 | Implement Argumentspropertynameinjsmode | feature | frontend | design-ready | P1 |  | Implement Argumentspropertynameinjsmode |
+| 199 | Implement Compiler | feature | frontend | design-ready | P1 |  | Implement Compiler |
+| 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
+| 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 <!-- generated:ready:end -->
 
 ## Blocked queue
