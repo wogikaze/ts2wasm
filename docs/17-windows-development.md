@@ -116,13 +116,6 @@ Some scripts still depend on bash and are not yet available on Windows:
 
 - `check-scripts` - Bash syntax check (not needed on Windows)
 - `install-hooks` - Git hooks installation (Unix-specific)
-- `check-coverage-gate` - Coverage comparison (requires bash)
-- `reference-coverage` - Reference suite coverage runner (requires bash)
-- `test262` - test262 harness (requires bash)
-- `test-differential-reporter` - HTML/Md report from test262 (requires bash)
-- `test-regression-gate` - Regression gate (requires bash)
-- `coverage-report` - Language coverage report (requires bash)
-- `benchmark-tracker` - Performance metrics (requires bash)
 - `check-repo-smoke` - Smoke test (requires bash)
 
 **Migrated to Python (Windows-compatible):**
@@ -142,6 +135,13 @@ Some scripts still depend on bash and are not yet available on Windows:
 - `update-issue-index` - Issue index generation
 - `gen-issues-from-coverage` - Issue generation from coverage
 - `update-coverage-matrix` - Coverage matrix update
+- `check-coverage-gate` - Coverage comparison
+- `coverage-report` - Language coverage report
+- `reference-coverage` - Reference suite coverage runner
+- `test262` - test262 harness
+- `test-differential-reporter` - HTML/Md report from test262
+- `test-regression-gate` - Regression gate
+- `benchmark-tracker` - Performance metrics
 - `fmt` - Cargo formatting
 - `clippy` - Cargo linting
 - `nextest` - Test runner
@@ -227,14 +227,8 @@ When contributing Windows-specific fixes:
 
 The following bash scripts are planned to be migrated to Python for full Windows support:
 
-- [ ] reference-coverage
-- [ ] test262
-- [ ] test-differential-reporter
-- [ ] test-regression-gate
-- [ ] coverage-report
-- [ ] benchmark-tracker
-- [ ] check-coverage-gate
-- [ ] install-hooks (Git hooks)
+- [ ] install-hooks (Git hooks - may remain Unix-only due to Git differences)
 - [ ] check-scripts (bash syntax check - may remain Unix-only)
+- [ ] check-repo-smoke (Smoke test)
 
 See the issue tracker for progress.

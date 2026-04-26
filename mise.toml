@@ -25,36 +25,36 @@ description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath [Unix
 run = "bash scripts/manager install-hooks"
 
 [tasks."check-coverage-gate"]
-description = "Compare two coverage matrix documents (see script for args) [Unix only]"
-run = "bash scripts/manager check-coverage-gate"
+description = "Compare two coverage matrix documents (see script for args)"
+run = "python scripts/manager.py check-coverage-gate"
 
 [tasks."update-coverage-matrix"]
 description = "Refresh reference coverage table (see script for args)"
 run = "python scripts/manager.py update-coverage-matrix"
 
 [tasks."reference-coverage"]
-description = "Run reference-based coverage (see script for args) [Unix only]"
-run = "bash scripts/manager reference-coverage"
+description = "Run reference-based coverage (see script for args)"
+run = "python scripts/manager.py reference-coverage"
 
 [tasks."coverage-report"]
-description = "Generate language coverage report from language-reference (args: --format text|markdown) [Unix only]"
-run = "bash scripts/manager coverage-report"
+description = "Generate language coverage report from language-reference (args: --format text|markdown)"
+run = "python scripts/manager.py coverage-report"
 
 [tasks.benchmark-tracker]
-description = "Append build/fixture performance metrics to JSON [Unix only]"
-run = "bash scripts/manager benchmark-tracker"
+description = "Append build/fixture performance metrics to JSON"
+run = "python scripts/manager.py benchmark-tracker"
 
 [tasks.test262]
-description = "test262 harness: JSONL on stdout (see script for args) [Unix only]"
-run = "bash scripts/manager test262"
+description = "test262 harness: JSONL on stdout (see script for args)"
+run = "python scripts/manager.py test262"
 
 [tasks."test-differential-reporter"]
-description = "HTML/Md report from test262 JSONL (stdin; optional file args) [Unix only]"
-run = "bash scripts/manager test-differential-reporter"
+description = "HTML/Md report from test262 JSONL (stdin; optional file args)"
+run = "python scripts/manager.py test-differential-reporter"
 
 [tasks."test-regression-gate"]
-description = "Gate: JSONL result vs baseline [Unix only]"
-run = "bash scripts/manager test-regression-gate"
+description = "Gate: JSONL result vs baseline"
+run = "python scripts/manager.py test-regression-gate"
 
 [tasks.fmt]
 description = "cargo fmt --all --check"
