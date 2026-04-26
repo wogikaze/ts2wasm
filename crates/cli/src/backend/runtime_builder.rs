@@ -55,6 +55,9 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringSlice => self.emit_string_slice(wat),
                 RuntimeFn::StringIndexOf => self.emit_string_index_of(wat),
                 RuntimeFn::StringSplit => self.emit_string_split(wat),
+                RuntimeFn::StringTrim => self.emit_string_trim(wat),
+                RuntimeFn::StringToUpperCase => self.emit_string_to_upper_case(wat),
+                RuntimeFn::StringToLowerCase => self.emit_string_to_lower_case(wat),
                 RuntimeFn::ArrayPush => self.emit_array_push(wat),
                 RuntimeFn::ArrayPop => self.emit_array_pop(wat),
                 RuntimeFn::ArraySlice => self.emit_array_slice(wat),
@@ -1265,6 +1268,48 @@ impl WatEmitter<'_> {
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+        ));
+    }
+
+    fn emit_string_trim(&self, wat: &mut String) {
+        // Simplified trim: return original string for now
+        // Full implementation would trim whitespace from both ends
+        wat.push_str(&format!(
+            r#"
+  (func $string_trim (param $s i32) (result i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    ;; Placeholder: return original string
+    (local.get $s))
+"#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_string_to_upper_case(&self, wat: &mut String) {
+        // Simplified toUpperCase: return original string for now
+        // Full implementation would convert ASCII letters to uppercase
+        wat.push_str(&format!(
+            r#"
+  (func $string_to_upper_case (param $s i32) (result i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    ;; Placeholder: return original string
+    (local.get $s))
+"#,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_string_to_lower_case(&self, wat: &mut String) {
+        // Simplified toLowerCase: return original string for now
+        // Full implementation would convert ASCII letters to lowercase
+        wat.push_str(&format!(
+            r#"
+  (func $string_to_lower_case (param $s i32) (result i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    ;; Placeholder: return original string
+    (local.get $s))
+"#,
+            undefined = ValueTag::UNDEFINED,
         ));
     }
 

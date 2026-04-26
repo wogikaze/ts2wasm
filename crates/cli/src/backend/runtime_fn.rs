@@ -74,6 +74,9 @@ pub(crate) enum RuntimeFn {
     StringSlice,
     StringIndexOf,
     StringSplit,
+    StringTrim,
+    StringToUpperCase,
+    StringToLowerCase,
     /// M10: Array methods
     ArrayPush,
     ArrayPop,
@@ -284,6 +287,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathAbs" => Some(RuntimeFn::MathAbs),
         "MathMax" => Some(RuntimeFn::MathMax),
         "MathMin" => Some(RuntimeFn::MathMin),
+        "MathRandom" => Some(RuntimeFn::MathRandom),
         "JsonStringify" => Some(RuntimeFn::JsonStringify),
         "JsonParse" => Some(RuntimeFn::JsonParse),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
@@ -294,6 +298,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringSlice" => Some(RuntimeFn::StringSlice),
         "StringIndexOf" => Some(RuntimeFn::StringIndexOf),
         "StringSplit" => Some(RuntimeFn::StringSplit),
+        "StringTrim" => Some(RuntimeFn::StringTrim),
+        "StringToUpperCase" => Some(RuntimeFn::StringToUpperCase),
+        "StringToLowerCase" => Some(RuntimeFn::StringToLowerCase),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
@@ -440,19 +447,14 @@ const VTS_RUNTIME_STRINGS: &[&str] = &[
 const LOG_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NEWLINE];
 
 // String method dependencies
-const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::IsString, RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::IsString, RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const STRING_SLICE_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::IsString, RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const STRING_CHAR_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_SUBSTRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
-const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
-    RuntimeFn::IsString,
-    RuntimeFn::AllocHeap,
-    RuntimeFn::Copy,
-    RuntimeFn::MemEqual,
-];
+const STRING_SPLIT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_TRIM_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
+const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
+const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 
 // Array method dependencies
 const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -808,6 +810,30 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringTrim => RuntimeSpec {
+                symbol: "$string_trim",
+                deps: STRING_TRIM_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringToUpperCase => RuntimeSpec {
+                symbol: "$string_to_upper_case",
+                deps: STRING_TO_UPPER_CASE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringToLowerCase => RuntimeSpec {
+                symbol: "$string_to_lower_case",
+                deps: STRING_TO_LOWER_CASE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPush => RuntimeSpec {
                 symbol: "$array_push",
                 deps: ARRAY_PUSH_DEPS,
@@ -1130,6 +1156,9 @@ impl RuntimeFn {
             Self::StringSlice => "string_slice",
             Self::StringIndexOf => "string_index_of",
             Self::StringSplit => "string_split",
+            Self::StringTrim => "string_trim",
+            Self::StringToUpperCase => "string_to_upper_case",
+            Self::StringToLowerCase => "string_to_lower_case",
             Self::ArrayPush => "array_push",
             Self::ArrayPop => "array_pop",
             Self::ArraySlice => "array_slice",
@@ -1203,6 +1232,9 @@ impl RuntimeFn {
             Self::StringSlice,
             Self::StringIndexOf,
             Self::StringSplit,
+            Self::StringTrim,
+            Self::StringToUpperCase,
+            Self::StringToLowerCase,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,
@@ -1221,6 +1253,7 @@ impl RuntimeFn {
             Self::MathAbs,
             Self::MathMax,
             Self::MathMin,
+            Self::MathRandom,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,
@@ -1282,6 +1315,9 @@ impl RuntimeFn {
             Self::StringSlice,
             Self::StringIndexOf,
             Self::StringSplit,
+            Self::StringTrim,
+            Self::StringToUpperCase,
+            Self::StringToLowerCase,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,
@@ -1300,6 +1336,7 @@ impl RuntimeFn {
             Self::MathAbs,
             Self::MathMax,
             Self::MathMin,
+            Self::MathRandom,
             // JSON functions
             Self::JsonStringify,
             Self::JsonParse,
