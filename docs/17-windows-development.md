@@ -115,7 +115,6 @@ python scripts/manager.py help
 Some scripts still depend on bash and are not yet available on Windows:
 
 - `check-scripts` - Bash syntax check (not needed on Windows)
-- `install-hooks` - Git hooks installation (Unix-specific)
 - `check-repo-smoke` - Smoke test (requires bash)
 
 **Migrated to Python (Windows-compatible):**
@@ -135,6 +134,7 @@ Some scripts still depend on bash and are not yet available on Windows:
 - `update-issue-index` - Issue index generation
 - `gen-issues-from-coverage` - Issue generation from coverage
 - `update-coverage-matrix` - Coverage matrix update
+- `install-hooks` - Git hooks installation (OS-aware)
 - `check-coverage-gate` - Coverage comparison
 - `coverage-report` - Language coverage report
 - `reference-coverage` - Reference suite coverage runner
@@ -227,7 +227,6 @@ When contributing Windows-specific fixes:
 
 The following bash scripts are planned to be migrated to Python for full Windows support:
 
-- [ ] install-hooks (Git hooks - may remain Unix-only due to Git differences)
 - [ ] check-scripts (bash syntax check - may remain Unix-only)
 - [ ] check-repo-smoke (Smoke test)
 

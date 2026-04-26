@@ -21,8 +21,8 @@ description = "Generate issues from reference-coverage --detail output (args: --
 run = "python scripts/manager.py gen-issues-from-coverage"
 
 [tasks."install-hooks"]
-description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath [Unix only]"
-run = "bash scripts/manager install-hooks"
+description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath"
+run = "python scripts/manager.py install-hooks"
 
 [tasks."check-coverage-gate"]
 description = "Compare two coverage matrix documents (see script for args)"

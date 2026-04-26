@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
-"""Single entry to repo scripts. Prefer this or `mise run <task>` (see root mise.toml)
-so you do not need to open each scripts/*.sh to see flags.
+"""ts2wasm script manager - cross-platform entry point for development scripts.
 
-Usage (from repository root):
-  python scripts/manager.py
-  python scripts/manager.py help
-  python scripts/manager.py <command> [args to underlying script...]
+Usage: python scripts/manager.py <command> [args...]
+
+This manager dispatches to the appropriate script (Python or bash) based on the command.
 """
 
 import os
 import sys
+import platform
 import subprocess
-import shutil
 from pathlib import Path
 
 # Repository root
@@ -162,7 +160,15 @@ def main():
         print("Run: python scripts/manager.py help", file=sys.stderr)
         sys.exit(1)
     
-    script_type, script_info = COMMANDS[target]
+    # Special case: install-hooks uses different scripts on Windows vs Unix
+    if target == "install-hooks":
+        if platform.system() == "Windows":
+            script_type = "python"
+            script_info = "scripts/dev/install-git-hooks.py"
+        else:
+            script_type, script_info = COMMANDS[target]
+    else:
+        script_type, script_info = COMMANDS[target]
     
     # For cargo commands, script_info is the full cargo command
     if script_type == "cargo":
