@@ -18,7 +18,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/fronten... |
-| 016 | Implement prototype and method call support | feature | runtime/semantics | implementation-ready | P1 | 014 | Prototype chain lookup and method calls are not implemented. Currently diagnosed as `unsupported-method-call` and `un... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 017a | Design GC strategy | feature | runtime/memory | design-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
@@ -225,6 +224,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 013 | Implement heap OOM check | feature | runtime/memory | see file |
 | 014 | Implement dynamic property key support | feature | runtime/semantics | see `issues/done/014-implement-dynamic-property-key-support.md` |
 | 015 | Implement object literal string key support | feature | parser/semantics | see file |
+| 016 | Implement prototype and method call support | feature | runtime/semantics | see `issues/done/016-implement-prototype-and-method-call-support.md` |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |

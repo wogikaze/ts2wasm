@@ -1,53 +1,11 @@
 {
-  "id": "016",
-  "title": "Implement prototype and method call support",
-  "status": "in_progress",
-  "issue_path": "issues/open/016-implement-prototype-and-method-call-support.md",
-  "scope": {
-    "allowed_files": [
-      "crates/ir/src/lowered.rs",
-      "crates/cli/src/backend/expr_emit.rs",
-      "crates/cli/src/backend/runtime_builder.rs",
-      "crates/runtime-abi/src/layout.rs",
-      "fixtures/classes-and-inheritance/class-basic.ts",
-      "fixtures/classes-and-inheritance/class-extends.ts",
-      "fixtures/classes-and-inheritance/class-super.ts",
-      "fixtures/classes-and-inheritance/class-super-method.ts",
-      "fixtures/classes-and-inheritance/class-static.ts",
-      "fixtures/classes-and-inheritance/new-expression.ts",
-      "crates/cli/tests/m2_node_diff.rs",
-      "crates/cli/tests/m8_oop_classes.rs",
-      "current-state.md",
-      "docs/14-runtime-abi.md"
-    ],
-    "forbidden_files": [
-      "crates/cli/src/cli.rs",
-      "crates/shared/src/**"
-    ]
-  },
-  "acceptance": [
-    "object key access via a[variableKey] returns correct value",
-    "object key assignment via a[variableKey] = value updates object property",
-    "Prototype chain lookup works for inherited properties.",
-    "Method calls use correct receiver (`this`) binding.",
-    "Node differential test passes for prototype fixtures.",
-    "Diagnostics `unsupported-method-call` and `unsupported-prototype` are removed for supported cases."
-  ],
-  "commands": {
-    "fast": [
-      "cargo fmt --all --check",
-      "cargo nextest run m2_node_diff::m5_edge_case_fixtures_match_node_output_under_iwasm -- run"
-    ],
-    "full": [
-      "cargo fmt --all --check",
-      "cargo nextest run",
-      "cargo test -p ts2wasm-cli m2_node_diff::m5_edge_case_fixtures_match_node_output_under_iwasm",
-      "iwasm fixtures/arrays-objects/dynamic-property.wasm"
-    ]
-  },
-  "risk": [
-    "Runtime object/string conversion behavior may differ from existing object/index semantics in edge cases.",
-    "Fixture additions may require updates if dynamic index behavior diverges from strict JS."
-  ],
-  "notes": "Selected for prototype-chain + method-call support in class/object runtime path."
+  "id": null,
+  "title": null,
+  "status": "idle",
+  "issue_path": null,
+  "scope": null,
+  "acceptance": null,
+  "commands": null,
+  "risk": null,
+  "notes": "016 complete and moved to issues/done on 2026-04-27."
 }
