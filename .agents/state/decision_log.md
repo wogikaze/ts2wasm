@@ -9,6 +9,24 @@
 
 ## Log
 
+### 2026-04-26T13:30:00Z — start issue 006
+
+- **When**: 2026-04-26T13:30:00Z
+- **State**: TASK_SELECT
+- **Decision**: Start issue 006 cleanup: remove stale milestone/transitional docs and keep future work centralized in issues.
+- **Rationale**: Issue 006 addresses mixed outdated implementation claims and transitional manifest duplication risk.
+- **Reversible?**: yes
+- **Follow-up**: none
+
+### 2026-04-26T13:45:00Z — close issue 006
+
+- **When**: 2026-04-26T13:45:00Z
+- **State**: VERIFY_FULL
+- **Decision**: Closed issue 006 as done and moved it to `issues/done/006-remove-stale-milestone-and-transitional-docs.md`.
+- **Rationale**: Stale milestone/transitional text removed from `docs/09`; current-state top priority list updated; canonical manifest references validated.
+- **Reversible?**: no
+- **Follow-up**: none
+
 ### 2026-04-26T13:19:35Z — close issue 003
 
 - **When**: 2026-04-26T13:19:35Z

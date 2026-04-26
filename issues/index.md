@@ -17,7 +17,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 006 | Remove stale milestone and transitional docs | cleanup | docs | docs-ready | P0 | 002, 003 | Several docs appear to mix stale milestone notes, transitional manifest schema, and current implementation claims. Th... |
 | 007 | Harden reference coverage prerequisites | infra | scripts/reference | implementation-ready | P1 | 005 | Reference coverage scripts depend on external reference repositories. If those repositories are missing, failures can... |
 | 008 | Introduce typed WAT writer skeleton | refactor | backend | design-ready | P1 | 003 | Large raw WAT string generation in runtime builder code is a major maintainability risk. A full rewrite is too large,... |
 | 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
@@ -235,6 +234,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 003 | Verify manifest against emitted WAT imports | test | wasi/tests | see file |
 | 004 | Reclassify compile-only compatibility tests | test | tests/coverage | see `issues/done/004-reclassify-compile-only-compatibility-tests.md` |
 | 005 | Add fine-grained unsupported feature breakdown | infra | scripts/coverage | see `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` |
+| 006 | Remove stale milestone and transitional docs | cleanup | docs | see file |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |

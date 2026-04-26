@@ -129,11 +129,11 @@ Semantic gap tracking:
 See `issues/index.md` for the auto-generated Ready queue and Blocked queue.
 Run `scripts/manager update-issue-index` to refresh after adding, closing, or moving issues.
 
-The current top Ready items (P0) are typically:
-- capability manifest verification (003)
-- compile-only test reclassification (004)
-- fine-grained unsupported feature breakdown (005)
-- heap OOM check (013)
+The current top Ready items (実務上優先する順) are:
+- Remove stale milestone / transitional docs (006)
+- Heap OOM check (013)
+- Harden reference coverage prerequisites (007)
+- Investigate and classify unknown-unsupported diagnostic cases (060)
 
 For exact ordering and full queue, refer to the generated table in `issues/index.md`.
 

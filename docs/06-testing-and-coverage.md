@@ -38,7 +38,7 @@ Coverage dashboard は、少なくとも suite、shard、semantic area、target�
 
 - `m6_builtin_methods.rs`, `m7_control_flow.rs`, `m8_oop_classes.rs`, `m9_modules.rs`, `m10_node_apis.rs` の fixture は build smoke として扱う。
 - これらの class/module/node-api については、意味論互換は `m2_node_diff.rs` の differential テストで明示していない限り主張しない。
-- class/module/node-api semantic gap は、`docs/06`/`current-state.md` と issue 追跡で「未達領域」として管理する。
+- class/module/node-api semantic gap は、`current-state.md` と issue 追跡で「未達領域」として管理する。
 
 ## 追加設計: required test classes
 
