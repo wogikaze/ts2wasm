@@ -516,7 +516,7 @@ impl<'a> WatEmitter<'a> {
             wat.push_str(&format!(
                 "    (global.set $module_cache (call $alloc_heap (i32.const {cache_size})))\n",
             ));
-            wat.push_str("    (global.set $current_module_id (i32.const 0))\n");
+            wat.push_str("    (global.set $current_module_id (i32.const 1))\n");
         }
         self.emit_top_level_statements(wat, 4, &frame);
         wat.push_str("  )\n");

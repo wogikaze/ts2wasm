@@ -19,14 +19,13 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
 | 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/fronten... |
-| 016 | Implement prototype and method call support | feature | runtime/semantics | implementation-ready | P1 | 014 | Prototype chain lookup and method calls are not implemented. Currently diagnosed as `unsupported-method-call` and `un... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
+| 030 | Implement instanceof operator | feature | runtime/semantics | implementation-ready | P1 | 016 | Implement instanceof operator |
 | 036 | Implement arrow function | feature | frontend/semantics | implementation-ready | P1 | 037 | Implement arrow function |
-| 039 | Implement spread arguments | feature | frontend/semantics | implementation-ready | P1 |  | Implement spread arguments |
-| 041 | Implement template literals | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literals |
+| 041 | Implement template literals | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literal syntax with string interpolation |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
@@ -193,7 +192,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | 020a | Implement IR lowering from TypeScript AST |
 | 020c | Add IR validation passes and document contracts | feature | ir/semantics | 020b | Add IR validation passes and document contracts |
 | 021 | Implement full wasm backend | feature | backend | 008, 020 | Implement full wasm backend |
-| 030 | Implement instanceof operator | feature | runtime/semantics | 016 | Implement instanceof operator |
 | 046 | Implement extends inheritance | feature | runtime/semantics | 045 | Implement extends inheritance |
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 <!-- generated:blocked:end -->
@@ -217,6 +215,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 013 | Implement heap OOM check | feature | runtime/memory | see file |
 | 014 | Implement dynamic property key support | feature | runtime/semantics | see file |
 | 015 | Implement object literal string key support | feature | parser/semantics | see file |
+| 016 | Implement prototype and method call support | feature | runtime/semantics | see file |
 | 017a | Design GC strategy | feature | runtime/memory | see file |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
@@ -231,7 +230,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 035 | Implement break and continue statements | feature | frontend/semantics | see `issues/done/035-implement-break-continue.md` |
 | 037 | Implement this binding | feature | runtime/semantics | see `issues/done/037-implement-this-binding.md` |
 | 038 | Implement rest parameters | feature | frontend/semantics | see `issues/done/038-implement-rest-parameters.md` |
+| 039 | Implement spread arguments | feature | frontend/semantics | see `issues/done/039-implement-spread-arguments.md` |
 | 040 | Implement default parameters | feature | frontend/semantics | see `issues/done/040-implement-default-parameters.md` |
+| 041 | Implement template literals | feature | frontend/semantics | see `issues/done/041-implement-template-literals.md` |
 | 042 | Implement string methods | feature | runtime/builtins | see `issues/done/042-implement-string-methods.md` |
 | 043 | Implement string indexing | feature | runtime/semantics | see `issues/done/043-implement-string-indexing.md` |
 | 044 | Implement String.fromCharCode and charCodeAt | feature | runtime/builtins | see `issues/done/044-implement-string-from-char-code.md` |

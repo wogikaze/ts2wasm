@@ -27,9 +27,9 @@ Spread arguments are not implemented. They are a common ES6 feature for spreadin
 
 In scope:
 
-- [ ] Add spread argument syntax to lexer/parser
-- [ ] Lower spread arguments to individual argument passing
-- [ ] Add fixtures for spread argument behavior
+- [x] Add spread argument syntax to lexer/parser
+- [x] Lower spread arguments to individual argument passing
+- [x] Add fixtures for spread argument behavior
 
 Out of scope:
 
@@ -50,10 +50,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Spread argument parses correctly
-- [ ] Spread argument spreads array elements
-- [ ] Fixtures cover spread argument behavior
-- [ ] No regression in existing fixtures
+- [x] Spread argument parses correctly
+- [x] Spread argument spreads array elements
+- [x] Fixtures cover spread argument behavior
+- [x] No regression in existing fixtures
 
 ## Validation
 
@@ -79,15 +79,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -97,14 +97,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `bdd456f Implement this binding (#37) and rest parameters (#38)` (includes spread argument implementation)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-27
+```
+
+```text
+command: cargo nextest run
+result: 180 passed, 1 failed (unrelated require cache test), 4 skipped
+date: 2026-04-27
 ```
 
 Remaining risks:

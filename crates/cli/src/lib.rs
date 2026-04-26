@@ -487,6 +487,46 @@ impl<'a> Lexer<'a> {
                         });
                     }
                 }
+                '.' => {
+                    self.advance_char();
+                    if self.peek_char() == Some('.') {
+                        self.advance_char();
+                        if self.peek_char() == Some('.') {
+                            self.advance_char();
+                            tokens.push(SpannedToken {
+                                kind: Token::DotDotDot,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        } else {
+                            // ".." is not a valid token in our subset, treat as two dots
+                            tokens.push(SpannedToken {
+                                kind: Token::Dot,
+                                span: Span {
+                                    start,
+                                    end: start + 1,
+                                },
+                            });
+                            tokens.push(SpannedToken {
+                                kind: Token::Dot,
+                                span: Span {
+                                    start: start + 1,
+                                    end: self.cursor,
+                                },
+                            });
+                        }
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Dot,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
+                }
                 '(' => {
                     self.advance_char();
                     tokens.push(SpannedToken {
@@ -566,28 +606,6 @@ impl<'a> Lexer<'a> {
                             end: self.cursor,
                         },
                     });
-                }
-                '.' => {
-                    self.advance_char();
-                    if self.peek_char() == Some('.') && self.peek_n_char(1) == Some('.') {
-                        self.advance_char();
-                        self.advance_char();
-                        tokens.push(SpannedToken {
-                            kind: Token::Spread,
-                            span: Span {
-                                start,
-                                end: self.cursor,
-                            },
-                        });
-                    } else {
-                        tokens.push(SpannedToken {
-                            kind: Token::Dot,
-                            span: Span {
-                                start,
-                                end: self.cursor,
-                            },
-                        });
-                    }
                 }
                 ';' => {
                     self.advance_char();
@@ -1049,13 +1067,14 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
+                let is_rest = self.consume(TokenKind::DotDotDot);
                 let (param_name, _) = self.expect_ident()?;
                 let default = if self.consume(TokenKind::Equal) {
                     Some(self.assignment()?)
                 } else {
                     None
                 };
-                params.push((param_name, default, false));
+                params.push((param_name, default, is_rest));
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -1399,7 +1418,7 @@ impl Parser {
             let mut params = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let is_rest = self.consume(TokenKind::Ellipsis);
+                    let is_rest = self.consume(TokenKind::DotDotDot);
                     let (param_name, _) = self.expect_ident()?;
                     let default = if self.consume(TokenKind::Equal) {
                         Some(self.assignment()?)

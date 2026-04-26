@@ -87,7 +87,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] 036 (arrow function)
+- [x] 036 (arrow function) - ArrowFn variant added to LoweredExpr with placeholder emission
 
 ## Notes
 

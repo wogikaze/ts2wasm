@@ -995,7 +995,7 @@ impl WatEmitter<'_> {
     ;; append new key/value (instance objects are preallocated with headroom by new-expression emission)
     (local.set $entry_base
       (i32.add (local.get $base)
-        (i32.add (i32.const 4) (i32.shl (local.get $count) (i32.const 3)))))
+        (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
     (local.set $key_obj (call $alloc_heap (i32.add (i32.const 4) (local.get $key_len))))
     (i32.store (local.get $key_obj) (local.get $key_len))
     (call $copy (local.get $key_ptr) (i32.add (local.get $key_obj) (i32.const 4)) (local.get $key_len))

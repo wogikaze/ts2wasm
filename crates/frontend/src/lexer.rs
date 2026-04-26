@@ -79,6 +79,7 @@ pub enum Token {
     UnsignedRightShift,
     Question,
     Spread,
+    DotDotDot,
     Arrow,
     OptionalChain,
     NullishCoalesce,
@@ -170,7 +171,7 @@ pub enum TokenKind {
     UnsignedRightShift,
     Question,
     Spread,
-    Ellipsis,
+    DotDotDot,
     Arrow,
     OptionalChain,
     NullishCoalesce,
@@ -257,7 +258,7 @@ impl TokenKind {
                 | (Self::UnsignedRightShift, Token::UnsignedRightShift)
                 | (Self::Question, Token::Question)
                 | (Self::Spread, Token::Spread)
-                | (Self::Ellipsis, Token::Spread)
+                | (Self::DotDotDot, Token::DotDotDot)
                 | (Self::Arrow, Token::Arrow)
                 | (Self::OptionalChain, Token::OptionalChain)
                 | (Self::NullishCoalesce, Token::NullishCoalesce)

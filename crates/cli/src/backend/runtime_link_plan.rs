@@ -410,16 +410,6 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyHas);
             }
-            LoweredExpr::ArrayNew { elements, .. } => {
-                for elem in elements {
-                    self.collect_required_runtime_expr(elem);
-                }
-                self.add_required_runtime(RuntimeFn::AllocHeap);
-            }
-            LoweredExpr::ArrowFn { .. } => {
-                // Arrow functions not yet fully implemented (issue #36)
-                // No runtime functions needed for placeholder emission
-            }
         }
     }
 }
