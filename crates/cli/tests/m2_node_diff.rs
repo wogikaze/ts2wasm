@@ -1,4 +1,7 @@
+use std::collections::hash_map::DefaultHasher;
 use std::fs;
+use std::hash::Hash;
+use std::hash::Hasher;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::process::Stdio;
@@ -113,8 +116,30 @@ fn assert_no_precomputed_stdout(fixture: &str, output: &Path, expected_stdout: &
 }
 
 fn temp_wasm_path(fixture: &str) -> PathBuf {
-    let safe_name = fixture.replace(['/', '.'], "_");
-    std::env::temp_dir().join(format!("ts2wasm-{safe_name}-{}.wasm", std::process::id()))
+    let mut hasher = DefaultHasher::new();
+    fixture.hash(&mut hasher);
+    let hash = hasher.finish();
+    let safe_name: String = fixture
+        .chars()
+        .map(|ch| {
+            if ch.is_ascii_alphanumeric() || ch == '_' || ch == '-' {
+                ch
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+
+    let safe_name = if safe_name.is_empty() {
+        "fixture".to_string()
+    } else {
+        safe_name
+    };
+
+    std::env::temp_dir().join(format!(
+        "ts2wasm-{safe_name}-{hash:016x}-{}.wasm",
+        std::process::id()
+    ))
 }
 
 const CLASS_SEMANTIC_GAP_FIXTURES: &[&str] = &[
@@ -423,7 +448,6 @@ fn differential_test_runner_classifies_fixtures() {
             .join(fixture);
 
         let record = run_differential_test(&fixture_path);
-
         // Validate the record
         assert!(
             record.validate().is_ok(),
