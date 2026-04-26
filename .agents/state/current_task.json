@@ -1,18 +1,34 @@
 {
-  "status": "idle",
-  "issue_id": null,
-  "issue_title": null,
-  "started_at": null,
+  "status": "in_progress",
+  "issue_id": "057",
+  "issue_title": "Implement function resolution for function calls",
+  "started_at": "2026-04-26T16:30:00Z",
   "target_gate": null,
   "scope": {
-    "allowed_files": [],
-    "forbidden_files": []
+    "allowed_files": [
+      "crates/frontend/src/",
+      "crates/cli/src/",
+      "fixtures/"
+    ],
+    "forbidden_files": [
+      "crates/runtime-abi/",
+      "crates/backend-wasm/"
+    ]
   },
-  "acceptance": [],
+  "acceptance": [
+    "Function resolution passes for basic function calls",
+    "UnresolvedFunction diagnostic reduced from 5 to 0 in test262 sample",
+    "Regression test added for function resolution",
+    "Docs updated if semantics change"
+  ],
   "commands": {
-    "fast": [],
-    "full": []
+    "fast": [
+      "cargo fmt --all --check"
+    ],
+    "full": [
+      "cargo nextest run"
+    ]
   },
   "risk": [],
-  "notes": ""
+  "notes": "P0 issue - implement function resolution for function calls. UnresolvedFunction currently emitted in lowered.rs. Need to investigate if name_resolver already handles function declarations or if additional resolution is needed."
 }
