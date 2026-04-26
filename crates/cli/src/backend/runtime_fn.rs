@@ -92,6 +92,7 @@ pub(crate) enum RuntimeFn {
     MathAbs,
     MathMax,
     MathMin,
+    MathRandom,
     /// M10: JSON functions
     JsonStringify,
     JsonParse,
@@ -472,6 +473,7 @@ const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Cop
 
 // Math function dependencies (no deps)
 const MATH_DEPS: &[RuntimeFn] = &[];
+const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
 
 // JSON function dependencies
 const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
@@ -926,6 +928,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::MathRandom => RuntimeSpec {
+                symbol: "$math_random",
+                deps: MATH_RANDOM_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::JsonStringify => RuntimeSpec {
                 symbol: "$json_stringify",
                 deps: JSON_STRINGIFY_DEPS,
@@ -1135,6 +1145,7 @@ impl RuntimeFn {
             Self::MathAbs => "math_abs",
             Self::MathMax => "math_max",
             Self::MathMin => "math_min",
+            Self::MathRandom => "math_random",
             Self::JsonStringify => "json_stringify",
             Self::JsonParse => "json_parse",
             Self::ModuleRequire => "module_require",

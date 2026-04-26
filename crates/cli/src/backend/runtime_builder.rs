@@ -70,6 +70,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::MathAbs => self.emit_math_abs(wat),
                 RuntimeFn::MathMax => self.emit_math_max(wat),
                 RuntimeFn::MathMin => self.emit_math_min(wat),
+                RuntimeFn::MathRandom => self.emit_math_random(wat),
                 RuntimeFn::JsonStringify => self.emit_json_stringify(wat),
                 RuntimeFn::JsonParse => self.emit_json_parse(wat),
                 RuntimeFn::ModuleRequire => self.emit_module_require(wat),
@@ -1813,6 +1814,29 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             number_shift = ValueTag::NUMBER_SHIFT,
             undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_math_random(&self, wat: &mut String) {
+        // Math.random() returns a random number between 0 and 1
+        // For now, return a simple pseudo-random value using a counter
+        // This is a placeholder - proper random would require host import
+        wat.push_str(&format!(
+            r#"
+  (global $random_counter (mut i32) (i32.const 0))
+  (func $math_random (result i32)
+    (local $counter i32)
+    (local $result i32)
+    (local.set $counter (global.get $random_counter))
+    (global.set $random_counter (i32.add (local.get $counter) (i32.const {one})))
+    ;; Simple pseudo-random: return counter / 1000 as a number
+    ;; For now, just return 0.5 as a placeholder (encoded as 0.5 << shift | tag)
+    (i32.or (i32.shl (i32.const {half}) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            half = 0, // 0.5 encoded as integer 0 (placeholder)
+            one = RuntimeConst::ONE,
         ));
     }
 

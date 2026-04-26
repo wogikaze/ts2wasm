@@ -470,6 +470,7 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
                 "abs" => Some("MathAbs".to_owned()),
                 "max" => Some("MathMax".to_owned()),
                 "min" => Some("MathMin".to_owned()),
+                "random" => Some("MathRandom".to_owned()),
                 _ => None,
             };
         }
