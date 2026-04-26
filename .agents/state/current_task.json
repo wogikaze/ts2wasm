@@ -1,11 +1,11 @@
 {
   "id": null,
   "title": null,
-  "status": "idle",
-  "issue_path": null,
+  "status": "done",
+  "issue_path": "issues/done/009-select-first-coverage-improvement-feature-slice.md",
   "scope": null,
   "acceptance": null,
   "commands": null,
   "risk": null,
-  "notes": "Stale active task pointer cleared during state synchronization: issue 011 is done and current_task path was invalid."
+  "notes": "Closed after creating follow-up issue 202-implement-regexp-literal-support.md from coverage data and logging wrapper-based command evidence under reports/runs/20260426-171214308 and 20260426-171517567."
 }

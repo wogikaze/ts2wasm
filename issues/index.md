@@ -17,24 +17,15 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
 | 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/fronten... |
-| 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | implementation-ready | P2 |  | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) |
 | 014 | Implement dynamic property key support | feature | runtime/semantics | implementation-ready | P1 | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupported-dynamic-proper... |
-| 015 | Implement object literal string key support | feature | parser/semantics | implementation-ready | P1 |  | Object literal with string literal keys `{"x": v}` is not implemented. Currently only identifier keys `{x: v}` are su... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 017a | Design GC strategy | feature | runtime/memory | design-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
-| 018 | Implement UTF-8 string support | feature | runtime/semantics | implementation-ready | P1 |  | Non-ASCII string literals are intentionally unsupported. UTF-8 support is incomplete. docs/04 specifies UTF-8 decode/... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
-| 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | implementation-ready | P1 | 002, 003 | host-deny / capability manifest "auditable E2E" is planned but not implemented. docs/06 specifies required test class... |
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
-| 029 | Implement typeof operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement typeof operator |
 | 030 | Implement instanceof operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement instanceof operator |
 | 031 | Implement in operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement in operator |
 | 032 | Implement delete operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement delete operator |
-| 033 | Implement switch statement | feature | frontend/semantics | implementation-ready | P1 |  | Implement switch statement |
-| 034 | Implement while and do-while loops | feature | frontend/semantics | implementation-ready | P1 |  | Implement while and do-while loops |
-| 035 | Implement break and continue statements | feature | frontend/semantics | implementation-ready | P1 |  | Implement break and continue statements |
 | 036 | Implement arrow function | feature | frontend/semantics | implementation-ready | P1 |  | Implement arrow function |
 | 037 | Implement this binding | feature | runtime/semantics | implementation-ready | P1 |  | Implement this binding |
 | 038 | Implement rest parameters | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameters |
@@ -42,7 +33,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 040 | Implement default parameters | feature | frontend/semantics | implementation-ready | P1 |  | Implement default parameters |
 | 041 | Implement template literals | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literals |
 | 042 | Implement string methods | feature | runtime/builtins | implementation-ready | P1 |  | Implement string methods |
-| 043 | Implement string indexing | feature | runtime/semantics | implementation-ready | P1 |  | Implement string indexing |
 | 044 | Implement String.fromCharCode and charCodeAt | feature | runtime/builtins | implementation-ready | P1 |  | Implement String.fromCharCode and charCodeAt |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
@@ -199,6 +189,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | feature | frontend | design-ready | P1 |  | Implement Compiler |
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
+| 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -234,11 +225,21 @@ Issue files are the source of truth for work items. The generated section below 
 | 006 | Remove stale milestone and transitional docs | cleanup | docs | see file |
 | 007 | Harden reference coverage prerequisites | infra | scripts/reference | see file |
 | 008 | Introduce typed WAT writer skeleton | refactor | backend | see `issues/done/008-introduce-typed-wat-writer-skeleton.md` |
+| 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | see file |
+| 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | see `issues/done/011-enable-cargo-deny-warnings-in-ci-and-harnesses.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
-| 013 | Implement heap OOM check | feature | runtime/memory | see `issues/done/013-implement-heap-oom-check.md` |
+| 013 | Implement heap OOM check | feature | runtime/memory | see file |
+| 015 | Implement object literal string key support | feature | parser/semantics | see file |
+| 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
+| 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
 | 027 | Migrate frontend code to frontend crate | refactor | frontend | see `issues/done/027-migrate-frontend-code-to-frontend-crate.md` |
+| 029 | Implement typeof operator | feature | runtime/semantics | see `issues/done/029-implement-typeof-operator.md` |
+| 033 | Implement switch statement | feature | frontend/semantics | see `issues/done/033-implement-switch-statement.md` |
+| 034 | Implement while and do-while loops | feature | frontend/semantics | see `issues/done/034-implement-while-do-while-loops.md` |
+| 035 | Implement break and continue statements | feature | frontend/semantics | see `issues/done/035-implement-break-continue.md` |
+| 043 | Implement string indexing | feature | runtime/semantics | see `issues/done/043-implement-string-indexing.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
