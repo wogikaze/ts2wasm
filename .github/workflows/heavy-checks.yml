@@ -5,16 +5,18 @@ on:
     paths:
       - "crates/**"
       - "fixtures/**"
-      - "scripts/check/fixture-differential.sh"
+      - "scripts/check/fixture-differential.py"
       - "scripts/manager"
+      - "scripts/manager.py"
   push:
     branches:
       - master
     paths:
       - "crates/**"
       - "fixtures/**"
-      - "scripts/check/fixture-differential.sh"
+      - "scripts/check/fixture-differential.py"
       - "scripts/manager"
+      - "scripts/manager.py"
   workflow_dispatch:
 
 jobs:

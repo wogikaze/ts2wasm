@@ -4,18 +4,20 @@ on:
   pull_request:
     paths:
       - "issues/**"
-      - "scripts/check/issue-queue.py"
-      - "scripts/gen/update-issue-index.sh"
+      - "scripts/check/issue-health.py"
+      - "scripts/gen/update-issue-index.py"
       - "scripts/manager"
+      - "scripts/manager.py"
       - ".githooks/pre-commit"
   push:
     branches:
       - master
     paths:
       - "issues/**"
-      - "scripts/check/issue-queue.py"
-      - "scripts/gen/update-issue-index.sh"
+      - "scripts/check/issue-health.py"
+      - "scripts/gen/update-issue-index.py"
       - "scripts/manager"
+      - "scripts/manager.py"
   schedule:
     - cron: "17 4 * * 1" # weekly Monday 04:17 UTC
   workflow_dispatch:

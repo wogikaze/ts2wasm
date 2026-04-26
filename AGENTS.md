@@ -28,6 +28,8 @@ cargo nextest run
 
 スクリプト: `scripts/manager` または `mise tasks` / `mise run <task>`。
 
+**Note**: `scripts/manager check-agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
+
 ## 3) ファイル構成
 
 実装は `crates/cli` に集約。`crates/shared` は共有定義。`crates/frontend`, `crates/ir`, `crates/runtime-abi` は移行済み（issues 024, 025, 027 done）。`crates/backend-wasm` は issue 026 で進行中。

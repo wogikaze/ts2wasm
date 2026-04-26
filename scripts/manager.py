@@ -7,6 +7,7 @@ This manager dispatches to the appropriate script (Python or bash) based on the 
 """
 
 import os
+import shutil
 import sys
 import platform
 import subprocess

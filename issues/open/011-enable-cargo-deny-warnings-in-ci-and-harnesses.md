@@ -20,4 +20,4 @@
 - `TS2WASM_NEXTEST_DENY_WARNINGS=1` with `RUSTFLAGS='-D warnings' cargo nextest run` passes from repo root.
 
 **Notes**
-- Hint text in `scripts/check/harness-installation.sh` references this work item.
+- Hint text in `scripts/check/harness-installation.py` references this work item.

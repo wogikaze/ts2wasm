@@ -4,14 +4,8 @@ on:
   pull_request:
     paths:
       - crates/cli/**
-      - scripts/run/reference-coverage.sh
-      - scripts/gen/coverage-matrix.sh
-      - scripts/gate/coverage.sh
-      - scripts/run/test262.sh
-      - scripts/report/differential.sh
-      - scripts/gate/regression.sh
-      - scripts/check/shell-syntax.sh
-      - scripts/lib/common.sh
+      - scripts/manager
+      - scripts/manager.py
       - artifacts/coverage/reference-coverage-matrix.md
       - .github/workflows/reference-coverage.yml
   schedule:
@@ -45,12 +39,11 @@ jobs:
 
       - name: Run coverage matrix check
         run: |
-          chmod +x scripts/run/reference-coverage.sh scripts/gen/coverage-matrix.sh scripts/gate/coverage.sh
-          scripts/gen/coverage-matrix.sh --check
+          ./scripts/manager update-coverage-matrix --check
 
       - name: Run coverage delta gate
         run: |
-          scripts/gate/coverage.sh /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
+          ./scripts/manager check-coverage-gate /tmp/base-coverage-matrix.md artifacts/coverage/reference-coverage-matrix.md
 
   test262-gate:
     if: github.event_name == 'pull_request'
@@ -76,17 +69,15 @@ jobs:
 
       - name: Check shell scripts
         run: |
-          chmod +x scripts/check/shell-syntax.sh
-          scripts/check/shell-syntax.sh
+          ./scripts/manager check-scripts
 
       - name: Run test262 runner with sample
         run: |
-          chmod +x scripts/run/test262.sh scripts/report/differential.sh scripts/gate/regression.sh
-          scripts/run/test262.sh --sample 50 --jobs 4 | tee test262-results.jsonl | scripts/report/differential.sh --html test262-report.html --markdown test262-report.md
+          ./scripts/manager test262 --sample 50 --jobs 4 | tee test262-results.jsonl | ./scripts/manager test-differential-reporter --html test262-report.html --markdown test262-report.md
 
       - name: Run regression gate
         run: |
-          scripts/gate/regression.sh test262-results.jsonl
+          ./scripts/manager test-regression-gate test262-results.jsonl
 
       - name: Upload test262 results
         uses: actions/upload-artifact@v4
@@ -114,8 +105,7 @@ jobs:
 
       - name: Update coverage matrix (ramp)
         run: |
-          chmod +x scripts/run/reference-coverage.sh scripts/gen/coverage-matrix.sh
-          scripts/gen/coverage-matrix.sh
+          ./scripts/manager update-coverage-matrix
 
       - name: Create pull request if matrix changed
         uses: peter-evans/create-pull-request@v7
@@ -125,7 +115,7 @@ jobs:
           body: |
             Automated reference coverage refresh.
 
-            - ran scripts/gen/coverage-matrix.sh
+            - ran scripts/manager update-coverage-matrix
             - advanced per-suite executed limits by ramp step
             - updated artifacts/coverage/reference-coverage-matrix.md
           branch: ci/reference-coverage-ramp
