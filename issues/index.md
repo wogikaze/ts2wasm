@@ -19,7 +19,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
 | 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/fronten... |
-| 014 | Implement dynamic property key support | feature | runtime/semantics | implementation-ready | P1 | 012 | Dynamic property keys (e.g., `obj[variable]`) are not implemented. Currently diagnosed as `unsupported-dynamic-proper... |
+| 016 | Implement prototype and method call support | feature | runtime/semantics | implementation-ready | P1 | 014 | Prototype chain lookup and method calls are not implemented. Currently diagnosed as `unsupported-method-call` and `un... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 017a | Design GC strategy | feature | runtime/memory | design-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
@@ -38,8 +38,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
 | 050 | Implement Date | feature | runtime/builtins | implementation-ready | P1 |  | Implement Date |
 | 051 | Implement RegExp | feature | runtime/builtins | implementation-ready | P1 |  | Implement RegExp |
-| 052 | Implement JSON | feature | runtime/builtins | implementation-ready | P1 |  | JSON |
-| 054 | Implement Error types | feature | runtime/builtins | implementation-ready | P1 |  | Error types |
+| 052 | Implement JSON | feature | runtime/builtins | implementation-ready | P1 |  | Implement JSON |
+| 054 | Implement Error types | feature | runtime/builtins | implementation-ready | P1 |  | Implement Error types |
 | 055 | Implement import and export | feature | frontend/semantics | implementation-ready | P1 |  | Implement import and export |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported diagnostic cases |
@@ -191,7 +191,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 016 | Implement prototype and method call support | feature | runtime/semantics | 014 | Implement prototype and method call support |
 | 017b | Implement GC strategy | feature | runtime/memory | 017a | Implement GC strategy |
 | 019 | Integrate TypeScript parser/checker | feature | frontend | 010 | Integrate TypeScript parser/checker |
 | 019a | Integrate TypeScript compiler API for type checking | feature | frontend | 010 | Integrate TypeScript compiler API for type checking |
@@ -222,6 +221,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | see `issues/done/011-enable-cargo-deny-warnings-in-ci-and-harnesses.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
 | 013 | Implement heap OOM check | feature | runtime/memory | see file |
+| 014 | Implement dynamic property key support | feature | runtime/semantics | see file |
 | 015 | Implement object literal string key support | feature | parser/semantics | see file |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
@@ -232,12 +232,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 033 | Implement switch statement | feature | frontend/semantics | see `issues/done/033-implement-switch-statement.md` |
 | 034 | Implement while and do-while loops | feature | frontend/semantics | see `issues/done/034-implement-while-do-while-loops.md` |
 | 035 | Implement break and continue statements | feature | frontend/semantics | see `issues/done/035-implement-break-continue.md` |
+| 042 | Implement string methods | feature | runtime/builtins | see `issues/done/042-implement-string-methods.md` |
 | 043 | Implement string indexing | feature | runtime/semantics | see `issues/done/043-implement-string-indexing.md` |
+| 044 | Implement String.fromCharCode and charCodeAt | feature | runtime/builtins | see `issues/done/044-implement-string-from-char-code.md` |
+| 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
-| 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
-| 042 | Implement string methods | feature | runtime/builtins | see `issues/done/042-implement-string-methods.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
