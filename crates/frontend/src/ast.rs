@@ -69,7 +69,7 @@ pub enum Stmt {
     },
     Function {
         name: String,
-        params: Vec<(String, Option<Expr>)>,
+        params: Vec<(String, Option<Expr>, bool)>,
         body: Vec<Stmt>,
         span: Span,
     },
@@ -230,6 +230,9 @@ pub enum Expr {
         value: Box<Expr>,
         span: Span,
     },
+    This {
+        span: Span,
+    },
 }
 
 impl Stmt {
@@ -279,7 +282,8 @@ impl Expr {
             | Self::ArrowFn { span, .. }
             | Self::Spread { span, .. }
             | Self::PropertyAssign { span, .. }
-            | Self::IndexAssign { span, .. } => *span,
+            | Self::IndexAssign { span, .. }
+            | Self::This { span } => *span,
         }
     }
 }

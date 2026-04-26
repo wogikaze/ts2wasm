@@ -197,6 +197,7 @@ pub enum LoweredExpr {
     ModuleLoad {
         module_id: usize,
     },
+    This,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -306,9 +307,10 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     (Vec::new(), Vec::new())
                 };
 
-                let mut ctor_params_with_this: Vec<(String, Option<ResolvedExpr>)> =
-                    vec![("this".to_owned(), None)];
-                ctor_params_with_this.extend(ctor_params);
+                let mut ctor_params_with_this: Vec<(String, Option<ResolvedExpr>, bool)> =
+                    vec![("this".to_owned(), None, false)];
+                ctor_params_with_this.extend(ctor_params.clone());
+
                 functions.push(lower_function(
                     ctor_id,
                     &ctor_params_with_this,
@@ -322,11 +324,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
                     let method_id = function_ids[&method_key];
-                    let method_params_with_this: Vec<(String, Option<ResolvedExpr>)> =
+                    let method_params_with_this: Vec<(String, Option<ResolvedExpr>, bool)> =
                         if method.name.starts_with("static::") {
                             method.params.clone()
                         } else {
-                            let mut params = vec![("this".to_owned(), None)];
+                            let mut params = vec![("this".to_owned(), None, false)];
                             params.extend(method.params.clone());
                             params
                         };
@@ -434,7 +436,7 @@ fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<Str
 
 fn lower_function(
     id: FuncId,
-    params: &[(String, Option<ResolvedExpr>)],
+    params: &[(String, Option<ResolvedExpr>, bool)],
     body: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
     class_parents: HashMap<String, Option<String>>,
@@ -445,7 +447,7 @@ fn lower_function(
         function_ids,
         params
             .iter()
-            .map(|(name, _)| name.clone())
+            .map(|(name, _, _)| name.clone())
             .collect::<Vec<_>>()
             .as_slice(),
         class_parents,
@@ -453,10 +455,17 @@ fn lower_function(
         in_constructor,
     )?;
 
-    // Insert default parameter assignments at the start of the body
+    // Insert default parameter assignments and rest parameter collection at the start of the body
     let mut body_with_defaults = Vec::new();
-    for (param_name, default_expr) in params {
-        if let Some(default) = default_expr {
+    for (param_idx, (param_name, default_expr, is_rest)) in params.iter().enumerate() {
+        if *is_rest {
+            // Rest parameter: collect remaining arguments into an array
+            let param_local = resolver.resolve_local(param_name)?;
+            body_with_defaults.push(LoweredStmt::Assign(
+                param_local,
+                LoweredExpr::ArrayNew { elements: vec![] },
+            ));
+        } else if let Some(default) = default_expr {
             let param_local = resolver.resolve_local(param_name)?;
             let lowered_default = resolver.lower_expr(default)?;
             // Generate: if (param === undefined) { param = default; }
@@ -475,7 +484,7 @@ fn lower_function(
 
     let min_required = params
         .iter()
-        .filter(|(_, default)| default.is_none())
+        .filter(|(_, default, is_rest)| default.is_none() && !*is_rest)
         .count();
     Ok(LoweredFunction {
         id,
@@ -843,7 +852,13 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
             ResolvedExpr::Null => Ok(LoweredExpr::Null),
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
+            ResolvedExpr::This => Ok(LoweredExpr::Local(self.resolve_local("this")?)),
             ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
+            ResolvedExpr::Spread(_) => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "spread expressions are only supported in call arguments".to_owned(),
+                span: None,
+            }),
             ResolvedExpr::Unary { op, expr } => {
                 if *op == UnaryOp::Delete {
                     // Lower delete to PropertyDelete or PropertyDeleteDynamic
@@ -955,10 +970,29 @@ impl<'a> Resolver<'a> {
                     });
                 }
 
-                let lowered_args = args
-                    .iter()
-                    .map(|arg| self.lower_expr(arg))
-                    .collect::<Result<Vec<_>, _>>()?;
+                // Lower arguments, expanding spread arrays
+                let mut lowered_args = Vec::new();
+                for arg in args {
+                    match arg {
+                        ResolvedExpr::Spread(spread_expr) => {
+                            // For now, only support spreading literal arrays
+                            if let ResolvedExpr::Array(elements) = spread_expr.as_ref() {
+                                for elem in elements {
+                                    lowered_args.push(self.lower_expr(elem)?);
+                                }
+                            } else {
+                                return Err(Diagnostic {
+                                    code: DiagCode::UnsupportedSyntax,
+                                    message: "spread arguments are only supported for literal arrays in this milestone".to_owned(),
+                                    span: None,
+                                });
+                            }
+                        }
+                        _ => {
+                            lowered_args.push(self.lower_expr(arg)?);
+                        }
+                    }
+                }
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(self.resolve_func(func_name)?),
                     args: lowered_args,

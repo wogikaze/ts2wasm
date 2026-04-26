@@ -19,7 +19,7 @@ pub enum ResolvedStmt {
     Return(ResolvedExpr),
     Function {
         name: String,
-        params: Vec<(String, Option<ResolvedExpr>)>,
+        params: Vec<(String, Option<ResolvedExpr>, bool)>,
         body: Vec<ResolvedStmt>,
     },
     TryCatch {
@@ -65,7 +65,7 @@ pub enum ResolvedStmt {
     ClassDecl {
         name: String,
         extends: Option<String>,
-        constructor: Option<(Vec<(String, Option<ResolvedExpr>)>, Vec<ResolvedStmt>)>,
+        constructor: Option<(Vec<(String, Option<ResolvedExpr>, bool)>, Vec<ResolvedStmt>)>,
         methods: Vec<ClassMethod>,
         statics: Vec<(String, ResolvedExpr)>,
     },
@@ -74,7 +74,7 @@ pub enum ResolvedStmt {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClassMethod {
     pub name: String,
-    pub params: Vec<(String, Option<ResolvedExpr>)>,
+    pub params: Vec<(String, Option<ResolvedExpr>, bool)>,
     pub body: Vec<ResolvedStmt>,
 }
 
@@ -85,6 +85,7 @@ pub enum ResolvedExpr {
     Bool(bool),
     Null,
     Undefined,
+    This,
     Ident(String),
     Unary {
         op: UnaryOp,
@@ -127,6 +128,7 @@ pub enum ResolvedExpr {
         key: String,
         value: Box<ResolvedExpr>,
     },
+    Spread(Box<ResolvedExpr>),
     PropertyAssignDynamic {
         object: Box<ResolvedExpr>,
         key: Box<ResolvedExpr>,

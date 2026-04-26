@@ -70,10 +70,11 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         } => {
             let resolved_params = params
                 .iter()
-                .map(|(param_name, default)| {
+                .map(|(param_name, default, is_rest)| {
                     Ok((
                         param_name.clone(),
                         default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                        *is_rest,
                     ))
                 })
                 .collect::<Result<Vec<_>, _>>()?;
@@ -131,10 +132,11 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         }
                         let resolved_params = params
                             .iter()
-                            .map(|(param_name, default)| {
+                            .map(|(param_name, default, is_rest)| {
                                 Ok((
                                     param_name.clone(),
                                     default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                                    *is_rest,
                                 ))
                             })
                             .collect::<Result<Vec<_>, _>>()?;
@@ -154,10 +156,11 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                     } => {
                         let resolved_params = params
                             .iter()
-                            .map(|(param_name, default)| {
+                            .map(|(param_name, default, is_rest)| {
                                 Ok((
                                     param_name.clone(),
                                     default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                                    *is_rest,
                                 ))
                             })
                             .collect::<Result<Vec<_>, _>>()?;
@@ -313,6 +316,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Bool { value, .. } => Ok(ResolvedExpr::Bool(*value)),
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
+        Expr::This { .. } => Ok(ResolvedExpr::This),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
         Expr::Unary { op, expr, .. } => Ok(ResolvedExpr::Unary {
             op: *op,
@@ -487,14 +491,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             value: Box::new(resolve_expr(value)?),
         }),
         // New expression types (not yet supported in resolver
-        Expr::InstanceOf { span, .. }
-        | Expr::Ternary { span, .. }
-        | Expr::ArrowFn { span, .. }
-        | Expr::Spread { span, .. } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "expression type not yet supported in builtin resolver".to_owned(),
-            span: Some(*span),
-        }),
+        Expr::InstanceOf { span, .. } | Expr::Ternary { span, .. } | Expr::ArrowFn { span, .. } => {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "expression type not yet supported in builtin resolver".to_owned(),
+                span: Some(*span),
+            })
+        }
+        Expr::Spread { expr, .. } => Ok(ResolvedExpr::Spread(Box::new(resolve_expr(expr)?))),
         Expr::TypeOf { expr, .. } => Ok(ResolvedExpr::Unary {
             op: UnaryOp::TypeOf,
             expr: Box::new(resolve_expr(expr)?),
@@ -674,6 +678,7 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::String { span, .. }
         | Expr::Bool { span, .. }
         | Expr::Null { span }
+        | Expr::This { span }
         | Expr::Undefined { span }
         | Expr::Ident { span, .. }
         | Expr::Unary { span, .. }

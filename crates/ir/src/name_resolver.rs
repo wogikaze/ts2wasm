@@ -143,11 +143,13 @@ impl NameResolver {
                 // Function declarations are already collected in first pass
                 // Now resolve the function body with its own scope
                 self.enter_scope();
-                for (param_name, default) in params {
+                for (param_name, default, is_rest) in params {
                     self.declare_variable(param_name, None)?;
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
+                    // Rest parameters don't need special handling in name resolution
+                    let _ = is_rest;
                 }
                 let resolved_body = self.resolve_block(body)?;
                 self.exit_scope();
@@ -316,6 +318,7 @@ impl NameResolver {
             }),
             Expr::Null { span } => Ok(Expr::Null { span: *span }),
             Expr::Undefined { span } => Ok(Expr::Undefined { span: *span }),
+            Expr::This { span } => Ok(Expr::This { span: *span }),
             Expr::Ident { name, span } => {
                 // Check if it's a function name
                 if self.functions.contains_key(name) {

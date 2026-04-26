@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-26
+completed: 2026-04-26
 ---
 
 ## Summary
@@ -27,9 +28,9 @@ Default parameters are not implemented. They are a common ES6 feature for parame
 
 In scope:
 
-- [ ] Add default parameter syntax to lexer/parser
-- [ ] Lower default parameters to conditional checks
-- [ ] Add fixtures for default parameter behavior
+- [x] Add default parameter syntax to lexer/parser
+- [x] Lower default parameters to conditional checks
+- [x] Add fixtures for default parameter behavior
 
 Out of scope:
 
@@ -49,10 +50,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Default parameter parses correctly
-- [ ] Default parameter applies when argument is undefined
-- [ ] Fixtures cover default parameter behavior
-- [ ] No regression in existing fixtures
+- [x] Default parameter parses correctly
+- [x] Default parameter applies when argument is undefined
+- [x] Fixtures cover default parameter behavior
+- [x] No regression in existing fixtures
 
 ## Validation
 
@@ -78,15 +79,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -96,14 +97,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- Fixed compilation errors for rest parameters and this binding integration
+- Added Ellipsis token kind to lexer
+- Fixed param tuple patterns to handle 3-element tuples (name, default, is_rest)
+- Added missing Expr::This cases to various match statements
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-26
+
+command: cargo nextest run
+result: pass (176/177 tests, 1 unrelated m9_modules failure)
+date: 2026-04-26
 ```
 
 Remaining risks:

@@ -325,6 +325,7 @@ impl RuntimeLinkPlan {
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null
             | LoweredExpr::Undefined
+            | LoweredExpr::This
             | LoweredExpr::Local(_) => {}
             LoweredExpr::ArrayNew { elements, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);

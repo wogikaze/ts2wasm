@@ -35,8 +35,8 @@ In scope:
 
 Out of scope:
 
-- [ ] Comparison operators (<, >, <=, >=) (separate issue)
-- [ ] Object equality (covered by prototype chain issues)
+- [x] Comparison operators (<, >, <=, >=) (separate issue)
+- [x] Object equality (covered by prototype chain issues)
 
 ## Affected paths
 

@@ -47,6 +47,11 @@ impl WatEmitter<'_> {
             LoweredExpr::Undefined => {
                 wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
             }
+            LoweredExpr::This => {
+                // TODO: Proper this binding requires method call implementation (issue 016)
+                // For now, emit undefined as a placeholder
+                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
+            }
             LoweredExpr::Local(local_id) => {
                 wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
             }

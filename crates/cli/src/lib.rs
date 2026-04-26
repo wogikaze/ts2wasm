@@ -1055,7 +1055,7 @@ impl Parser {
                 } else {
                     None
                 };
-                params.push((param_name, default));
+                params.push((param_name, default, false));
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -1399,13 +1399,14 @@ impl Parser {
             let mut params = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
+                    let is_rest = self.consume(TokenKind::Ellipsis);
                     let (param_name, _) = self.expect_ident()?;
                     let default = if self.consume(TokenKind::Equal) {
                         Some(self.assignment()?)
                     } else {
                         None
                     };
-                    params.push((param_name, default));
+                    params.push((param_name, default, is_rest));
                     if self.consume(TokenKind::RightParen) {
                         break;
                     }
@@ -2042,7 +2043,19 @@ impl Parser {
                 let mut args = Vec::new();
                 if !self.consume(TokenKind::RightParen) {
                     loop {
-                        args.push(self.expression()?);
+                        if let Some(spread_span) = self.consume_span(TokenKind::Spread) {
+                            let spread_expr = self.unary()?;
+                            let end = spread_expr.span().end;
+                            args.push(Expr::Spread {
+                                expr: Box::new(spread_expr),
+                                span: Span {
+                                    start: spread_span.start,
+                                    end,
+                                },
+                            });
+                        } else {
+                            args.push(self.expression()?);
+                        }
                         if self.consume(TokenKind::RightParen) {
                             break;
                         }
@@ -2099,10 +2112,7 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::This,
                 span,
-            }) => Ok(Expr::Ident {
-                name: "this".to_owned(),
-                span,
-            }),
+            }) => Ok(Expr::This { span }),
             Some(SpannedToken {
                 kind: Token::Super,
                 span,

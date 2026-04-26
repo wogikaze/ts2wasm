@@ -24,12 +24,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
-| 030 | Implement instanceof operator | feature | runtime/semantics | implementation-ready | P1 |  | Implement instanceof operator |
-| 036 | Implement arrow function | feature | frontend/semantics | implementation-ready | P1 |  | Implement arrow function |
-| 037 | Implement this binding | feature | runtime/semantics | implementation-ready | P1 |  | Implement this binding |
-| 038 | Implement rest parameters | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameters |
+| 036 | Implement arrow function | feature | frontend/semantics | implementation-ready | P1 | 037 | Implement arrow function |
 | 039 | Implement spread arguments | feature | frontend/semantics | implementation-ready | P1 |  | Implement spread arguments |
-| 040 | Implement default parameters | feature | frontend/semantics | implementation-ready | P1 |  | Implement default parameters |
 | 041 | Implement template literals | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literals |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
@@ -197,6 +193,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | 020a | Implement IR lowering from TypeScript AST |
 | 020c | Add IR validation passes and document contracts | feature | ir/semantics | 020b | Add IR validation passes and document contracts |
 | 021 | Implement full wasm backend | feature | backend | 008, 020 | Implement full wasm backend |
+| 030 | Implement instanceof operator | feature | runtime/semantics | 016 | Implement instanceof operator |
 | 046 | Implement extends inheritance | feature | runtime/semantics | 045 | Implement extends inheritance |
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 <!-- generated:blocked:end -->
@@ -232,6 +229,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 033 | Implement switch statement | feature | frontend/semantics | see `issues/done/033-implement-switch-statement.md` |
 | 034 | Implement while and do-while loops | feature | frontend/semantics | see `issues/done/034-implement-while-do-while-loops.md` |
 | 035 | Implement break and continue statements | feature | frontend/semantics | see `issues/done/035-implement-break-continue.md` |
+| 037 | Implement this binding | feature | runtime/semantics | see `issues/done/037-implement-this-binding.md` |
+| 038 | Implement rest parameters | feature | frontend/semantics | see `issues/done/038-implement-rest-parameters.md` |
+| 040 | Implement default parameters | feature | frontend/semantics | see `issues/done/040-implement-default-parameters.md` |
 | 042 | Implement string methods | feature | runtime/builtins | see `issues/done/042-implement-string-methods.md` |
 | 043 | Implement string indexing | feature | runtime/semantics | see `issues/done/043-implement-string-indexing.md` |
 | 044 | Implement String.fromCharCode and charCodeAt | feature | runtime/builtins | see `issues/done/044-implement-string-from-char-code.md` |
