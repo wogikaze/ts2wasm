@@ -1,3 +1,8 @@
+/// Integration tests for Modules (build smoke tests only)
+///
+/// These tests verify that module-related syntax can be parsed and compiled to WASM.
+/// They do NOT verify runtime semantics - module execution behavior is not tested.
+/// Use differential tests (m2_node_diff.rs) for semantic verification.
 use std::path::Path;
 use std::process::Command;
 
@@ -7,7 +12,9 @@ fn fixture_path(fixture: &str) -> std::path::PathBuf {
         .join(fixture)
 }
 
-fn compile_fixture(fixture: &str) -> std::path::PathBuf {
+/// Helper to verify a fixture builds successfully (build smoke test).
+/// This only checks compilation, not runtime semantics.
+fn compile_fixture_build_smoke(fixture: &str) -> std::path::PathBuf {
     let input = fixture_path(fixture);
     assert!(input.exists(), "fixture should exist: {:?}", input);
 
@@ -27,7 +34,7 @@ fn compile_fixture(fixture: &str) -> std::path::PathBuf {
 
     assert!(
         build.status.success(),
-        "build failed for {}\nstdout:\n{}\nstderr:\n{}",
+        "build failed for {} (smoke test)\nstdout:\n{}\nstderr:\n{}",
         fixture,
         String::from_utf8_lossy(&build.stdout),
         String::from_utf8_lossy(&build.stderr)
@@ -37,28 +44,28 @@ fn compile_fixture(fixture: &str) -> std::path::PathBuf {
 }
 
 #[test]
-fn require_cache_compiles() {
-    compile_fixture("modules-and-typed-optimizations/require-cache.ts");
+fn require_cache_build_smoke() {
+    compile_fixture_build_smoke("modules-and-typed-optimizations/require-cache.ts");
 }
 
 #[test]
-fn require_relative_compiles() {
-    compile_fixture("modules-and-typed-optimizations/require-relative.ts");
+fn require_relative_build_smoke() {
+    compile_fixture_build_smoke("modules-and-typed-optimizations/require-relative.ts");
 }
 
 #[test]
-fn exports_assign_compiles() {
-    compile_fixture("modules-and-typed-optimizations/exports-assign.ts");
+fn exports_assign_build_smoke() {
+    compile_fixture_build_smoke("modules-and-typed-optimizations/exports-assign.ts");
 }
 
 #[test]
-fn module_exports_assign_compiles() {
-    compile_fixture("modules-and-typed-optimizations/module-exports-assign.ts");
+fn module_exports_assign_build_smoke() {
+    compile_fixture_build_smoke("modules-and-typed-optimizations/module-exports-assign.ts");
 }
 
 #[test]
-fn require_cache_reuses_same_object_at_runtime() {
-    let output = compile_fixture("modules-and-typed-optimizations/require-cache.ts");
+fn require_cache_reuses_same_object_at_runtime_semantic_diff() {
+    let output = compile_fixture_build_smoke("modules-and-typed-optimizations/require-cache.ts");
     let run = Command::new("iwasm")
         .arg(&output)
         .output()

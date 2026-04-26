@@ -55,6 +55,23 @@ mise run update-coverage-matrix
 
 正確なファイル数は `find fixtures/<dir> -type f | wc -l` で取得する。AGENTS の「19 fixtures」などの圧縮表記がある場合は、この表を優先する。
 
+## Test classification
+
+Tests are classified into three categories to distinguish build success from semantic compatibility:
+
+- **build_smoke**: Tests that compilation succeeds (syntax parsing, name resolution, lowering to WASM). These do NOT verify runtime semantics.
+- **semantic_diff**: Tests that Node.js and iwasm execution produce identical output (differential testing).
+- **parser_smoke**: Tests that syntax can be parsed (not yet implemented).
+
+**Build pass does NOT imply semantic compatibility.**
+
+Test files follow naming conventions:
+- `*_build_smoke()`: Build smoke tests (m7_control_flow.rs, m8_oop_classes.rs, m9_modules.rs, m10_node_apis.rs)
+- `*_semantic_diff()`: Differential tests (m2_node_diff.rs)
+- `m2_node_diff.rs`: Semantic differential tests for core fixtures
+
+Compile-only tests for class/module/Node API are explicitly marked as build_smoke to avoid implying semantic support.
+
 ## Reference coverage（測定の正本）
 
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`

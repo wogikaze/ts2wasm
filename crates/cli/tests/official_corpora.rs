@@ -1,3 +1,14 @@
+/// Integration tests for official corpora (build smoke tests only)
+///
+/// These tests verify that official test cases can be parsed and compiled to WASM.
+/// They do NOT verify runtime semantics - execution behavior is not tested.
+/// Use differential tests (m2_node_diff.rs) for semantic verification.
+///
+/// Test classification:
+/// - build_smoke: Tests that compilation succeeds (syntax parsing, name resolution, lowering)
+/// - semantic_diff: Tests that Node.js and iwasm execution produce identical output
+///
+/// Build pass does NOT imply semantic compatibility.
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -37,6 +48,13 @@ fn count_files_with_extension(root: &Path, extension: &str, limit: usize) -> usi
     count
 }
 
+/// Classify a build case (build smoke test).
+///
+/// This function only checks whether the compiler can parse and emit WASM.
+/// It does NOT verify runtime semantics.
+///
+/// Returns a TestRecord with target "wasm32-wasi-build" to distinguish
+/// from semantic differential tests (target "wasm32-wasi").
 fn classify_build_case(suite: &str, case: &str) -> TestRecord {
     let source = repo_root().join(case);
     let output_wasm = std::env::temp_dir().join(format!(
@@ -86,7 +104,10 @@ fn classify_build_case(suite: &str, case: &str) -> TestRecord {
             status: TestStatus::Pass,
             expected: None,
             actual: None,
-            reason: None,
+            reason: Some(
+                "Build smoke test passed (syntax compilation, not semantic verification)"
+                    .to_owned(),
+            ),
             tracking: None,
         };
     }
@@ -230,6 +251,9 @@ fn official_corpora_smoke_gate_classifies_samples_without_requiring_pass() {
 #[test]
 #[ignore = "strict official corpus pass gate fails until selected official cases are implemented"]
 fn strict_official_corpora_samples_must_build_successfully() {
+    // NOTE: This is a BUILD smoke test, not a semantic compatibility test.
+    // Build success does NOT imply semantic compatibility with Node.js.
+    // See m2_node_diff.rs for semantic differential tests.
     let records = OFFICIAL_SAMPLE_CASES
         .iter()
         .map(|(suite, case)| classify_build_case(suite, case))

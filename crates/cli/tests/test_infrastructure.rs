@@ -95,7 +95,7 @@ fn test_record_json_escaping() {
 }
 
 #[test]
-fn test_pass_fixture_compiles() {
+fn test_pass_fixture_exists() {
     let fixture = fixtures_path("test-infrastructure/pass-fixture.ts");
     assert!(fixture.exists(), "pass-fixture.ts should exist");
 
@@ -104,7 +104,7 @@ fn test_pass_fixture_compiles() {
 }
 
 #[test]
-fn test_fail_fixture_compiles() {
+fn test_fail_fixture_exists() {
     let fixture = fixtures_path("test-infrastructure/fail-fixture.ts");
     assert!(fixture.exists(), "fail-fixture.ts should exist");
 

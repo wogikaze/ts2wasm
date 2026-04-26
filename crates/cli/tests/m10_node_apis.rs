@@ -1,6 +1,13 @@
+/// Integration tests for Node APIs (build smoke tests only)
+///
+/// These tests verify that Node API syntax can be parsed and compiled to WASM.
+/// They do NOT verify runtime semantics - Node API execution behavior is not tested.
+/// Use differential tests (m2_node_diff.rs) for semantic verification.
 use std::path::Path;
 
-fn assert_fixture_compiles(fixture_path: &str) {
+/// Helper to verify a fixture builds successfully (build smoke test).
+/// This only checks compilation, not runtime semantics.
+fn assert_fixture_build_smoke(fixture_path: &str) {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
         .join(fixture_path);
@@ -16,48 +23,48 @@ fn assert_fixture_compiles(fixture_path: &str) {
     match ts2wasm_cli::build_file(&fixture, &output_wasm) {
         Ok(()) => {}
         Err(e) => panic!(
-            "Fixture {} should compile but got error: {}",
+            "Fixture {} should build (smoke test) but got error: {}",
             fixture_path, e
         ),
     }
 }
 
 #[test]
-fn fs_read_compiles() {
-    assert_fixture_compiles("node-apis/fs-read.ts");
+fn fs_read_build_smoke() {
+    assert_fixture_build_smoke("node-apis/fs-read.ts");
 }
 
 #[test]
-fn fs_write_compiles() {
-    assert_fixture_compiles("node-apis/fs-write.ts");
+fn fs_write_build_smoke() {
+    assert_fixture_build_smoke("node-apis/fs-write.ts");
 }
 
 #[test]
-fn fs_append_compiles() {
-    assert_fixture_compiles("node-apis/fs-append.ts");
+fn fs_append_build_smoke() {
+    assert_fixture_build_smoke("node-apis/fs-append.ts");
 }
 
 #[test]
-fn process_argv_compiles() {
-    assert_fixture_compiles("node-apis/process-argv.ts");
+fn process_argv_build_smoke() {
+    assert_fixture_build_smoke("node-apis/process-argv.ts");
 }
 
 #[test]
-fn process_env_compiles() {
-    assert_fixture_compiles("node-apis/process-env.ts");
+fn process_env_build_smoke() {
+    assert_fixture_build_smoke("node-apis/process-env.ts");
 }
 
 #[test]
-fn path_join_compiles() {
-    assert_fixture_compiles("node-apis/path-join.ts");
+fn path_join_build_smoke() {
+    assert_fixture_build_smoke("node-apis/path-join.ts");
 }
 
 #[test]
-fn path_resolve_compiles() {
-    assert_fixture_compiles("node-apis/path-resolve.ts");
+fn path_resolve_build_smoke() {
+    assert_fixture_build_smoke("node-apis/path-resolve.ts");
 }
 
 #[test]
-fn crypto_random_bytes_compiles() {
-    assert_fixture_compiles("node-apis/crypto-random-bytes.ts");
+fn crypto_random_bytes_build_smoke() {
+    assert_fixture_build_smoke("node-apis/crypto-random-bytes.ts");
 }

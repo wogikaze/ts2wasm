@@ -1,7 +1,8 @@
-/// Integration tests for Stream C: Control Flow & Statement Extensions
+/// Integration tests for Control Flow & Statement Extensions (build smoke tests only)
 ///
-/// These tests verify that the full compilation pipeline (parse → resolve → lower → emit)
-/// produces valid WebAssembly text for control flow constructs.
+/// These tests verify that control flow constructs can be parsed and compiled to WASM.
+/// They do NOT verify runtime semantics - execution behavior is not tested.
+/// Use differential tests (m2_node_diff.rs) for semantic verification.
 use std::path::Path;
 
 /// Helper to compile a fixture through the full pipeline and check the result.
@@ -41,8 +42,9 @@ fn compile_fixture(fixture_path: &str) -> Result<String, String> {
 }
 
 /// Helper to compile a fixture through the full pipeline (parse → resolve → lower → emit)
-/// using the library API directly, asserting the build succeeds.
-fn assert_fixture_compiles(fixture_path: &str) {
+/// using the library API directly, asserting the build succeeds (build smoke test).
+/// This only checks compilation, not runtime semantics.
+fn assert_fixture_build_smoke(fixture_path: &str) {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
         .join(fixture_path);
@@ -56,9 +58,9 @@ fn assert_fixture_compiles(fixture_path: &str) {
     ));
 
     match ts2wasm_cli::build_file(&fixture, &output_wasm) {
-        Ok(()) => {} // success
+        Ok(()) => {} // build smoke test success
         Err(e) => panic!(
-            "Fixture {} should compile but got error: {}",
+            "Fixture {} should build (smoke test) but got error: {}",
             fixture_path, e
         ),
     }
@@ -67,66 +69,66 @@ fn assert_fixture_compiles(fixture_path: &str) {
 // ─── Try / Catch / Finally ────────────────────────────────────────────────
 
 #[test]
-fn try_catch_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/try-catch.ts");
+fn try_catch_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/try-catch.ts");
 }
 
 #[test]
-fn try_finally_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/try-finally.ts");
+fn try_finally_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/try-finally.ts");
 }
 
 #[test]
-fn try_catch_finally_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/try-catch-finally.ts");
+fn try_catch_finally_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/try-catch-finally.ts");
 }
 
 // ─── Switch / Case / Default ──────────────────────────────────────────────
 
 #[test]
-fn switch_case_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/switch-case.ts");
+fn switch_case_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/switch-case.ts");
 }
 
 // ─── Do-While ─────────────────────────────────────────────────────────────
 
 #[test]
-fn do_while_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/do-while.ts");
+fn do_while_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/do-while.ts");
 }
 
 // ─── For Loop ─────────────────────────────────────────────────────────────
 
 #[test]
-fn for_loop_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/for-loop.ts");
+fn for_loop_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/for-loop.ts");
 }
 
 #[test]
-fn for_in_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/for-in.ts");
+fn for_in_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/for-in.ts");
 }
 
 #[test]
-fn for_of_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/for-of.ts");
+fn for_of_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/for-of.ts");
 }
 
 // ─── While with Break/Continue ────────────────────────────────────────────
 
 #[test]
-fn while_break_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/while-break.ts");
+fn while_break_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/while-break.ts");
 }
 
 #[test]
-fn while_continue_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/while-continue.ts");
+fn while_continue_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/while-continue.ts");
 }
 
 // ─── Throw ────────────────────────────────────────────────────────────────
 
 #[test]
-fn throw_test262_compiles() {
-    assert_fixture_compiles("control-flow-and-exceptions/throw-test262.ts");
+fn throw_test262_build_smoke() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/throw-test262.ts");
 }
