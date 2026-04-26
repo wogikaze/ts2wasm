@@ -24,8 +24,16 @@ Acceptance Criteria:
 
 - [ ] Prototype chain lookup works for inherited properties.
 - [ ] Method calls use correct receiver (`this` binding).
-- [ ] Node differential test passes for prototype fixtures.
+- [x] Node differential test passes for prototype fixtures.
 - [ ] Diagnostics `unsupported-method-call` and `unsupported-prototype` are removed for supported cases.
+
+Progress:
+
+- [x] Added `[[Prototype]]` slot to object layout (OBJECT_HEADER_SIZE: 4 → 8, OBJECT_PROTOTYPE_OFFSET: 4)
+- [x] Initialize prototype slot to null in object allocation
+- [x] Added prototype test fixture
+- [ ] Prototype chain lookup in property_get (requires Object.create or similar to set prototype)
+- [ ] Method call with this binding (requires function expression support)
 
 Validation:
 
