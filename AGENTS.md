@@ -47,6 +47,9 @@ mise run check-manifest-imports       # manifest/wasm import一致確認
 mise run reference-coverage -- test262 --limit 50  # カバレッジ計測
 mise run update-coverage-matrix       # カバレッジ表更新
 mise run test262 -- --sample 50 --jobs 4  # test262実行
+# Issue追加（カバレッジ結果から自動生成）
+scripts/run/reference-coverage.sh test262 --limit 500 --detail | \
+  mise run gen-issues-from-coverage -- --suite test262
 ```
 
 ## 5) 運用上の最小ルール
@@ -67,5 +70,16 @@ mise run test262 -- --sample 50 --jobs 4  # test262実行
 7. Update docs/artifacts/current-state only when facts changed
 8. Write cycle report
 9. Create follow-up issues
+
+**Issue addition workflow** (when Ready queue is low):
+1. Run reference-coverage with --detail flag
+2. Pipe to gen-issues-from-coverage to auto-generate issues
+3. Update issue index
+4. Commit changes
+
+**Coverage expansion** (when implementation targets decrease):
+- Increase --limit in reference-coverage (e.g., 50 → 100 → 500 → 1000)
+- Add new test suites if needed
+- Auto-generate issues from expanded coverage
 
 Semantic compatibility: Node differential evidence required unless parser/build-only.

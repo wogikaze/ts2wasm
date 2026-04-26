@@ -71,6 +71,36 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 - Update failure_patterns.md if new failure pattern discovered
 - Update review_checklist.md if new guard needed
 
+**Issue addition** (when Ready queue is low):
+
+- Run reference-coverage with --detail flag:
+
+  ```bash
+  scripts/run/reference-coverage.sh test262 --limit 500 --detail
+  ```
+
+- Pipe to gen-issues-from-coverage to auto-generate issues:
+
+  ```bash
+  scripts/run/reference-coverage.sh test262 --limit 500 --detail | \
+    mise run gen-issues-from-coverage -- --suite test262
+  ```
+
+- Run `mise run update-issue-index` to regenerate `issues/index.md`
+
+- Commit changes:
+
+  ```bash
+  git add issues/ scripts/gen/issues-from-coverage.py
+  git commit -m "feat(issues): add issues NNN-XXX from coverage"
+  ```
+
+**Coverage expansion** (when implementation targets decrease):
+- Increase --limit in reference-coverage (e.g., 50 → 100 → 500 → 1000)
+- Add new test suites if needed (tsc, tsgo)
+- Auto-generate issues from expanded coverage
+- Update issue index and commit
+
 ## Critical Requirements
 
 **A loop is NOT complete until:**
