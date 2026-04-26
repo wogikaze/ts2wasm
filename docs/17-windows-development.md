@@ -1,237 +1,202 @@
-# Windows Development Guide
+## Windows 開発環境セットアップ
 
-This guide covers setting up a Windows development environment for ts2wasm without using WSL or bash dependencies.
+### 1. 必要ツールのインストール
 
-## Prerequisites
-
-- Windows 10/11
-- Administrator access (for some tool installations)
-
-## Required Tools
-
-### 1. Python 3
-
-Install Python 3.10 or later from [python.org](https://www.python.org/downloads/).
+#### Python 3
 
 ```powershell
-# Verify installation
+# python.org から Python 3.10+ をインストール
+# https://www.python.org/downloads/
+
+# インストール確認
 python --version
 ```
 
-### 2. Rust Toolchain
-
-Install Rust using rustup:
+#### Rust Toolchain
 
 ```powershell
-# Download and run rustup-init.exe from https://rustup.rs/
-# Or use winget:
+# rustup-init.exe をダウンロードして実行
+# https://rustup.rs/
+# または winget 使用:
 winget install Rustlang.Rustup
-```
 
-Install cargo-nextest:
-
-```powershell
+# cargo-nextest インストール
 cargo install cargo-nextest
 ```
 
-### 3. Node.js
-
-Install Node.js LTS from [nodejs.org](https://nodejs.org/).
+#### Node.js
 
 ```powershell
-# Verify installation
+# nodejs.org から LTS 版をインストール
+# https://nodejs.org/
+
+# 確認
 node --version
 npm --version
 ```
 
-### 4. Git
-
-Install Git from [git-scm.com](https://git-scm.com/).
+#### Git
 
 ```powershell
-# Verify installation
+# git-scm.com からインストール
+# https://git-scm.com/
+
+# 確認
 git --version
 ```
 
-### 5. Additional Tools
+#### 追加ツール
 
-Install the following tools using their respective installers:
+```powershell
+# jq: https://stedolan.github.io/jq/download/ からダウンロード
+# ripgrep: https://github.com/BurntSushi/ripgrep/releases からダウンロード
+# wasm-tools:
+cargo install wasm-tools
+# ast-grep:
+cargo install ast-grep
+# WAMR (iwasm): https://github.com/bytecodealliance/wasm-micro-runtime/releases から Windows バイナリをダウンロード
+```
 
-- **jq**: Download from [stedolan.github.io/jq](https://stedolan.github.io/jq/download/)
-- **ripgrep**: Download from [github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep/releases)
-- **wasm-tools**: `cargo install wasm-tools`
-- **ast-grep**: `cargo install ast-grep`
-- **WAMR (iwasm)**: Download Windows binary from [github.com/bytecodealliance/wasm-micro-runtime](https://github.com/bytecodealliance/wasm-micro-runtime/releases)
+すべてのツールを PATH に追加すること。
 
-Add all tools to your PATH.
+### 2. jsonschema のインストール（重要）
 
-## Repository Setup
+```powershell
+python -m pip install jsonschema
+```
 
-Clone the repository:
+これは `check-agent-state` で必須です。
+
+### 3. リポジトリのクローン
 
 ```powershell
 git clone <repository-url>
 cd ts2wasm
 ```
 
-## Using the Python Script Manager
+### 4. Python スクリプトマネージャーの使用
 
-The project provides `scripts/manager.py` as a cross-platform alternative to the bash-based `scripts/manager`.
+bash 依存を避けるため、[scripts/manager.py](cci:7://file:///home/wogikaze/ts2wasm/scripts/manager.py:0:0-0:0) を直接使用します。
 
-### Basic Commands
+#### 基本コマンド
 
 ```powershell
-# Format code
+# コードフォーマット
 python scripts/manager.py fmt
 
-# Run clippy
+# Clippy 実行
 python scripts/manager.py clippy
 
-# Run tests
+# テスト実行
 python scripts/manager.py nextest
 
-# Run fast gate (fmt + issue health + coverage matrix + tests)
+# ファストゲート（fmt + issue health + coverage matrix + tests）
 python scripts/manager.py check-fast-gate
 
-# Skip tests in fast gate
+# テストをスキップしてファストゲート
 python scripts/manager.py check-fast-gate --skip-nextest
 
-# Show all commands
+# ヘルプ表示
 python scripts/manager.py help
 ```
 
-### Available Commands
+#### 利用可能なコマンド
 
 - `fmt` - cargo fmt --all --check
 - `clippy` - cargo clippy --all-targets
 - `nextest` - cargo nextest run
 - `check-fast-gate` - fmt + issue health + coverage matrix + nextest
-- `check-issue-health` - Validate issues/ directory
-- `update-issue-index` - Regenerate issues/index.md
-- And more (see `python scripts/manager.py help`)
-
-## Known Limitations
-
-Some scripts still depend on bash and are not yet available on Windows:
-
-(None - all high-priority scripts have been migrated to Python)
-
-**Migrated to Python (Windows-compatible):**
-- `check-toolchain` - Toolchain verification
-- `check-manifest-imports` - Manifest vs wasm imports
-- `check-test-records-schema` - TestRecord JSONL validation
-- `check-fixture-catalog` - Fixture layout rules
-- `check-architecture-rules` - Crate boundary checks
-- `check-compiler-diagnostics` - Panic! checks
-- `check-harness-installation` - Harness baseline
-- `check-fixture-differential` - Node vs iwasm differential
-- `check-host-deny` - Host import denial
-- `check-runtimefn-invariants` - Runtime function invariants
-- `check-wasm-validation` - WASM validation
-- `check-agent-state` - Agent state validation
-- `check-issue-health` - Issue health checks
-- `update-issue-index` - Issue index generation
-- `gen-issues-from-coverage` - Issue generation from coverage
-- `update-coverage-matrix` - Coverage matrix update
-- `install-hooks` - Git hooks installation (OS-aware)
-- `check-scripts` - Bash syntax check (skips on Windows if bash unavailable)
+- `check-issue-health` - issues/ ディレクトリの検証
+- `update-issue-index` - issues/index.md の再生成
+- `check-agent-state` - エージェント状態の検証
 - `check-repo-smoke` - fmt + check-scripts + check-issue-health
-- `check-coverage-gate` - Coverage comparison
-- `coverage-report` - Language coverage report
-- `reference-coverage` - Reference suite coverage runner
-- `test262` - test262 harness
-- `test-differential-reporter` - HTML/Md report from test262
-- `test-regression-gate` - Regression gate
-- `benchmark-tracker` - Performance metrics
-- `fmt` - Cargo formatting
-- `clippy` - Cargo linting
-- `nextest` - Test runner
-- `check-fast-gate` - Fast gate (fmt + issues + coverage + tests)
+- その他多数（`python scripts/manager.py help` で確認）
 
-For full functionality including test262 and coverage reports, consider using WSL2. See the main README for WSL setup instructions.
+### 5. 開発ワークフロー
 
-## Alternative: Using Mise (Experimental)
-
-Mise has Windows support. Install from [mise.jdx.dev](https://mise.jdx.dev/).
+#### 典型的な開発サイクル
 
 ```powershell
-# Install mise
+# 1. コードフォーマット
+python scripts/manager.py fmt
+
+# 2. リンター実行
+python scripts/manager.py clippy
+
+# 3. テスト実行
+python scripts/manager.py nextest
+
+# 4. フルゲート実行（コミット前）
+python scripts/manager.py check-fast-gate
+```
+
+#### Issue 管理
+
+```powershell
+# Issue 検証
+python scripts/manager.py check-issue-health
+
+# Issue index 更新
+python scripts/manager.py update-issue-index
+
+# カバレッジから Issue 生成
+python scripts/manager.py gen-issues-from-coverage --suite test262
+```
+
+### 6. 開始前の最終確認
+
+```powershell
+# Issue index 検証
+python scripts/manager.py update-issue-index --check
+
+# Issue health 検証
+python scripts/manager.py check-issue-health
+
+# Agent state 検証
+python scripts/manager.py check-agent-state
+
+# Repo smoke 検証
+python scripts/manager.py check-repo-smoke
+
+# ファストゲート（テストスキップ）
+python scripts/manager.py check-fast-gate --skip-nextest
+```
+
+これら5つがすべて通れば開発を開始できます。
+
+#### "bash not found" でスクリプト失敗
+
+実行しようとしているスクリプトが bash 依存。Python マネージャー（`python scripts/manager.py`）を使用するか、完全機能のために WSL2 を使用。
+
+### 8. 制限事項
+
+すべての高優先度スクリプトは Python に移行済みで Windows 互換です。
+
+**Python 移行済み（Windows互換）:**
+
+- check-toolchain, check-manifest-imports, check-test-records-schema
+- check-fixture-catalog, check-architecture-rules, check-compiler-diagnostics
+- check-harness-installation, check-fixture-differential, check-host-deny
+- check-runtimefn-invariants, check-wasm-validation, check-agent-state
+- check-issue-health, update-issue-index, gen-issues-from-coverage
+- update-coverage-matrix, install-hooks, check-scripts
+- check-repo-smoke, check-coverage-gate, coverage-report
+- reference-coverage, test262, test-differential-reporter
+- test-regression-gate, benchmark-tracker, fmt, clippy, nextest
+- check-fast-gate
+
+test262 とカバレッジレポートの完全機能には WSL2 の使用を検討してください。WSL セットアップはメイン README を参照。
+
+### 9. 代替案: Mise 使用（実験的）
+
+```powershell
+# mise インストール
 winget install jdx.mise
 
-# Use mise tasks
+# mise tasks 使用
 mise tasks
 mise run fmt
 mise run nextest
 ```
 
-Note: Some mise tasks still call bash scripts and may not work on Windows.
-
-## Development Workflow
-
-### Typical Development Cycle
-
-```powershell
-# 1. Format code
-python scripts/manager.py fmt
-
-# 2. Run linter
-python scripts/manager.py clippy
-
-# 3. Run tests
-python scripts/manager.py nextest
-
-# 4. Run full gate (before committing)
-python scripts/manager.py check-fast-gate
-```
-
-### Issue Management
-
-```powershell
-# Validate issues
-python scripts/manager.py check-issue-health
-
-# Update issue index
-python scripts/manager.py update-issue-index
-
-# Generate issues from coverage
-python scripts/manager.py gen-issues-from-coverage --suite test262
-```
-
-## Troubleshooting
-
-### "python not found"
-
-Ensure Python is installed and added to PATH. Restart your terminal after installation.
-
-### "cargo not found"
-
-Ensure Rust is installed via rustup and added to PATH. Restart your terminal.
-
-### "iwasm not found"
-
-Download WAMR Windows binary from GitHub releases and add to PATH.
-
-### Script fails with "bash not found"
-
-The script you're trying to run depends on bash. Use the Python manager (`python scripts/manager.py`) instead, or use WSL2 for full functionality.
-
-## Contributing
-
-When contributing Windows-specific fixes:
-
-1. Prefer Python over bash scripts
-2. Use `pathlib.Path` for cross-platform path handling
-3. Avoid Unix-specific commands (mktemp, grep, etc.)
-4. Test on both Windows and Linux if possible
-
-## Future Improvements
-
-All high-priority scripts have been migrated to Python for Windows support.
-
-Remaining bash scripts (Unix-specific libraries):
-- scripts/lib/common.sh (used by remaining bash scripts)
-- scripts/lib/feature-labels.sh (used by remaining bash scripts)
-
-These libraries are used by a few remaining Unix-specific scripts and may be kept as-is.
-
-See the issue tracker for progress.
+注意: 一部の mise タスクはまだ bash スクリプトを呼び出し、Windows で動作しない可能性があります。
