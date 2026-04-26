@@ -1045,20 +1045,13 @@ impl WatEmitter<'_> {
           (then
             (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
               (then
-                ;; found: shift remaining entries left
-                (local.set $j (local.get $i))
-                (loop $shift
-                  (br_if $shift (i32.eq (local.get $j) (i32.sub (local.get $count) (i32.const {one}))))
-                  (local.set $j (i32.add (local.get $j) (i32.const {one})))
-                  (local.set $entry_base
-                    (i32.add (local.get $base)
-                      (i32.add (i32.const {obj_header})
-                        (i32.shl (local.get $j) (i32.const {entry_shift})))))
-                  (i32.store (i32.sub (local.get $entry_base) (i32.const {entry_size}))
-                    (i32.load (local.get $entry_base)))
-                  (i32.store (i32.add (i32.sub (local.get $entry_base) (i32.const {entry_size})) (i32.const {value_off}))
-                    (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
-                  (br $shift))
+                ;; found: clear the entry and decrement count
+                (local.set $entry_base
+                  (i32.add (local.get $base)
+                    (i32.add (i32.const {obj_header})
+                      (i32.shl (local.get $i) (i32.const {entry_shift})))))
+                (i32.store (local.get $entry_base) (i32.const {zero}))
+                (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (i32.const {zero}))
                 ;; decrement count
                 (i32.store (local.get $base) (i32.sub (local.get $count) (i32.const {one})))
                 (return (i32.const {true}))))))
@@ -1072,7 +1065,6 @@ impl WatEmitter<'_> {
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
-            entry_size = Layout::OBJECT_ENTRY_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,

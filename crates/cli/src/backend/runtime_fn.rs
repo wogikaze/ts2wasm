@@ -1269,6 +1269,7 @@ impl RuntimeFn {
             Self::GetLength,
             Self::PropertyGet,
             Self::PropertySet,
+            Self::PropertyDelete,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,
@@ -1354,6 +1355,7 @@ impl RuntimeFn {
             Self::GetLength,
             Self::PropertyGet,
             Self::PropertySet,
+            Self::PropertyDelete,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,

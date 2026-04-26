@@ -16,6 +16,7 @@ impl WatEmitter<'_> {
                 kind: FunctionCallKind::Builtin(builtin),
                 ..
             } => RuntimeFn::from_builtin(*builtin).is_value(),
+            LoweredExpr::PropertyDelete { .. } | LoweredExpr::PropertyDeleteDynamic { .. } => true,
             _ => true,
         }
     }
@@ -55,14 +56,16 @@ impl WatEmitter<'_> {
                 let key_len = self.string_len(key);
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
                 wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::PropertyDelete.symbol()));
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::PropertyDelete.symbol()
+                ));
             }
             LoweredExpr::PropertyDeleteDynamic { object, key } => {
                 let tmp = frame.heap_base_tmp();
                 self.emit_expr(wat, key, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", tmp));
                 self.emit_expr(wat, object, indent, frame);
-                wat.push_str(&format!("{pad}(local.get {})\n", tmp));
                 wat.push_str(&format!(
                     "{pad}(i32.and (local.get {}) (i32.const {}))\n",
                     tmp,
@@ -78,7 +81,10 @@ impl WatEmitter<'_> {
                     tmp,
                     ValueTag::HEAP_MASK
                 ));
-                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::PropertyDelete.symbol()));
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::PropertyDelete.symbol()
+                ));
             }
             LoweredExpr::Unary { op, expr } => {
                 self.emit_expr(wat, expr, indent, frame);
