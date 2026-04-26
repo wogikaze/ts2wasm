@@ -44,7 +44,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 053 | Implement Math | feature | runtime/builtins | implementation-ready | P1 |  | Implement Math |
 | 054 | Implement Error types | feature | runtime/builtins | implementation-ready | P1 |  | Implement Error types |
 | 055 | Implement import and export | feature | frontend/semantics | implementation-ready | P1 |  | Implement import and export |
-| 057 | Implement function resolution for function calls | feature | frontend | design-ready | P0 |  | Implement function resolution for function calls |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | design-ready | P1 |  | Implement equality operators (==, !=, ===, !==) |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported diagnostic cases |
@@ -239,6 +238,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 035 | Implement break and continue statements | feature | frontend/semantics | see `issues/done/035-implement-break-continue.md` |
 | 043 | Implement string indexing | feature | runtime/semantics | see `issues/done/043-implement-string-indexing.md` |
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
+| 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
