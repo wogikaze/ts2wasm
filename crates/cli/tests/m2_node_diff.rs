@@ -143,19 +143,13 @@ fn temp_wasm_path(fixture: &str) -> PathBuf {
 }
 
 const CLASS_SEMANTIC_GAP_FIXTURES: &[&str] = &[
-    "fixtures/classes-and-inheritance/class-basic.ts",
-    "fixtures/classes-and-inheritance/class-extends.ts",
-    "fixtures/classes-and-inheritance/new-expression.ts",
-    "fixtures/classes-and-inheritance/class-static.ts",
-    "fixtures/classes-and-inheritance/class-super.ts",
-    "fixtures/classes-and-inheritance/class-super-method.ts",
+    // Class fixtures now match Node output in current runtime implementation.
+    // Keep this list only for fixtures that remain intentionally unimplemented.
 ];
 
 const MODULE_SEMANTIC_GAP_FIXTURES: &[&str] = &[
     "fixtures/modules-and-typed-optimizations/require-cache.ts",
     "fixtures/modules-and-typed-optimizations/require-relative.ts",
-    "fixtures/modules-and-typed-optimizations/exports-assign.ts",
-    "fixtures/modules-and-typed-optimizations/module-exports-assign.ts",
 ];
 
 const NODE_API_SEMANTIC_GAP_FIXTURES: &[&str] = &[
