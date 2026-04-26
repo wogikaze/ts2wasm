@@ -55,6 +55,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 055 | Implement import and export | feature | frontend/semantics | implementation-ready | P1 |  | Implement import and export |
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | design-ready | P0 |  | Implement name resolution for variables and identifiers |
 | 057 | Implement function resolution for function calls | feature | frontend | design-ready | P0 |  | Implement function resolution for function calls |
+| 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | design-ready | P1 |  | Implement equality operators (==, !=, ===, !==) |
+| 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
+| 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported diagnostic cases |
 <!-- generated:ready:end -->
 
 ## Blocked queue
