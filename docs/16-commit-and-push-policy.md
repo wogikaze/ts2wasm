@@ -143,7 +143,7 @@ push 前に可能なら実行:
 ```bash
 cargo fmt --all --check
 cargo nextest run
-mise run check-issue-index
+scripts/manager check-issue-health
 ```
 
 ただし、重い gate は毎回必須にしない。

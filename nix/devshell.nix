@@ -16,6 +16,7 @@ pkgs.mkShell {
       ripgrep
       jq
       mold
+      python3Packages.jsonschema
     ])
     ++ [
       # Hyphenated pname; `with pkgs; [ ast-grep ]` would parse as subtraction.

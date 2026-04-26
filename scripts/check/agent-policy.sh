@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Ensure local git hooks are not bypassing agreed checks (lightweight).
 #
-# Usage: scripts/check_agent_policy.sh
+# Usage: scripts/manager check-agent-policy
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"

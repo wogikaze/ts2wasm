@@ -5,13 +5,13 @@
 #   - Top-level entries under fixtures/ must be directories (no loose .ts at fixtures root).
 #   - Directory names: lowercase ASCII, digits, hyphen only (kebab-case prefix style).
 #
-# Usage: scripts/check_fixture_catalog.sh
+# Usage: scripts/manager check-fixture-catalog
 set -euo pipefail
 
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/check_fixture_catalog.sh
+  scripts/manager check-fixture-catalog
 
 Validates fixtures/ directory layout conventions.
 USAGE

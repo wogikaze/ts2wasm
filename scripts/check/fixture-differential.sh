@@ -2,7 +2,7 @@
 # Re-run the Node vs iwasm fixture differential (integration) suite as a standalone gate.
 # Wraps: crates/cli/tests/m2_node_diff.rs
 #
-# Usage: scripts/check_fixture_differential.sh
+# Usage: scripts/manager check-fixture-differential
 # Dependencies: cargo, nextest, node, ts2wasm binary (via nextest build)
 set -euo pipefail
 
@@ -29,7 +29,7 @@ while [[ $# -gt 0 ]]; do
       fi
       ;;
     -h|--help)
-      echo "Usage: scripts/check_fixture_differential.sh [--sample N]" >&2
+      echo "Usage: scripts/manager check-fixture-differential [--sample N]" >&2
       exit 0
       ;;
     *)

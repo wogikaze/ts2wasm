@@ -5,7 +5,7 @@
 # Builds with the ts2wasm CLI, prints wasm, and fails if a `(import "host" ...` appears.
 # Override list with TS2WASM_HOST_FREE_FIXTURES (space-separated paths) if needed.
 #
-# Usage: scripts/check_host_deny.sh
+# Usage: scripts/manager check-host-deny
 # Dependencies: cargo, wasm-tools
 set -euo pipefail
 
@@ -18,7 +18,7 @@ if ! command -v wasm-tools >/dev/null 2>&1; then
 fi
 
 # Default: subset aligned with m2 "pure" path + tiny hello; extend as the compiler grows.
-# Optional:  scripts/check_host_deny.sh  fixtures/a.ts  fixtures/b.ts
+# Optional:  scripts/manager check-host-deny  fixtures/a.ts  fixtures/b.ts
 #   or  TS2WASM_HOST_FREE_FIXTURES="f1 f2"
 default_list=(
   fixtures/basics-hello/hello.ts

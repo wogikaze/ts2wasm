@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Docs hygiene: backticked scripts/ paths in docs must exist in the repo.
 #
-# Usage: scripts/check_docs_health.sh
+# Usage: scripts/manager check-docs-health
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${0}")/../.." && pwd)"

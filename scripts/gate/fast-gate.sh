@@ -2,7 +2,7 @@
 # Single local gate: fmt + script syntax + issue queue + coverage matrix check + nextest (optional).
 #
 # Usage:
-#   scripts/check_fast_gate.sh [--skip-nextest]
+#   scripts/manager check-fast-gate [--skip-nextest]
 #
 # Environment:
 #   TS2WASM_FAST_GATE_SKIP_NEXTEST=1  Same as --skip-nextest (for pre-push).
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
     --skip-nextest) skip_nextest=1 ;;
     -h|--help)
       ts2wasm_usage "scripts/gate/fast-gate.sh" \
-        "Runs cargo fmt --all --check, scripts/check/shell-syntax.sh, scripts/check/issue-queue.py, scripts/gen/coverage-matrix.py --check, and cargo nextest run (unless skipped)." \
+        "Runs cargo fmt --all --check, scripts/check/shell-syntax.sh, scripts/check/issue-health.py, scripts/gen/coverage-matrix.py --check, and cargo nextest run (unless skipped)." \
         "Options:" \
         "  --skip-nextest   Skip cargo nextest (faster; use in pre-push with targeted tests)."
       exit 0
@@ -36,7 +36,7 @@ while [[ $# -gt 0 ]]; do
     *)
       ts2wasm_log "unknown option: $1"
       ts2wasm_usage "scripts/gate/fast-gate.sh" \
-        "Runs cargo fmt --all --check, scripts/check/shell-syntax.sh, scripts/check/issue-queue.py, scripts/gen/coverage-matrix.py --check, and cargo nextest run (unless skipped)."
+        "Runs cargo fmt --all --check, scripts/check/shell-syntax.sh, scripts/check/issue-health.py, scripts/gen/coverage-matrix.py --check, and cargo nextest run (unless skipped)."
       exit 1
       ;;
   esac
@@ -44,6 +44,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 ts2wasm_require_cmds cargo bash
+PYTHON_BIN="${PYTHON_BIN:-python3}"
 
 run() {
   ts2wasm_log "check_fast_gate: $*"
@@ -52,8 +53,8 @@ run() {
 
 run cargo fmt --all --check
 run bash "${TS2WASM_REPO_ROOT}/scripts/check/shell-syntax.sh"
-run python3 "${TS2WASM_REPO_ROOT}/scripts/check/issue-queue.py"
-run python3 "${TS2WASM_REPO_ROOT}/scripts/gen/coverage-matrix.py" --check
+run "$PYTHON_BIN" "${TS2WASM_REPO_ROOT}/scripts/check/issue-health.py"
+run "$PYTHON_BIN" "${TS2WASM_REPO_ROOT}/scripts/gen/coverage-matrix.py" --check
 
 if [[ "$skip_nextest" -eq 0 ]]; then
   run cargo nextest run

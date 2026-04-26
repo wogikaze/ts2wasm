@@ -2,7 +2,7 @@
 # Compare capability manifest "imports" with wasm module imports (wasm-tools print).
 #
 # Usage:
-#   scripts/check_manifest_imports.sh [--fixture PATH.ts]
+#   scripts/manager check-manifest-imports [--fixture PATH.ts]
 #
 # Default fixture: fixtures/basics-hello/hello.ts (pure WASI console.log).
 #
@@ -15,8 +15,8 @@ cd "$repo_root"
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/check_manifest_imports.sh [--fixture PATH.ts]
-  scripts/check_manifest_imports.sh PATH.ts
+  scripts/manager check-manifest-imports [--fixture PATH.ts]
+  scripts/manager check-manifest-imports PATH.ts
 
 A single path ending in .ts may be given without --fixture.
 Default fixture: fixtures/basics-hello/hello.ts
@@ -31,7 +31,7 @@ if [[ "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
 fi
 
 fixture="fixtures/basics-hello/hello.ts"
-# Optional positional:  scripts/check_manifest_imports.sh  fixtures/foo.ts
+# Optional positional:  scripts/manager check-manifest-imports  fixtures/foo.ts
 if [[ -n "${1:-}" && "$1" == *.ts && -f "$1" && "$1" != --* ]]; then
   fixture="$1"
   shift

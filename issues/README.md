@@ -29,7 +29,7 @@ Use these locations consistently:
 - a `**Depends on**` id has no `issues/open/NNN-*.md` or `issues/done/NNN-*.md`;
 - a backticked path under `crates/`, `docs/`, `fixtures/`, `scripts/`, `reference/`, `issues/`, `reports/`, `.github/`, `.agents/`, or `artifacts/` points to a path that does not exist (placeholders with `...` and similar are skipped);
 - a JSON file under `.agents/state/` is not valid JSON (when `jq` is installed);
-- `issues/index.md` fails `scripts/manager check-issue-index` (stale generated tables or an open id missing from Ready/Blocked).
+- `issues/index.md` fails `scripts/manager check-issue-health` (stale generated tables or an open id missing from Ready/Blocked). `scripts/manager check-issue-index` remains a compatibility alias.
 
 `pre-commit` runs the generator so `issues/index.md` is refreshed and staged when needed, then runs this script.
 

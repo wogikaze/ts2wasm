@@ -101,7 +101,7 @@ echo "" >&2
 echo "== required repo gates (script files) ==" >&2
 for f in \
   scripts/check/shell-syntax.sh \
-  scripts/check/issue-queue.py \
+  scripts/check/issue-health.py \
   scripts/gen/coverage-matrix.py \
   scripts/gate/fast-gate.sh \
   scripts/check/manifest-imports.sh \
@@ -123,7 +123,7 @@ run_check "P0: check_wasm_validation" bash scripts/check/wasm-validation.sh
 echo "" >&2
 echo "== run aggregate gates (fast gate without nextest first) ==" >&2
 # fmt + scripts + issues + coverage matrix (nextest run separately so we can flag RUSTFLAGS once)
-run_check "check_fast_gate --skip-nextest" bash scripts/gate/fast-gate.sh --skip-nextest
+run_check "scripts/manager check-fast-gate --skip-nextest" bash scripts/gate/fast-gate.sh --skip-nextest
 
 if [[ "${TS2WASM_NEXTEST_DENY_WARNINGS:-0}" == "1" ]]; then
   echo "harness: TS2WASM_NEXTEST_DENY_WARNINGS=1 (RUSTFLAGS=-D warnings)" >&2
@@ -135,11 +135,11 @@ fi
 
 echo "" >&2
 echo "== additional custom harnesses ==" >&2
-run_check "check_manifest_imports" bash scripts/check/manifest-imports.sh
-run_check "check_test_records_schema (empty)" bash -c ': | scripts/check/test-records-schema.sh'
-run_check "check_fixture_catalog" bash scripts/check/fixture-catalog.sh
-run_check "check_architecture_rules" bash scripts/check/architecture-rules.sh
-run_check "check_compiler_diagnostics" bash scripts/check/compiler-diagnostics.sh
+run_check "scripts/manager check-manifest-imports" bash scripts/check/manifest-imports.sh
+run_check "scripts/manager check-test-records-schema (empty)" bash -c ': | scripts/check/test-records-schema.sh'
+run_check "scripts/manager check-fixture-catalog" bash scripts/check/fixture-catalog.sh
+run_check "scripts/manager check-architecture-rules" bash scripts/check/architecture-rules.sh
+run_check "scripts/manager check-compiler-diagnostics" bash scripts/check/compiler-diagnostics.sh
 
 echo "" >&2
 if [[ "$fail" -eq 0 ]]; then

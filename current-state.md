@@ -27,7 +27,7 @@ mise run check-fixture-catalog
 mise run check-architecture-rules
 mise run check-compiler-diagnostics
 mise run update-issue-index --check
-mise run check-issue-index
+scripts/manager check-issue-health
 ```
 
 reference coverage を更新する場合（実測値を変えるとき）:
@@ -70,7 +70,7 @@ mise run update-coverage-matrix
 - runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
 - reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run check-coverage`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
-- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `mise run update-issue-index` が生成、`mise run check-issue-index` で整合検証）
+- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `scripts/manager update-issue-index` が生成、`scripts/manager check-issue-health` で整合検証。`scripts/manager check-issue-index` は互換 alias）
 - harness scripts（`mise run check-fast-gate`、`mise run check-manifest-imports`、`mise run check-test-records-schema`、`mise run check-fixture-catalog`、`mise run check-architecture-rules`、`mise run check-compiler-diagnostics`；pre-push は `.githooks/pre-push`）
 
 ## Known blockers / gaps

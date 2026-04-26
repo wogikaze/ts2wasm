@@ -243,7 +243,7 @@ Issue files are the source of truth for work items. The generated section below 
 
 ## Index generation contract
 
-Run `scripts/manager update-issue-index` after adding, closing, or moving issues. CI and agents should run `scripts/manager update-issue-index --check` and `scripts/manager check-issue-index`.
+Run `scripts/manager update-issue-index` after adding, closing, or moving issues. CI and agents should run `scripts/manager update-issue-index --check` and `scripts/manager check-issue-health`. `scripts/manager check-issue-index` remains a compatibility alias.
 
 A future generator replaces only the regions between the `<!-- generated:*:start -->` / `<!-- generated:*:end -->` markers.
 

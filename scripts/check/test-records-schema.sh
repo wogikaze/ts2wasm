@@ -2,9 +2,9 @@
 # Validate JSONL TestRecord lines (suite, case, target, status + required reason/tracking).
 #
 # Usage:
-#   scripts/check_test_records_schema.sh [file.jsonl]
-#   some-runner | scripts/check_test_records_schema.sh
-#   some-runner | scripts/check_test_records_schema.sh -
+#   scripts/manager check-test-records-schema [file.jsonl]
+#   some-runner | scripts/manager check-test-records-schema
+#   some-runner | scripts/manager check-test-records-schema -
 #
 # When no file arg or file is "-", reads stdin.
 #
@@ -15,8 +15,8 @@ _self="${BASH_SOURCE[0]}"
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/check_test_records_schema.sh [file.jsonl|-]
-  scripts/check_test_records_schema.sh --self-test
+  scripts/manager check-test-records-schema [file.jsonl|-]
+  scripts/manager check-test-records-schema --self-test
 
 One JSON object per line. Each line must include suite, case, target, status.
 status must be one of: pass fail unsupported blocked skip-with-reason

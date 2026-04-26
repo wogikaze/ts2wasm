@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Lightweight dependency-direction checks (complement to docs/12 + ast-grep rules).
 #
-# Usage: scripts/check_architecture_rules.sh
+# Usage: scripts/manager check-architecture-rules
 set -euo pipefail
 
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/check_architecture_rules.sh
+  scripts/manager check-architecture-rules
 
 Current checks:
   - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).

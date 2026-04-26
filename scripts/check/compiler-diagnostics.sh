@@ -4,13 +4,13 @@
 # Policy (incremental): backend/, runtime/, and main.rs must not contain `panic!(`.
 # Tests and lib.rs monolith may still use panics inside #[cfg(test)]; tighten over time.
 #
-# Usage: scripts/check_compiler_diagnostics.sh
+# Usage: scripts/manager check-compiler-diagnostics
 set -euo pipefail
 
 usage() {
   cat <<'USAGE'
 Usage:
-  scripts/check_compiler_diagnostics.sh
+  scripts/manager check-compiler-diagnostics
 
 Fails if `panic!(` appears under crates/cli/src/backend, crates/cli/src/runtime, or main.rs.
 USAGE

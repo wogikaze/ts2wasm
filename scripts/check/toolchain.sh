@@ -2,7 +2,7 @@
 # Verify build/test toolchain commands exist (for CI, agents, and new machines).
 # Does not run compile/tests — only "can we invoke the tools?".
 #
-# Usage: scripts/check_toolchain.sh
+# Usage: scripts/manager check-toolchain
 # Exit: 0 if all required are present, 1 otherwise
 set -euo pipefail
 

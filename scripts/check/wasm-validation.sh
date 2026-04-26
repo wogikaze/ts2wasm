@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build representative fixtures to wasm, then `wasm tools validate` each binary.
 #
-# Usage: scripts/check_wasm_validation.sh
+# Usage: scripts/manager check-wasm-validation
 # Optional: TS2WASM_VALIDATE_FIXTURES="f1 f2" (space-separated, repo-root paths)
 # Dependencies: cargo, wasm-tools
 set -euo pipefail
@@ -14,7 +14,7 @@ if ! command -v wasm-tools >/dev/null 2>&1; then
   exit 1
 fi
 
-# Optional:  scripts/check_wasm_validation.sh  path/to/a.ts [more.ts ...]
+# Optional:  scripts/manager check-wasm-validation  path/to/a.ts [more.ts ...]
 default_list=(
   fixtures/basics-hello/hello.ts
   fixtures/primitives-control-flow/number.ts
