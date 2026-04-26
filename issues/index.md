@@ -25,7 +25,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
 | 030 | Implement instanceof operator | feature | runtime/semantics | implementation-ready | P1 | 016 | Implement instanceof operator |
 | 036 | Implement arrow function | feature | frontend/semantics | implementation-ready | P1 | 037 | Implement arrow function |
-| 041 | Implement template literals | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literal syntax with string interpolation |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
