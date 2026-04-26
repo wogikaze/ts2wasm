@@ -10,6 +10,11 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 ## Table of Contents
 
 - [Manager: auto-execute after making changes](#manager-auto-execute-after-making-changes-required)
+- [Manager / Entry Point Rules](#manager--entry-point-rules)
+- [Migration / Old Reference Rules](#migration--old-reference-rules)
+- [Issue / Index Script Rules](#issue--index-script-rules)
+- [Agent State and Run Report Rules](#agent-state-and-run-report-rules)
+- [Repo Root and Script Location Rules](#repo-root-and-script-location-rules)
 - [Scope](#scope)
 - [Core Rules](#core-rules)
 - [Fixture Boundary Rules](#fixture-boundary-rules)
@@ -33,6 +38,155 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 - For coverage/ CI scripts: also run the same command family you would run in `scripts` docs (e.g. `scripts/manager reference-coverage` with a small limit when that script supports it)
 - `mise tasks` to confirm your new `mise run <task>` appears after you add it to `mise.toml`
 - **Auto-commit changes after verification passes** (commit message based on change description)
+
+## Manager / Entry Point Rules
+
+`scripts/manager` is the canonical executable entrypoint.
+`scripts/manager.py` may contain the implementation, but callers must use `scripts/manager`.
+
+Required rules:
+
+1. When adding a command, register it in all applicable places:
+   - `scripts/manager.py`
+   - `mise.toml`
+   - docs / skills that mention the command
+   - CI workflow path filters if the command affects CI behavior
+2. Keep `scripts/manager` as a thin executable shim:
+   - it must exist
+   - it must be executable
+   - it must dispatch to `scripts/manager.py`
+3. Do not document direct calls to implementation files unless the file is intentionally public.
+   - Prefer: `scripts/manager check-issue-health`
+   - Avoid: `python scripts/check/issue-health.py`
+4. After manager or script command changes, run:
+   - `scripts/manager check-scripts`
+   - `scripts/manager check-repo-smoke`
+   - `scripts/manager check-agent-state`
+5. After adding a `mise.toml` task, run:
+   - `mise tasks`
+
+## Migration / Old Reference Rules
+
+Script migrations must remove stale command references in the same change.
+
+Before finishing any script rename, `.sh` to `.py` migration, or manager command rename, run:
+
+```sh
+rg 'scripts/check_.*\.sh|update_issue_index|issue-queue\.py|update-issue-index\.sh|fixture-differential\.sh|check_fast_gate\.sh|check_manifest_imports\.sh' .
+```
+
+If any hit remains, classify it explicitly:
+
+- valid compatibility wrapper
+- historical note in completed issue
+- stale reference to fix now
+
+Do not leave stale references in:
+
+- `.agents/skills/**`
+- `.agents/prompts/**`
+- `.github/workflows/**`
+- `.githooks/**`
+- `README.md`
+- `AGENTS.md`
+- `issues/open/**`
+- `issues/index.md`
+
+## Issue / Index Script Rules
+
+Issue queue scripts are infrastructure-critical. Do not let checker and generator drift.
+
+Required rules:
+
+1. Shared parsing/rendering must live in `scripts/lib/`.
+2. `scripts/check/issue-health.py` and `scripts/gen/update-issue-index.py` must use the same parser and table renderer.
+3. `scripts/manager update-issue-index --check` must fail if generated table content differs, not only if IDs are missing.
+4. `scripts/manager check-issue-health` must verify:
+   - duplicate IDs
+   - open/done conflicts
+   - missing dependencies
+   - stale generated index
+   - missing repo-owned backticked paths
+5. `reference/**` paths are external corpus references, not normal repo-owned paths. Do not fail issue health solely because `reference/**` is not cloned.
+6. YAML issue frontmatter support is limited to the documented single-line format unless a real YAML parser is introduced.
+
+Allowed issue frontmatter shape:
+
+```yaml
+---
+id: 026
+title: "Migrate backend module to backend-wasm crate"
+type: refactor
+area: backend
+class: implementation-ready
+priority: P1
+depends_on: [024, 025]
+---
+```
+
+Unsupported unless explicitly implemented:
+
+```yaml
+depends_on:
+  - 024
+  - 025
+```
+
+## Agent State and Run Report Rules
+
+Autonomous-loop scripts must preserve auditable state.
+
+Required preflight:
+
+```sh
+scripts/manager check-agent-state
+scripts/manager check-repo-smoke
+```
+
+Rules:
+
+1. `check-agent-state` must fail when required schema validation dependencies are missing.
+2. `jsonschema` must be available through the documented dev environment.
+3. State schemas and examples must stay consistent.
+4. Run/cycle scripts must write under `reports/runs/<run_id>/`.
+5. Report generators must not overwrite unrelated runs.
+6. Human-readable cycle notes and machine-readable test reports are separate artifacts.
+
+Minimum run directory shape:
+
+```text
+reports/runs/<run_id>/
+  cycle_report.md
+  test_report.json        # when command execution is captured
+  commands/
+    001.stdout
+    001.stderr
+```
+
+## Repo Root and Script Location Rules
+
+Repo-root mistakes are high-risk.
+
+Required rules:
+
+1. Every script must resolve repo root from its own file location or use manager-provided repo root.
+2. Scripts under `scripts/check/`, `scripts/gate/`, `scripts/gen/`, `scripts/run/`, `scripts/report/`, `scripts/perf/`, `scripts/dev/` must not assume they are one level below repo root.
+3. For shell scripts under `scripts/<tier>/foo.sh`, use:
+
+```bash
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$repo_root"
+```
+
+1. For shell scripts under `scripts/foo.sh`, use:
+
+```bash
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+```
+
+1. For Python scripts, use `Path(__file__).resolve().parents[N]` and verify the expected root contains `README.md` or `.git`.
+2. `scripts/lib/` files are helpers. They are imported or sourced, not executed directly.
 
 Use this skill only for scripts/ changes.
 
@@ -213,37 +367,59 @@ Use the strictest relevant validation group below.
 
 ## Validation
 
-Always run:
+Always run the smallest valid set, but never stop at syntax-only checks.
 
-- cargo fmt --all --check
-- scripts/check/shell-syntax.sh（`bash -n` のみ。syntax OK は runtime OK を意味しない）
-- bash -n <touched-script>
+For any script change:
 
-Run the touched script with a representative command（`shell-syntax.sh` はこれに代わらない）。
+```sh
+scripts/manager check-scripts
+bash -n <touched-shell-script>   # only when a shell script changed
+scripts/manager check-repo-smoke
+```
 
-Examples:
+For manager, issue, state, or generated-index scripts:
 
-- scripts/manager reference-coverage test262 --limit 1
-- scripts/manager reference-coverage tsc --limit 1
-- scripts/manager reference-coverage tsgo --limit 1
-- scripts/manager check-coverage-matrix
-- scripts/manager check-fast-gate --skip-nextest
-- scripts/manager check-manifest-imports
-- scripts/manager check-test-records-schema <file.jsonl>
-- scripts/manager check-fixture-catalog
-- scripts/manager check-architecture-rules
-- scripts/manager check-compiler-diagnostics
-- scripts/manager check-coverage <base-doc> <current-doc>
-- scripts/manager test262 --sample 1 --jobs 1
-- scripts/manager check-regression <results.jsonl> --baseline <baseline.json>
-- scripts/manager report-differential --markdown <tmp.md> --html <tmp.html>
+```sh
+scripts/manager update-issue-index --check
+scripts/manager check-issue-health
+scripts/manager check-agent-state
+scripts/manager check-repo-smoke
+```
 
-Run tests:
+For CI workflow changes:
 
-- cargo nextest run for impacted tests at minimum
-- cargo nextest run when output contracts, fixture references, coverage classification, or gate behavior changes
+```sh
+scripts/manager check-repo-smoke
+scripts/manager check-fast-gate --skip-nextest
+```
 
-When the touched script consumes fixtures, also run at least one fixture-heavy or differential path that exercises the changed reference logic.
+For coverage/reference/test262 scripts:
+
+```sh
+scripts/manager update-coverage-matrix --check
+scripts/manager check-coverage-gate <base-doc> <current-doc>
+scripts/manager test262 --sample 1 --jobs 1
+```
+
+For scripts that produce JSONL/TestRecord:
+
+```sh
+scripts/manager check-test-records-schema <file.jsonl>
+```
+
+For scripts that consume fixtures:
+
+```sh
+scripts/manager check-fixture-catalog
+scripts/manager check-fast-gate --skip-nextest
+```
+
+For Rust-impacting script changes:
+
+```sh
+scripts/manager fmt
+cargo nextest run
+```
 
 ## Common Traps
 
@@ -265,6 +441,19 @@ When the touched script consumes fixtures, also run at least one fixture-heavy o
 - Reference corpus missing locally is treated as all-pass
 - Parallel jobs produce nondeterministic machine-readable output
 - Benchmark script changes measurement conditions without recording metadata
+- `scripts/manager.py` exists but `scripts/manager` shim is missing
+- docs/CI/hooks call `scripts/manager` but only direct Python entrypoints were tested
+- `.sh` script is migrated to `.py` but workflow path filters still watch the old `.sh`
+- checker and generator parse the same file with different logic
+- issue index check only checks ID presence, not table content drift
+- `reference/**` is treated as required repo-owned content
+- `check-agent-state` silently passes without schema validation dependency
+- `repo_root` is computed as `scripts/` instead of repository root
+- `source scripts/lib/common.sh` is relative to the wrong tier directory
+- `replace_generated_block()` drops final newline and causes endless stale-index diffs
+- generated block marker absence is ignored
+- syntax check passes but representative runtime command was never executed
+- run report directory is created but no machine-readable command result is captured
 
 ## Related Skills
 

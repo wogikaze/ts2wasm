@@ -10,6 +10,11 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 ## 目次
 
 - [Manager: スクリプト変更後に自動実行](#manager-スクリプト変更後に自動実行必須)
+- [Manager / Entry Point Rules](#manager--entry-point-rules)
+- [Migration / Old Reference Rules](#migration--old-reference-rules)
+- [Issue / Index Script Rules](#issue--index-script-rules)
+- [Agent State and Run Report Rules](#agent-state-and-run-report-rules)
+- [Repo Root and Script Location Rules](#repo-root-and-script-location-rules)
 - [スコープ](#スコープ)
 - [コアルール](#コアルール)
 - [フィクスチャ境界ルール](#フィクスチャ境界ルール)
@@ -32,6 +37,155 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 - `issues`パスまたはmanagerに触れた後: `scripts/manager check-repo-smoke`
 - カバレッジ/CIスクリプトの場合: そのスクリプトの`scripts`ドキュメントで実行するのと同じコマンドファミリーも実行（例: そのスクリプトがサポートする場合、小さなlimitで`scripts/manager reference-coverage`）
 - 新しい`mise run <task>`が`mise.toml`に追加した後に現れることを`mise tasks`で確認
+
+## Manager / Entry Point Rules
+
+`scripts/manager` は正規の実行可能エントリーポイント。
+`scripts/manager.py` は実装を含むかもしれないが、呼び出し側は `scripts/manager` を使用しなければならない。
+
+必須ルール:
+
+1. コマンドを追加するとき、すべての適用可能な場所に登録:
+   - `scripts/manager.py`
+   - `mise.toml`
+   - コマンドを言及する docs / skills
+   - CI workflow path filters（コマンドがCI振る舞いに影響する場合）
+2. `scripts/manager` を薄い実行可能shimとして保持:
+   - 存在しなければならない
+   - 実行可能でなければならない
+   - `scripts/manager.py` にディスパッチしなければならない
+3. ファイルが意図的に公開でない限り、実装ファイルへの直接呼び出しをドキュメント化しない。
+   - 推奨: `scripts/manager check-issue-health`
+   - 避ける: `python scripts/check/issue-health.py`
+4. manager またはスクリプトコマンド変更後、実行:
+   - `scripts/manager check-scripts`
+   - `scripts/manager check-repo-smoke`
+   - `scripts/manager check-agent-state`
+5. `mise.toml` タスク追加後、実行:
+   - `mise tasks`
+
+## Migration / Old Reference Rules
+
+スクリプト移行は同じ変更で古いコマンド参照を削除しなければならない。
+
+スクリプトリネーム、`.sh` から `.py` への移行、managerコマンドリネームを完了する前に実行:
+
+```sh
+rg 'scripts/check_.*\.sh|update_issue_index|issue-queue\.py|update-issue-index\.sh|fixture-differential\.sh|check_fast_gate\.sh|check_manifest_imports\.sh' .
+```
+
+ヒットが残る場合、明示的に分類:
+
+- 有効な互換性ラッパー
+- 完了したissueの歴史的注記
+- 今すぐ修正すべき古い参照
+
+以下に古い参照を残さない:
+
+- `.agents/skills/**`
+- `.agents/prompts/**`
+- `.github/workflows/**`
+- `.githooks/**`
+- `README.md`
+- `AGENTS.md`
+- `issues/open/**`
+- `issues/index.md`
+
+## Issue / Index Script Rules
+
+Issueキュースクリプトはインフラ重要。checker と generator を drift させてはならない。
+
+必須ルール:
+
+1. 共有解析/レンダリングは `scripts/lib/` に置かなければならない。
+2. `scripts/check/issue-health.py` と `scripts/gen/update-issue-index.py` は同じ parser と table renderer を使用しなければならない。
+3. `scripts/manager update-issue-index --check` は生成テーブル内容が異なる場合に失敗しなければならない（ID欠落のみではない）。
+4. `scripts/manager check-issue-health` は以下を検証しなければならない:
+   - 重複ID
+   - open/done競合
+   - 欠落依存
+   - 古い生成index
+   - 欠落repo-owned backticked paths
+5. `reference/**` パスは外部コーパス参照であり、通常のrepo-ownedパスではない。`reference/**` がcloneされていないだけで issue health を失敗させてはならない。
+6. YAML issue frontmatterサポートはドキュメント化された単一行形式に制限される（本物のYAML parserが導入されない限り）。
+
+許可されるissue frontmatter形状:
+
+```yaml
+---
+id: 026
+title: "Migrate backend module to backend-wasm crate"
+type: refactor
+area: backend
+class: implementation-ready
+priority: P1
+depends_on: [024, 025]
+---
+```
+
+明示的に実装されない限り未サポート:
+
+```yaml
+depends_on:
+  - 024
+  - 025
+```
+
+## Agent State and Run Report Rules
+
+Autonomous-loopスクリプトは監査可能なstateを保持しなければならない。
+
+必須preflight:
+
+```sh
+scripts/manager check-agent-state
+scripts/manager check-repo-smoke
+```
+
+ルール:
+
+1. `check-agent-state` は必須schema検証依存が欠落している場合に失敗しなければならない。
+2. `jsonschema` はドキュメント化されたdev環境を通じて利用可能でなければならない。
+3. State schemaとexampleは一貫性を保たなければならない。
+4. Run/cycleスクリプトは `reports/runs/<run_id>/` の下に書かなければならない。
+5. Report generatorは無関係なrunを上書きしてはならない。
+6. 人間可読cycleノートと機械可読test reportは別のアーティファクト。
+
+最小run directory形状:
+
+```text
+reports/runs/<run_id>/
+  cycle_report.md
+  test_report.json        # コマンド実行がキャプチャされるとき
+  commands/
+    001.stdout
+    001.stderr
+```
+
+## Repo Root and Script Location Rules
+
+Repo-rootミスは高リスク。
+
+必須ルール:
+
+1. すべてのスクリプトは独自のファイル位置からrepo rootを解決するか、manager提供repo rootを使用しなければならない。
+2. `scripts/check/`、`scripts/gate/`、`scripts/gen/`、`scripts/run/`、`scripts/report/`、`scripts/perf/`、`scripts/dev/` の下のスクリプトはrepo rootの一つ下にあると仮定してはならない。
+3. `scripts/<tier>/foo.sh` の下のシェルスクリプトの場合、使用:
+
+```bash
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+cd "$repo_root"
+```
+
+1. `scripts/foo.sh` の下のシェルスクリプトの場合、使用:
+
+```bash
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+```
+
+1. Pythonスクリプトの場合、`Path(__file__).resolve().parents[N]` を使用し、期待されるrootが `README.md` または `.git` を含むことを検証。
+2. `scripts/lib/` ファイルはヘルパー。インポートまたはsourceされ、直接実行されない。
 
 このskillはscripts/変更のみに使用。
 
@@ -211,37 +365,59 @@ JSONL TestRecord出力の場合:
 
 ## 検証
 
-常に実行:
+常に最小の有効セットを実行するが、syntax-onlyチェックで止まらない。
 
-- cargo fmt --all --check
-- scripts/check/shell-syntax.sh（`bash -n`のみ。syntax OKはruntime OKを意味しない）
-- bash -n <touched-script>
+スクリプト変更の場合:
 
-代表的なコマンドで触れたスクリプトを実行（`shell-syntax.sh`はこれに代わらない）。
+```sh
+scripts/manager check-scripts
+bash -n <touched-shell-script>   # シェルスクリプトが変更された場合のみ
+scripts/manager check-repo-smoke
+```
 
-例:
+manager、issue、state、または生成indexスクリプトの場合:
 
-- scripts/manager reference-coverage test262 --limit 1
-- scripts/manager reference-coverage tsc --limit 1
-- scripts/manager reference-coverage tsgo --limit 1
-- scripts/manager check-coverage-matrix
-- scripts/manager check-fast-gate --skip-nextest
-- scripts/manager check-manifest-imports
-- scripts/manager check-test-records-schema <file.jsonl>
-- scripts/manager check-fixture-catalog
-- scripts/manager check-architecture-rules
-- scripts/manager check-compiler-diagnostics
-- scripts/manager check-coverage <base-doc> <current-doc>
-- scripts/manager test262 --sample 1 --jobs 1
-- scripts/manager check-regression <results.jsonl> --baseline <baseline.json>
-- scripts/manager report-differential --markdown <tmp.md> --html <tmp.html>
+```sh
+scripts/manager update-issue-index --check
+scripts/manager check-issue-health
+scripts/manager check-agent-state
+scripts/manager check-repo-smoke
+```
 
-テストを実行:
+CI workflow変更の場合:
 
-- 影響を受けるテストの少なくともcargo nextest run
-- 出力契約、フィクスチャ参照、カバレッジ分類、またはゲート振る舞いが変更された場合cargo nextest run
+```sh
+scripts/manager check-repo-smoke
+scripts/manager check-fast-gate --skip-nextest
+```
 
-触れたスクリプトがフィクスチャを消費する場合、変更された参照ロジックを行使する少なくとも1つのフィクスチャ重視または差分パスも実行。
+coverage/reference/test262スクリプトの場合:
+
+```sh
+scripts/manager update-coverage-matrix --check
+scripts/manager check-coverage-gate <base-doc> <current-doc>
+scripts/manager test262 --sample 1 --jobs 1
+```
+
+JSONL/TestRecordを生成するスクリプトの場合:
+
+```sh
+scripts/manager check-test-records-schema <file.jsonl>
+```
+
+フィクスチャを消費するスクリプトの場合:
+
+```sh
+scripts/manager check-fixture-catalog
+scripts/manager check-fast-gate --skip-nextest
+```
+
+Rustに影響するスクリプト変更の場合:
+
+```sh
+scripts/manager fmt
+cargo nextest run
+```
 
 ## 一般的な罠
 
@@ -263,6 +439,19 @@ JSONL TestRecord出力の場合:
 - ローカルで参照コーパスが欠落している場合、すべてパスとして扱われる
 - 並列ジョブが非決定論的な機械可読出力を生成する
 - ベンチマークスクリプトがメタデータを記録せずに測定条件を変更
+- `scripts/manager.py` は存在するが `scripts/manager` shim が欠落
+- docs/CI/hooks は `scripts/manager` を呼ぶが直接Pythonエントリーポイントのみがテストされた
+- `.sh` スクリプトは `.py` に移行されたが workflow path filters は古い `.sh` を監視
+- checker と generator が同じファイルを異なるロジックでparse
+- issue index check はID存在のみチェックし、テーブル内容driftをチェックしない
+- `reference/**` が必須repo-ownedコンテンツとして扱われる
+- `check-agent-state` はschema検証依存なしで静かにpass
+- `repo_root` がrepository rootではなく `scripts/` として計算される
+- `source scripts/lib/common.sh` が誤ったtierディレクトリに相対的
+- `replace_generated_block()` が最終改行を落とし、無限stale-index diffを引き起こす
+- 生成block marker不在が無視される
+- syntax check はpassするが代表的runtimeコマンドは一度も実行されない
+- run report directory は作成されるが機械可読コマンド結果はキャプチャされない
 
 ## 関連スキル
 
