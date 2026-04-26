@@ -1,8 +1,8 @@
 {
   "id": "014",
   "title": "Implement dynamic property key support",
-  "status": "selected",
-  "issue_path": "issues/open/014-implement-dynamic-property-key-support.md",
+  "status": "done",
+  "issue_path": "issues/done/014-implement-dynamic-property-key-support.md",
   "scope": {
     "allowed_files": [
       "crates/frontend/src/ast.rs",

@@ -9,6 +9,15 @@
 
 ## Log
 
+### 2026-04-26T19:20:00Z — close issue 014
+
+- **When**: 2026-04-26T19:20:00Z
+- **State**: RETRO
+- **Decision**: Close issue 014 and move it to `issues/done/014-implement-dynamic-property-key-support.md`.
+- **Rationale**: Dynamic property key read/write behavior is implemented through runtime string conversion in `property_set`/`property_get`, covered by fixtures and differential tests. The branch also includes runtime-linking coverage and full `nextest` verification, with only an unrelated missing test262 reference path in this environment.
+- **Reversible?**: no
+- **Follow-up**: none
+
 ### 2026-04-26T14:45:00Z — start issue 007
 
 - **When**: 2026-04-26T14:45:00Z
