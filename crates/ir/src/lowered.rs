@@ -879,7 +879,7 @@ impl<'a> Resolver<'a> {
                         index: Box::new(self.lower_expr(index)?),
                     })
                 }
-            },
+            }
             ResolvedExpr::Array(elements) => {
                 let lowered = elements
                     .iter()
