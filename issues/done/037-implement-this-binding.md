@@ -27,10 +27,10 @@ The `this` keyword is not implemented. It is essential for method calls and obje
 
 In scope:
 
-- [ ] Add `this` to lexer/parser
-- [ ] Implement call site receiver binding
-- [ ] Implement constructor `this` binding
-- [ ] Add fixtures for this behavior
+- [x] Add `this` to lexer/parser
+- [x] Implement call site receiver binding
+- [x] Implement constructor `this` binding
+- [x] Add fixtures for this behavior
 
 Out of scope:
 
@@ -50,10 +50,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `this` parses correctly
-- [ ] `this` binds to call site receiver
-- [ ] Fixtures cover this behavior
-- [ ] No regression in existing fixtures
+- [x] `this` parses correctly
+- [x] `this` binds to call site receiver
+- [x] Fixtures cover this behavior
+- [x] No regression in existing fixtures
 
 ## Validation
 

@@ -903,6 +903,7 @@ impl WatEmitter<'_> {
     (local $pk_raw i32)
     (local $pk_ptr i32)
     (local $pk_len i32)
+    (local $proto i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (i32.const {undefined}))))
@@ -928,6 +929,11 @@ impl WatEmitter<'_> {
               (then
                 (return (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))))))
         (br $scan)))
+    ;; Check prototype chain
+    (local.set $proto (i32.load (i32.add (local.get $base) (i32.const {proto_offset}))))
+    (if (i32.ne (local.get $proto) (i32.const {null}))
+      (then
+        (return (call $property_get (local.get $proto) (local.get $key_ptr) (local.get $key_len)))))
     (i32.const {undefined}))
 "#,
             tag_mask = ValueTag::TAG_MASK,
@@ -937,9 +943,11 @@ impl WatEmitter<'_> {
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
+            proto_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
+            null = ValueTag::NULL,
         ));
     }
 

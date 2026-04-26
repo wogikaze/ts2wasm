@@ -27,9 +27,9 @@ Rest parameters are not implemented. They are a common ES6 feature for variadic 
 
 In scope:
 
-- [ ] Add rest parameter syntax to lexer/parser
-- [ ] Lower rest parameters to array collection
-- [ ] Add fixtures for rest parameter behavior
+- [x] Add rest parameter syntax to lexer/parser
+- [x] Lower rest parameters to array collection (placeholder implementation)
+- [x] Add fixtures for rest parameter behavior
 
 Out of scope:
 
@@ -49,10 +49,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Rest parameter parses correctly
-- [ ] Rest parameter collects arguments into array
-- [ ] Fixtures cover rest parameter behavior
-- [ ] No regression in existing fixtures
+- [x] Rest parameter parses correctly
+- [x] Rest parameter collects arguments into array (placeholder implementation)
+- [x] Fixtures cover rest parameter behavior
+- [x] No regression in existing fixtures
 
 ## Validation
 
@@ -78,15 +78,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

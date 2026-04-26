@@ -138,8 +138,11 @@ pub enum ResolvedExpr {
         class_name: String,
         args: Vec<ResolvedExpr>,
     },
-    /// A require("specifier") call expression.
     ModuleLoad {
         specifier: String,
+    },
+    ArrowFn {
+        params: Vec<String>,
+        body: Box<ResolvedExpr>,
     },
 }

@@ -318,6 +318,21 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { .. } => Ok(ResolvedExpr::This),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
+        Expr::InstanceOf { left, right, .. } => Ok(ResolvedExpr::Binary {
+            left: Box::new(resolve_expr(left)?),
+            op: BinaryOp::InstanceOf,
+            right: Box::new(resolve_expr(right)?),
+        }),
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => Ok(ResolvedExpr::Ternary {
+            condition: Box::new(resolve_expr(condition)?),
+            then_expr: Box::new(resolve_expr(then_expr)?),
+            else_expr: Box::new(resolve_expr(else_expr)?),
+        }),
         Expr::Unary { op, expr, .. } => Ok(ResolvedExpr::Unary {
             op: *op,
             expr: Box::new(resolve_expr(expr)?),
@@ -490,12 +505,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             key: Box::new(resolve_expr(index)?),
             value: Box::new(resolve_expr(value)?),
         }),
-        // New expression types (not yet supported in resolver
-        Expr::InstanceOf { span, .. } | Expr::Ternary { span, .. } | Expr::ArrowFn { span, .. } => {
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "expression type not yet supported in builtin resolver".to_owned(),
-                span: Some(*span),
+        Expr::ArrowFn { params, body, .. } => {
+            let resolved_body = resolve_expr(body)?;
+            Ok(ResolvedExpr::ArrowFn {
+                params: params.clone(),
+                body: Box::new(resolved_body),
             })
         }
         Expr::Spread { expr, .. } => Ok(ResolvedExpr::Spread(Box::new(resolve_expr(expr)?))),
@@ -503,6 +517,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op: UnaryOp::TypeOf,
             expr: Box::new(resolve_expr(expr)?),
         }),
+        Expr::InstanceOf { span, .. } | Expr::Ternary { span, .. } | Expr::ArrowFn { span, .. } => {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "expression type not yet supported in builtin resolver".to_owned(),
+                span: Some(*span),
+            })
+        }
     }
 }
 

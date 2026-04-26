@@ -1538,9 +1538,8 @@ impl Parser {
         // Body can be an expression or a block
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
             let _block_stmts = self.block()?;
-            // Convert block to expression (for now, wrap as identifier)
-            Expr::Ident {
-                name: "block_body".to_owned(),
+            // Convert block to expression (use undefined as placeholder for block expressions)
+            Expr::Undefined {
                 span: Span { start: 0, end: 0 },
             }
         } else {

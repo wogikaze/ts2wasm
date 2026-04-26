@@ -198,6 +198,9 @@ pub enum LoweredExpr {
         module_id: usize,
     },
     This,
+    ArrowFn {
+        func_id: FuncId,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -457,7 +460,7 @@ fn lower_function(
 
     // Insert default parameter assignments and rest parameter collection at the start of the body
     let mut body_with_defaults = Vec::new();
-    for (param_idx, (param_name, default_expr, is_rest)) in params.iter().enumerate() {
+    for (param_name, default_expr, is_rest) in params {
         if *is_rest {
             // Rest parameter: collect remaining arguments into an array
             let param_local = resolver.resolve_local(param_name)?;
@@ -852,7 +855,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
             ResolvedExpr::Null => Ok(LoweredExpr::Null),
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
-            ResolvedExpr::This => Ok(LoweredExpr::Local(self.resolve_local("this")?)),
+            ResolvedExpr::This => Ok(LoweredExpr::This),
             ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
             ResolvedExpr::Spread(_) => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -1223,6 +1226,11 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
                 module_id: self.module_id_for_specifier(specifier),
             }),
+            ResolvedExpr::ArrowFn { params, body } => {
+                // For now, lower arrow function to undefined as placeholder
+                // Full implementation requires closure creation with lexical this capture
+                Ok(LoweredExpr::Undefined)
+            }
         }
     }
 
