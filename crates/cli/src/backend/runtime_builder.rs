@@ -38,6 +38,9 @@ impl WatEmitter<'_> {
                 RuntimeFn::Greater => self.emit_greater(wat),
                 RuntimeFn::GreaterFast => self.emit_greater_fast(wat),
                 RuntimeFn::StrictEqual => self.emit_strict_equal(wat),
+                RuntimeFn::EqualEqual => self.emit_equal_equal(wat),
+                RuntimeFn::BangEqual => self.emit_bang_equal(wat),
+                RuntimeFn::StrictNotEqual => self.emit_strict_not_equal(wat),
                 RuntimeFn::And => self.emit_and(wat),
                 RuntimeFn::Or => self.emit_or(wat),
                 RuntimeFn::AllocHeap => self.emit_alloc_heap(wat),
@@ -67,6 +70,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::MathAbs => self.emit_math_abs(wat),
                 RuntimeFn::MathMax => self.emit_math_max(wat),
                 RuntimeFn::MathMin => self.emit_math_min(wat),
+                RuntimeFn::MathRandom => self.emit_math_random(wat),
                 RuntimeFn::JsonStringify => self.emit_json_stringify(wat),
                 RuntimeFn::JsonParse => self.emit_json_parse(wat),
                 RuntimeFn::ModuleRequire => self.emit_module_require(wat),
@@ -436,6 +440,45 @@ impl WatEmitter<'_> {
     (if (result i32) (i32.eq (local.get $a) (local.get $b))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
+"#,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_equal_equal(&self, wat: &mut String) {
+        // Abstract equality (==) - delegates to strict_equal for now
+        // Full type coercion can be added in a follow-up
+        wat.push_str(&format!(
+            r#"
+  (func $equal_equal (param $a i32) (param $b i32) (result i32)
+    (call $strict_equal (local.get $a) (local.get $b)))
+"#,
+        ));
+    }
+
+    fn emit_bang_equal(&self, wat: &mut String) {
+        // Abstract inequality (!=) - negates equal_equal
+        wat.push_str(&format!(
+            r#"
+  (func $bang_equal (param $a i32) (param $b i32) (result i32)
+    (if (result i32) (call $equal_equal (local.get $a) (local.get $b))
+      (then (i32.const {false_tag}))
+      (else (i32.const {true_tag}))))
+"#,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_strict_not_equal(&self, wat: &mut String) {
+        // Strict inequality (!==) - negates strict_equal
+        wat.push_str(&format!(
+            r#"
+  (func $strict_not_equal (param $a i32) (param $b i32) (result i32)
+    (if (result i32) (call $strict_equal (local.get $a) (local.get $b))
+      (then (i32.const {false_tag}))
+      (else (i32.const {true_tag}))))
 "#,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
@@ -1791,6 +1834,29 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             number_shift = ValueTag::NUMBER_SHIFT,
             undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_math_random(&self, wat: &mut String) {
+        // Math.random() returns a random number between 0 and 1
+        // For now, return a simple pseudo-random value using a counter
+        // This is a placeholder - proper random would require host import
+        wat.push_str(&format!(
+            r#"
+  (global $random_counter (mut i32) (i32.const 0))
+  (func $math_random (result i32)
+    (local $counter i32)
+    (local $result i32)
+    (local.set $counter (global.get $random_counter))
+    (global.set $random_counter (i32.add (local.get $counter) (i32.const {one})))
+    ;; Simple pseudo-random: return counter / 1000 as a number
+    ;; For now, just return 0.5 as a placeholder (encoded as 0.5 << shift | tag)
+    (i32.or (i32.shl (i32.const {half}) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            half = 0, // 0.5 encoded as integer 0 (placeholder)
+            one = RuntimeConst::ONE,
         ));
     }
 

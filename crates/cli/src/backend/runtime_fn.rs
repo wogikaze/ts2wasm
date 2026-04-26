@@ -49,6 +49,9 @@ pub(crate) enum RuntimeFn {
     Greater,
     GreaterFast,
     StrictEqual,
+    EqualEqual,
+    BangEqual,
+    StrictNotEqual,
     And,
     Or,
     /// Bump-allocate `size` bytes on the heap, aligned to `Layout::ALIGN`.
@@ -89,6 +92,7 @@ pub(crate) enum RuntimeFn {
     MathAbs,
     MathMax,
     MathMin,
+    MathRandom,
     /// M10: JSON functions
     JsonStringify,
     JsonParse,
@@ -395,6 +399,9 @@ const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];
 const LESS_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Less];
 const GREATER_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Greater];
 const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::StringEqual];
+const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const BANG_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::EqualEqual];
+const STRICT_NOT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 
@@ -467,6 +474,7 @@ const INDEX_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::ValueToStr
 
 // Math function dependencies (no deps)
 const MATH_DEPS: &[RuntimeFn] = &[];
+const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
 
 // JSON function dependencies
 const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
@@ -660,6 +668,30 @@ impl RuntimeFn {
             Self::StrictEqual => RuntimeSpec {
                 symbol: "$strict_equal",
                 deps: STRICT_EQUAL_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::EqualEqual => RuntimeSpec {
+                symbol: "$equal_equal",
+                deps: EQUAL_EQUAL_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BangEqual => RuntimeSpec {
+                symbol: "$bang_equal",
+                deps: BANG_EQUAL_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StrictNotEqual => RuntimeSpec {
+                symbol: "$strict_not_equal",
+                deps: STRICT_NOT_EQUAL_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -897,6 +929,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::MathRandom => RuntimeSpec {
+                symbol: "$math_random",
+                deps: MATH_RANDOM_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::JsonStringify => RuntimeSpec {
                 symbol: "$json_stringify",
                 deps: JSON_STRINGIFY_DEPS,
@@ -1074,6 +1114,9 @@ impl RuntimeFn {
             Self::Greater => "greater",
             Self::GreaterFast => "greater_fast",
             Self::StrictEqual => "strict_equal",
+            Self::EqualEqual => "equal_equal",
+            Self::BangEqual => "bang_equal",
+            Self::StrictNotEqual => "strict_not_equal",
             Self::And => "and",
             Self::Or => "or",
             Self::AllocHeap => "alloc_heap",
@@ -1103,6 +1146,7 @@ impl RuntimeFn {
             Self::MathAbs => "math_abs",
             Self::MathMax => "math_max",
             Self::MathMin => "math_min",
+            Self::MathRandom => "math_random",
             Self::JsonStringify => "json_stringify",
             Self::JsonParse => "json_parse",
             Self::ModuleRequire => "module_require",
