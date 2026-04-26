@@ -489,6 +489,12 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
                 _ => None,
             };
         }
+        if name == "String" {
+            return match method {
+                "fromCharCode" => Some("StringFromCharCode".to_owned()),
+                _ => None,
+            };
+        }
     }
     match method {
         "charAt" => Some("StringCharAt".to_owned()),
@@ -499,6 +505,7 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
         "trim" => Some("StringTrim".to_owned()),
         "toUpperCase" => Some("StringToUpperCase".to_owned()),
         "toLowerCase" => Some("StringToLowerCase".to_owned()),
+        "charCodeAt" => Some("StringCharCodeAt".to_owned()),
         "push" => Some("ArrayPush".to_owned()),
         "pop" => Some("ArrayPop".to_owned()),
         "concat" => Some("ArrayConcat".to_owned()),
@@ -916,7 +923,7 @@ impl<'a> Resolver<'a> {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
                         object.as_ref(),
-                        ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object"
+                        ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object" || name == "String"
                     );
                     if !is_static_call {
                         lowered_args.push(self.lower_expr(object)?);

@@ -58,6 +58,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringTrim => self.emit_string_trim(wat),
                 RuntimeFn::StringToUpperCase => self.emit_string_to_upper_case(wat),
                 RuntimeFn::StringToLowerCase => self.emit_string_to_lower_case(wat),
+                RuntimeFn::StringCharCodeAt => self.emit_string_char_code_at(wat),
+                RuntimeFn::StringFromCharCode => self.emit_string_from_char_code(wat),
                 RuntimeFn::ArrayPush => self.emit_array_push(wat),
                 RuntimeFn::ArrayPop => self.emit_array_pop(wat),
                 RuntimeFn::ArraySlice => self.emit_array_slice(wat),
@@ -1310,6 +1312,60 @@ impl WatEmitter<'_> {
     (local.get $s))
 "#,
             undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_string_char_code_at(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_char_code_at (param $s i32) (param $index i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $idx i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $idx (i32.shr_s (local.get $index) (i32.const {number_shift})))
+    ;; Handle negative index
+    (if (i32.lt_s (local.get $idx) (i32.const {zero}))
+      (then (local.set $idx (i32.add (local.get $len) (local.get $idx)))))
+    ;; Clamp to [0, len)
+    (if (i32.lt_s (local.get $idx) (i32.const {zero})) (then (local.set $idx (i32.const {zero}))))
+    (if (i32.ge_u (local.get $idx) (local.get $len)) (then (return (i32.const {undefined}))))
+    ;; Get character code
+    (i32.or (i32.shl (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {string_header})) (local.get $idx))) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
+            string_header = Layout::STRING_HEADER_SIZE,
+        ));
+    }
+
+    fn emit_string_from_char_code(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_from_char_code (param $code i32) (result i32)
+    (local $code_num i32)
+    (local $result_ptr i32)
+    (local.set $code_num (i32.shr_s (local.get $code) (i32.const {number_shift})))
+    ;; Clamp to valid Unicode range (0-65535)
+    (if (i32.lt_s (local.get $code_num) (i32.const {zero})) (then (local.set $code_num (i32.const {zero}))))
+    (if (i32.gt_u (local.get $code_num) (i32.const 65535)) (then (local.set $code_num (i32.const 65535))))
+    ;; Allocate single-character string
+    (local.set $result_ptr (call $alloc_heap (i32.const {single_char_size})))
+    (i32.store (local.get $result_ptr) (i32.const {one}))
+    (i32.store8 (i32.add (local.get $result_ptr) (i32.const {string_header})) (local.get $code_num))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            single_char_size = Layout::STRING_HEADER_SIZE + 1,
+            string_header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
         ));
     }
 

@@ -321,8 +321,14 @@ impl NameResolver {
                         span: *span,
                     });
                 }
-                // Check if it's a variable in scope
+                // Check if it's a variable in scope or allowed global
                 if self.is_declared(name) {
+                    Ok(Expr::Ident {
+                        name: name.clone(),
+                        span: *span,
+                    })
+                } else if self.allowed_globals.contains(name) {
+                    // Fallback: directly check allowed_globals if is_declared missed it
                     Ok(Expr::Ident {
                         name: name.clone(),
                         span: *span,
@@ -367,11 +373,14 @@ impl NameResolver {
                 object,
                 property,
                 span,
-            } => Ok(Expr::Member {
-                object: Box::new(self.resolve_expr(object)?),
-                property: property.clone(),
-                span: *span,
-            }),
+            } => {
+                let resolved_object = self.resolve_expr(object)?;
+                Ok(Expr::Member {
+                    object: Box::new(resolved_object),
+                    property: property.clone(),
+                    span: *span,
+                })
+            }
             Expr::Array { elements, span } => Ok(Expr::Array {
                 elements: elements
                     .iter()

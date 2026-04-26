@@ -274,6 +274,26 @@ fn string_to_lower_case_method_emits() {
     );
 }
 
+#[test]
+fn string_char_code_at_method_emits() {
+    let result = run_fixture("builtins-and-io/string-char-code-at.ts");
+    assert!(
+        result.is_ok(),
+        "String.charCodeAt should compile: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn string_from_char_code_method_emits() {
+    let result = run_fixture("builtins-and-io/string-from-char-code.ts");
+    assert!(
+        result.is_ok(),
+        "String.fromCharCode should compile: {:?}",
+        result.err()
+    );
+}
+
 // Array method tests
 
 #[test]

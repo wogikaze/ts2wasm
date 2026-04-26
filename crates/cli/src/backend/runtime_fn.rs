@@ -77,6 +77,8 @@ pub(crate) enum RuntimeFn {
     StringTrim,
     StringToUpperCase,
     StringToLowerCase,
+    StringCharCodeAt,
+    StringFromCharCode,
     /// M10: Array methods
     ArrayPush,
     ArrayPop,
@@ -301,6 +303,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringTrim" => Some(RuntimeFn::StringTrim),
         "StringToUpperCase" => Some(RuntimeFn::StringToUpperCase),
         "StringToLowerCase" => Some(RuntimeFn::StringToLowerCase),
+        "StringCharCodeAt" => Some(RuntimeFn::StringCharCodeAt),
+        "StringFromCharCode" => Some(RuntimeFn::StringFromCharCode),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
@@ -447,14 +451,24 @@ const VTS_RUNTIME_STRINGS: &[&str] = &[
 const LOG_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NEWLINE];
 
 // String method dependencies
-const STRING_CHAR_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
-const STRING_SUBSTRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
-const STRING_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_SLICE_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
-const STRING_SPLIT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
+];
 const STRING_TRIM_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
+const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
+const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 
 // Array method dependencies
 const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -834,6 +848,22 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::StringCharCodeAt => RuntimeSpec {
+                symbol: "$string_char_code_at",
+                deps: STRING_CHAR_CODE_AT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::StringFromCharCode => RuntimeSpec {
+                symbol: "$string_from_char_code",
+                deps: STRING_FROM_CHAR_CODE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPush => RuntimeSpec {
                 symbol: "$array_push",
                 deps: ARRAY_PUSH_DEPS,
@@ -1159,6 +1189,8 @@ impl RuntimeFn {
             Self::StringTrim => "string_trim",
             Self::StringToUpperCase => "string_to_upper_case",
             Self::StringToLowerCase => "string_to_lower_case",
+            Self::StringCharCodeAt => "string_char_code_at",
+            Self::StringFromCharCode => "string_from_char_code",
             Self::ArrayPush => "array_push",
             Self::ArrayPop => "array_pop",
             Self::ArraySlice => "array_slice",
@@ -1235,6 +1267,8 @@ impl RuntimeFn {
             Self::StringTrim,
             Self::StringToUpperCase,
             Self::StringToLowerCase,
+            Self::StringCharCodeAt,
+            Self::StringFromCharCode,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,
@@ -1318,6 +1352,8 @@ impl RuntimeFn {
             Self::StringTrim,
             Self::StringToUpperCase,
             Self::StringToLowerCase,
+            Self::StringCharCodeAt,
+            Self::StringFromCharCode,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,
