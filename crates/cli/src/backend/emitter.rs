@@ -7,6 +7,7 @@ use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::RuntimeGlobal;
 use super::runtime_link_plan::RuntimeLinkPlan;
+use super::wat_writer::WatModuleBuilder;
 
 pub(crate) fn emit_wat(program: &LoweredProgram) -> Result<String, Diagnostic> {
     WatEmitter::new(program).emit()
@@ -244,38 +245,20 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn emit_imports_from_catalog(&self, wat: &mut String) {
-        // Emit all required imports using catalog as single source of truth
+        let mut writer = WatModuleBuilder::new();
         for import in self.link_plan.required_imports() {
             let spec = import.spec();
-            // Build complete WAT function signature from catalog
-            let mut sig = String::new();
-            if !spec.params.is_empty() {
-                sig.push(' ');
-                sig.push('(');
-                sig.push_str(spec.params);
-                sig.push(')');
-            }
-            if !spec.result.is_empty() {
-                sig.push(' ');
-                sig.push('(');
-                sig.push_str(spec.result);
-                sig.push(')');
-            }
-            wat.push_str(&format!(
-                "  (import \"{}\" \"{}\" (func {}{}))\n",
-                spec.module, spec.name, spec.wat_symbol, sig
-            ));
+            writer.push_import_func(&spec);
         }
+        wat.push_str(&writer.into_inner());
     }
 
     fn emit_required_globals(&self, wat: &mut String) {
+        let mut writer = WatModuleBuilder::new();
         for global in self.link_plan.required_globals() {
-            wat.push_str(&format!(
-                "  (global {} (mut i32) (i32.const {}))\n",
-                global.symbol(),
-                global.initial_value(),
-            ));
+            writer.push_global_i32(global.symbol(), global.initial_value());
         }
+        wat.push_str(&writer.into_inner());
     }
 
     fn intern_required_runtime_strings(&mut self) {
