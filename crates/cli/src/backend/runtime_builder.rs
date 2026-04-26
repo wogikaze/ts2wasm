@@ -984,19 +984,18 @@ impl WatEmitter<'_> {
     ;; append new key/value (instance objects are preallocated with headroom by new-expression emission)
     (local.set $entry_base
       (i32.add (local.get $base)
-        (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
-    (local.set $key_obj (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $key_len))))
+        (i32.add (i32.const 4) (i32.shl (local.get $count) (i32.const 3)))))
+    (local.set $key_obj (call $alloc_heap (i32.add (i32.const 4) (local.get $key_len))))
     (i32.store (local.get $key_obj) (local.get $key_len))
-    (call $copy (local.get $key_ptr) (i32.add (local.get $key_obj) (i32.const {str_header})) (local.get $key_len))
-    (i32.store (local.get $entry_base) (i32.or (local.get $key_obj) (i32.const {string_tag})))
-    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (local.get $value))
-    (i32.store (local.get $base) (i32.add (local.get $count) (i32.const {one})))
+    (call $copy (local.get $key_ptr) (i32.add (local.get $key_obj) (i32.const 4)) (local.get $key_len))
+    (i32.store (local.get $entry_base) (i32.or (local.get $key_obj) (i32.const 6)))
+    (i32.store (i32.add (local.get $entry_base) (i32.const 4)) (local.get $value))
+    (i32.store (local.get $base) (i32.add (local.get $count) (i32.const 1)))
     (local.get $value))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
-            string_tag = ValueTag::STRING,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
