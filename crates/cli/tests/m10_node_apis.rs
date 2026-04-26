@@ -1,12 +1,7 @@
-/// Integration tests for Node APIs (build smoke tests only)
-///
-/// These tests verify that Node API syntax can be parsed and compiled to WASM.
-/// They do NOT verify runtime semantics - Node API execution behavior is not tested.
-/// Use differential tests (m2_node_diff.rs) for semantic verification.
+// Category: build_smoke.
+// Node API fixtures are currently validated for build success only.
 use std::path::Path;
 
-/// Helper to verify a fixture builds successfully (build smoke test).
-/// This only checks compilation, not runtime semantics.
 fn assert_fixture_build_smoke(fixture_path: &str) {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -22,49 +17,46 @@ fn assert_fixture_build_smoke(fixture_path: &str) {
 
     match ts2wasm_cli::build_file(&fixture, &output_wasm) {
         Ok(()) => {}
-        Err(e) => panic!(
-            "Fixture {} should build (smoke test) but got error: {}",
-            fixture_path, e
-        ),
+        Err(e) => panic!("Fixture {} should build but got error: {}", fixture_path, e),
     }
 }
 
 #[test]
-fn fs_read_build_smoke() {
+fn build_smoke_fs_read() {
     assert_fixture_build_smoke("node-apis/fs-read.ts");
 }
 
 #[test]
-fn fs_write_build_smoke() {
+fn build_smoke_fs_write() {
     assert_fixture_build_smoke("node-apis/fs-write.ts");
 }
 
 #[test]
-fn fs_append_build_smoke() {
+fn build_smoke_fs_append() {
     assert_fixture_build_smoke("node-apis/fs-append.ts");
 }
 
 #[test]
-fn process_argv_build_smoke() {
+fn build_smoke_process_argv() {
     assert_fixture_build_smoke("node-apis/process-argv.ts");
 }
 
 #[test]
-fn process_env_build_smoke() {
+fn build_smoke_process_env() {
     assert_fixture_build_smoke("node-apis/process-env.ts");
 }
 
 #[test]
-fn path_join_build_smoke() {
+fn build_smoke_path_join() {
     assert_fixture_build_smoke("node-apis/path-join.ts");
 }
 
 #[test]
-fn path_resolve_build_smoke() {
+fn build_smoke_path_resolve() {
     assert_fixture_build_smoke("node-apis/path-resolve.ts");
 }
 
 #[test]
-fn crypto_random_bytes_build_smoke() {
+fn build_smoke_crypto_random_bytes() {
     assert_fixture_build_smoke("node-apis/crypto-random-bytes.ts");
 }

@@ -3,7 +3,6 @@
 **Status**: done
 **Created**: 2026-04-26
 **Updated**: 2026-04-26
-**Completed**: 2026-04-26
 **ID**: 004
 **Type**: test
 **Area**: tests/coverage
@@ -27,23 +26,29 @@ Acceptance Criteria:
 - [x] Coverage reporting distinguishes build pass from semantic pass.
 - [x] Current state clearly identifies class/module/Node API semantic gaps.
 
-Close:
-
-- Date: 2026-04-26
-- Evidence:
-  - Renamed all `*_compiles()` test functions to `*_build_smoke()` in m7_control_flow.rs, m8_oop_classes.rs, m9_modules.rs, m10_node_apis.rs
-  - Added documentation clarifying build smoke tests only check compilation, not runtime semantics
-  - Updated official_corpora.rs to distinguish build_smoke (target: wasm32-wasi-build) from semantic_diff (target: wasm32-wasi)
-  - Updated current-state.md with test classification section documenting build_smoke vs semantic_diff
-  - Renamed infrastructure test functions to avoid "compiles" naming
-  - All tests pass: cargo nextest run (185 passed, 4 skipped)
-  - Format check passes: cargo fmt --all --check
-  - grep -R "compiles" crates/cli/tests now only returns infrastructure fixture existence tests (not compilation tests)
-
 Validation:
 
 ```sh
 cargo fmt --all --check
 cargo nextest run
-grep -R "compiles" crates/cli/tests
+rg "compiles" crates/cli/tests
 ```
+
+Validation result (local):
+
+- `cargo fmt --all --check`: pass
+- `cargo nextest run`: fail (environmental: `iwasm` is not installed in this workspace; existing differential fixtures requiring runtime execution are blocked in this environment)
+- `rg "compiles" crates/cli/tests`: pass (build-smoke rename in targeted files; semantic differentiation handled in `m2_node_diff.rs`)
+
+## Completion evidence
+
+- `crates/cli/tests/m6_builtin_methods.rs`: rebuilt as `build_smoke_*` and no longer emits synthetic pass `TestRecord`s.
+- `crates/cli/tests/m7_control_flow.rs`: rebuilt as `build_smoke_*` and asserts build success explicitly.
+- `crates/cli/tests/m8_oop_classes.rs`: rebuilt as `build_smoke_*`.
+- `crates/cli/tests/m9_modules.rs`: module semantic claim test removed; now build-smoke only.
+- `crates/cli/tests/m10_node_apis.rs`: rebuilt as `build_smoke_*`.
+- `crates/cli/tests/m2_node_diff.rs`:
+  - Added `CLASS_SEMANTIC_GAP_FIXTURES`, `MODULE_SEMANTIC_GAP_FIXTURES`, `NODE_API_SEMANTIC_GAP_FIXTURES`.
+  - Added `assert_fixture_not_semantically_pass(...)` helper and 3 gap assertions, requiring non-`pass` status + tracking.
+- `docs/06-testing-and-coverage.md` and `docs/15-coverage-matrix.md` updated to distinguish `build_smoke` vs `semantic_pass`.
+- `current-state.md` now explicitly tracks class/module/node-api semantic gaps and references `m2_node_diff.rs`.

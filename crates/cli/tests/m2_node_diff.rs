@@ -117,6 +117,33 @@ fn temp_wasm_path(fixture: &str) -> PathBuf {
     std::env::temp_dir().join(format!("ts2wasm-{safe_name}-{}.wasm", std::process::id()))
 }
 
+const CLASS_SEMANTIC_GAP_FIXTURES: &[&str] = &[
+    "fixtures/classes-and-inheritance/class-basic.ts",
+    "fixtures/classes-and-inheritance/class-extends.ts",
+    "fixtures/classes-and-inheritance/new-expression.ts",
+    "fixtures/classes-and-inheritance/class-static.ts",
+    "fixtures/classes-and-inheritance/class-super.ts",
+    "fixtures/classes-and-inheritance/class-super-method.ts",
+];
+
+const MODULE_SEMANTIC_GAP_FIXTURES: &[&str] = &[
+    "fixtures/modules-and-typed-optimizations/require-cache.ts",
+    "fixtures/modules-and-typed-optimizations/require-relative.ts",
+    "fixtures/modules-and-typed-optimizations/exports-assign.ts",
+    "fixtures/modules-and-typed-optimizations/module-exports-assign.ts",
+];
+
+const NODE_API_SEMANTIC_GAP_FIXTURES: &[&str] = &[
+    "fixtures/node-apis/fs-read.ts",
+    "fixtures/node-apis/fs-write.ts",
+    "fixtures/node-apis/fs-append.ts",
+    "fixtures/node-apis/process-argv.ts",
+    "fixtures/node-apis/process-env.ts",
+    "fixtures/node-apis/path-join.ts",
+    "fixtures/node-apis/path-resolve.ts",
+    "fixtures/node-apis/crypto-random-bytes.ts",
+];
+
 /// Differential test runner that classifies test results
 ///
 /// This implements M7: differential test runner that can classify
@@ -257,6 +284,49 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
             reason: Some("Failed to build ts2wasm".to_string()),
             tracking: Some("build:ts2wasm-unavailable".to_string()),
         },
+    }
+}
+
+fn assert_fixture_not_semantically_pass(area: &str, fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let record = run_differential_test(&fixture_path);
+
+    assert!(
+        record.validate().is_ok(),
+        "differential record should be valid for {area} fixture {fixture}: {:?}",
+        record.validate().err()
+    );
+    assert_ne!(
+        record.status,
+        TestStatus::Pass,
+        "{area} fixture {fixture} should stay build-smoke until semantic support is implemented"
+    );
+    assert!(
+        record.tracking.is_some(),
+        "fixture {fixture} ({area}) should have explicit tracking while not semantic-pass"
+    );
+}
+
+#[test]
+fn m2_class_fixtures_are_not_marked_as_semantic_pass() {
+    for fixture in CLASS_SEMANTIC_GAP_FIXTURES {
+        assert_fixture_not_semantically_pass("class", fixture);
+    }
+}
+
+#[test]
+fn m2_module_fixtures_are_not_marked_as_semantic_pass() {
+    for fixture in MODULE_SEMANTIC_GAP_FIXTURES {
+        assert_fixture_not_semantically_pass("module", fixture);
+    }
+}
+
+#[test]
+fn m2_node_api_fixtures_are_not_marked_as_semantic_pass() {
+    for fixture in NODE_API_SEMANTIC_GAP_FIXTURES {
+        assert_fixture_not_semantically_pass("node_api", fixture);
     }
 }
 
