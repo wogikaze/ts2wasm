@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
 
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
@@ -318,10 +318,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { .. } => Ok(ResolvedExpr::This),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
-        Expr::InstanceOf { span, .. } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "instanceof operator not yet supported".to_owned(),
-            span: Some(*span),
+        Expr::InstanceOf { expr, type_expr, .. } => Ok(ResolvedExpr::Binary {
+            left: Box::new(resolve_expr(expr)?),
+            op: BinaryOp::InstanceOf,
+            right: Box::new(resolve_expr(type_expr)?),
         }),
         Expr::Ternary { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,

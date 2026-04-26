@@ -13,6 +13,7 @@ pub enum BuiltinId {
     PathBasename,
     PathDirname,
     CryptoRandomBytes,
+    InstanceOf,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -43,6 +44,7 @@ impl BuiltinId {
             Self::PathBasename => 1,
             Self::PathDirname => 1,
             Self::CryptoRandomBytes => 1,
+            Self::InstanceOf => 2,
         }
     }
 
@@ -61,6 +63,7 @@ impl BuiltinId {
             Self::PathBasename => BuiltinResult::Value,
             Self::PathDirname => BuiltinResult::Value,
             Self::CryptoRandomBytes => BuiltinResult::Value,
+            Self::InstanceOf => BuiltinResult::Value,
         }
     }
 }

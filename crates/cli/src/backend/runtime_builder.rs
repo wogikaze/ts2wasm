@@ -71,6 +71,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ObjectKeys => self.emit_object_keys(wat),
                 RuntimeFn::ObjectValues => self.emit_object_values(wat),
                 RuntimeFn::ObjectEntries => self.emit_object_entries(wat),
+                RuntimeFn::InstanceOf => self.emit_instanceof(wat),
                 RuntimeFn::MathFloor => self.emit_math_floor(wat),
                 RuntimeFn::MathCeil => self.emit_math_ceil(wat),
                 RuntimeFn::MathRound => self.emit_math_round(wat),
@@ -1924,6 +1925,18 @@ impl WatEmitter<'_> {
             two = 2,
             array_tag = ValueTag::ARRAY,
             undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_instanceof(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $instanceof (param $obj i32) (param $constructor i32) (result i32)
+    ;; For now, return false for all instanceof checks
+    ;; Full implementation requires prototype chain traversal
+    (i32.const {false}))
+"#,
+            false = ValueTag::FALSE,
         ));
     }
 

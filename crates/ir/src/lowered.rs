@@ -891,7 +891,13 @@ impl<'a> Resolver<'a> {
                 }
             }
             ResolvedExpr::Binary { left, op, right } => {
-                if *op == BinaryOp::In {
+                if *op == BinaryOp::InstanceOf {
+                    // Lower instanceof to RuntimeCall
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "$instanceof".to_string(),
+                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    })
+                } else if *op == BinaryOp::In {
                     // Lower in to PropertyIn or PropertyInDynamic
                     // key in object -> check if key exists in object
                     match left.as_ref() {

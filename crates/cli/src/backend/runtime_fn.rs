@@ -94,6 +94,8 @@ pub(crate) enum RuntimeFn {
     ObjectKeys,
     ObjectValues,
     ObjectEntries,
+    /// Instanceof operator
+    InstanceOf,
     /// M10: Math functions
     MathFloor,
     MathCeil,
@@ -299,6 +301,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
+        "$instanceof" => Some(RuntimeFn::InstanceOf),
         "StringCharAt" => Some(RuntimeFn::StringCharAt),
         "StringSubstring" => Some(RuntimeFn::StringSubstring),
         "StringSlice" => Some(RuntimeFn::StringSlice),
@@ -519,6 +522,7 @@ impl RuntimeFn {
             BuiltinId::PathBasename => Self::PathBasename,
             BuiltinId::PathDirname => Self::PathDirname,
             BuiltinId::CryptoRandomBytes => Self::CryptoRandomBytes,
+            BuiltinId::InstanceOf => Self::InstanceOf,
         }
     }
 
@@ -956,6 +960,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::InstanceOf => RuntimeSpec {
+                symbol: "$instanceof",
+                deps: &[],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::MathFloor => RuntimeSpec {
                 symbol: "$math_floor",
                 deps: MATH_DEPS,
@@ -1245,6 +1257,7 @@ impl RuntimeFn {
             Self::PathBasename => "path_basename",
             Self::PathDirname => "path_dirname",
             Self::CryptoRandomBytes => "crypto_random_bytes",
+            Self::InstanceOf => "instanceof",
         }
     }
 
@@ -1304,6 +1317,8 @@ impl RuntimeFn {
             Self::ObjectKeys,
             Self::ObjectValues,
             Self::ObjectEntries,
+            // Instanceof operator
+            Self::InstanceOf,
             // Math functions
             Self::MathFloor,
             Self::MathCeil,
@@ -1391,6 +1406,8 @@ impl RuntimeFn {
             Self::ObjectKeys,
             Self::ObjectValues,
             Self::ObjectEntries,
+            // Instanceof operator
+            Self::InstanceOf,
             // Math functions
             Self::MathFloor,
             Self::MathCeil,
