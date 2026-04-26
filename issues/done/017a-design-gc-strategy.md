@@ -1,8 +1,9 @@
 # Design GC strategy
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-27
+**Closed**: 2026-04-27
 **ID**: 017a
 **Type**: feature
 **Area**: runtime/memory
@@ -26,10 +27,10 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] Heap object header design is documented.
-- [ ] GC strategy (mark-and-sweep or arena) is chosen and justified.
-- [ ] GC trigger points are defined.
-- [ ] GC strategy is documented in docs/14-runtime-abi.md.
+- [x] Heap object header design is documented.
+- [x] GC strategy (mark-and-sweep or arena) is chosen and justified.
+- [x] GC trigger points are defined.
+- [x] GC strategy is documented in docs/14-runtime-abi.md.
 
 Validation:
 
@@ -37,3 +38,9 @@ Validation:
 cargo fmt --all --check
 grep -A 20 "GC strategy" docs/14-runtime-abi.md
 ```
+
+## Completion evidence
+
+- 2026-04-27: `docs/14-runtime-abi.md` に GC 設計（ヘッダ、戦略、トリガー条件）を追加。
+- 2026-04-27: `cargo fmt --all --check` 合格（docs 修正後）。
+- 2026-04-27: `grep -A 20 "GC strategy" docs/14-runtime-abi.md` で設計節が確認可能。
