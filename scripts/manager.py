@@ -1,0 +1,174 @@
+#!/usr/bin/env python3
+"""Single entry to repo scripts. Prefer this or `mise run <task>` (see root mise.toml)
+so you do not need to open each scripts/*.sh to see flags.
+
+Usage (from repository root):
+  python scripts/manager.py
+  python scripts/manager.py help
+  python scripts/manager.py <command> [args to underlying script...]
+"""
+
+import os
+import sys
+import subprocess
+import shutil
+from pathlib import Path
+
+# Repository root
+REPO_ROOT = Path(__file__).parent.parent.resolve()
+PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable)
+
+# Command mapping: command -> (script_type, script_path, interpreter)
+COMMANDS = {
+    "check-scripts": ("bash", "scripts/check/shell-syntax.sh"),
+    "check-fast-gate": ("python", "scripts/gate/fast-gate.py"),
+    "check-manifest-imports": ("bash", "scripts/check/manifest-imports.sh"),
+    "check-test-records-schema": ("bash", "scripts/check/test-records-schema.sh"),
+    "check-fixture-catalog": ("bash", "scripts/check/fixture-catalog.sh"),
+    "check-architecture-rules": ("bash", "scripts/check/architecture-rules.sh"),
+    "check-compiler-diagnostics": ("bash", "scripts/check/compiler-diagnostics.sh"),
+    "check-harness-installation": ("bash", "scripts/check/harness-installation.sh"),
+    "check-toolchain": ("bash", "scripts/check/toolchain.sh"),
+    "check-fixture-differential": ("bash", "scripts/check/fixture-differential.sh"),
+    "check-host-deny": ("bash", "scripts/check/host-deny.sh"),
+    "check-runtimefn-invariants": ("bash", "scripts/check/runtimefn-invariants.sh"),
+    "check-wasm-validation": ("bash", "scripts/check/wasm-validation.sh"),
+    "check-agent-state": ("python", "scripts/check/agent-state.py"),
+    "check-issue-index": ("python", "scripts/check/issue-health.py"),
+    "check-issue-health": ("python", "scripts/check/issue-health.py"),
+    "update-issue-index": ("python", "scripts/gen/update-issue-index.py"),
+    "install-hooks": ("bash", "scripts/dev/install-git-hooks.sh"),
+    "check-coverage-gate": ("bash", "scripts/gate/coverage.sh"),
+    "update-coverage-matrix": ("python", "scripts/gen/coverage-matrix.py"),
+    "coverage-report": ("bash", "scripts/gen/coverage-report.sh"),
+    "reference-coverage": ("bash", "scripts/run/reference-coverage.sh"),
+    "benchmark-tracker": ("bash", "scripts/perf/benchmark-tracker.sh"),
+    "test262": ("bash", "scripts/run/test262.sh"),
+    "test-differential-reporter": ("bash", "scripts/report/differential.sh"),
+    "test-regression-gate": ("bash", "scripts/gate/regression.sh"),
+    "gen-issues-from-coverage": ("python", "scripts/gen/issues-from-coverage.py"),
+    "fmt": ("cargo", "fmt --all --check"),
+    "clippy": ("cargo", "clippy --all-targets"),
+    "nextest": ("cargo", "nextest run"),
+}
+
+def usage():
+    """Print usage information."""
+    print("ts2wasm — script manager (one entry; arguments pass through to the underlying script)")
+    print()
+    print("Usage:")
+    print("  python scripts/manager.py [help]")
+    print("  python scripts/manager.py <command> [args...]")
+    print()
+    print("Examples:")
+    print("  python scripts/manager.py check-issue-health")
+    print("  python scripts/manager.py update-issue-index --check")
+    print("  python scripts/manager.py nextest -- --no-fail-fast")
+    print()
+    print("Commands:")
+    
+    # Format command list
+    cmd_list = [
+        ("check-scripts", "Bash -n on scripts/*.sh (syntax)"),
+        ("check-fast-gate", "fmt + scripts + issues + coverage matrix + nextest"),
+        ("check-manifest-imports", "Manifest JSON imports vs wasm import section"),
+        ("check-test-records-schema", "Validate TestRecord JSONL lines"),
+        ("check-fixture-catalog", "Fixtures/ top-level layout rules"),
+        ("check-architecture-rules", "Lightweight crate boundary checks"),
+        ("check-compiler-diagnostics", "No panic! in backend/runtime/main.rs"),
+        ("check-harness-installation", "Full harness baseline: P0 tools + nextest"),
+        ("check-toolchain", "Verify rust/node/iwasm/wasm-tools exist"),
+        ("check-fixture-differential", "Node vs iwasm: runs nextest m2_node_diff"),
+        ("check-host-deny", "Standalone fixtures must not emit wasm (import \"host\")"),
+        ("check-runtimefn-invariants", "Unit tests: runtime_link_plan invariants"),
+        ("check-wasm-validation", "Build sample fixtures; wasm-tools validate"),
+        ("check-agent-state", "Validate .agents/state JSON files against schemas"),
+        ("check-issue-index", "Fail if issues/index.md is stale"),
+        ("check-issue-health", "Mechanical invariants: ids, paths, index+tables"),
+        ("update-issue-index", "Regenerate index tables (add --check to verify only)"),
+        ("install-hooks", "Install .githooks via git config core.hooksPath"),
+        ("check-coverage-gate", "Compare two coverage matrix docs"),
+        ("update-coverage-matrix", "Refresh reference coverage table"),
+        ("reference-coverage", "Reference suite coverage runner"),
+        ("coverage-report", "Language coverage report from language-reference"),
+        ("benchmark-tracker", "Performance metrics JSON"),
+        ("test262", "test262 JSONL to stdout"),
+        ("test-differential-reporter", "Report from test262 JSONL (stdin)"),
+        ("test-regression-gate", "JSONL vs baseline"),
+        ("gen-issues-from-coverage", "Generate issues from reference-coverage --detail"),
+        ("fmt", "cargo fmt --all --check"),
+        ("clippy", "cargo clippy --all-targets"),
+        ("nextest", "cargo nextest run"),
+        ("check-repo-smoke", "cargo fmt + check-scripts + check-issue-health"),
+    ]
+    
+    max_cmd_len = max(len(cmd) for cmd, _ in cmd_list)
+    for cmd, desc in cmd_list:
+        print(f"  {cmd:<{max_cmd_len}}  {desc}")
+    
+    print()
+    print("Mise: run `mise tasks` / `mise run <task>` for the same set (mise optional).")
+    print("Scripts: scripts/{check,gate,gen,run,...}/* and scripts/manager.py; this dispatches to them.")
+
+def run_command(script_type, script_path, args):
+    """Execute a command based on its type."""
+    full_path = REPO_ROOT / script_path
+    
+    if script_type == "bash":
+        if not shutil.which("bash"):
+            print("Error: bash not found on PATH", file=sys.stderr)
+            sys.exit(1)
+        cmd = ["bash", str(full_path)] + args
+    elif script_type == "python":
+        cmd = [PYTHON_BIN, str(full_path)] + args
+    elif script_type == "cargo":
+        cmd = ["cargo"] + script_path.split() + args
+    else:
+        print(f"Error: unknown script type: {script_type}", file=sys.stderr)
+        sys.exit(1)
+    
+    # Execute command
+    result = subprocess.run(cmd, cwd=REPO_ROOT)
+    sys.exit(result.returncode)
+
+def main():
+    """Main entry point."""
+    if len(sys.argv) < 2 or sys.argv[1] in ("help", "-h", "--help"):
+        usage()
+        sys.exit(0)
+    
+    target = sys.argv[1]
+    args = sys.argv[2:]
+    
+    # Special case: check-repo-smoke is a composite command
+    if target == "check-repo-smoke":
+        # Run cargo fmt
+        result = subprocess.run(["cargo", "fmt", "--all", "--check"], cwd=REPO_ROOT)
+        if result.returncode != 0:
+            sys.exit(result.returncode)
+        
+        # Run check-scripts
+        result = subprocess.run(["bash", str(REPO_ROOT / "scripts/check/shell-syntax.sh")], cwd=REPO_ROOT)
+        if result.returncode != 0:
+            sys.exit(result.returncode)
+        
+        # Run check-issue-health
+        result = subprocess.run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")], cwd=REPO_ROOT)
+        sys.exit(result.returncode)
+    
+    # Look up command
+    if target not in COMMANDS:
+        print(f"Unknown command: {target}", file=sys.stderr)
+        print("Run: python scripts/manager.py help", file=sys.stderr)
+        sys.exit(1)
+    
+    script_type, script_info = COMMANDS[target]
+    
+    # For cargo commands, script_info is the full cargo command
+    if script_type == "cargo":
+        run_command("cargo", script_info, args)
+    else:
+        run_command(script_type, script_info, args)
+
+if __name__ == "__main__":
+    main()

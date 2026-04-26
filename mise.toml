@@ -1,134 +1,133 @@
-# Task runner: same commands as `scripts/manager` (single entry, no need to read each .sh first).
+# Task runner: same commands as `scripts/manager.py` (single entry, no need to read each script first).
 # Install: https://mise.jdx.dev  —  then: `mise tasks` / `mise run <task>`
-# No mise? Use: `scripts/manager` or `scripts/manager help`
+# No mise? Use: `python scripts/manager.py` or `python scripts/manager.py help`
+# Note: On Windows, use python scripts/manager.py instead of scripts/manager (bash)
 
+# Use Python manager for cross-platform support
 [tasks."check-scripts"]
-description = "Bash -n on scripts/**/*.sh (syntax only)"
-run = "scripts/manager check-scripts"
+description = "Bash -n on scripts/**/*.sh (syntax only) [Unix only]"
+run = "bash scripts/manager check-scripts"
 
 [tasks."check-issue-index"]
-description = "Fail if issues/index.md is stale or queue tables are wrong"
-run = "scripts/manager check-issue-index"
-
+description = "Compatibility alias for check-issue-health"
+run = "python scripts/manager.py check-issue-index"
 
 [tasks."update-issue-index"]
 description = "Regenerate issues/index.md (pass --check to verify only)"
-run = "scripts/manager update-issue-index"
+run = "python scripts/manager.py update-issue-index"
 
 [tasks."gen-issues-from-coverage"]
 description = "Generate issues from reference-coverage --detail output (args: --suite test262)"
-run = "scripts/manager gen-issues-from-coverage"
+run = "python scripts/manager.py gen-issues-from-coverage"
 
 [tasks."install-hooks"]
-description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath"
-run = "scripts/manager install-hooks"
+description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath [Unix only]"
+run = "bash scripts/manager install-hooks"
 
 [tasks."check-coverage-gate"]
-description = "Compare two coverage matrix documents (see script for args)"
-run = "scripts/manager check-coverage-gate"
+description = "Compare two coverage matrix documents (see script for args) [Unix only]"
+run = "bash scripts/manager check-coverage-gate"
 
 [tasks."update-coverage-matrix"]
 description = "Refresh reference coverage table (see script for args)"
-run = "scripts/manager update-coverage-matrix"
+run = "python scripts/manager.py update-coverage-matrix"
 
 [tasks."reference-coverage"]
-description = "Run reference-based coverage (see script for args)"
-run = "scripts/manager reference-coverage"
+description = "Run reference-based coverage (see script for args) [Unix only]"
+run = "bash scripts/manager reference-coverage"
 
 [tasks."coverage-report"]
-description = "Generate language coverage report from language-reference (args: --format text|markdown)"
-run = "scripts/manager coverage-report"
+description = "Generate language coverage report from language-reference (args: --format text|markdown) [Unix only]"
+run = "bash scripts/manager coverage-report"
 
 [tasks.benchmark-tracker]
-description = "Append build/fixture performance metrics to JSON"
-run = "scripts/manager benchmark-tracker"
+description = "Append build/fixture performance metrics to JSON [Unix only]"
+run = "bash scripts/manager benchmark-tracker"
 
 [tasks.test262]
-description = "test262 harness: JSONL on stdout (see script for args)"
-run = "scripts/manager test262"
+description = "test262 harness: JSONL on stdout (see script for args) [Unix only]"
+run = "bash scripts/manager test262"
 
 [tasks."test-differential-reporter"]
-description = "HTML/Md report from test262 JSONL (stdin; optional file args)"
-run = "scripts/manager test-differential-reporter"
+description = "HTML/Md report from test262 JSONL (stdin; optional file args) [Unix only]"
+run = "bash scripts/manager test-differential-reporter"
 
 [tasks."test-regression-gate"]
-description = "Gate: JSONL result vs baseline"
-run = "scripts/manager test-regression-gate"
+description = "Gate: JSONL result vs baseline [Unix only]"
+run = "bash scripts/manager test-regression-gate"
 
 [tasks.fmt]
 description = "cargo fmt --all --check"
-run = "scripts/manager fmt"
+run = "python scripts/manager.py fmt"
 
 [tasks.clippy]
 description = "cargo clippy --all-targets (extra args: mise run clippy -- -- -D warnings)"
-run = "scripts/manager clippy"
+run = "python scripts/manager.py clippy"
 
 [tasks.nextest]
 description = "cargo nextest run (default project test entry)"
-run = "scripts/manager nextest"
+run = "python scripts/manager.py nextest"
 
 [tasks."check-repo-smoke"]
-description = "fmt + check-scripts + check-issue-health (no cargo test)"
-run = "scripts/manager check-repo-smoke"
+description = "fmt + check-scripts + check-issue-health (no cargo test) [Unix only]"
+run = "bash scripts/manager check-repo-smoke"
 
 [tasks."check-fast-gate"]
-description = "fmt + scripts + issues + coverage matrix check + nextest (see script --help)"
-run = "scripts/manager check-fast-gate"
+description = "fmt + issues + coverage matrix check + nextest (see script --help)"
+run = "python scripts/manager.py check-fast-gate"
 
 [tasks."check-manifest-imports"]
-description = "Manifest JSON imports vs wasm import section"
-run = "scripts/manager check-manifest-imports"
-
+description = "Manifest JSON imports vs wasm import section [Unix only]"
+run = "bash scripts/manager check-manifest-imports"
 
 [tasks."check-fixture-catalog"]
-description = "fixtures/ top-level layout rules"
-run = "scripts/manager check-fixture-catalog"
+description = "fixtures/ top-level layout rules [Unix only]"
+run = "bash scripts/manager check-fixture-catalog"
 
 [tasks."check-architecture-rules"]
-description = "Crate boundary smoke (shared must not depend on cli)"
-run = "scripts/manager check-architecture-rules"
+description = "Crate boundary smoke (shared must not depend on cli) [Unix only]"
+run = "bash scripts/manager check-architecture-rules"
 
 [tasks."check-compiler-diagnostics"]
-description = "No panic! in backend/runtime/main.rs"
-run = "scripts/manager check-compiler-diagnostics"
+description = "No panic! in backend/runtime/main.rs [Unix only]"
+run = "bash scripts/manager check-compiler-diagnostics"
 
 [tasks."check-harness-installation"]
-description = "P0 + fast gate + all project check_* harnesses (slow)"
-run = "scripts/manager check-harness-installation"
+description = "P0 + fast gate + all project check_* harnesses (slow) [Unix only]"
+run = "bash scripts/manager check-harness-installation"
 
 [tasks."check-toolchain"]
-description = "Verify required CLI tools (cargo, node, wasm-tools, …)"
-run = "scripts/manager check-toolchain"
-
+description = "Verify required CLI tools (cargo, node, wasm-tools, …) [Unix only]"
+run = "bash scripts/manager check-toolchain"
 
 [tasks."check-host-deny"]
-description = "Standalone fixtures must not import wasm module name host"
-run = "scripts/manager check-host-deny"
+description = "Standalone fixtures must not import wasm module name host [Unix only]"
+run = "bash scripts/manager check-host-deny"
 
 [tasks."check-runtimefn-invariants"]
-description = "Unit tests for runtime link plan and RuntimeFn invariants"
-run = "scripts/manager check-runtimefn-invariants"
+description = "Unit tests for runtime link plan and RuntimeFn invariants [Unix only]"
+run = "bash scripts/manager check-runtimefn-invariants"
 
 [tasks."check-wasm-validation"]
-description = "wasm-tools validate on representative build outputs"
-run = "scripts/manager check-wasm-validation"
+description = "wasm-tools validate on representative build outputs [Unix only]"
+run = "bash scripts/manager check-wasm-validation"
 
 [tasks."check-agent-state"]
 description = "Validate .agents/state JSON files against schemas"
-run = "scripts/manager check-agent-state"
+run = "python scripts/manager.py check-agent-state"
 
 [tasks."check-issue-health"]
 description = "Mechanical invariants: ids, paths, index+tables"
-run = "scripts/manager check-issue-health"
+run = "python scripts/manager.py check-issue-health"
 
 [tasks."check-test-records-schema"]
-description = "Validate TestRecord JSONL lines (stdin or file)"
-run = "scripts/manager check-test-records-schema"
+description = "Validate TestRecord JSONL lines (stdin or file) [Unix only]"
+run = "bash scripts/manager check-test-records-schema"
 
 [tasks."check-fixture-differential"]
-description = "Node vs iwasm: runs nextest m2_node_diff"
-run = "scripts/manager check-fixture-differential"
+description = "Node vs iwasm: runs nextest m2_node_diff [Unix only]"
+run = "bash scripts/manager check-fixture-differential"
 
 [tasks.manager]
 description = "Print script manager help (list all commands)"
-run = "scripts/manager help"
+run = "python scripts/manager.py help"

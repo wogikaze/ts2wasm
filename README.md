@@ -127,3 +127,7 @@ A: `cargo nextest run` で実行。differential testing が必要な場合は `s
 ### Q: Nix がなくても開発できるか？
 
 A: 可能。手動でツールを入れる場合の例が README にある。ただし Nix を使うとツールの共有が容易になる。
+
+### Q: Windows で開発できるか？
+
+A: 可能。`scripts/manager.py` と `docs/17-windows-development.md` を参照。主要なコマンド（fmt, clippy, nextest, check-fast-gate）は Python で動作する。ただし一部のスクリプトはまだ bash 依存で、Windows では動作しない。完全な機能には WSL2 の使用を推奨。

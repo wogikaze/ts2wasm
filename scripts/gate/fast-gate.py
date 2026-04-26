@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+"""Single local gate: fmt + issue queue + coverage matrix check + nextest (optional).
+
+Usage:
+  python scripts/manager.py check-fast-gate [--skip-nextest]
+
+Environment:
+  TS2WASM_FAST_GATE_SKIP_NEXTEST=1  Same as --skip-nextest (for pre-push).
+
+Dependencies: cargo, python3 (see nested scripts for cargo-nextest, jq, etc.)
+"""
+
+import os
+import sys
+import subprocess
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable)
+
+def usage():
+    print("Usage: python scripts/manager.py check-fast-gate [--skip-nextest]")
+    print()
+    print("Runs:")
+    print("  - cargo fmt --all --check")
+    print("  - python scripts/check/issue-health.py")
+    print("  - python scripts/gen/coverage-matrix.py --check")
+    print("  - cargo nextest run (unless --skip-nextest)")
+    print()
+    print("Options:")
+    print("  --skip-nextest   Skip cargo nextest (faster; use in pre-push with targeted tests).")
+
+def run(cmd, cwd=REPO_ROOT):
+    """Run a command and exit if it fails."""
+    print(f"check_fast_gate: {' '.join(cmd)}", file=sys.stderr)
+    result = subprocess.run(cmd, cwd=cwd)
+    if result.returncode != 0:
+        sys.exit(result.returncode)
+
+def main():
+    skip_nextest = os.environ.get("TS2WASM_FAST_GATE_SKIP_NEXTEST", "0") == "1"
+    
+    args = sys.argv[1:]
+    while args:
+        if args[0] == "--skip-nextest":
+            skip_nextest = True
+            args.pop(0)
+        elif args[0] in ("-h", "--help"):
+            usage()
+            sys.exit(0)
+        else:
+            print(f"check_fast_gate: unknown option: {args[0]}", file=sys.stderr)
+            usage()
+            sys.exit(1)
+    
+    # Check for required commands
+    for cmd in ["cargo", "python3", sys.executable]:
+        if subprocess.run(["which", cmd], capture_output=True).returncode != 0:
+            print(f"check_fast_gate: missing required command: {cmd}", file=sys.stderr)
+            sys.exit(1)
+    
+    # Run checks
+    run(["cargo", "fmt", "--all", "--check"])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/gen/coverage-matrix.py"), "--check"])
+    
+    if not skip_nextest:
+        run(["cargo", "nextest", "run"])
+    else:
+        print("check_fast_gate: skipping cargo nextest (--skip-nextest)", file=sys.stderr)
+    
+    print("check_fast_gate: OK", file=sys.stderr)
+
+if __name__ == "__main__":
+    main()
