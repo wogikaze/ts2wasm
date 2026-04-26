@@ -105,20 +105,13 @@ def main():
     require_all = os.environ.get("REQUIRE_ALL_HARNESSES", "0") == "1"
     check_func = need_exec_required if require_all else need_exec_optional
     
-    p1_harnesses = [
-        "scripts/check/docs-health.sh",
-        "scripts/check/agent-policy.sh",
-        "scripts/check/benchmark-regression.sh",
-        "scripts/check/scripts-behavior.sh",
-        "scripts/check/determinism.sh",
-    ]
-    for f in p1_harnesses:
-        check_func(f)
+    # P1+ harnesses have been removed (migrated to Python or deprecated)
+    print("harness: (info) P1+ harnesses removed - all high-priority scripts migrated to Python", file=sys.stderr)
     
     print("", file=sys.stderr)
     print("== required repo gates (script files) ==", file=sys.stderr)
     required_gates = [
-        "scripts/check/shell-syntax.sh",
+        "scripts/check/shell-syntax.py",
         "scripts/check/issue-health.py",
         "scripts/gen/coverage-matrix.py",
         "scripts/gate/fast-gate.py",

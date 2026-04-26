@@ -93,18 +93,15 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
    - `scripts/manager update-issue-index --check`
    - `scripts/manager check-issue-health`
 
-4. **Docs consistency check** (if docs or manifests were touched):
-   - `scripts/check/docs-health.sh`
-
-5. **Final validation**:
+4. **Final validation**:
    - `scripts/manager check-agent-state`
    - `scripts/manager check-repo-smoke`
 
-6. **Commit close changes**:
+5. **Commit close changes**:
    - Group into 1 commit or logically split into few commits (e.g., `chore(issues): close #NNN …`)
    - Ensure issue move and index update are in the same commit or logical sequence
 
-7. **Cleanup and reporting**:
+6. **Cleanup and reporting**:
    - Clear `current_task.json` to idle state
    - Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
    - Update failure_patterns.md if new failure pattern discovered

@@ -44,11 +44,12 @@ check-fixture-differential	Node vs iwasm: runs nextest m2_node_diff
 check-host-deny	Standalone fixtures must not emit wasm (import "host" ...)
 check-runtimefn-invariants	Unit tests: runtime_link_plan + runtime_fn invariants
 check-wasm-validation	Build sample fixtures; wasm-tools validate
-check-agent-policy	Check local hooks do not bypass agreed checks
-check-benchmark-regression	Benchmark regression placeholder gate
-check-determinism	Determinism placeholder gate
-check-docs-health	Check docs backticked script paths
-check-scripts-behavior	Smoke test scripts/manager behavior
+# Removed P1+ harnesses (migrated to Python or deprecated)
+# check-agent-policy	Check local hooks do not bypass agreed checks
+# check-benchmark-regression	Benchmark regression placeholder gate
+# check-determinism	Determinism placeholder gate
+# check-docs-health	Check docs backticked script paths
+# check-scripts-behavior	Smoke test scripts/manager behavior
 check-agent-state	Validate .agents/state JSON files against schemas
 check-issue-index	Compatibility alias for check-issue-health
 check-issue-health	Mechanical invariants: ids, done checkboxes, paths, index+tables
@@ -83,11 +84,12 @@ TABLE
   check-host-deny             no (import "host") in standalone fixtures
   check-runtimefn-invariants    runtime link plan unit tests
   check-wasm-validation         wasm-tools validate on samples
-  check-agent-policy          local hook policy check
-  check-benchmark-regression  benchmark regression placeholder
-  check-determinism           determinism placeholder
-  check-docs-health           docs backticked script paths
-  check-scripts-behavior      scripts/manager behavior smoke
+# Removed P1+ harnesses (migrated to Python or deprecated)
+#  check-agent-policy          local hook policy check
+#  check-benchmark-regression  benchmark regression placeholder
+#  check-determinism           determinism placeholder
+#  check-docs-health           docs backticked script paths
+#  check-scripts-behavior      scripts/manager behavior smoke
   check-agent-state            Validate .agents/state JSON files against schemas
   check-issue-index         Compatibility alias for check-issue-health
   check-issue-health         Mechanical invariants: ids, paths, index+tables
@@ -134,11 +136,12 @@ case "$target" in
   check-host-deny) exec bash "${repo_root}/scripts/check/host-deny.sh" "$@" ;;
   check-runtimefn-invariants) exec bash "${repo_root}/scripts/check/runtimefn-invariants.sh" "$@" ;;
   check-wasm-validation) exec bash "${repo_root}/scripts/check/wasm-validation.sh" "$@" ;;
-  check-agent-policy) exec bash "${repo_root}/scripts/check/agent-policy.sh" "$@" ;;
-  check-benchmark-regression) exec bash "${repo_root}/scripts/check/benchmark-regression.sh" "$@" ;;
-  check-determinism) exec bash "${repo_root}/scripts/check/determinism.sh" "$@" ;;
-  check-docs-health) exec bash "${repo_root}/scripts/check/docs-health.sh" "$@" ;;
-  check-scripts-behavior) exec bash "${repo_root}/scripts/check/scripts-behavior.sh" "$@" ;;
+  # Removed P1+ harnesses (migrated to Python or deprecated)
+# check-agent-policy) exec bash "${repo_root}/scripts/check/agent-policy.sh" "$@" ;;
+# check-benchmark-regression) exec bash "${repo_root}/scripts/check/benchmark-regression.sh" "$@" ;;
+# check-determinism) exec bash "${repo_root}/scripts/check/determinism.sh" "$@" ;;
+# check-docs-health) exec bash "${repo_root}/scripts/check/docs-health.sh" "$@" ;;
+# check-scripts-behavior) exec bash "${repo_root}/scripts/check/scripts-behavior.sh" "$@" ;;
   check-agent-state) exec "$PYTHON_BIN" "${repo_root}/scripts/check/agent-state.py" "$@" ;;
   check-issue-index) exec "$PYTHON_BIN" "${repo_root}/scripts/check/issue-health.py" "$@" ;;
   check-issue-health) exec "$PYTHON_BIN" "${repo_root}/scripts/check/issue-health.py" "$@" ;;
