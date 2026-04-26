@@ -63,17 +63,58 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 
 ### Close (RETRO state)
 
-- Update issue file status to "done" and add completion evidence
-- Move issue file from `issues/open/` to `issues/done/`
-- Run `scripts/manager update-issue-index` to regenerate `issues/index.md`
-- Run `scripts/manager update-issue-index --check`
-- Run `scripts/manager check-issue-queue`
-- Run `scripts/manager check-agent-state`
-- Run `scripts/manager check-repo-smoke`
-- Clear `current_task.json` to idle state
-- Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
-- Update failure_patterns.md if new failure pattern discovered
-- Update review_checklist.md if new guard needed
+**Prerequisites (all must be satisfied):**
+- All acceptance criteria in the issue are satisfied with evidence in the repository
+- Required verification / Close gate commands from the issue have been executed with exit 0 recorded
+- No remaining tasks, STOP_IF, or blocked declarations remain in the issue body
+- Implementation, verification, or documentation changes have been committed (not just mechanical checkbox updates)
+
+**Close procedure:**
+
+1. **Commit implementation changes** (if not already committed):
+   - Run all validation commands from the issue
+   - `scripts/manager fmt`
+   - `scripts/manager nextest` (full suite, no filters)
+   - Any fixture-specific tests (e.g., `iwasm fixture.wasm`)
+   - Commit with descriptive message (e.g., `feat(area): implement NNN description`)
+   - Record the commit hash
+
+2. **Move issue to done**:
+   - `git mv issues/open/<slug>.md issues/done/<slug>.md` (preserves history and path)
+   - Update issue frontmatter: set Status to done
+   - Add Close note with:
+     - Date
+     - Commit hash(es) providing evidence
+     - Mapping of acceptance criteria to evidence
+     - Verification commands executed and results
+
+3. **Regenerate index and verify**:
+   - `scripts/manager update-issue-index` to regenerate `issues/index.md`
+   - `scripts/manager update-issue-index --check`
+   - `scripts/manager check-issue-queue`
+
+4. **Docs consistency check** (if docs or manifests were touched):
+   - `scripts/check/docs-health.sh`
+
+5. **Final validation**:
+   - `scripts/manager check-agent-state`
+   - `scripts/manager check-repo-smoke`
+
+6. **Commit close changes**:
+   - Group into 1 commit or logically split into few commits (e.g., `chore(issues): close #NNN …`)
+   - Ensure issue move and index update are in the same commit or logical sequence
+
+7. **Cleanup and reporting**:
+   - Clear `current_task.json` to idle state
+   - Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
+   - Update failure_patterns.md if new failure pattern discovered
+   - Update review_checklist.md if new guard needed
+
+**False-done prevention:**
+- Do not mark an issue as done without implementation-backed evidence
+- Do not move issues with remaining `[ ]` checkboxes or open Status to done/
+- Do not close issues based on text-only changes without verification
+- Do not close issues with upstream dependencies still open
 
 **Issue addition** (when Ready queue is low):
 
