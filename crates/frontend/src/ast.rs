@@ -69,7 +69,7 @@ pub enum Stmt {
     },
     Function {
         name: String,
-        params: Vec<String>,
+        params: Vec<(String, Option<Expr>)>,
         body: Vec<Stmt>,
         span: Span,
     },

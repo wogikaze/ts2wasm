@@ -67,14 +67,25 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         Stmt::Return { expr, .. } => Ok(ResolvedStmt::Return(resolve_expr(expr)?)),
         Stmt::Function {
             name, params, body, ..
-        } => Ok(ResolvedStmt::Function {
-            name: name.clone(),
-            params: params.clone(),
-            body: body
+        } => {
+            let resolved_params = params
                 .iter()
-                .map(resolve_stmt)
-                .collect::<Result<Vec<_>, _>>()?,
-        }),
+                .map(|(param_name, default)| {
+                    Ok((
+                        param_name.clone(),
+                        default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                    ))
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(ResolvedStmt::Function {
+                name: name.clone(),
+                params: resolved_params,
+                body: body
+                    .iter()
+                    .map(resolve_stmt)
+                    .collect::<Result<Vec<_>, _>>()?,
+            })
+        }
         Stmt::ClassDecl {
             name,
             extends,
@@ -118,12 +129,21 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                                 span: None,
                             });
                         }
+                        let resolved_params = params
+                            .iter()
+                            .map(|(param_name, default)| {
+                                Ok((
+                                    param_name.clone(),
+                                    default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                                ))
+                            })
+                            .collect::<Result<Vec<_>, _>>()?;
                         let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<
                             Vec<_>,
                             _,
                         >>(
                         )?;
-                        constructor = Some((params.clone(), resolved_body));
+                        constructor = Some((resolved_params, resolved_body));
                     }
                     // Regular methods
                     Stmt::Function {
@@ -132,6 +152,15 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         body: method_body,
                         ..
                     } => {
+                        let resolved_params = params
+                            .iter()
+                            .map(|(param_name, default)| {
+                                Ok((
+                                    param_name.clone(),
+                                    default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                                ))
+                            })
+                            .collect::<Result<Vec<_>, _>>()?;
                         let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<
                             Vec<_>,
                             _,
@@ -141,13 +170,13 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                             statics.push((stripped.to_owned(), ResolvedExpr::Undefined));
                             methods.push(ClassMethod {
                                 name: method_name.clone(),
-                                params: params.clone(),
+                                params: resolved_params,
                                 body: resolved_body,
                             });
                         } else {
                             methods.push(ClassMethod {
                                 name: method_name.clone(),
-                                params: params.clone(),
+                                params: resolved_params,
                                 body: resolved_body,
                             });
                         }

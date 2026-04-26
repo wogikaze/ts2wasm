@@ -31,6 +31,7 @@ pub struct LoweredProgram {
 pub struct LoweredFunction {
     pub id: FuncId,
     pub params: Vec<LocalId>,
+    pub min_required_params: usize,
     pub locals: Vec<LocalId>,
     pub body: Vec<LoweredStmt>,
 }
@@ -305,7 +306,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     (Vec::new(), Vec::new())
                 };
 
-                let mut ctor_params_with_this = vec!["this".to_owned()];
+                let mut ctor_params_with_this: Vec<(String, Option<ResolvedExpr>)> =
+                    vec![("this".to_owned(), None)];
                 ctor_params_with_this.extend(ctor_params);
                 functions.push(lower_function(
                     ctor_id,
@@ -320,13 +322,14 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
                     let method_id = function_ids[&method_key];
-                    let method_params_with_this = if method.name.starts_with("static::") {
-                        method.params.clone()
-                    } else {
-                        let mut params = vec!["this".to_owned()];
-                        params.extend(method.params.clone());
-                        params
-                    };
+                    let method_params_with_this: Vec<(String, Option<ResolvedExpr>)> =
+                        if method.name.starts_with("static::") {
+                            method.params.clone()
+                        } else {
+                            let mut params = vec![("this".to_owned(), None)];
+                            params.extend(method.params.clone());
+                            params
+                        };
                     functions.push(lower_function(
                         method_id,
                         &method_params_with_this,
@@ -431,7 +434,7 @@ fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<Str
 
 fn lower_function(
     id: FuncId,
-    params: &[String],
+    params: &[(String, Option<ResolvedExpr>)],
     body: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
     class_parents: HashMap<String, Option<String>>,
@@ -440,18 +443,46 @@ fn lower_function(
 ) -> Result<LoweredFunction, Diagnostic> {
     let (mut resolver, param_ids) = Resolver::with_params(
         function_ids,
-        params,
+        params
+            .iter()
+            .map(|(name, _)| name.clone())
+            .collect::<Vec<_>>()
+            .as_slice(),
         class_parents,
         current_class,
         in_constructor,
     )?;
-    let body = resolver.lower_block(body)?;
 
+    // Insert default parameter assignments at the start of the body
+    let mut body_with_defaults = Vec::new();
+    for (param_name, default_expr) in params {
+        if let Some(default) = default_expr {
+            let param_local = resolver.resolve_local(param_name)?;
+            let lowered_default = resolver.lower_expr(default)?;
+            // Generate: if (param === undefined) { param = default; }
+            body_with_defaults.push(LoweredStmt::If {
+                condition: LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(param_local)),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Undefined),
+                },
+                then_body: vec![LoweredStmt::Assign(param_local, lowered_default)],
+                else_body: vec![],
+            });
+        }
+    }
+    body_with_defaults.extend(resolver.lower_block(body)?);
+
+    let min_required = params
+        .iter()
+        .filter(|(_, default)| default.is_none())
+        .count();
     Ok(LoweredFunction {
         id,
         params: param_ids,
+        min_required_params: min_required,
         locals: resolver.locals,
-        body,
+        body: body_with_defaults,
     })
 }
 
@@ -1521,14 +1552,17 @@ fn validate_expr(
                             span: None,
                         });
                     } else {
-                        let expected = program.functions[func_id.0].params.len();
-                        if args.len() != expected {
+                        let func = &program.functions[func_id.0];
+                        let min_required = func.min_required_params;
+                        let max_allowed = func.params.len();
+                        if args.len() < min_required || args.len() > max_allowed {
                             errors.push(Diagnostic {
                                 code: DiagCode::ArityMismatch,
                                 message: format!(
-                                    "function {} expects {} argument(s), got {}",
+                                    "function {} expects between {} and {} argument(s), got {}",
                                     func_id.0,
-                                    expected,
+                                    min_required,
+                                    max_allowed,
                                     args.len()
                                 ),
                                 span: None,

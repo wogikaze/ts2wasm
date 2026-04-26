@@ -19,7 +19,7 @@ pub enum ResolvedStmt {
     Return(ResolvedExpr),
     Function {
         name: String,
-        params: Vec<String>,
+        params: Vec<(String, Option<ResolvedExpr>)>,
         body: Vec<ResolvedStmt>,
     },
     TryCatch {
@@ -65,7 +65,7 @@ pub enum ResolvedStmt {
     ClassDecl {
         name: String,
         extends: Option<String>,
-        constructor: Option<(Vec<String>, Vec<ResolvedStmt>)>,
+        constructor: Option<(Vec<(String, Option<ResolvedExpr>)>, Vec<ResolvedStmt>)>,
         methods: Vec<ClassMethod>,
         statics: Vec<(String, ResolvedExpr)>,
     },
@@ -74,7 +74,7 @@ pub enum ResolvedStmt {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClassMethod {
     pub name: String,
-    pub params: Vec<String>,
+    pub params: Vec<(String, Option<ResolvedExpr>)>,
     pub body: Vec<ResolvedStmt>,
 }
 

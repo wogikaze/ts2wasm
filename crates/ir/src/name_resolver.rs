@@ -143,8 +143,11 @@ impl NameResolver {
                 // Function declarations are already collected in first pass
                 // Now resolve the function body with its own scope
                 self.enter_scope();
-                for param in params {
-                    self.declare_variable(param, None)?;
+                for (param_name, default) in params {
+                    self.declare_variable(param_name, None)?;
+                    if let Some(default_expr) = default {
+                        self.resolve_expr(default_expr)?;
+                    }
                 }
                 let resolved_body = self.resolve_block(body)?;
                 self.exit_scope();

@@ -1049,7 +1049,13 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                params.push(self.expect_ident()?.0);
+                let (param_name, _) = self.expect_ident()?;
+                let default = if self.consume(TokenKind::Equal) {
+                    Some(self.assignment()?)
+                } else {
+                    None
+                };
+                params.push((param_name, default));
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -1393,8 +1399,13 @@ impl Parser {
             let mut params = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let (param, _) = self.expect_ident()?;
-                    params.push(param);
+                    let (param_name, _) = self.expect_ident()?;
+                    let default = if self.consume(TokenKind::Equal) {
+                        Some(self.assignment()?)
+                    } else {
+                        None
+                    };
+                    params.push((param_name, default));
                     if self.consume(TokenKind::RightParen) {
                         break;
                     }

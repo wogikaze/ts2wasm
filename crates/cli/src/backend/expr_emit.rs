@@ -203,14 +203,28 @@ impl WatEmitter<'_> {
                 }
             }
             LoweredExpr::Call { kind, args } => {
-                for arg in args {
-                    self.emit_expr(wat, arg, indent, frame);
-                }
                 match kind {
                     FunctionCallKind::User(func_id) => {
+                        // Get the function to check parameter count
+                        let func = self.program.functions.get(func_id.0);
+                        let param_count = func.map(|f| f.params.len()).unwrap_or(0);
+
+                        // Emit provided arguments
+                        for arg in args {
+                            self.emit_expr(wat, arg, indent, frame);
+                        }
+
+                        // Fill missing arguments with undefined
+                        for _ in args.len()..param_count {
+                            wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                        }
+
                         wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*func_id)));
                     }
                     FunctionCallKind::Builtin(builtin) => {
+                        for arg in args {
+                            self.emit_expr(wat, arg, indent, frame);
+                        }
                         let runtime_fn = RuntimeFn::from_builtin(*builtin);
                         wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
                     }
