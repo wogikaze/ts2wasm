@@ -6,6 +6,9 @@ use ts2wasm_runtime_abi::RuntimeString;
 pub(crate) enum HostAbi {
     WasiPreview1,
     NodeShim,
+    /// Internal host functions for runtime support
+    /// Kept for future internal host function support
+    #[allow(dead_code)]
     InternalHost,
 }
 
@@ -32,6 +35,7 @@ pub(crate) enum RuntimeFn {
     Log,
     TruthyBool,
     Not,
+    TypeOf,
     StringEqual,
     Concat,
     IsString,
@@ -53,6 +57,8 @@ pub(crate) enum RuntimeFn {
     MemEqual,
     /// Load an element from a heap array by tagged-int index.
     ArrayGet,
+    /// Generic indexing that handles both arrays and strings.
+    Index,
     /// Read the `.length` of a string or array (i32 at offset 0 of heap ptr).
     GetLength,
     /// Linear-scan property lookup on a heap object.
@@ -245,6 +251,8 @@ impl HostImport {
     }
 
     /// Get the flat import name for manifest (derived from spec).
+    /// Kept for future manifest emission capabilities.
+    #[allow(dead_code)]
     pub(crate) const fn manifest_name(self) -> &'static str {
         match self {
             Self::FdRead => "wasi_snapshot_preview1.fd_read",
@@ -544,6 +552,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::TypeOf => RuntimeSpec {
+                symbol: "$typeof",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringEqual => RuntimeSpec {
                 symbol: "$string_equal",
                 deps: STRING_EQUAL_DEPS,
@@ -682,6 +698,14 @@ impl RuntimeFn {
             },
             Self::ArrayGet => RuntimeSpec {
                 symbol: "$array_get",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::Index => RuntimeSpec {
+                symbol: "$index",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
@@ -1035,6 +1059,7 @@ impl RuntimeFn {
             Self::Log => "log",
             Self::TruthyBool => "truthy_bool",
             Self::Not => "not",
+            Self::TypeOf => "typeof",
             Self::StringEqual => "string_equal",
             Self::Concat => "concat",
             Self::IsString => "is_string",
@@ -1053,6 +1078,7 @@ impl RuntimeFn {
             Self::AllocHeap => "alloc_heap",
             Self::MemEqual => "mem_equal",
             Self::ArrayGet => "array_get",
+            Self::Index => "index",
             Self::GetLength => "get_length",
             Self::PropertyGet => "property_get",
             Self::PropertySet => "property_set",
@@ -1104,6 +1130,7 @@ impl RuntimeFn {
             Self::Log,
             Self::TruthyBool,
             Self::Not,
+            Self::TypeOf,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -1122,6 +1149,7 @@ impl RuntimeFn {
             Self::AllocHeap,
             Self::MemEqual,
             Self::ArrayGet,
+            Self::Index,
             Self::GetLength,
             Self::PropertyGet,
             Self::PropertySet,
@@ -1181,6 +1209,7 @@ impl RuntimeFn {
             Self::Log,
             Self::TruthyBool,
             Self::Not,
+            Self::TypeOf,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -1199,6 +1228,7 @@ impl RuntimeFn {
             Self::AllocHeap,
             Self::MemEqual,
             Self::ArrayGet,
+            Self::Index,
             Self::GetLength,
             Self::PropertyGet,
             Self::PropertySet,

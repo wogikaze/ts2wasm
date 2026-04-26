@@ -32,6 +32,9 @@ impl Default for RuntimeLinkPlan {
 }
 
 impl RuntimeLinkPlan {
+    /// Return the manifest target string.
+    /// Kept for future manifest emission capabilities.
+    #[allow(dead_code)]
     pub(crate) const fn manifest_target(&self) -> &'static str {
         self.manifest_target
     }
@@ -251,6 +254,7 @@ impl RuntimeLinkPlan {
                 match op {
                     LoweredUnaryOp::Not => self.add_required_runtime(RuntimeFn::Not),
                     LoweredUnaryOp::Negate => self.add_required_runtime(RuntimeFn::Negate),
+                    LoweredUnaryOp::TypeOf => self.add_required_runtime(RuntimeFn::TypeOf),
                 }
             }
             LoweredExpr::Binary { left, op, right } => {
@@ -323,6 +327,11 @@ impl RuntimeLinkPlan {
             LoweredExpr::ArrayGet { arr, index } => {
                 self.add_required_runtime(RuntimeFn::ArrayGet);
                 self.collect_required_runtime_expr(arr);
+                self.collect_required_runtime_expr(index);
+            }
+            LoweredExpr::Index { object, index } => {
+                self.add_required_runtime(RuntimeFn::Index);
+                self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(index);
             }
             LoweredExpr::GetLength(inner) => {

@@ -58,6 +58,9 @@ impl WatEmitter<'_> {
                     LoweredUnaryOp::Negate => {
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Negate.symbol()))
                     }
+                    LoweredUnaryOp::TypeOf => {
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TypeOf.symbol()))
+                    }
                 }
             }
             LoweredExpr::Binary { left, op, right } => {
@@ -167,6 +170,11 @@ impl WatEmitter<'_> {
                 self.emit_expr(wat, arr, indent, frame);
                 self.emit_expr(wat, index, indent, frame);
                 wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ArrayGet.symbol()));
+            }
+            LoweredExpr::Index { object, index } => {
+                self.emit_expr(wat, object, indent, frame);
+                self.emit_expr(wat, index, indent, frame);
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Index.symbol()));
             }
             LoweredExpr::GetLength(inner) => {
                 self.emit_expr(wat, inner, indent, frame);

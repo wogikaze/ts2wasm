@@ -65,7 +65,7 @@ impl<'a> WatEmitter<'a> {
         emitter
     }
 
-    fn emit(self) -> Result<String, Diagnostic> {
+    fn emit(mut self) -> Result<String, Diagnostic> {
         self.validate_memory_layout()?;
         let _required_capabilities = self.link_plan.required_capabilities();
         let mut wat = String::new();
@@ -415,6 +415,10 @@ impl<'a> WatEmitter<'a> {
             }
             LoweredExpr::ArrayGet { arr, index } => {
                 self.collect_expr_strings(arr);
+                self.collect_expr_strings(index);
+            }
+            LoweredExpr::Index { object, index } => {
+                self.collect_expr_strings(object);
                 self.collect_expr_strings(index);
             }
             LoweredExpr::GetLength(inner) => {

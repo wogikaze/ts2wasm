@@ -7,7 +7,7 @@ use ts2wasm_runtime_abi::{
 };
 
 impl WatEmitter<'_> {
-    pub(super) fn emit_runtime(&self, wat: &mut String) {
+    pub(super) fn emit_runtime(&mut self, wat: &mut String) {
         for runtime_fn in RuntimeFn::emission_order() {
             if !self
                 .link_plan
@@ -24,6 +24,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::Log => self.emit_log(wat),
                 RuntimeFn::TruthyBool => self.emit_truthy_bool(wat),
                 RuntimeFn::Not => self.emit_not(wat),
+                RuntimeFn::TypeOf => self.emit_typeof(wat),
                 RuntimeFn::StringEqual => self.emit_string_equal(wat),
                 RuntimeFn::Concat => self.emit_concat(wat),
                 RuntimeFn::IsString => self.emit_is_string(wat),
@@ -42,6 +43,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::AllocHeap => self.emit_alloc_heap(wat),
                 RuntimeFn::MemEqual => self.emit_mem_equal(wat),
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
+                RuntimeFn::Index => self.emit_index(wat),
                 RuntimeFn::GetLength => self.emit_get_length(wat),
                 RuntimeFn::PropertyGet => self.emit_property_get(wat),
                 RuntimeFn::PropertySet => self.emit_property_set(wat),
@@ -339,6 +341,54 @@ impl WatEmitter<'_> {
 "#,
             false_tag = ValueTag::FALSE,
             true_tag = ValueTag::TRUE,
+        ));
+    }
+
+    fn emit_typeof(&mut self, wat: &mut String) {
+        // Pre-intern typeof result strings
+        let str_undefined = self.intern_string("undefined");
+        let str_object = self.intern_string("object");
+        let str_boolean = self.intern_string("boolean");
+        let str_number = self.intern_string("number");
+        let str_string = self.intern_string("string");
+
+        wat.push_str(&format!(
+            r#"
+  (func $typeof (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {undefined_tag}))
+      (then (return (i32.or (i32.const {str_undefined}) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {null_tag}))
+      (then (return (i32.or (i32.const {str_object}) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {false_tag}))
+      (then (return (i32.or (i32.const {str_boolean}) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {true_tag}))
+      (then (return (i32.or (i32.const {str_boolean}) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (i32.or (i32.const {str_number}) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
+      (then (return (i32.or (i32.const {str_string}) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.or (i32.const {str_object}) (i32.const {string_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then (return (i32.or (i32.const {str_object}) (i32.const {string_tag})))))
+    (i32.or (i32.const {str_object}) (i32.const {string_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            undefined_tag = ValueTag::UNDEFINED,
+            null_tag = ValueTag::NULL,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+            number_tag = ValueTag::NUMBER,
+            string_tag = ValueTag::STRING_TAG,
+            object_tag = ValueTag::OBJECT_TAG,
+            array_tag = ValueTag::ARRAY_TAG,
+            str_undefined = str_undefined + Layout::STRING_HEADER_SIZE,
+            str_object = str_object + Layout::STRING_HEADER_SIZE,
+            str_boolean = str_boolean + Layout::STRING_HEADER_SIZE,
+            str_number = str_number + Layout::STRING_HEADER_SIZE,
+            str_string = str_string + Layout::STRING_HEADER_SIZE,
         ));
     }
 
@@ -712,6 +762,52 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             undefined = ValueTag::UNDEFINED,
             header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+        ));
+    }
+
+    fn emit_index(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $index (param $obj i32) (param $idx i32) (result i32)
+    (local $obj_tag i32)
+    (local $idx_tag i32)
+    (local $base i32)
+    (local $i i32)
+    (local.set $obj_tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (local.set $idx_tag (i32.and (local.get $idx) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $idx_tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
+    ;; String indexing
+    (if (i32.eq (local.get $obj_tag) (i32.const {string_tag}))
+      (then
+        (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {undefined}))))
+        (return
+          (i32.or
+            (i32.shl
+              (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {string_header}) (local.get $i))))
+              (i32.const {number_shift}))
+            (i32.const {number_tag}))))))
+    ;; Array indexing
+    (if (i32.ne (local.get $obj_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {undefined}))))
+    (i32.load
+      (i32.add
+        (local.get $base)
+        (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            string_tag = ValueTag::STRING,
+            array_tag = ValueTag::ARRAY,
+            number_tag = ValueTag::NUMBER,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            undefined = ValueTag::UNDEFINED,
+            string_header = Layout::STRING_HEADER_SIZE,
+            array_header = Layout::ARRAY_HEADER_SIZE,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
         ));
     }

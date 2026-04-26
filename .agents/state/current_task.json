@@ -1,14 +1,31 @@
 {
-  "id": null,
-  "title": null,
   "status": "idle",
-  "issue_path": null,
-  "scope": null,
-  "acceptance": [],
+  "issue_id": null,
+  "issue_title": null,
+  "started_at": null,
+  "target_gate": null,
+  "scope": {
+    "allowed_files": [
+      "crates/cli/src/backend/",
+      "fixtures/"
+    ],
+    "forbidden_files": [
+      "docs/"
+    ]
+  },
+  "acceptance": [
+    "String indexing works correctly",
+    "Fixtures cover string indexing behavior",
+    "No regression in existing fixtures"
+  ],
   "commands": {
-    "fast": [],
-    "full": []
+    "fast": [
+      "cargo fmt --all --check"
+    ],
+    "full": [
+      "cargo nextest run"
+    ]
   },
   "risk": [],
-  "notes": "Issue 012 completed and moved to done. Ready to select next task."
+  "notes": "Selected P1 issue 043 - implement string indexing. Parser already handles bracket notation (Expr::Index), but ComputedIndex is lowered to ArrayGet (for arrays), not string indexing. Need to implement string indexing in runtime."
 }

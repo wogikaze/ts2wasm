@@ -138,6 +138,10 @@ pub enum LoweredExpr {
         arr: Box<LoweredExpr>,
         index: Box<LoweredExpr>,
     },
+    Index {
+        object: Box<LoweredExpr>,
+        index: Box<LoweredExpr>,
+    },
     GetLength(Box<LoweredExpr>),
     ObjectNew {
         props: Vec<(String, LoweredExpr)>,
@@ -184,6 +188,7 @@ pub enum LoweredBinaryOp {
 pub enum LoweredUnaryOp {
     Not,
     Negate,
+    TypeOf,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -494,11 +499,11 @@ fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
     match op {
         UnaryOp::Not => Ok(LoweredUnaryOp::Not),
         UnaryOp::Negate => Ok(LoweredUnaryOp::Negate),
+        UnaryOp::TypeOf => Ok(LoweredUnaryOp::TypeOf),
         UnaryOp::Increment
         | UnaryOp::Decrement
         | UnaryOp::PreIncrement
         | UnaryOp::PreDecrement
-        | UnaryOp::TypeOf
         | UnaryOp::BitwiseNot
         | UnaryOp::Delete
         | UnaryOp::Void => Err(Diagnostic {
@@ -860,10 +865,21 @@ impl<'a> Resolver<'a> {
                 obj: Box::new(self.lower_expr(object)?),
                 key: key.clone(),
             }),
-            ResolvedExpr::ComputedIndex { object, index } => Ok(LoweredExpr::ArrayGet {
-                arr: Box::new(self.lower_expr(object)?),
-                index: Box::new(self.lower_expr(index)?),
-            }),
+            ResolvedExpr::ComputedIndex { object, index } => {
+                // If the object is a string literal, use StringIndex
+                // Otherwise, use ArrayGet for arrays
+                if matches!(object.as_ref(), ResolvedExpr::String(_)) {
+                    Ok(LoweredExpr::Index {
+                        object: Box::new(self.lower_expr(object)?),
+                        index: Box::new(self.lower_expr(index)?),
+                    })
+                } else {
+                    Ok(LoweredExpr::ArrayGet {
+                        arr: Box::new(self.lower_expr(object)?),
+                        index: Box::new(self.lower_expr(index)?),
+                    })
+                }
+            },
             ResolvedExpr::Array(elements) => {
                 let lowered = elements
                     .iter()
@@ -1445,6 +1461,10 @@ fn validate_expr(
         }
         LoweredExpr::ArrayGet { arr, index } => {
             validate_expr(arr, local_count, num_funcs, program, errors, true);
+            validate_expr(index, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::Index { object, index } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
             validate_expr(index, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::GetLength(expr) => {
