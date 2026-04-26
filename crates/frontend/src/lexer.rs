@@ -52,6 +52,9 @@ pub enum Token {
     Bang,
     StrictEqual,
     Equal,
+    EqualEqual,
+    BangEqual,
+    StrictNotEqual,
     AndAnd,
     OrOr,
     Greater,
@@ -140,6 +143,9 @@ pub enum TokenKind {
     Bang,
     StrictEqual,
     Equal,
+    EqualEqual,
+    BangEqual,
+    StrictNotEqual,
     AndAnd,
     OrOr,
     Greater,
@@ -223,6 +229,9 @@ impl TokenKind {
                 | (Self::Bang, Token::Bang)
                 | (Self::StrictEqual, Token::StrictEqual)
                 | (Self::Equal, Token::Equal)
+                | (Self::EqualEqual, Token::EqualEqual)
+                | (Self::BangEqual, Token::BangEqual)
+                | (Self::StrictNotEqual, Token::StrictNotEqual)
                 | (Self::AndAnd, Token::AndAnd)
                 | (Self::OrOr, Token::OrOr)
                 | (Self::Greater, Token::Greater)

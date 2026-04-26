@@ -114,6 +114,9 @@ impl WatEmitter<'_> {
                             LoweredBinaryOp::Less => RuntimeFn::Less,
                             LoweredBinaryOp::Greater => RuntimeFn::Greater,
                             LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
+                            LoweredBinaryOp::EqualEqual => RuntimeFn::EqualEqual,
+                            LoweredBinaryOp::BangEqual => RuntimeFn::BangEqual,
+                            LoweredBinaryOp::StrictNotEqual => RuntimeFn::StrictNotEqual,
                             LoweredBinaryOp::And => RuntimeFn::And,
                             LoweredBinaryOp::Or => RuntimeFn::Or,
                         };

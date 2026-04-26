@@ -188,13 +188,35 @@ impl<'a> Lexer<'a> {
                 }
                 '!' => {
                     self.advance_char();
-                    tokens.push(SpannedToken {
-                        kind: Token::Bang,
-                        span: Span {
-                            start,
-                            end: self.cursor,
-                        },
-                    });
+                    if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        if self.peek_char() == Some('=') {
+                            self.advance_char();
+                            tokens.push(SpannedToken {
+                                kind: Token::StrictNotEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        } else {
+                            tokens.push(SpannedToken {
+                                kind: Token::BangEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            });
+                        }
+                    } else {
+                        tokens.push(SpannedToken {
+                            kind: Token::Bang,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
+                        });
+                    }
                 }
                 '*' => {
                     self.advance_char();
@@ -304,13 +326,12 @@ impl<'a> Lexer<'a> {
                                 },
                             });
                         } else {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message: "this subset supports === but not ==".to_owned(),
-                                span: Some(Span {
-                                    start: self.cursor.saturating_sub(2),
+                            tokens.push(SpannedToken {
+                                kind: Token::EqualEqual,
+                                span: Span {
+                                    start,
                                     end: self.cursor,
-                                }),
+                                },
                             });
                         }
                     } else if self.peek_char() == Some('>') {
@@ -1559,7 +1580,26 @@ impl Parser {
 
     fn equality(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.comparison()?;
-        while self.consume(TokenKind::StrictEqual) {
+        while self.consume(TokenKind::StrictEqual)
+            || self.consume(TokenKind::EqualEqual)
+            || self.consume(TokenKind::BangEqual)
+            || self.consume(TokenKind::StrictNotEqual)
+        {
+            let op = if self.prev_token_is(Token::StrictEqual) {
+                BinaryOp::StrictEqual
+            } else if self.prev_token_is(Token::EqualEqual) {
+                BinaryOp::EqualEqual
+            } else if self.prev_token_is(Token::BangEqual) {
+                BinaryOp::BangEqual
+            } else if self.prev_token_is(Token::StrictNotEqual) {
+                BinaryOp::StrictNotEqual
+            } else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "unexpected token in equality expression".to_owned(),
+                    span: None,
+                });
+            };
             let right = self.comparison()?;
             let span = Span {
                 start: expr.span().start,
@@ -1567,7 +1607,7 @@ impl Parser {
             };
             expr = Expr::Binary {
                 left: Box::new(expr),
-                op: BinaryOp::StrictEqual,
+                op,
                 right: Box::new(right),
                 span,
             };
@@ -2163,6 +2203,14 @@ impl Parser {
             .checked_sub(1)
             .and_then(|idx| self.tokens.get(idx))
             .map(|t| t.span)
+    }
+
+    fn prev_token_is(&self, token: Token) -> bool {
+        self.cursor
+            .checked_sub(1)
+            .and_then(|idx| self.tokens.get(idx))
+            .map(|t| t.kind == token)
+            .unwrap_or(false)
     }
 
     fn is_at_end(&self) -> bool {

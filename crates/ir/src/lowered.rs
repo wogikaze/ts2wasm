@@ -180,6 +180,9 @@ pub enum LoweredBinaryOp {
     Less,
     Greater,
     StrictEqual,
+    EqualEqual,
+    BangEqual,
+    StrictNotEqual,
     And,
     Or,
 }
@@ -227,9 +230,12 @@ impl LoweredExpr {
                         InferredType::Unknown
                     }
                 }
-                LoweredBinaryOp::Less | LoweredBinaryOp::Greater | LoweredBinaryOp::StrictEqual => {
-                    InferredType::Boolean
-                }
+                LoweredBinaryOp::Less
+                | LoweredBinaryOp::Greater
+                | LoweredBinaryOp::StrictEqual
+                | LoweredBinaryOp::EqualEqual
+                | LoweredBinaryOp::BangEqual
+                | LoweredBinaryOp::StrictNotEqual => InferredType::Boolean,
                 LoweredBinaryOp::And | LoweredBinaryOp::Or => InferredType::Unknown,
             },
             _ => InferredType::Unknown,
@@ -430,6 +436,9 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
         BinaryOp::Less => Ok(LoweredBinaryOp::Less),
         BinaryOp::Greater => Ok(LoweredBinaryOp::Greater),
         BinaryOp::StrictEqual => Ok(LoweredBinaryOp::StrictEqual),
+        BinaryOp::EqualEqual => Ok(LoweredBinaryOp::EqualEqual),
+        BinaryOp::BangEqual => Ok(LoweredBinaryOp::BangEqual),
+        BinaryOp::StrictNotEqual => Ok(LoweredBinaryOp::StrictNotEqual),
         BinaryOp::And => Ok(LoweredBinaryOp::And),
         BinaryOp::Or => Ok(LoweredBinaryOp::Or),
         BinaryOp::Multiply
