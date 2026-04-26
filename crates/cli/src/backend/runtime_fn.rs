@@ -68,6 +68,8 @@ pub(crate) enum RuntimeFn {
     PropertyGet,
     /// Set or append a property on a heap object.
     PropertySet,
+    /// Delete a property from a heap object.
+    PropertyDelete,
     /// M10: String methods
     StringCharAt,
     StringSubstring,
@@ -784,6 +786,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::PropertyDelete => RuntimeSpec {
+                symbol: "$property_delete",
+                deps: &[Self::MemEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringCharAt => RuntimeSpec {
                 symbol: "$string_char_at",
                 deps: STRING_CHAR_AT_DEPS,
@@ -1181,6 +1191,7 @@ impl RuntimeFn {
             Self::GetLength => "get_length",
             Self::PropertyGet => "property_get",
             Self::PropertySet => "property_set",
+            Self::PropertyDelete => "property_delete",
             Self::StringCharAt => "string_char_at",
             Self::StringSubstring => "string_substring",
             Self::StringSlice => "string_slice",

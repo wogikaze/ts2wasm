@@ -167,6 +167,14 @@ pub enum LoweredExpr {
         key: String,
         value: Box<LoweredExpr>,
     },
+    PropertyDelete {
+        object: Box<LoweredExpr>,
+        key: String,
+    },
+    PropertyDeleteDynamic {
+        object: Box<LoweredExpr>,
+        key: Box<LoweredExpr>,
+    },
     PropertySetDynamic {
         object: Box<LoweredExpr>,
         key: Box<LoweredExpr>,
@@ -201,6 +209,7 @@ pub enum LoweredUnaryOp {
     Not,
     Negate,
     TypeOf,
+    Delete,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -529,12 +538,12 @@ fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
         UnaryOp::Not => Ok(LoweredUnaryOp::Not),
         UnaryOp::Negate => Ok(LoweredUnaryOp::Negate),
         UnaryOp::TypeOf => Ok(LoweredUnaryOp::TypeOf),
+        UnaryOp::Delete => Ok(LoweredUnaryOp::Delete),
         UnaryOp::Increment
         | UnaryOp::Decrement
         | UnaryOp::PreIncrement
         | UnaryOp::PreDecrement
         | UnaryOp::BitwiseNot
-        | UnaryOp::Delete
         | UnaryOp::Void => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("unary operator {:?} not yet supported", op),
@@ -796,10 +805,34 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Null => Ok(LoweredExpr::Null),
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
             ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
-            ResolvedExpr::Unary { op, expr } => Ok(LoweredExpr::Unary {
-                op: lower_unary_op(*op)?,
-                expr: Box::new(self.lower_expr(expr)?),
-            }),
+            ResolvedExpr::Unary { op, expr } => {
+                if *op == UnaryOp::Delete {
+                    // Lower delete to PropertyDelete or PropertyDeleteDynamic
+                    match expr.as_ref() {
+                        ResolvedExpr::PropertyAccess { object, key } => {
+                            Ok(LoweredExpr::PropertyDelete {
+                                object: Box::new(self.lower_expr(object)?),
+                                key: key.clone(),
+                            })
+                        }
+                        ResolvedExpr::ComputedIndex { object, index } => {
+                            Ok(LoweredExpr::PropertyDeleteDynamic {
+                                object: Box::new(self.lower_expr(object)?),
+                                key: Box::new(self.lower_expr(index)?),
+                            })
+                        }
+                        _ => Ok(LoweredExpr::Unary {
+                            op: lower_unary_op(*op)?,
+                            expr: Box::new(self.lower_expr(expr)?),
+                        }),
+                    }
+                } else {
+                    Ok(LoweredExpr::Unary {
+                        op: lower_unary_op(*op)?,
+                        expr: Box::new(self.lower_expr(expr)?),
+                    })
+                }
+            }
             ResolvedExpr::Binary { left, op, right } => Ok(LoweredExpr::Binary {
                 left: Box::new(self.lower_expr(left)?),
                 op: lower_binary_op(*op)?,

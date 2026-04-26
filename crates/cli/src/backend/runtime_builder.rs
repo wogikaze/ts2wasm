@@ -50,6 +50,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::GetLength => self.emit_get_length(wat),
                 RuntimeFn::PropertyGet => self.emit_property_get(wat),
                 RuntimeFn::PropertySet => self.emit_property_set(wat),
+                RuntimeFn::PropertyDelete => self.emit_property_delete(wat),
                 RuntimeFn::StringCharAt => self.emit_string_char_at(wat),
                 RuntimeFn::StringSubstring => self.emit_string_substring(wat),
                 RuntimeFn::StringSlice => self.emit_string_slice(wat),
@@ -1004,6 +1005,79 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_property_delete(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $property_delete (param $obj i32) (param $key_ptr i32) (param $key_len i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $pk_raw i32)
+    (local $pk_ptr i32)
+    (local $pk_len i32)
+    (local $j i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+
+    ;; scan for the key to delete
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $pk_raw (i32.load (local.get $entry_base)))
+        (local.set $pk_ptr
+          (i32.add (i32.and (local.get $pk_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+        (local.set $pk_len
+          (i32.load (i32.and (local.get $pk_raw) (i32.const {heap_mask}))))
+        (if (i32.eq (local.get $key_len) (local.get $pk_len))
+          (then
+            (if (call $mem_equal (local.get $key_ptr) (local.get $pk_ptr) (local.get $key_len))
+              (then
+                ;; found: shift remaining entries left
+                (local.set $j (local.get $i))
+                (loop $shift
+                  (br_if $shift (i32.eq (local.get $j) (i32.sub (local.get $count) (i32.const {one}))))
+                  (local.set $j (i32.add (local.get $j) (i32.const {one})))
+                  (local.set $entry_base
+                    (i32.add (local.get $base)
+                      (i32.add (i32.const {obj_header})
+                        (i32.shl (local.get $j) (i32.const {entry_shift})))))
+                  (i32.store (i32.sub (local.get $entry_base) (i32.const {entry_size}))
+                    (i32.load (local.get $entry_base)))
+                  (i32.store (i32.add (i32.sub (local.get $entry_base) (i32.const {entry_size})) (i32.const {value_off}))
+                    (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
+                  (br $shift))
+                ;; decrement count
+                (i32.store (local.get $base) (i32.sub (local.get $count) (i32.const {one})))
+                (return (i32.const {true}))))))
+        (br $scan)))
+    ;; not found
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            str_header = Layout::STRING_HEADER_SIZE,
+            entry_size = Layout::OBJECT_ENTRY_SIZE,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
         ));
     }
 

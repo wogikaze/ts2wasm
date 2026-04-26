@@ -49,6 +49,37 @@ impl WatEmitter<'_> {
             LoweredExpr::Local(local_id) => {
                 wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
             }
+            LoweredExpr::PropertyDelete { object, key } => {
+                self.emit_expr(wat, object, indent, frame);
+                let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+                let key_len = self.string_len(key);
+                wat.push_str(&format!("{pad}(i32.const {})\n", key_ptr));
+                wat.push_str(&format!("{pad}(i32.const {})\n", key_len));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::PropertyDelete.symbol()));
+            }
+            LoweredExpr::PropertyDeleteDynamic { object, key } => {
+                let tmp = frame.heap_base_tmp();
+                self.emit_expr(wat, key, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", tmp));
+                self.emit_expr(wat, object, indent, frame);
+                wat.push_str(&format!("{pad}(local.get {})\n", tmp));
+                wat.push_str(&format!(
+                    "{pad}(i32.and (local.get {}) (i32.const {}))\n",
+                    tmp,
+                    ValueTag::HEAP_MASK
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.add (local.get {}) (i32.const {}))\n",
+                    tmp,
+                    Layout::STRING_HEADER_SIZE
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.load (i32.and (local.get {}) (i32.const {})))\n",
+                    tmp,
+                    ValueTag::HEAP_MASK
+                ));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::PropertyDelete.symbol()));
+            }
             LoweredExpr::Unary { op, expr } => {
                 self.emit_expr(wat, expr, indent, frame);
                 match op {
@@ -60,6 +91,11 @@ impl WatEmitter<'_> {
                     }
                     LoweredUnaryOp::TypeOf => {
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TypeOf.symbol()))
+                    }
+                    LoweredUnaryOp::Delete => {
+                        // Delete is handled as a special case in the AST
+                        // This should not be reached if delete is properly lowered
+                        wat.push_str(&format!("{pad}(i32.const 0)\n"))
                     }
                 }
             }

@@ -403,6 +403,14 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(arg);
                 }
             }
+            LoweredExpr::PropertyDelete { object, key } => {
+                self.collect_expr_strings(object);
+                self.intern_string(key);
+            }
+            LoweredExpr::PropertyDeleteDynamic { object, key } => {
+                self.collect_expr_strings(object);
+                self.collect_expr_strings(key);
+            }
             LoweredExpr::Number(_)
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null

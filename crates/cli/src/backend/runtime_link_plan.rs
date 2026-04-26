@@ -255,6 +255,9 @@ impl RuntimeLinkPlan {
                     LoweredUnaryOp::Not => self.add_required_runtime(RuntimeFn::Not),
                     LoweredUnaryOp::Negate => self.add_required_runtime(RuntimeFn::Negate),
                     LoweredUnaryOp::TypeOf => self.add_required_runtime(RuntimeFn::TypeOf),
+                    LoweredUnaryOp::Delete => {
+                        // Delete is handled specially, no runtime function needed
+                    }
                 }
             }
             LoweredExpr::Binary { left, op, right } => {
@@ -386,6 +389,15 @@ impl RuntimeLinkPlan {
                 for arg in args {
                     self.collect_required_runtime_expr(arg);
                 }
+            }
+            LoweredExpr::PropertyDelete { object, key: _ } => {
+                self.collect_required_runtime_expr(object);
+                self.add_required_runtime(RuntimeFn::PropertyDelete);
+            }
+            LoweredExpr::PropertyDeleteDynamic { object, key } => {
+                self.collect_required_runtime_expr(object);
+                self.collect_required_runtime_expr(key);
+                self.add_required_runtime(RuntimeFn::PropertyDelete);
             }
         }
     }
