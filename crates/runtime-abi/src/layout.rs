@@ -47,8 +47,10 @@ impl Layout {
     pub const ARRAY_ELEM_SHIFT: u32 = 2;
 
     // ---- Object heap layout -----------------------------------------------
-    /// Bytes before the property entries: i32 property count.
-    pub const OBJECT_HEADER_SIZE: u32 = 4;
+    /// Bytes before the property entries: i32 property count, i32 prototype pointer.
+    pub const OBJECT_HEADER_SIZE: u32 = 8;
+    /// Byte offset of the prototype pointer in the object header.
+    pub const OBJECT_PROTOTYPE_OFFSET: u32 = 4;
     /// Each entry: (i32 key_raw_value, i32 value) = 8 bytes; shift = 3.
     pub const OBJECT_ENTRY_SHIFT: u32 = 3;
     /// Byte offset of the value field within one property entry.
