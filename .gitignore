@@ -20,3 +20,8 @@ tmp/
 
 # instant-grep index
 .ig/
+
+.env
+
+# Development run reports
+reports/runs/
