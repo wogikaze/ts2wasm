@@ -154,6 +154,7 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 - **Mechanical guards added** to `failure_patterns.md` or `review_checklist.md` if new patterns discovered
 - **State files validated** with `scripts/manager check-agent-state`
 - **Command outputs saved** to `reports/runs/<run_id>/stdout.log` and `stderr.log`
+- **Discord report sent** with `scripts/manager discord-report --run-id <run_id>` (see retrospective-codify skill for format)
 
 Do not mark an issue as done without completing these steps.
 

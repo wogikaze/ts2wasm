@@ -265,6 +265,86 @@ message: Set/Map のサイズは .size プロパティを使う。
 - **勝手に書き出す**: ユーザー承認なしに CLAUDE.md や skill を更新する → 必ず提案 → 承認 → 書き出し の順を守る
 - **失敗の言語化を省く**: 「最終解は X」だけ書いて、なぜ初手で詰まったかを残さない → 失敗側の記述が無いと、将来の自分は同じ落とし穴にまた落ちる
 
+## 開発ループレポート形式
+
+開発ループの終了時に Discord に送信するレポート形式。
+
+**哲学: 次のループの質 = f(今回の失敗の解像度)**
+
+- 成功よりも失敗を書く
+- 変更よりも判断を書く
+- 結果よりも次のアクションを書く
+
+### Discord Embed 形式
+
+```json
+{
+  "embeds": [
+    {
+      "title": "ts2wasm 開発ループレポート",
+      "color": 5814783,
+      "fields": [
+        {
+          "name": "📊 状態",
+          "value": "tests: 185 passed\nissues: +1 / done: 2\nchanges: 15 files"
+        },
+        {
+          "name": "🎯 今回の目的",
+          "value": "issue parserの一貫性を確保し、index driftを防ぐ"
+        },
+        {
+          "name": "🔄 実施内容",
+          "value": "- issue parserをcommon化\n- index生成の末尾改行バグ修正\n- scripts-workflow更新"
+        },
+        {
+          "name": "🧠 判断と根拠",
+          "value": "- checker/generatorの不一致が根本原因\n- regexベースでも十分だが共通化が必須"
+        },
+        {
+          "name": "⚠️ 詰まり・ロス",
+          "value": "- YAML parsing仕様の曖昧さで時間消費\n- 末尾改行差分で無限diffの危険"
+        },
+        {
+          "name": "📉 リスク",
+          "value": "- parserがまだ非完全（multi-line YAML未対応）\n- 将来drift再発の可能性"
+        },
+        {
+          "name": "➡️ 次にやるべきこと",
+          "value": "- typeof operator (#028)\n- issue parserの仕様固定\n- report generator実装"
+        },
+        {
+          "name": "📌 完了 / 追加",
+          "value": "done: #026, #027\nnew: #028"
+        }
+      ],
+      "footer": {
+        "text": "loop: 12 → 13 | duration: ~2h"
+      }
+    }
+  ]
+}
+```
+
+### 各フィールドの説明
+
+- **📊 状態**: テスト結果、Issue 変化、変更ファイル数
+- **🎯 今回の目的**: 1行で何を達成しようとしたか
+- **🔄 実施内容**: 実際に何をしたか（箇条書き）
+- **🧠 判断と根拠**: なぜその解を選んだか（失敗からの学び）
+- **⚠️ 詰まり・ロス**: 何に時間を溶かしたか、どこで詰まったか
+- **📉 リスク**: 残っているリスク、将来の懸念
+- **➡️ 次にやるべきこと**: 具体的な次のアクション（Issue番号付き）
+- **📌 完了 / 追加**: done に移動した Issue、新しく追加した Issue
+
+### 送信方法
+
+```bash
+# .env から DISCORD_WEBHOOK_URL を読み込み
+scripts/manager discord-report --run-id <run_id>
+```
+
+レポート内容は `reports/runs/<run_id>/cycle_report.md` から抽出する。
+
 ## Related Skills
 
 - ast-grep-practice: for creating ast-grep rules from learnings
