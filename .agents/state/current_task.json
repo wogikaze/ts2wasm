@@ -1,34 +1,18 @@
 {
-  "status": "in_progress",
-  "issue_id": "056",
-  "issue_title": "Implement name resolution for variables and identifiers",
-  "started_at": "2026-04-26T16:00:00Z",
+  "status": "idle",
+  "issue_id": null,
+  "issue_title": null,
+  "started_at": null,
   "target_gate": null,
   "scope": {
-    "allowed_files": [
-      "crates/frontend/src/",
-      "crates/cli/src/",
-      "fixtures/"
-    ],
-    "forbidden_files": [
-      "crates/runtime-abi/",
-      "crates/backend-wasm/"
-    ]
+    "allowed_files": [],
+    "forbidden_files": []
   },
-  "acceptance": [
-    "Name resolution passes for basic variable declarations and references",
-    "UnresolvedName diagnostic reduced from 14 to 0 in test262 sample",
-    "Regression test added for name resolution",
-    "Docs updated if semantics change"
-  ],
+  "acceptance": [],
   "commands": {
-    "fast": [
-      "cargo fmt --all --check"
-    ],
-    "full": [
-      "cargo nextest run"
-    ]
+    "fast": [],
+    "full": []
   },
   "risk": [],
-  "notes": "P0 issue - implement lexical scope tracking for variable declarations, function declarations, and identifier references. Start with simple lexical scope before adding closure support."
+  "notes": ""
 }
