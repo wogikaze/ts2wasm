@@ -12,6 +12,8 @@ set -euo pipefail
 _ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../lib/common.sh
 source "${_ts2wasm_entry_dir}/../lib/common.sh"
+# shellcheck source=../lib/feature-labels.sh
+source "${_ts2wasm_entry_dir}/../lib/feature-labels.sh"
 cd "$TS2WASM_REPO_ROOT"
 
 SAMPLE=""
@@ -154,6 +156,7 @@ create_test_record() {
 
 RESULT_STATUS=""
 RESULT_DIAG=""
+RESULT_FEATURE=""
 RESULT_REASON=""
 RESULT_ACTUAL=""
 
@@ -169,16 +172,21 @@ compile_and_run_test() {
 
     RESULT_STATUS=""
     RESULT_DIAG=""
+    RESULT_FEATURE=""
     RESULT_REASON=""
     RESULT_ACTUAL=""
 
     if ! cargo run -q -p ts2wasm-cli -- build "$test_file" -o "$tmp_wasm" >"$tmp_stderr" 2>&1; then
         RESULT_STATUS="unsupported"
         RESULT_DIAG=$(grep -oE 'UnsupportedSyntax|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError' "$tmp_stderr" | head -1 || true)
-        RESULT_REASON=$(head -1 "$tmp_stderr" || true)
         if [[ -z "$RESULT_DIAG" ]]; then
             RESULT_DIAG="CompilationError"
         fi
+        RESULT_REASON=$(grep -F "[$RESULT_DIAG]" "$tmp_stderr" | head -1 || true)
+        if [[ -z "$RESULT_REASON" ]]; then
+            RESULT_REASON=$(head -1 "$tmp_stderr" || true)
+        fi
+        RESULT_FEATURE="$(ts2wasm_feature_label "$RESULT_DIAG" "$tmp_stderr" "$test_file")"
         return 0
     fi
 
@@ -239,8 +247,8 @@ process_one_test() {
             ;;
         unsupported)
             local tracking_key
-            tracking_key="feature:$(echo "$RESULT_DIAG" | tr '[:upper:]' '[:lower:]')"
-            create_test_record "test262" "$test_file" "wasm-iwasm" "unsupported" "" "" "$RESULT_DIAG: $RESULT_REASON" "$tracking_key" >"$json_out"
+            tracking_key="feature:$RESULT_FEATURE"
+            create_test_record "test262" "$test_file" "wasm-iwasm" "unsupported" "" "" "$RESULT_DIAG/$RESULT_FEATURE: $RESULT_REASON" "$tracking_key" >"$json_out"
             echo "unsupported" >"$status_out"
             ;;
         fail)

@@ -13,7 +13,10 @@ dist/
 target/
 
 # python
-__pycache__/
+__pycache__
 
 # local generated artifacts
 tmp/
+
+# instant-grep index
+.ig/

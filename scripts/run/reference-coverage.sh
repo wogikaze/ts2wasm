@@ -57,6 +57,8 @@ done
 _ts2wasm_entry_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=../lib/common.sh
 source "${_ts2wasm_entry_dir}/../lib/common.sh"
+# shellcheck source=../lib/feature-labels.sh
+source "${_ts2wasm_entry_dir}/../lib/feature-labels.sh"
 cd "$TS2WASM_REPO_ROOT"
 repo_root="$TS2WASM_REPO_ROOT"
 
@@ -97,6 +99,7 @@ if [[ "$limit" == "0" ]]; then
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {},
+  "unsupported_features": {},
   "status": "in-progress",
   "evidence": "scripts/run/reference-coverage.sh $suite --limit 0"
 }
@@ -114,6 +117,7 @@ JSON
     printf 'blocked=0\n'
     printf 'skip_with_reason=0\n'
     printf 'unsupported_diagcodes=\n'
+    printf 'unsupported_features=\n'
     printf 'semantic_enabled=0\n'
   fi
   exit 0
@@ -130,6 +134,7 @@ unsupported_count=0
 blocked_count=0
 skip_count=0
 declare -A unsupported_diag_counts
+declare -A unsupported_feature_counts
 
 semantic_enabled=0
 if command -v node >/dev/null 2>&1 && command -v iwasm >/dev/null 2>&1; then
@@ -191,7 +196,9 @@ for file in "${files[@]}"; do
     if [[ -z "$diag_code" ]]; then
       diag_code="Unknown"
     fi
+    feature_label="$(ts2wasm_feature_label "$diag_code" "$err_file" "$file")"
     unsupported_diag_counts["$diag_code"]=$(( ${unsupported_diag_counts["$diag_code"]:-0} + 1 ))
+    unsupported_feature_counts["$feature_label"]=$(( ${unsupported_feature_counts["$feature_label"]:-0} + 1 ))
   fi
 done
 
@@ -200,6 +207,15 @@ if [[ ${#unsupported_diag_counts[@]} -gt 0 ]]; then
   unsupported_diagcodes="$({
     for code in "${!unsupported_diag_counts[@]}"; do
       printf '%s:%s\n' "$code" "${unsupported_diag_counts[$code]}"
+    done
+  } | sort -t: -k2,2nr -k1,1 | paste -sd ',' -)"
+fi
+
+unsupported_features=""
+if [[ ${#unsupported_feature_counts[@]} -gt 0 ]]; then
+  unsupported_features="$({
+    for feature in "${!unsupported_feature_counts[@]}"; do
+      printf '%s:%s\n' "$feature" "${unsupported_feature_counts[$feature]}"
     done
   } | sort -t: -k2,2nr -k1,1 | paste -sd ',' -)"
 fi
@@ -228,6 +244,18 @@ if [[ "$json_output" -eq 1 ]]; then
   done
   diag_json+="}"
 
+  feature_json="{"
+  first=1
+  for feature in "${!unsupported_feature_counts[@]}"; do
+    if [[ $first -eq 1 ]]; then
+      first=0
+    else
+      feature_json+=","
+    fi
+    feature_json+="\"$feature\":${unsupported_feature_counts[$feature]}"
+  done
+  feature_json+="}"
+
   cat <<JSON
 {
   "suite": "$suite",
@@ -243,6 +271,7 @@ if [[ "$json_output" -eq 1 ]]; then
   "blocked": $blocked_count,
   "skip_with_reason": $skip_count,
   "unsupported_diagcodes": $diag_json,
+  "unsupported_features": $feature_json,
   "status": "in-progress",
   "evidence": "scripts/run/reference-coverage.sh $suite --limit $limit"
 }
@@ -260,5 +289,6 @@ else
   printf 'blocked=%s\n' "$blocked_count"
   printf 'skip_with_reason=%s\n' "$skip_count"
   printf 'unsupported_diagcodes=%s\n' "$unsupported_diagcodes"
+  printf 'unsupported_features=%s\n' "$unsupported_features"
   printf 'semantic_enabled=%s\n' "$semantic_enabled"
 fi

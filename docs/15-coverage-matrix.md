@@ -12,7 +12,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 - 分子は `build_pass` と `semantic_pass` を別列で記録する。`unsupported` / `blocked` / `skip-with-reason` は内訳として別管理し、いずれの coverage% の分子にも含めない。
 - gate 判定に影響する変更時は、影響する suite 行の `executed` と status 内訳を同時に更新する。
 - `executed` は段階的に増やす。1 回の更新あたり `test262:+50`、`tsc:+30`、`tsgo:+20` を基本ステップとする。
-- `unsupported (DiagCode breakdown)` 列で優先実装対象を可視化する（例: `UnsupportedSyntax:120`）。
+- `unsupported (DiagCode breakdown)` と `unsupported (feature breakdown)` 列で優先実装対象を可視化する（例: `UnsupportedSyntax:120`, `class:50,import-export:30`）。
 
 ## Reference Coverage Dashboard
 
@@ -61,6 +61,7 @@ Unsupported:
 
 - 診断として終了したが、既知未対応として扱う件数。
 - 現在は `InvariantViolation` と `BackendIo` 以外の compiler diagnostics を unsupported として集計する。
+- `unsupported (feature breakdown)` は diagnostic message と reference path から導出した安定 label を集計する。TestRecord の `tracking` も `feature:<label>` を使う。
 
 Fail:
 
@@ -123,5 +124,5 @@ The coverage matrix above shows test262 execution counts. For detailed test resu
 - reference suite の分母が変わっていないか確認したか
 - 変更対象 suite の `executed` と status 内訳を `artifacts/coverage/reference-coverage-matrix.md` に反映したか
 - `build_coverage%` / `semantic_coverage%` の再計算を反映したか
-- `unsupported (DiagCode breakdown)` が最新の実行結果を反映しているか
+- `unsupported (DiagCode breakdown)` と `unsupported (feature breakdown)` が最新の実行結果を反映しているか
 - 必要なら `current-state.md` と整合したか

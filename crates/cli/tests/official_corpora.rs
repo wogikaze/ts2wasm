@@ -93,10 +93,11 @@ fn classify_build_case(suite: &str, case: &str) -> TestRecord {
 
     let stderr = String::from_utf8_lossy(&build.stderr).to_string();
     let diag_code = extract_diag_code(&stderr);
+    let feature_label = feature_label_from_diag(&diag_code, &stderr, case);
     let (status, tracking) = match diag_code.as_str() {
         "BackendIo" => (TestStatus::Blocked, "build:backend-io".to_owned()),
         "InvariantViolation" => (TestStatus::Fail, "bug:invariant-violation".to_owned()),
-        code => (TestStatus::Unsupported, format!("feature:{code}")),
+        _ => (TestStatus::Unsupported, format!("feature:{feature_label}")),
     };
 
     TestRecord {
@@ -119,6 +120,68 @@ fn extract_diag_code(stderr: &str) -> String {
         return "UnknownDiagnostic".to_owned();
     };
     stderr[start + 1..start + 1 + end].to_owned()
+}
+
+fn feature_label_from_diag(diag_code: &str, stderr: &str, case: &str) -> &'static str {
+    match diag_code {
+        "BackendIo" => return "backend-io",
+        "InvariantViolation" => return "invariant-violation",
+        "UnresolvedName" => return "name-resolution",
+        "UnresolvedFunction" => return "function-resolution",
+        "DuplicateFunction" => return "duplicate-function",
+        "DuplicateLocal" => return "duplicate-local",
+        "DuplicateParameter" => return "duplicate-parameter",
+        "NumberOutOfRange" => return "number-range",
+        "ArityMismatch" => return "arity",
+        "InvalidTopLevelReturn" => return "top-level-return",
+        _ => {}
+    }
+
+    let diagnostic = stderr
+        .lines()
+        .find(|line| line.contains(&format!("[{diag_code}]")))
+        .unwrap_or(stderr);
+    let text = diagnostic.to_ascii_lowercase();
+    let path = case.to_ascii_lowercase();
+
+    if path.contains("/built-ins/date/") {
+        "date"
+    } else if path.contains("/built-ins/function/") {
+        "function"
+    } else if path.contains("/class/") || path.contains("/class-") || text.contains("class ") {
+        "class"
+    } else if path.contains("/module/")
+        || path.contains("/import/")
+        || path.contains("/export/")
+        || text.contains(" import ")
+        || text.contains(" export ")
+    {
+        "import-export"
+    } else if path.contains("/regexp/") || text.contains("regexp") {
+        "regexp-literal"
+    } else if path.contains("/async") || text.contains(" async ") || text.contains("await ") {
+        "async"
+    } else if path.contains("/destructuring/") || text.contains("destructur") {
+        "destructuring"
+    } else if path.contains("/template/") || text.contains("template") {
+        "template-literal"
+    } else if path.contains("/arrow") || text.contains("=>") || text.contains("arrow") {
+        "arrow-function"
+    } else if path.contains("/spread/") || text.contains("spread") {
+        "spread"
+    } else if text.contains("non-ascii") || text.contains("utf-8") || text.contains("utf8") {
+        "utf8-string"
+    } else if text.contains("binary operator") || text.contains("unary operator") {
+        "operator"
+    } else if text.contains("kind: function") || text.contains("nested function") {
+        "function"
+    } else if text.contains("expression type not yet supported") {
+        "unsupported-expression"
+    } else if text.contains("expected ") || text.contains("unsupported character") {
+        "parser-syntax"
+    } else {
+        "unknown-unsupported"
+    }
 }
 
 #[test]
