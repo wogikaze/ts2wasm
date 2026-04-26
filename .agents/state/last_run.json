@@ -1,7 +1,7 @@
 {
-  "run_id": "2026-04-26T00-00-00",
-  "ended_at": "2026-04-26T00:00:00Z",
-  "task_id": null,
-  "summary": "idle",
-  "test_report_path": null
+  "run_id": "20260426-131806",
+  "ended_at": "2026-04-26T13:20:30Z",
+  "task_id": "003",
+  "summary": "verify_full",
+  "test_report_path": "reports/runs/20260426-131806/test_report.json"
 }

@@ -9,6 +9,15 @@
 
 ## Log
 
+### 2026-04-26T13:19:35Z — close issue 003
+
+- **When**: 2026-04-26T13:19:35Z
+- **State**: VERIFY_FULL
+- **Decision**: Closed issue 003 as done and moved it to `issues/done/` with updated acceptance evidence
+- **Rationale**: Manifest import/fixture tests in scope were implemented and validated; issue tracker and index were synchronized
+- **Reversible?**: no
+- **Follow-up**: none
+
 ### 2026-04-26 — plan for issue 002
 
 - **When**: 2026-04-26T06:45:00Z
