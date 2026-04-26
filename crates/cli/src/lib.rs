@@ -2019,7 +2019,7 @@ impl Parser {
                 let mut props = Vec::new();
                 if !self.consume(TokenKind::RightBrace) {
                     loop {
-                        let (key, _) = self.expect_ident()?;
+                        let key = self.parse_object_key()?;
                         self.expect(TokenKind::Colon)?;
                         let val = self.expression()?;
                         props.push((key, val));
@@ -2055,6 +2055,28 @@ impl Parser {
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected identifier, got {other:?}"),
+                span: self.peek_span(),
+            }),
+        }
+    }
+
+    fn parse_object_key(&mut self) -> Result<String, Diagnostic> {
+        match self.peek() {
+            Some(Token::Ident(name)) => {
+                let key = name.clone();
+                self.advance();
+                Ok(key)
+            }
+            Some(Token::String(s)) => {
+                let key = s.clone();
+                self.advance();
+                Ok(key)
+            }
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "expected identifier or string literal as object key, got {other:?}"
+                ),
                 span: self.peek_span(),
             }),
         }
