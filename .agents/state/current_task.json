@@ -1,31 +1,26 @@
 {
-  "status": "idle",
-  "issue_id": null,
-  "issue_title": null,
-  "started_at": null,
-  "target_gate": null,
+  "id": "011",
+  "title": "Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree)",
+  "status": "in_progress",
+  "issue_path": "issues/open/011-enable-cargo-deny-warnings-in-ci-and-harnesses.md",
   "scope": {
-    "allowed_files": [
-      "crates/cli/src/backend/",
-      "fixtures/"
-    ],
-    "forbidden_files": [
-      "docs/"
-    ]
+    "allowed_files": [],
+    "forbidden_files": []
   },
   "acceptance": [
-    "String indexing works correctly",
-    "Fixtures cover string indexing behavior",
-    "No regression in existing fixtures"
+    "No `cargo nextest run` warnings under `TS2WASM_NEXTEST_DENY_WARNINGS=1` + `RUSTFLAGS=-D warnings` mode.",
+    "All repository paths referenced in issue evidence exist and are valid."
   ],
   "commands": {
     "fast": [
-      "cargo fmt --all --check"
+      "TS2WASM_NEXTEST_DENY_WARNINGS=1 RUSTFLAGS='-D warnings' cargo nextest run"
     ],
     "full": [
-      "cargo nextest run"
+      "TS2WASM_NEXTEST_DENY_WARNINGS=1 RUSTFLAGS='-D warnings' cargo nextest run",
+      "python scripts/manager.py check-issue-health",
+      "python scripts/manager.py check-agent-state"
     ]
   },
   "risk": [],
-  "notes": "Selected P1 issue 043 - implement string indexing. Parser already handles bracket notation (Expr::Index), but ComputedIndex is lowered to ArrayGet (for arrays), not string indexing. Need to implement string indexing in runtime."
+  "notes": "2026-04-26: verification attempted; full strict mode is blocked by workspace/fs conditions. `TS2WASM_NEXTEST_DENY_WARNINGS=1 RUSTFLAGS='-D warnings' cargo nextest run` fails with `Access is denied` in target output writes and `LNK1318/LNK1106` due environment disk/temp limits. `cargo check --workspace` succeeds when using temp target on PATH with space, confirming warning policy change is likely not a code regression."
 }
