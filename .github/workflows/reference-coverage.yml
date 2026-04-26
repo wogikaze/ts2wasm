@@ -110,8 +110,8 @@ jobs:
       - name: Create pull request if matrix changed
         uses: peter-evans/create-pull-request@v7
         with:
-          commit-message: docs: refresh reference coverage matrix
-          title: docs: refresh reference coverage matrix
+          commit-message: "docs: refresh reference coverage matrix"
+          title: "docs: refresh reference coverage matrix"
           body: |
             Automated reference coverage refresh.
 
