@@ -82,6 +82,36 @@ fn lowering_routes_regexp_literal_to_string_subset() {
 }
 
 #[test]
+fn lowering_routes_template_interpolation_through_addition() {
+    let program = parse_and_resolve("let name = \"world\"; let message = `Hello, ${name}!`;");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[1] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::Binary {
+                left,
+                op: ts2wasm_ir::lowered::LoweredBinaryOp::Add,
+                right,
+            },
+        ) => {
+            assert!(matches!(
+                right.as_ref(),
+                ts2wasm_ir::lowered::LoweredExpr::String(value) if value == "!"
+            ));
+            assert!(matches!(
+                left.as_ref(),
+                ts2wasm_ir::lowered::LoweredExpr::Binary {
+                    op: ts2wasm_ir::lowered::LoweredBinaryOp::Add,
+                    ..
+                }
+            ));
+        }
+        other => panic!("unexpected lowered template statement: {other:?}"),
+    }
+}
+
+#[test]
 fn validate_rejects_arity_mismatch() {
     use ts2wasm_ir::lowered::{
         FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
