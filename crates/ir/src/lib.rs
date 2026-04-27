@@ -18,5 +18,5 @@ pub use lowered::{
 pub use name_resolver::resolve_names;
 pub use semantic::{
     HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp, HirStmt,
-    lower_to_hir,
+    lower_to_hir, validate_hir,
 };

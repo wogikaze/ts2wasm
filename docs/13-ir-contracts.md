@@ -3,6 +3,10 @@
 このドキュメントは ts2wasm の各 IR 段階の責務、不変条件、validate 関数の仕様を定める。
 各 IR は前段の不変条件を満たした後にのみ構築される。
 
+## IR contracts validation summary
+
+IR contracts は各 phase の入口で検証する。現在は `LoweredProgram` の `validate_lowered` に加えて、初期 Semantic HIR slice に `validate_hir` を持つ。build pipeline は HIR lowering が対応済みの subset では `validate_hir` を実行し、未対応構文は既存 `LoweredProgram` pipeline を維持する。HIR が対応した構文で invariant violation が出た場合は compiler bug として `InvariantViolation` を返す。
+
 ## IR 段階の概観
 
 ```text
@@ -17,9 +21,9 @@ BuiltinResolved AST (現在の semantic 前段)
   `console.log` / `.length` / property / computed index の意味付けを持つ。
   まだ LocalId / FuncId には解決されていない。
 
-HIR (High-level IR) — 未実装（予定）
+HIR (High-level IR) — 初期 slice 実装済み
   名前解決済み。JS semantic operation を保持する。
-  型情報の一部（typeof, instanceof など）を持ちうる。
+  `crates/ir::semantic` が対応済み subset の lowering と validation を提供する。
 
 MIR (Mid-level IR / Runtime IR) — 未実装（予定）
   runtime ABI 呼び出しに寄せた表現。
@@ -106,7 +110,7 @@ HIR は次の命令群を持つ。命令名は設計上の契約であり、実�
 | Group | Instructions | Semantics |
 |---|---|---|
 | Value | `ConstUndefined`, `ConstNull`, `ConstBool`, `ConstNumber`, `ConstString`, `ConstObject`, `ConstArray` | JS value を作る。backend の tagged layout はここでは露出しない |
-| Local | `LoadLocal`, `StoreLocal`, `LoadFunction`, `LoadBuiltin` | すべて ID 参照。名前文字列は HIR に残さない |
+| Local / builtin receiver | `LoadLocal`, `StoreLocal`, `LoadBuiltin` | locals は ID 参照。`LoadBuiltin` は HIR 初期 slice で許可済み global receiver 名を保持する暫定表現 |
 | Conversion | `ToBoolean`, `ToNumber`, `ToString`, `ToPropertyKey`, `ToPrimitive` | JS の抽象操作を表す。最適化 hint があっても意味論を変えない |
 | Operator | `JsAdd`, `JsStrictEqual`, `JsAbstractEqual`, `JsRelational`, `JsUnaryNot`, `JsTypeOf`, `JsInstanceOf` | operator token ではなく JS semantics。`JsAdd` は number add と string concat の両方を保持する |
 | Property | `GetProp`, `SetProp`, `GetIndex`, `SetIndex`, `HasProp`, `OwnKeys`, `ArrayLength` | prototype chain / property key conversion / array length semantics を backend から隠す |
@@ -153,6 +157,9 @@ pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>>
 | call arity mismatch | `ArityMismatch` |
 | top-level return | `InvalidTopLevelReturn` |
 | duplicate function | `DuplicateFunction` |
+| local / function ID の範囲外参照 | `InvariantViolation` |
+| truthy branch condition が `ToBoolean` を通っていない | `InvariantViolation` |
+| function table index と `HirFunctionId` の不一致 | `InvariantViolation` |
 
 ## LoweredProgram — 現在の lowering 中間形式
 

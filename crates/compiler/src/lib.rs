@@ -49,6 +49,7 @@ pub fn build_file_with_host_deny(
     validate_ast(&program)?;
     let name_resolved = name_resolver::resolve_names(&program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    validate_supported_hir_slice(&resolved)?;
     let lowered = lowered::lower_program(&resolved)?;
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
@@ -73,6 +74,20 @@ pub fn build_file_with_host_deny(
     }
     let wat = backend::emit_wat(&lowered)?;
     write_wasm_from_wat(&wat, output)
+}
+
+fn validate_supported_hir_slice(resolved: &[ts2wasm_ir::ResolvedStmt]) -> Result<(), Diagnostic> {
+    match ts2wasm_ir::semantic::lower_to_hir(resolved) {
+        Ok(hir) => ts2wasm_ir::semantic::validate_hir(&hir).map_err(|errs| {
+            errs.into_iter().next().unwrap_or(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "validate_hir failed with empty diagnostic list".to_owned(),
+                span: None,
+            })
+        }),
+        Err(error) if error.code == DiagCode::UnsupportedSyntax => Ok(()),
+        Err(error) => Err(error),
+    }
 }
 
 fn ensure_runtime_feature_gates(lowered: &lowered::LoweredProgram) -> Result<(), Diagnostic> {

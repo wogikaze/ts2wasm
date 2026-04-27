@@ -57,6 +57,7 @@ pub enum HirExpr {
     ConstNumber(i32),
     ConstString(String),
     LoadLocal(HirLocalId),
+    LoadBuiltin(String),
     ToBoolean(Box<HirExpr>),
     JsUnaryNot(Box<HirExpr>),
     JsAdd {
@@ -131,6 +132,165 @@ pub fn lower_to_hir(program: &[ResolvedStmt]) -> Result<HirProgram, Diagnostic> 
         locals: lowerer.locals,
         functions,
     })
+}
+
+pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>> {
+    let mut errors = Vec::new();
+    validate_function_ids(program, &mut errors);
+    let top_context = ValidationContext {
+        locals: &program.locals,
+        functions_len: program.functions.len(),
+        allow_return: false,
+    };
+    validate_stmts(&program.body, top_context, &mut errors);
+
+    for (index, function) in program.functions.iter().enumerate() {
+        if function.id.0 != index {
+            errors.push(invariant(format!(
+                "function id {:?} does not match function table index {index}",
+                function.id
+            )));
+        }
+        for param in &function.params {
+            if !function.locals.contains(param) {
+                errors.push(invariant(format!(
+                    "function {:?} parameter {:?} is not present in locals",
+                    function.id, param
+                )));
+            }
+        }
+        let context = ValidationContext {
+            locals: &function.locals,
+            functions_len: program.functions.len(),
+            allow_return: true,
+        };
+        validate_stmts(&function.body, context, &mut errors);
+    }
+
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
+}
+
+#[derive(Clone, Copy)]
+struct ValidationContext<'a> {
+    locals: &'a [HirLocalId],
+    functions_len: usize,
+    allow_return: bool,
+}
+
+fn validate_function_ids(program: &HirProgram, errors: &mut Vec<Diagnostic>) {
+    for (index, local) in program.locals.iter().enumerate() {
+        if local.0 != index {
+            errors.push(invariant(format!(
+                "top-level local id {:?} does not match locals index {index}",
+                local
+            )));
+        }
+    }
+}
+
+fn validate_stmts(stmts: &[HirStmt], context: ValidationContext<'_>, errors: &mut Vec<Diagnostic>) {
+    for stmt in stmts {
+        match stmt {
+            HirStmt::Let { local, init } | HirStmt::StoreLocal { local, value: init } => {
+                validate_local(*local, context, errors);
+                validate_expr(init, context, errors);
+            }
+            HirStmt::Expr(expr) => validate_expr(expr, context, errors),
+            HirStmt::BranchIfTruthy {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                if !matches!(condition, HirExpr::ToBoolean(_)) {
+                    errors.push(invariant(
+                        "BranchIfTruthy condition must be explicit ToBoolean".to_owned(),
+                    ));
+                }
+                validate_expr(condition, context, errors);
+                validate_stmts(then_body, context, errors);
+                validate_stmts(else_body, context, errors);
+            }
+            HirStmt::LoopWhile { condition, body } => {
+                if !matches!(condition, HirExpr::ToBoolean(_)) {
+                    errors.push(invariant(
+                        "LoopWhile condition must be explicit ToBoolean".to_owned(),
+                    ));
+                }
+                validate_expr(condition, context, errors);
+                validate_stmts(body, context, errors);
+            }
+            HirStmt::Return(expr) => {
+                if !context.allow_return {
+                    errors.push(invariant("top-level Return is not valid HIR".to_owned()));
+                }
+                validate_expr(expr, context, errors);
+            }
+        }
+    }
+}
+
+fn validate_expr(expr: &HirExpr, context: ValidationContext<'_>, errors: &mut Vec<Diagnostic>) {
+    match expr {
+        HirExpr::LoadLocal(local) => validate_local(*local, context, errors),
+        HirExpr::LoadBuiltin(_) => {}
+        HirExpr::ToBoolean(expr) | HirExpr::JsUnaryNot(expr) | HirExpr::ArrayLength(expr) => {
+            validate_expr(expr, context, errors);
+        }
+        HirExpr::JsAdd { left, right }
+        | HirExpr::JsStrictEqual { left, right }
+        | HirExpr::JsAbstractEqual { left, right }
+        | HirExpr::JsRelational { left, right, .. }
+        | HirExpr::GetIndex {
+            object: left,
+            index: right,
+        } => {
+            validate_expr(left, context, errors);
+            validate_expr(right, context, errors);
+        }
+        HirExpr::GetProp { object, .. } => validate_expr(object, context, errors),
+        HirExpr::CallBuiltin { args, .. } => {
+            for arg in args {
+                validate_expr(arg, context, errors);
+            }
+        }
+        HirExpr::CallFunction { function, args } => {
+            if function.0 >= context.functions_len {
+                errors.push(invariant(format!("invalid function id {:?}", function)));
+            }
+            for arg in args {
+                validate_expr(arg, context, errors);
+            }
+        }
+        HirExpr::CallMethod { receiver, args, .. } => {
+            validate_expr(receiver, context, errors);
+            for arg in args {
+                validate_expr(arg, context, errors);
+            }
+        }
+        HirExpr::ConstUndefined
+        | HirExpr::ConstNull
+        | HirExpr::ConstBool(_)
+        | HirExpr::ConstNumber(_)
+        | HirExpr::ConstString(_) => {}
+    }
+}
+
+fn validate_local(local: HirLocalId, context: ValidationContext<'_>, errors: &mut Vec<Diagnostic>) {
+    if !context.locals.contains(&local) {
+        errors.push(invariant(format!("invalid local id {:?}", local)));
+    }
+}
+
+fn invariant(message: String) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::InvariantViolation,
+        message,
+        span: None,
+    }
 }
 
 fn collect_function_ids(
@@ -250,7 +410,10 @@ impl<'a> HirLowerer<'a> {
             ResolvedExpr::Bool(value) => Ok(HirExpr::ConstBool(*value)),
             ResolvedExpr::Null => Ok(HirExpr::ConstNull),
             ResolvedExpr::Undefined => Ok(HirExpr::ConstUndefined),
-            ResolvedExpr::Ident(name) => Ok(HirExpr::LoadLocal(self.resolve_local(name)?)),
+            ResolvedExpr::Ident(name) => match self.resolve_local(name) {
+                Ok(local) => Ok(HirExpr::LoadLocal(local)),
+                Err(_) => Ok(HirExpr::LoadBuiltin(name.clone())),
+            },
             ResolvedExpr::Unary {
                 op: UnaryOp::Not,
                 expr,
@@ -438,5 +601,57 @@ mod tests {
                 ..
             })
         ));
+    }
+
+    #[test]
+    fn validates_valid_hir() {
+        let hir = parse_to_hir("let a = 1; if (a) { console.log(\"yes\"); }");
+        validate_hir(&hir).unwrap();
+    }
+
+    #[test]
+    fn validation_rejects_invalid_local_id() {
+        let hir = HirProgram {
+            body: vec![HirStmt::Expr(HirExpr::LoadLocal(HirLocalId(99)))],
+            locals: vec![],
+            functions: vec![],
+        };
+        let errors = validate_hir(&hir).unwrap_err();
+        assert!(errors.iter().any(|error| {
+            error.code == DiagCode::InvariantViolation && error.message.contains("local id")
+        }));
+    }
+
+    #[test]
+    fn validation_rejects_branch_without_to_boolean() {
+        let hir = HirProgram {
+            body: vec![HirStmt::BranchIfTruthy {
+                condition: HirExpr::ConstBool(true),
+                then_body: vec![],
+                else_body: vec![],
+            }],
+            locals: vec![],
+            functions: vec![],
+        };
+        let errors = validate_hir(&hir).unwrap_err();
+        assert!(errors.iter().any(|error| {
+            error.code == DiagCode::InvariantViolation && error.message.contains("ToBoolean")
+        }));
+    }
+
+    #[test]
+    fn validation_rejects_invalid_function_id() {
+        let hir = HirProgram {
+            body: vec![HirStmt::Expr(HirExpr::CallFunction {
+                function: HirFunctionId(7),
+                args: vec![],
+            })],
+            locals: vec![],
+            functions: vec![],
+        };
+        let errors = validate_hir(&hir).unwrap_err();
+        assert!(errors.iter().any(|error| {
+            error.code == DiagCode::InvariantViolation && error.message.contains("function id")
+        }));
     }
 }

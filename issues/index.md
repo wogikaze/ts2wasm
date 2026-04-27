@@ -18,8 +18,7 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
-| 020 | Implement generic JavaScript semantic IR | feature | ir/semantics | implementation-ready | P1 | 019 | Generic JavaScript semantic IR is not implemented. Current IR is minimal and tied to specific lowering patterns. docs... |
-| 020c | Add IR validation passes and document contracts | feature | ir/semantics | implementation-ready | P1 | 020b | IR lowering is implemented in 020b but validation passes and contract documentation are missing. |
+| 021 | Implement full wasm backend | feature | backend | implementation-ready | P2 | 008, 020 | Full wasm backend is not implemented. Current implementation is WAT-centric. docs/04 specifies initial linear memory ... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
@@ -172,6 +171,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
+| 204 | Add typed IR dump command | feature | cli | implementation-ready | P2 | 020 | Add typed IR dump command |
 | 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | implementation-ready | P1 | 048 | Complete instanceof prototype-chain semantics |
 | 208 | Implement switch fall-through semantics | feature | frontend/semantics | implementation-ready | P2 |  | Implement switch fall-through semantics |
 | 209 | Implement labeled break and continue | feature | frontend/semantics | implementation-ready | P2 | 035 | Implement labeled break and continue |
@@ -186,10 +186,8 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 021 | Implement full wasm backend | feature | backend | 008, 020 | Implement full wasm backend |
 | 046 | Implement extends inheritance | feature | runtime/semantics | 045 | Implement extends inheritance |
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
-| 204 | Add typed IR dump command | feature | cli | 020 | Add typed IR dump command |
 | 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
 | 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | 211 | Implement arrow function closure and lexical this semantics |
 <!-- generated:blocked:end -->
@@ -222,8 +220,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 019 | Integrate TypeScript parser/checker | feature | frontend | see file |
 | 019a | Integrate TypeScript compiler API for type checking | feature | frontend | see file |
 | 019b | Extract type information for optimization hints | feature | frontend | see file |
+| 020 | Implement generic JavaScript semantic IR | feature | ir/semantics | see file |
 | 020a | Design JavaScript semantic IR | feature | ir/semantics | see file |
 | 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | see file |
+| 020c | Add IR validation passes and document contracts | feature | ir/semantics | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
