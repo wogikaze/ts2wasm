@@ -140,7 +140,7 @@
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | `===` (strict equality) | ES3 | primitive fast path | 実装済み | - | - |
-| `==` (abstract equality) | ES1 | runtime helper | 部分実装（strict equality fallback; coercion は追跡中） | P1 | 216 |
+| `==` (abstract equality) | ES1 | runtime helper | 実装済み（primitive coercion: nullish / boolean / number / string; object ToPrimitive は未実装） | P2 | - |
 | `!==`, `!=` | ES1 | derived from equality | 実装済み | - | - |
 | `<`, `>`, `<=`, `>=` | ES1 | number/string comparison | 実装済み | - | - |
 | `+` (addition) | ES1 | number/string overload | 実装済み | - | - |

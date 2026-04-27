@@ -41,7 +41,7 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | `this`          | call site ごとに receiver を明示して IR に落とす      |
 | prototype       | class 対応後に object model に統合               |
 | property lookup | string key lookup から開始し、shape cache を後で追加 |
-| `==`            | runtime helper で正確性を優先                    |
+| `==`            | runtime helper で primitive coercion を実装し、object ToPrimitive は object model 安定後に追加 |
 | `===`           | primitive fast path を用意                   |
 | `NaN` / `-0`    | number semantics のテスト対象にする                |
 | exception       | runtime stack と wasm exception の両案を検討     |
@@ -49,7 +49,9 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | `with`          | 初期非対応、診断必須                                |
 | Proxy           | 初期非対応、object model 安定後に検討                 |
 
-Compatibility evidence distinguishes syntax/build support from semantic parity. A feature that parses, lowers, or builds with placeholder behavior is recorded as `部分実装` in `docs/language-reference/javascript-features.md` and must have an open issue with Node differential acceptance criteria before it can count toward semantic gates. Current placeholder or partial semantic trackers include issues 207-216 for `instanceof`, switch fall-through, labeled control flow, arrow closures, `this`, rest parameters, template interpolation, string methods, `Math.random`, and abstract equality coercion.
+Compatibility evidence distinguishes syntax/build support from semantic parity. A feature that parses, lowers, or builds with placeholder behavior is recorded as `部分実装` in `docs/language-reference/javascript-features.md` and must have an open issue with Node differential acceptance criteria before it can count toward semantic gates. Current placeholder or partial semantic trackers include issues 207-215 for `instanceof`, switch fall-through, labeled control flow, arrow closures, `this`, rest parameters, template interpolation, string methods, and `Math.random`.
+
+Abstract equality (`==` / `!=`) supports the current primitive runtime value set: `undefined`, `null`, booleans, tagged integer numbers, and strings that coerce to tagged integers. Full object `ToPrimitive`, floating point, `NaN`, and `-0` behavior remain tied to the broader object and number-model work.
 
 ## Array / object semantics（実装済み範囲）
 
