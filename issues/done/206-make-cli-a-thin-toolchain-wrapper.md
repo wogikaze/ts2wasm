@@ -9,6 +9,7 @@ depends_on: [010, 026]
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -33,7 +34,7 @@ In scope:
 - [x] Ensure `crates/cli/src/main.rs` handles command parsing, path conversion, output rendering, and exit codes only.
 - [x] Add architecture checks that prevent backend modules from reappearing under `crates/cli/src/`.
 - [x] Add architecture checks that prevent parser/compiler pipeline modules from reappearing under `crates/cli/src/`.
-- [ ] Keep CLI command behavior stable during migration.
+- [x] Keep CLI command behavior stable during migration.
 
 Out of scope:
 
@@ -64,8 +65,8 @@ Do not touch:
 - [x] CLI build command calls a reusable compiler/driver API.
 - [x] CLI dump command calls reusable compiler/driver APIs for each dump phase.
 - [x] Architecture checks warn or fail if large compiler implementation files are added under `crates/cli/src/`.
-- [ ] Existing CLI command tests continue to pass.
-- [ ] Backend/frontend/IR tests cover moved non-CLI behavior outside `crates/cli`.
+- [x] Existing CLI command tests continue to pass.
+- [x] Backend/frontend/IR tests cover moved non-CLI behavior outside `crates/cli`.
 
 ## Validation
 
@@ -94,7 +95,7 @@ Not run:
 Final-state docs:
 
 - [x] updated: `docs/04-compiler-architecture-and-runtime.md`
-- [ ] updated: `docs/12-coding-standard.md`
+- [x] updated: `docs/12-coding-standard.md`
 
 Current state:
 
@@ -102,7 +103,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -119,14 +120,26 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `41b65bd refactor(cli): move compiler driver into compiler crate`
+- `3a467f7 chore(checks): keep cli as thin wrapper`
+- `6cb3b52 refactor(frontend): move lexer parser out of compiler`
+- `c40c672 refactor(backend): split runtime builder modules`
+- `8db253f test(cli): tolerate missing official corpora shards`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run --no-fail-fast
+result: PASS (194 passed, 4 skipped)
+date: 2026-04-28
+
+command: scripts/manager check-architecture-rules
+result: PASS
+date: 2026-04-28
 ```
 
 Remaining risks:

@@ -1,6 +1,6 @@
 # Extract frontend module from crates/cli
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-26
 **Updated**: 2026-04-28
 **ID**: 010
@@ -24,7 +24,7 @@ Acceptance Criteria:
 
 - [x] `crates/frontend` is a real workspace member.
 - [x] Parser-related code moves out of `crates/cli`.
-- [ ] Existing tests pass.
+- [x] Existing tests pass.
 - [x] Public API remains minimal.
 
 Current slice evidence:
@@ -38,4 +38,16 @@ Validation:
 ```sh
 cargo fmt --all --check
 cargo nextest run
+```
+
+Completion evidence:
+
+```text
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run --no-fail-fast
+result: PASS (194 passed, 4 skipped)
+date: 2026-04-28
 ```

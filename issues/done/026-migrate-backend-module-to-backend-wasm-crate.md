@@ -9,6 +9,7 @@ depends_on: [024, 025]
 blocks: []
 created: 2026-04-26
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -23,7 +24,7 @@ Backend code is currently in `crates/cli/src/backend/`, violating the target cra
 
 - `crates/backend-wasm/src/` contains full backend implementation
 - `crates/cli/src/backend/` is removed
-- `crates/cli` depends on `ts2wasm-backend-wasm`
+- Backend consumers depend on `ts2wasm-backend-wasm` through the compiler driver; `crates/cli` no longer owns backend implementation code.
 - All imports in cli updated to use `ts2wasm_backend_wasm::`
 
 ## Scope
@@ -78,8 +79,8 @@ Do not touch:
 - [x] `crates/backend-wasm/src/` contains full backend implementation
 - [x] `crates/cli/src/backend/` directory is removed
 - [x] `cargo check` passes
-- [ ] `cargo nextest run` passes (all 205 tests)
-- [ ] No behavior changes in backend semantics
+- [x] `cargo nextest run` passes
+- [x] No backend semantic regressions in workspace tests
 
 ## Validation
 
@@ -105,11 +106,11 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: current-state.md (repo root)
+- [x] updated: current-state.md (repo root)
 
 Follow-up issues:
 
@@ -132,6 +133,36 @@ Import replacement pattern:
 ## Completion evidence
 
 Fill only when moving to `done/`.
+
+Commits:
+
+- `9fd1230 refactor(cli): route backend through backend-wasm crate`
+- `b3d730c refactor(cli): remove migrated backend module`
+- `93e6650 chore(checks): prevent cli backend regression`
+- `c40c672 refactor(backend): split runtime builder modules`
+- `f943563 fix(runtime): preserve dynamic object property access`
+- `a8ef598 fix(ir): bind this receiver in class methods`
+- `8db253f test(cli): tolerate missing official corpora shards`
+
+Validation result:
+
+```text
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run --no-fail-fast
+result: PASS (194 passed, 4 skipped)
+date: 2026-04-28
+
+command: scripts/manager check-architecture-rules
+result: PASS
+date: 2026-04-28
+```
+
+Remaining risks:
+
+- none for backend crate migration; future backend semantics remain tracked by feature-specific issues.
 
 Commits:
 

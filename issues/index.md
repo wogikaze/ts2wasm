@@ -17,10 +17,10 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` previously mixed lexer, parser, AST, span, validation, and build pipeline code. `crates/front... |
 | 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
+| 019 | Integrate TypeScript parser/checker | feature | frontend | implementation-ready | P1 | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 specifies using tsc as o... |
+| 019a | Integrate TypeScript compiler API for type checking | feature | frontend | implementation-ready | P1 | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 specifies using tsc as o... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
-| 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
@@ -189,8 +189,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 019 | Integrate TypeScript parser/checker | feature | frontend | 010 | Integrate TypeScript parser/checker |
-| 019a | Integrate TypeScript compiler API for type checking | feature | frontend | 010 | Integrate TypeScript compiler API for type checking |
 | 019b | Extract type information for optimization hints | feature | frontend | 019a | Extract type information for optimization hints |
 | 020 | Implement generic JavaScript semantic IR | feature | ir/semantics | 019 | Implement generic JavaScript semantic IR |
 | 020a | Design JavaScript semantic IR | feature | ir/semantics | 019 | Design JavaScript semantic IR |
@@ -201,7 +199,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 | 204 | Add typed IR dump command | feature | cli | 020 | Add typed IR dump command |
 | 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
-| 206 | Make CLI a thin toolchain wrapper | refactor | cli | 010, 026 | Make CLI a thin toolchain wrapper |
 | 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | 048 | Complete instanceof prototype-chain semantics |
 | 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | 211 | Implement arrow function closure and lexical this semantics |
 <!-- generated:blocked:end -->
@@ -221,6 +218,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 007 | Harden reference coverage prerequisites | infra | scripts/reference | see file |
 | 008 | Introduce typed WAT writer skeleton | refactor | backend | see `issues/done/008-introduce-typed-wat-writer-skeleton.md` |
 | 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | see file |
+| 010 | Extract frontend module from crates/cli | refactor | frontend | see file |
 | 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | see `issues/done/011-enable-cargo-deny-warnings-in-ci-and-harnesses.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
 | 013 | Implement heap OOM check | feature | runtime/memory | see file |
@@ -233,6 +231,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
+| 026 | Migrate backend module to backend-wasm crate | refactor | runtime | see `issues/done/026-migrate-backend-module-to-backend-wasm-crate.md` |
 | 027 | Migrate frontend code to frontend crate | refactor | frontend | see `issues/done/027-migrate-frontend-code-to-frontend-crate.md` |
 | 029 | Implement typeof operator | feature | runtime/semantics | see `issues/done/029-implement-typeof-operator.md` |
 | 030 | Implement instanceof operator | feature | runtime/semantics | see `issues/done/030-implement-instanceof-operator.md` |
@@ -254,6 +253,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
+| 206 | Make CLI a thin toolchain wrapper | refactor | cli | see `issues/done/206-make-cli-a-thin-toolchain-wrapper.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

@@ -905,7 +905,9 @@ cargo nextest run --include-ignored
 
 ```bash
 rg "as_console_log_call" crates/cli/src
-rg 'property == "length"' crates/cli/src/ir/lowered.rs
+rg 'property == "length"' crates/ir/src/lowered.rs
+rg 'mod backend;|mod parser;|mod compiler;|mod driver;' crates/cli/src
+rg 'struct Lexer|struct Parser|ts2wasm_backend_wasm' crates/cli/src
 rg 'fd_write|fd_read' crates/backend-wasm/src -g'*.rs'
 rg 'RuntimeString::.*intern|intern_required_runtime_strings' crates/backend-wasm/src
 rg 'span: None' crates/cli/src
@@ -917,6 +919,8 @@ rg 'unwrap\\(|expect\\(|panic!' crates/cli/src
 ```text
 as_console_log_call が復活していたら reject
 lowered.rs が .length を直接判定していたら reject
+crates/cli/src に backend/parser/compiler/driver module 宣言や lexer/parser 実装が復活していたら reject
+crates/cli/src/lib.rs が backend crate を直接参照していたら reject
 fd_write / fd_read が RuntimeLinkPlan 経由でない場所に直書きされていたら reject
 runtime string の無条件 intern が増えていたら reject
 source 起因 diagnostic の span: None が増えていたら reject

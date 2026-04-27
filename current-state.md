@@ -96,7 +96,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 ## Known blockers / gaps
 
-- **Crates module migration**: `crates/frontend`, `crates/ir`, `crates/runtime-abi`, and `crates/backend-wasm` code migrations are complete. Issue 026 remains open until full-suite behavior evidence is cleanly recorded.
+- **Crates module migration**: `crates/frontend`, `crates/ir`, `crates/runtime-abi`, and `crates/backend-wasm` code migrations are complete. Issue 026 is closed with full workspace nextest evidence.
 - **CLI ownership**: `crates/cli` is now a thin binary/re-export wrapper for compiler APIs. Lexer/parser implementation has moved to `crates/frontend`; backend runtime emission is split into focused modules and no repo-owned source file currently exceeds the 2000-line architecture warning threshold.
 - TypeScript parser/checker integration は未実装
 - 汎用 JavaScript semantic IR は未実装
