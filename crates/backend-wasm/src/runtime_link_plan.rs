@@ -227,7 +227,10 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::Add);
                     self.collect_required_runtime_stmts(body);
                 }
-                LoweredStmt::Break | LoweredStmt::Continue => {}
+                LoweredStmt::Labeled { body, .. } => {
+                    self.collect_required_runtime_stmts(std::slice::from_ref(body.as_ref()));
+                }
+                LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => {}
                 LoweredStmt::Export { expr, .. } => {
                     self.collect_required_runtime_expr(expr);
                     self.add_required_runtime(RuntimeFn::ModuleExportsSet);

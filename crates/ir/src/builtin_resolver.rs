@@ -304,8 +304,16 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
-        Stmt::Break { .. } => Ok(ResolvedStmt::Break),
-        Stmt::Continue { .. } => Ok(ResolvedStmt::Continue),
+        Stmt::Labeled { label, body, .. } => Ok(ResolvedStmt::Labeled {
+            label: label.clone(),
+            body: Box::new(resolve_stmt(body)?),
+        }),
+        Stmt::Break { label, .. } => Ok(ResolvedStmt::Break {
+            label: label.clone(),
+        }),
+        Stmt::Continue { label, .. } => Ok(ResolvedStmt::Continue {
+            label: label.clone(),
+        }),
     }
 }
 

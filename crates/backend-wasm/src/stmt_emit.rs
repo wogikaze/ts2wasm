@@ -20,25 +20,46 @@ fn gen_label(prefix: &str) -> String {
     })
 }
 
-pub(crate) enum LoopContext {
-    Root,
-    Loop {
-        exit_label: String,
-        continue_label: String,
-    },
-    Switch {
-        exit_label: String,
-        continue_label: Option<String>,
-    },
+#[derive(Default)]
+pub(crate) struct LoopContext {
+    frames: Vec<ControlFrame>,
+}
+
+struct ControlFrame {
+    name: Option<String>,
+    exit_label: String,
+    continue_label: Option<String>,
 }
 
 impl LoopContext {
-    fn continue_label(&self) -> Option<&str> {
-        match self {
-            Self::Root => None,
-            Self::Loop { continue_label, .. } => Some(continue_label),
-            Self::Switch { continue_label, .. } => continue_label.as_deref(),
+    fn push(&mut self, frame: ControlFrame) {
+        self.frames.push(frame);
+    }
+
+    fn pop(&mut self) {
+        self.frames.pop();
+    }
+
+    fn break_label(&self, name: Option<&str>) -> Option<&str> {
+        match name {
+            Some(name) => self
+                .frames
+                .iter()
+                .rev()
+                .find(|frame| frame.name.as_deref() == Some(name))
+                .map(|frame| frame.exit_label.as_str()),
+            None => self.frames.last().map(|frame| frame.exit_label.as_str()),
         }
+    }
+
+    fn continue_label(&self, name: Option<&str>) -> Option<&str> {
+        self.frames.iter().rev().find_map(|frame| {
+            if name.is_none() || frame.name.as_deref() == name {
+                frame.continue_label.as_deref()
+            } else {
+                None
+            }
+        })
     }
 }
 
@@ -50,7 +71,7 @@ impl WatEmitter<'_> {
         frame: &LocalFrame,
     ) {
         for statement in &self.program.top_level_statements {
-            self.emit_statement(wat, statement, indent, &mut LoopContext::Root, frame);
+            self.emit_statement(wat, statement, indent, &mut LoopContext::default(), frame);
         }
     }
 
@@ -74,6 +95,18 @@ impl WatEmitter<'_> {
         indent: usize,
         loop_ctx: &mut LoopContext,
         frame: &LocalFrame,
+    ) {
+        self.emit_statement_with_label(wat, statement, indent, loop_ctx, frame, None);
+    }
+
+    fn emit_statement_with_label(
+        &self,
+        wat: &mut String,
+        statement: &LoweredStmt,
+        indent: usize,
+        loop_ctx: &mut LoopContext,
+        frame: &LocalFrame,
+        bound_label: Option<&str>,
     ) {
         let pad = " ".repeat(indent);
         match statement {
@@ -118,11 +151,13 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}    (i32.eqz)\n"));
                 wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
 
-                let mut new_ctx = LoopContext::Loop {
+                loop_ctx.push(ControlFrame {
+                    name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
-                    continue_label: loop_label.clone(),
-                };
-                self.emit_statements(wat, body, indent + 4, &mut new_ctx, frame);
+                    continue_label: Some(loop_label.clone()),
+                });
+                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                loop_ctx.pop();
 
                 wat.push_str(&format!("{pad}    (br ${})\n", loop_label));
                 wat.push_str(&format!("{pad}  )\n"));
@@ -143,11 +178,13 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(block ${}\n", exit_label));
                 wat.push_str(&format!("{pad}  (loop ${}\n", loop_label));
 
-                let mut new_ctx = LoopContext::Loop {
+                loop_ctx.push(ControlFrame {
+                    name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
-                    continue_label: loop_label.clone(),
-                };
-                self.emit_statements(wat, body, indent + 4, &mut new_ctx, frame);
+                    continue_label: Some(loop_label.clone()),
+                });
+                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                loop_ctx.pop();
 
                 self.emit_expr(wat, condition, indent + 4, frame);
                 wat.push_str(&format!(
@@ -185,11 +222,13 @@ impl WatEmitter<'_> {
                     wat.push_str(&format!("{pad}    (br_if ${})\n", exit_label));
                 }
 
-                let mut new_ctx = LoopContext::Loop {
+                loop_ctx.push(ControlFrame {
+                    name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
-                    continue_label: continue_label.clone(),
-                };
-                self.emit_statements(wat, body, indent + 4, &mut new_ctx, frame);
+                    continue_label: Some(continue_label.clone()),
+                });
+                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                loop_ctx.pop();
 
                 wat.push_str(&format!("{pad}  (block ${}\n", continue_label));
                 if let Some(upd) = update {
@@ -262,11 +301,13 @@ impl WatEmitter<'_> {
                 ));
                 wat.push_str(&format!("{pad}    (local.set {})\n", local_index(*var)));
 
-                let mut new_ctx = LoopContext::Loop {
+                loop_ctx.push(ControlFrame {
+                    name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
-                    continue_label: loop_label.clone(),
-                };
-                self.emit_statements(wat, body, indent + 4, &mut new_ctx, frame);
+                    continue_label: Some(loop_label.clone()),
+                });
+                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                loop_ctx.pop();
 
                 wat.push_str(&format!(
                     "{pad}    (local.get {})\n",
@@ -343,11 +384,13 @@ impl WatEmitter<'_> {
                 ));
                 wat.push_str(&format!("{pad}    (local.set {})\n", local_index(*var)));
 
-                let mut new_ctx = LoopContext::Loop {
+                loop_ctx.push(ControlFrame {
+                    name: bound_label.map(str::to_owned),
                     exit_label: exit_label.clone(),
-                    continue_label: loop_label.clone(),
-                };
-                self.emit_statements(wat, body, indent + 4, &mut new_ctx, frame);
+                    continue_label: Some(loop_label.clone()),
+                });
+                self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
+                loop_ctx.pop();
 
                 wat.push_str(&format!(
                     "{pad}    (local.get {})\n",
@@ -367,37 +410,43 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}  )\n"));
                 wat.push_str(&format!("{pad})\n"));
             }
-            LoweredStmt::Break => match loop_ctx {
-                LoopContext::Loop { exit_label, .. } => {
-                    wat.push_str(&format!("{pad}(br ${})\n", exit_label));
+            LoweredStmt::Labeled { label, body } => {
+                if is_loop_stmt(body) {
+                    self.emit_statement_with_label(
+                        wat,
+                        body,
+                        indent,
+                        loop_ctx,
+                        frame,
+                        Some(label.as_str()),
+                    );
+                } else {
+                    let exit_label = gen_label("label_exit");
+                    wat.push_str(&format!("{pad}(block ${}\n", exit_label));
+                    loop_ctx.push(ControlFrame {
+                        name: Some(label.clone()),
+                        exit_label,
+                        continue_label: None,
+                    });
+                    self.emit_statement(wat, body, indent + 2, loop_ctx, frame);
+                    loop_ctx.pop();
+                    wat.push_str(&format!("{pad})\n"));
                 }
-                LoopContext::Switch { exit_label, .. } => {
-                    wat.push_str(&format!("{pad}(br ${})\n", exit_label));
-                }
-                LoopContext::Root => {
+            }
+            LoweredStmt::Break { label } => {
+                if let Some(target) = loop_ctx.break_label(label.as_deref()) {
+                    wat.push_str(&format!("{pad}(br ${target})\n"));
+                } else {
                     wat.push_str(&format!("{pad};; ERROR: break outside loop\n"));
                 }
-            },
-            LoweredStmt::Continue => match loop_ctx {
-                LoopContext::Loop { continue_label, .. } => {
-                    wat.push_str(&format!("{pad}(br ${})\n", continue_label));
-                }
-                LoopContext::Switch {
-                    continue_label: Some(continue_label),
-                    ..
-                } => {
-                    wat.push_str(&format!("{pad}(br ${})\n", continue_label));
-                }
-                LoopContext::Switch {
-                    continue_label: None,
-                    ..
-                } => {
+            }
+            LoweredStmt::Continue { label } => {
+                if let Some(target) = loop_ctx.continue_label(label.as_deref()) {
+                    wat.push_str(&format!("{pad}(br ${target})\n"));
+                } else {
                     wat.push_str(&format!("{pad};; ERROR: continue outside loop\n"));
                 }
-                LoopContext::Root => {
-                    wat.push_str(&format!("{pad};; ERROR: continue outside loop\n"));
-                }
-            },
+            }
             LoweredStmt::TryCatch {
                 try_body,
                 catch_var,
@@ -487,14 +536,16 @@ impl WatEmitter<'_> {
                     wat.push_str(&format!("{pad}    (br ${})\n", switch_exit));
                 }
 
-                let mut switch_ctx = LoopContext::Switch {
+                loop_ctx.push(ControlFrame {
+                    name: bound_label.map(str::to_owned),
                     exit_label: switch_exit.clone(),
-                    continue_label: loop_ctx.continue_label().map(str::to_owned),
-                };
+                    continue_label: None,
+                });
                 for ((_, body), label) in cases.iter().zip(case_labels.iter()) {
                     wat.push_str(&format!("{pad}  ) ;; ${label}\n"));
-                    self.emit_statements(wat, body, indent + 2, &mut switch_ctx, frame);
+                    self.emit_statements(wat, body, indent + 2, loop_ctx, frame);
                 }
+                loop_ctx.pop();
                 wat.push_str(&format!("{pad})\n"));
             }
             LoweredStmt::Export { name, expr } => {
@@ -528,4 +579,15 @@ impl WatEmitter<'_> {
 
 fn local_index(id: LocalId) -> usize {
     id.0
+}
+
+fn is_loop_stmt(statement: &LoweredStmt) -> bool {
+    matches!(
+        statement,
+        LoweredStmt::While { .. }
+            | LoweredStmt::DoWhile { .. }
+            | LoweredStmt::For { .. }
+            | LoweredStmt::ForIn { .. }
+            | LoweredStmt::ForOf { .. }
+    )
 }

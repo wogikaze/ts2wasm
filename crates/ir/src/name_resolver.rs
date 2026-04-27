@@ -17,6 +17,16 @@ struct NameResolver {
     classes: std::collections::HashMap<String, Option<Span>>,
     /// Global identifiers that are allowed (builtins like console, require, etc.)
     allowed_globals: std::collections::HashSet<String>,
+    /// Active ECMAScript labels and whether their target is an iteration statement.
+    labels: Vec<LabelBinding>,
+    loop_depth: usize,
+    breakable_depth: usize,
+}
+
+#[derive(Clone)]
+struct LabelBinding {
+    name: String,
+    is_loop: bool,
 }
 
 impl NameResolver {
@@ -57,6 +67,9 @@ impl NameResolver {
             functions: std::collections::HashMap::new(),
             classes: std::collections::HashMap::new(),
             allowed_globals,
+            labels: Vec::new(),
+            loop_depth: 0,
+            breakable_depth: 0,
         }
     }
 
@@ -123,7 +136,9 @@ impl NameResolver {
                 ..
             } => {
                 let resolved_condition = self.resolve_expr(condition)?;
+                self.enter_loop();
                 let resolved_body = self.resolve_block(body)?;
+                self.exit_loop();
                 Ok(Stmt::While {
                     condition: resolved_condition,
                     body: resolved_body,
@@ -204,6 +219,7 @@ impl NameResolver {
             }),
             Stmt::Switch { expr, cases, span } => {
                 let resolved_expr = self.resolve_expr(expr)?;
+                self.breakable_depth += 1;
                 let resolved_cases = cases
                     .iter()
                     .map(|(cond, body)| {
@@ -213,6 +229,7 @@ impl NameResolver {
                         ))
                     })
                     .collect::<Result<Vec<_>, _>>()?;
+                self.breakable_depth -= 1;
                 Ok(Stmt::Switch {
                     expr: resolved_expr,
                     cases: resolved_cases,
@@ -225,8 +242,10 @@ impl NameResolver {
                 span,
                 ..
             } => {
+                self.enter_loop();
                 let resolved_body = self.resolve_block(body)?;
                 let resolved_condition = self.resolve_expr(condition)?;
+                self.exit_loop();
                 Ok(Stmt::DoWhile {
                     body: resolved_body,
                     condition: resolved_condition,
@@ -251,7 +270,9 @@ impl NameResolver {
                     .map(|c| self.resolve_expr(c))
                     .transpose()?;
                 let resolved_update = update.as_ref().map(|u| self.resolve_expr(u)).transpose()?;
+                self.enter_loop();
                 let resolved_body = self.resolve_block(body)?;
+                self.exit_loop();
                 self.exit_scope();
                 Ok(Stmt::For {
                     init: resolved_init,
@@ -270,7 +291,9 @@ impl NameResolver {
                 self.enter_scope();
                 self.declare_variable(var, None)?;
                 let resolved_iter = self.resolve_expr(iter)?;
+                self.enter_loop();
                 let resolved_body = self.resolve_block(body)?;
+                self.exit_loop();
                 self.exit_scope();
                 Ok(Stmt::ForIn {
                     var: var.clone(),
@@ -288,7 +311,9 @@ impl NameResolver {
                 self.enter_scope();
                 self.declare_variable(var, None)?;
                 let resolved_iter = self.resolve_expr(iter)?;
+                self.enter_loop();
                 let resolved_body = self.resolve_block(body)?;
+                self.exit_loop();
                 self.exit_scope();
                 Ok(Stmt::ForOf {
                     var: var.clone(),
@@ -297,9 +322,94 @@ impl NameResolver {
                     span: *span,
                 })
             }
-            Stmt::Break { span } => Ok(Stmt::Break { span: *span }),
-            Stmt::Continue { span } => Ok(Stmt::Continue { span: *span }),
+            Stmt::Labeled { label, body, span } => {
+                if self.labels.iter().any(|binding| binding.name == *label) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("duplicate label `{label}`"),
+                        span: Some(*span),
+                    });
+                }
+                self.labels.push(LabelBinding {
+                    name: label.clone(),
+                    is_loop: is_loop_stmt(body),
+                });
+                let resolved_body = self.resolve_stmt(body)?;
+                self.labels.pop();
+                Ok(Stmt::Labeled {
+                    label: label.clone(),
+                    body: Box::new(resolved_body),
+                    span: *span,
+                })
+            }
+            Stmt::Break { label, span } => {
+                if let Some(label) = label {
+                    if !self.labels.iter().any(|binding| binding.name == *label) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("undefined break label `{label}`"),
+                            span: Some(*span),
+                        });
+                    }
+                } else if self.breakable_depth == 0 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "break must be inside a loop or switch".to_owned(),
+                        span: Some(*span),
+                    });
+                }
+                Ok(Stmt::Break {
+                    label: label.clone(),
+                    span: *span,
+                })
+            }
+            Stmt::Continue { label, span } => {
+                if let Some(label) = label {
+                    match self
+                        .labels
+                        .iter()
+                        .rev()
+                        .find(|binding| binding.name == *label)
+                    {
+                        Some(binding) if binding.is_loop => {}
+                        Some(_) => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!("continue label `{label}` does not target a loop"),
+                                span: Some(*span),
+                            });
+                        }
+                        None => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!("undefined continue label `{label}`"),
+                                span: Some(*span),
+                            });
+                        }
+                    }
+                } else if self.loop_depth == 0 {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "continue must be inside a loop".to_owned(),
+                        span: Some(*span),
+                    });
+                }
+                Ok(Stmt::Continue {
+                    label: label.clone(),
+                    span: *span,
+                })
+            }
         }
+    }
+
+    fn enter_loop(&mut self) {
+        self.loop_depth += 1;
+        self.breakable_depth += 1;
+    }
+
+    fn exit_loop(&mut self) {
+        self.loop_depth -= 1;
+        self.breakable_depth -= 1;
     }
 
     fn resolve_expr(&mut self, expr: &Expr) -> Result<Expr, Diagnostic> {
@@ -544,4 +654,15 @@ impl NameResolver {
             Ok(())
         }
     }
+}
+
+fn is_loop_stmt(stmt: &Stmt) -> bool {
+    matches!(
+        stmt,
+        Stmt::While { .. }
+            | Stmt::DoWhile { .. }
+            | Stmt::For { .. }
+            | Stmt::ForIn { .. }
+            | Stmt::ForOf { .. }
+    )
 }

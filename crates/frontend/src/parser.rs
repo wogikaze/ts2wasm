@@ -37,6 +37,9 @@ impl Parser {
             Some(Token::Continue) => self.continue_statement(),
             Some(Token::Class) => self.class_statement(),
             Some(Token::Return) => self.return_statement(),
+            Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Colon)) => {
+                self.labeled_statement()
+            }
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Equal)) => {
                 self.assign_statement()
             }
@@ -277,14 +280,39 @@ impl Parser {
 
     fn break_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let span = self.expect(TokenKind::Break)?;
+        let label = if matches!(self.peek(), Some(Token::Ident(_))) {
+            Some(self.expect_ident()?.0)
+        } else {
+            None
+        };
         self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Break { span })
+        Ok(Stmt::Break { label, span })
     }
 
     fn continue_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let span = self.expect(TokenKind::Continue)?;
+        let label = if matches!(self.peek(), Some(Token::Ident(_))) {
+            Some(self.expect_ident()?.0)
+        } else {
+            None
+        };
         self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Continue { span })
+        Ok(Stmt::Continue { label, span })
+    }
+
+    fn labeled_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let (label, label_span) = self.expect_ident()?;
+        self.expect(TokenKind::Colon)?;
+        let body = self.statement()?;
+        let end = body.span().end;
+        Ok(Stmt::Labeled {
+            label,
+            body: Box::new(body),
+            span: Span {
+                start: label_span.start,
+                end,
+            },
+        })
     }
 
     fn do_while_statement(&mut self) -> Result<Stmt, Diagnostic> {

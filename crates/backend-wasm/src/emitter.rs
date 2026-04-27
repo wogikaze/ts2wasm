@@ -366,7 +366,8 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(iter);
                 self.collect_program_strings(body);
             }
-            LoweredStmt::Break | LoweredStmt::Continue => {}
+            LoweredStmt::Labeled { body, .. } => self.collect_statement_strings(body),
+            LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => {}
             LoweredStmt::Export { name, expr } => {
                 self.intern_string(name);
                 self.collect_expr_strings(expr);
@@ -624,7 +625,13 @@ impl<'a> WatEmitter<'a> {
                     self.collect_class_prototypes_from_expr(iter, prototypes);
                     self.collect_class_prototypes_from_stmts(body, prototypes);
                 }
-                LoweredStmt::Break | LoweredStmt::Continue | LoweredStmt::ClassDecl { .. } => {}
+                LoweredStmt::Labeled { body, .. } => self.collect_class_prototypes_from_stmts(
+                    std::slice::from_ref(body.as_ref()),
+                    prototypes,
+                ),
+                LoweredStmt::Break { .. }
+                | LoweredStmt::Continue { .. }
+                | LoweredStmt::ClassDecl { .. } => {}
             }
         }
     }
@@ -732,7 +739,7 @@ impl<'a> WatEmitter<'a> {
             for _ in 0..frame.backend_local_count() {
                 wat.push_str("    (local i32)\n");
             }
-            let mut loop_ctx = super::stmt_emit::LoopContext::Root;
+            let mut loop_ctx = super::stmt_emit::LoopContext::default();
             self.emit_statements(wat, &function.body, 4, &mut loop_ctx, &frame);
             wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
             wat.push_str("  )\n");

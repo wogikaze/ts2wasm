@@ -125,10 +125,17 @@ pub enum Stmt {
         body: Vec<Stmt>,
         span: Span,
     },
+    Labeled {
+        label: String,
+        body: Box<Stmt>,
+        span: Span,
+    },
     Break {
+        label: Option<String>,
         span: Span,
     },
     Continue {
+        label: Option<String>,
         span: Span,
     },
 }
@@ -260,8 +267,9 @@ impl Stmt {
             | Self::For { span, .. }
             | Self::ForIn { span, .. }
             | Self::ForOf { span, .. }
-            | Self::Break { span }
-            | Self::Continue { span } => *span,
+            | Self::Labeled { span, .. }
+            | Self::Break { span, .. }
+            | Self::Continue { span, .. } => *span,
         }
     }
 }

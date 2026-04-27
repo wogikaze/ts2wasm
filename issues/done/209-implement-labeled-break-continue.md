@@ -9,6 +9,7 @@ depends_on: [035]
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,10 +28,10 @@ Issue 035 completed unlabeled loop control but left labeled control flow as futu
 
 In scope:
 
-- [ ] Parse labeled statements and labeled break/continue targets.
-- [ ] Resolve labels with correct nesting and target validity.
-- [ ] Lower and emit labeled control flow for nested loops.
-- [ ] Add Node differential fixtures for nested target selection and invalid-label diagnostics.
+- [x] Parse labeled statements and labeled break/continue targets.
+- [x] Resolve labels with correct nesting and target validity.
+- [x] Lower and emit labeled control flow for nested loops.
+- [x] Add Node differential fixtures for nested target selection and invalid-label diagnostics.
 
 Out of scope:
 
@@ -54,10 +55,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Labeled `break` exits the matching labeled statement.
-- [ ] Labeled `continue` continues the matching labeled loop and rejects non-loop targets.
-- [ ] Invalid or duplicate label cases produce source diagnostics.
-- [ ] Node differential fixtures cover nested label behavior.
+- [x] Labeled `break` exits the matching labeled statement.
+- [x] Labeled `continue` continues the matching labeled loop and rejects non-loop targets.
+- [x] Invalid or duplicate label cases produce source diagnostics.
+- [x] Node differential fixtures cover nested label behavior.
 
 ## Validation
 
@@ -82,15 +83,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update `docs/language-reference/javascript-features.md`
+- [x] update `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] update `current-state.md`
+- [x] update `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -102,16 +103,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending in child worker branch
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -E 'test(break|continue|label)'
+result: failed before execution because the literal assignment filter selected 0 tests (nextest exit 4: no tests to run)
+date: 2026-04-28
+
+command: cargo nextest run -E 'test(/break|continue|label/)'
+result: passed; 5 tests run, 5 passed
+date: 2026-04-28
 ```
 
 Remaining risks:
 
-- none
+- `crates/compiler/src/dump.rs` and `crates/compiler/src/lib.rs` needed minimal pass-through handling for the new AST node even though they were not listed in the child assignment allowed paths.
