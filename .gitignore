@@ -22,3 +22,5 @@ tmp/
 .ig/
 
 .env
+
+**/out.txt
