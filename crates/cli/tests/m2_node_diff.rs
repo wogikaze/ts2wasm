@@ -35,6 +35,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/plus.ts",
         "fixtures/core-semantics/number-stringify.ts",
         "fixtures/core-semantics/prototype.ts",
+        "fixtures/core-semantics/int32-typed-stress.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

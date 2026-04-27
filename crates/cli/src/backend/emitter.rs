@@ -384,6 +384,7 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::Local(_)
             | LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
+            LoweredExpr::Assign { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Binary { left, right, .. } => {
                 self.collect_expr_strings(left);
                 self.collect_expr_strings(right);

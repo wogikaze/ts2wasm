@@ -260,6 +260,9 @@ impl RuntimeLinkPlan {
                     }
                 }
             }
+            LoweredExpr::Assign { expr, .. } => {
+                self.collect_required_runtime_expr(expr);
+            }
             LoweredExpr::Binary { left, op, right } => {
                 self.collect_required_runtime_expr(left);
                 self.collect_required_runtime_expr(right);
@@ -282,6 +285,33 @@ impl RuntimeLinkPlan {
                             self.add_required_runtime(RuntimeFn::Sub);
                         }
                     }
+                    LoweredBinaryOp::Multiply => {
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::MulFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::Mul);
+                        }
+                    }
+                    LoweredBinaryOp::Divide => {
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::DivFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::Div);
+                        }
+                    }
+                    LoweredBinaryOp::Modulo => {
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::ModFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::Mod);
+                        }
+                    }
                     LoweredBinaryOp::Less => {
                         if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                             && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
@@ -291,6 +321,15 @@ impl RuntimeLinkPlan {
                             self.add_required_runtime(RuntimeFn::Less);
                         }
                     }
+                    LoweredBinaryOp::LessEqual => {
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::LessEqualFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::LessEqual);
+                        }
+                    }
                     LoweredBinaryOp::Greater => {
                         if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                             && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
@@ -298,6 +337,15 @@ impl RuntimeLinkPlan {
                             self.add_required_runtime(RuntimeFn::GreaterFast);
                         } else {
                             self.add_required_runtime(RuntimeFn::Greater);
+                        }
+                    }
+                    LoweredBinaryOp::GreaterEqual => {
+                        if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                            && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
+                        {
+                            self.add_required_runtime(RuntimeFn::GreaterEqualFast);
+                        } else {
+                            self.add_required_runtime(RuntimeFn::GreaterEqual);
                         }
                     }
                     LoweredBinaryOp::StrictEqual => {
@@ -535,15 +583,9 @@ mod tests {
     fn m5_runtime_linker_collects_array_object_and_length_helpers() {
         let array_get_program = lowered("let x = [1][0];");
         let array_get = RuntimeLinkPlan::from_program(&array_get_program);
-        let array_expected: BTreeSet<_> = [
-            RuntimeFn::AllocHeap,
-            RuntimeFn::Index,
-            RuntimeFn::PropertyGet,
-            RuntimeFn::ValueToStringInto,
-            RuntimeFn::MemEqual,
-        ]
-        .into_iter()
-        .collect();
+        let array_expected: BTreeSet<_> = [RuntimeFn::AllocHeap, RuntimeFn::ArrayGet]
+            .into_iter()
+            .collect();
         assert!(
             array_expected
                 .iter()

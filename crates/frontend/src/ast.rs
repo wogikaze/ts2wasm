@@ -5,7 +5,9 @@ pub enum BinaryOp {
     Add,
     Subtract,
     Less,
+    LessEqual,
     Greater,
+    GreaterEqual,
     StrictEqual,
     EqualEqual,
     BangEqual,
@@ -176,6 +178,11 @@ pub enum Expr {
         args: Vec<Expr>,
         span: Span,
     },
+    Assign {
+        name: String,
+        expr: Box<Expr>,
+        span: Span,
+    },
     Array {
         elements: Vec<Expr>,
         span: Span,
@@ -272,6 +279,7 @@ impl Expr {
             | Self::Binary { span, .. }
             | Self::Member { span, .. }
             | Self::Call { span, .. }
+            | Self::Assign { span, .. }
             | Self::Array { span, .. }
             | Self::Object { span, .. }
             | Self::Index { span, .. }

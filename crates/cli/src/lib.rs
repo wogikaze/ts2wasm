@@ -130,7 +130,9 @@ impl<'a> Lexer<'a> {
             | Some(Token::BangEqual)
             | Some(Token::StrictNotEqual)
             | Some(Token::Less)
+            | Some(Token::LessEqual)
             | Some(Token::Greater)
+            | Some(Token::GreaterEqual)
             | Some(Token::AndAnd)
             | Some(Token::OrOr)
             | Some(Token::Question)
@@ -312,6 +314,18 @@ impl<'a> Lexer<'a> {
                                 },
                             },
                         );
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::GreaterEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
                     } else {
                         self.add_token(
                             &mut tokens,
@@ -472,6 +486,18 @@ impl<'a> Lexer<'a> {
                                 },
                             },
                         );
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::LessEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
                     } else {
                         self.add_token(
                             &mut tokens,
@@ -513,6 +539,18 @@ impl<'a> Lexer<'a> {
                                 },
                             );
                         }
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::GreaterEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
                     } else {
                         self.add_token(
                             &mut tokens,
@@ -560,6 +598,18 @@ impl<'a> Lexer<'a> {
                             &mut tokens,
                             SpannedToken {
                                 kind: Token::Arrow,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
+                            },
+                        );
+                    } else if self.peek_char() == Some('=') {
+                        self.advance_char();
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::GreaterEqual,
                                 span: Span {
                                     start,
                                     end: self.cursor,
@@ -1154,14 +1204,6 @@ impl<'a> Lexer<'a> {
         chars.next()
     }
 
-    fn peek_n_char(&self, n: usize) -> Option<char> {
-        let mut chars = self.source[self.cursor..].chars();
-        for _ in 0..=n {
-            chars.next()?;
-        }
-        chars.next()
-    }
-
     fn advance_char(&mut self) -> Option<char> {
         let ch = self.peek_char()?;
         self.cursor += ch.len_utf8();
@@ -1298,6 +1340,14 @@ impl Parser {
             }
         };
         let (name, _) = self.expect_ident()?;
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[
+                TokenKind::Equal,
+                TokenKind::Semicolon,
+                TokenKind::Comma,
+                TokenKind::RightParen,
+            ])?;
+        }
         self.expect(TokenKind::Equal)?;
         let expr = self.expression()?;
         let semi = self.expect(TokenKind::Semicolon)?;
@@ -1333,7 +1383,11 @@ impl Parser {
         self.expect(TokenKind::RightParen)?;
         let then_body = self.block()?;
         let else_body = if self.consume(TokenKind::Else) {
-            self.block()?
+            if matches!(self.peek(), Some(Token::If)) {
+                vec![self.if_statement()?]
+            } else {
+                self.block()?
+            }
         } else {
             Vec::new()
         };
@@ -1382,6 +1436,13 @@ impl Parser {
             loop {
                 let is_rest = self.consume(TokenKind::DotDotDot);
                 let (param_name, _) = self.expect_ident()?;
+                if self.consume(TokenKind::Colon) {
+                    self.skip_type_annotation_until(&[
+                        TokenKind::Equal,
+                        TokenKind::Comma,
+                        TokenKind::RightParen,
+                    ])?;
+                }
                 let default = if self.consume(TokenKind::Equal) {
                     Some(self.assignment()?)
                 } else {
@@ -1393,6 +1454,9 @@ impl Parser {
                 }
                 self.expect(TokenKind::Comma)?;
             }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
         }
         let body = self.block()?;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
@@ -1643,6 +1707,9 @@ impl Parser {
         let (catch_param, catch_block) = if self.consume(TokenKind::Catch) {
             let param = if self.consume(TokenKind::LeftParen) {
                 let (name, _) = self.expect_ident()?;
+                if self.consume(TokenKind::Colon) {
+                    self.skip_type_annotation_until(&[TokenKind::RightParen])?;
+                }
                 self.expect(TokenKind::RightParen)?;
                 Some(name)
             } else {
@@ -1733,6 +1800,13 @@ impl Parser {
                 loop {
                     let is_rest = self.consume(TokenKind::DotDotDot);
                     let (param_name, _) = self.expect_ident()?;
+                    if self.consume(TokenKind::Colon) {
+                        self.skip_type_annotation_until(&[
+                            TokenKind::Equal,
+                            TokenKind::Comma,
+                            TokenKind::RightParen,
+                        ])?;
+                    }
                     let default = if self.consume(TokenKind::Equal) {
                         Some(self.assignment()?)
                     } else {
@@ -1744,6 +1818,9 @@ impl Parser {
                     }
                     self.expect(TokenKind::Comma)?;
                 }
+            }
+            if self.consume(TokenKind::Colon) {
+                self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
             }
 
             let method_body = self.block()?;
@@ -1812,6 +1889,12 @@ impl Parser {
             while !matches!(self.peek(), Some(Token::RightParen)) && !self.is_at_end() {
                 if matches!(self.peek(), Some(Token::Ident(_))) {
                     self.advance();
+                    if self.consume(TokenKind::Colon) {
+                        self.skip_type_annotation_until(&[
+                            TokenKind::Comma,
+                            TokenKind::RightParen,
+                        ])?;
+                    }
                     _param_count += 1;
                     if !self.consume(TokenKind::Comma) {
                         break;
@@ -1820,8 +1903,11 @@ impl Parser {
                     break;
                 }
             }
-            if self.consume(TokenKind::RightParen) && self.consume(TokenKind::Arrow) {
-                true
+            if self.consume(TokenKind::RightParen) {
+                if self.consume(TokenKind::Colon) {
+                    self.skip_type_annotation_until(&[TokenKind::Arrow])?;
+                }
+                self.consume(TokenKind::Arrow)
             } else {
                 false
             }
@@ -1842,7 +1928,23 @@ impl Parser {
             return self.arrow_function();
         }
 
-        self.ternary()
+        let expr = self.ternary()?;
+        if matches!(self.peek(), Some(Token::Equal)) {
+            if let Expr::Ident { name, span } = expr {
+                self.advance();
+                let value = self.assignment()?;
+                return Ok(Expr::Assign {
+                    name,
+                    span: Span {
+                        start: span.start,
+                        end: value.span().end,
+                    },
+                    expr: Box::new(value),
+                });
+            }
+        }
+
+        Ok(expr)
     }
 
     fn arrow_function(&mut self) -> Result<Expr, Diagnostic> {
@@ -1853,6 +1955,12 @@ impl Parser {
             if !self.consume(TokenKind::RightParen) {
                 loop {
                     let (param, _) = self.expect_ident()?;
+                    if self.consume(TokenKind::Colon) {
+                        self.skip_type_annotation_until(&[
+                            TokenKind::Comma,
+                            TokenKind::RightParen,
+                        ])?;
+                    }
                     params.push(param);
                     if self.consume(TokenKind::RightParen) {
                         break;
@@ -1865,6 +1973,9 @@ impl Parser {
             params.push(param);
         }
 
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::Arrow])?;
+        }
         self.expect(TokenKind::Arrow)?;
 
         // Body can be an expression or a block
@@ -2009,8 +2120,12 @@ impl Parser {
         loop {
             let op = if self.consume(TokenKind::Less) {
                 Some(BinaryOp::Less)
+            } else if self.consume(TokenKind::LessEqual) {
+                Some(BinaryOp::LessEqual)
             } else if self.consume(TokenKind::Greater) {
                 Some(BinaryOp::Greater)
+            } else if self.consume(TokenKind::GreaterEqual) {
+                Some(BinaryOp::GreaterEqual)
             } else {
                 None
             };
@@ -2572,6 +2687,55 @@ impl Parser {
         }
     }
 
+    fn skip_type_annotation_until(&mut self, stops: &[TokenKind]) -> Result<(), Diagnostic> {
+        let mut paren_depth = 0usize;
+        let mut bracket_depth = 0usize;
+        let mut brace_depth = 0usize;
+        while !self.is_at_end() {
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            if at_top_level
+                && self
+                    .peek()
+                    .is_some_and(|token| stops.iter().any(|kind| kind.matches(token)))
+            {
+                return Ok(());
+            }
+
+            match self.peek() {
+                Some(Token::LeftParen) => paren_depth += 1,
+                Some(Token::LeftBracket) => bracket_depth += 1,
+                Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::RightParen) => {
+                    if paren_depth == 0 {
+                        return Ok(());
+                    }
+                    paren_depth -= 1;
+                }
+                Some(Token::RightBracket) => {
+                    if bracket_depth == 0 {
+                        return Ok(());
+                    }
+                    bracket_depth -= 1;
+                }
+                Some(Token::RightBrace) => {
+                    if brace_depth == 0 {
+                        return Ok(());
+                    }
+                    brace_depth -= 1;
+                }
+                None => break,
+                _ => {}
+            }
+            self.advance();
+        }
+
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "unterminated TypeScript type annotation".to_owned(),
+            span: self.prev_span(),
+        })
+    }
+
     fn consume(&mut self, kind: TokenKind) -> bool {
         self.consume_span(kind).is_some()
     }
@@ -3051,6 +3215,26 @@ mod tests {
             Stmt::Let { name, expr, .. } => {
                 assert_eq!(name, "t");
                 assert!(matches!(expr, Expr::TypeOf { .. }));
+            }
+            other => panic!("unexpected: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_typescript_type_annotations_as_syntax_only() {
+        let source = r#"
+            function add(a: number, b: number): number { return a + b; }
+            const limit: number = 4;
+            let done: boolean = limit >= 4;
+            console.log(add(limit, 2), done);
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 4);
+        match &program[0] {
+            Stmt::Function { params, .. } => {
+                assert_eq!(params.len(), 2);
+                assert_eq!(params[0].0, "a");
+                assert_eq!(params[1].0, "b");
             }
             other => panic!("unexpected: {other:?}"),
         }

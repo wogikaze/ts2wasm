@@ -32,11 +32,21 @@ impl WatEmitter<'_> {
                 RuntimeFn::AddFast => self.emit_add_fast(wat),
                 RuntimeFn::Sub => self.emit_sub(wat),
                 RuntimeFn::SubFast => self.emit_sub_fast(wat),
+                RuntimeFn::Mul => self.emit_mul(wat),
+                RuntimeFn::MulFast => self.emit_mul_fast(wat),
+                RuntimeFn::Div => self.emit_div(wat),
+                RuntimeFn::DivFast => self.emit_div_fast(wat),
+                RuntimeFn::Mod => self.emit_mod(wat),
+                RuntimeFn::ModFast => self.emit_mod_fast(wat),
                 RuntimeFn::Negate => self.emit_negate(wat),
                 RuntimeFn::Less => self.emit_less(wat),
                 RuntimeFn::LessFast => self.emit_less_fast(wat),
+                RuntimeFn::LessEqual => self.emit_less_equal(wat),
+                RuntimeFn::LessEqualFast => self.emit_less_equal_fast(wat),
                 RuntimeFn::Greater => self.emit_greater(wat),
                 RuntimeFn::GreaterFast => self.emit_greater_fast(wat),
+                RuntimeFn::GreaterEqual => self.emit_greater_equal(wat),
+                RuntimeFn::GreaterEqualFast => self.emit_greater_equal_fast(wat),
                 RuntimeFn::StrictEqual => self.emit_strict_equal(wat),
                 RuntimeFn::EqualEqual => self.emit_equal_equal(wat),
                 RuntimeFn::BangEqual => self.emit_bang_equal(wat),
@@ -470,7 +480,7 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $bang_equal (param $a i32) (param $b i32) (result i32)
-    (if (result i32) (call $equal_equal (local.get $a) (local.get $b))
+    (if (result i32) (i32.eq (call $equal_equal (local.get $a) (local.get $b)) (i32.const {true_tag}))
       (then (i32.const {false_tag}))
       (else (i32.const {true_tag}))))
 "#,
@@ -484,7 +494,7 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $strict_not_equal (param $a i32) (param $b i32) (result i32)
-    (if (result i32) (call $strict_equal (local.get $a) (local.get $b))
+    (if (result i32) (i32.eq (call $strict_equal (local.get $a) (local.get $b)) (i32.const {true_tag}))
       (then (i32.const {false_tag}))
       (else (i32.const {true_tag}))))
 "#,
@@ -641,6 +651,106 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_mul(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $mul (param $a i32) (param $b i32) (result i32)
+    (i32.or
+      (i32.shl
+        (i32.mul (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    fn emit_mul_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $mul_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then (return (call $mul (local.get $a) (local.get $b)))))
+    (call $mul (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    fn emit_div(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $div (param $a i32) (param $b i32) (result i32)
+    (local $rhs i32)
+    (local.set $rhs (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (if (i32.eqz (local.get $rhs))
+      (then (return (i32.const {undefined_tag}))))
+    (i32.or
+      (i32.shl
+        (i32.div_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (local.get $rhs))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            undefined_tag = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_div_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $div_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then (return (call $div (local.get $a) (local.get $b)))))
+    (call $div (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    fn emit_mod(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $mod (param $a i32) (param $b i32) (result i32)
+    (local $rhs i32)
+    (local.set $rhs (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (if (i32.eqz (local.get $rhs))
+      (then (return (i32.const {undefined_tag}))))
+    (i32.or
+      (i32.shl
+        (i32.rem_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (local.get $rhs))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            undefined_tag = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_mod_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $mod_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then (return (call $mod (local.get $a) (local.get $b)))))
+    (call $mod (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
     fn emit_negate(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -687,6 +797,46 @@ impl WatEmitter<'_> {
             (then (i32.const {true_tag}))
             (else (i32.const {false_tag}))))))
     (call $less (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_less_equal(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $less_equal (param $a i32) (param $b i32) (result i32)
+    (if (result i32)
+      (i32.le_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+      (then (i32.const {true_tag}))
+      (else (i32.const {false_tag}))))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_less_equal_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $less_equal_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then
+        (return
+          (if (result i32)
+            (i32.le_s
+              (i32.shr_s (local.get $a) (i32.const {number_shift}))
+              (i32.shr_s (local.get $b) (i32.const {number_shift})))
+            (then (i32.const {true_tag}))
+            (else (i32.const {false_tag}))))))
+    (call $less_equal (local.get $a) (local.get $b)))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
@@ -927,7 +1077,6 @@ impl WatEmitter<'_> {
     (local $pk_raw i32)
     (local $pk_ptr i32)
     (local $pk_len i32)
-    (local $proto i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (i32.const {undefined}))))
@@ -1995,6 +2144,46 @@ impl WatEmitter<'_> {
             two = 2,
             array_tag = ValueTag::ARRAY,
             undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_greater_equal(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $greater_equal (param $a i32) (param $b i32) (result i32)
+    (if (result i32)
+      (i32.ge_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+      (then (i32.const {true_tag}))
+      (else (i32.const {false_tag}))))
+"#,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    fn emit_greater_equal_fast(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $greater_equal_fast (param $a i32) (param $b i32) (result i32)
+    (if (i32.and
+          (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
+      (then
+        (return
+          (if (result i32)
+            (i32.ge_s
+              (i32.shr_s (local.get $a) (i32.const {number_shift}))
+              (i32.shr_s (local.get $b) (i32.const {number_shift})))
+            (then (i32.const {true_tag}))
+            (else (i32.const {false_tag}))))))
+    (call $greater_equal (local.get $a) (local.get $b)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
         ));
     }
 

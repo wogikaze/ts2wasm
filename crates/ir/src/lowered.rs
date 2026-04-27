@@ -140,6 +140,10 @@ pub enum LoweredExpr {
         kind: FunctionCallKind,
         args: Vec<LoweredExpr>,
     },
+    Assign {
+        local: LocalId,
+        expr: Box<LoweredExpr>,
+    },
     ArrayNew {
         elements: Vec<LoweredExpr>,
     },
@@ -207,8 +211,13 @@ pub enum LoweredExpr {
 pub enum LoweredBinaryOp {
     Add,
     Subtract,
+    Multiply,
+    Divide,
+    Modulo,
     Less,
+    LessEqual,
     Greater,
+    GreaterEqual,
     StrictEqual,
     EqualEqual,
     BangEqual,
@@ -252,7 +261,10 @@ impl LoweredExpr {
                     (InferredType::String, InferredType::String) => InferredType::String,
                     _ => InferredType::Unknown,
                 },
-                LoweredBinaryOp::Subtract => {
+                LoweredBinaryOp::Subtract
+                | LoweredBinaryOp::Multiply
+                | LoweredBinaryOp::Divide
+                | LoweredBinaryOp::Modulo => {
                     if left.inferred_type() == InferredType::Number
                         && right.inferred_type() == InferredType::Number
                     {
@@ -262,13 +274,16 @@ impl LoweredExpr {
                     }
                 }
                 LoweredBinaryOp::Less
+                | LoweredBinaryOp::LessEqual
                 | LoweredBinaryOp::Greater
+                | LoweredBinaryOp::GreaterEqual
                 | LoweredBinaryOp::StrictEqual
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::BangEqual
                 | LoweredBinaryOp::StrictNotEqual => InferredType::Boolean,
                 LoweredBinaryOp::And | LoweredBinaryOp::Or => InferredType::Unknown,
             },
+            Self::Assign { expr, .. } => expr.inferred_type(),
             _ => InferredType::Unknown,
         }
     }
@@ -502,18 +517,20 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
     match op {
         BinaryOp::Add => Ok(LoweredBinaryOp::Add),
         BinaryOp::Subtract => Ok(LoweredBinaryOp::Subtract),
+        BinaryOp::Multiply => Ok(LoweredBinaryOp::Multiply),
+        BinaryOp::Divide => Ok(LoweredBinaryOp::Divide),
+        BinaryOp::Modulo => Ok(LoweredBinaryOp::Modulo),
         BinaryOp::Less => Ok(LoweredBinaryOp::Less),
+        BinaryOp::LessEqual => Ok(LoweredBinaryOp::LessEqual),
         BinaryOp::Greater => Ok(LoweredBinaryOp::Greater),
+        BinaryOp::GreaterEqual => Ok(LoweredBinaryOp::GreaterEqual),
         BinaryOp::StrictEqual => Ok(LoweredBinaryOp::StrictEqual),
         BinaryOp::EqualEqual => Ok(LoweredBinaryOp::EqualEqual),
         BinaryOp::BangEqual => Ok(LoweredBinaryOp::BangEqual),
         BinaryOp::StrictNotEqual => Ok(LoweredBinaryOp::StrictNotEqual),
         BinaryOp::And => Ok(LoweredBinaryOp::And),
         BinaryOp::Or => Ok(LoweredBinaryOp::Or),
-        BinaryOp::Multiply
-        | BinaryOp::Divide
-        | BinaryOp::Modulo
-        | BinaryOp::Power
+        BinaryOp::Power
         | BinaryOp::BitwiseAnd
         | BinaryOp::BitwiseOr
         | BinaryOp::BitwiseXor
@@ -928,6 +945,13 @@ impl<'a> Resolver<'a> {
                         right: Box::new(self.lower_expr(right)?),
                     })
                 }
+            }
+            ResolvedExpr::Assign { name, expr } => {
+                let local = self.resolve_local(name)?;
+                Ok(LoweredExpr::Assign {
+                    local,
+                    expr: Box::new(self.lower_expr(expr)?),
+                })
             }
             ResolvedExpr::Call { callee, args } => {
                 let func_name = match callee.as_ref() {
@@ -1600,6 +1624,10 @@ fn validate_expr(
         }
         LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
         LoweredExpr::Unary { expr, .. } => {
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::Assign { local, expr } => {
+            check_local_id(*local, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::Binary { left, right, .. } => {

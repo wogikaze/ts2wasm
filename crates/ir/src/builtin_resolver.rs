@@ -390,6 +390,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 })
             }
         }
+        Expr::Assign { name, expr, .. } => Ok(ResolvedExpr::Assign {
+            name: name.clone(),
+            expr: Box::new(resolve_expr(expr)?),
+        }),
         Expr::Member {
             object, property, ..
         } => {
@@ -705,6 +709,7 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Binary { span, .. }
         | Expr::Member { span, .. }
         | Expr::Call { span, .. }
+        | Expr::Assign { span, .. }
         | Expr::Array { span, .. }
         | Expr::Object { span, .. }
         | Expr::Index { span, .. }

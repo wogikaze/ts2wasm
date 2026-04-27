@@ -51,6 +51,7 @@ pub enum Token {
     Plus,
     Minus,
     Less,
+    LessEqual,
     Bang,
     StrictEqual,
     Equal,
@@ -60,6 +61,7 @@ pub enum Token {
     AndAnd,
     OrOr,
     Greater,
+    GreaterEqual,
     Power,
     Increment,
     Decrement,
@@ -143,6 +145,7 @@ pub enum TokenKind {
     Plus,
     Minus,
     Less,
+    LessEqual,
     Bang,
     StrictEqual,
     Equal,
@@ -152,6 +155,7 @@ pub enum TokenKind {
     AndAnd,
     OrOr,
     Greater,
+    GreaterEqual,
     Power,
     Increment,
     Decrement,
@@ -232,6 +236,7 @@ impl TokenKind {
                 | (Self::Plus, Token::Plus)
                 | (Self::Minus, Token::Minus)
                 | (Self::Less, Token::Less)
+                | (Self::LessEqual, Token::LessEqual)
                 | (Self::Bang, Token::Bang)
                 | (Self::StrictEqual, Token::StrictEqual)
                 | (Self::Equal, Token::Equal)
@@ -241,6 +246,7 @@ impl TokenKind {
                 | (Self::AndAnd, Token::AndAnd)
                 | (Self::OrOr, Token::OrOr)
                 | (Self::Greater, Token::Greater)
+                | (Self::GreaterEqual, Token::GreaterEqual)
                 | (Self::Power, Token::Power)
                 | (Self::Increment, Token::Increment)
                 | (Self::Decrement, Token::Decrement)

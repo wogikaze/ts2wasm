@@ -151,6 +151,10 @@ impl WatEmitter<'_> {
                     }
                 }
             }
+            LoweredExpr::Assign { local, expr } => {
+                self.emit_expr(wat, expr, indent, frame);
+                wat.push_str(&format!("{pad}(local.tee {})\n", local_index(*local)));
+            }
             LoweredExpr::Binary { left, op, right } => {
                 let left_ty = left.inferred_type();
                 let right_ty = right.inferred_type();
@@ -176,12 +180,43 @@ impl WatEmitter<'_> {
                         self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::SubFast.symbol()));
                     }
+                    LoweredBinaryOp::Multiply
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::MulFast.symbol()));
+                    }
+                    LoweredBinaryOp::Divide
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::DivFast.symbol()));
+                    }
+                    LoweredBinaryOp::Modulo
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ModFast.symbol()));
+                    }
                     LoweredBinaryOp::Less
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
                         self.emit_expr(wat, left, indent, frame);
                         self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::LessFast.symbol()));
+                    }
+                    LoweredBinaryOp::LessEqual
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
+                        wat.push_str(&format!(
+                            "{pad}(call {})\n",
+                            RuntimeFn::LessEqualFast.symbol()
+                        ));
                     }
                     LoweredBinaryOp::Greater
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
@@ -193,14 +228,29 @@ impl WatEmitter<'_> {
                             RuntimeFn::GreaterFast.symbol()
                         ));
                     }
+                    LoweredBinaryOp::GreaterEqual
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
+                        wat.push_str(&format!(
+                            "{pad}(call {})\n",
+                            RuntimeFn::GreaterEqualFast.symbol()
+                        ));
+                    }
                     _ => {
                         self.emit_expr(wat, left, indent, frame);
                         self.emit_expr(wat, right, indent, frame);
                         let runtime_fn = match op {
                             LoweredBinaryOp::Add => RuntimeFn::Add,
                             LoweredBinaryOp::Subtract => RuntimeFn::Sub,
+                            LoweredBinaryOp::Multiply => RuntimeFn::Mul,
+                            LoweredBinaryOp::Divide => RuntimeFn::Div,
+                            LoweredBinaryOp::Modulo => RuntimeFn::Mod,
                             LoweredBinaryOp::Less => RuntimeFn::Less,
+                            LoweredBinaryOp::LessEqual => RuntimeFn::LessEqual,
                             LoweredBinaryOp::Greater => RuntimeFn::Greater,
+                            LoweredBinaryOp::GreaterEqual => RuntimeFn::GreaterEqual,
                             LoweredBinaryOp::StrictEqual => RuntimeFn::StrictEqual,
                             LoweredBinaryOp::EqualEqual => RuntimeFn::EqualEqual,
                             LoweredBinaryOp::BangEqual => RuntimeFn::BangEqual,

@@ -100,6 +100,10 @@ pub enum ResolvedExpr {
         callee: Box<ResolvedExpr>,
         args: Vec<ResolvedExpr>,
     },
+    Assign {
+        name: String,
+        expr: Box<ResolvedExpr>,
+    },
     Array(Vec<ResolvedExpr>),
     Object(Vec<(String, ResolvedExpr)>),
     ComputedIndex {
