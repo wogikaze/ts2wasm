@@ -17,7 +17,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
 | 021 | Implement full wasm backend | feature | backend | implementation-ready | P2 | 008, 020 | Full wasm backend is not implemented. Current implementation is WAT-centric. docs/04 specifies initial linear memory ... |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
@@ -184,6 +183,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
+| 017b | Implement GC strategy | feature | runtime/memory | class: blocked | Implement GC strategy |
 | 046 | Implement extends inheritance | feature | runtime/semantics | 045 | Implement extends inheritance |
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 | 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
