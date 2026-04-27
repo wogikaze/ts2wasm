@@ -60,9 +60,14 @@ ts2wasm check main.ts
 ts2wasm test tests/**/*.ts
 ts2wasm emit-wat main.ts -o main.wat
 ts2wasm explain main.ts
+ts2wasm dump main.ts
+ts2wasm dump --ast --unparse main.ts
+ts2wasm dump --lowered main.ts
 ```
 
 `build` は `.wasm` を生成する。`run` はビルド後に適切な runtime で実行する。Node host が不要なら iwasm または wasmtime で実行し、Node host が必要なら生成された host shim を使う。`check` は parser / semantic / unsupported feature を確認する。`explain` は、そのソースが standalone で動くのか、Node host が必要なのか、どの API が原因なのかを表示する。
+
+`dump` は compiler 開発用に pipeline の中間表現を表示する。フェーズ指定なしでは利用可能なフェーズを順に表示し、個別指定では `--tokens`、`--ast`、`--resolved`、`--lowered`、`--wat` を選べる。`--ast --unparse` は AST を正規化された疑似ソースとして出力する。
 
 たとえば、`process.env.FOO` の読み取りだけを使っているコードに対して `explain` を実行すると、WASI environ で実行できることを示す。
 

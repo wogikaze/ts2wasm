@@ -86,6 +86,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - WAT/WASM emitter と runtime subset（`crates/cli`; backend-wasm 移行は issue 026 で進行中）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
 - IR crate（`crates/ir`）: resolved/lowered IR
+- CLI dump command: `ts2wasm dump` can emit tokens, AST, resolved AST, lowered IR, WAT, and AST pseudo-source via `--ast --unparse`
 - runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
 - reference coverage パイプライン（`scripts/manager reference-coverage`, `scripts/manager update-coverage-matrix`, `scripts/manager update-coverage-matrix --check`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
@@ -97,6 +98,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - **Crates module migration**: `crates/frontend`, `crates/ir`, `crates/runtime-abi` migrations are complete (issues 024, 025, 027 done). `crates/backend-wasm` migration is in progress (issue 026 open).
 - TypeScript parser/checker integration は未実装
 - 汎用 JavaScript semantic IR は未実装
+- typed IR dump (`ts2wasm dump --tir`) and optimizer dump (`ts2wasm dump --optimize`) are tracked by issues 204 and 205.
 - full wasm backend は未実装（現状は WAT 中心）
 - test262 full differential 運用は未完（sample/ramp が中心）
 - GC 実装は未完。OOM check と UTF-8 literal basic support は完了済みだが、UTF-16 parity / encode-decode helper は追跡対象。
