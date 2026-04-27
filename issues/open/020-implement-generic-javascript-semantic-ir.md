@@ -2,7 +2,7 @@
 
 **Status**: open
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-28
 **ID**: 020
 **Type**: feature
 **Area**: ir/semantics
@@ -15,7 +15,7 @@ Problem: Generic JavaScript semantic IR is not implemented. Current IR is minima
 Scope:
 
 This is a parent issue coordinating IR work. Sub-issues:
-- 020a: Design IR with JS semantics instructions (design-ready)
+- 020a: Design IR with JS semantics instructions (done)
 - 020b: Implement IR lowering from TypeScript AST (implementation-ready, depends on 020a)
 - 020c: Add validation passes and document contracts (implementation-ready, depends on 020b)
 
@@ -25,7 +25,7 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] 020a (design) is complete.
+- [x] 020a (design) is complete.
 - [ ] 020b (implementation) is complete.
 - [ ] 020c (validation) is complete.
 - [ ] Node differential test passes for IR-level fixtures.

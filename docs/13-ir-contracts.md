@@ -95,6 +95,33 @@ Expr::Index { object: Box<Expr>, index: Box<Expr> }
 
 `console.log(x)` かどうかは BuiltinResolver だけが判断する。
 
+## IR design
+
+Generic JavaScript semantic IR は、AST の構文構造でも backend の runtime ABI でもない中間層として設計する。目的は、JavaScript の observable semantics を `backend-wasm` から切り離し、lowering/validation/optimization が同じ semantic operation を共有できるようにすることである。
+
+### Semantic instruction set
+
+HIR は次の命令群を持つ。命令名は設計上の契約であり、実際の Rust enum 名は 020b で確定する。
+
+| Group | Instructions | Semantics |
+|---|---|---|
+| Value | `ConstUndefined`, `ConstNull`, `ConstBool`, `ConstNumber`, `ConstString`, `ConstObject`, `ConstArray` | JS value を作る。backend の tagged layout はここでは露出しない |
+| Local | `LoadLocal`, `StoreLocal`, `LoadFunction`, `LoadBuiltin` | すべて ID 参照。名前文字列は HIR に残さない |
+| Conversion | `ToBoolean`, `ToNumber`, `ToString`, `ToPropertyKey`, `ToPrimitive` | JS の抽象操作を表す。最適化 hint があっても意味論を変えない |
+| Operator | `JsAdd`, `JsStrictEqual`, `JsAbstractEqual`, `JsRelational`, `JsUnaryNot`, `JsTypeOf`, `JsInstanceOf` | operator token ではなく JS semantics。`JsAdd` は number add と string concat の両方を保持する |
+| Property | `GetProp`, `SetProp`, `GetIndex`, `SetIndex`, `HasProp`, `OwnKeys`, `ArrayLength` | prototype chain / property key conversion / array length semantics を backend から隠す |
+| Call | `CallFunction`, `CallMethod`, `CallBuiltin`, `Construct` | receiver と callee を明示し、method call の `this` を失わない |
+| Control | `Block`, `BranchIfTruthy`, `Loop`, `Break`, `Continue`, `Return`, `Throw`, `TryCatchFinally` | condition は `ToBoolean` または truthy branch として明示する |
+| Metadata | `TypeHint`, `SourceSpan`, `CapabilityHint` | 診断・最適化・manifest の補助情報。metadata だけで observable semantics を変更しない |
+
+### Design decisions
+
+* `JsAdd` は HIR では単一命令のまま保持する。TypeScript type hints が `number-add-fast-path` を示しても、runtime guard または証明済み typed lowering がない限り static number add に置き換えない。
+* property access は `GetProp` / `SetProp` に集約し、computed index は `ToPropertyKey` を通して同じ property model に入れる。array index fast path は MIR/backend の最適化で扱う。
+* `CallMethod` は receiver を明示フィールドとして持つ。`obj.method()` を `CallFunction(GetProp(obj, "method"))` に潰すと `this` binding が失われるため禁止する。
+* TypeScript checker 由来の型情報は `TypeHint` metadata として保持する。hint は最適化候補を示すだけで、semantic validation の代替にはしない。
+* HIR validation は unresolved name、invalid local/function ID、arity mismatch、top-level return、receiver loss を検出する。backend は validate 済み HIR/MIR だけを受け取る。
+
 ## HIR — High-level IR（予定）
 
 ### 責務

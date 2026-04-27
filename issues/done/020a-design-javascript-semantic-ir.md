@@ -1,8 +1,9 @@
 # Design JavaScript semantic IR
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-28
+**Completed**: 2026-04-28
 **ID**: 020a
 **Type**: feature
 **Area**: ir/semantics
@@ -25,9 +26,9 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] IR design includes JS semantics instructions.
-- [ ] IR instruction set is documented.
-- [ ] Design decisions are justified.
+- [x] IR design includes JS semantics instructions.
+- [x] IR instruction set is documented.
+- [x] Design decisions are justified.
 
 Validation:
 
@@ -35,3 +36,19 @@ Validation:
 cargo fmt --all --check
 grep -A 30 "IR design" docs/13-ir-contracts.md
 ```
+
+Completion evidence:
+
+```text
+command: grep -A 30 "IR design" docs/13-ir-contracts.md
+result: PASS (semantic instruction set and design decisions documented)
+date: 2026-04-28
+
+command: cargo nextest run --no-fail-fast
+result: PASS (204 passed, 4 skipped)
+date: 2026-04-28
+```
+
+Remaining risks:
+
+- Rust enum implementation and lowering are tracked by issues 020b and 020c.
