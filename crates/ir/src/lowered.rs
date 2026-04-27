@@ -883,7 +883,10 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
             ResolvedExpr::Null => Ok(LoweredExpr::Null),
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
-            ResolvedExpr::This => Ok(LoweredExpr::This),
+            ResolvedExpr::This => match self.resolve_local("this") {
+                Ok(local) => Ok(LoweredExpr::Local(local)),
+                Err(_) => Ok(LoweredExpr::This),
+            },
             ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
             ResolvedExpr::Spread(_) => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -1126,6 +1129,36 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     })
                 } else {
+                    if matches!(object.as_ref(), ResolvedExpr::This) {
+                        let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "this.method(...) requires class context".to_owned(),
+                            span: None,
+                        })?;
+                        let method_id =
+                            self.resolve_class_method(class_name, method)
+                                .ok_or_else(|| Diagnostic {
+                                    code: DiagCode::UnsupportedSyntax,
+                                    message: format!(
+                                        "method `{}.{}` not found",
+                                        class_name, method
+                                    ),
+                                    span: None,
+                                })?;
+
+                        let mut lowered_args =
+                            vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                        lowered_args.extend(
+                            args.iter()
+                                .map(|e| self.lower_expr(e))
+                                .collect::<Result<Vec<_>, _>>()?,
+                        );
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(method_id),
+                            args: lowered_args,
+                        });
+                    }
+
                     let receiver_name = match object.as_ref() {
                         ResolvedExpr::Ident(name) => name,
                         _ => {
