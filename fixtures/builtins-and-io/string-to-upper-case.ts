@@ -1,3 +1,3 @@
-let s = "hello";
-let t = s.toUpperCase();
-console.log(t);
+console.log("hello".toUpperCase());
+console.log("Hello 123!".toUpperCase());
+console.log("ALREADY".toUpperCase());

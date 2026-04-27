@@ -1,3 +1,3 @@
-let s = "HELLO";
-let t = s.toLowerCase();
-console.log(t);
+console.log("HELLO".toLowerCase());
+console.log("Hello 123!".toLowerCase());
+console.log("already".toLowerCase());

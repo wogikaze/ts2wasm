@@ -490,9 +490,10 @@ const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
     RuntimeFn::MemEqual,
 ];
-const STRING_TRIM_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
-const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
-const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
+const STRING_TRIM_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
+const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 
