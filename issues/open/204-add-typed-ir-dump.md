@@ -42,7 +42,7 @@ Out of scope:
 
 Expected:
 
-- `crates/cli/src/dump.rs`
+- `crates/compiler/src/dump.rs`
 - `crates/cli/src/main.rs`
 - `crates/cli/tests/dump_cli.rs`
 - `crates/ir/src/...`

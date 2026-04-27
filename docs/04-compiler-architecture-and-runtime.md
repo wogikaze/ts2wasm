@@ -6,6 +6,8 @@
 
 コンパイラは、frontend、semantic layer、lowering、runtime binding、wasm backend の五段階に分ける。
 
+Crate boundary はこの pipeline に合わせる。`crates/compiler` は driver/orchestration を持ち、入力ファイル、dump phase、build option を frontend / IR / backend に流す。`crates/cli` は command parsing、path/stdout/stderr、exit code mapping だけを扱い、compiler 実装を持たない。
+
 ### Compiler Pipeline Visualization
 
 ```mermaid

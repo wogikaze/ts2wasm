@@ -27,10 +27,10 @@ Reduce `crates/cli` to command parsing, file/stdout/stderr handling, exit-code m
 
 In scope:
 
-- [ ] Add or designate a compiler/driver crate for `build_file`, `build_file_with_options`, `build_file_with_host_deny`, and dump pipeline APIs.
-- [ ] Move build pipeline orchestration out of `crates/cli/src/lib.rs`.
-- [ ] Move dump orchestration out of `crates/cli/src/dump.rs` or make it call reusable compiler APIs only.
-- [ ] Ensure `crates/cli/src/main.rs` handles command parsing, path conversion, output rendering, and exit codes only.
+- [x] Add or designate a compiler/driver crate for `build_file`, `build_file_with_options`, `build_file_with_host_deny`, and dump pipeline APIs.
+- [x] Move build pipeline orchestration out of `crates/cli/src/lib.rs`.
+- [x] Move dump orchestration out of `crates/compiler/src/dump.rs` or make it call reusable compiler APIs only.
+- [x] Ensure `crates/cli/src/main.rs` handles command parsing, path conversion, output rendering, and exit codes only.
 - [x] Add architecture checks that prevent backend modules from reappearing under `crates/cli/src/`.
 - [ ] Add architecture checks that prevent parser/compiler pipeline modules from reappearing under `crates/cli/src/`.
 - [ ] Keep CLI command behavior stable during migration.
@@ -39,7 +39,7 @@ Out of scope:
 
 - Implementing new language semantics.
 - Implementing typed IR or optimizer dump output; track those in issues 204 and 205.
-- Removing frontend/backend code before issues 010 and 026 have usable replacement APIs.
+- Removing frontend code before issue 010 has a usable replacement API.
 
 ## Affected paths
 
@@ -48,11 +48,10 @@ Expected:
 - `crates/cli/Cargo.toml`
 - `crates/cli/src/main.rs`
 - `crates/cli/src/lib.rs`
-- `crates/cli/src/dump.rs`
+- `crates/compiler/`
 - `crates/backend-wasm/`
 - `crates/frontend/`
 - `crates/ir/`
-- future compiler or driver crate path, once the crate is created
 - `scripts/check/architecture-rules.py`
 
 Do not touch:
@@ -61,9 +60,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `crates/cli` no longer defines backend, parser, or compiler pipeline implementation modules.
-- [ ] CLI build command calls a reusable compiler/driver API.
-- [ ] CLI dump command calls reusable compiler/driver APIs for each dump phase.
+- [x] `crates/cli` no longer defines backend, parser, or compiler pipeline implementation modules.
+- [x] CLI build command calls a reusable compiler/driver API.
+- [x] CLI dump command calls reusable compiler/driver APIs for each dump phase.
 - [ ] Architecture checks warn or fail if large compiler implementation files are added under `crates/cli/src/`.
 - [ ] Existing CLI command tests continue to pass.
 - [ ] Backend/frontend/IR tests cover moved non-CLI behavior outside `crates/cli`.

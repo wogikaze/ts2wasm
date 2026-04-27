@@ -6,6 +6,7 @@ members = [
     "crates/ir",
     "crates/runtime-abi",
     "crates/backend-wasm",
+    "crates/compiler",
 ]
 resolver = "3"
 

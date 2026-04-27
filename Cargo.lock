@@ -102,13 +102,16 @@ dependencies = [
 name = "ts2wasm-cli"
 version = "0.1.0"
 dependencies = [
- "serde",
- "serde_json",
+ "ts2wasm-compiler",
+]
+
+[[package]]
+name = "ts2wasm-compiler"
+version = "0.1.0"
+dependencies = [
  "ts2wasm-backend-wasm",
  "ts2wasm-frontend",
  "ts2wasm-ir",
- "ts2wasm-runtime-abi",
- "ts2wasm-shared",
 ]
 
 [[package]]
