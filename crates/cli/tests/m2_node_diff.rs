@@ -36,6 +36,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/plus.ts",
         "fixtures/core-semantics/number-stringify.ts",
         "fixtures/core-semantics/prototype.ts",
+        "fixtures/core-semantics/instanceof.ts",
         "fixtures/core-semantics/int32-typed-stress.ts",
     ] {
         assert_fixture_matches_node(fixture);
@@ -89,6 +90,44 @@ fn abstract_equality_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn template_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/template-literal.ts");
+}
+
+#[test]
+fn instanceof_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/instanceof.ts");
+}
+
+#[test]
+fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
+    let fixture = "fixtures/core-semantics/instanceof-unsupported-rhs.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "unsupported instanceof RHS fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]"),
+        "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains(
+            "issue-207: instanceof right-hand side must be a supported class constructor"
+        ),
+        "expected issue-207 diagnostic, got:\n{stderr}"
+    );
 }
 
 fn assert_fixture_matches_node(fixture: &str) {

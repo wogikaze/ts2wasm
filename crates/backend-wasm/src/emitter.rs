@@ -1,7 +1,7 @@
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 
 use crate::{DiagCode, Diagnostic};
-use ts2wasm_ir::lowered::{FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
+use ts2wasm_ir::lowered::{ClassPrototypeRef, FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
@@ -82,6 +82,7 @@ impl<'a> WatEmitter<'a> {
             Layout::HEAP_START,
         ));
         self.emit_required_globals(&mut wat);
+        self.emit_class_prototype_globals(&mut wat);
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
         self.emit_functions(&mut wat);
@@ -462,12 +463,249 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(arg);
                 }
             }
+            LoweredExpr::ClassPrototype(_) => {}
             LoweredExpr::ModuleLoad { .. } => {}
             LoweredExpr::RuntimeCall { args, .. } => {
                 for arg in args {
                     self.collect_expr_strings(arg);
                 }
             }
+        }
+    }
+
+    fn emit_class_prototype_globals(&self, wat: &mut String) {
+        for constructor in self.class_prototypes().keys() {
+            wat.push_str(&format!(
+                "  (global ${} (mut i32) (i32.const 0))\n",
+                class_prototype_global(*constructor),
+            ));
+        }
+    }
+
+    fn emit_class_prototype_initializers(&self, wat: &mut String, indent: usize) {
+        let pad = " ".repeat(indent);
+        for (constructor, parent) in self.ordered_class_prototypes() {
+            let global = class_prototype_global(constructor);
+            wat.push_str(&format!(
+                "{pad}(if (i32.eqz (global.get ${global}))\n{pad}  (then\n"
+            ));
+            wat.push_str(&format!(
+                "{pad}    (global.set ${global} (call {} (i32.const {})))\n",
+                super::runtime_fn::RuntimeFn::AllocHeap.symbol(),
+                Layout::OBJECT_HEADER_SIZE,
+            ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (global.get ${global}) (i32.const 0))\n"
+            ));
+            let parent_expr = parent
+                .map(|id| format!("global.get ${}", class_prototype_global(id)))
+                .unwrap_or_else(|| "i32.const 0".to_owned());
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) ({parent_expr}))\n",
+                Layout::OBJECT_PROTOTYPE_OFFSET,
+            ));
+            wat.push_str(&format!("{pad}  )\n{pad})\n"));
+        }
+    }
+
+    fn ordered_class_prototypes(&self) -> Vec<(FuncId, Option<FuncId>)> {
+        let prototypes = self.class_prototypes();
+        let mut ordered = prototypes
+            .iter()
+            .map(|(constructor, parent)| {
+                (
+                    *constructor,
+                    *parent,
+                    class_prototype_depth(*constructor, &prototypes),
+                )
+            })
+            .collect::<Vec<_>>();
+        ordered.sort_by_key(|(constructor, _, depth)| (*depth, constructor.0));
+        ordered
+            .into_iter()
+            .map(|(constructor, parent, _)| (constructor, parent))
+            .collect()
+    }
+
+    fn class_prototypes(&self) -> BTreeMap<FuncId, Option<FuncId>> {
+        let mut prototypes = BTreeMap::new();
+        self.collect_class_prototypes_from_stmts(
+            &self.program.top_level_statements,
+            &mut prototypes,
+        );
+        for function in &self.program.functions {
+            self.collect_class_prototypes_from_stmts(&function.body, &mut prototypes);
+        }
+        prototypes
+    }
+
+    fn collect_class_prototypes_from_stmts(
+        &self,
+        stmts: &[LoweredStmt],
+        prototypes: &mut BTreeMap<FuncId, Option<FuncId>>,
+    ) {
+        for stmt in stmts {
+            match stmt {
+                LoweredStmt::Let(_, expr)
+                | LoweredStmt::Assign(_, expr)
+                | LoweredStmt::Expr(expr)
+                | LoweredStmt::Return(expr)
+                | LoweredStmt::Throw(expr)
+                | LoweredStmt::Export { expr, .. }
+                | LoweredStmt::ModuleExportsAssign { expr } => {
+                    self.collect_class_prototypes_from_expr(expr, prototypes);
+                }
+                LoweredStmt::If {
+                    condition,
+                    then_body,
+                    else_body,
+                } => {
+                    self.collect_class_prototypes_from_expr(condition, prototypes);
+                    self.collect_class_prototypes_from_stmts(then_body, prototypes);
+                    self.collect_class_prototypes_from_stmts(else_body, prototypes);
+                }
+                LoweredStmt::While { condition, body }
+                | LoweredStmt::DoWhile { body, condition } => {
+                    self.collect_class_prototypes_from_expr(condition, prototypes);
+                    self.collect_class_prototypes_from_stmts(body, prototypes);
+                }
+                LoweredStmt::TryCatch {
+                    try_body,
+                    catch_body,
+                    finally_body,
+                    ..
+                } => {
+                    self.collect_class_prototypes_from_stmts(try_body, prototypes);
+                    if let Some(body) = catch_body {
+                        self.collect_class_prototypes_from_stmts(body, prototypes);
+                    }
+                    if let Some(body) = finally_body {
+                        self.collect_class_prototypes_from_stmts(body, prototypes);
+                    }
+                }
+                LoweredStmt::Switch { expr, cases } => {
+                    self.collect_class_prototypes_from_expr(expr, prototypes);
+                    for (case_expr, body) in cases {
+                        if let Some(case_expr) = case_expr {
+                            self.collect_class_prototypes_from_expr(case_expr, prototypes);
+                        }
+                        self.collect_class_prototypes_from_stmts(body, prototypes);
+                    }
+                }
+                LoweredStmt::For {
+                    init,
+                    condition,
+                    update,
+                    body,
+                } => {
+                    if let Some(init) = init {
+                        self.collect_class_prototypes_from_stmts(
+                            std::slice::from_ref(init.as_ref()),
+                            prototypes,
+                        );
+                    }
+                    if let Some(condition) = condition {
+                        self.collect_class_prototypes_from_expr(condition, prototypes);
+                    }
+                    if let Some(update) = update {
+                        self.collect_class_prototypes_from_expr(update, prototypes);
+                    }
+                    self.collect_class_prototypes_from_stmts(body, prototypes);
+                }
+                LoweredStmt::ForIn { iter, body, .. } | LoweredStmt::ForOf { iter, body, .. } => {
+                    self.collect_class_prototypes_from_expr(iter, prototypes);
+                    self.collect_class_prototypes_from_stmts(body, prototypes);
+                }
+                LoweredStmt::Break | LoweredStmt::Continue | LoweredStmt::ClassDecl { .. } => {}
+            }
+        }
+    }
+
+    fn collect_class_prototypes_from_expr(
+        &self,
+        expr: &LoweredExpr,
+        prototypes: &mut BTreeMap<FuncId, Option<FuncId>>,
+    ) {
+        match expr {
+            LoweredExpr::ClassPrototype(prototype) => {
+                add_class_prototype_ref(prototype, prototypes);
+            }
+            LoweredExpr::New {
+                prototype, args, ..
+            } => {
+                add_class_prototype_ref(prototype, prototypes);
+                for arg in args {
+                    self.collect_class_prototypes_from_expr(arg, prototypes);
+                }
+            }
+            LoweredExpr::Unary { expr, .. }
+            | LoweredExpr::GetLength(expr)
+            | LoweredExpr::PropertyGet { obj: expr, .. }
+            | LoweredExpr::MethodCall { object: expr, .. }
+            | LoweredExpr::PropertyDelete { object: expr, .. } => {
+                self.collect_class_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::Binary { left, right, .. } => {
+                self.collect_class_prototypes_from_expr(left, prototypes);
+                self.collect_class_prototypes_from_expr(right, prototypes);
+            }
+            LoweredExpr::PropertyIn { obj, .. } => {
+                self.collect_class_prototypes_from_expr(obj, prototypes);
+            }
+            LoweredExpr::PropertyInDynamic { obj, key }
+            | LoweredExpr::ArrayGet {
+                arr: obj,
+                index: key,
+            }
+            | LoweredExpr::Index {
+                object: obj,
+                index: key,
+            }
+            | LoweredExpr::PropertyGetDynamic { obj, key }
+            | LoweredExpr::PropertyDeleteDynamic { object: obj, key } => {
+                self.collect_class_prototypes_from_expr(obj, prototypes);
+                self.collect_class_prototypes_from_expr(key, prototypes);
+            }
+            LoweredExpr::Call { args, .. } | LoweredExpr::RuntimeCall { args, .. } => {
+                for arg in args {
+                    self.collect_class_prototypes_from_expr(arg, prototypes);
+                }
+            }
+            LoweredExpr::ArrayNew { elements } => {
+                for elem in elements {
+                    self.collect_class_prototypes_from_expr(elem, prototypes);
+                }
+            }
+            LoweredExpr::ObjectNew { props } => {
+                for (_, value) in props {
+                    self.collect_class_prototypes_from_expr(value, prototypes);
+                }
+            }
+            LoweredExpr::PropertySet { object, value, .. } => {
+                self.collect_class_prototypes_from_expr(object, prototypes);
+                self.collect_class_prototypes_from_expr(value, prototypes);
+            }
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+            } => {
+                self.collect_class_prototypes_from_expr(object, prototypes);
+                self.collect_class_prototypes_from_expr(index, prototypes);
+                self.collect_class_prototypes_from_expr(value, prototypes);
+            }
+            LoweredExpr::Assign { expr, .. } => {
+                self.collect_class_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::Number(_)
+            | LoweredExpr::String(_)
+            | LoweredExpr::Bool(_)
+            | LoweredExpr::Null
+            | LoweredExpr::Undefined
+            | LoweredExpr::Local(_)
+            | LoweredExpr::ModuleLoad { .. }
+            | LoweredExpr::This
+            | LoweredExpr::ArrowFn { .. } => {}
         }
     }
 
@@ -506,6 +744,7 @@ impl<'a> WatEmitter<'a> {
             ));
             wat.push_str("    (global.set $current_module_id (i32.const 1))\n");
         }
+        self.emit_class_prototype_initializers(wat, 4);
         self.emit_top_level_statements(wat, 4, &frame);
         wat.push_str("  )\n");
     }
@@ -519,4 +758,44 @@ impl<'a> WatEmitter<'a> {
 
 pub(super) fn function_symbol(id: FuncId) -> String {
     format!("func_{}", id.0)
+}
+
+pub(super) fn class_prototype_global(id: FuncId) -> String {
+    format!("class_proto_{}", id.0)
+}
+
+fn add_class_prototype_ref(
+    prototype: &ClassPrototypeRef,
+    prototypes: &mut BTreeMap<FuncId, Option<FuncId>>,
+) {
+    let mut current = prototype.constructor;
+    for parent in &prototype.parent_constructors {
+        prototypes
+            .entry(current)
+            .and_modify(|existing| {
+                if existing.is_none() {
+                    *existing = Some(*parent);
+                }
+            })
+            .or_insert(Some(*parent));
+        prototypes.entry(*parent).or_insert(None);
+        current = *parent;
+    }
+    prototypes.entry(current).or_insert(None);
+}
+
+fn class_prototype_depth(
+    constructor: FuncId,
+    prototypes: &BTreeMap<FuncId, Option<FuncId>>,
+) -> usize {
+    let mut depth = 0;
+    let mut current = constructor;
+    while let Some(Some(parent)) = prototypes.get(&current) {
+        depth += 1;
+        current = *parent;
+        if depth > prototypes.len() {
+            break;
+        }
+    }
+    depth
 }

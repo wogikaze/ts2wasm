@@ -423,6 +423,9 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(arg);
                 }
             }
+            LoweredExpr::ClassPrototype(_) => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+            }
             LoweredExpr::MethodCall { .. } => {}
             LoweredExpr::ModuleLoad { .. } => {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);

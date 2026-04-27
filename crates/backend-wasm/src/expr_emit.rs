@@ -7,7 +7,7 @@ use ts2wasm_ir::lowered::{
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::emitter::function_symbol;
+use super::emitter::{class_prototype_global, function_symbol};
 
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
@@ -481,6 +481,7 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::New {
                 constructor,
+                prototype,
                 args,
                 base_local,
             } => {
@@ -497,9 +498,10 @@ impl WatEmitter<'_> {
                     local_index(*base_local),
                 ));
                 wat.push_str(&format!(
-                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
                     local_index(*base_local),
                     Layout::OBJECT_PROTOTYPE_OFFSET,
+                    class_prototype_global(prototype.constructor),
                 ));
 
                 // Call constructor with implicit `this` first argument.
@@ -517,6 +519,13 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!(
                     "{pad}(i32.or (local.get {}) (i32.const {}))\n",
                     local_index(*base_local),
+                    ValueTag::OBJECT,
+                ));
+            }
+            LoweredExpr::ClassPrototype(prototype) => {
+                wat.push_str(&format!(
+                    "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
+                    class_prototype_global(prototype.constructor),
                     ValueTag::OBJECT,
                 ));
             }

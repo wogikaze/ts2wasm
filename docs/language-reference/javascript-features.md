@@ -150,7 +150,7 @@
 | `??` (nullish coalescing) | ES2020 | lowering candidate | 未実装 | P2 | - |
 | `?.` (optional chaining) | ES2020 | lowering candidate | 未実装 | P2 | - |
 | `typeof` | ES1 | type tag check | 実装済み (basic) | - | 029 |
-| `instanceof` | ES1 | prototype chain check | 部分実装（syntax/placeholder; full semantics は追跡中） | P1 | 207 |
+| `instanceof` | ES1 | prototype chain check | 実装済み（ordinary class constructor / prototype-chain traversal; `Symbol.hasInstance` は対象外） | - | 207 |
 | `in` | ES1 | property existence check | 実装済み (basic) | - | 031 |
 | `delete` | ES1 | property deletion | 実装済み (basic) | - | 032 |
 | `void` | ES1 | return undefined | 未実装 | P2 | - |
@@ -221,7 +221,7 @@
 | `super` | ES6 | parent class access | 未実装 | P1 | - |
 | static methods/fields | ES6 | class static members | 未実装 | P2 | - |
 | private fields `#x` | ES2022 | private class fields | 未実装 | P2 | - |
-| prototype chain | ES1 | `__proto__` / inheritance | 未実装 | P1 | - |
+| prototype chain | ES1 | `__proto__` / inheritance | 実装済み (basic `Object.getPrototypeOf` / `Object.setPrototypeOf` / class prototype links) | - | 048, 207 |
 
 ## 文字列
 
