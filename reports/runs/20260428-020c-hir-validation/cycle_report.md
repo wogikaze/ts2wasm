@@ -24,11 +24,18 @@ HIR coverage はまだ初期 slice なので、build pipeline では HIR lowerin
 ## 検証
 
 - PASS: `cargo nextest run -p ts2wasm-ir`（13 passed）
-- PASS: `cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_floor_method build_smoke_json_parse_method string_from_char_code_method_emits`（3 passed / 24 skipped）
-- PASS: `cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm`
+- PASS: `cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_abs_method -- --nocapture`
+- PASS: `cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_json_parse_method -- --nocapture`
+- PASS: `cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_ceil_method -- --nocapture`
+- PASS: `cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_floor_method -- --nocapture`
 - PASS: `cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/ir-test.ts -o /tmp/ir-test.wasm`
 - PASS: `grep -A 20 "IR contracts" docs/13-ir-contracts.md`
-- PASS: `cargo nextest run --no-fail-fast`（211 passed, 4 skipped）
+- PASS: `cargo fmt --all --check`
+- PASS: `scripts/manager update-issue-index --check`
+- PASS: `scripts/manager check-issue-health`
+- PASS: `scripts/manager check-agent-state`
+- PASS: `scripts/manager check-repo-smoke`
+- PASS: `cargo nextest run`（211 passed, 4 skipped）
 
 ## リスク
 

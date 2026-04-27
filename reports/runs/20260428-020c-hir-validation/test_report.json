@@ -11,14 +11,24 @@
       "notes": "13 passed"
     },
     {
-      "command": "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_floor_method build_smoke_json_parse_method string_from_char_code_method_emits",
+      "command": "cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_abs_method -- --nocapture",
       "status": "pass",
-      "notes": "3 passed, 24 skipped"
+      "notes": "1 passed"
     },
     {
-      "command": "cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm",
+      "command": "cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_json_parse_method -- --nocapture",
       "status": "pass",
-      "notes": "IR-level fixture included in core semantic Node differential list"
+      "notes": "1 passed"
+    },
+    {
+      "command": "cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_ceil_method -- --nocapture",
+      "status": "pass",
+      "notes": "1 passed"
+    },
+    {
+      "command": "cargo test -p ts2wasm-cli --test m6_builtin_methods build_smoke_math_floor_method -- --nocapture",
+      "status": "pass",
+      "notes": "1 passed"
     },
     {
       "command": "cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/ir-test.ts -o /tmp/ir-test.wasm",
@@ -31,7 +41,32 @@
       "notes": "IR contracts summary present"
     },
     {
-      "command": "cargo nextest run --no-fail-fast",
+      "command": "cargo fmt --all --check",
+      "status": "pass",
+      "notes": "format check passed"
+    },
+    {
+      "command": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "notes": "issues/index.md OK"
+    },
+    {
+      "command": "scripts/manager check-issue-health",
+      "status": "pass",
+      "notes": "issue health OK"
+    },
+    {
+      "command": "scripts/manager check-agent-state",
+      "status": "pass",
+      "notes": "agent state files validated"
+    },
+    {
+      "command": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "notes": "repo smoke passed"
+    },
+    {
+      "command": "cargo nextest run",
       "status": "pass",
       "notes": "211 passed, 4 skipped"
     }
