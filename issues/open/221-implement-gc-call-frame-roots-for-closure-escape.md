@@ -35,3 +35,10 @@ Validation:
 cargo fmt --all --check
 cargo nextest run
 ```
+
+Progress notes:
+
+- 2026-04-28: initial call-frame local mirroring and `fixtures/core-semantics/gc-call-frame-root.ts`
+  differential coverage were added as a partial slice. This issue remains open because the current
+  root table is conservative/static and does not yet register/unregister activation frames for
+  nested calls or closure captures.
