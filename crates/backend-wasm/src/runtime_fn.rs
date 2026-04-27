@@ -104,6 +104,8 @@ pub(crate) enum RuntimeFn {
     ObjectKeys,
     ObjectValues,
     ObjectEntries,
+    ObjectGetPrototypeOf,
+    ObjectSetPrototypeOf,
     /// Instanceof operator
     InstanceOf,
     /// M10: Math functions
@@ -311,6 +313,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
+        "ObjectGetPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
+        "ObjectSetPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
         "$instanceof" => Some(RuntimeFn::InstanceOf),
         "StringCharAt" => Some(RuntimeFn::StringCharAt),
         "StringSubstring" => Some(RuntimeFn::StringSubstring),
@@ -508,6 +512,7 @@ const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
 const INDEX_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::ValueToStringInto];
 
 // Math function dependencies (no deps)
@@ -1056,6 +1061,22 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectGetPrototypeOf => RuntimeSpec {
+                symbol: "$object_get_prototype_of",
+                deps: OBJECT_PROTOTYPE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ObjectSetPrototypeOf => RuntimeSpec {
+                symbol: "$object_set_prototype_of",
+                deps: OBJECT_PROTOTYPE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::InstanceOf => RuntimeSpec {
                 symbol: "$instanceof",
                 deps: &[],
@@ -1340,6 +1361,8 @@ impl RuntimeFn {
             Self::ObjectKeys => "object_keys",
             Self::ObjectValues => "object_values",
             Self::ObjectEntries => "object_entries",
+            Self::ObjectGetPrototypeOf => "object_get_prototype_of",
+            Self::ObjectSetPrototypeOf => "object_set_prototype_of",
             Self::MathFloor => "math_floor",
             Self::MathCeil => "math_ceil",
             Self::MathRound => "math_round",
@@ -1436,6 +1459,8 @@ impl RuntimeFn {
             Self::ObjectKeys,
             Self::ObjectValues,
             Self::ObjectEntries,
+            Self::ObjectGetPrototypeOf,
+            Self::ObjectSetPrototypeOf,
             // Instanceof operator
             Self::InstanceOf,
             // Math functions
@@ -1538,6 +1563,8 @@ impl RuntimeFn {
             Self::ObjectKeys,
             Self::ObjectValues,
             Self::ObjectEntries,
+            Self::ObjectGetPrototypeOf,
+            Self::ObjectSetPrototypeOf,
             // Instanceof operator
             Self::InstanceOf,
             // Math functions

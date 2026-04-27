@@ -22,7 +22,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 019b | Extract type information for optimization hints | feature | frontend | implementation-ready | P1 | 019a | TypeScript compiler API is integrated in 019a but type information is not yet extracted for optimization hints. |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
-| 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
 | 050 | Implement Date | feature | runtime/builtins | implementation-ready | P1 |  | Implement Date |
 | 051 | Implement RegExp | feature | runtime/builtins | implementation-ready | P1 |  | Implement RegExp |
@@ -173,6 +172,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
+| 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | implementation-ready | P1 | 048 | Complete instanceof prototype-chain semantics |
 | 208 | Implement switch fall-through semantics | feature | frontend/semantics | implementation-ready | P2 |  | Implement switch fall-through semantics |
 | 209 | Implement labeled break and continue | feature | frontend/semantics | implementation-ready | P2 | 035 | Implement labeled break and continue |
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | implementation-ready | P1 |  | Complete this receiver binding semantics |
@@ -197,7 +197,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 | 204 | Add typed IR dump command | feature | cli | 020 | Add typed IR dump command |
 | 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
-| 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | 048 | Complete instanceof prototype-chain semantics |
 | 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | 211 | Implement arrow function closure and lexical this semantics |
 <!-- generated:blocked:end -->
 
@@ -248,6 +247,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 042 | Implement string methods | feature | runtime/builtins | see `issues/done/042-implement-string-methods.md` |
 | 043 | Implement string indexing | feature | runtime/semantics | see `issues/done/043-implement-string-indexing.md` |
 | 044 | Implement String.fromCharCode and charCodeAt | feature | runtime/builtins | see `issues/done/044-implement-string-from-char-code.md` |
+| 048 | Implement prototype chain | feature | runtime/semantics | see `issues/done/048-implement-prototype-chain.md` |
 | 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |

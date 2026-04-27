@@ -76,6 +76,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::ObjectKeys => self.emit_object_keys(wat),
                 RuntimeFn::ObjectValues => self.emit_object_values(wat),
                 RuntimeFn::ObjectEntries => self.emit_object_entries(wat),
+                RuntimeFn::ObjectGetPrototypeOf => self.emit_object_get_prototype_of(wat),
+                RuntimeFn::ObjectSetPrototypeOf => self.emit_object_set_prototype_of(wat),
                 RuntimeFn::InstanceOf => self.emit_instanceof(wat),
                 RuntimeFn::MathFloor => self.emit_math_floor(wat),
                 RuntimeFn::MathCeil => self.emit_math_ceil(wat),

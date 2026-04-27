@@ -468,6 +468,68 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_object_get_prototype_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_get_prototype_of (param $obj i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $proto i32)
+    (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $proto (i32.load (i32.add (local.get $base) (i32.const {obj_proto}))))
+    (if (i32.eqz (local.get $proto))
+      (then (return (i32.const {null}))))
+    (i32.or (local.get $proto) (i32.const {object_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            undefined = ValueTag::UNDEFINED,
+            null = ValueTag::NULL,
+        ));
+    }
+
+    pub(super) fn emit_object_set_prototype_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_set_prototype_of (param $obj i32) (param $proto i32) (result i32)
+    (local $obj_tag i32)
+    (local $proto_tag i32)
+    (local $base i32)
+    (local $proto_ptr i32)
+    (local.set $obj_tag (i32.and (local.get $obj) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $obj_tag) (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+
+    (local.set $proto_ptr (i32.const 0))
+    (if (i32.ne (local.get $proto) (i32.const {null}))
+      (then
+        (local.set $proto_tag (i32.and (local.get $proto) (i32.const {tag_mask})))
+        (if (i32.ne (local.get $proto_tag) (i32.const {object_tag}))
+          (then (return (i32.const {undefined}))))
+        (local.set $proto_ptr (i32.and (local.get $proto) (i32.const {heap_mask})))))
+
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (if (i32.eq (local.get $base) (local.get $proto_ptr))
+      (then (return (i32.const {undefined}))))
+    (i32.store
+      (i32.add (local.get $base) (i32.const {obj_proto}))
+      (local.get $proto_ptr))
+    (local.get $obj))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            undefined = ValueTag::UNDEFINED,
+            null = ValueTag::NULL,
+        ));
+    }
+
     pub(super) fn emit_instanceof(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

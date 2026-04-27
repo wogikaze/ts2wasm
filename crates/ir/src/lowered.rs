@@ -572,6 +572,8 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
                 "keys" => Some("ObjectKeys".to_owned()),
                 "values" => Some("ObjectValues".to_owned()),
                 "entries" => Some("ObjectEntries".to_owned()),
+                "getPrototypeOf" => Some("ObjectGetPrototypeOf".to_owned()),
+                "setPrototypeOf" => Some("ObjectSetPrototypeOf".to_owned()),
                 _ => None,
             };
         }
