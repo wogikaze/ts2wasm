@@ -977,11 +977,9 @@ impl WatEmitter<'_> {
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
-            proto_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
-            null = ValueTag::NULL,
         ));
     }
 
