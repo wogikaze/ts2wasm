@@ -1,0 +1,1 @@
+scripts/manager discord-report --run-id 20260427T213536Z failed: DISCORD_WEBHOOK_URL is not configured in the environment or .env.

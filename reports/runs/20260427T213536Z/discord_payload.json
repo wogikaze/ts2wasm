@@ -1,0 +1,3 @@
+{
+  "content": "PROGRESS issue=202 branch=agent/202-regexp-literal-20260427T212735Z commit=27a551a: basic RegExp literals accepted and targeted tests pass; DONE blocked by missing reference/test262 and pre-existing broad gate failures."
+}

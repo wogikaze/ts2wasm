@@ -1,0 +1,24 @@
+{
+  "run_id": "20260427T213536Z",
+  "agent_id": "agent-202-regexp-20260427T212735Z",
+  "issue": "202",
+  "branch": "agent/202-regexp-literal-20260427T212735Z",
+  "status": "PROGRESS",
+  "commit": "27a551a",
+  "merge_request": false,
+  "summary": "Basic RegExp literals are accepted in the parser and lowered through the existing string subset; targeted parser, lowering, diagnostic, and Node-vs-iwasm fixture checks pass. Full DONE is blocked by missing reference/test262 and pre-existing broad gate failures.",
+  "blocked_commands": [
+    {
+      "cmd": "python scripts/manager.py reference-coverage test262 --limit 50 --detail",
+      "reason": "reference/test262 is missing in this worktree"
+    },
+    {
+      "cmd": "cargo nextest run",
+      "reason": "pre-existing failures in official reference shard check, dynamic-property differential, and prototype fixture"
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "reason": "pre-existing stale issue paths referencing crates/cli/src/backend"
+    }
+  ]
+}
