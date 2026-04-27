@@ -1327,6 +1327,10 @@ impl Parser {
                 span,
             }) => Ok(Expr::String { value, span }),
             Some(SpannedToken {
+                kind: Token::RegExp { raw, .. },
+                span,
+            }) => Ok(Expr::String { value: raw, span }),
+            Some(SpannedToken {
                 kind: Token::TemplateLiteral(value),
                 span,
             }) => {
@@ -1576,5 +1580,52 @@ impl Parser {
 
     fn is_at_end(&self) -> bool {
         self.cursor >= self.tokens.len()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Lexer;
+
+    fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
+        let tokens = Lexer::new(source).tokenize()?;
+        Parser::new(tokens).parse_program()
+    }
+
+    #[test]
+    fn parses_supported_regexp_literals_as_string_subset() {
+        let program =
+            parse_program("let a = /abc/i; let b = /a*/g; let c = /a\\/b/; let d = /[a/]/;")
+                .unwrap();
+        assert_eq!(program.len(), 4);
+
+        for (stmt, expected) in program.iter().zip(["/abc/i", "/a*/g", "/a\\/b/", "/[a/]/"]) {
+            match stmt {
+                Stmt::Let {
+                    expr: Expr::String { value, .. },
+                    ..
+                } => assert_eq!(value, expected),
+                other => panic!("unexpected regexp literal statement: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_unsupported_regexp_flag_with_issue_linked_diagnostic() {
+        let err = parse_program("let r = /abc/d;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-202"));
+        assert!(err.message.contains("unsupported RegExp flag `d`"));
+        assert!(err.span.is_some());
+    }
+
+    #[test]
+    fn rejects_duplicate_regexp_flag_with_issue_linked_diagnostic() {
+        let err = parse_program("let r = /abc/gg;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-202"));
+        assert!(err.message.contains("duplicate RegExp flag `g`"));
+        assert!(err.span.is_some());
     }
 }

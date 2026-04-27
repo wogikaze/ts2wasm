@@ -68,6 +68,20 @@ fn lowering_accepts_non_ascii_string_literal() {
 }
 
 #[test]
+fn lowering_routes_regexp_literal_to_string_subset() {
+    let program = parse_and_resolve("let r = /abc/i;");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::String(value),
+        ) => assert_eq!(value, "/abc/i"),
+        other => panic!("unexpected lowered statement: {other:?}"),
+    }
+}
+
+#[test]
 fn validate_rejects_arity_mismatch() {
     use ts2wasm_ir::lowered::{
         FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr, LoweredFunction,
