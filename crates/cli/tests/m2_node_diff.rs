@@ -149,6 +149,26 @@ fn instanceof_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/core-semantics/this-receiver-method.ts",
+        "fixtures/core-semantics/this-receiver-nested-method-boundary.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn this_receiver_method_unsupported_forms_report_issue_211() {
+    for fixture in [
+        "fixtures/core-semantics/this-extracted-method-unsupported.ts",
+        "fixtures/core-semantics/this-top-level-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, "issue-211:");
+    }
+}
+
+#[test]
 fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
     let fixture = "fixtures/core-semantics/instanceof-unsupported-rhs.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))

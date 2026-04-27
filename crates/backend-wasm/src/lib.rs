@@ -102,6 +102,20 @@ mod tests {
     }
 
     #[test]
+    fn emit_wat_rejects_residual_this_before_emission() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::This)],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let err = emit_wat(&program).expect_err("emit_wat must reject residual this");
+        assert_eq!(err.code, DiagCode::InvariantViolation);
+        assert!(err.message.contains("issue-211: residual `this`"));
+    }
+
+    #[test]
     fn alloc_heap_emits_gc_header_and_trigger_contract() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew { props: vec![] })],

@@ -911,7 +911,11 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
             ResolvedExpr::This => match self.resolve_local("this") {
                 Ok(local) => Ok(LoweredExpr::Local(local)),
-                Err(_) => Ok(LoweredExpr::This),
+                Err(_) => Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-211: `this` is only supported inside receiver-bound class constructors and instance methods".to_owned(),
+                    span: None,
+                }),
             },
             ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
             ResolvedExpr::Spread(_) => Err(Diagnostic {
@@ -1077,8 +1081,22 @@ impl<'a> Resolver<'a> {
                         }
                     }
                 }
+                let func_id = match self.resolve_func(func_name) {
+                    Ok(func_id) => func_id,
+                    Err(_) if self.resolve_local(func_name).is_ok() => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-211: function-valued local calls such as extracted method `{func_name}(...)` are not supported; call receiver.method(...) directly"
+                            ),
+                            span: None,
+                        });
+                    }
+                    Err(err) => return Err(err),
+                };
+
                 Ok(LoweredExpr::Call {
-                    kind: FunctionCallKind::User(self.resolve_func(func_name)?),
+                    kind: FunctionCallKind::User(func_id),
                     args: lowered_args,
                 })
             }
@@ -1202,7 +1220,7 @@ impl<'a> Resolver<'a> {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(
-                                    "method `{}` requires an identifier receiver",
+                                    "issue-211: method `{}` requires an identifier receiver",
                                     method
                                 ),
                                 span: None,
@@ -1272,7 +1290,10 @@ impl<'a> Resolver<'a> {
                             .get(&obj_local)
                             .ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
-                                message: format!("unknown receiver class for method `{}`", method),
+                                message: format!(
+                                    "issue-211: unknown receiver class for method `{}`",
+                                    method
+                                ),
                                 span: None,
                             })?;
 
@@ -1856,6 +1877,13 @@ fn validate_expr(
             for parent in &prototype.parent_constructors {
                 check_func_id(*parent, num_funcs, errors);
             }
+        }
+        LoweredExpr::This => {
+            errors.push(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-211: residual `this` must be resolved to an active receiver local before backend emission".to_owned(),
+                span: None,
+            });
         }
         LoweredExpr::MethodCall { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);

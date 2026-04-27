@@ -48,9 +48,8 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
             }
             LoweredExpr::This => {
-                // TODO: Proper this binding requires method call implementation (issue 016)
-                // For now, emit undefined as a placeholder
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
+                // validate_lowered rejects residual `this`; supported receivers lower to Local.
+                wat.push_str(&format!("{pad}(unreachable)\n"))
             }
             LoweredExpr::ArrowFn { .. } => {
                 // TODO: Arrow function emission not yet implemented (issue #36)
