@@ -60,14 +60,18 @@ impl LocalFrame {
     }
 
     pub(super) fn gc_root_slot(self, local_id: LocalId) -> Option<usize> {
+        self.gc_root_slot_for_index(local_id.0)
+    }
+
+    pub(super) fn gc_root_slot_for_index(self, local_index: usize) -> Option<usize> {
         self.gc_root_base_slot
-            .filter(|_| local_id.0 < self.user_local_count)
-            .map(|base| base + local_id.0)
+            .filter(|_| local_index < self.total_local_count())
+            .map(|base| base + local_index)
     }
 
     pub(super) fn gc_root_slots(self) -> impl Iterator<Item = (usize, usize)> {
         self.gc_root_base_slot.into_iter().flat_map(move |base| {
-            (0..self.user_local_count).map(move |local| (local, base + local))
+            (0..self.total_local_count()).map(move |local| (local, base + local))
         })
     }
 }
@@ -98,8 +102,9 @@ impl<'a> WatEmitter<'a> {
         // Emit all required imports from catalog (single source of truth)
         self.emit_imports_from_catalog(&mut wat);
         wat.push_str(&format!(
-            "  (memory (export \"memory\") {})\n",
+            "  (memory (export \"memory\") {} {})\n",
             Layout::MEMORY_MIN_PAGES,
+            Layout::MEMORY_MAX_PAGES,
         ));
         wat.push_str(&format!(
             "  (global $heap (mut i32) (i32.const {}))\n",
@@ -827,31 +832,64 @@ impl<'a> WatEmitter<'a> {
         let Some(slot) = frame.gc_root_slot(local_id) else {
             return;
         };
+        self.emit_gc_root_mirror_slot(wat, pad, local_id.0, slot);
+    }
+
+    pub(super) fn emit_gc_root_mirror_index(
+        &self,
+        wat: &mut String,
+        pad: &str,
+        local_index: usize,
+        frame: &LocalFrame,
+    ) {
+        let Some(slot) = frame.gc_root_slot_for_index(local_index) else {
+            return;
+        };
+        self.emit_gc_root_mirror_slot(wat, pad, local_index, slot);
+    }
+
+    fn emit_gc_root_mirror_slot(
+        &self,
+        wat: &mut String,
+        pad: &str,
+        local_index: usize,
+        slot: usize,
+    ) {
         let offset = slot * std::mem::size_of::<u32>();
         wat.push_str(&format!(
             "{pad}(i32.store (i32.add (global.get $gc_root_base) (i32.const {offset})) (local.get {}))\n",
-            local_id.0,
+            local_index,
         ));
     }
 
     fn gc_root_slot_count(&self) -> usize {
         self.program.top_level_locals.len()
+            + if self.module_runtime_enabled() { 1 } else { 0 }
+            + LocalFrame::new(0, None).backend_local_count()
             + self
                 .program
                 .functions
                 .iter()
-                .map(|function| function.params.len() + function.locals.len())
+                .map(|function| {
+                    function.params.len()
+                        + function.locals.len()
+                        + LocalFrame::new(0, None).backend_local_count()
+                })
                 .sum::<usize>()
     }
 
     fn function_gc_root_offsets(&self) -> Vec<usize> {
-        let mut next = self.program.top_level_locals.len();
+        let mut next = self.program.top_level_locals.len()
+            + if self.module_runtime_enabled() { 1 } else { 0 }
+            + LocalFrame::new(0, None).backend_local_count();
         self.program
             .functions
             .iter()
             .map(|function| {
                 let base = next;
-                next += function.params.len() + function.locals.len();
+                next += function.params.len()
+                    + function.locals.len()
+                    + LocalFrame::new(0, None).backend_local_count();
                 base
             })
             .collect()

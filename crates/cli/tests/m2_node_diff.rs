@@ -39,6 +39,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/gc-transient-allocation.ts",
         "fixtures/core-semantics/gc-object-root.ts",
         "fixtures/core-semantics/gc-call-frame-root.ts",
+        "fixtures/core-semantics/gc-high-pressure-root.ts",
         "fixtures/core-semantics/prototype.ts",
         "fixtures/core-semantics/instanceof.ts",
         "fixtures/core-semantics/int32-typed-stress.ts",

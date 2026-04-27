@@ -42,3 +42,6 @@ Progress notes:
   differential coverage were added as a partial slice. This issue remains open because the current
   root table is conservative/static and does not yet register/unregister activation frames for
   nested calls or closure captures.
+- 2026-04-28: issue 222 added backend temporary root mirroring for the caller-side temporary value
+  that crosses a collecting function call. Precise activation-frame push/pop and closure capture
+  semantics remain open here.

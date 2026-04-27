@@ -75,6 +75,7 @@ impl WatEmitter<'_> {
                 let tmp = frame.heap_base_tmp();
                 self.emit_expr(wat, key, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", tmp));
+                self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
                 self.emit_expr(wat, object, indent, frame);
                 wat.push_str(&format!(
                     "{pad}(i32.and (local.get {}) (i32.const {}))\n",
@@ -111,6 +112,7 @@ impl WatEmitter<'_> {
                 let tmp = frame.heap_base_tmp();
                 self.emit_expr(wat, key, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", tmp));
+                self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
                 self.emit_expr(wat, obj, indent, frame);
                 wat.push_str(&format!(
                     "{pad}(i32.and (local.get {}) (i32.const {}))\n",
@@ -240,8 +242,6 @@ impl WatEmitter<'_> {
                         ));
                     }
                     _ => {
-                        self.emit_expr(wat, left, indent, frame);
-                        self.emit_expr(wat, right, indent, frame);
                         let runtime_fn = match op {
                             LoweredBinaryOp::Add => RuntimeFn::Add,
                             LoweredBinaryOp::Subtract => RuntimeFn::Sub,
@@ -259,6 +259,18 @@ impl WatEmitter<'_> {
                             LoweredBinaryOp::And => RuntimeFn::And,
                             LoweredBinaryOp::Or => RuntimeFn::Or,
                         };
+                        if expr_may_collect(right) && !expr_uses_caller_backend_tmp(right) {
+                            let lhs_tmp = frame.switch_value_tmp();
+                            self.emit_expr(wat, left, indent, frame);
+                            wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
+                            self.emit_gc_root_mirror_index(wat, &pad, lhs_tmp, frame);
+                            wat.push_str(&format!("{pad}(local.get {})\n", lhs_tmp));
+                            self.emit_expr(wat, right, indent, frame);
+                            wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                            return;
+                        }
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
                     }
                 }
@@ -300,6 +312,7 @@ impl WatEmitter<'_> {
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
                 wat.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
@@ -347,6 +360,7 @@ impl WatEmitter<'_> {
                     RuntimeFn::AllocHeap.symbol(),
                     size,
                 ));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
                 wat.push_str(&format!(
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
@@ -400,6 +414,7 @@ impl WatEmitter<'_> {
                 let tmp = frame.heap_base_tmp();
                 self.emit_expr(wat, key, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", tmp));
+                self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
                 self.emit_expr(wat, obj, indent, frame);
                 wat.push_str(&format!("{pad}(local.get {})\n", tmp));
                 wat.push_str(&format!(
@@ -457,6 +472,7 @@ impl WatEmitter<'_> {
             } => {
                 self.emit_expr(wat, object, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
                 self.emit_expr(wat, index, indent, frame);
                 wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
                 wat.push_str(&format!(
@@ -536,4 +552,96 @@ impl WatEmitter<'_> {
 
 fn local_index(id: LocalId) -> usize {
     id.0
+}
+
+fn expr_may_collect(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::Call { .. }
+        | LoweredExpr::RuntimeCall { .. }
+        | LoweredExpr::ArrayNew { .. }
+        | LoweredExpr::ObjectNew { .. }
+        | LoweredExpr::New { .. } => true,
+        LoweredExpr::Binary { left, right, .. } => {
+            expr_may_collect(left) || expr_may_collect(right)
+        }
+        LoweredExpr::Unary { expr, .. }
+        | LoweredExpr::GetLength(expr)
+        | LoweredExpr::Assign { expr, .. } => expr_may_collect(expr),
+        LoweredExpr::PropertyGet { obj, .. }
+        | LoweredExpr::PropertyIn { obj, .. }
+        | LoweredExpr::PropertyDelete { object: obj, .. } => expr_may_collect(obj),
+        LoweredExpr::PropertyGetDynamic { obj, key }
+        | LoweredExpr::PropertyInDynamic { obj, key }
+        | LoweredExpr::Index {
+            object: obj,
+            index: key,
+        }
+        | LoweredExpr::ArrayGet {
+            arr: obj,
+            index: key,
+        }
+        | LoweredExpr::PropertyDeleteDynamic { object: obj, key } => {
+            expr_may_collect(obj) || expr_may_collect(key)
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            expr_may_collect(object) || expr_may_collect(value)
+        }
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+        } => expr_may_collect(object) || expr_may_collect(index) || expr_may_collect(value),
+        LoweredExpr::MethodCall { object, .. } => expr_may_collect(object),
+        LoweredExpr::Number(_)
+        | LoweredExpr::String(_)
+        | LoweredExpr::Bool(_)
+        | LoweredExpr::Null
+        | LoweredExpr::Undefined
+        | LoweredExpr::Local(_)
+        | LoweredExpr::ModuleLoad { .. }
+        | LoweredExpr::This
+        | LoweredExpr::ArrowFn { .. }
+        | LoweredExpr::ClassPrototype(_) => false,
+    }
+}
+
+fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
+    match expr {
+        LoweredExpr::ArrayNew { .. }
+        | LoweredExpr::ObjectNew { .. }
+        | LoweredExpr::PropertyGetDynamic { .. }
+        | LoweredExpr::PropertyInDynamic { .. }
+        | LoweredExpr::PropertyDeleteDynamic { .. }
+        | LoweredExpr::PropertySetDynamic { .. }
+        | LoweredExpr::New { .. } => true,
+        LoweredExpr::Binary { left, right, .. } => {
+            expr_uses_caller_backend_tmp(left) || expr_uses_caller_backend_tmp(right)
+        }
+        LoweredExpr::Unary { expr, .. }
+        | LoweredExpr::GetLength(expr)
+        | LoweredExpr::Assign { expr, .. } => expr_uses_caller_backend_tmp(expr),
+        LoweredExpr::PropertyGet { obj, .. }
+        | LoweredExpr::PropertyIn { obj, .. }
+        | LoweredExpr::PropertyDelete { object: obj, .. }
+        | LoweredExpr::MethodCall { object: obj, .. } => expr_uses_caller_backend_tmp(obj),
+        LoweredExpr::Index { object, index } | LoweredExpr::ArrayGet { arr: object, index } => {
+            expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(index)
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(value)
+        }
+        LoweredExpr::Call { args, .. } | LoweredExpr::RuntimeCall { args, .. } => {
+            args.iter().any(expr_uses_caller_backend_tmp)
+        }
+        LoweredExpr::Number(_)
+        | LoweredExpr::String(_)
+        | LoweredExpr::Bool(_)
+        | LoweredExpr::Null
+        | LoweredExpr::Undefined
+        | LoweredExpr::Local(_)
+        | LoweredExpr::ModuleLoad { .. }
+        | LoweredExpr::This
+        | LoweredExpr::ArrowFn { .. }
+        | LoweredExpr::ClassPrototype(_) => false,
+    }
 }

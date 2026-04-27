@@ -175,7 +175,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
 | 215 | Define Math.random capability policy | feature | runtime/builtins | design-ready | P1 |  | Define Math.random capability policy |
 | 221 | Implement GC call-frame roots for closure escape | feature | runtime/memory | implementation-ready | P1 | 220 | Top-level locals are mirrored into GC roots, but function/call-frame locals and closure captures are still not regist... |
-| 222 | Investigate GC high-pressure OOB under repeated local-root allocation | bug | runtime/memory | implementation-ready | P1 | 220 | GC local-root fixtures preserve semantics at 2000 repeated string allocations, but raising the |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -260,6 +259,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 218 | Implement GC mark root scanning | feature | runtime/memory | see file |
 | 219 | Implement GC sweep reuse and fixtures | feature | runtime/memory | see file |
 | 220 | Implement GC top-level local roots for object escape fixtures | feature | runtime/memory | see file |
+| 222 | Investigate GC high-pressure OOB under repeated local-root allocation | bug | runtime/memory | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract

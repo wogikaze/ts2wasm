@@ -7,6 +7,8 @@ impl Layout {
     /// Initial memory pages reserved for runtime scratch + heap + stdin read path.
     /// Current guarantee scope: enough for one max-size stdin allocation from HEAP_START.
     pub const MEMORY_MIN_PAGES: u32 = 2;
+    /// Maximum pages the core wasm runtime may grow to before trapping allocation.
+    pub const MEMORY_MAX_PAGES: u32 = 16;
     /// First byte offset used for the static string data segment table.
     pub const DATA_START: u32 = 256;
     /// Byte alignment for heap allocations and data segment entries.
@@ -177,6 +179,11 @@ mod tests {
             max_alloc <= bytes,
             "initial memory ({bytes} bytes) must cover one max stdin allocation from HEAP_START ({max_alloc} bytes)"
         );
+    }
+
+    #[test]
+    fn memory_max_pages_cover_initial_pages() {
+        assert!(Layout::MEMORY_MAX_PAGES >= Layout::MEMORY_MIN_PAGES);
     }
 
     #[test]

@@ -601,29 +601,51 @@ impl WatEmitter<'_> {
             r#"
   (func $concat (param $a i32) (param $b i32) (result i32)
     (local $ptr i32)
-    (local $data i32)
+    (local $data_ptr i32)
+    (local $src_a i32)
+    (local $src_b i32)
     (local $len_a i32)
     (local $len_b i32)
-    (local.set $ptr (global.get $heap))
-    (local.set $data (i32.add (local.get $ptr) (i32.const {string_header_size})))
-    (local.set $len_a (call $value_to_string_into (local.get $a) (local.get $data)))
-    (local.set $len_b
-      (call $value_to_string_into
-        (local.get $b)
-        (i32.add (local.get $data) (local.get $len_a))))
-    (i32.store (local.get $ptr) (i32.add (local.get $len_a) (local.get $len_b)))
-    (global.set $heap
-      (i32.and
-        (i32.add
-          (local.get $ptr)
+    (if (call $is_string (local.get $a))
+      (then
+        (local.set $src_a
           (i32.add
-            (i32.add (local.get $len_a) (local.get $len_b))
-            (i32.const {heap_bump_padding})))
-        (i32.const {heap_mask})))
+            (i32.and (local.get $a) (i32.const {heap_mask}))
+            (i32.const {string_header_size})))
+        (local.set $len_a
+          (i32.load (i32.and (local.get $a) (i32.const {heap_mask})))))
+      (else
+        (local.set $src_a (i32.const {scratch}))
+        (local.set $len_a
+          (call $value_to_string_into (local.get $a) (local.get $src_a)))))
+    (if (call $is_string (local.get $b))
+      (then
+        (local.set $src_b
+          (i32.add
+            (i32.and (local.get $b) (i32.const {heap_mask}))
+            (i32.const {string_header_size})))
+        (local.set $len_b
+          (i32.load (i32.and (local.get $b) (i32.const {heap_mask})))))
+      (else
+        (local.set $src_b (i32.add (i32.const {scratch}) (local.get $len_a)))
+        (local.set $len_b
+          (call $value_to_string_into (local.get $b) (local.get $src_b)))))
+    (local.set $ptr
+      (call $alloc_heap
+        (i32.add
+          (i32.const {string_header_size})
+          (i32.add (local.get $len_a) (local.get $len_b)))))
+    (local.set $data_ptr (i32.add (local.get $ptr) (i32.const {string_header_size})))
+    (i32.store (local.get $ptr) (i32.add (local.get $len_a) (local.get $len_b)))
+    (call $copy (local.get $src_a) (local.get $data_ptr) (local.get $len_a))
+    (call $copy
+      (local.get $src_b)
+      (i32.add (local.get $data_ptr) (local.get $len_a))
+      (local.get $len_b))
     (i32.or (local.get $ptr) (i32.const {string_tag})))
 "#,
             string_header_size = Layout::STRING_HEADER_SIZE,
-            heap_bump_padding = Layout::HEAP_BUMP_PADDING,
+            scratch = Layout::SCRATCH_OFFSET,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
         ));
@@ -1020,6 +1042,7 @@ impl WatEmitter<'_> {
     (local $new_heap i32)
     (local $memory_pages i32)
     (local $memory_bytes i32)
+    (local $needed_pages i32)
     (local $free_prev i32)
     (local $free_header i32)
     (local $free_next i32)
@@ -1086,6 +1109,21 @@ impl WatEmitter<'_> {
     ;; OOM check: verify allocation fits within current memory
     (local.set $memory_pages (memory.size))
     (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
+    (if (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))
+      (then
+        (local.set $needed_pages
+          (i32.div_u
+            (i32.add
+              (i32.sub (local.get $new_heap) (local.get $memory_bytes))
+              (i32.const {page_align_mask}))
+            (i32.const {page_size})))
+        (if
+          (i32.eq
+            (memory.grow (local.get $needed_pages))
+            (i32.const -1))
+          (then (unreachable)))
+        (local.set $memory_pages (memory.size))
+        (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))))
     (if (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))
       (then (unreachable)))
 
@@ -1215,8 +1253,11 @@ impl WatEmitter<'_> {
     (local $flags i32)
     (local $body_size i32)
     (local $next i32)
+    (local $next_flags i32)
+    (local $next_body_size i32)
     (local.set $cursor (i32.const {heap_start}))
     (local.set $heap_end (global.get $heap))
+    (global.set $gc_free_list (i32.const 0))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $cursor) (local.get $heap_end)))
@@ -1239,6 +1280,31 @@ impl WatEmitter<'_> {
               (i32.add (local.get $cursor) (i32.const {gc_flags_offset}))
               (i32.and (local.get $flags) (i32.const {gc_mark_clear_mask}))))
           (else
+            (block $coalesced
+              (loop $coalesce
+                (br_if $coalesced (i32.ge_u (local.get $next) (local.get $heap_end)))
+                (local.set $next_flags
+                  (i32.load
+                    (i32.add (local.get $next) (i32.const {gc_flags_offset}))))
+                (br_if $coalesced
+                  (i32.ne
+                    (i32.and (local.get $next_flags) (i32.const {gc_mark_flag}))
+                    (i32.const 0)))
+                (local.set $next_body_size
+                  (i32.load
+                    (i32.add (local.get $next) (i32.const {gc_body_size_offset}))))
+                (local.set $body_size
+                  (i32.add
+                    (local.get $body_size)
+                    (i32.add (i32.const {gc_header_size}) (local.get $next_body_size))))
+                (local.set $next
+                  (i32.add
+                    (local.get $next)
+                    (i32.add (i32.const {gc_header_size}) (local.get $next_body_size))))
+                (br $coalesce)))
+            (i32.store
+              (i32.add (local.get $cursor) (i32.const {gc_body_size_offset}))
+              (local.get $body_size))
             (i32.store
               (i32.add (local.get $cursor) (i32.const {gc_sweep_next_offset}))
               (global.get $gc_free_list))
@@ -1260,6 +1326,7 @@ impl WatEmitter<'_> {
             gc_mark_flag = Layout::GC_MARK_FLAG,
             gc_mark_clear_mask = !(Layout::GC_MARK_FLAG as i32),
             page_size = Layout::WASM_PAGE_SIZE,
+            page_align_mask = Layout::WASM_PAGE_SIZE - 1,
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,

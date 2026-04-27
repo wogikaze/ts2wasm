@@ -80,8 +80,8 @@ mod tests {
     use super::emit_wat;
     use ts2wasm_frontend::DiagCode;
     use ts2wasm_ir::lowered::{
-        ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredFunction,
-        LoweredProgram, LoweredStmt, ModuleInfo,
+        ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
+        LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
     };
 
     #[test]
@@ -118,6 +118,7 @@ mod tests {
 
         let wat = emit_wat(&program).expect("object allocation should emit WAT");
 
+        assert!(wat.contains("(memory (export \"memory\") 2 16)"));
         assert!(wat.contains("(global $alloc_bytes_since_last_gc (mut i32) (i32.const 0))"));
         assert!(wat.contains("(global $gc_free_list (mut i32) (i32.const 0))"));
         assert!(wat.contains("(func $gc_collect"));
@@ -125,6 +126,9 @@ mod tests {
         assert!(wat.contains("(local $payload_base i32)"));
         assert!(wat.contains("(i32.const 16)"));
         assert!(wat.contains("(i32.const 65536)"));
+        assert!(wat.contains("(local $needed_pages i32)"));
+        assert!(wat.contains("(memory.grow (local.get $needed_pages))"));
+        assert!(wat.contains("(i32.const -1)"));
         assert!(wat.contains("(global.get $alloc_bytes_since_last_gc)"));
         assert!(wat.contains("(then (call $gc_collect))"));
         assert!(wat.contains("(global.set $alloc_bytes_since_last_gc"));
@@ -144,11 +148,41 @@ mod tests {
 
         assert!(wat.contains("(func $gc_sweep"));
         assert!(wat.contains("(global.get $gc_free_list)"));
+        assert!(wat.contains("(global.set $gc_free_list (i32.const 0))"));
+        assert!(wat.contains("(local $next_body_size i32)"));
+        assert!(wat.contains("(loop $coalesce"));
+        assert!(wat.contains("(i32.add (i32.const 16) (local.get $next_body_size))"));
         assert!(wat.contains("(global.set $gc_free_list (local.get $cursor))"));
         assert!(wat.contains("(local $free_header i32)"));
         assert!(wat.contains("(local $free_body_size i32)"));
         assert!(wat.contains("(return (i32.add (local.get $free_header) (i32.const 16)))"));
         assert!(wat.contains("(i32.and (local.get $flags) (i32.const -2))"));
+    }
+
+    #[test]
+    fn concat_allocates_managed_heap_strings() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Binary {
+                op: LoweredBinaryOp::Add,
+                left: Box::new(LoweredExpr::String("a".to_owned())),
+                right: Box::new(LoweredExpr::String("b".to_owned())),
+            })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("string concat should emit WAT");
+        let concat_start = wat.find("(func $concat").expect("concat should be emitted");
+        let concat_end = wat[concat_start + 1..]
+            .find("\n  (func ")
+            .map(|offset| concat_start + 1 + offset)
+            .unwrap_or(wat.len());
+        let concat_body = &wat[concat_start..concat_end];
+
+        assert!(concat_body.contains("(call $alloc_heap"));
+        assert!(concat_body.contains("(call $copy"));
+        assert!(!concat_body.contains("(global.set $heap"));
     }
 
     #[test]
@@ -167,10 +201,13 @@ mod tests {
 
         assert!(wat.contains("(global $gc_root_base (mut i32) (i32.const 0))"));
         assert!(wat.contains("(global $gc_root_count (mut i32) (i32.const 0))"));
-        assert!(wat.contains("(global.set $gc_root_count (i32.const 1))"));
-        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 4)))"));
+        assert!(wat.contains("(global.set $gc_root_count (i32.const 4))"));
+        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 16)))"));
         assert!(wat.contains(
             "(i32.store (i32.add (global.get $gc_root_base) (i32.const 0)) (local.get 0))"
+        ));
+        assert!(wat.contains(
+            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 4)) (local.get 1))"
         ));
         assert!(wat.contains("(func $gc_mark_registered_roots"));
         assert!(wat.contains("(call $gc_mark_value (i32.load (local.get $slot)))"));
@@ -199,10 +236,13 @@ mod tests {
 
         let wat = emit_wat(&program).expect("function local root should emit WAT");
 
-        assert!(wat.contains("(global.set $gc_root_count (i32.const 1))"));
-        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 4)))"));
+        assert!(wat.contains("(global.set $gc_root_count (i32.const 7))"));
+        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 28)))"));
         assert!(wat.contains(
-            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 0)) (local.get 0))"
+            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 12)) (local.get 0))"
+        ));
+        assert!(wat.contains(
+            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 16)) (local.get 1))"
         ));
         assert!(wat.contains("(call $gc_mark_registered_roots"));
     }
