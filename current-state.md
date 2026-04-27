@@ -84,7 +84,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 - frontend crate（`crates/frontend`）: AST/span/diagnostic/token definitions plus lexer/parser implementation
 - compiler/driver crate（`crates/compiler`）: build pipeline, dump pipeline, AST validation, lowering orchestration
-- TypeScript compiler API oracle: explicit `ts2wasm check <input.ts>` and `ts2wasm_frontend::check_typescript_file` type-check through the local TypeScript devDependency; normal `build` does not invoke tsc.
+- TypeScript compiler API oracle: explicit `ts2wasm check <input.ts>` and `ts2wasm_frontend::check_typescript_file` type-check through the local TypeScript devDependency; the oracle also exposes binding/parameter/binary-expression type hints and number/string optimization candidates. Normal `build` does not invoke tsc.
 - WAT/WASM emitter と runtime subset（`crates/backend-wasm`）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
 - IR crate（`crates/ir`）: resolved/lowered IR
@@ -99,7 +99,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 - **Crates module migration**: `crates/frontend`, `crates/ir`, `crates/runtime-abi`, and `crates/backend-wasm` code migrations are complete. Issue 026 is closed with full workspace nextest evidence.
 - **CLI ownership**: `crates/cli` is now a thin binary/re-export wrapper for compiler APIs. Lexer/parser implementation has moved to `crates/frontend`; backend runtime emission is split into focused modules and no repo-owned source file currently exceeds the 2000-line architecture warning threshold.
-- TypeScript compiler API の明示 type-check oracle は実装済み。production build pipeline は tsc を必須にしない。型情報を最適化 hint として取り込む作業は issue 019b。
+- TypeScript compiler API の明示 type-check oracle と optimization hint 抽出は実装済み。production build pipeline は tsc を必須にしない。
 - 汎用 JavaScript semantic IR は未実装
 - typed IR dump (`ts2wasm dump --tir`) and optimizer dump (`ts2wasm dump --optimize`) are tracked by issues 204 and 205.
 - full wasm backend は未実装（現状は WAT 中心）
@@ -112,7 +112,7 @@ Semantic gap tracking:
 - class 系: `crates/cli/tests/m8_oop_classes.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の class gap アサーションで管理。
 - module 系: `crates/cli/tests/m9_modules.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の module gap アサーションで管理。
 - node API 系: `crates/cli/tests/m10_node_apis.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の node_api gap アサーションで管理。
-- Partial feature semantics from historical done issues are tracked by dedicated open issues, not by the done queue: `instanceof` prototype-chain semantics (207), switch fall-through (208), labeled break/continue (209), arrow closure and lexical `this` (210), `this` receiver binding (211), rest parameter argument collection (212), template literal interpolation (213), string method placeholders (214), and `Math.random` capability/randomness policy (215). Abstract equality now has primitive coercion coverage for nullish, boolean, number, and string values; object `ToPrimitive` remains tied to object-model follow-up work.
+- Partial feature semantics from historical done issues are tracked by dedicated open issues, not by the done queue: `instanceof` prototype-chain semantics (207), switch fall-through (208), labeled break/continue (209), arrow closure and lexical `this` (210), `this` receiver binding (211), rest parameter argument collection (212), string method placeholders (214), and `Math.random` capability/randomness policy (215). Template literal interpolation now has basic Node differential coverage. Abstract equality now has primitive coercion coverage for nullish, boolean, number, and string values; object `ToPrimitive` remains tied to object-model follow-up work.
 
 ## Risk Management
 

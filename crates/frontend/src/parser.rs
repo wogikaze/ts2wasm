@@ -1333,11 +1333,7 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::TemplateLiteral(value),
                 span,
-            }) => {
-                // For now, treat template literals as simple strings
-                // Full interpolation support will require parsing ${} expressions
-                Ok(Expr::String { value, span })
-            }
+            }) => self.template_literal_expr(&value, span),
             Some(SpannedToken {
                 kind: Token::True,
                 span,
@@ -1431,6 +1427,55 @@ impl Parser {
                 message: format!("unsupported expression: {other:?}"),
                 span: self.peek_span(),
             }),
+        }
+    }
+
+    fn template_literal_expr(&self, raw: &str, span: Span) -> Result<Expr, Diagnostic> {
+        let parts = parse_template_parts(raw, span)?;
+        let mut expr = Expr::String {
+            value: String::new(),
+            span,
+        };
+        let mut has_value = false;
+
+        for part in parts {
+            match part {
+                TemplatePart::String(value) => {
+                    if value.is_empty() && has_value {
+                        continue;
+                    }
+                    let right = Expr::String { value, span };
+                    if has_value {
+                        expr = Expr::Binary {
+                            left: Box::new(expr),
+                            op: BinaryOp::Add,
+                            right: Box::new(right),
+                            span,
+                        };
+                    } else {
+                        expr = right;
+                        has_value = true;
+                    }
+                }
+                TemplatePart::Expr(right) => {
+                    expr = Expr::Binary {
+                        left: Box::new(expr),
+                        op: BinaryOp::Add,
+                        right: Box::new(right),
+                        span,
+                    };
+                    has_value = true;
+                }
+            }
+        }
+
+        if has_value {
+            Ok(expr)
+        } else {
+            Ok(Expr::String {
+                value: String::new(),
+                span,
+            })
         }
     }
 
@@ -1583,6 +1628,168 @@ impl Parser {
     }
 }
 
+enum TemplatePart {
+    String(String),
+    Expr(Expr),
+}
+
+fn parse_template_parts(raw: &str, span: Span) -> Result<Vec<TemplatePart>, Diagnostic> {
+    let mut parts = Vec::new();
+    let mut segment_start = 0;
+    let mut cursor = 0;
+
+    while cursor < raw.len() {
+        let Some((offset, ch)) = next_char_at(raw, cursor) else {
+            break;
+        };
+
+        if ch == '\\' {
+            cursor = next_char_at(raw, offset + ch.len_utf8())
+                .map(|(next_offset, next_ch)| next_offset + next_ch.len_utf8())
+                .unwrap_or(raw.len());
+            continue;
+        }
+
+        if ch == '$' && raw[offset + ch.len_utf8()..].starts_with('{') {
+            let cooked = cook_template_segment(&raw[segment_start..offset]);
+            if !cooked.is_empty() {
+                parts.push(TemplatePart::String(cooked));
+            }
+
+            let expr_start = offset + ch.len_utf8() + 1;
+            let expr_end = find_template_expr_end(raw, expr_start, span)?;
+            let source = raw[expr_start..expr_end].trim();
+            if source.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-213: empty template interpolation expression".to_owned(),
+                    span: Some(span),
+                });
+            }
+            parts.push(TemplatePart::Expr(parse_template_expression(source, span)?));
+            cursor = expr_end + 1;
+            segment_start = cursor;
+            continue;
+        }
+
+        cursor = offset + ch.len_utf8();
+    }
+
+    let cooked = cook_template_segment(&raw[segment_start..]);
+    if !cooked.is_empty() {
+        parts.push(TemplatePart::String(cooked));
+    }
+
+    Ok(parts)
+}
+
+fn parse_template_expression(source: &str, span: Span) -> Result<Expr, Diagnostic> {
+    let tokens = crate::Lexer::new(source).tokenize()?;
+    let mut parser = Parser::new(tokens);
+    let expr = parser.expression()?;
+    if !parser.is_at_end() {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-213: unsupported template interpolation expression".to_owned(),
+            span: Some(span),
+        });
+    }
+    Ok(expr)
+}
+
+fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, Diagnostic> {
+    let mut depth = 1usize;
+    let mut cursor = start;
+    let mut string_quote = None;
+    let mut escaped = false;
+
+    while cursor < raw.len() {
+        let Some((offset, ch)) = next_char_at(raw, cursor) else {
+            break;
+        };
+        cursor = offset + ch.len_utf8();
+
+        if let Some(quote) = string_quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == quote {
+                string_quote = None;
+            }
+            continue;
+        }
+
+        match ch {
+            '\'' | '"' => string_quote = Some(ch),
+            '`' => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-213: nested template literals are not yet supported".to_owned(),
+                    span: Some(span),
+                });
+            }
+            '{' => depth += 1,
+            '}' => {
+                depth -= 1;
+                if depth == 0 {
+                    return Ok(offset);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    Err(Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-213: unterminated template interpolation".to_owned(),
+        span: Some(span),
+    })
+}
+
+fn cook_template_segment(raw: &str) -> String {
+    let mut cooked = String::new();
+    let mut cursor = 0;
+    let mut escaped = false;
+
+    while cursor < raw.len() {
+        let Some((offset, ch)) = next_char_at(raw, cursor) else {
+            break;
+        };
+        cursor = offset + ch.len_utf8();
+
+        if escaped {
+            cooked.push(match ch {
+                '`' => '`',
+                '$' => '$',
+                '\\' => '\\',
+                'n' => '\n',
+                'r' => '\r',
+                't' => '\t',
+                other => other,
+            });
+            escaped = false;
+        } else if ch == '\\' {
+            escaped = true;
+        } else {
+            cooked.push(ch);
+        }
+    }
+
+    if escaped {
+        cooked.push('\\');
+    }
+
+    cooked
+}
+
+fn next_char_at(source: &str, start: usize) -> Option<(usize, char)> {
+    source[start..]
+        .char_indices()
+        .next()
+        .map(|(offset, ch)| (start + offset, ch))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1608,6 +1815,80 @@ mod tests {
                 } => assert_eq!(value, expected),
                 other => panic!("unexpected regexp literal statement: {other:?}"),
             }
+        }
+    }
+
+    #[test]
+    fn parses_template_literal_interpolation_as_add_chain() {
+        let program = parse_program("let message = `Hello, ${name}!`;").unwrap();
+        match &program[0] {
+            Stmt::Let {
+                expr:
+                    Expr::Binary {
+                        left,
+                        op: BinaryOp::Add,
+                        right,
+                        ..
+                    },
+                ..
+            } => {
+                assert!(matches!(right.as_ref(), Expr::String { value, .. } if value == "!"));
+                match left.as_ref() {
+                    Expr::Binary {
+                        left,
+                        op: BinaryOp::Add,
+                        right,
+                        ..
+                    } => {
+                        assert!(matches!(
+                            left.as_ref(),
+                            Expr::String { value, .. } if value == "Hello, "
+                        ));
+                        assert!(matches!(
+                            right.as_ref(),
+                            Expr::Ident { name, .. } if name == "name"
+                        ));
+                    }
+                    other => panic!("unexpected template left branch: {other:?}"),
+                }
+            }
+            other => panic!("unexpected template statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_template_literal_empty_leading_segment() {
+        let program = parse_program("let message = `${name}`;").unwrap();
+        match &program[0] {
+            Stmt::Let {
+                expr:
+                    Expr::Binary {
+                        left,
+                        op: BinaryOp::Add,
+                        right,
+                        ..
+                    },
+                ..
+            } => {
+                assert!(matches!(left.as_ref(), Expr::String { value, .. } if value.is_empty()));
+                assert!(matches!(
+                    right.as_ref(),
+                    Expr::Ident { name, .. } if name == "name"
+                ));
+            }
+            other => panic!("unexpected template statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn cooks_escaped_template_literal_segments() {
+        let program = parse_program("let message = `tick \\` and \\${name}`;").unwrap();
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::String { value, .. },
+                ..
+            } => assert_eq!(value, "tick ` and ${name}"),
+            other => panic!("unexpected escaped template statement: {other:?}"),
         }
     }
 

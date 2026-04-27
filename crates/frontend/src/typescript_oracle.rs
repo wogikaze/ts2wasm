@@ -9,6 +9,7 @@ use crate::{DiagCode, Diagnostic, Span};
 pub struct TypeScriptCheckReport {
     pub typescript_version: Option<String>,
     pub diagnostics: Vec<TypeScriptDiagnostic>,
+    pub hints: Vec<TypeScriptTypeHint>,
 }
 
 impl TypeScriptCheckReport {
@@ -29,10 +30,28 @@ pub struct TypeScriptDiagnostic {
     pub character: Option<usize>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TypeScriptTypeHint {
+    pub kind: String,
+    pub name: Option<String>,
+    pub type_text: String,
+    pub candidate: Option<String>,
+    pub operator: Option<String>,
+    pub left_type: Option<String>,
+    pub right_type: Option<String>,
+    pub file: Option<PathBuf>,
+    pub start: Option<usize>,
+    pub length: Option<usize>,
+    pub line: Option<usize>,
+    pub character: Option<usize>,
+}
+
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct OracleReport {
     diagnostics: Vec<OracleDiagnostic>,
+    #[serde(default)]
+    hints: Vec<OracleTypeHint>,
     typescript_version: Option<String>,
     error: Option<String>,
 }
@@ -42,6 +61,23 @@ struct OracleDiagnostic {
     code: u32,
     category: String,
     message: String,
+    file: Option<PathBuf>,
+    start: Option<usize>,
+    length: Option<usize>,
+    line: Option<usize>,
+    character: Option<usize>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct OracleTypeHint {
+    kind: String,
+    name: Option<String>,
+    type_text: String,
+    candidate: Option<String>,
+    operator: Option<String>,
+    left_type: Option<String>,
+    right_type: Option<String>,
     file: Option<PathBuf>,
     start: Option<usize>,
     length: Option<usize>,
@@ -100,6 +136,24 @@ pub fn collect_typescript_diagnostics(input: &Path) -> Result<TypeScriptCheckRep
                 length: diagnostic.length,
                 line: diagnostic.line,
                 character: diagnostic.character,
+            })
+            .collect(),
+        hints: report
+            .hints
+            .into_iter()
+            .map(|hint| TypeScriptTypeHint {
+                kind: hint.kind,
+                name: hint.name,
+                type_text: hint.type_text,
+                candidate: hint.candidate,
+                operator: hint.operator,
+                left_type: hint.left_type,
+                right_type: hint.right_type,
+                file: hint.file,
+                start: hint.start,
+                length: hint.length,
+                line: hint.line,
+                character: hint.character,
             })
             .collect(),
     })
@@ -177,6 +231,28 @@ mod tests {
         };
         assert!(report.is_ok(), "unexpected diagnostics: {report:?}");
         assert!(report.typescript_version.is_some());
+    }
+
+    #[test]
+    fn extracts_type_hints_for_optimization_candidates() {
+        let Some(report) = skip_if_oracle_missing(collect_typescript_diagnostics(&fixture(
+            "optimization-hints.ts",
+        ))) else {
+            return;
+        };
+        assert!(report.is_ok(), "unexpected diagnostics: {report:?}");
+        assert!(report.hints.iter().any(|hint| {
+            hint.kind == "parameter"
+                && hint.name.as_deref() == Some("a")
+                && hint.type_text == "number"
+        }));
+        assert!(report.hints.iter().any(|hint| {
+            hint.kind == "binary-expression"
+                && hint.operator.as_deref() == Some("+")
+                && hint.left_type.as_deref() == Some("number")
+                && hint.right_type.as_deref() == Some("number")
+                && hint.candidate.as_deref() == Some("number-add-fast-path")
+        }));
     }
 
     #[test]
