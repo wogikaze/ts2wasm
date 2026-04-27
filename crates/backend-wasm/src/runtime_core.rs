@@ -362,13 +362,182 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_equal_equal(&self, wat: &mut String) {
-        // Abstract equality (==) - delegates to strict_equal for now
-        // Full type coercion can be added in a follow-up
         wat.push_str(&format!(
             r#"
+  (func $string_to_number_for_equality (param $v i32) (result i32)
+    (local $ptr i32)
+    (local $len i32)
+    (local $i i32)
+    (local $sign i32)
+    (local $n i32)
+    (local $ch i32)
+    (local $saw_digit i32)
+    (local.set $ptr (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $ptr)))
+    (local.set $ptr (i32.add (local.get $ptr) (i32.const {string_header_size})))
+    (local.set $sign (i32.const {one}))
+    (block $trim_leading_done
+      (loop $trim_leading
+        (br_if $trim_leading_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.or
+              (i32.eq (local.get $ch) (i32.const {ascii_tab}))
+              (i32.or
+                (i32.eq (local.get $ch) (i32.const {ascii_lf}))
+                (i32.eq (local.get $ch) (i32.const {ascii_cr})))))
+          (then
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $trim_leading))
+          (else (br $trim_leading_done)))))
+    (if (i32.ge_u (local.get $i) (local.get $len))
+      (then (return (i32.const {number_zero}))))
+    (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+    (if (i32.eq (local.get $ch) (i32.const {ascii_minus}))
+      (then
+        (local.set $sign (i32.const {minus_one}))
+        (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+      (else
+        (if (i32.eq (local.get $ch) (i32.const {ascii_plus}))
+          (then (local.set $i (i32.add (local.get $i) (i32.const {one})))))))
+    (block $digits_done
+      (loop $digits
+        (br_if $digits_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if
+          (i32.and
+            (i32.ge_u (local.get $ch) (i32.const {ascii_zero}))
+            (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+          (then
+            (local.set $saw_digit (i32.const {one}))
+            (local.set $n
+              (i32.add
+                (i32.mul (local.get $n) (i32.const {ten}))
+                (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $digits))
+          (else (br $digits_done)))))
+    (if (i32.eqz (local.get $saw_digit))
+      (then (return (i32.const {nan_sentinel}))))
+    (block $trim_trailing_done
+      (loop $trim_trailing
+        (br_if $trim_trailing_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.or
+              (i32.eq (local.get $ch) (i32.const {ascii_tab}))
+              (i32.or
+                (i32.eq (local.get $ch) (i32.const {ascii_lf}))
+                (i32.eq (local.get $ch) (i32.const {ascii_cr})))))
+          (then
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $trim_trailing))
+          (else (return (i32.const {nan_sentinel}))))))
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
+    (i32.or
+      (i32.shl (local.get $n) (i32.const {number_shift}))
+      (i32.const {number_tag})))
+
+  (func $primitive_to_number_for_equality (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (local.get $v))))
+    (if (i32.or
+          (i32.eq (local.get $v) (i32.const {false_tag}))
+          (i32.eq (local.get $v) (i32.const {null_tag})))
+      (then (return (i32.const {number_zero}))))
+    (if (i32.eq (local.get $v) (i32.const {true_tag}))
+      (then (return (i32.const {number_one}))))
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
+      (then (return (call $string_to_number_for_equality (local.get $v)))))
+    (i32.const {nan_sentinel}))
+
   (func $equal_equal (param $a i32) (param $b i32) (result i32)
-    (call $strict_equal (local.get $a) (local.get $b)))
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $n i32)
+    (if (i32.eq (call $strict_equal (local.get $a) (local.get $b)) (i32.const {true_tag}))
+      (then (return (i32.const {true_tag}))))
+    (if
+      (i32.or
+        (i32.and
+          (i32.eq (local.get $a) (i32.const {undefined_tag}))
+          (i32.eq (local.get $b) (i32.const {null_tag})))
+        (i32.and
+          (i32.eq (local.get $a) (i32.const {null_tag}))
+          (i32.eq (local.get $b) (i32.const {undefined_tag}))))
+      (then (return (i32.const {true_tag}))))
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
+    (if
+      (i32.or
+        (i32.eq (local.get $a) (i32.const {false_tag}))
+        (i32.eq (local.get $a) (i32.const {true_tag})))
+      (then
+        (return
+          (call $equal_equal
+            (call $primitive_to_number_for_equality (local.get $a))
+            (local.get $b)))))
+    (if
+      (i32.or
+        (i32.eq (local.get $b) (i32.const {false_tag}))
+        (i32.eq (local.get $b) (i32.const {true_tag})))
+      (then
+        (return
+          (call $equal_equal
+            (local.get $a)
+            (call $primitive_to_number_for_equality (local.get $b))))))
+    (if
+      (i32.and
+        (i32.eq (local.get $a_tag) (i32.const {number_tag}))
+        (i32.eq (local.get $b_tag) (i32.const {string_tag})))
+      (then
+        (local.set $n (call $string_to_number_for_equality (local.get $b)))
+        (if (i32.eq (local.get $n) (i32.const {nan_sentinel}))
+          (then (return (i32.const {false_tag}))))
+        (return (call $strict_equal (local.get $a) (local.get $n)))))
+    (if
+      (i32.and
+        (i32.eq (local.get $a_tag) (i32.const {string_tag}))
+        (i32.eq (local.get $b_tag) (i32.const {number_tag})))
+      (then
+        (local.set $n (call $string_to_number_for_equality (local.get $a)))
+        (if (i32.eq (local.get $n) (i32.const {nan_sentinel}))
+          (then (return (i32.const {false_tag}))))
+        (return (call $strict_equal (local.get $n) (local.get $b)))))
+    (i32.const {false_tag}))
 "#,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            tag_mask = ValueTag::TAG_MASK,
+            undefined_tag = ValueTag::UNDEFINED,
+            null_tag = ValueTag::NULL,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+            number_tag = ValueTag::NUMBER,
+            string_tag = ValueTag::STRING,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_zero = ValueTag::encode_number(0),
+            number_one = ValueTag::encode_number(1),
+            nan_sentinel = ValueTag::UNDEFINED,
+            ascii_tab = 9,
+            ascii_lf = 10,
+            ascii_cr = 13,
+            ascii_space = 32,
+            ascii_plus = 43,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = 57,
+            minus_one = -1,
+            ten = RuntimeConst::TEN,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 

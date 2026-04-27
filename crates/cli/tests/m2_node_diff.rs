@@ -32,6 +32,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/null-undefined.ts",
         "fixtures/core-semantics/truthiness.ts",
         "fixtures/core-semantics/strict-equal.ts",
+        "fixtures/core-semantics/abstract-equality.ts",
         "fixtures/core-semantics/plus.ts",
         "fixtures/core-semantics/number-stringify.ts",
         "fixtures/core-semantics/prototype.ts",
@@ -78,6 +79,11 @@ fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
 #[test]
 fn regexp_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
+}
+
+#[test]
+fn abstract_equality_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/abstract-equality.ts");
 }
 
 fn assert_fixture_matches_node(fixture: &str) {

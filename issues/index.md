@@ -180,7 +180,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 213 | Implement template literal interpolation | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literal interpolation |
 | 214 | Replace string method placeholders | feature | runtime/builtins | implementation-ready | P1 |  | Replace string method placeholders |
 | 215 | Define Math.random capability policy | feature | runtime/builtins | design-ready | P1 |  | Define Math.random capability policy |
-| 216 | Implement abstract equality coercion | feature | runtime/semantics | implementation-ready | P1 |  | Implement abstract equality coercion |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -254,6 +253,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 | 206 | Make CLI a thin toolchain wrapper | refactor | cli | see `issues/done/206-make-cli-a-thin-toolchain-wrapper.md` |
+| 216 | Implement abstract equality coercion | feature | runtime/semantics | see `issues/done/216-implement-abstract-equality-coercion.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

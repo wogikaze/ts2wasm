@@ -21,7 +21,7 @@ Reference test results show 3 cases fail with equality-operator diagnostic (tsc:
 
 ## Desired final state
 
-Equality operator syntax and strict equality are implemented. Abstract equality (`==`, `!=`) currently delegates to strict equality; full ECMAScript coercion is tracked by `issues/open/216-implement-abstract-equality-coercion.md`.
+Equality operator syntax and strict equality are implemented. Abstract equality (`==`, `!=`) initially delegated to strict equality; primitive coercion was later completed by `issues/done/216-implement-abstract-equality-coercion.md`.
 
 ## Scope
 
@@ -29,8 +29,8 @@ In scope:
 
 - [x] Add equality operators to lexer/parser
 - [x] Implement strict equality (===, !==)
-- [x] Implement abstract equality (==, !=) with type coercion (partial: strict fallback; full coercion tracked by `issues/open/216-implement-abstract-equality-coercion.md`)
-- [x] Handle type coercion rules per ECMAScript spec (partial: strict fallback; full coercion tracked by `issues/open/216-implement-abstract-equality-coercion.md`)
+- [x] Implement abstract equality (==, !=) with type coercion (initial partial strict fallback; primitive coercion completed by `issues/done/216-implement-abstract-equality-coercion.md`)
+- [x] Handle type coercion rules per ECMAScript spec (initial partial strict fallback; primitive coercion completed by `issues/done/216-implement-abstract-equality-coercion.md`)
 - [x] Add fixtures for equality operator behavior
 
 Out of scope:
@@ -90,7 +90,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] Abstract equality coercion tracked by `issues/open/216-implement-abstract-equality-coercion.md`
+- [x] Abstract equality primitive coercion completed by `issues/done/216-implement-abstract-equality-coercion.md`
 
 ## Notes
 
@@ -102,7 +102,7 @@ Implemented equality operators (==, !=, ===, !==) with the following changes:
 - Updated parser to handle all equality operators
 - Added EqualEqual, BangEqual, StrictNotEqual to LoweredBinaryOp enum
 - Added corresponding RuntimeFn variants and runtime implementations
-- Abstract equality (==, !=) currently delegates to strict_equal for simplicity. Full type coercion is tracked by `issues/open/216-implement-abstract-equality-coercion.md`.
+- Abstract equality (==, !=) initially delegated to strict_equal for simplicity. Primitive coercion was later completed by `issues/done/216-implement-abstract-equality-coercion.md`.
 
 ## Completion evidence
 
@@ -121,4 +121,4 @@ date: 2026-04-26
 
 Remaining risks:
 
-- Abstract equality (==, !=) currently delegates to strict equality without full type coercion. Full ECMAScript type coercion rules are tracked by `issues/open/216-implement-abstract-equality-coercion.md`.
+- Abstract equality (==, !=) initially delegated to strict equality without full type coercion. Primitive coercion was later completed by `issues/done/216-implement-abstract-equality-coercion.md`.
