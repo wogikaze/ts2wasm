@@ -1,0 +1,70 @@
+{
+  "run_id": "agent-217-gc-header-20260427T223251Z",
+  "issue": 217,
+  "status": "pass",
+  "implementation_commit": "1ef8f90",
+  "commands": [
+    {
+      "command": "cargo fmt --all --check",
+      "status": "pass"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-runtime-abi",
+      "status": "pass",
+      "summary": "8 tests passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-backend-wasm",
+      "status": "pass",
+      "summary": "5 tests passed"
+    },
+    {
+      "command": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "summary": "issues/index.md OK (up to date)"
+    },
+    {
+      "command": "scripts/manager check-issue-health",
+      "status": "pass",
+      "summary": "issues/index.md queue OK; check_issue_health: OK"
+    },
+    {
+      "command": "scripts/manager check-agent-state",
+      "status": "pass",
+      "summary": "OK: agent state files validated"
+    },
+    {
+      "command": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "summary": "shell syntax and issue health passed"
+    },
+    {
+      "command": "cargo nextest run",
+      "status": "pass",
+      "summary": "219 tests passed, 4 skipped"
+    }
+  ],
+  "acceptance": [
+    {
+      "criterion": "Heap object header fields are emitted for each $alloc_heap allocation.",
+      "status": "pass",
+      "evidence": "runtime_core::tests::alloc_heap_emits_gc_header_and_trigger_accounting_contract checks emitted WAT for header stores and GC header constants."
+    },
+    {
+      "criterion": "Existing heap payload pointer ABI remains unchanged for string/array/object users.",
+      "status": "pass",
+      "evidence": "$alloc_heap returns the payload base after GC_HEADER_SIZE; existing callers still tag the returned payload pointer."
+    },
+    {
+      "criterion": "Allocation threshold accounting calls a collection hook before OOM.",
+      "status": "pass",
+      "evidence": "$alloc_heap updates alloc_bytes_since_last_gc and calls $gc_collect_stub before the OOM check when allocation pressure or heap occupancy crosses threshold."
+    },
+    {
+      "criterion": "Tests cover the emitted allocation contract.",
+      "status": "pass",
+      "evidence": "Backend WAT contract test plus runtime ABI layout tests passed in targeted and full nextest runs."
+    }
+  ],
+  "newly_failed": []
+}

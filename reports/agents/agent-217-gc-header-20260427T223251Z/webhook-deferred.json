@@ -1,0 +1,11 @@
+{
+  "status": "deferred",
+  "reason": "webhook environment configuration unavailable",
+  "payload": {
+    "event": "DONE",
+    "issue": 217,
+    "branch": "agent/217-gc-header-20260427T223251Z",
+    "implementation_commit": "1ef8f90",
+    "merge_request": true
+  }
+}
