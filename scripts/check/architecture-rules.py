@@ -6,7 +6,7 @@ Usage: python scripts/manager.py check-architecture-rules
 Current checks:
   - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).
   - crates/cli/src/backend must not be reintroduced after backend-wasm extraction.
-  - crates/cli/src/lib.rs must not declare a local backend module.
+  - crates/cli/src must not declare local backend/parser/compiler implementation modules.
   - Warn when a repo-owned source/document file exceeds 2000 lines.
 """
 
@@ -50,7 +50,7 @@ def usage():
     print("Current checks:")
     print("  - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).")
     print("  - crates/cli/src/backend must not be reintroduced.")
-    print("  - crates/cli/src/lib.rs must not declare a local backend module.")
+    print("  - crates/cli/src must not declare local backend/parser/compiler modules.")
     print("  - Warn when a repo-owned source/document file exceeds the line limit.")
 
 
@@ -124,8 +124,9 @@ def warn_oversized_files(max_file_lines: int) -> None:
         print(f"check_architecture_rules: WARN {path}: {count} lines", file=sys.stderr)
 
 
-def check_cli_backend_boundary() -> None:
-    backend_dir = REPO_ROOT / "crates" / "cli" / "src" / "backend"
+def check_cli_thin_wrapper_boundary() -> None:
+    cli_src = REPO_ROOT / "crates" / "cli" / "src"
+    backend_dir = cli_src / "backend"
     if backend_dir.exists():
         print(
             "check_architecture_rules: crates/cli/src/backend must not be reintroduced; "
@@ -134,11 +135,40 @@ def check_cli_backend_boundary() -> None:
         )
         sys.exit(1)
 
-    cli_lib = REPO_ROOT / "crates" / "cli" / "src" / "lib.rs"
-    if cli_lib.exists() and "mod backend;" in cli_lib.read_text():
+    forbidden_module_names = ("backend", "parser", "compiler", "driver")
+    for path in cli_src.glob("*.rs"):
+        text = path.read_text()
+        for module_name in forbidden_module_names:
+            if f"mod {module_name};" in text:
+                print(
+                    f"check_architecture_rules: {path.relative_to(REPO_ROOT)} must not declare "
+                    f"mod {module_name}; keep compiler implementation outside crates/cli",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+        if "struct Lexer" in text or "struct Parser" in text:
+            print(
+                f"check_architecture_rules: {path.relative_to(REPO_ROOT)} must not define "
+                "parser implementation types; keep parser/compiler implementation outside crates/cli",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    for module_name in forbidden_module_names:
+        module_file = cli_src / f"{module_name}.rs"
+        if module_file.exists():
+            print(
+                f"check_architecture_rules: {module_file.relative_to(REPO_ROOT)} must not exist; "
+                "crates/cli is a thin wrapper",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+
+    cli_lib = cli_src / "lib.rs"
+    if cli_lib.exists() and "ts2wasm_backend_wasm" in cli_lib.read_text():
         print(
-            "check_architecture_rules: crates/cli/src/lib.rs must not declare mod backend; "
-            "use ts2wasm-backend-wasm instead",
+            "check_architecture_rules: crates/cli/src/lib.rs must not call backend directly; "
+            "use ts2wasm-compiler instead",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -148,7 +178,7 @@ def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
     warn_oversized_files(max_file_lines)
-    check_cli_backend_boundary()
+    check_cli_thin_wrapper_boundary()
     
     if not shutil.which("cargo"):
         print("check_architecture_rules: cargo is required", file=sys.stderr)

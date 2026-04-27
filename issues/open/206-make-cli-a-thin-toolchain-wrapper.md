@@ -32,7 +32,7 @@ In scope:
 - [x] Move dump orchestration out of `crates/compiler/src/dump.rs` or make it call reusable compiler APIs only.
 - [x] Ensure `crates/cli/src/main.rs` handles command parsing, path conversion, output rendering, and exit codes only.
 - [x] Add architecture checks that prevent backend modules from reappearing under `crates/cli/src/`.
-- [ ] Add architecture checks that prevent parser/compiler pipeline modules from reappearing under `crates/cli/src/`.
+- [x] Add architecture checks that prevent parser/compiler pipeline modules from reappearing under `crates/cli/src/`.
 - [ ] Keep CLI command behavior stable during migration.
 
 Out of scope:
@@ -63,7 +63,7 @@ Do not touch:
 - [x] `crates/cli` no longer defines backend, parser, or compiler pipeline implementation modules.
 - [x] CLI build command calls a reusable compiler/driver API.
 - [x] CLI dump command calls reusable compiler/driver APIs for each dump phase.
-- [ ] Architecture checks warn or fail if large compiler implementation files are added under `crates/cli/src/`.
+- [x] Architecture checks warn or fail if large compiler implementation files are added under `crates/cli/src/`.
 - [ ] Existing CLI command tests continue to pass.
 - [ ] Backend/frontend/IR tests cover moved non-CLI behavior outside `crates/cli`.
 
