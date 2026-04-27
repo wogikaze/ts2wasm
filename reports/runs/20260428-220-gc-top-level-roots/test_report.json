@@ -2,7 +2,7 @@
   "run_id": "20260428-220-gc-top-level-roots",
   "issue": "220",
   "status": "pass",
-  "commit": null,
+  "commit": "c07bd50",
   "commands": [
     {
       "command": "cargo fmt --all --check",
