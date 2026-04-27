@@ -909,12 +909,12 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
             ResolvedExpr::Null => Ok(LoweredExpr::Null),
             ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
-            ResolvedExpr::This => match self.resolve_local("this") {
+            ResolvedExpr::This { span } => match self.resolve_local("this") {
                 Ok(local) => Ok(LoweredExpr::Local(local)),
                 Err(_) => Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-211: `this` is only supported inside receiver-bound class constructors and instance methods".to_owned(),
-                    span: None,
+                    span: Some(*span),
                 }),
             },
             ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
@@ -997,7 +997,7 @@ impl<'a> Resolver<'a> {
                     expr: Box::new(self.lower_expr(expr)?),
                 })
             }
-            ResolvedExpr::Call { callee, args } => {
+            ResolvedExpr::Call { callee, args, span } => {
                 let func_name = match callee.as_ref() {
                     ResolvedExpr::Ident(name) => name,
                     _ => {
@@ -1005,7 +1005,7 @@ impl<'a> Resolver<'a> {
                             code: DiagCode::UnsupportedSyntax,
                             message: "only identifier calls are supported in expression context"
                                 .to_owned(),
-                            span: None,
+                            span: Some(*span),
                         });
                     }
                 };
@@ -1089,7 +1089,7 @@ impl<'a> Resolver<'a> {
                             message: format!(
                                 "issue-211: function-valued local calls such as extracted method `{func_name}(...)` are not supported; call receiver.method(...) directly"
                             ),
-                            span: None,
+                            span: Some(*span),
                         });
                     }
                     Err(err) => return Err(err),
@@ -1164,6 +1164,7 @@ impl<'a> Resolver<'a> {
                 object,
                 method,
                 args,
+                span,
             } => {
                 if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     let mut lowered_args = Vec::new();
@@ -1184,11 +1185,11 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     })
                 } else {
-                    if matches!(object.as_ref(), ResolvedExpr::This) {
+                    if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
                         let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: "this.method(...) requires class context".to_owned(),
-                            span: None,
+                            span: Some(*span),
                         })?;
                         let method_id =
                             self.resolve_class_method(class_name, method)
@@ -1198,7 +1199,7 @@ impl<'a> Resolver<'a> {
                                         "method `{}.{}` not found",
                                         class_name, method
                                     ),
-                                    span: None,
+                                    span: Some(*span),
                                 })?;
 
                         let mut lowered_args =
@@ -1223,7 +1224,7 @@ impl<'a> Resolver<'a> {
                                     "issue-211: method `{}` requires an identifier receiver",
                                     method
                                 ),
-                                span: None,
+                                span: Some(*span),
                             });
                         }
                     };
@@ -1232,7 +1233,7 @@ impl<'a> Resolver<'a> {
                         let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message: "super.method(...) requires class context".to_owned(),
-                            span: None,
+                            span: Some(*span),
                         })?;
                         let parent_name = self
                             .class_parents
@@ -1242,7 +1243,7 @@ impl<'a> Resolver<'a> {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: "super.method(...) used in class without extends"
                                     .to_owned(),
-                                span: None,
+                                span: Some(*span),
                             })?;
                         let method_id = self
                             .resolve_class_method(&parent_name, method)
@@ -1252,7 +1253,7 @@ impl<'a> Resolver<'a> {
                                     "super method `{}.{}` not found",
                                     parent_name, method
                                 ),
-                                span: None,
+                                span: Some(*span),
                             })?;
 
                         let mut lowered_args =
@@ -1294,7 +1295,7 @@ impl<'a> Resolver<'a> {
                                     "issue-211: unknown receiver class for method `{}`",
                                     method
                                 ),
-                                span: None,
+                                span: Some(*span),
                             })?;
 
                     let method_id =
@@ -1302,7 +1303,7 @@ impl<'a> Resolver<'a> {
                             .ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!("method `{}.{}` not found", class_name, method),
-                                span: None,
+                                span: Some(*span),
                             })?;
 
                     let mut lowered_args = vec![LoweredExpr::Local(obj_local)];

@@ -163,7 +163,9 @@ fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
 fn this_receiver_method_unsupported_forms_report_issue_211() {
     for fixture in [
         "fixtures/core-semantics/this-extracted-method-unsupported.ts",
+        "fixtures/core-semantics/this-non-identifier-receiver-unsupported.ts",
         "fixtures/core-semantics/this-top-level-unsupported.ts",
+        "fixtures/core-semantics/this-unknown-receiver-class-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-211:");
     }
@@ -280,6 +282,25 @@ fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
         stderr.contains(expected),
         "expected diagnostic containing {expected:?} for {fixture}, got:\n{stderr}"
     );
+    assert!(
+        stderr_has_source_span(&stderr),
+        "expected diagnostic with source span for {fixture}, got:\n{stderr}"
+    );
+}
+
+fn stderr_has_source_span(stderr: &str) -> bool {
+    stderr
+        .lines()
+        .filter(|line| line.contains("[UnsupportedSyntax]"))
+        .any(|line| {
+            let Some((_, span)) = line.rsplit_once(" at ") else {
+                return false;
+            };
+            let Some((start, end)) = span.split_once("..") else {
+                return false;
+            };
+            start.parse::<usize>().is_ok() && end.parse::<usize>().is_ok()
+        })
 }
 
 fn assert_no_precomputed_stdout(fixture: &str, output: &Path, expected_stdout: &[u8]) {

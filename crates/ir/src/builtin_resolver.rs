@@ -324,7 +324,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Bool { value, .. } => Ok(ResolvedExpr::Bool(*value)),
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
-        Expr::This { .. } => Ok(ResolvedExpr::This),
+        Expr::This { span } => Ok(ResolvedExpr::This { span: *span }),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
         Expr::InstanceOf {
             expr, type_expr, ..
@@ -367,7 +367,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 })
             }
         }
-        Expr::Call { callee, args, .. } => {
+        Expr::Call { callee, args, span } => {
             let resolved_args = args
                 .iter()
                 .map(resolve_expr)
@@ -390,11 +390,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     object: Box::new(resolve_expr(object)?),
                     method: property.clone(),
                     args: resolved_args,
+                    span: *span,
                 })
             } else {
                 Ok(ResolvedExpr::Call {
                     callee: Box::new(resolve_expr(callee)?),
                     args: resolved_args,
+                    span: *span,
                 })
             }
         }

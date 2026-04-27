@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{BinaryOp, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, Span, UnaryOp};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId};
 
@@ -93,7 +93,9 @@ pub enum ResolvedExpr {
     Bool(bool),
     Null,
     Undefined,
-    This,
+    This {
+        span: Span,
+    },
     Ident(String),
     Unary {
         op: UnaryOp,
@@ -107,6 +109,7 @@ pub enum ResolvedExpr {
     Call {
         callee: Box<ResolvedExpr>,
         args: Vec<ResolvedExpr>,
+        span: Span,
     },
     Assign {
         name: String,
@@ -134,6 +137,7 @@ pub enum ResolvedExpr {
         object: Box<ResolvedExpr>,
         method: String,
         args: Vec<ResolvedExpr>,
+        span: Span,
     },
     PropertyAssign {
         object: Box<ResolvedExpr>,
