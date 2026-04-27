@@ -92,6 +92,17 @@ fn template_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/template-literal.ts");
 }
 
+#[test]
+fn string_method_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/string-trim.ts",
+        "fixtures/builtins-and-io/string-to-upper-case.ts",
+        "fixtures/builtins-and-io/string-to-lower-case.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
 fn assert_fixture_matches_node(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")

@@ -267,44 +267,176 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_string_trim(&self, wat: &mut String) {
-        // Simplified trim: return original string for now
-        // Full implementation would trim whitespace from both ends
         wat.push_str(&format!(
             r#"
   (func $string_trim (param $s i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $start i32)
+    (local $end i32)
+    (local $ch i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
-    ;; Placeholder: return original string
-    (local.get $s))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $end (local.get $len))
+    (block $trim_leading_done
+      (loop $trim_leading
+        (br_if $trim_leading_done (i32.ge_u (local.get $start) (local.get $end)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {header}))
+              (local.get $start))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $start (i32.add (local.get $start) (i32.const {one})))
+            (br $trim_leading))
+          (else (br $trim_leading_done)))))
+    (block $trim_trailing_done
+      (loop $trim_trailing
+        (br_if $trim_trailing_done (i32.le_u (local.get $end) (local.get $start)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {header}))
+              (i32.sub (local.get $end) (i32.const {one})))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $end (i32.sub (local.get $end) (i32.const {one})))
+            (br $trim_trailing))
+          (else (br $trim_trailing_done)))))
+    (if
+      (i32.and
+        (i32.eqz (local.get $start))
+        (i32.eq (local.get $end) (local.get $len)))
+      (then (return (local.get $s))))
+    (local.set $result_len (i32.sub (local.get $end) (local.get $start)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (call $copy
+      (i32.add
+        (i32.add (local.get $obj) (i32.const {header}))
+        (local.get $start))
+      (i32.add (local.get $result_ptr) (i32.const {header}))
+      (local.get $result_len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
 "#,
             undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            one = RuntimeConst::ONE,
+            ascii_tab = 9,
+            ascii_cr = 13,
+            ascii_space = 32,
         ));
     }
 
     pub(super) fn emit_string_to_upper_case(&self, wat: &mut String) {
-        // Simplified toUpperCase: return original string for now
-        // Full implementation would convert ASCII letters to uppercase
         wat.push_str(&format!(
             r#"
   (func $string_to_upper_case (param $s i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $result_ptr i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
-    ;; Placeholder: return original string
-    (local.get $s))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $len))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {header}))
+              (local.get $i))))
+        (if
+          (i32.and
+            (i32.ge_u (local.get $ch) (i32.const {ascii_a}))
+            (i32.le_u (local.get $ch) (i32.const {ascii_z})))
+          (then
+            (local.set $ch (i32.sub (local.get $ch) (i32.const {ascii_case_delta})))))
+        (i32.store8
+          (i32.add
+            (i32.add (local.get $result_ptr) (i32.const {header}))
+            (local.get $i))
+          (local.get $ch))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
 "#,
             undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            one = RuntimeConst::ONE,
+            ascii_a = 97,
+            ascii_z = 122,
+            ascii_case_delta = 32,
         ));
     }
 
     pub(super) fn emit_string_to_lower_case(&self, wat: &mut String) {
-        // Simplified toLowerCase: return original string for now
-        // Full implementation would convert ASCII letters to lowercase
         wat.push_str(&format!(
             r#"
   (func $string_to_lower_case (param $s i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $result_ptr i32)
     (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
-    ;; Placeholder: return original string
-    (local.get $s))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $len))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {header}))
+              (local.get $i))))
+        (if
+          (i32.and
+            (i32.ge_u (local.get $ch) (i32.const {ascii_a_upper}))
+            (i32.le_u (local.get $ch) (i32.const {ascii_z_upper})))
+          (then
+            (local.set $ch (i32.add (local.get $ch) (i32.const {ascii_case_delta})))))
+        (i32.store8
+          (i32.add
+            (i32.add (local.get $result_ptr) (i32.const {header}))
+            (local.get $i))
+          (local.get $ch))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
 "#,
             undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            one = RuntimeConst::ONE,
+            ascii_a_upper = 65,
+            ascii_z_upper = 90,
+            ascii_case_delta = 32,
         ));
     }
 
