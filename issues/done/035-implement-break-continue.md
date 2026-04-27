@@ -90,7 +90,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] Implement labeled break/continue (P2)
+- [x] Implement labeled break/continue (P2; tracked by `issues/open/209-implement-labeled-break-continue.md`)
 
 ## Notes
 
@@ -117,4 +117,4 @@ date: 2026-04-26
   - Tests: 5 break/continue related tests already pass
 
 **Remaining risks:**
-- Labeled break/continue is not implemented (P2 feature)
+- Labeled break/continue is not implemented and is tracked by `issues/open/209-implement-labeled-break-continue.md`

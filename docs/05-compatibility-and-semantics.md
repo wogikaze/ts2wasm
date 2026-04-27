@@ -49,6 +49,8 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | `with`          | 初期非対応、診断必須                                |
 | Proxy           | 初期非対応、object model 安定後に検討                 |
 
+Compatibility evidence distinguishes syntax/build support from semantic parity. A feature that parses, lowers, or builds with placeholder behavior is recorded as `部分実装` in `docs/language-reference/javascript-features.md` and must have an open issue with Node differential acceptance criteria before it can count toward semantic gates. Current placeholder or partial semantic trackers include issues 207-216 for `instanceof`, switch fall-through, labeled control flow, arrow closures, `this`, rest parameters, template interpolation, string methods, `Math.random`, and abstract equality coercion.
+
 ## Array / object semantics（実装済み範囲）
 
 現行 lowering がカバーする array と object の semantics 要件を記録する。
@@ -62,7 +64,7 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | object literal `{k: v}` | 実装済み | heap block `[i32 count, (key_raw, value)×n]` tagged `ptr\|7` |
 | data property read `obj.key` | 実装済み | reverse scan; last duplicate key wins (JS 仕様) |
 | dynamic property key | 実装済み (basic) | string key による `obj[key]` / assignment をサポート |
-| prototype / method call | 実装済み (basic) | `[[Prototype]]` slot と method receiver の basic path をサポート |
+| prototype / method call | 部分実装 (basic) | `[[Prototype]]` slot と method receiver の basic path をサポート。`instanceof` full traversal and `this` receiver parity are tracked by issues 207 and 211 |
 | non-ASCII string literal | 実装済み (basic) | UTF-8 byte storage。decode/encode runtime helper は追跡中 |
 | object literal key (string literal) | 未実装 | `{key: v}` の key は identifier only; `{"x": v}` は parse error |
 | `obj["key"]` computed property | 実装済み (basic) | object property lookup path を使う |

@@ -88,11 +88,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] none
+- [x] Placeholder string methods tracked by `issues/open/214-replace-string-method-placeholders.md`
 
 ## Notes
 
-Implemented String.trim, String.toUpperCase, and String.toLowerCase. Existing string methods (charAt, substring, slice, indexOf, split) were already implemented. Added fixtures for the new methods. The new methods use placeholder implementations that return the original string - full implementations would require proper string manipulation logic.
+Implemented String.trim, String.toUpperCase, and String.toLowerCase. Existing string methods (charAt, substring, slice, indexOf, split) were already implemented. Added fixtures for the new methods. The new methods use placeholder implementations that return the original string - full implementations are tracked by `issues/open/214-replace-string-method-placeholders.md`.
 
 ## Completion evidence
 
@@ -110,4 +110,4 @@ date: 2026-04-26
 
 Remaining risks:
 
-- String.trim, toUpperCase, and toLowerCase currently return the original string as placeholders. Full implementations would require actual string manipulation logic.
+- String.trim, toUpperCase, and toLowerCase currently return the original string as placeholders. Full implementations are tracked by `issues/open/214-replace-string-method-placeholders.md`.

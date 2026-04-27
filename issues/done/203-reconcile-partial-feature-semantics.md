@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -40,15 +41,15 @@ Each partial feature is either implemented with semantic differential evidence o
 
 In scope:
 
-- [ ] Audit the listed done issues for placeholder or deferred semantics.
-- [ ] Split any large remaining work into dedicated feature issues.
-- [ ] Update `docs/language-reference/javascript-features.md` and related semantics docs with exact status.
-- [ ] Add or update validation commands that prove semantic behavior, not only parsing/build success.
-- [ ] Add a mechanical check or checklist rule if a done issue says "new issue needed" without an open follow-up.
+- [x] Audit the listed done issues for placeholder or deferred semantics.
+- [x] Split any large remaining work into dedicated feature issues.
+- [x] Update `docs/language-reference/javascript-features.md` and related semantics docs with exact status.
+- [x] Add or update validation commands that prove semantic behavior, not only parsing/build success.
+- [x] Add a mechanical check or checklist rule if a done issue says "new issue needed" without an open follow-up.
 
 Out of scope:
 
-- [ ] Implementing the compiler/runtime behavior in this cleanup issue.
+- [x] Implementing the compiler/runtime behavior in this cleanup issue.
 
 ## Affected paths
 
@@ -60,7 +61,7 @@ Expected:
 - `docs/language-reference/javascript-features.md`
 - `docs/05-compatibility-and-semantics.md`
 - `current-state.md`
-- `scripts/check/`
+- `.agents/skills/compiler-autonomy/references/review_checklist.md`
 
 Do not touch:
 
@@ -68,11 +69,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] No done issue entry with placeholder/deferred semantics lacks a linked open follow-up or documented scope decision.
-- [ ] Docs do not claim full implementation for placeholder behavior.
-- [ ] `scripts/manager update-issue-index --check` passes.
-- [ ] `scripts/manager check-issue-health` passes.
-- [ ] `scripts/manager check-repo-smoke` passes.
+- [x] No done issue entry with placeholder/deferred semantics lacks a linked open follow-up or documented scope decision.
+- [x] Docs do not claim full implementation for placeholder behavior.
+- [x] `scripts/manager update-issue-index --check` passes.
+- [x] `scripts/manager check-issue-health` passes.
+- [x] `scripts/manager check-repo-smoke` passes.
 
 ## Validation
 
@@ -98,16 +99,55 @@ Not run:
 
 Final-state docs:
 
-- [ ] update affected language-reference / semantics docs
+- [x] updated `docs/language-reference/javascript-features.md`
+- [x] updated `docs/05-compatibility-and-semantics.md`
 
 Current state:
 
-- [ ] update `current-state.md` if current support status changes
+- [x] updated `current-state.md`
 
 Follow-up issues:
 
-- [ ] split dedicated implementation issues as needed
+- [x] Existing open issues 207-216 cover the audited partial semantics. No duplicate issues were created.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Commits:
+
+- this docs/issues cleanup commit
+
+Validation result:
+
+```text
+command: rg -n "placeholder|deferred to follow-up|new issue needed" issues/done
+result: all semantic placeholder/deferred matches in the audited done issues link to issues/open/207-216; non-semantic numeric matches are historical test counts
+date: 2026-04-28
+
+command: scripts/manager update-issue-index
+result: pass
+date: 2026-04-28
+
+command: scripts/manager update-issue-index --check
+result: pass
+date: 2026-04-28
+
+command: scripts/manager check-issue-health
+result: pass
+date: 2026-04-28
+
+command: scripts/manager fmt
+result: pass
+date: 2026-04-28
+
+command: scripts/manager check-repo-smoke
+result: pass
+date: 2026-04-28
+
+command: scripts/manager check-agent-state
+result: pass
+date: 2026-04-28
+```
+
+Remaining risks:
+
+- Issues 207-216 still require implementation and Node differential evidence before those partial features count as semantic parity.

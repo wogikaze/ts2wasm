@@ -87,11 +87,12 @@ Current state:
 
 Follow-up issues:
 
-- [x] 036 (arrow function) - ArrowFn variant added to LoweredExpr with placeholder emission
+- [x] 036 (arrow function) - ArrowFn variant added to LoweredExpr with placeholder emission; full arrow semantics tracked by `issues/open/210-implement-arrow-function-closure-lexical-this.md`
+- [x] This receiver binding semantic completion tracked by `issues/open/211-complete-this-receiver-binding-semantics.md`
 
 ## Notes
 
-Requires method call implementation.
+Requires method call implementation. Placeholder receiver behavior is tracked by `issues/open/211-complete-this-receiver-binding-semantics.md`.
 
 ## Completion evidence
 
@@ -102,7 +103,7 @@ Commits:
 - Added `This` variant to ResolvedExpr in crates/ir/src/builtin_resolved.rs
 - Added `This` variant to LoweredExpr in crates/ir/src/lowered.rs
 - Implemented lowering logic for `This` to resolve to local variable
-- Added emission logic in backend expr_emit.rs (emits undefined as placeholder pending method call implementation)
+- Added emission logic in backend expr_emit.rs (emits undefined as placeholder pending method call implementation; semantic receiver completion tracked by `issues/open/211-complete-this-receiver-binding-semantics.md`)
 - Added fixture fixtures/this-binding/this-basic.ts
 - Fixed pre-existing rest parameter tuple type mismatches
 
@@ -120,5 +121,5 @@ date: 2026-04-26
 
 Remaining risks:
 
-- Proper this binding requires method call implementation (issue 016) - currently emits undefined as placeholder
-- Arrow function lexical this (issue 036) is out of scope for this issue
+- Proper this binding requires method call implementation evidence - currently emits undefined as placeholder and is tracked by `issues/open/211-complete-this-receiver-binding-semantics.md`
+- Arrow function lexical this (issue 036) is out of scope for this issue and is tracked by `issues/open/210-implement-arrow-function-closure-lexical-this.md`

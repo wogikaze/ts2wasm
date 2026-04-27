@@ -1,0 +1,57 @@
+{
+  "run_id": "agent-203-current-close-20260427T214721Z",
+  "task_id": "203",
+  "git": {
+    "sha": "f316263",
+    "exit_code": 0,
+    "changed_files": [
+      ".agents/skills/compiler-autonomy/references/review_checklist.md",
+      "current-state.md",
+      "docs/05-compatibility-and-semantics.md",
+      "docs/language-reference/javascript-features.md",
+      "issues/done/030-implement-instanceof-operator.md",
+      "issues/done/033-implement-switch-statement.md",
+      "issues/done/035-implement-break-continue.md",
+      "issues/done/036-implement-arrow-function.md",
+      "issues/done/037-implement-this-binding.md",
+      "issues/done/038-implement-rest-parameters.md",
+      "issues/done/041-implement-template-literals.md",
+      "issues/done/042-implement-string-methods.md",
+      "issues/done/053-implement-math.md",
+      "issues/done/058-implement-equality-operators.md",
+      "issues/done/203-reconcile-partial-feature-semantics.md",
+      "issues/index.md"
+    ],
+    "commits": [
+      { "sha": "f316263", "message": "issue-203: reconcile partial semantic tracking" }
+    ]
+  },
+  "commands": [
+    { "cmd": "rg -n \"placeholder|deferred to follow-up|new issue needed\" issues/done", "status": "pass", "exit_code": 0 },
+    { "cmd": "scripts/manager update-issue-index", "status": "pass", "exit_code": 0 },
+    { "cmd": "scripts/manager update-issue-index --check", "status": "pass", "exit_code": 0 },
+    { "cmd": "scripts/manager check-issue-health", "status": "pass", "exit_code": 0 },
+    { "cmd": "scripts/manager fmt", "status": "pass", "exit_code": 0 },
+    { "cmd": "scripts/manager check-repo-smoke", "status": "pass", "exit_code": 0 },
+    { "cmd": "scripts/manager check-agent-state", "status": "pass", "exit_code": 0 },
+    { "cmd": "cargo nextest run", "status": "fail", "exit_code": 100 }
+  ],
+  "fixtures": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "docs_issues_only": true,
+    "required_validation": "passed",
+    "cargo_nextest_run": "accidentally triggered during report generation; failed on pre-existing unrelated gates: missing reference/test262, dynamic-property stdout mismatch, prototype unsupported method receiver",
+    "webhook": "deferred: DISCORD_WEBHOOK_URL is not configured"
+  }
+}

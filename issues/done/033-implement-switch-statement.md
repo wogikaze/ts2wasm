@@ -89,11 +89,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] Implement fall-through behavior for switch statements (P2)
+- [x] Implement fall-through behavior for switch statements (P2; tracked by `issues/open/208-implement-switch-fall-through-semantics.md`)
 
 ## Notes
 
-Switch is lowered to a series of if-else statements (not a jump table). Fall-through is not implemented - each case automatically breaks at the end, which is simpler but differs from JavaScript semantics. Full fall-through support requires detecting break statements at the end of case blocks, which can be added in a follow-up issue.
+Switch is lowered to a series of if-else statements (not a jump table). Fall-through is not implemented - each case automatically breaks at the end, which is simpler but differs from JavaScript semantics. Full fall-through support is tracked by `issues/open/208-implement-switch-fall-through-semantics.md`.
 
 ## Completion evidence
 
@@ -129,5 +129,5 @@ date: 2026-04-26
 - This is simpler than JavaScript semantics but functional for basic use cases
 
 **Remaining risks:**
-- Fall-through behavior is not implemented (each case breaks automatically)
-- This differs from JavaScript semantics but is acceptable for the current implementation
+- Fall-through behavior is not implemented (each case breaks automatically) and is tracked by `issues/open/208-implement-switch-fall-through-semantics.md`
+- This differs from JavaScript semantics and must not be counted as full switch semantic parity
