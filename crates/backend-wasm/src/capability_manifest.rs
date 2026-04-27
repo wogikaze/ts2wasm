@@ -43,6 +43,14 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
                     .or_default()
                     .push("fs.readFileSync(0, \"utf8\")".to_owned());
             }
+            Capability::WasiRandom => {
+                manifest.wasi.random = true;
+                manifest
+                    .capability_reasons
+                    .entry("wasi.random".to_owned())
+                    .or_default()
+                    .push("Math.random".to_owned());
+            }
             Capability::HostFsReadFileSync
             | Capability::HostFsWriteFileSync
             | Capability::HostFsAppendFileSync => {

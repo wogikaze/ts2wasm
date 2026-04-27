@@ -122,25 +122,27 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_math_random(&self, wat: &mut String) {
-        // Math.random() returns a random number between 0 and 1
-        // For now, return a simple pseudo-random value using a counter
-        // This is a placeholder - proper random would require host import
         wat.push_str(&format!(
             r#"
-  (global $random_counter (mut i32) (i32.const 0))
   (func $math_random (result i32)
-    (local $counter i32)
-    (local $result i32)
-    (local.set $counter (global.get $random_counter))
-    (global.set $random_counter (i32.add (local.get $counter) (i32.const {one})))
-    ;; Simple pseudo-random: return counter / 1000 as a number
-    ;; For now, just return 0.5 as a placeholder (encoded as 0.5 << shift | tag)
-    (i32.or (i32.shl (i32.const {half}) (i32.const {number_shift})) (i32.const {number_tag})))
+    (local $errno i32)
+    (local $raw i32)
+    (local.set $errno (call $random_get (i32.const {scratch}) (i32.const 4)))
+    (if (i32.ne (local.get $errno) (i32.const 0))
+      (then unreachable))
+    (local.set $raw (i32.load (i32.const {scratch})))
+    ;; The current number representation is tagged i32; this is a random
+    ;; integer payload until the broader JS double model is available.
+    (i32.or
+      (i32.shl
+        (i32.rem_u (local.get $raw) (i32.const {modulus}))
+        (i32.const {number_shift}))
+      (i32.const {number_tag})))
 "#,
+            scratch = Layout::SCRATCH_OFFSET,
+            modulus = 1000,
             number_shift = ValueTag::NUMBER_SHIFT,
             number_tag = ValueTag::NUMBER,
-            half = 0, // 0.5 encoded as integer 0 (placeholder)
-            one = RuntimeConst::ONE,
         ));
     }
 

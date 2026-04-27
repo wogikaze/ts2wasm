@@ -172,7 +172,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
 | 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | implementation-ready | P1 | 211 | Implement arrow function closure and lexical this semantics |
 | 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
-| 215 | Define Math.random capability policy | feature | runtime/builtins | design-ready | P1 |  | Define Math.random capability policy |
 | 221 | Implement GC call-frame roots for closure escape | feature | runtime/memory | implementation-ready | P1 | 220 | Top-level locals are mirrored into GC roots, but function/call-frame locals and closure captures are still not regist... |
 <!-- generated:ready:end -->
 
@@ -254,6 +253,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | see `issues/done/211-complete-this-receiver-binding-semantics.md` |
 | 213 | Implement template literal interpolation | feature | frontend/semantics | see `issues/done/213-implement-template-literal-interpolation.md` |
 | 214 | Replace string method placeholders | feature | runtime/builtins | see `issues/done/214-replace-string-method-placeholders.md` |
+| 215 | Define Math.random capability policy | feature | runtime/builtins | see `issues/done/215-define-math-random-capability-policy.md` |
 | 216 | Implement abstract equality coercion | feature | runtime/semantics | see `issues/done/216-implement-abstract-equality-coercion.md` |
 | 217 | Implement GC heap header and trigger accounting | feature | runtime/memory | see file |
 | 218 | Implement GC mark root scanning | feature | runtime/memory | see file |
