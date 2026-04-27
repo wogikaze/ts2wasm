@@ -63,8 +63,35 @@ impl Layout {
     pub const OBJECT_ENTRY_SIZE: u32 = 8;
 
     // ---- GC layout --------------------------------------------------------
+    /// Bytes reserved immediately before each GC-managed heap payload.
+    ///
+    /// `$alloc_heap(size)` returns the payload pointer, so the header starts at
+    /// `payload_ptr - GC_HEADER_SIZE`.
+    pub const GC_HEADER_SIZE: u32 = 16;
+    /// Offset of flags/type metadata from the GC header base.
+    pub const GC_FLAGS_AND_TYPE_OFFSET: u32 = 0;
+    /// Offset of the aligned payload size from the GC header base.
+    pub const GC_BODY_SIZE_OFFSET: u32 = 4;
+    /// Offset of sweep/free-list linkage from the GC header base.
+    pub const GC_SWEEP_NEXT_OFFSET: u32 = 8;
+    /// Offset of reserved generation/finalizer metadata from the GC header base.
+    pub const GC_RESERVED_OFFSET: u32 = 12;
     /// Initial GC threshold in bytes (trigger GC when heap exceeds this).
     pub const GC_THRESHOLD: u32 = 64 * 1024;
+    /// Mark flag for the 017a GC header flags/type field.
+    pub const GC_MARK_FLAG: u32 = 0x1;
+    /// Reserved finalizer flag for the 017a GC header flags/type field.
+    pub const GC_FINALIZABLE_FLAG: u32 = 0x2;
+    /// Bit shift for heap kind in the 017a GC header flags/type field.
+    pub const GC_KIND_SHIFT: u32 = 2;
+    /// Unknown heap kind used by the current `$alloc_heap(size)` ABI.
+    pub const GC_KIND_UNKNOWN: u32 = 0;
+    /// String heap kind.
+    pub const GC_KIND_STRING: u32 = 1 << Self::GC_KIND_SHIFT;
+    /// Array heap kind.
+    pub const GC_KIND_ARRAY: u32 = 2 << Self::GC_KIND_SHIFT;
+    /// Object heap kind.
+    pub const GC_KIND_OBJECT: u32 = 3 << Self::GC_KIND_SHIFT;
     /// Bit mask for object type in type_tag field.
     pub const OBJECT_TYPE_MASK: u32 = 0x7F;
     /// Mark bit for GC mark phase.
@@ -110,6 +137,30 @@ mod tests {
             Layout::HEAP_START % Layout::ALIGN,
             0,
             "HEAP_START must be ALIGN-aligned so heap pointers are tag-safe"
+        );
+    }
+
+    #[test]
+    fn gc_header_preserves_payload_pointer_alignment() {
+        assert_eq!(
+            Layout::GC_HEADER_SIZE % Layout::ALIGN,
+            0,
+            "GC header size must preserve payload pointer alignment"
+        );
+        assert_eq!(Layout::GC_FLAGS_AND_TYPE_OFFSET, 0);
+        assert_eq!(Layout::GC_BODY_SIZE_OFFSET, 4);
+        assert_eq!(Layout::GC_SWEEP_NEXT_OFFSET, 8);
+        assert_eq!(Layout::GC_RESERVED_OFFSET, 12);
+    }
+
+    #[test]
+    fn gc_kind_flags_do_not_overlap_mark_bits() {
+        assert_eq!(Layout::GC_KIND_UNKNOWN, 0);
+        assert_eq!(Layout::GC_KIND_STRING & Layout::GC_MARK_FLAG, 0);
+        assert_eq!(Layout::GC_KIND_ARRAY & Layout::GC_FINALIZABLE_FLAG, 0);
+        assert_eq!(
+            Layout::GC_KIND_OBJECT & (Layout::GC_MARK_FLAG | Layout::GC_FINALIZABLE_FLAG),
+            0
         );
     }
 

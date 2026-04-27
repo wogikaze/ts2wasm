@@ -97,4 +97,27 @@ mod tests {
         assert_eq!(err.code, DiagCode::InvariantViolation);
         assert!(err.message.contains("MethodCall"));
     }
+
+    #[test]
+    fn alloc_heap_emits_gc_header_and_trigger_contract() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew { props: vec![] })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("object allocation should emit WAT");
+
+        assert!(wat.contains("(global $alloc_bytes_since_last_gc (mut i32) (i32.const 0))"));
+        assert!(wat.contains("(func $gc_collect"));
+        assert!(wat.contains("(local $header_base i32)"));
+        assert!(wat.contains("(local $payload_base i32)"));
+        assert!(wat.contains("(i32.const 16)"));
+        assert!(wat.contains("(i32.const 65536)"));
+        assert!(wat.contains("(global.get $alloc_bytes_since_last_gc)"));
+        assert!(wat.contains("(then (call $gc_collect))"));
+        assert!(wat.contains("(global.set $alloc_bytes_since_last_gc"));
+        assert!(wat.contains("(local.get $payload_base))"));
+    }
 }

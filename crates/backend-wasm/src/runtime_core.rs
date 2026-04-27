@@ -956,25 +956,72 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $alloc_heap (param $size i32) (result i32)
-    (local $base i32)
+    (local $header_base i32)
+    (local $payload_base i32)
+    (local $payload_size i32)
+    (local $block_size i32)
     (local $new_heap i32)
     (local $memory_pages i32)
     (local $memory_bytes i32)
-    (local.set $base
+    (local.set $header_base
       (i32.and
         (i32.add (global.get $heap) (i32.const {align_mask}))
         (i32.const {heap_align})))
-    (local.set $new_heap (i32.add (local.get $base) (local.get $size)))
+    (local.set $payload_base
+      (i32.add (local.get $header_base) (i32.const {gc_header_size})))
+    (local.set $payload_size
+      (i32.and
+        (i32.add (local.get $size) (i32.const {align_mask}))
+        (i32.const {heap_align})))
+    (local.set $block_size
+      (i32.add (i32.const {gc_header_size}) (local.get $payload_size)))
+    (local.set $new_heap (i32.add (local.get $header_base) (local.get $block_size)))
+
+    ;; Trigger a collection hook once allocation pressure crosses the threshold.
+    (if
+      (i32.ge_u
+        (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $block_size))
+        (i32.const {gc_threshold}))
+      (then (call $gc_collect)))
+
     ;; OOM check: verify allocation fits within current memory
     (local.set $memory_pages (memory.size))
     (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
     (if (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))
       (then (unreachable)))
+
+    ;; Header layout is defined in ts2wasm_runtime_abi::Layout.
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_flags_offset}))
+      (i32.const {gc_kind_unknown}))
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_body_size_offset}))
+      (local.get $payload_size))
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_sweep_next_offset}))
+      (i32.const 0))
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_reserved_offset}))
+      (i32.const 0))
+
+    (global.set $alloc_bytes_since_last_gc
+      (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $block_size)))
     (global.set $heap (local.get $new_heap))
-    (local.get $base))
+    (local.get $payload_base))
+
+  (func $gc_collect
+    ;; 217 establishes the trigger hook; mark/sweep is implemented in 218/219.
+    (global.set $alloc_bytes_since_last_gc (i32.const 0)))
 "#,
             align_mask = Layout::ALIGN_MASK,
             heap_align = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_threshold = Layout::GC_THRESHOLD,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_body_size_offset = Layout::GC_BODY_SIZE_OFFSET,
+            gc_sweep_next_offset = Layout::GC_SWEEP_NEXT_OFFSET,
+            gc_reserved_offset = Layout::GC_RESERVED_OFFSET,
+            gc_kind_unknown = Layout::GC_KIND_UNKNOWN,
             page_size = Layout::WASM_PAGE_SIZE,
         ));
     }

@@ -1,0 +1,54 @@
+{
+  "run_id": "20260428-217-gc-header-accounting",
+  "issue": "217",
+  "status": "pass",
+  "commit": null,
+  "commands": [
+    {
+      "command": "cargo fmt --all --check",
+      "status": "pass",
+      "notes": "format check passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-runtime-abi",
+      "status": "pass",
+      "notes": "8 passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-backend-wasm",
+      "status": "pass",
+      "notes": "5 passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-cli --test m2_node_diff m5_array_object_fixtures_match_node_output_under_iwasm m5_edge_case_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "notes": "2 passed, 16 skipped"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-cli --test m6_builtin_methods",
+      "status": "pass",
+      "notes": "27 passed"
+    },
+    {
+      "command": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "notes": "issues/index.md up to date"
+    },
+    {
+      "command": "scripts/manager check-issue-health",
+      "status": "pass",
+      "notes": "issue queue healthy"
+    },
+    {
+      "command": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "notes": "repo smoke passed"
+    },
+    {
+      "command": "cargo nextest run --no-fail-fast",
+      "status": "pass",
+      "notes": "219 passed, 4 skipped"
+    }
+  ],
+  "next": "218: implement GC mark root scanning"
+}
