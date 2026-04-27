@@ -13,6 +13,7 @@ Dependencies: cargo, python3 (see nested scripts for cargo-nextest, jq, etc.)
 import os
 import sys
 import subprocess
+import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
@@ -54,10 +55,16 @@ def main():
             sys.exit(1)
     
     # Check for required commands
-    for cmd in ["cargo", "python3", sys.executable]:
-        if subprocess.run(["which", cmd], capture_output=True).returncode != 0:
-            print(f"check_fast_gate: missing required command: {cmd}", file=sys.stderr)
-            sys.exit(1)
+    for cmd in ["python3", "python"]:
+        if shutil.which(cmd):
+            break
+    else:
+        print("check_fast_gate: missing required command: python/python3", file=sys.stderr)
+        sys.exit(1)
+
+    if not shutil.which("cargo"):
+        print("check_fast_gate: missing required command: cargo", file=sys.stderr)
+        sys.exit(1)
     
     # Run checks
     run(["cargo", "fmt", "--all", "--check"])

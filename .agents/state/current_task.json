@@ -1,36 +1,11 @@
 {
-  "status": "in_progress",
-  "issue_id": "014",
-  "issue_title": "Implement dynamic property key support",
-  "started_at": "2026-04-26T18:13:00+09:00",
-  "target_gate": "Gate C (semantic compatibility)",
-  "scope": {
-    "allowed_files": [
-      "crates/ir/src/lowered.rs",
-      "crates/cli/src/backend/runtime_builder.rs",
-      "crates/cli/src/backend/runtime_fn.rs",
-      "fixtures/arrays-objects/"
-    ],
-    "forbidden_files": []
-  },
-  "acceptance": [
-    "Dynamic property access `obj[key]` works with string variables",
-    "Dynamic property set `obj[key] = value` works correctly",
-    "Node differential test passes for dynamic property fixtures",
-    "Diagnostic `unsupported-dynamic-property` is removed for supported cases"
-  ],
-  "commands": {
-    "fast": [
-      "cargo fmt --all --check",
-      "cargo nextest run"
-    ],
-    "full": [
-      "iwasm fixtures/arrays-objects/dynamic-property.wasm"
-    ]
-  },
-  "risk": [
-    "Runtime property access with dynamic keys may require heap allocation for key strings",
-    "Need to ensure property_get/set handle both literal and runtime string keys"
-  ],
-  "notes": "Issue 012 (computed property semantics) is done, so dynamic property key support is ready to implement."
+  "id": null,
+  "title": null,
+  "status": "idle",
+  "issue_path": null,
+  "scope": null,
+  "acceptance": null,
+  "commands": null,
+  "risk": null,
+  "notes": "Merged origin/master with local changes (030 instanceof, 036 arrow function). Resolving conflicts."
 }

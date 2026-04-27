@@ -368,10 +368,15 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(value);
             }
-            LoweredExpr::PropertySetDynamic { object, key, value } => {
+            LoweredExpr::PropertySetDynamic {
+                object,
+                index,
+                value,
+            } => {
                 self.add_required_runtime(RuntimeFn::PropertySet);
+                self.add_required_runtime(RuntimeFn::ValueToStringInto);
                 self.collect_required_runtime_expr(object);
-                self.collect_required_runtime_expr(key);
+                self.collect_required_runtime_expr(index);
                 self.collect_required_runtime_expr(value);
             }
             LoweredExpr::New { args, .. } => {
@@ -530,9 +535,15 @@ mod tests {
     fn m5_runtime_linker_collects_array_object_and_length_helpers() {
         let array_get_program = lowered("let x = [1][0];");
         let array_get = RuntimeLinkPlan::from_program(&array_get_program);
-        let array_expected: BTreeSet<_> = [RuntimeFn::AllocHeap, RuntimeFn::ArrayGet]
-            .into_iter()
-            .collect();
+        let array_expected: BTreeSet<_> = [
+            RuntimeFn::AllocHeap,
+            RuntimeFn::Index,
+            RuntimeFn::PropertyGet,
+            RuntimeFn::ValueToStringInto,
+            RuntimeFn::MemEqual,
+        ]
+        .into_iter()
+        .collect();
         assert!(
             array_expected
                 .iter()

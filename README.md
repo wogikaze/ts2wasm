@@ -112,7 +112,9 @@ A: 初期段階では型を「実行に必要な情報」と「診断に必要�
 
 ### Q: Node.js との semantic equivalence はどう確認するのか？
 
-A: differential testing を使用する。同じ TS/JS コードを Node.js と生成された WASM で実行し、stdout を比較する。詳細は `docs/06-testing-and-coverage.md` を参照。
+A: differential testing を使用する。同じ TS/JS コードを Node.js と生成された WASM で実行し、stdout を比較する。詳細は `docs/06-testing-and-coverage.md` を参照。  
+  Reference coverage の運用は `python scripts/manager.py reference-coverage <suite> [--limit N]`（ramp）を再実行し、  
+  `python scripts/manager.py update-coverage-matrix --check`（check）で matrix の整合を確認する。
 
 ### Q: standalone 対象プログラムとは何か？
 
@@ -124,7 +126,7 @@ A: `current-state.md` の「Next Priority Slice」セクションに優先度順
 
 ### Q: テストはどう実行するのか？
 
-A: `cargo nextest run` で実行。differential testing が必要な場合は `scripts/run/reference-coverage.sh` を使用。詳細は `docs/06-testing-and-coverage.md` を参照。
+A: `cargo nextest run` で実行。differential testing が必要な場合は `python scripts/manager.py reference-coverage` を使用。詳細は `docs/06-testing-and-coverage.md` を参照。
 
 ### Q: Nix がなくても開発できるか？
 

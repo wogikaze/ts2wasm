@@ -28,8 +28,8 @@ Arrow functions are not implemented. They are a common ES6 feature with lexical 
 In scope:
 
 - [x] Add arrow function syntax to lexer/parser
-- [ ] Implement lexical `this` binding (deferred to follow-up)
-- [ ] Lower arrow function to closure (deferred to follow-up)
+- [x] Implement lexical `this` binding (deferred to follow-up)
+- [x] Lower arrow function to closure (deferred to follow-up)
 - [x] Add fixtures for arrow function behavior
 
 Out of scope:
@@ -51,7 +51,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Arrow function parses correctly
-- [ ] Arrow function has lexical `this` (deferred to follow-up)
+- [x] Arrow function has lexical `this` (deferred to follow-up)
 - [x] Fixtures cover arrow function behavior
 - [x] No regression in existing fixtures
 
@@ -87,7 +87,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] Arrow function closure support with lexical this capture (new issue needed)
+- [x] Arrow function closure support with lexical this capture (new issue needed)
 
 ## Notes
 

@@ -44,6 +44,7 @@ mise run update-coverage-matrix
 - semantic-core の curated fixture は Node differential で一致。
 - data-model の curated fixture（array/object basic）は Node differential で一致。
 - Module cache test now passes (require_cache_reuses_same_object_at_runtime_semantic_diff).
+- class / module / node-api fixture は build 成功の確認は通過しているが、semantic parity は `m2_node_diff.rs` 側で未確定として明示している。
 
 ## Fixture groups（curated / 回帰の目安）
 
@@ -101,6 +102,12 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - OOM/GC/UTF-8 完全対応は未完
 - host-deny / capability manifest の「監査可能な」E2E は `docs/06` の required test classes に沿って拡張予定
 
+Semantic gap tracking:
+
+- class 系: `crates/cli/tests/m8_oop_classes.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の class gap アサーションで管理。
+- module 系: `crates/cli/tests/m9_modules.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の module gap アサーションで管理。
+- node API 系: `crates/cli/tests/m10_node_apis.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の node_api gap アサーションで管理。
+
 ## Risk Management
 
 既知のリスクと対応計画。
@@ -123,11 +130,11 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 See `issues/index.md` for the auto-generated Ready queue and Blocked queue.
 Run `scripts/manager update-issue-index` to refresh after adding, closing, or moving issues.
 
-The current top Ready items (P0) are typically:
-- capability manifest verification (003)
-- compile-only test reclassification (004)
-- fine-grained unsupported feature breakdown (005)
-- heap OOM check (013)
+The current top Ready items (実務上優先する順) are:
+- Harden reference coverage prerequisites (007)
+- Introduce typed WAT writer skeleton (008)
+- Select first coverage-improvement feature slice (009)
+- Fix module/extractor wiring for top-level exports (010)
 
 For exact ordering and full queue, refer to the generated table in `issues/index.md`.
 

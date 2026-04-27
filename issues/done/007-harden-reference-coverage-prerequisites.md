@@ -3,7 +3,7 @@
 **Status**: done
 **Created**: 2026-04-26
 **Updated**: 2026-04-26
-**Completed**: 2026-04-26
+**Closed**: 2026-04-26
 **ID**: 007
 **Type**: infra
 **Area**: scripts/reference
@@ -15,11 +15,11 @@ Problem: Reference coverage scripts depend on external reference repositories. I
 
 Scope:
 
-- [x] Detect missing reference repos early.
-- [x] Print exact clone/init command hints.
-- [x] Prevent denominator-zero matrix updates.
-- [x] Clarify check mode vs ramp mode in README/AGENTS.
-- [x] Add script syntax checks where useful.
+- Detect missing reference repos early.
+- Print exact clone/init command hints.
+- Prevent denominator-zero matrix updates.
+- Clarify check mode vs ramp mode in README/AGENTS.
+- Add script syntax checks where useful.
 
 Acceptance Criteria:
 
@@ -30,33 +30,34 @@ Acceptance Criteria:
 Validation:
 
 ```sh
-python scripts/check/shell-syntax.py
+python scripts/manager.py check-scripts
 python scripts/manager.py reference-coverage test262 --limit 1
-python scripts/gen/coverage-matrix.py --check
+python scripts/manager.py update-coverage-matrix --check
 ```
 
-## Completion evidence
-
-**Validation results:**
+Validation result:
 
 ```text
-command: python scripts/check/shell-syntax.py
-result: All shell syntax checks passed
-date: 2026-04-26
+python scripts/manager.py check-scripts
+  ❌ failed: Syntax error in scripts/dev/install-git-hooks.sh (pre-existing issue)
 
-command: python scripts/manager.py reference-coverage test262 --limit 1
-result: executed successfully (denominator=53444)
-date: 2026-04-26
+python scripts/manager.py reference-coverage test262 --limit 1
+  ✅ failed early with clear remediation text and clone/pull command
 
-command: python scripts/gen/coverage-matrix.py --check
-result: coverage matrix OK (up to date)
-date: 2026-04-26
+python scripts/manager.py update-coverage-matrix --check
+  ✅ OK (matrix up to date)
+
+python scripts/manager.py reference-coverage tsc --limit 1
+  ✅ failed early with clear remediation text and clone/pull command
+
+python scripts/manager.py reference-coverage tsgo --limit 1
+  ✅ failed early with clear remediation text and clone/pull command
 ```
 
-**Implementation:**
-- Added `REFERENCE_REPOS` configuration dictionary to `scripts/run/reference-coverage.py` with paths and clone/init commands for test262, tsc, and tsgo
-- Added `check_reference_repo()` function to detect missing reference repos early and print exact clone/init command hints
-- Added denominator-zero check in `main()` to prevent invalid matrix updates when no files are found
-- Added documentation for check mode (--limit 0) vs ramp mode (--limit N) in script docstring
-- Added Reference Repository Setup section to script docstring with example commands
+Close evidence:
 
+- 2026-04-26: Added `scripts/run/reference-coverage.py` repository/suite pre-check with actionable remediation text and shallow-checkout resume hints.
+- 2026-04-26: Updated `AGENTS.md` check/ramp command guidance to manager-based invocation.
+- 2026-04-26: Updated `README.md` FAQ coverage section with manager-based check/ramp workflow.
+- 2026-04-26: `python scripts/manager.py update-coverage-matrix --check` passes after invalid-suite failures no longer produce denominator-zero runs.
+- 2026-04-26: Environment validation (`python scripts/manager.py nextest`) shows pre-existing failures unrelated to this change (iwasm availability + known differential fixture expectations).

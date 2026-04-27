@@ -1,8 +1,9 @@
 # Implement prototype and method call support
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-26
 **Updated**: 2026-04-26
+**Closed**: 2026-04-27
 **ID**: 016
 **Type**: feature
 **Area**: runtime/semantics
@@ -34,7 +35,6 @@ Progress:
 - [x] Added prototype test fixture
 - [x] Prototype chain lookup in property_get (recursive call to $property_get on prototype)
 - [x] Method call with this binding (class methods already pass `this` as first argument)
-
 Validation:
 
 ```sh
@@ -42,3 +42,13 @@ cargo fmt --all --check
 cargo nextest run
 iwasm fixtures/core-semantics/prototype.wasm
 ```
+
+## Completion evidence
+
+- 2026-04-27: `cargo fmt --all --check` passed.
+- 2026-04-27: `cargo test -p ts2wasm-cli --test m2_node_diff -- --exact m3_semantic_fixtures_match_node_output_under_iwasm` passed.
+- 2026-04-27: `cargo test -p ts2wasm-cli --test m2_node_diff -- --exact m5_array_object_fixtures_match_node_output_under_iwasm` passed.
+- 2026-04-27: `cargo test -p ts2wasm-cli --test m8_oop_classes -- --exact build_smoke_class_extends build_smoke_class_basic build_smoke_class_static build_smoke_class_super build_smoke_class_super_method build_smoke_new_expression` passed.
+- 2026-04-27: Full `cargo nextest run` passed with one environment-specific failure in `official_corpora_smoke_gate_finds_reference_shards` (missing `reference/test262` test corpus).
+- 2026-04-27: `cargo run -p ts2wasm-cli -- build fixtures/core-semantics/prototype.ts -o <tmp>.wasm` + `iwasm <tmp>.wasm` outputs `11`, `18`, `10`, matching Node output.
+- 2026-04-27: `cargo run -p ts2wasm-cli -- build fixtures/classes-and-inheritance/class-super-method.ts -o <tmp>.wasm` + `iwasm <tmp>.wasm` outputs `4`, matching Node output.

@@ -24,10 +24,10 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] 017a (design) is complete.
-- [ ] 017b (implementation) is complete.
-- [ ] GC prevents memory leaks in test fixtures.
-- [ ] Node differential test passes for GC-relevant fixtures.
+- [x] 017a (design) is complete.
+- [x] 017b (implementation) is complete.
+- [x] GC prevents memory leaks in test fixtures.
+- [x] Node differential test passes for GC-relevant fixtures.
 
 Validation:
 

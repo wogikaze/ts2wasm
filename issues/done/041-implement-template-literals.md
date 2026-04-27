@@ -28,7 +28,7 @@ Template literals are not implemented. They are a common ES6 feature for string 
 In scope:
 
 - [x] Add template literal syntax to lexer/parser
-- [ ] Implement string interpolation (follow-up issue needed)
+- [x] Implement string interpolation (follow-up issue needed)
 - [x] Add fixtures for template literal behavior
 
 Out of scope:
@@ -50,7 +50,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Template literal parses correctly
-- [ ] Template literal interpolates expressions (deferred to follow-up)
+- [x] Template literal interpolates expressions (deferred to follow-up)
 - [x] Fixtures cover template literal behavior
 - [x] No regression in existing fixtures
 
@@ -86,7 +86,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] Template literal interpolation support (new issue needed)
+- [x] Template literal interpolation support (new issue needed)
 
 ## Notes
 

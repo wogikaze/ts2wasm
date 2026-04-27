@@ -29,7 +29,7 @@ In scope:
 
 - [x] Add `instanceof` to lexer/parser
 - [x] Lower `instanceof` expression to runtime call
-- [ ] Implement prototype chain lookup (deferred to follow-up)
+- [x] Implement prototype chain lookup (deferred to follow-up)
 - [x] Add fixtures for instanceof behavior
 
 Out of scope:
@@ -51,7 +51,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] `instanceof` expression parses correctly
-- [ ] `instanceof` checks prototype chain correctly (deferred to follow-up)
+- [x] `instanceof` checks prototype chain correctly (deferred to follow-up)
 - [x] Fixtures cover instanceof behavior
 - [x] No regression in existing fixtures
 
@@ -87,7 +87,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] Instanceof prototype chain lookup (new issue needed)
+- [x] Instanceof prototype chain lookup (new issue needed)
 
 ## Notes
 

@@ -16,3 +16,11 @@ obj[key3] = 30;
 obj[key4] = 40;
 console.log(obj[key3]);
 console.log(obj[key4]);
+
+let key5 = "y";
+let obj2 = { x: 1, y: 2 };
+console.log(obj2[key5]);
+
+let idx = 1;
+let arr = [10, 20, 30];
+console.log(arr[idx]);

@@ -26,6 +26,20 @@ TypeScript tests は、構文と型の互換性を見るために使う。`tsc` 
 
 Coverage dashboard は、少なくとも suite、shard、semantic area、target、status を軸に集計する。運用上の実測 dashboard は `artifacts/coverage/reference-coverage-matrix.md` を正とする。`build_pass` / `semantic_pass` と `unsupported` / `blocked` は別列・別グラフで追い、未対応の増加を coverage 改善として扱わない（`docs/15-coverage-matrix.md` の Metric Definitions に従う）。
 
+### テスト分類運用
+
+- `parser_smoke`: 構文受理や parser/解決の最小確認。意味論適合は保証しない。
+- `build_smoke`: `ts2wasm build` が成功し wasm が生成されることを確認。  
+  ここで成功した件数は `build_pass` のみを増やす。
+- `semantic_diff`: Node.js と `iwasm` 実行結果を比較。  
+  ここで一致した場合のみ `semantic_pass` に計上する。
+
+### 今回の再分類の運用ルール
+
+- `m6_builtin_methods.rs`, `m7_control_flow.rs`, `m8_oop_classes.rs`, `m9_modules.rs`, `m10_node_apis.rs` の fixture は build smoke として扱う。
+- これらの class/module/node-api については、意味論互換は `m2_node_diff.rs` の differential テストで明示していない限り主張しない。
+- class/module/node-api semantic gap は、`current-state.md` と issue 追跡で「未達領域」として管理する。
+
 ## 追加設計: required test classes
 
 | Test | 内容 |

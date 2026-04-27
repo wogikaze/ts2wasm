@@ -79,6 +79,17 @@ Generated table:
 
 - `artifacts/coverage/reference-coverage-matrix.md` を参照する。
 
+### テストクラス運用（build vs semantic）
+
+`parser_smoke`, `build_smoke`, `semantic_diff` の三段階で fixture を区別する。
+
+- `build_smoke`: `ts2wasm build` が成功するかを確認。`build_pass` にのみ反映。
+- `semantic_diff`: Node.js 参照と `iwasm` 実行の一致を確認。`semantic_pass` にのみ反映。
+- `parser_smoke`: parser / 基本検証に限定する（現時点では未導入）。
+
+現時点では `m6_builtin_methods.rs`、`m7_control_flow.rs`、`m8_oop_classes.rs`、`m9_modules.rs`、`m10_node_apis.rs` を build_smoke として運用し、  
+class/module/node-api の semantic claim は `m2_node_diff.rs` の differential テストで明示しない限り扱わない。
+
 ## 計測スクリプト
 
 計測スクリプトの使い方、運用順序、ゲート実行手順は `AGENTS.md` の Build/Test Commands を正とする。

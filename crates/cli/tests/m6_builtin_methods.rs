@@ -1,11 +1,11 @@
 /// Integration tests for builtin method calls (Math, Object, JSON)
 ///
-/// These tests verify that method calls like `Math.floor(x)`, `Object.keys(obj)`,
-/// and `JSON.stringify(val)` are properly lowered and emitted.
+/// Category: build_smoke.
+/// These tests confirm the compiler can emit Wasm for builtin invocations.
+/// Runtime semantics are validated in `m2_node_diff.rs` where supported.
 use std::path::Path;
-use ts2wasm_shared::{TestRecord, TestStatus};
 
-/// Helper to run a fixture through the compiler
+/// Build a fixture with the compiler and return stdout on success.
 fn run_fixture(path: &str) -> Result<String, String> {
     let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
@@ -40,206 +40,145 @@ fn run_fixture(path: &str) -> Result<String, String> {
 }
 
 #[test]
-fn math_floor_method_emits() {
+fn build_smoke_math_floor_method() {
     let result = run_fixture("builtins-and-io/math-floor.ts");
     assert!(
         result.is_ok(),
-        "Math.floor should compile: {:?}",
+        "Math.floor should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn math_ceil_method_emits() {
+fn build_smoke_math_ceil_method() {
     let result = run_fixture("builtins-and-io/math-ceil.ts");
-    assert!(
-        result.is_ok(),
-        "Math.ceil should compile: {:?}",
-        result.err()
-    );
+    assert!(result.is_ok(), "Math.ceil should build: {:?}", result.err());
 }
 
 #[test]
-fn math_round_method_emits() {
+fn build_smoke_math_round_method() {
     let result = run_fixture("builtins-and-io/math-round.ts");
     assert!(
         result.is_ok(),
-        "Math.round should compile: {:?}",
+        "Math.round should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn math_abs_method_emits() {
+fn build_smoke_math_abs_method() {
     let result = run_fixture("builtins-and-io/math-abs.ts");
-    assert!(
-        result.is_ok(),
-        "Math.abs should compile: {:?}",
-        result.err()
-    );
+    assert!(result.is_ok(), "Math.abs should build: {:?}", result.err());
 }
 
 #[test]
-fn math_max_method_emits() {
+fn build_smoke_math_max_method() {
     let result = run_fixture("builtins-and-io/math-max.ts");
-    assert!(
-        result.is_ok(),
-        "Math.max should compile: {:?}",
-        result.err()
-    );
+    assert!(result.is_ok(), "Math.max should build: {:?}", result.err());
 }
 
 #[test]
-fn math_min_method_emits() {
+fn build_smoke_math_min_method() {
     let result = run_fixture("builtins-and-io/math-min.ts");
-    assert!(
-        result.is_ok(),
-        "Math.min should compile: {:?}",
-        result.err()
-    );
+    assert!(result.is_ok(), "Math.min should build: {:?}", result.err());
 }
 
 #[test]
-fn object_keys_method_emits() {
+fn build_smoke_object_keys_method() {
     let result = run_fixture("builtins-and-io/object-keys.ts");
     assert!(
         result.is_ok(),
-        "Object.keys should compile: {:?}",
+        "Object.keys should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn object_values_method_emits() {
+fn build_smoke_object_values_method() {
     let result = run_fixture("builtins-and-io/object-values.ts");
     assert!(
         result.is_ok(),
-        "Object.values should compile: {:?}",
+        "Object.values should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn object_entries_method_emits() {
+fn build_smoke_object_entries_method() {
     let result = run_fixture("builtins-and-io/object-entries.ts");
     assert!(
         result.is_ok(),
-        "Object.entries should compile: {:?}",
+        "Object.entries should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn json_stringify_method_emits() {
+fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
         result.is_ok(),
-        "JSON.stringify should compile: {:?}",
+        "JSON.stringify should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn json_parse_method_emits() {
+fn build_smoke_json_parse_method() {
     let result = run_fixture("builtins-and-io/json-parse.ts");
     assert!(
         result.is_ok(),
-        "JSON.parse should compile: {:?}",
+        "JSON.parse should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn math_methods_classify_as_supported() {
-    // Verify that Math methods are properly resolved to RuntimeFn variants
-    let _ = TestRecord {
-        suite: "fixtures/builtins-and-io".to_owned(),
-        case: "math-floor.ts".to_owned(),
-        target: "wasm32-wasi".to_owned(),
-        status: TestStatus::Pass,
-        expected: None,
-        actual: None,
-        reason: None,
-        tracking: Some("feature:math-methods".to_owned()),
-    };
-}
-
-#[test]
-fn object_methods_classify_as_supported() {
-    let _ = TestRecord {
-        suite: "fixtures/builtins-and-io".to_owned(),
-        case: "object-keys.ts".to_owned(),
-        target: "wasm32-wasi".to_owned(),
-        status: TestStatus::Pass,
-        expected: None,
-        actual: None,
-        reason: None,
-        tracking: Some("feature:object-methods".to_owned()),
-    };
-}
-
-#[test]
-fn json_methods_classify_as_supported() {
-    let _ = TestRecord {
-        suite: "fixtures/builtins-and-io".to_owned(),
-        case: "json-stringify.ts".to_owned(),
-        target: "wasm32-wasi".to_owned(),
-        status: TestStatus::Pass,
-        expected: None,
-        actual: None,
-        reason: None,
-        tracking: Some("feature:json-methods".to_owned()),
-    };
-}
-
-// String method tests
-
-#[test]
-fn string_char_at_method_emits() {
+fn build_smoke_string_char_at_method() {
     let result = run_fixture("builtins-and-io/string-char-at.ts");
     assert!(
         result.is_ok(),
-        "String.charAt should compile: {:?}",
+        "String.charAt should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn string_substring_method_emits() {
+fn build_smoke_string_substring_method() {
     let result = run_fixture("builtins-and-io/string-substring.ts");
     assert!(
         result.is_ok(),
-        "String.substring should compile: {:?}",
+        "String.substring should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn string_slice_method_emits() {
+fn build_smoke_string_slice_method() {
     let result = run_fixture("builtins-and-io/string-slice.ts");
     assert!(
         result.is_ok(),
-        "String.slice should compile: {:?}",
+        "String.slice should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn string_index_of_method_emits() {
+fn build_smoke_string_index_of_method() {
     let result = run_fixture("builtins-and-io/string-index-of.ts");
     assert!(
         result.is_ok(),
-        "String.indexOf should compile: {:?}",
+        "String.indexOf should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn string_split_method_emits() {
+fn build_smoke_string_split_method() {
     let result = run_fixture("builtins-and-io/string-split.ts");
     assert!(
         result.is_ok(),
-        "String.split should compile: {:?}",
+        "String.split should build: {:?}",
         result.err()
     );
 }
@@ -295,93 +234,58 @@ fn string_from_char_code_method_emits() {
 }
 
 // Array method tests
-
 #[test]
-fn array_push_method_emits() {
+fn build_smoke_array_push_method() {
     let result = run_fixture("builtins-and-io/array-push.ts");
     assert!(
         result.is_ok(),
-        "Array.push should compile: {:?}",
+        "Array.push should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn array_pop_method_emits() {
+fn build_smoke_array_pop_method() {
     let result = run_fixture("builtins-and-io/array-pop.ts");
-    assert!(
-        result.is_ok(),
-        "Array.pop should compile: {:?}",
-        result.err()
-    );
+    assert!(result.is_ok(), "Array.pop should build: {:?}", result.err());
 }
 
 #[test]
-fn array_slice_method_emits() {
+fn build_smoke_array_slice_method() {
     let result = run_fixture("builtins-and-io/array-slice.ts");
     assert!(
         result.is_ok(),
-        "Array.slice should compile: {:?}",
+        "Array.slice should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn array_concat_method_emits() {
+fn build_smoke_array_concat_method() {
     let result = run_fixture("builtins-and-io/array-concat.ts");
     assert!(
         result.is_ok(),
-        "Array.concat should compile: {:?}",
+        "Array.concat should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn array_join_method_emits() {
+fn build_smoke_array_join_method() {
     let result = run_fixture("builtins-and-io/array-join.ts");
     assert!(
         result.is_ok(),
-        "Array.join should compile: {:?}",
+        "Array.join should build: {:?}",
         result.err()
     );
 }
 
 #[test]
-fn array_reverse_method_emits() {
+fn build_smoke_array_reverse_method() {
     let result = run_fixture("builtins-and-io/array-reverse.ts");
     assert!(
         result.is_ok(),
-        "Array.reverse should compile: {:?}",
+        "Array.reverse should build: {:?}",
         result.err()
     );
-}
-
-// Classification tests
-
-#[test]
-fn string_methods_classify_as_supported() {
-    let _ = TestRecord {
-        suite: "fixtures/builtins-and-io".to_owned(),
-        case: "string-char-at.ts".to_owned(),
-        target: "wasm32-wasi".to_owned(),
-        status: TestStatus::Pass,
-        expected: None,
-        actual: None,
-        reason: None,
-        tracking: Some("feature:string-methods".to_owned()),
-    };
-}
-
-#[test]
-fn array_methods_classify_as_supported() {
-    let _ = TestRecord {
-        suite: "fixtures/builtins-and-io".to_owned(),
-        case: "array-push.ts".to_owned(),
-        target: "wasm32-wasi".to_owned(),
-        status: TestStatus::Pass,
-        expected: None,
-        actual: None,
-        reason: None,
-        tracking: Some("feature:array-methods".to_owned()),
-    };
 }

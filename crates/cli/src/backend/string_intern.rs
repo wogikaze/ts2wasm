@@ -1,4 +1,5 @@
 use super::emitter::WatEmitter;
+use super::wat_writer::WatModuleBuilder;
 use crate::{align_to, wat_bytes};
 use ts2wasm_runtime_abi::{Layout, ValueTag};
 
@@ -23,15 +24,14 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_data_segments(&self, wat: &mut String) {
+        let mut writer = WatModuleBuilder::new();
         for (offset, value) in &self.string_data {
             let mut bytes = Vec::new();
             bytes.extend_from_slice(&(value.len() as u32).to_le_bytes());
             bytes.extend_from_slice(value.as_bytes());
-            wat.push_str(&format!(
-                "  (data (i32.const {offset}) \"{}\")\n",
-                wat_bytes(&bytes)
-            ));
+            writer.push_data_segment_escaped(*offset, &wat_bytes(&bytes));
         }
+        wat.push_str(&writer.into_inner());
     }
 
     pub(super) fn string_len(&self, value: &str) -> u32 {

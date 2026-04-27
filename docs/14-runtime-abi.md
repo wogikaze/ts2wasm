@@ -82,6 +82,69 @@ ptr を取り出すには: `ptr = raw_value & HEAP_MASK`
 length を読むには: `len = i32.load(ptr)`
 文字列バイトは: `ptr + 4` から `len` バイト
 
+## Planned Heap GC strategy (017a)
+
+This section records the planned GC model for the current runtime. The implementation is not in this issue.
+
+### Chosen strategy
+
+**Stop-the-world mark-and-sweep** is selected as the baseline strategy.
+
+Rationale:
+
+- 長寿命の `closure`/`class`/`module` オブジェクトが増えるケースを安全側に扱える
+- `arena` は明示的な生存区間が必要で、現行の型付けと実行モデルでは閉じ込めが困難
+- `string`/`array`/`object` が同一ヒープを使う現状では、最初に `mark+list-based sweep` を導入するのが既存 runtime の変更面積を最小化できる
+
+### Planned heap object header
+
+GC enabled allocation uses a **separate runtime header** before each heap block.
+ユーザから観測される `RawValue` ポインタは header より `GC_HEADER_SIZE` 分だけ進んだ本体先頭を指す。
+
+```text
+obj_ptr + -16: i32 flags_and_type    ; mark bit + type bits
+obj_ptr + -12: i32 body_size_bytes   ; this object's payload size in bytes (aligned)
+obj_ptr + -8 : i32 sweep_next        ; freelist / sweep list linkage
+obj_ptr + -4 : i32 gen_or_reserved   ; optional next-generation field (future)
+obj_ptr      : payload
+```
+
+Flag layout:
+
+- bit0: `mark` (1 = live in current mark cycle)
+- bit1: `finalizable` (reserved)
+- bits2-4: heap kind (`001` string, `010` array, `011` object)
+- bits5-31: reserved
+
+### Heap payload layout (planned)
+
+The existing logical payload shape is kept; header is additive.
+
+- `string`: `[len:i32, bytes... ]`
+- `array`:  `[len:i32, elem0, elem1, ...]` (`i32` raw values)
+- `object`: `[property_count:i32, prototype_ptr:i32, (key:value)×N]`
+
+`object` は既存仕様に合わせて `prototype_ptr` を保持し、`[[Prototype]]` 走査は将来の markフェーズと連携させる。
+
+### GC trigger points
+
+`$alloc_heap` は以下のどちらかを満たすと GC を試行する:
+
+- `alloc_bytes_since_last_gc >= 4096`
+- `next_free >= memory.size * 0x80 / 100` （メモリ使用率が 80% を超える）
+
+Pseudo flow:
+
+1. markフェーズ: ルートとして `globals` / `runtime stacks` / `module cache` を走査
+2. sweepフェーズ: 生存フラグがないブロックを `sweep_list` へ回収（空きリストへ）
+3. 回収後に再試行、必要なら `memory.grow`、それでも足りなければ trap
+
+### Safety and compatibility notes
+
+- この設計は最初の実装では stop-the-world 全停止 GC とし、同時実行は対象外
+- mark ビットは各 GC サイクルで反転 bit を使って O(1) リセットする方式を採用（全ヒープ走査の clear を回避）
+- 文字列 primitive の一時 `scratch` は現在どおり GC 対象外
+
 ## RuntimeFn Catalog
 
 runtime 関数は `RuntimeFn` カタログとして管理する（catalog 化が完了すれば linker が単一導線になる）。

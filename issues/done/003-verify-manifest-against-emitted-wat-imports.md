@@ -15,11 +15,11 @@ Problem: A manifest is only useful as a gate if it matches emitted WAT/wasm impo
 
 Scope:
 
-- [x] Add helper to extract WAT imports from emitted text.
-- [x] Verify `console.log` uses `fd_write` and manifest says stdout is required.
-- [x] Verify `fs.readFileSync(0, "utf8")` uses `fd_read` and manifest says stdin is required.
-- [x] Verify standalone fixtures have no Node host imports.
-- [x] Verify Node shim fixtures mark `node_host.required = true`.
+- Add helper to extract WAT imports from emitted text.
+- Verify `console.log` uses `fd_write` and manifest says stdout is required.
+- Verify `fs.readFileSync(0, "utf8")` uses `fd_read` and manifest says stdin is required.
+- Verify standalone fixtures have no Node host imports.
+- Verify Node shim fixtures mark `node_host.required = true`.
 
 Acceptance Criteria:
 
@@ -35,35 +35,8 @@ cargo fmt --all --check
 cargo nextest run -E 'test(manifest)'
 ```
 
-## Completion evidence
+Completion evidence:
 
-**Validation results:**
-
-```text
-command: cargo fmt --all --check
-result: passed
-date: 2026-04-26
-
-command: cargo nextest run -E 'test(manifest)'
-result: 12 tests passed
-date: 2026-04-26
-
-command: cargo nextest run
-result: 192 tests passed, 4 skipped
-date: 2026-04-26
-```
-
-**Implementation:**
-- Added `extract_wat_imports()` helper function to parse WAT import lines
-- Added `manifest_wat_imports_match_console_log_fd_write()` test
-- Added `manifest_wat_imports_match_stdin_fd_read()` test
-- Added `standalone_fixture_has_no_node_imports()` test
-- Added `node_shim_fixture_has_node_host_required()` test
-- All tests verify that manifest declarations match actual WAT imports
-
-**Test names for Gate C/F evidence:**
-- `manifest_wat_imports_match_console_log_fd_write`
-- `manifest_wat_imports_match_stdin_fd_read`
-- `standalone_fixture_has_no_node_imports`
-- `node_shim_fixture_has_node_host_required`
-
+- `cargo fmt --all --check`: pass
+- `cargo nextest run --filterset "test(manifest)"` (with `CARGO_TARGET_DIR=$env:TEMP\ts2wasm-target`): pass
+- Tests passed: 9 manifest tests.

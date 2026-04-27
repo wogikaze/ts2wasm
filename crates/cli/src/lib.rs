@@ -109,7 +109,11 @@ struct Lexer<'a> {
 
 impl<'a> Lexer<'a> {
     fn new(source: &'a str) -> Self {
-        Self { source, cursor: 0, prev_token: None }
+        Self {
+            source,
+            cursor: 0,
+            prev_token: None,
+        }
     }
 
     fn is_regexp_context(&self) -> bool {
@@ -171,10 +175,10 @@ impl<'a> Lexer<'a> {
     fn regexp(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
         // Skip the opening '/'
         self.advance_char();
-        
+
         let mut pattern = String::new();
         let mut escaped = false;
-        
+
         while let Some(ch) = self.peek_char() {
             if escaped {
                 pattern.push(ch);
@@ -191,7 +195,7 @@ impl<'a> Lexer<'a> {
             }
             self.advance_char();
         }
-        
+
         // Parse flags (if any)
         let mut flags = String::new();
         while let Some(ch) = self.peek_char() {
@@ -203,14 +207,14 @@ impl<'a> Lexer<'a> {
                 _ => break,
             }
         }
-        
+
         // Combine pattern and flags
         let mut regexp_str = pattern;
         if !flags.is_empty() {
             regexp_str.push('/');
             regexp_str.push_str(&flags);
         }
-        
+
         Ok(SpannedToken {
             kind: Token::RegExp(regexp_str),
             span: Span {
@@ -223,10 +227,10 @@ impl<'a> Lexer<'a> {
     fn template_literal(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
         // Skip the opening backtick
         self.advance_char();
-        
+
         let mut literal = String::new();
         let mut escaped = false;
-        
+
         while let Some(ch) = self.peek_char() {
             if escaped {
                 literal.push(ch);
@@ -243,7 +247,7 @@ impl<'a> Lexer<'a> {
             }
             self.advance_char();
         }
-        
+
         Ok(SpannedToken {
             kind: Token::TemplateLiteral(literal),
             span: Span {
@@ -270,76 +274,94 @@ impl<'a> Lexer<'a> {
                 ch if ch.is_whitespace() => {
                     self.advance_char();
                 }
-                 '0'..='9' => {
-                     let token = self.number()?;
-                     self.add_token(&mut tokens, token);
-                 }
-                 '"' | '\'' => {
-                     let token = self.string()?;
-                     self.add_token(&mut tokens, token);
-                 }
-                 'a'..='z' | 'A'..='Z' | '_' | '$' => {
-                     let token = self.ident_or_keyword();
-                     self.add_token(&mut tokens, token);
-                 }
+                '0'..='9' => {
+                    let token = self.number()?;
+                    self.add_token(&mut tokens, token);
+                }
+                '"' | '\'' => {
+                    let token = self.string()?;
+                    self.add_token(&mut tokens, token);
+                }
+                'a'..='z' | 'A'..='Z' | '_' | '$' => {
+                    let token = self.ident_or_keyword();
+                    self.add_token(&mut tokens, token);
+                }
                 '+' => {
                     self.advance_char();
                     if self.peek_char() == Some('+') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Increment,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Increment,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else if self.peek_char() == Some('=') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::PlusEqual,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::PlusEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Plus,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Plus,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '-' => {
                     self.advance_char();
                     if self.peek_char() == Some('-') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Decrement,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Decrement,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else if self.peek_char() == Some('=') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::MinusEqual,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::MinusEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Minus,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Minus,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '!' => {
@@ -348,30 +370,39 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::StrictNotEqual,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::StrictNotEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         } else {
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::BangEqual,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::BangEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         }
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Bang,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Bang,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '*' => {
@@ -380,60 +411,78 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::PowerEqual,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::PowerEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         } else {
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::Power,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::Power,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         }
                     } else if self.peek_char() == Some('=') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::StarEqual,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::StarEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Star,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Star,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '<' => {
                     self.advance_char();
                     if self.peek_char() == Some('<') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::LeftShift,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::LeftShift,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Less,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Less,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '>' => {
@@ -442,30 +491,39 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('>') {
                             self.advance_char();
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::UnsignedRightShift,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::UnsignedRightShift,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         } else {
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::RightShift,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::RightShift,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         }
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Greater,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Greater,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '=' => {
@@ -474,122 +532,158 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::StrictEqual,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::StrictEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         } else {
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::EqualEqual,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::EqualEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         }
                     } else if self.peek_char() == Some('>') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Arrow,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Arrow,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Equal,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Equal,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '&' => {
                     self.advance_char();
                     if self.peek_char() == Some('&') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::AndAnd,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::AndAnd,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Ampersand,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Ampersand,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '|' => {
                     self.advance_char();
                     if self.peek_char() == Some('|') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::OrOr,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::OrOr,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Pipe,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Pipe,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '^' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::Caret,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::Caret,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 '~' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::Tilde,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::Tilde,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 '%' => {
                     self.advance_char();
                     if self.peek_char() == Some('=') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::PercentEqual,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::PercentEqual,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Percent,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Percent,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '/' => {
@@ -601,21 +695,27 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('=') {
                             self.advance_char();
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::SlashEqual,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::SlashEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         } else {
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::Slash,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::Slash,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         }
                     }
                 }
@@ -623,30 +723,39 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('.') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::OptionalChain,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::OptionalChain,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else if self.peek_char() == Some('?') {
                         self.advance_char();
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::NullishCoalesce,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::NullishCoalesce,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Question,
-                            span: Span {
-                                start,
-                                end: self.cursor,
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
+                                kind: Token::Question,
+                                span: Span {
+                                    start,
+                                    end: self.cursor,
+                                },
                             },
-                        });
+                        );
                     }
                 }
                 '.' => {
@@ -655,119 +764,155 @@ impl<'a> Lexer<'a> {
                         self.advance_char();
                         if self.peek_char() == Some('.') {
                             self.advance_char();
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::DotDotDot,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::DotDotDot,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            });
+                            );
                         } else {
                             // ".." is not a valid token in our subset, treat as two dots
-                            self.add_token(&mut tokens, SpannedToken {
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::Dot,
+                                    span: Span {
+                                        start,
+                                        end: start + 1,
+                                    },
+                                },
+                            );
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::Dot,
+                                    span: Span {
+                                        start: start + 1,
+                                        end: self.cursor,
+                                    },
+                                },
+                            );
+                        }
+                    } else {
+                        self.add_token(
+                            &mut tokens,
+                            SpannedToken {
                                 kind: Token::Dot,
                                 span: Span {
                                     start,
-                                    end: start + 1,
-                                },
-                            });
-                            self.add_token(&mut tokens, SpannedToken {
-                                kind: Token::Dot,
-                                span: Span {
-                                    start: start + 1,
                                     end: self.cursor,
                                 },
-                            });
-                        }
-                    } else {
-                        self.add_token(&mut tokens, SpannedToken {
-                            kind: Token::Dot,
-                            span: Span {
-                                start,
-                                end: self.cursor,
                             },
-                        });
+                        );
                     }
                 }
                 '(' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::LeftParen,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::LeftParen,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 ')' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::RightParen,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::RightParen,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 '{' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::LeftBrace,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::LeftBrace,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 '}' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::RightBrace,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::RightBrace,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 ',' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::Comma,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::Comma,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 ':' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::Colon,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::Colon,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 '[' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::LeftBracket,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::LeftBracket,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 ']' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::RightBracket,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::RightBracket,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 '`' => {
                     let token = self.template_literal(start)?;
@@ -775,13 +920,16 @@ impl<'a> Lexer<'a> {
                 }
                 ';' => {
                     self.advance_char();
-                    self.add_token(&mut tokens, SpannedToken {
-                        kind: Token::Semicolon,
-                        span: Span {
-                            start,
-                            end: self.cursor,
+                    self.add_token(
+                        &mut tokens,
+                        SpannedToken {
+                            kind: Token::Semicolon,
+                            span: Span {
+                                start,
+                                end: self.cursor,
+                            },
                         },
-                    });
+                    );
                 }
                 other => {
                     return Err(Diagnostic {
@@ -1094,11 +1242,10 @@ impl Parser {
                 Expr::Index {
                     object,
                     index,
-                    span,
+                    span: index_span,
                 } => {
                     let value = self.expression()?;
                     let semi = self.expect(TokenKind::Semicolon)?;
-                    let index_span = *span;
                     return Ok(Stmt::Expr {
                         expr: Expr::IndexAssign {
                             object: object.clone(),

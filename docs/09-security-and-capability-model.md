@@ -62,15 +62,55 @@ Audit では、少なくとも次を確認する。
 | preopen verification | filesystem access が許可された preopen 内に収まることを検証する |
 | security review | filesystem/env/network/crypto/timer capability を一覧化する |
 
-## Manifest CLI output
+## Manifest CLI output（canonical）
+
+`--emit-manifest` は `docs/11-shared-definitions.md` の canonical capability manifest schema を出力する。`--emit-capabilities` は同一 output を返す deprecated alias である。
 
 ```bash
 ts2wasm build input.ts -o out.wasm --emit-manifest out.manifest.json
 ```
 
-`--emit-capabilities` は互換の deprecated alias として当面維持する。
+例:
 
-The canonical capability manifest schema is defined in `docs/11-shared-definitions.md` under "Capability manifest schema". The CLI emits this canonical schema with fields including `schema_version`, `target`, `standalone`, `wasi`, `node_host`, and `capability_reasons`.
+```json
+{
+  "schema_version": 1,
+  "target": "wasm32-wasi",
+  "standalone": true,
+  "wasi": {
+    "stdin": true,
+    "stdout": true,
+    "stderr": false,
+    "args": false,
+    "env": false,
+    "filesystem": {
+      "read": [],
+      "write": [],
+      "preopens": []
+    },
+    "random": false
+  },
+  "node_host": {
+    "required": false,
+    "imports": []
+  },
+  "capability_reasons": {
+    "wasi.stdin": [
+      "fs.readFileSync(0, \"utf8\")"
+    ],
+    "wasi.stdout": [
+      "console.log"
+    ]
+  }
+}
+```
+
+- `schema_version`: `1` 固定
+- `target`: 実行ターゲット識別子
+- `standalone`: Node host import が不要なら `true`
+- `wasi.*`: WASI capability と filesystem の read/write/preopen 区分
+- `node_host`: Node host が必要な場合の関数単位 import
+- `capability_reasons`: capability を必要としたソース API の根拠
 
 ## Host shim trimming
 

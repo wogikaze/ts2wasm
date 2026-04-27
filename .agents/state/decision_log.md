@@ -9,6 +9,69 @@
 
 ## Log
 
+### 2026-04-26T19:20:00Z — close issue 014
+
+- **When**: 2026-04-26T19:20:00Z
+- **State**: RETRO
+- **Decision**: Close issue 014 and move it to `issues/done/014-implement-dynamic-property-key-support.md`.
+- **Rationale**: Dynamic property key read/write behavior is implemented through runtime string conversion in `property_set`/`property_get`, covered by fixtures and differential tests. The branch also includes runtime-linking coverage and full `nextest` verification, with only an unrelated missing test262 reference path in this environment.
+- **Reversible?**: no
+- **Follow-up**: none
+
+### 2026-04-26T14:45:00Z — start issue 007
+
+- **When**: 2026-04-26T14:45:00Z
+- **State**: TASK_SELECT
+- **Decision**: Start issue 007 for reference-coverage prerequisite hardening and check/ramp documentation.
+- **Rationale**: Missing external reference suites currently can produce zero-denominator runs without clear remediation, and the coverage workflow documents are inconsistent.
+- **Reversible?**: yes
+- **Follow-up**: issues/open/007-harden-reference-coverage-prerequisites.md
+
+### 2026-04-26T15:25:00Z — verify issue 007
+
+- **When**: 2026-04-26T15:25:00Z
+- **State**: VERIFY_FULL
+- **Decision**: Verified missing-reference detection for test262/tsc/tsgo and documented check/ramp command paths; `update-coverage-matrix --check` is clean. `check-scripts` remains failing due a pre-existing syntax error in `scripts/dev/install-git-hooks.sh`.
+- **Rationale**: Required failure path now exits with actionable clone/fetch guidance before any denominator-zero or matrix-update flow. Manager command docs now describe check vs ramp.
+- **Reversible?**: yes
+- **Follow-up**: none
+
+### 2026-04-26T15:40:00Z — close issue 007
+
+- **When**: 2026-04-26T15:40:00Z
+- **State**: RETRO
+- **Decision**: Closed issue 007 and moved it to `issues/done/007-harden-reference-coverage-prerequisites.md`.
+- **Rationale**: Required acceptance criteria are satisfied for missing-reference messaging and docs updates; issue index regenerated and validated.
+- **Reversible?**: no
+- **Follow-up**: none
+
+### 2026-04-26T13:30:00Z — start issue 006
+
+- **When**: 2026-04-26T13:30:00Z
+- **State**: TASK_SELECT
+- **Decision**: Start issue 006 cleanup: remove stale milestone/transitional docs and keep future work centralized in issues.
+- **Rationale**: Issue 006 addresses mixed outdated implementation claims and transitional manifest duplication risk.
+- **Reversible?**: yes
+- **Follow-up**: none
+
+### 2026-04-26T13:45:00Z — close issue 006
+
+- **When**: 2026-04-26T13:45:00Z
+- **State**: VERIFY_FULL
+- **Decision**: Closed issue 006 as done and moved it to `issues/done/006-remove-stale-milestone-and-transitional-docs.md`.
+- **Rationale**: Stale milestone/transitional text removed from `docs/09`; current-state top priority list updated; canonical manifest references validated.
+- **Reversible?**: no
+- **Follow-up**: none
+
+### 2026-04-26T13:19:35Z — close issue 003
+
+- **When**: 2026-04-26T13:19:35Z
+- **State**: VERIFY_FULL
+- **Decision**: Closed issue 003 as done and moved it to `issues/done/` with updated acceptance evidence
+- **Rationale**: Manifest import/fixture tests in scope were implemented and validated; issue tracker and index were synchronized
+- **Reversible?**: no
+- **Follow-up**: none
+
 ### 2026-04-26 — plan for issue 002
 
 - **When**: 2026-04-26T06:45:00Z

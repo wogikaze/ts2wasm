@@ -17,7 +17,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | design-ready | P1 | 005 | After coverage breakdown exists, the next implementation should be chosen by data. The goal is to increase semantic p... |
 | 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/fronten... |
 | 017 | Design and implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 013 | Current runtime has no GC. Long-running programs and programs with closure escape will leak memory. docs/04 specifies... |
 | 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
@@ -174,6 +173,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | feature | frontend | design-ready | P1 |  | Implement Compiler |
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
+| 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -201,19 +201,20 @@ Issue files are the source of truth for work items. The generated section below 
 | 000 | Short imperative title | feature | bug | refactor | docs | test | infra | cleanup | spike | frontend | ir | runtime | abi | wasi | cli | fixtures | scripts | docs | tests | coverage | reference | see `issues/done/000-sample-issue.md` |
 | 001 | Fix issue infrastructure and current-state path references | infra | issues/docs | see `issues/done/001-fix-issue-infrastructure-and-current-state-path-references.md` |
 | 002 | Emit canonical capability manifest schema | feature | abi/wasi | see `issues/done/002-emit-canonical-capability-manifest-schema.md` |
-| 003 | Verify manifest against emitted WAT imports | test | wasi/tests | see `issues/done/003-verify-manifest-against-emitted-wat-imports.md` |
-| 004 | Reclassify compile-only compatibility tests | test | tests/coverage | see file |
+| 003 | Verify manifest against emitted WAT imports | test | wasi/tests | see file |
+| 004 | Reclassify compile-only compatibility tests | test | tests/coverage | see `issues/done/004-reclassify-compile-only-compatibility-tests.md` |
 | 005 | Add fine-grained unsupported feature breakdown | infra | scripts/coverage | see `issues/done/005-add-fine-grained-unsupported-feature-breakdown.md` |
-| 006 | Remove stale milestone and transitional docs | cleanup | docs | see `issues/done/006-remove-stale-milestone-and-transitional-docs.md` |
-| 007 | Harden reference coverage prerequisites | infra | scripts/reference | see `issues/done/007-harden-reference-coverage-prerequisites.md` |
+| 006 | Remove stale milestone and transitional docs | cleanup | docs | see file |
+| 007 | Harden reference coverage prerequisites | infra | scripts/reference | see file |
 | 008 | Introduce typed WAT writer skeleton | refactor | backend | see `issues/done/008-introduce-typed-wat-writer-skeleton.md` |
+| 009 | Select first coverage-improvement feature slice | spike | frontend/ir/runtime | see file |
 | 011 | Enable `RUSTFLAGS=-D warnings` for nextest / harness (warning-clean tree) | infra | tests | see `issues/done/011-enable-cargo-deny-warnings-in-ci-and-harnesses.md` |
 | 012 | Fix computed property semantics bug | bug | runtime/semantics | see `issues/done/012-fix-computed-property-semantics-bug.md` |
 | 013 | Implement heap OOM check | feature | runtime/memory | see file |
-| 014 | Implement dynamic property key support | feature | runtime/semantics | see file |
+| 014 | Implement dynamic property key support | feature | runtime/semantics | see `issues/done/014-implement-dynamic-property-key-support.md` |
 | 015 | Implement object literal string key support | feature | parser/semantics | see file |
-| 016 | Implement prototype and method call support | feature | runtime/semantics | see file |
-| 017a | Design GC strategy | feature | runtime/memory | see file |
+| 016 | Implement prototype and method call support | feature | runtime/semantics | see `issues/done/016-implement-prototype-and-method-call-support.md` |
+| 017a | Design GC strategy | feature | runtime/memory | see `issues/done/017a-design-gc-strategy.md` |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |

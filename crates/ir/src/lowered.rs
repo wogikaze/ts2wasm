@@ -186,7 +186,7 @@ pub enum LoweredExpr {
     },
     PropertySetDynamic {
         object: Box<LoweredExpr>,
-        key: Box<LoweredExpr>,
+        index: Box<LoweredExpr>,
         value: Box<LoweredExpr>,
     },
     New {
@@ -686,6 +686,13 @@ impl<'a> Resolver<'a> {
                 .last_mut()
                 .expect("function scope must exist")
                 .insert(param.clone(), local_id);
+            if let Some(current_class) = current_class {
+                if param == "this" {
+                    resolver
+                        .local_classes
+                        .insert(local_id, current_class.to_owned());
+                }
+            }
             param_ids.push(local_id);
         }
 
@@ -715,16 +722,20 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 let lowered = self.lower_expr(expr)?;
-                if let ResolvedExpr::New { class_name, .. } = expr {
-                    self.local_classes.insert(local_id, class_name.clone());
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = expr_class {
+                    self.local_classes.insert(local_id, class_name);
+                } else {
+                    self.local_classes.remove(&local_id);
                 }
                 Ok(LoweredStmt::Let(local_id, lowered))
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
                 let lowered = self.lower_expr(expr)?;
-                if let ResolvedExpr::New { class_name, .. } = expr {
-                    self.local_classes.insert(local_id, class_name.clone());
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = expr_class {
+                    self.local_classes.insert(local_id, class_name);
                 } else {
                     self.local_classes.remove(&local_id);
                 }
@@ -1316,6 +1327,17 @@ impl<'a> Resolver<'a> {
         }
         None
     }
+
+    fn infer_class_for_expr(&self, expr: &ResolvedExpr) -> Option<String> {
+        match expr {
+            ResolvedExpr::New { class_name, .. } => Some(class_name.clone()),
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .and_then(|local_id| self.local_classes.get(&local_id).cloned()),
+            _ => None,
+        }
+    }
 }
 
 fn class_maps(
@@ -1668,6 +1690,19 @@ fn validate_expr(
         }
         LoweredExpr::PropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertySet { object, value, .. } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(value, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertySetDynamic {
+            object,
+            index,
+            value,
+        } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(index, local_count, num_funcs, program, errors, true);
+            validate_expr(value, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::MethodCall { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);

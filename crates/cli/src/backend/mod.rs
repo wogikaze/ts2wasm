@@ -6,6 +6,7 @@ mod runtime_fn;
 mod runtime_link_plan;
 mod stmt_emit;
 mod string_intern;
+mod wat_writer;
 
 use crate::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::LoweredProgram;

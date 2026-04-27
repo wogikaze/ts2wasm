@@ -318,7 +318,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { .. } => Ok(ResolvedExpr::This),
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
-        Expr::InstanceOf { expr, type_expr, .. } => Ok(ResolvedExpr::Binary {
+        Expr::InstanceOf {
+            expr, type_expr, ..
+        } => Ok(ResolvedExpr::Binary {
             left: Box::new(resolve_expr(expr)?),
             op: BinaryOp::InstanceOf,
             right: Box::new(resolve_expr(type_expr)?),
@@ -495,11 +497,20 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             index,
             value,
             ..
-        } => Ok(ResolvedExpr::PropertyAssignDynamic {
-            object: Box::new(resolve_expr(object)?),
-            key: Box::new(resolve_expr(index)?),
-            value: Box::new(resolve_expr(value)?),
-        }),
+        } => {
+            if let Expr::String { value: key, .. } = index.as_ref() {
+                return Ok(ResolvedExpr::PropertyAssign {
+                    object: Box::new(resolve_expr(object)?),
+                    key: key.clone(),
+                    value: Box::new(resolve_expr(value)?),
+                });
+            }
+            Ok(ResolvedExpr::PropertyAssignDynamic {
+                object: Box::new(resolve_expr(object)?),
+                key: Box::new(resolve_expr(index)?),
+                value: Box::new(resolve_expr(value)?),
+            })
+        }
         Expr::ArrowFn { params, body, .. } => {
             let resolved_body = resolve_expr(body)?;
             Ok(ResolvedExpr::ArrowFn {
