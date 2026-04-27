@@ -1,8 +1,9 @@
 # Investigate GC high-pressure OOB under repeated local-root allocation
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-28
 **Updated**: 2026-04-28
+**Completed**: 2026-04-28
 **ID**: 222
 **Type**: bug
 **Area**: runtime/memory
@@ -28,13 +29,59 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] The minimized high-pressure local-root fixture runs without OOB under `iwasm`.
-- [ ] The regression triggers collection and verifies Node/iwasm output equivalence.
-- [ ] Existing GC differential fixtures continue to pass.
+- [x] The minimized high-pressure local-root fixture runs without OOB under `iwasm`.
+- [x] The regression triggers collection and verifies Node/iwasm output equivalence.
+- [x] Existing GC differential fixtures continue to pass.
 
 Validation:
 
 ```sh
 cargo fmt --all --check
 cargo nextest run
+```
+
+Completion evidence:
+
+```text
+implementation commit: fd35d94
+
+command: node fixtures/core-semantics/gc-high-pressure-root.ts && target/debug/ts2wasm build fixtures/core-semantics/gc-high-pressure-root.ts -o /tmp/ts2wasm-issue222-gc-high-pressure-root.wasm && iwasm /tmp/ts2wasm-issue222-gc-high-pressure-root.wasm
+result: PASS (Node and iwasm stdout: top:function)
+date: 2026-04-28
+
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-backend-wasm
+result: PASS (11 passed)
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm
+result: PASS (1 passed, 19 skipped)
+date: 2026-04-28
+
+command: scripts/manager update-issue-index --check
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-issue-index
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-agent-state
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-issue-health
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run
+result: PASS (230 passed, 4 skipped)
+date: 2026-04-28
+
+command: scripts/manager check-repo-smoke
+result: PASS
+date: 2026-04-28
 ```
