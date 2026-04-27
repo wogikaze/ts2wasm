@@ -228,7 +228,7 @@
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | string literal `"..."` | ES1 | heap object | 実装済み (UTF-8 storage; UTF-16 parity は部分) | P2 | 018 |
-| template literal `` `...` `` | ES6 | string interpolation | 部分実装（literal syntax only） | P1 | 213 |
+| template literal `` `...` `` | ES6 | string interpolation | 実装済み（basic interpolation） | - | 213 |
 | string methods (`trim`, `split`, etc.) | ES5+ | runtime builtin | 部分実装（一部 placeholder） | P1 | 214 |
 | string indexing `str[n]` | ES5 | UTF-16 code unit | 実装済み (basic) | - | 043 |
 | `String.fromCharCode` | ES1 | code unit to string | 実装済み (basic) | - | 044 |
