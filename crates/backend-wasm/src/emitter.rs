@@ -1,11 +1,13 @@
 use std::collections::{BTreeMap, HashMap};
 
 use crate::{DiagCode, Diagnostic};
-use ts2wasm_ir::lowered::{ClassPrototypeRef, FuncId, LoweredExpr, LoweredProgram, LoweredStmt};
+use ts2wasm_ir::lowered::{
+    ClassPrototypeRef, FuncId, LocalId, LoweredExpr, LoweredProgram, LoweredStmt,
+};
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::runtime_fn::RuntimeGlobal;
+use super::runtime_fn::{RuntimeFn, RuntimeGlobal};
 use super::runtime_link_plan::RuntimeLinkPlan;
 use super::wat_writer::WatModuleBuilder;
 
@@ -25,13 +27,15 @@ pub(super) struct WatEmitter<'a> {
 pub(super) struct LocalFrame {
     pub(super) user_local_count: usize,
     pub(super) backend_base: usize,
+    gc_root_base_slot: Option<usize>,
 }
 
 impl LocalFrame {
-    pub(super) fn new(user_local_count: usize) -> Self {
+    pub(super) fn new(user_local_count: usize, gc_root_base_slot: Option<usize>) -> Self {
         Self {
             user_local_count,
             backend_base: user_local_count,
+            gc_root_base_slot,
         }
     }
 
@@ -53,6 +57,18 @@ impl LocalFrame {
 
     pub(super) const fn switch_value_tmp(self) -> usize {
         self.backend_base + 2
+    }
+
+    pub(super) fn gc_root_slot(self, local_id: LocalId) -> Option<usize> {
+        self.gc_root_base_slot
+            .filter(|_| local_id.0 < self.user_local_count)
+            .map(|base| base + local_id.0)
+    }
+
+    pub(super) fn gc_root_slots(self) -> impl Iterator<Item = (usize, usize)> {
+        self.gc_root_base_slot.into_iter().flat_map(move |base| {
+            (0..self.user_local_count).map(move |local| (local, base + local))
+        })
     }
 }
 
@@ -725,6 +741,7 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn emit_functions(&self, wat: &mut String) {
+        let function_root_offsets = self.function_gc_root_offsets();
         for function in &self.program.functions {
             wat.push_str(&format!("  (func ${} ", function_symbol(function.id)));
             for _ in &function.params {
@@ -734,11 +751,16 @@ impl<'a> WatEmitter<'a> {
             for _ in &function.locals {
                 wat.push_str("    (local i32)\n");
             }
-            let frame = LocalFrame::new(function.params.len() + function.locals.len());
+            let frame = LocalFrame::new(
+                function.params.len() + function.locals.len(),
+                self.gc_root_table_enabled()
+                    .then(|| function_root_offsets[function.id.0]),
+            );
             // Backend-owned temporaries for heap construction and switch dispatch.
             for _ in 0..frame.backend_local_count() {
                 wat.push_str("    (local i32)\n");
             }
+            self.emit_gc_root_param_initializer(wat, &frame, 4);
             let mut loop_ctx = super::stmt_emit::LoopContext::default();
             self.emit_statements(wat, &function.body, 4, &mut loop_ctx, &frame);
             wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
@@ -749,10 +771,14 @@ impl<'a> WatEmitter<'a> {
     fn emit_start(&self, wat: &mut String) {
         wat.push_str("  (func $_start (export \"_start\")\n");
         let extra_locals = if self.module_runtime_enabled() { 1 } else { 0 };
-        let frame = LocalFrame::new(self.program.top_level_locals.len() + extra_locals);
+        let frame = LocalFrame::new(
+            self.program.top_level_locals.len() + extra_locals,
+            self.gc_root_table_enabled().then_some(0),
+        );
         for _ in 0..frame.total_local_count() {
             wat.push_str("    (local i32)\n");
         }
+        self.emit_gc_root_table_initializer(wat, 4);
         if self.module_runtime_enabled() {
             let cache_size = Layout::MODULE_CACHE_MAX as u32 * Layout::MODULE_CACHE_ENTRY_SIZE;
             wat.push_str(&format!(
@@ -765,10 +791,82 @@ impl<'a> WatEmitter<'a> {
         wat.push_str("  )\n");
     }
 
+    fn emit_gc_root_table_initializer(&self, wat: &mut String, indent: usize) {
+        let root_count = self.gc_root_slot_count();
+        if root_count == 0 || !self.gc_root_table_enabled() {
+            return;
+        }
+        let pad = " ".repeat(indent);
+        let root_bytes = root_count * std::mem::size_of::<u32>();
+        wat.push_str(&format!(
+            "{pad}(global.set $gc_root_count (i32.const {root_count}))\n",
+        ));
+        wat.push_str(&format!(
+            "{pad}(global.set $gc_root_base (call {} (i32.const {root_bytes})))\n",
+            RuntimeFn::AllocHeap.symbol(),
+        ));
+    }
+
+    fn emit_gc_root_param_initializer(&self, wat: &mut String, frame: &LocalFrame, indent: usize) {
+        let pad = " ".repeat(indent);
+        for (local, slot) in frame.gc_root_slots() {
+            let offset = slot * std::mem::size_of::<u32>();
+            wat.push_str(&format!(
+                "{pad}(i32.store (i32.add (global.get $gc_root_base) (i32.const {offset})) (local.get {local}))\n",
+            ));
+        }
+    }
+
+    pub(super) fn emit_gc_root_mirror(
+        &self,
+        wat: &mut String,
+        pad: &str,
+        local_id: LocalId,
+        frame: &LocalFrame,
+    ) {
+        let Some(slot) = frame.gc_root_slot(local_id) else {
+            return;
+        };
+        let offset = slot * std::mem::size_of::<u32>();
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (global.get $gc_root_base) (i32.const {offset})) (local.get {}))\n",
+            local_id.0,
+        ));
+    }
+
+    fn gc_root_slot_count(&self) -> usize {
+        self.program.top_level_locals.len()
+            + self
+                .program
+                .functions
+                .iter()
+                .map(|function| function.params.len() + function.locals.len())
+                .sum::<usize>()
+    }
+
+    fn function_gc_root_offsets(&self) -> Vec<usize> {
+        let mut next = self.program.top_level_locals.len();
+        self.program
+            .functions
+            .iter()
+            .map(|function| {
+                let base = next;
+                next += function.params.len() + function.locals.len();
+                base
+            })
+            .collect()
+    }
+
     fn module_runtime_enabled(&self) -> bool {
         self.link_plan
             .required_globals()
             .contains(&RuntimeGlobal::ModuleCache)
+    }
+
+    fn gc_root_table_enabled(&self) -> bool {
+        self.link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::AllocHeap)
     }
 }
 

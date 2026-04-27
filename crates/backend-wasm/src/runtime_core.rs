@@ -1006,7 +1006,9 @@ impl WatEmitter<'_> {
                 )
             })
             .collect::<String>();
-        let gc_roots = format!("{gc_collect_roots}{class_prototype_roots}");
+        let gc_roots = format!(
+            "\n    (call $gc_mark_registered_roots){gc_collect_roots}{class_prototype_roots}"
+        );
 
         wat.push_str(&format!(
             r#"
@@ -1110,6 +1112,23 @@ impl WatEmitter<'_> {
     ;; 219 consumes mark bits via sweep and free-list reuse.{gc_roots}
     (call $gc_sweep)
     (global.set $alloc_bytes_since_last_gc (i32.const 0)))
+
+  (func $gc_mark_registered_roots
+    (local $i i32)
+    (local $slot i32)
+    (if (i32.eqz (global.get $gc_root_base))
+      (then (return)))
+    (drop (call $gc_mark_payload_header (global.get $gc_root_base)))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (global.get $gc_root_count)))
+        (local.set $slot
+          (i32.add
+            (global.get $gc_root_base)
+            (i32.shl (local.get $i) (i32.const 2))))
+        (call $gc_mark_value (i32.load (local.get $slot)))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $scan))))
 
   (func $gc_mark_payload_header (param $payload i32) (result i32)
     (local $header i32)

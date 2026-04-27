@@ -154,6 +154,7 @@ impl WatEmitter<'_> {
             LoweredExpr::Assign { local, expr } => {
                 self.emit_expr(wat, expr, indent, frame);
                 wat.push_str(&format!("{pad}(local.tee {})\n", local_index(*local)));
+                self.emit_gc_root_mirror(wat, &pad, *local, frame);
             }
             LoweredExpr::Binary { left, op, right } => {
                 let left_ty = left.inferred_type();

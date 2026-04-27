@@ -80,8 +80,8 @@ mod tests {
     use super::emit_wat;
     use ts2wasm_frontend::DiagCode;
     use ts2wasm_ir::lowered::{
-        ClassPrototypeRef, FuncId, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt,
-        ModuleInfo,
+        ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredFunction,
+        LoweredProgram, LoweredStmt, ModuleInfo,
     };
 
     #[test]
@@ -149,6 +149,62 @@ mod tests {
         assert!(wat.contains("(local $free_body_size i32)"));
         assert!(wat.contains("(return (i32.add (local.get $free_header) (i32.const 16)))"));
         assert!(wat.contains("(i32.and (local.get $flags) (i32.const -2))"));
+    }
+
+    #[test]
+    fn top_level_locals_are_mirrored_into_gc_root_table() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Let(
+                LocalId(0),
+                LoweredExpr::ObjectNew { props: vec![] },
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("top-level local root should emit WAT");
+
+        assert!(wat.contains("(global $gc_root_base (mut i32) (i32.const 0))"));
+        assert!(wat.contains("(global $gc_root_count (mut i32) (i32.const 0))"));
+        assert!(wat.contains("(global.set $gc_root_count (i32.const 1))"));
+        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 4)))"));
+        assert!(wat.contains(
+            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 0)) (local.get 0))"
+        ));
+        assert!(wat.contains("(func $gc_mark_registered_roots"));
+        assert!(wat.contains("(call $gc_mark_value (i32.load (local.get $slot)))"));
+    }
+
+    #[test]
+    fn function_locals_are_mirrored_into_gc_root_table() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(0)),
+                args: vec![],
+            })],
+            top_level_locals: vec![],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![],
+                min_required_params: 0,
+                locals: vec![LocalId(0)],
+                body: vec![
+                    LoweredStmt::Let(LocalId(0), LoweredExpr::ObjectNew { props: vec![] }),
+                    LoweredStmt::Return(LoweredExpr::Local(LocalId(0))),
+                ],
+            }],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("function local root should emit WAT");
+
+        assert!(wat.contains("(global.set $gc_root_count (i32.const 1))"));
+        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 4)))"));
+        assert!(wat.contains(
+            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 0)) (local.get 0))"
+        ));
+        assert!(wat.contains("(call $gc_mark_registered_roots"));
     }
 
     #[test]

@@ -105,7 +105,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - typed IR dump (`ts2wasm dump --tir`) and optimizer dump (`ts2wasm dump --optimize`) are tracked by issues 204 and 205.
 - full wasm backend は未実装（現状は WAT 中心）
 - test262 full differential 運用は未完（sample/ramp が中心）
-- GC 実装は未完。`$alloc_heap` は GC header と allocation threshold hook を持ち、GC mark phase は module cache / class prototype globals / heap graph payload を走査し、sweep/free-list reuse は transient allocation fixture で通っている。stack/local roots for closure/object escape は issue 220 の追跡対象。OOM check と UTF-8 literal basic support は完了済みだが、UTF-16 parity / encode-decode helper は追跡対象。
+- GC 実装は未完。`$alloc_heap` は GC header と allocation threshold hook を持ち、GC mark phase は module cache / class prototype globals / heap graph payload / top-level local root table を走査し、sweep/free-list reuse は transient/object-root allocation fixtures で通っている。function/call-frame roots for closure escape は issue 221 の追跡対象。OOM check と UTF-8 literal basic support は完了済みだが、UTF-16 parity / encode-decode helper は追跡対象。
 - host-deny / capability manifest の base path は実装済み。`docs/06` の required test classes に沿った監査範囲の拡張は継続対象。
 
 Semantic gap tracking:

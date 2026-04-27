@@ -383,6 +383,8 @@ pub(crate) enum RuntimeResult {
 pub(crate) enum RuntimeGlobal {
     AllocBytesSinceLastGc,
     GcFreeList,
+    GcRootBase,
+    GcRootCount,
     ModuleCache,
     CurrentModuleId,
 }
@@ -392,6 +394,8 @@ impl RuntimeGlobal {
         match self {
             Self::AllocBytesSinceLastGc => "$alloc_bytes_since_last_gc",
             Self::GcFreeList => "$gc_free_list",
+            Self::GcRootBase => "$gc_root_base",
+            Self::GcRootCount => "$gc_root_count",
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
         }
@@ -401,6 +405,8 @@ impl RuntimeGlobal {
         match self {
             Self::AllocBytesSinceLastGc => 0,
             Self::GcFreeList => 0,
+            Self::GcRootBase => 0,
+            Self::GcRootCount => 0,
             Self::ModuleCache | Self::CurrentModuleId => 0,
         }
     }
@@ -424,6 +430,8 @@ const NO_RUNTIME_STRINGS: &[&str] = &[];
 const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
     RuntimeGlobal::AllocBytesSinceLastGc,
     RuntimeGlobal::GcFreeList,
+    RuntimeGlobal::GcRootBase,
+    RuntimeGlobal::GcRootCount,
 ];
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];

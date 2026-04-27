@@ -113,6 +113,7 @@ impl WatEmitter<'_> {
             LoweredStmt::Let(local_id, expr) | LoweredStmt::Assign(local_id, expr) => {
                 self.emit_expr(wat, expr, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", local_index(*local_id)));
+                self.emit_gc_root_mirror(wat, &pad, *local_id, frame);
             }
             LoweredStmt::Expr(expr) => {
                 self.emit_expr(wat, expr, indent, frame);
