@@ -175,7 +175,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | implementation-ready | P1 |  | Complete this receiver binding semantics |
 | 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
 | 215 | Define Math.random capability policy | feature | runtime/builtins | design-ready | P1 |  | Define Math.random capability policy |
-| 218 | Implement GC mark root scanning | feature | runtime/memory | implementation-ready | P1 | 217 | GC can only reclaim safely after reachable heap objects are marked from runtime roots. |
+| 219 | Implement GC sweep reuse and fixtures | feature | runtime/memory | implementation-ready | P1 | 218 | Marked/unmarked heap metadata must be converted into reusable memory and covered by runtime fixtures before the GC tr... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -188,7 +188,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 | 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
 | 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | 211 | Implement arrow function closure and lexical this semantics |
-| 219 | Implement GC sweep reuse and fixtures | feature | runtime/memory | 218 | Implement GC sweep reuse and fixtures |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -257,6 +256,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 214 | Replace string method placeholders | feature | runtime/builtins | see `issues/done/214-replace-string-method-placeholders.md` |
 | 216 | Implement abstract equality coercion | feature | runtime/semantics | see `issues/done/216-implement-abstract-equality-coercion.md` |
 | 217 | Implement GC heap header and trigger accounting | feature | runtime/memory | see file |
+| 218 | Implement GC mark root scanning | feature | runtime/memory | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract

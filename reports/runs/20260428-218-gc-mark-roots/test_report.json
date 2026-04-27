@@ -1,0 +1,49 @@
+{
+  "run_id": "20260428-218-gc-mark-roots",
+  "issue": "218",
+  "status": "pass",
+  "commit": null,
+  "commands": [
+    {
+      "command": "cargo fmt --all --check",
+      "status": "pass",
+      "notes": "format check passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-backend-wasm",
+      "status": "pass",
+      "notes": "8 passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-cli --test m8_oop_classes --test m9_modules",
+      "status": "pass",
+      "notes": "10 passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-cli --test m2_node_diff instanceof_fixture_matches_node_output_under_iwasm m5_array_object_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "notes": "2 passed, 16 skipped"
+    },
+    {
+      "command": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "notes": "issues/index.md up to date"
+    },
+    {
+      "command": "scripts/manager check-issue-health",
+      "status": "pass",
+      "notes": "issue queue healthy"
+    },
+    {
+      "command": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "notes": "repo smoke passed"
+    },
+    {
+      "command": "cargo nextest run --no-fail-fast",
+      "status": "pass",
+      "notes": "222 passed, 4 skipped"
+    }
+  ],
+  "next": "219: implement GC sweep reuse and fixtures"
+}

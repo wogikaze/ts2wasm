@@ -535,7 +535,7 @@ impl<'a> WatEmitter<'a> {
             .collect()
     }
 
-    fn class_prototypes(&self) -> BTreeMap<FuncId, Option<FuncId>> {
+    pub(super) fn class_prototypes(&self) -> BTreeMap<FuncId, Option<FuncId>> {
         let mut prototypes = BTreeMap::new();
         self.collect_class_prototypes_from_stmts(
             &self.program.top_level_statements,

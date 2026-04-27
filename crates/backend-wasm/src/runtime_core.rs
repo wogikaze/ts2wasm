@@ -1,4 +1,7 @@
-use super::emitter::WatEmitter;
+use super::{
+    emitter::{WatEmitter, class_prototype_global},
+    runtime_fn::RuntimeGlobal,
+};
 use ts2wasm_runtime_abi::{
     consts::{RuntimeConst, RuntimeString},
     layout::Layout,
@@ -953,6 +956,58 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_alloc_heap(&self, wat: &mut String) {
+        let mark_module_cache_roots = self
+            .link_plan
+            .required_globals()
+            .contains(&RuntimeGlobal::ModuleCache);
+        let gc_collect_roots = if mark_module_cache_roots {
+            "\n    (call $gc_mark_module_cache_roots)"
+        } else {
+            ""
+        };
+        let module_cache_marker = if mark_module_cache_roots {
+            format!(
+                r#"
+  (func $gc_mark_module_cache_roots
+    (local $i i32)
+    (local $entry i32)
+    (if (i32.eqz (global.get $module_cache))
+      (then (return)))
+    (drop (call $gc_mark_payload_header (global.get $module_cache)))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (i32.const {module_cache_max})))
+        (local.set $entry
+          (i32.add
+            (global.get $module_cache)
+            (i32.mul (local.get $i) (i32.const {module_cache_entry_size}))))
+        (if (i32.ne (i32.load (local.get $entry)) (i32.const 0))
+          (then
+            (call $gc_mark_value
+              (i32.load (i32.add (local.get $entry) (i32.const {module_cache_value_offset}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $scan))))
+"#,
+                module_cache_max = Layout::MODULE_CACHE_MAX,
+                module_cache_entry_size = Layout::MODULE_CACHE_ENTRY_SIZE,
+                module_cache_value_offset = Layout::OBJECT_VALUE_OFFSET,
+            )
+        } else {
+            String::new()
+        };
+        let class_prototype_roots = self
+            .class_prototypes()
+            .keys()
+            .map(|constructor| {
+                format!(
+                    "\n    (call $gc_mark_value (i32.or (global.get ${}) (i32.const {})))",
+                    class_prototype_global(*constructor),
+                    ValueTag::OBJECT,
+                )
+            })
+            .collect::<String>();
+        let gc_roots = format!("{gc_collect_roots}{class_prototype_roots}");
+
         wat.push_str(&format!(
             r#"
   (func $alloc_heap (param $size i32) (result i32)
@@ -1010,11 +1065,92 @@ impl WatEmitter<'_> {
     (local.get $payload_base))
 
   (func $gc_collect
-    ;; 217 establishes the trigger hook; mark/sweep is implemented in 218/219.
+    ;; 218 marks reachable heap values; sweep/free-list reuse is implemented in 219.{gc_roots}
     (global.set $alloc_bytes_since_last_gc (i32.const 0)))
+
+  (func $gc_mark_payload_header (param $payload i32) (result i32)
+    (local $header i32)
+    (local $flags i32)
+    (if (i32.lt_u (local.get $payload) (i32.const {heap_start}))
+      (then (return (i32.const 0))))
+    (local.set $header
+      (i32.sub (local.get $payload) (i32.const {gc_header_size})))
+    (local.set $flags
+      (i32.load (i32.add (local.get $header) (i32.const {gc_flags_offset}))))
+    (if
+      (i32.ne
+        (i32.and (local.get $flags) (i32.const {gc_mark_flag}))
+        (i32.const 0))
+      (then (return (i32.const 0))))
+    (i32.store
+      (i32.add (local.get $header) (i32.const {gc_flags_offset}))
+      (i32.or (local.get $flags) (i32.const {gc_mark_flag})))
+    (i32.const 1))
+
+  (func $gc_mark_value (param $value i32)
+    (local $tag i32)
+    (local $payload i32)
+    (local.set $tag (i32.and (local.get $value) (i32.const {tag_mask})))
+    (if
+      (i32.and
+        (i32.and
+          (i32.ne (local.get $tag) (i32.const {string_tag}))
+          (i32.ne (local.get $tag) (i32.const {array_tag})))
+        (i32.ne (local.get $tag) (i32.const {object_tag})))
+      (then (return)))
+    (local.set $payload (i32.and (local.get $value) (i32.const {heap_mask})))
+    (if (i32.eqz (call $gc_mark_payload_header (local.get $payload)))
+      (then (return)))
+    (if (i32.eq (local.get $tag) (i32.const {array_tag}))
+      (then (call $gc_mark_array_payload (local.get $payload))))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then (call $gc_mark_object_payload (local.get $payload)))))
+
+  (func $gc_mark_array_payload (param $payload i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem_ptr i32)
+    (local.set $len (i32.load (local.get $payload)))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem_ptr
+          (i32.add
+            (local.get $payload)
+            (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {array_elem_shift})))))
+        (call $gc_mark_value (i32.load (local.get $elem_ptr)))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $scan))))
+
+  (func $gc_mark_object_payload (param $payload i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_ptr i32)
+    (local $proto i32)
+    (local.set $proto
+      (i32.load (i32.add (local.get $payload) (i32.const {object_prototype_offset}))))
+    (if (i32.ne (local.get $proto) (i32.const 0))
+      (then
+        (call $gc_mark_value
+          (i32.or (local.get $proto) (i32.const {object_tag})))))
+    (local.set $count (i32.load (local.get $payload)))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $entry_ptr
+          (i32.add
+            (local.get $payload)
+            (i32.add (i32.const {object_entries_offset}) (i32.shl (local.get $i) (i32.const {object_entry_shift})))))
+        (call $gc_mark_value (i32.load (local.get $entry_ptr)))
+        (call $gc_mark_value
+          (i32.load (i32.add (local.get $entry_ptr) (i32.const {object_value_offset}))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $scan))))
+{module_cache_marker}
 "#,
             align_mask = Layout::ALIGN_MASK,
             heap_align = ValueTag::HEAP_MASK,
+            heap_start = Layout::HEAP_START,
             gc_header_size = Layout::GC_HEADER_SIZE,
             gc_threshold = Layout::GC_THRESHOLD,
             gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
@@ -1022,7 +1158,21 @@ impl WatEmitter<'_> {
             gc_sweep_next_offset = Layout::GC_SWEEP_NEXT_OFFSET,
             gc_reserved_offset = Layout::GC_RESERVED_OFFSET,
             gc_kind_unknown = Layout::GC_KIND_UNKNOWN,
+            gc_mark_flag = Layout::GC_MARK_FLAG,
             page_size = Layout::WASM_PAGE_SIZE,
+            tag_mask = ValueTag::TAG_MASK,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_tag = ValueTag::STRING,
+            array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            array_elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            object_prototype_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
+            object_entries_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            object_entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            object_value_offset = Layout::OBJECT_VALUE_OFFSET,
+            gc_roots = gc_roots,
+            module_cache_marker = module_cache_marker,
         ));
     }
 

@@ -27,7 +27,7 @@ Out of scope:
 Acceptance Criteria:
 
 - [x] 217 is complete.
-- [ ] 218 is complete.
+- [x] 218 is complete.
 - [ ] 219 is complete.
 - [ ] Node differential test passes for GC-relevant fixtures.
 
