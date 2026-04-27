@@ -70,6 +70,11 @@ fn build_smoke_switch_case() {
 }
 
 #[test]
+fn build_smoke_switch_fallthrough() {
+    assert_fixture_build_smoke("control-flow-and-exceptions/switch-fallthrough.ts");
+}
+
+#[test]
 fn build_smoke_do_while() {
     assert_fixture_build_smoke("control-flow-and-exceptions/do-while.ts");
 }

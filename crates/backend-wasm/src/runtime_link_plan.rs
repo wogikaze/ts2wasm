@@ -173,7 +173,11 @@ impl RuntimeLinkPlan {
                 }
                 LoweredStmt::Switch { expr, cases } => {
                     self.collect_required_runtime_expr(expr);
-                    for (_, case_body) in cases {
+                    for (cond, case_body) in cases {
+                        if let Some(cond_expr) = cond {
+                            self.collect_required_runtime_expr(cond_expr);
+                            self.add_required_runtime(RuntimeFn::StrictEqual);
+                        }
                         self.collect_required_runtime_stmts(case_body);
                     }
                 }

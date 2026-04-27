@@ -26,6 +26,20 @@ pub(crate) enum LoopContext {
         exit_label: String,
         continue_label: String,
     },
+    Switch {
+        exit_label: String,
+        continue_label: Option<String>,
+    },
+}
+
+impl LoopContext {
+    fn continue_label(&self) -> Option<&str> {
+        match self {
+            Self::Root => None,
+            Self::Loop { continue_label, .. } => Some(continue_label),
+            Self::Switch { continue_label, .. } => continue_label.as_deref(),
+        }
+    }
 }
 
 impl WatEmitter<'_> {
@@ -357,6 +371,9 @@ impl WatEmitter<'_> {
                 LoopContext::Loop { exit_label, .. } => {
                     wat.push_str(&format!("{pad}(br ${})\n", exit_label));
                 }
+                LoopContext::Switch { exit_label, .. } => {
+                    wat.push_str(&format!("{pad}(br ${})\n", exit_label));
+                }
                 LoopContext::Root => {
                     wat.push_str(&format!("{pad};; ERROR: break outside loop\n"));
                 }
@@ -364,6 +381,18 @@ impl WatEmitter<'_> {
             LoweredStmt::Continue => match loop_ctx {
                 LoopContext::Loop { continue_label, .. } => {
                     wat.push_str(&format!("{pad}(br ${})\n", continue_label));
+                }
+                LoopContext::Switch {
+                    continue_label: Some(continue_label),
+                    ..
+                } => {
+                    wat.push_str(&format!("{pad}(br ${})\n", continue_label));
+                }
+                LoopContext::Switch {
+                    continue_label: None,
+                    ..
+                } => {
+                    wat.push_str(&format!("{pad};; ERROR: continue outside loop\n"));
                 }
                 LoopContext::Root => {
                     wat.push_str(&format!("{pad};; ERROR: continue outside loop\n"));
@@ -404,29 +433,68 @@ impl WatEmitter<'_> {
                 }
             }
             LoweredStmt::Switch { expr, cases } => {
-                // Switch: for now, convert to if-else chain
                 let switch_exit = gen_label("switch_exit");
                 wat.push_str(&format!("{pad}(block ${}\n", switch_exit));
 
-                for (cond, body) in cases {
+                if cases.is_empty() {
+                    self.emit_expr(wat, expr, indent + 2, frame);
+                    if self.expr_produces_value(expr) {
+                        wat.push_str(&format!("{pad}  (drop)\n"));
+                    }
+                    wat.push_str(&format!("{pad})\n"));
+                    return;
+                }
+
+                let case_labels = (0..cases.len())
+                    .map(|_| gen_label("switch_case"))
+                    .collect::<Vec<_>>();
+
+                for label in case_labels.iter().rev() {
+                    wat.push_str(&format!("{pad}  (block ${label}\n"));
+                }
+
+                self.emit_expr(wat, expr, indent + 4, frame);
+                wat.push_str(&format!(
+                    "{pad}    (local.set {})\n",
+                    frame.switch_value_tmp()
+                ));
+
+                let default_label = cases
+                    .iter()
+                    .position(|(cond, _)| cond.is_none())
+                    .map(|index| case_labels[index].as_str());
+
+                for ((cond, _), label) in cases.iter().zip(case_labels.iter()) {
                     if let Some(c) = cond {
-                        // Case with condition
-                        self.emit_expr(wat, expr, indent + 2, frame);
-                        self.emit_expr(wat, c, indent + 2, frame);
-                        wat.push_str(&format!("{pad}  (i32.eq)\n"));
-                        wat.push_str(&format!("{pad}  (if\n"));
-                        wat.push_str(&format!("{pad}    (then\n"));
-                        self.emit_statements(wat, body, indent + 6, loop_ctx, frame);
-                        wat.push_str(&format!("{pad}      (br ${})\n", switch_exit));
-                        wat.push_str(&format!("{pad}    )\n"));
-                        wat.push_str(&format!("{pad}  )\n"));
-                    } else {
-                        // Default case
-                        self.emit_statements(wat, body, indent + 2, loop_ctx, frame);
-                        wat.push_str(&format!("{pad}  (br ${})\n", switch_exit));
+                        wat.push_str(&format!(
+                            "{pad}    (local.get {})\n",
+                            frame.switch_value_tmp()
+                        ));
+                        self.emit_expr(wat, c, indent + 4, frame);
+                        wat.push_str(&format!(
+                            "{pad}    (call {})\n",
+                            RuntimeFn::StrictEqual.symbol()
+                        ));
+                        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::TRUE));
+                        wat.push_str(&format!("{pad}    (i32.eq)\n"));
+                        wat.push_str(&format!("{pad}    (br_if ${label})\n"));
                     }
                 }
 
+                if let Some(label) = default_label {
+                    wat.push_str(&format!("{pad}    (br ${label})\n"));
+                } else {
+                    wat.push_str(&format!("{pad}    (br ${})\n", switch_exit));
+                }
+
+                let mut switch_ctx = LoopContext::Switch {
+                    exit_label: switch_exit.clone(),
+                    continue_label: loop_ctx.continue_label().map(str::to_owned),
+                };
+                for ((_, body), label) in cases.iter().zip(case_labels.iter()) {
+                    wat.push_str(&format!("{pad}  ) ;; ${label}\n"));
+                    self.emit_statements(wat, body, indent + 2, &mut switch_ctx, frame);
+                }
                 wat.push_str(&format!("{pad})\n"));
             }
             LoweredStmt::Export { name, expr } => {
