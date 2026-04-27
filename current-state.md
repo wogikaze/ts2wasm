@@ -88,6 +88,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - WAT/WASM emitter と runtime subset（`crates/backend-wasm`）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
 - IR crate（`crates/ir`）: resolved/lowered IR
+- Semantic HIR initial slice（`crates/ir::semantic`）: `ResolvedStmt` lowers to JS semantic operations such as `JsAdd`, `ToBoolean` branch conditions, property/index access, builtin calls, and method calls; backend still consumes `LoweredProgram`.
 - CLI dump command: `ts2wasm dump` can emit tokens, AST, resolved AST, lowered IR, WAT, and AST pseudo-source via `--ast --unparse`
 - runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
 - reference coverage パイプライン（`scripts/manager reference-coverage`, `scripts/manager update-coverage-matrix`, `scripts/manager update-coverage-matrix --check`）
@@ -101,6 +102,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - **CLI ownership**: `crates/cli` is now a thin binary/re-export wrapper for compiler APIs. Lexer/parser implementation has moved to `crates/frontend`; backend runtime emission is split into focused modules and no repo-owned source file currently exceeds the 2000-line architecture warning threshold.
 - TypeScript compiler API の明示 type-check oracle と optimization hint 抽出は実装済み。production build pipeline は tsc を必須にしない。
 - 汎用 JavaScript semantic IR は未実装
+- Generic JavaScript semantic IR is partially implemented as an initial HIR lowering slice. Validation passes and backend consumption remain tracked by issue 020c and follow-up implementation work.
 - typed IR dump (`ts2wasm dump --tir`) and optimizer dump (`ts2wasm dump --optimize`) are tracked by issues 204 and 205.
 - full wasm backend は未実装（現状は WAT 中心）
 - test262 full differential 運用は未完（sample/ramp が中心）

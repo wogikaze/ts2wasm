@@ -3,6 +3,7 @@ pub mod builtin_resolved;
 pub mod builtin_resolver;
 pub mod lowered;
 pub mod name_resolver;
+pub mod semantic;
 
 #[cfg(test)]
 mod name_resolver_tests;
@@ -15,3 +16,7 @@ pub use lowered::{
     FuncId, LocalId, LoweredExpr, LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
 };
 pub use name_resolver::resolve_names;
+pub use semantic::{
+    HirExpr, HirFunction, HirFunctionId, HirLocalId, HirProgram, HirRelationalOp, HirStmt,
+    lower_to_hir,
+};

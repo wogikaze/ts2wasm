@@ -1,8 +1,9 @@
 # Implement IR lowering from TypeScript AST
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-28
+**Completed**: 2026-04-28
 **ID**: 020b
 **Type**: feature
 **Area**: ir/semantics
@@ -25,9 +26,9 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] TypeScript AST lowers to semantic IR correctly.
-- [ ] Fixtures demonstrate IR-level semantics.
-- [ ] Lowering matches IR design from 020a.
+- [x] TypeScript AST lowers to semantic IR correctly.
+- [x] Fixtures demonstrate IR-level semantics.
+- [x] Lowering matches IR design from 020a.
 
 Validation:
 
@@ -36,3 +37,23 @@ cargo fmt --all --check
 cargo nextest run
 cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/ir-test.ts -o /tmp/ir-test.wasm
 ```
+
+Completion evidence:
+
+```text
+command: cargo nextest run -p ts2wasm-ir
+result: PASS (9 passed)
+date: 2026-04-28
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/ir-test.ts -o /tmp/ir-test.wasm
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run --no-fail-fast
+result: PASS (207 passed, 4 skipped)
+date: 2026-04-28
+```
+
+Remaining risks:
+
+- HIR validation passes and backend consumption are tracked by issue 020c and follow-up implementation work.
