@@ -15,6 +15,7 @@ fn main() -> ExitCode {
 fn run() -> Result<(), String> {
     let args = env::args().skip(1).collect::<Vec<_>>();
     match args.as_slice() {
+        [command, rest @ ..] if command == "dump" => run_dump(rest),
         [command, input, flag, output] if command == "build" && flag == "-o" => {
             ts2wasm_cli::build_file_with_options(
                 &PathBuf::from(input),
@@ -63,8 +64,55 @@ fn run() -> Result<(), String> {
             .map_err(|e| e.to_string())
         }
         _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm dump [--tokens|--ast|--resolved|--lowered|--wat] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
                 .to_owned(),
         ),
     }
+}
+
+fn run_dump(args: &[String]) -> Result<(), String> {
+    let mut options = ts2wasm_cli::DumpOptions::default();
+    let mut input = None;
+
+    for arg in args {
+        match arg.as_str() {
+            "--tokens" => options.set_phase(ts2wasm_cli::DumpPhase::Tokens)?,
+            "--ast" => options.set_phase(ts2wasm_cli::DumpPhase::Ast)?,
+            "--resolved" => options.set_phase(ts2wasm_cli::DumpPhase::Resolved)?,
+            "--lowered" | "--ir" => options.set_phase(ts2wasm_cli::DumpPhase::Lowered)?,
+            "--wat" => options.set_phase(ts2wasm_cli::DumpPhase::Wat)?,
+            "--unparse" => options.unparse = true,
+            "--tir" => {
+                return Err(
+                    "dump --tir is not available yet; typed IR dump is tracked in issue 204"
+                        .to_owned(),
+                );
+            }
+            "--optimize" => {
+                return Err(
+                    "dump --optimize is not available yet; optimizer dump is tracked in issue 205"
+                        .to_owned(),
+                );
+            }
+            "-O0" | "-O1" | "-O2" | "-O3" => {
+                return Err(format!(
+                    "{arg} is only supported after optimizer dump is implemented"
+                ));
+            }
+            _ if arg.starts_with('-') => return Err(format!("unknown dump option: {arg}")),
+            _ => {
+                if input.replace(PathBuf::from(arg)).is_some() {
+                    return Err("dump accepts exactly one input file".to_owned());
+                }
+            }
+        }
+    }
+
+    let input = input.ok_or_else(|| {
+        "usage: ts2wasm dump [--tokens|--ast|--resolved|--lowered|--wat] [--unparse] <input.ts>"
+            .to_owned()
+    })?;
+    let output = ts2wasm_cli::dump_file_with_options(&input, options).map_err(|e| e.to_string())?;
+    print!("{output}");
+    Ok(())
 }

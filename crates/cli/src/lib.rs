@@ -1,4 +1,5 @@
 mod backend;
+mod dump;
 
 use std::collections::HashMap;
 use std::fs;
@@ -13,6 +14,8 @@ use ts2wasm_ir::lowered;
 use ts2wasm_ir::name_resolver;
 
 const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
+
+pub use dump::{DumpOptions, DumpPhase, dump_file_with_options};
 
 pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
     build_file_with_options(input, output, None)
