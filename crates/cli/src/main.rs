@@ -67,7 +67,7 @@ fn run() -> Result<(), String> {
             .map_err(|e| e.to_string())
         }
         _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm dump [--tokens|--ast|--resolved|--lowered|--wat] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm dump [--tokens|--ast|--resolved|--tir|--lowered|--wat] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
                 .to_owned(),
         ),
     }
@@ -82,15 +82,10 @@ fn run_dump(args: &[String]) -> Result<(), String> {
             "--tokens" => options.set_phase(ts2wasm_cli::DumpPhase::Tokens)?,
             "--ast" => options.set_phase(ts2wasm_cli::DumpPhase::Ast)?,
             "--resolved" => options.set_phase(ts2wasm_cli::DumpPhase::Resolved)?,
+            "--tir" => options.set_phase(ts2wasm_cli::DumpPhase::TypedIr)?,
             "--lowered" | "--ir" => options.set_phase(ts2wasm_cli::DumpPhase::Lowered)?,
             "--wat" => options.set_phase(ts2wasm_cli::DumpPhase::Wat)?,
             "--unparse" => options.unparse = true,
-            "--tir" => {
-                return Err(
-                    "dump --tir is not available yet; typed IR dump is tracked in issue 204"
-                        .to_owned(),
-                );
-            }
             "--optimize" => {
                 return Err(
                     "dump --optimize is not available yet; optimizer dump is tracked in issue 205"
@@ -112,7 +107,7 @@ fn run_dump(args: &[String]) -> Result<(), String> {
     }
 
     let input = input.ok_or_else(|| {
-        "usage: ts2wasm dump [--tokens|--ast|--resolved|--lowered|--wat] [--unparse] <input.ts>"
+        "usage: ts2wasm dump [--tokens|--ast|--resolved|--tir|--lowered|--wat] [--unparse] <input.ts>"
             .to_owned()
     })?;
     let output = ts2wasm_cli::dump_file_with_options(&input, options).map_err(|e| e.to_string())?;

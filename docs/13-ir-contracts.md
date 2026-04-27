@@ -24,6 +24,8 @@ BuiltinResolved AST (現在の semantic 前段)
 HIR (High-level IR) — 初期 slice 実装済み
   名前解決済み。JS semantic operation を保持する。
   `crates/ir::semantic` が対応済み subset の lowering と validation を提供する。
+  `ts2wasm dump --tir` はこの phase を structural debug output として表示する。
+  `ts2wasm dump --tir --unparse` は local/function ID を保持した pseudo source を表示する。
 
 MIR (Mid-level IR / Runtime IR) — 未実装（予定）
   runtime ABI 呼び出しに寄せた表現。
@@ -126,7 +128,7 @@ HIR は次の命令群を持つ。命令名は設計上の契約であり、実�
 * TypeScript checker 由来の型情報は `TypeHint` metadata として保持する。hint は最適化候補を示すだけで、semantic validation の代替にはしない。
 * HIR validation は unresolved name、invalid local/function ID、arity mismatch、top-level return、receiver loss を検出する。backend は validate 済み HIR/MIR だけを受け取る。
 
-## HIR — High-level IR（予定）
+## HIR — High-level IR（初期 slice 実装済み）
 
 ### 責務
 
@@ -143,7 +145,13 @@ HIR は次の命令群を持つ。命令名は設計上の契約であり、実�
   runtime lowering で `RuntimeFn::Add` に落とす（静的分岐しない）。
 * すべての node は `Span` を持つ。
 
-### validate_hir の仕様（予定）
+### dump --tir の仕様
+
+`dump --tir` は `BuiltinResolved AST` から `HirProgram` を構築し、`validate_hir` に成功した結果だけを出力する。これは backend 用の runtime lowering である `LoweredProgram` の別名ではない。
+
+構造出力は Rust の debug representation を使い、`HirProgram` / `HirStmt` / `HirExpr` をそのまま表示する。`--unparse` は source の識別子名ではなく HIR の `local$N` / `fn$N` ID を表示し、`JsAdd`、`ToBoolean`、`CallBuiltin` 相当の semantic operation を残した pseudo source にする。
+
+### validate_hir の仕様
 
 ```rust
 pub fn validate_hir(program: &HirProgram) -> Result<(), Vec<Diagnostic>>

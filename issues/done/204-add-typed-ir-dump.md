@@ -9,6 +9,7 @@ depends_on: [020]
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,11 +28,11 @@ Add `ts2wasm dump --tir` once the typed semantic IR exists. The command should e
 
 In scope:
 
-- [ ] Define the concrete typed IR phase to expose as `--tir`.
-- [ ] Add `DumpPhase::TypedIr` or equivalent CLI plumbing.
-- [ ] Print the typed IR in a readable structural format.
-- [ ] Add `--tir --unparse` pseudo-source output.
-- [ ] Add CLI regression tests for `--tir` and `--tir --unparse`.
+- [x] Define the concrete typed IR phase to expose as `--tir`.
+- [x] Add `DumpPhase::TypedIr` or equivalent CLI plumbing.
+- [x] Print the typed IR in a readable structural format.
+- [x] Add `--tir --unparse` pseudo-source output.
+- [x] Add CLI regression tests for `--tir` and `--tir --unparse`.
 
 Out of scope:
 
@@ -54,10 +55,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `ts2wasm dump --tir fixtures/.../example.ts` succeeds for a supported fixture.
-- [ ] `ts2wasm dump --tir --unparse fixtures/.../example.ts` emits readable pseudo source.
-- [ ] The output is not an alias for `LoweredProgram`.
-- [ ] Regression tests cover both structural and unparse modes.
+- [x] `ts2wasm dump --tir fixtures/.../example.ts` succeeds for a supported fixture.
+- [x] `ts2wasm dump --tir --unparse fixtures/.../example.ts` emits readable pseudo source.
+- [x] The output is not an alias for `LoweredProgram`.
+- [x] Regression tests cover both structural and unparse modes.
 
 ## Validation
 
@@ -82,15 +83,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/13-ir-contracts.md`
+- [x] updated: `docs/13-ir-contracts.md`
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -102,14 +103,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `5abe97b` issue-204: add typed IR dump
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: PASS (5 passed)
+date: 2026-04-28
+
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-agent-state
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-issue-health
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-repo-smoke
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run
+result: PASS (218 passed, 4 skipped)
+date: 2026-04-28
 ```
 
 Remaining risks:
