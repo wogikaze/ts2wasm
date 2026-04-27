@@ -1,0 +1,20 @@
+{
+  "run_id": "20260428-064240",
+  "agent_id": "agent-203-reconcile-20260427T212735Z",
+  "branch": "agent/203-reconcile-20260427T212735Z",
+  "issue": "203",
+  "status": "DONE",
+  "commit": "174bea9",
+  "merge_request": true,
+  "summary": "Reconciled partial feature semantics by creating issues 207-216, linking placeholder/deferred done issue notes to open follow-ups, updating docs/current-state, adding a review checklist guard, closing issue 203, and validating issue/index/smoke gates.",
+  "validation": [
+    "rg -n \"placeholder|deferred to follow-up|new issue needed\" issues/done",
+    "scripts/manager update-issue-index",
+    "scripts/manager update-issue-index --check",
+    "scripts/manager check-issue-health",
+    "scripts/manager fmt",
+    "scripts/manager check-repo-smoke",
+    "scripts/manager check-agent-state"
+  ],
+  "defer_reason": "DISCORD_WEBHOOK_URL is not configured in the local environment."
+}

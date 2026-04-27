@@ -128,7 +128,7 @@ This issue is docs/issues cleanup only. No compiler/runtime implementation files
 
 Commits:
 
-- pending until validation commit
+- `174bea9` issue-203: reconcile partial semantic tracking
 
 Validation result:
 
