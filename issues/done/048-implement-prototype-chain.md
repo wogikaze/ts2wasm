@@ -100,7 +100,7 @@ This is a prerequisite for many features (instanceof, extends, etc.).
 
 Commits:
 
-- `<pending>` issue-048: implement prototype chain runtime slice
+- `b2723fc` issue-048: implement prototype chain runtime slice
 
 Validation result:
 
@@ -115,6 +115,10 @@ date: 2026-04-28
 
 command: cargo nextest run -E 'test(prototype_chain_fixture_matches_node_output_under_iwasm)'
 result: pass; 1 passed, 198 skipped
+date: 2026-04-28
+
+command: cargo nextest run -E 'test(/prototype|object|getPrototypeOf|setPrototypeOf/)'
+result: pass; 5 passed, 194 skipped
 date: 2026-04-28
 
 command: cargo nextest run prototype_chain_fixture_matches_node_output_under_iwasm
