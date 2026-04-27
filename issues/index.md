@@ -171,7 +171,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
 | 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | implementation-ready | P1 | 211 | Implement arrow function closure and lexical this semantics |
-| 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
 | 221 | Implement GC call-frame roots for closure escape | feature | runtime/memory | implementation-ready | P1 | 220 | Top-level locals are mirrored into GC roots, but function/call-frame locals and closure captures are still not regist... |
 <!-- generated:ready:end -->
 
@@ -251,6 +250,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 208 | Implement switch fall-through semantics | feature | frontend/semantics | see `issues/done/208-implement-switch-fall-through-semantics.md` |
 | 209 | Implement labeled break and continue | feature | frontend/semantics | see `issues/done/209-implement-labeled-break-continue.md` |
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | see `issues/done/211-complete-this-receiver-binding-semantics.md` |
+| 212 | Implement rest parameter argument collection | feature | frontend/semantics | see `issues/done/212-implement-rest-parameter-argument-collection.md` |
 | 213 | Implement template literal interpolation | feature | frontend/semantics | see `issues/done/213-implement-template-literal-interpolation.md` |
 | 214 | Replace string method placeholders | feature | runtime/builtins | see `issues/done/214-replace-string-method-placeholders.md` |
 | 215 | Define Math.random capability policy | feature | runtime/builtins | see `issues/done/215-define-math-random-capability-policy.md` |

@@ -45,6 +45,13 @@ impl RuntimeLinkPlan {
         for function in &program.functions {
             plan.collect_required_runtime_stmts(&function.body);
         }
+        if program
+            .functions
+            .iter()
+            .any(|function| function.rest_param_index.is_some())
+        {
+            plan.add_required_runtime(RuntimeFn::AllocHeap);
+        }
         // Module cache initialization requires AllocHeap.
         if !program.modules.is_empty() {
             plan.add_required_runtime(RuntimeFn::AllocHeap);

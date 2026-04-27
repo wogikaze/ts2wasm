@@ -124,6 +124,7 @@ mod tests {
                 id: FuncId(0),
                 params: vec![],
                 min_required_params: 0,
+                rest_param_index: None,
                 locals: vec![],
                 body: vec![],
             }],
@@ -239,6 +240,7 @@ mod tests {
                 id: FuncId(0),
                 params: vec![],
                 min_required_params: 0,
+                rest_param_index: None,
                 locals: vec![LocalId(0)],
                 body: vec![
                     LoweredStmt::Let(LocalId(0), LoweredExpr::ObjectNew { props: vec![] }),
@@ -335,6 +337,7 @@ mod tests {
                 id: FuncId(0),
                 params: vec![],
                 min_required_params: 0,
+                rest_param_index: None,
                 locals: vec![],
                 body: vec![],
             }],
