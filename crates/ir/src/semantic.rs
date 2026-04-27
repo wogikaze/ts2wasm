@@ -436,7 +436,7 @@ impl<'a> HirLowerer<'a> {
                 object: Box::new(self.lower_expr(object)?),
                 index: Box::new(self.lower_expr(index)?),
             }),
-            ResolvedExpr::Call { callee, args } => match callee.as_ref() {
+            ResolvedExpr::Call { callee, args, .. } => match callee.as_ref() {
                 ResolvedExpr::Ident(name) => {
                     let function =
                         self.function_ids
@@ -457,6 +457,7 @@ impl<'a> HirLowerer<'a> {
                 object,
                 method,
                 args,
+                ..
             } => Ok(HirExpr::CallMethod {
                 receiver: Box::new(self.lower_expr(object)?),
                 method: method.clone(),
