@@ -1,0 +1,91 @@
+{
+  "run_id": "agent-026-backend-20260427T212735Z",
+  "task_id": "issue-026",
+  "git": {
+    "sha": "b3d730c",
+    "exit_code": 1,
+    "changed_files": [
+      "issues/open/026-migrate-backend-module-to-backend-wasm-crate.md",
+      "reports/agents/agent-026-backend-20260427T212735Z/report.md",
+      "reports/agents/agent-026-backend-20260427T212735Z/webhook-deferred.json",
+      "reports/runs/agent-026-backend-20260427T212735Z/cycle_report.md",
+      "reports/runs/agent-026-backend-20260427T212735Z/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "cargo check",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 5715
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 45
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 36
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "fail",
+      "exit_code": 1,
+      "elapsed_ms": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "fail",
+      "exit_code": 100,
+      "elapsed_ms": 8182
+    },
+    {
+      "cmd": "cargo nextest run --no-fail-fast",
+      "status": "fail",
+      "exit_code": 100,
+      "elapsed_ms": 1440
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "fail",
+      "exit_code": 1,
+      "elapsed_ms": 246
+    }
+  ],
+  "fixtures": {
+    "passed": 185,
+    "failed": 3,
+    "skipped": 4,
+    "newly_passed": [],
+    "newly_failed": [
+      "official_corpora_smoke_gate_finds_reference_shards",
+      "fixtures/arrays-objects/dynamic-property.ts",
+      "fixtures/core-semantics/prototype.ts"
+    ]
+  },
+  "regressions": [
+    "check-issue-health stale path references to removed crates/cli/src/backend are outside this worker scope",
+    "cargo nextest run --no-fail-fast failed 3 tests; issue 026 not closed"
+  ],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "BLOCKED",
+    "branch": "agent/026-backend-migration-20260427T212735Z",
+    "nextest_run_id": "7c0914c6-ae15-4c48-81d0-fd7d2161a119",
+    "reason": "validation-gates-red"
+  }
+}

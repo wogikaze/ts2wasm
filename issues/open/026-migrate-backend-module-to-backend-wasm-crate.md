@@ -133,6 +133,51 @@ Import replacement pattern:
 
 Fill only when moving to `done/`.
 
+## Verification attempt: 2026-04-28
+
+Outcome: BLOCKED, issue remains open.
+
+Migration structure was rechecked:
+
+- `crates/backend-wasm/src/` contains the migrated backend modules.
+- `crates/cli/src/backend/` is absent.
+- `crates/cli/Cargo.toml` depends on `ts2wasm-backend-wasm`.
+- `crates/cli/src/lib.rs` imports `ts2wasm_backend_wasm as backend` and no longer declares `mod backend`.
+
+Validation evidence:
+
+```text
+cargo check
+result: pass
+
+cargo fmt --all --check
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+
+scripts/manager update-issue-index --check
+result: pass
+
+scripts/manager check-issue-health
+result: fail
+reason: stale issue path references to removed crates/cli/src/backend in issue 206 and done issues 029-044/053; those files are outside this worker assignment scope.
+
+cargo nextest run --no-fail-fast
+result: fail
+summary: 185 passed, 3 failed, 4 skipped out of 188 tests
+failures:
+- ts2wasm-cli::official_corpora official_corpora_smoke_gate_finds_reference_shards: missing reference/test262/test/language
+- ts2wasm-cli::m2_node_diff m5_array_object_fixtures_match_node_output_under_iwasm: fixtures/arrays-objects/dynamic-property.ts stdout mismatch
+- ts2wasm-cli::m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm: fixtures/core-semantics/prototype.ts build failed with UnsupportedSyntax method `value` requires an identifier receiver
+
+scripts/manager check-repo-smoke
+result: fail
+reason: check_issue_health stale path failures listed above
+```
+
+Close decision: do not move to `done/` until required gates pass or the parent assigns a scope that permits stale issue-path cleanup and semantic/reference failure handling.
+
 Commits:
 
 - `...`

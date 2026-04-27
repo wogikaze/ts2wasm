@@ -1,0 +1,25 @@
+{
+  "status": "DEFERRED",
+  "reason": "Webhook delivery was not attempted with a live URL from this worker; local payload saved for parent/orchestrator handling.",
+  "run_id": "agent-026-backend-20260427T212735Z",
+  "agent_id": "agent-026-backend-20260427T212735Z",
+  "issue": "026",
+  "branch": "agent/026-backend-migration-20260427T212735Z",
+  "outcome": "BLOCKED",
+  "summary": "Issue 026 structural migration verified, but required gates are red: check-issue-health fails on stale issue path references outside this worker scope, and nextest fails 3 tests.",
+  "validation": {
+    "passed": [
+      "cargo check",
+      "cargo fmt --all --check",
+      "scripts/manager check-agent-state",
+      "scripts/manager update-issue-index --check"
+    ],
+    "failed": [
+      "scripts/manager check-issue-health",
+      "cargo nextest run",
+      "cargo nextest run --no-fail-fast",
+      "scripts/manager check-repo-smoke"
+    ]
+  },
+  "parent_event": "PARENT_EVENT: BLOCKED issue=026 branch=agent/026-backend-migration-20260427T212735Z commit=<pending> reason=validation-gates-red"
+}
