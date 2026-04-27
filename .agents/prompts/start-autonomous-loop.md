@@ -24,8 +24,10 @@ Use Anti-Stall Policy:
 - Retry transient failures once.
 - Narrow failing gates before changing code.
 - Preserve useful progress.
-- Keep implementing Rust/compiler changes that make more fixtures pass.
+- Keep implementing Rust/compiler changes that make more `reference/` tests pass.
+- Use local `fixtures/` as regression locks for behavior learned from `reference/`, not as the final compatibility target.
 - Commit every internally consistent forward step after narrow validation passes.
+- Do not finish a work cycle with uncommitted useful changes unless a blocker is recorded.
 - Send or defer Discord reporting for each cycle and each local commit batch.
 - If an issue cannot be completed, leave it open with evidence and continue to another Ready issue.
 - Treat DONE, PROGRESS, and BLOCKED as valid cycle outcomes.
@@ -33,7 +35,7 @@ Use Anti-Stall Policy:
 - External reporting failures must not erase local progress.
 
 Primary goal:
-maximize safe forward progress by making more fixtures pass while preventing false-done.
+maximize safe forward progress toward 100% semantic pass for supported `reference/` suites while preventing false-done.
 ```
 
 ## When to use
@@ -49,19 +51,33 @@ maximize safe forward progress by making more fixtures pass while preventing fal
 3. Agent follows the state machine: SYNC → TRIAGE → TASK_SELECT → PLAN → IMPLEMENT → VERIFY → RETRO
 4. Agent updates state files and writes cycle reports to `reports/runs/`
 5. Agent keeps selecting the next safe task after DONE, PROGRESS, or BLOCKED until no safe task exists or the user stops the loop
+6. Agent commits its own validated changes before reporting the work complete, or records exactly why no safe commit was possible
 
 ## Operating Goal
 
-The agent should behave like a continuous fixture-to-Rust implementation machine:
+The agent should behave like a continuous reference-to-Rust implementation machine:
 
-- Use failing fixtures, reference coverage, and issue acceptance criteria to choose the next smallest semantic gap.
+- Treat tests under `reference/` as the canonical compatibility target.
+- Use failing reference tests, reference coverage, and issue acceptance criteria to choose the next smallest semantic gap.
 - Prefer Rust implementation changes in compiler/runtime paths over weakening tests, lowering expectations, or marking unsupported cases as success.
-- Add or update fixtures when they lock in real behavior that was implemented.
-- Preserve test262 / fixture evidence and use it to generate follow-up issues when a gap is too large for the current cycle.
+- Add or update local `fixtures/` when they lock in behavior learned from `reference/` or make a regression faster to reproduce.
+- Do not substitute local fixture success for reference-suite progress when the issue is about compatibility.
+- Preserve `reference/`, test262, and fixture evidence and use it to generate follow-up issues when a gap is too large for the current cycle.
 - Commit validated forward progress in small logical units.
 - Report each cycle outcome to Discord, or save a deferred payload when reporting is unavailable.
 
 Do not relax completion criteria to keep moving. Use PROGRESS or BLOCKED outcomes when DONE is not justified.
+
+## Project Completion Target
+
+The long-term project target is 100% semantic pass for the selected compatibility suites under `reference/`.
+
+- `reference/` tests are the source-of-truth backlog for compatibility work.
+- Coverage expansion should monotonically increase the measured reference surface until the relevant suite is fully covered.
+- Passing local `fixtures/` is necessary for regression protection, but it is not sufficient to declare the project complete.
+- Unsupported, skipped, xfailed, or parser-only outcomes do not count as semantic pass.
+- A feature area is complete only when its reference tests pass semantically or every remaining exception is explicitly documented as out of scope by project policy.
+- If reference tests reveal gaps not represented by issues, generate or update issues from the reference coverage output and keep working from that queue.
 
 ## Detailed Steps
 
@@ -109,15 +125,15 @@ Never stop at TASK_SELECT without writing why no task was selectable.
 - Do not modify forbidden files
 - Follow coding standards from docs/12
 - Run incremental validation as needed
-- Implement the smallest Rust/compiler/runtime change that makes a real fixture or reference case advance
+- Implement the smallest Rust/compiler/runtime change that makes a real `reference/` test, generated compatibility issue, or local regression fixture advance
 - Do not change expected fixture output unless the previous expectation is proven wrong by Node differential evidence or a documented spec decision
 - Add regression coverage for implemented behavior when the issue touches semantics, lowering, runtime ABI, WASM emission, or CLI behavior
 
-#### Fixture-driven Rust loop
+#### Reference-driven Rust loop
 
 Within a selected issue, repeat this inner loop while it remains in scope:
 
-1. Pick one failing fixture, reference case, or acceptance criterion.
+1. Pick one failing `reference/` test, generated reference-coverage issue, local fixture, or acceptance criterion.
 2. Reproduce it with the narrowest command available.
 3. Classify the failure as parser, frontend semantics, IR/lowering, runtime ABI, backend-wasm, WASI/runtime, CLI, or test harness.
 4. Change Rust code in the owning crate only when the failure is implementation-backed.
@@ -127,6 +143,8 @@ Within a selected issue, repeat this inner loop while it remains in scope:
 8. Record evidence in the issue note or cycle report.
 
 Do not wait for the full issue to close before committing useful implementation progress. A commit may represent PROGRESS if it passes narrow validation and does not falsify broader gates.
+
+When both a local fixture and a `reference/` test cover the same behavior, verify the `reference/` test before claiming compatibility progress.
 
 ### Verification (VERIFY state)
 
@@ -139,6 +157,8 @@ Validation order:
 
 2. Narrow issue validation:
    - commands listed in the issue
+   - targeted `reference/` tests or shards
+   - `scripts/manager reference-coverage ... --detail` when the issue came from reference coverage
    - targeted unit tests
    - targeted fixture tests
    - targeted CLI smoke tests
@@ -165,9 +185,16 @@ Verify all acceptance criteria with evidence before moving an issue to done.
 
 Commit local progress whenever a logical step is internally consistent and the relevant narrow validation passes.
 
+Finishing work without a commit is not allowed when useful file changes were made. Before ending a cycle or final response:
+- run `git status --short`
+- classify unrelated pre-existing changes separately
+- stage only the files changed for the current task
+- commit the current task's useful changes after required narrow validation
+- if a commit is unsafe, write the reason in the cycle report and leave an explicit BLOCKED or PROGRESS note
+
 Commit examples:
-- Rust implementation makes a targeted fixture pass
-- fixture or reference evidence is added for implemented behavior
+- Rust implementation makes a targeted `reference/` test or local regression fixture pass
+- reference or fixture evidence is added for implemented behavior
 - issue/index/report artifacts are updated after a cycle
 - generated coverage issues are added when no Ready issue is available
 
@@ -180,8 +207,8 @@ Do not commit:
 Commit messages should identify the issue or area, for example:
 
 ```bash
-git commit -m "issue-123: implement array length fixture"
-git commit -m "progress(runtime): pass targeted string fixture"
+git commit -m "issue-123: pass array length reference case"
+git commit -m "progress(runtime): pass targeted string reference shard"
 git commit -m "issues: record blocker for #123"
 ```
 
@@ -245,6 +272,7 @@ There are three valid outcomes for a cycle.
 Use DONE only when:
 - all acceptance criteria are satisfied
 - required verification commands pass
+- compatibility work has passing targeted `reference/` evidence, not only local fixture evidence
 - issue is moved from `issues/open/` to `issues/done/`
 - index/state/reporting checks pass
 - close commit is created
@@ -253,6 +281,7 @@ Use DONE only when:
 
 Use PROGRESS when:
 - implementation made meaningful forward progress
+- at least one targeted `reference/` test now passes, a reference-derived local regression now passes, or a reference failure is more precisely classified with evidence
 - narrow validation passes
 - full close requirements are not yet satisfied
 - the issue remains open
@@ -335,7 +364,7 @@ Pre-push webhook may block push, but must not block local commits, reports, or f
 
 7. **Continue**:
    - Return to TASK_SELECT after DONE, PROGRESS, or BLOCKED when another safe task exists
-   - Continue implementing fixture-backed Rust changes until no safe task remains, then write a clean stop report
+   - Continue implementing `reference/`-backed Rust changes until no safe task remains, then write a clean stop report
 
 **False-done prevention:**
 - Do not mark an issue as done without implementation-backed evidence
@@ -367,11 +396,12 @@ Pre-push webhook may block push, but must not block local commits, reports, or f
   git commit -m "feat(issues): add issues NNN-XXX from coverage"
   ```
 
-**Coverage expansion** (when implementation targets decrease):
-- Increase --limit in reference-coverage (e.g., 50 → 100 → 500 → 1000)
-- Add new test suites if needed (tsc, tsgo)
-- Auto-generate issues from expanded coverage
+**Coverage expansion** (until selected `reference/` suites reach 100% semantic pass):
+- Increase --limit in reference-coverage (e.g., 50 → 100 → 500 → 1000) until the full relevant suite is measured
+- Add new reference suites if needed (test262, tsc, tsgo)
+- Auto-generate issues from every expanded coverage run that exposes unsupported, build-fail, or semantic-fail cases
 - Update issue index and commit
+- Do not treat reduced unsupported counts as completion unless the corresponding cases are semantic pass
 
 ## Critical Requirements
 
@@ -392,7 +422,9 @@ Do not mark an issue as done without completing these steps. Failure to satisfy 
 - A cycle may end as DONE, PROGRESS, or BLOCKED.
 - DONE is required only for moving an issue to `issues/done/`.
 - PROGRESS and BLOCKED must include evidence and must leave the issue open.
+- Any cycle that changed files must include a commit hash for the useful current-task changes, unless the report records why committing would be unsafe.
 - Discord/webhook failure may prevent DONE or push, but must not prevent local commits, reports, or selecting another safe task.
+- The autonomous loop should keep drawing work from `reference/` failures until the selected reference suites are at 100% semantic pass or remaining exclusions are explicitly accepted by project policy.
 
 ## Worktree/Branch Naming Convention
 
