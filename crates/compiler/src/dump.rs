@@ -2,11 +2,13 @@ use std::fmt::Write as _;
 use std::fs;
 use std::path::Path;
 
-use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, Expr, SpannedToken, Stmt, UnaryOp};
+use ts2wasm_frontend::{
+    BinaryOp, DiagCode, Diagnostic, Expr, Lexer, Parser, SpannedToken, Stmt, UnaryOp,
+};
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
 use ts2wasm_ir::lowered::LoweredProgram;
 
-use super::{Lexer, Parser, backend, builtin_resolver, lowered, name_resolver};
+use super::{backend, builtin_resolver, lowered, name_resolver};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DumpPhase {

@@ -2,7 +2,7 @@
 
 **Status**: open
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-28
 **ID**: 010
 **Type**: refactor
 **Area**: frontend
@@ -10,7 +10,7 @@
 **Depends on**: 003,004
 **Orchestration class**: design-ready
 
-Problem: `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/frontend/` exists but is empty. Extraction is needed, but only after P0 gates are stable.
+Problem: `crates/cli/src/lib.rs` previously mixed lexer, parser, AST, span, validation, and build pipeline code. `crates/frontend/` now owns AST/span/diagnostic/token plus lexer/parser implementation; remaining closure is validation evidence for the broader suite and final issue-state cleanup.
 
 Scope:
 
@@ -22,10 +22,16 @@ Scope:
 
 Acceptance Criteria:
 
-- [ ] `crates/frontend` is a real workspace member.
-- [ ] Parser-related code moves out of `crates/cli`.
+- [x] `crates/frontend` is a real workspace member.
+- [x] Parser-related code moves out of `crates/cli`.
 - [ ] Existing tests pass.
-- [ ] Public API remains minimal.
+- [x] Public API remains minimal.
+
+Current slice evidence:
+
+- `crates/frontend/src/lexer.rs` owns `Lexer`.
+- `crates/frontend/src/parser.rs` owns `Parser`.
+- `crates/compiler/src/lib.rs` calls frontend APIs and is below the 2000-line architecture warning threshold.
 
 Validation:
 

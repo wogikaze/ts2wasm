@@ -82,8 +82,8 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 ## Implemented (high-level)
 
-- minimal parser/frontend（`crates/frontend`）
-- compiler/driver crate（`crates/compiler`）: build pipeline, dump pipeline, parser bridge
+- frontend crate（`crates/frontend`）: AST/span/diagnostic/token definitions plus lexer/parser implementation
+- compiler/driver crate（`crates/compiler`）: build pipeline, dump pipeline, AST validation, lowering orchestration
 - WAT/WASM emitter と runtime subset（`crates/backend-wasm`）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
 - IR crate（`crates/ir`）: resolved/lowered IR
@@ -97,7 +97,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 ## Known blockers / gaps
 
 - **Crates module migration**: `crates/frontend`, `crates/ir`, `crates/runtime-abi`, and `crates/backend-wasm` code migrations are complete. Issue 026 remains open until full-suite behavior evidence is cleanly recorded.
-- **CLI ownership**: `crates/cli` is now a thin binary/re-export wrapper for compiler APIs. Remaining large implementation pressure is in `crates/compiler/src/lib.rs` and should be split into frontend/compiler modules.
+- **CLI ownership**: `crates/cli` is now a thin binary/re-export wrapper for compiler APIs. Lexer/parser implementation has moved to `crates/frontend`; remaining large-file pressure is `crates/backend-wasm/src/runtime_builder.rs`.
 - TypeScript parser/checker integration は未実装
 - 汎用 JavaScript semantic IR は未実装
 - typed IR dump (`ts2wasm dump --tir`) and optimizer dump (`ts2wasm dump --optimize`) are tracked by issues 204 and 205.

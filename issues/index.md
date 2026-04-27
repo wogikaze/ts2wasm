@@ -17,7 +17,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` appears to mix lexer, parser, AST, span, validation, and build pipeline code. `crates/fronten... |
+| 010 | Extract frontend module from crates/cli | refactor | frontend | design-ready | P2 | 003, 004 | `crates/cli/src/lib.rs` previously mixed lexer, parser, AST, span, validation, and build pipeline code. `crates/front... |
 | 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | implementation-ready | P1 | 024, 025 | Migrate backend module to backend-wasm crate |
