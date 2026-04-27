@@ -70,6 +70,11 @@ fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
     }
 }
 
+#[test]
+fn regexp_literal_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
+}
+
 fn assert_fixture_matches_node(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
@@ -494,6 +499,37 @@ fn differential_test_runner_classifies_fixtures() {
             record.status
         );
     }
+}
+
+#[test]
+fn regexp_unsupported_flag_fixture_reports_issue_202() {
+    let fixture = "fixtures/core-semantics/regexp-unsupported-flag.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "unsupported flag fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]"),
+        "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-202: unsupported RegExp flag `d`"),
+        "expected issue-linked RegExp flag diagnostic, got:\n{stderr}"
+    );
 }
 
 fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {

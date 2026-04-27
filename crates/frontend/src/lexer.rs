@@ -6,7 +6,11 @@ pub enum Token {
     Number(i32),
     String(String),
     TemplateLiteral(String),
-    RegExp(String),
+    RegExp {
+        pattern: String,
+        flags: String,
+        raw: String,
+    },
     True,
     False,
     Null,
@@ -283,7 +287,7 @@ impl TokenKind {
                 | (Self::Dot, Token::Dot)
                 | (Self::Semicolon, Token::Semicolon)
                 | (Self::TemplateLiteral, Token::TemplateLiteral(_))
-                | (Self::RegExp, Token::RegExp(_))
+                | (Self::RegExp, Token::RegExp { .. })
         )
     }
 }
@@ -367,6 +371,8 @@ impl<'a> Lexer<'a> {
 
         let mut pattern = String::new();
         let mut escaped = false;
+        let mut in_class = false;
+        let mut terminated = false;
 
         while let Some(ch) = self.peek_char() {
             if escaped {
@@ -375,37 +381,90 @@ impl<'a> Lexer<'a> {
             } else if ch == '\\' {
                 pattern.push(ch);
                 escaped = true;
+            } else if ch == '[' {
+                pattern.push(ch);
+                in_class = true;
+            } else if ch == ']' {
+                pattern.push(ch);
+                in_class = false;
+            } else if ch == '\n' || ch == '\r' {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-202: unterminated RegExp literal".to_owned(),
+                    span: Some(Span {
+                        start,
+                        end: self.cursor,
+                    }),
+                });
             } else if ch == '/' {
-                // End of regexp pattern
-                self.advance_char();
-                break;
+                if in_class {
+                    pattern.push(ch);
+                } else {
+                    self.advance_char();
+                    terminated = true;
+                    break;
+                }
             } else {
                 pattern.push(ch);
             }
             self.advance_char();
         }
 
+        if !terminated {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-202: unterminated RegExp literal".to_owned(),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+            });
+        }
+
         // Parse flags (if any)
         let mut flags = String::new();
         while let Some(ch) = self.peek_char() {
-            match ch {
-                'g' | 'i' | 'm' | 's' | 'u' | 'y' => {
-                    flags.push(ch);
-                    self.advance_char();
-                }
-                _ => break,
+            if !ch.is_ascii_alphabetic() {
+                break;
             }
+
+            if !matches!(ch, 'g' | 'i' | 'm' | 's' | 'u' | 'y') {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("issue-202: unsupported RegExp flag `{ch}`"),
+                    span: Some(Span {
+                        start: self.cursor,
+                        end: self.cursor + ch.len_utf8(),
+                    }),
+                });
+            }
+            if flags.contains(ch) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("issue-202: duplicate RegExp flag `{ch}`"),
+                    span: Some(Span {
+                        start: self.cursor,
+                        end: self.cursor + ch.len_utf8(),
+                    }),
+                });
+            }
+            flags.push(ch);
+            self.advance_char();
         }
 
-        // Combine pattern and flags
-        let mut regexp_str = pattern;
+        let mut raw = String::from("/");
+        raw.push_str(&pattern);
+        raw.push('/');
         if !flags.is_empty() {
-            regexp_str.push('/');
-            regexp_str.push_str(&flags);
+            raw.push_str(&flags);
         }
 
         Ok(SpannedToken {
-            kind: Token::RegExp(regexp_str),
+            kind: Token::RegExp {
+                pattern,
+                flags,
+                raw,
+            },
             span: Span {
                 start,
                 end: self.cursor,
