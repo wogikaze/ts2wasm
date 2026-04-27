@@ -119,6 +119,7 @@ mod tests {
         let wat = emit_wat(&program).expect("object allocation should emit WAT");
 
         assert!(wat.contains("(global $alloc_bytes_since_last_gc (mut i32) (i32.const 0))"));
+        assert!(wat.contains("(global $gc_free_list (mut i32) (i32.const 0))"));
         assert!(wat.contains("(func $gc_collect"));
         assert!(wat.contains("(local $header_base i32)"));
         assert!(wat.contains("(local $payload_base i32)"));
@@ -128,6 +129,26 @@ mod tests {
         assert!(wat.contains("(then (call $gc_collect))"));
         assert!(wat.contains("(global.set $alloc_bytes_since_last_gc"));
         assert!(wat.contains("(local.get $payload_base))"));
+    }
+
+    #[test]
+    fn gc_sweep_and_free_list_reuse_contract_is_emitted() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew { props: vec![] })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("object allocation should emit WAT");
+
+        assert!(wat.contains("(func $gc_sweep"));
+        assert!(wat.contains("(global.get $gc_free_list)"));
+        assert!(wat.contains("(global.set $gc_free_list (local.get $cursor))"));
+        assert!(wat.contains("(local $free_header i32)"));
+        assert!(wat.contains("(local $free_body_size i32)"));
+        assert!(wat.contains("(return (i32.add (local.get $free_header) (i32.const 16)))"));
+        assert!(wat.contains("(i32.and (local.get $flags) (i32.const -2))"));
     }
 
     #[test]

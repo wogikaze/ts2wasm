@@ -1,0 +1,24 @@
+{
+  "run_id": "20260428-219-gc-sweep-reuse",
+  "issue": "219",
+  "status": "pass",
+  "commit": null,
+  "commands": [
+    {
+      "command": "cargo fmt --all --check",
+      "status": "pass",
+      "notes": "format check passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-backend-wasm",
+      "status": "pass",
+      "notes": "9 passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "notes": "1 passed, 17 skipped"
+    }
+  ],
+  "next": "220: implement GC stack/local roots for escape fixtures"
+}

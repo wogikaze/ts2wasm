@@ -1018,6 +1018,10 @@ impl WatEmitter<'_> {
     (local $new_heap i32)
     (local $memory_pages i32)
     (local $memory_bytes i32)
+    (local $free_prev i32)
+    (local $free_header i32)
+    (local $free_next i32)
+    (local $free_body_size i32)
     (local.set $header_base
       (i32.and
         (i32.add (global.get $heap) (i32.const {align_mask}))
@@ -1038,6 +1042,44 @@ impl WatEmitter<'_> {
         (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $block_size))
         (i32.const {gc_threshold}))
       (then (call $gc_collect)))
+
+    ;; Reuse a swept block when one is large enough for this payload.
+    (local.set $free_header (global.get $gc_free_list))
+    (block $free_not_found
+      (loop $free_scan
+        (br_if $free_not_found (i32.eqz (local.get $free_header)))
+        (local.set $free_body_size
+          (i32.load
+            (i32.add (local.get $free_header) (i32.const {gc_body_size_offset}))))
+        (local.set $free_next
+          (i32.load
+            (i32.add (local.get $free_header) (i32.const {gc_sweep_next_offset}))))
+        (if (i32.ge_u (local.get $free_body_size) (local.get $payload_size))
+          (then
+            (if (i32.eqz (local.get $free_prev))
+              (then
+                (global.set $gc_free_list (local.get $free_next)))
+              (else
+                (i32.store
+                  (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
+                  (local.get $free_next))))
+            (i32.store
+              (i32.add (local.get $free_header) (i32.const {gc_flags_offset}))
+              (i32.const {gc_kind_unknown}))
+            (i32.store
+              (i32.add (local.get $free_header) (i32.const {gc_sweep_next_offset}))
+              (i32.const 0))
+            (i32.store
+              (i32.add (local.get $free_header) (i32.const {gc_reserved_offset}))
+              (i32.const 0))
+            (global.set $alloc_bytes_since_last_gc
+              (i32.add
+                (global.get $alloc_bytes_since_last_gc)
+                (i32.add (i32.const {gc_header_size}) (local.get $free_body_size))))
+            (return (i32.add (local.get $free_header) (i32.const {gc_header_size})))))
+        (local.set $free_prev (local.get $free_header))
+        (local.set $free_header (local.get $free_next))
+        (br $free_scan)))
 
     ;; OOM check: verify allocation fits within current memory
     (local.set $memory_pages (memory.size))
@@ -1065,7 +1107,8 @@ impl WatEmitter<'_> {
     (local.get $payload_base))
 
   (func $gc_collect
-    ;; 218 marks reachable heap values; sweep/free-list reuse is implemented in 219.{gc_roots}
+    ;; 219 consumes mark bits via sweep and free-list reuse.{gc_roots}
+    (call $gc_sweep)
     (global.set $alloc_bytes_since_last_gc (i32.const 0)))
 
   (func $gc_mark_payload_header (param $payload i32) (result i32)
@@ -1146,6 +1189,43 @@ impl WatEmitter<'_> {
           (i32.load (i32.add (local.get $entry_ptr) (i32.const {object_value_offset}))))
         (local.set $i (i32.add (local.get $i) (i32.const 1)))
         (br $scan))))
+
+  (func $gc_sweep
+    (local $cursor i32)
+    (local $heap_end i32)
+    (local $flags i32)
+    (local $body_size i32)
+    (local $next i32)
+    (local.set $cursor (i32.const {heap_start}))
+    (local.set $heap_end (global.get $heap))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $cursor) (local.get $heap_end)))
+        (local.set $flags
+          (i32.load
+            (i32.add (local.get $cursor) (i32.const {gc_flags_offset}))))
+        (local.set $body_size
+          (i32.load
+            (i32.add (local.get $cursor) (i32.const {gc_body_size_offset}))))
+        (local.set $next
+          (i32.add
+            (local.get $cursor)
+            (i32.add (i32.const {gc_header_size}) (local.get $body_size))))
+        (if
+          (i32.ne
+            (i32.and (local.get $flags) (i32.const {gc_mark_flag}))
+            (i32.const 0))
+          (then
+            (i32.store
+              (i32.add (local.get $cursor) (i32.const {gc_flags_offset}))
+              (i32.and (local.get $flags) (i32.const {gc_mark_clear_mask}))))
+          (else
+            (i32.store
+              (i32.add (local.get $cursor) (i32.const {gc_sweep_next_offset}))
+              (global.get $gc_free_list))
+            (global.set $gc_free_list (local.get $cursor))))
+        (local.set $cursor (local.get $next))
+        (br $scan))))
 {module_cache_marker}
 "#,
             align_mask = Layout::ALIGN_MASK,
@@ -1159,6 +1239,7 @@ impl WatEmitter<'_> {
             gc_reserved_offset = Layout::GC_RESERVED_OFFSET,
             gc_kind_unknown = Layout::GC_KIND_UNKNOWN,
             gc_mark_flag = Layout::GC_MARK_FLAG,
+            gc_mark_clear_mask = !(Layout::GC_MARK_FLAG as i32),
             page_size = Layout::WASM_PAGE_SIZE,
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,

@@ -175,7 +175,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | implementation-ready | P1 |  | Complete this receiver binding semantics |
 | 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
 | 215 | Define Math.random capability policy | feature | runtime/builtins | design-ready | P1 |  | Define Math.random capability policy |
-| 219 | Implement GC sweep reuse and fixtures | feature | runtime/memory | implementation-ready | P1 | 218 | Marked/unmarked heap metadata must be converted into reusable memory and covered by runtime fixtures before the GC tr... |
+| 220 | Implement GC stack local roots for escape fixtures | feature | runtime/memory | implementation-ready | P1 | 219 | GC sweep/free-list reuse exists, but stack/local heap values are not part of the root set. A collection during execut... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -257,6 +257,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 216 | Implement abstract equality coercion | feature | runtime/semantics | see `issues/done/216-implement-abstract-equality-coercion.md` |
 | 217 | Implement GC heap header and trigger accounting | feature | runtime/memory | see file |
 | 218 | Implement GC mark root scanning | feature | runtime/memory | see file |
+| 219 | Implement GC sweep reuse and fixtures | feature | runtime/memory | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract

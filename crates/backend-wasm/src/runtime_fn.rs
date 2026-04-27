@@ -382,6 +382,7 @@ pub(crate) enum RuntimeResult {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
 pub(crate) enum RuntimeGlobal {
     AllocBytesSinceLastGc,
+    GcFreeList,
     ModuleCache,
     CurrentModuleId,
 }
@@ -390,6 +391,7 @@ impl RuntimeGlobal {
     pub(crate) const fn symbol(self) -> &'static str {
         match self {
             Self::AllocBytesSinceLastGc => "$alloc_bytes_since_last_gc",
+            Self::GcFreeList => "$gc_free_list",
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
         }
@@ -398,6 +400,7 @@ impl RuntimeGlobal {
     pub(crate) const fn initial_value(self) -> i32 {
         match self {
             Self::AllocBytesSinceLastGc => 0,
+            Self::GcFreeList => 0,
             Self::ModuleCache | Self::CurrentModuleId => 0,
         }
     }
@@ -418,7 +421,10 @@ const NO_IMPORTS: &[HostImport] = &[];
 const NO_CAPS: &[Capability] = &[];
 const NO_RUNTIME_STRINGS: &[&str] = &[];
 
-const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[RuntimeGlobal::AllocBytesSinceLastGc];
+const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
+    RuntimeGlobal::AllocBytesSinceLastGc,
+    RuntimeGlobal::GcFreeList,
+];
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
 
