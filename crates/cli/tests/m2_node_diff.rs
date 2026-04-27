@@ -42,6 +42,11 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn prototype_chain_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/prototype.ts");
+}
+
+#[test]
 fn m5_array_object_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/arrays-objects/array.ts",
