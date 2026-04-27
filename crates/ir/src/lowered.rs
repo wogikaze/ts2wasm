@@ -1214,7 +1214,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
                 Ok(LoweredExpr::PropertySetDynamic {
                     object: Box::new(self.lower_expr(object)?),
-                    key: Box::new(self.lower_expr(key)?),
+                    index: Box::new(self.lower_expr(key)?),
                     value: Box::new(self.lower_expr(value)?),
                 })
             }
