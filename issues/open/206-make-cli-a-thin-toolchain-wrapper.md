@@ -93,12 +93,12 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/04-compiler-architecture-and-runtime.md`
+- [x] updated: `docs/04-compiler-architecture-and-runtime.md`
 - [ ] updated: `docs/12-coding-standard.md`
 
 Current state:
 
-- [ ] not affected
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 

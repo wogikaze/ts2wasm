@@ -1,9 +1,14 @@
 mod capability_manifest;
 mod emitter;
 mod expr_emit;
+mod runtime_arrays_objects;
 mod runtime_builder;
+mod runtime_builtins_host;
+mod runtime_collections;
+mod runtime_core;
 mod runtime_fn;
 mod runtime_link_plan;
+mod runtime_strings;
 mod stmt_emit;
 mod string_intern;
 mod wat_writer;
