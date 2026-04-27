@@ -191,6 +191,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 021 | Implement full wasm backend | feature | backend | 008, 020 | Implement full wasm backend |
 | 046 | Implement extends inheritance | feature | runtime/semantics | 045 | Implement extends inheritance |
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
+| 204 | Add typed IR dump command | feature | cli | 020 | Add typed IR dump command |
+| 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
 <!-- generated:blocked:end -->
 
 ## Done queue
