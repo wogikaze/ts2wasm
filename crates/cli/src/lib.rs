@@ -183,6 +183,8 @@ impl<'a> Lexer<'a> {
 
         let mut pattern = String::new();
         let mut escaped = false;
+        let mut in_class = false;
+        let mut terminated = false;
 
         while let Some(ch) = self.peek_char() {
             if escaped {
@@ -191,37 +193,91 @@ impl<'a> Lexer<'a> {
             } else if ch == '\\' {
                 pattern.push(ch);
                 escaped = true;
+            } else if ch == '[' {
+                pattern.push(ch);
+                in_class = true;
+            } else if ch == ']' {
+                pattern.push(ch);
+                in_class = false;
+            } else if ch == '\n' || ch == '\r' {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-202: unterminated RegExp literal".to_owned(),
+                    span: Some(Span {
+                        start,
+                        end: self.cursor,
+                    }),
+                });
             } else if ch == '/' {
-                // End of regexp pattern
-                self.advance_char();
-                break;
+                if in_class {
+                    pattern.push(ch);
+                } else {
+                    // End of regexp pattern
+                    self.advance_char();
+                    terminated = true;
+                    break;
+                }
             } else {
                 pattern.push(ch);
             }
             self.advance_char();
         }
 
+        if !terminated {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-202: unterminated RegExp literal".to_owned(),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+            });
+        }
+
         // Parse flags (if any)
         let mut flags = String::new();
         while let Some(ch) = self.peek_char() {
-            match ch {
-                'g' | 'i' | 'm' | 's' | 'u' | 'y' => {
-                    flags.push(ch);
-                    self.advance_char();
-                }
-                _ => break,
+            if !ch.is_ascii_alphabetic() {
+                break;
             }
+
+            if !matches!(ch, 'g' | 'i' | 'm' | 's' | 'u' | 'y') {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("issue-202: unsupported RegExp flag `{ch}`"),
+                    span: Some(Span {
+                        start: self.cursor,
+                        end: self.cursor + ch.len_utf8(),
+                    }),
+                });
+            }
+            if flags.contains(ch) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("issue-202: duplicate RegExp flag `{ch}`"),
+                    span: Some(Span {
+                        start: self.cursor,
+                        end: self.cursor + ch.len_utf8(),
+                    }),
+                });
+            }
+            flags.push(ch);
+            self.advance_char();
         }
 
-        // Combine pattern and flags
-        let mut regexp_str = pattern;
+        let mut raw = String::from("/");
+        raw.push_str(&pattern);
+        raw.push('/');
         if !flags.is_empty() {
-            regexp_str.push('/');
-            regexp_str.push_str(&flags);
+            raw.push_str(&flags);
         }
 
         Ok(SpannedToken {
-            kind: Token::RegExp(regexp_str),
+            kind: Token::RegExp {
+                pattern,
+                flags,
+                raw,
+            },
             span: Span {
                 start,
                 end: self.cursor,
@@ -2539,6 +2595,15 @@ impl Parser {
                 span,
             }) => Ok(Expr::String { value, span }),
             Some(SpannedToken {
+                kind:
+                    Token::RegExp {
+                        pattern: _,
+                        flags: _,
+                        raw,
+                    },
+                span,
+            }) => Ok(Expr::String { value: raw, span }),
+            Some(SpannedToken {
                 kind: Token::TemplateLiteral(value),
                 span,
             }) => {
@@ -3101,6 +3166,40 @@ mod tests {
             }
             other => panic!("unexpected stmt: {other:?}"),
         }
+    }
+
+    #[test]
+    fn parses_supported_regexp_literals_as_string_subset() {
+        let program = parse_program("let a = /abc/i; let b = /a*/g; let c = /a\\/b/;").unwrap();
+        assert_eq!(program.len(), 3);
+
+        for (stmt, expected) in program.iter().zip(["/abc/i", "/a*/g", "/a\\/b/"]) {
+            match stmt {
+                Stmt::Let {
+                    expr: Expr::String { value, .. },
+                    ..
+                } => assert_eq!(value, expected),
+                other => panic!("unexpected regexp literal statement: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_unsupported_regexp_flag_with_issue_linked_diagnostic() {
+        let err = parse_program("let r = /abc/d;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-202"));
+        assert!(err.message.contains("unsupported RegExp flag `d`"));
+        assert!(err.span.is_some());
+    }
+
+    #[test]
+    fn rejects_duplicate_regexp_flag_with_issue_linked_diagnostic() {
+        let err = parse_program("let r = /abc/gg;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-202"));
+        assert!(err.message.contains("duplicate RegExp flag `g`"));
+        assert!(err.span.is_some());
     }
 
     #[test]
