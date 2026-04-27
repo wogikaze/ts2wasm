@@ -67,7 +67,7 @@ fn run() -> Result<(), String> {
             .map_err(|e| e.to_string())
         }
         _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm dump [--tokens|--ast|--resolved|--tir|--lowered|--wat] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm dump [--tokens|--ast|--resolved|--tir|--optimize|--lowered|--wat] [-O0|-O1|-O2|-O3] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
                 .to_owned(),
         ),
     }
@@ -75,6 +75,7 @@ fn run() -> Result<(), String> {
 
 fn run_dump(args: &[String]) -> Result<(), String> {
     let mut options = ts2wasm_cli::DumpOptions::default();
+    let mut saw_optimization_level = false;
     let mut input = None;
 
     for arg in args {
@@ -85,17 +86,23 @@ fn run_dump(args: &[String]) -> Result<(), String> {
             "--tir" => options.set_phase(ts2wasm_cli::DumpPhase::TypedIr)?,
             "--lowered" | "--ir" => options.set_phase(ts2wasm_cli::DumpPhase::Lowered)?,
             "--wat" => options.set_phase(ts2wasm_cli::DumpPhase::Wat)?,
+            "--optimize" => options.set_phase(ts2wasm_cli::DumpPhase::OptimizedIr)?,
             "--unparse" => options.unparse = true,
-            "--optimize" => {
-                return Err(
-                    "dump --optimize is not available yet; optimizer dump is tracked in issue 205"
-                        .to_owned(),
-                );
+            "-O0" => {
+                saw_optimization_level = true;
+                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O0);
             }
-            "-O0" | "-O1" | "-O2" | "-O3" => {
-                return Err(format!(
-                    "{arg} is only supported after optimizer dump is implemented"
-                ));
+            "-O1" => {
+                saw_optimization_level = true;
+                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O1);
+            }
+            "-O2" => {
+                saw_optimization_level = true;
+                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O2);
+            }
+            "-O3" => {
+                saw_optimization_level = true;
+                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O3);
             }
             _ if arg.starts_with('-') => return Err(format!("unknown dump option: {arg}")),
             _ => {
@@ -106,8 +113,12 @@ fn run_dump(args: &[String]) -> Result<(), String> {
         }
     }
 
+    if saw_optimization_level && options.phase != ts2wasm_cli::DumpPhase::OptimizedIr {
+        return Err("dump -O levels require --optimize".to_owned());
+    }
+
     let input = input.ok_or_else(|| {
-        "usage: ts2wasm dump [--tokens|--ast|--resolved|--tir|--lowered|--wat] [--unparse] <input.ts>"
+        "usage: ts2wasm dump [--tokens|--ast|--resolved|--tir|--optimize|--lowered|--wat] [-O0|-O1|-O2|-O3] [--unparse] <input.ts>"
             .to_owned()
     })?;
     let output = ts2wasm_cli::dump_file_with_options(&input, options).map_err(|e| e.to_string())?;

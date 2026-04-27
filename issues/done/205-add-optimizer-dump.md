@@ -9,6 +9,7 @@ depends_on: [020, 204]
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,11 +28,11 @@ The project documents optimization levels, but the CLI does not yet have a reusa
 
 In scope:
 
-- [ ] Add dump option parsing for `--optimize` with `-O0`, `-O1`, `-O2`, and `-O3`.
-- [ ] Route dump through the same optimizer pipeline used by `build`.
-- [ ] Emit structural optimized IR output.
-- [ ] Emit pseudo-source output for `--optimize --unparse`.
-- [ ] Add tests that prove `-O` changes are reflected when an optimization is observable in IR.
+- [x] Add dump option parsing for `--optimize` with `-O0`, `-O1`, `-O2`, and `-O3`.
+- [x] Route dump through the same optimizer pipeline used by `build`.
+- [x] Emit structural optimized IR output.
+- [x] Emit pseudo-source output for `--optimize --unparse`.
+- [x] Add tests that prove `-O` changes are reflected when an optimization is observable in IR.
 
 Out of scope:
 
@@ -54,10 +55,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `ts2wasm dump --optimize -O0 <input.ts>` succeeds.
-- [ ] `ts2wasm dump --optimize -O2 <input.ts>` succeeds.
-- [ ] `ts2wasm dump --optimize --unparse -O2 <input.ts>` succeeds.
-- [ ] Tests assert optimized dump output is produced by real optimizer passes, not by the unoptimized lowered IR path.
+- [x] `ts2wasm dump --optimize -O0 <input.ts>` succeeds.
+- [x] `ts2wasm dump --optimize -O2 <input.ts>` succeeds.
+- [x] `ts2wasm dump --optimize --unparse -O2 <input.ts>` succeeds.
+- [x] Tests assert optimized dump output is produced by real optimizer passes, not by the unoptimized lowered IR path.
 
 ## Validation
 
@@ -82,16 +83,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/07-performance-and-optimization.md`
-- [ ] updated: `docs/13-ir-contracts.md`
+- [x] updated: `docs/07-performance-and-optimization.md`
+- [x] updated: `docs/13-ir-contracts.md`
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -103,14 +104,38 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `51a0204` issue-205: add optimizer dump surface
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: PASS (9 passed)
+date: 2026-04-28
+
+command: scripts/manager check-agent-state
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-issue-index
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-issue-health
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-repo-smoke
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run
+result: PASS (234 passed, 4 skipped)
+date: 2026-04-28
 ```
 
 Remaining risks:

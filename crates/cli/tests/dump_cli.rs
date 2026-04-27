@@ -76,6 +76,50 @@ fn dump_tir_unparse_emits_pseudo_source() {
 }
 
 #[test]
+fn dump_optimize_o0_emits_optimized_hir_without_folding() {
+    let output = run_dump(&["--optimize", "-O0"], "let x = 1 + 2; console.log(x);");
+
+    assert!(output.contains("== optimized-ir =="), "{output}");
+    assert!(output.contains("OptimizedHirProgram"), "{output}");
+    assert!(output.contains("level: O0"), "{output}");
+    assert!(output.contains("applied_passes: []"), "{output}");
+    assert!(output.contains("JsAdd"), "{output}");
+    assert!(!output.contains("LoweredProgram"), "{output}");
+    assert!(!output.contains("top_level_statements"), "{output}");
+}
+
+#[test]
+fn dump_optimize_accepts_all_optimization_levels() {
+    for (flag, level) in [("-O0", "O0"), ("-O1", "O1"), ("-O2", "O2"), ("-O3", "O3")] {
+        let output = run_dump(&["--optimize", flag], "let x = 1;");
+        assert!(output.contains(&format!("level: {level}")), "{output}");
+    }
+}
+
+#[test]
+fn dump_optimize_o2_uses_real_optimizer_passes() {
+    let output = run_dump(&["--optimize", "-O2"], "let x = 1 + 2; console.log(x);");
+
+    assert!(output.contains("== optimized-ir =="), "{output}");
+    assert!(output.contains("OptimizedHirProgram"), "{output}");
+    assert!(output.contains("level: O2"), "{output}");
+    assert!(output.contains("LiteralNumericAddFold"), "{output}");
+    assert!(!output.contains("JsAdd"), "{output}");
+    assert!(!output.contains("LoweredProgram"), "{output}");
+    assert!(!output.contains("top_level_statements"), "{output}");
+}
+
+#[test]
+fn dump_optimize_unparse_emits_optimized_pseudo_source() {
+    let output = run_dump(
+        &["--optimize", "--unparse", "-O2"],
+        "let x = 1 + 2; console.log(x);",
+    );
+
+    assert_eq!(output, "let local$0 = 3;\nconsole.log(local$0);\n");
+}
+
+#[test]
 fn dump_without_phase_emits_available_phases() {
     let output = run_dump(&[], "let x = 1;");
 
@@ -83,6 +127,7 @@ fn dump_without_phase_emits_available_phases() {
     assert!(output.contains("== ast =="), "{output}");
     assert!(output.contains("== resolved =="), "{output}");
     assert!(output.contains("== typed-ir =="), "{output}");
+    assert!(output.contains("== optimized-ir =="), "{output}");
     assert!(output.contains("== lowered =="), "{output}");
     assert!(output.contains("== wat =="), "{output}");
 }

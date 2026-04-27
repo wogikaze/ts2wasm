@@ -8,6 +8,7 @@ use ts2wasm_frontend::{
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
 use ts2wasm_ir::lowered::LoweredProgram;
+use ts2wasm_ir::optimizer::{OptimizationLevel, OptimizedHirProgram};
 use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
 
 use super::{backend, builtin_resolver, lowered, name_resolver};
@@ -19,6 +20,7 @@ pub enum DumpPhase {
     Ast,
     Resolved,
     TypedIr,
+    OptimizedIr,
     Lowered,
     Wat,
 }
@@ -27,6 +29,7 @@ pub enum DumpPhase {
 pub struct DumpOptions {
     pub phase: DumpPhase,
     pub unparse: bool,
+    pub optimization_level: OptimizationLevel,
 }
 
 impl Default for DumpOptions {
@@ -34,6 +37,7 @@ impl Default for DumpOptions {
         Self {
             phase: DumpPhase::All,
             unparse: false,
+            optimization_level: OptimizationLevel::O0,
         }
     }
 }
@@ -46,6 +50,10 @@ impl DumpOptions {
         self.phase = phase;
         Ok(())
     }
+
+    pub fn set_optimization_level(&mut self, level: OptimizationLevel) {
+        self.optimization_level = level;
+    }
 }
 
 struct DumpPipeline {
@@ -53,14 +61,21 @@ struct DumpPipeline {
     ast: Vec<Stmt>,
     resolved: Vec<ResolvedStmt>,
     typed_ir: Result<HirProgram, Diagnostic>,
+    optimized_ir: Result<OptimizedHirProgram, Diagnostic>,
     lowered: LoweredProgram,
 }
 
 pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<String, Diagnostic> {
-    if options.unparse && !matches!(options.phase, DumpPhase::Ast | DumpPhase::TypedIr) {
+    if options.unparse
+        && !matches!(
+            options.phase,
+            DumpPhase::Ast | DumpPhase::TypedIr | DumpPhase::OptimizedIr
+        )
+    {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: "--unparse is currently supported only with --ast or --tir".to_owned(),
+            message: "--unparse is currently supported only with --ast, --tir, or --optimize"
+                .to_owned(),
             span: None,
         });
     }
@@ -86,7 +101,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         return Ok(format_section("ast", &format!("{ast:#?}")));
     }
 
-    let pipeline = build_dump_pipeline(&source)?;
+    let pipeline = build_dump_pipeline(&source, options.optimization_level)?;
     let mut out = String::new();
 
     match options.phase {
@@ -95,6 +110,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
             push_section(&mut out, "ast", &format!("{:#?}", pipeline.ast));
             push_section(&mut out, "resolved", &format!("{:#?}", pipeline.resolved));
             push_optional_typed_ir_section(&mut out, &pipeline.typed_ir)?;
+            push_optional_optimized_ir_section(&mut out, &pipeline.optimized_ir)?;
             push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
             let wat = backend::emit_wat(&pipeline.lowered)?;
             push_section(&mut out, "wat", &wat);
@@ -104,6 +120,9 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         }
         DumpPhase::TypedIr => {
             push_typed_ir_section(&mut out, &pipeline.typed_ir, options.unparse)?;
+        }
+        DumpPhase::OptimizedIr => {
+            push_optimized_ir_section(&mut out, &pipeline.optimized_ir, options.unparse)?;
         }
         DumpPhase::Lowered => {
             push_section(&mut out, "lowered", &format!("{:#?}", pipeline.lowered));
@@ -123,13 +142,20 @@ fn parse_ast(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
     Parser::new(tokens).parse_program()
 }
 
-fn build_dump_pipeline(source: &str) -> Result<DumpPipeline, Diagnostic> {
+fn build_dump_pipeline(
+    source: &str,
+    optimization_level: OptimizationLevel,
+) -> Result<DumpPipeline, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
     let ast = Parser::new(tokens.clone()).parse_program()?;
     super::validate_ast(&ast)?;
     let name_resolved = name_resolver::resolve_names(&ast)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     let typed_ir = build_typed_ir(&resolved);
+    let optimized_ir = typed_ir
+        .as_ref()
+        .map_err(Clone::clone)
+        .and_then(|typed_ir| optimize_typed_ir(typed_ir, optimization_level));
     let lowered = lowered::lower_program(&resolved)?;
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
@@ -145,6 +171,7 @@ fn build_dump_pipeline(source: &str) -> Result<DumpPipeline, Diagnostic> {
         ast,
         resolved,
         typed_ir,
+        optimized_ir,
         lowered,
     })
 }
@@ -159,6 +186,13 @@ fn build_typed_ir(resolved: &[ResolvedStmt]) -> Result<HirProgram, Diagnostic> {
         })
     })?;
     Ok(typed_ir)
+}
+
+pub(crate) fn optimize_typed_ir(
+    typed_ir: &HirProgram,
+    level: OptimizationLevel,
+) -> Result<OptimizedHirProgram, Diagnostic> {
+    ts2wasm_ir::optimizer::optimize_hir(typed_ir, level)
 }
 
 fn format_section(name: &str, body: &str) -> String {
@@ -201,6 +235,41 @@ fn push_optional_typed_ir_section(
                 out,
                 "typed-ir",
                 &format!("unsupported by initial HIR slice: {}", error.message),
+            );
+            Ok(())
+        }
+        Err(error) => Err(error.clone()),
+    }
+}
+
+fn push_optimized_ir_section(
+    out: &mut String,
+    optimized_ir: &Result<OptimizedHirProgram, Diagnostic>,
+    unparse: bool,
+) -> Result<(), Diagnostic> {
+    let optimized_ir = optimized_ir.as_ref().map_err(Clone::clone)?;
+    if unparse {
+        out.push_str(&unparse_hir_program(&optimized_ir.hir));
+    } else {
+        push_section(out, "optimized-ir", &format!("{optimized_ir:#?}"));
+    }
+    Ok(())
+}
+
+fn push_optional_optimized_ir_section(
+    out: &mut String,
+    optimized_ir: &Result<OptimizedHirProgram, Diagnostic>,
+) -> Result<(), Diagnostic> {
+    match optimized_ir {
+        Ok(optimized_ir) => {
+            push_section(out, "optimized-ir", &format!("{optimized_ir:#?}"));
+            Ok(())
+        }
+        Err(error) if error.code == DiagCode::UnsupportedSyntax => {
+            push_section(
+                out,
+                "optimized-ir",
+                &format!("unsupported by initial optimizer slice: {}", error.message),
             );
             Ok(())
         }

@@ -15,6 +15,8 @@ ts2wasm build main.ts -O0 -o main.wasm
 ts2wasm build main.ts -O1 -o main.wasm
 ts2wasm build main.ts -O2 -o main.wasm
 ts2wasm build main.ts -O3 -o main.wasm
+ts2wasm dump --optimize -O2 main.ts
+ts2wasm dump --optimize --unparse -O2 main.ts
 ```
 
 `-O2` では、TypeScript の型情報、制御フロー、到達可能性、escape analysis、定数畳み込み、不要 runtime call の削除、primitive fast path、packed array の選択などを行う。`-O3` では、さらに関数インライン化、monomorphization、shape specialization、loop optimization、bounds check elimination、runtime helper の特殊化を行う。ただし `-O3` でも observable JavaScript semantics は壊さない。
@@ -53,6 +55,12 @@ ts2wasm build main.ts -O3 -o main.wasm
 | host call reduction      | Node.js / WASI import 呼び出しをまとめる、または削る                              |
 
 > 本プロジェクトの性能戦略は、用途別 subset ではなく、TypeScript の型情報と最適化レベルに基づく汎用的な高速化である。結果として、数値計算、配列処理、短命 CLI、標準入出力中心のプログラムでは、競技用途にも耐える性能を目指す。
+
+## Optimizer diagnostics
+
+`ts2wasm dump --optimize -O0..-O3 <input.ts>` は、typed HIR に optimizer pipeline を適用した後の構造化 IR を表示する。`-O0` は pass を適用しない基準出力であり、`-O1` 以上は安全性を満たす pass だけを適用する。dump は `applied_passes` を含め、どの optimizer pass が実際に IR を変更したかを監査できるようにする。
+
+`ts2wasm dump --optimize --unparse -O2 <input.ts>` は、optimized HIR を pseudo source として表示する。これは source text の復元ではなく、`local$N` / `fn$N` ID と semantic operation を保持した optimizer 後の診断出力である。
 
 ## Performance State
 

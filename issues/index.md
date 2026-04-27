@@ -170,7 +170,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
-| 205 | Add optimizer dump command | feature | cli | implementation-ready | P2 | 020, 204 | Add optimizer dump command |
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | implementation-ready | P1 |  | Complete this receiver binding semantics |
 | 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
 | 215 | Define Math.random capability policy | feature | runtime/builtins | design-ready | P1 |  | Define Math.random capability policy |
@@ -248,6 +247,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 | 204 | Add typed IR dump command | feature | cli | see `issues/done/204-add-typed-ir-dump.md` |
+| 205 | Add optimizer dump command | feature | cli | see `issues/done/205-add-optimizer-dump.md` |
 | 206 | Make CLI a thin toolchain wrapper | refactor | cli | see `issues/done/206-make-cli-a-thin-toolchain-wrapper.md` |
 | 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | see `issues/done/207-complete-instanceof-prototype-chain-semantics.md` |
 | 208 | Implement switch fall-through semantics | feature | frontend/semantics | see `issues/done/208-implement-switch-fall-through-semantics.md` |
