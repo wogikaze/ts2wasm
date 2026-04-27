@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Create a new run directory for cycle reports.
+"""Create a new run directory for Japanese cycle reports.
 
 Usage: python scripts/manager.py create-run-dir [run_id]
 
-Creates reports/runs/<run_id>/ directory with cycle_report.md template.
+Creates reports/runs/<run_id>/ directory with a Japanese cycle_report.md template.
 If run_id is not provided, uses current timestamp (YYYYMMDD-HHMMSS).
 """
 
@@ -19,48 +19,59 @@ def create_run_dir(run_id: str | None = None) -> Path:
     """Create a new run directory and return its path."""
     if run_id is None:
         run_id = datetime.now().strftime("%Y%m%d-%H%M%S")
-    
+
     run_dir = REPORTS_DIR / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Create cycle report template
+
+    # Create Japanese cycle report template consumed by scripts/report/discord-report.py.
     cycle_report = run_dir / "cycle_report.md"
     if not cycle_report.exists():
-        cycle_report.write_text(f"""# Cycle Report: {run_id}
+        cycle_report.write_text(f"""# 開発ループレポート: {run_id}
 
-## Summary
+## 状態
 
-- Start time: {datetime.now().isoformat()}
-- End time: TBD
-- Issue: TBD
-- Status: In progress
+- 開始時刻: {datetime.now().isoformat()}
+- 終了時刻: 未記入
+- Issue: 未記入
+- 状態: 進行中
 
-## Tasks Completed
+## 目的
 
-- [ ] Task 1
-- [ ] Task 2
+未記入
 
-## Issues Encountered
+## 実施内容
 
-None
+- [ ] 未記入
 
-## Next Steps
+## 判断と根拠
 
-- [ ] Next step 1
-- [ ] Next step 2
+未記入
 
-## Notes
+## 詰まり・ロス
 
-Add any additional notes here.
+なし
+
+## リスク
+
+未記入
+
+## 次にやるべきこと
+
+- [ ] 未記入
+
+## 完了・追加
+
+done: なし
+new: なし
 """)
-    
+
     return run_dir
 
 
 def main():
     args = sys.argv[1:]
     run_id = args[0] if args else None
-    
+
     run_dir = create_run_dir(run_id)
     print(f"Created run directory: {run_dir.relative_to(REPO_ROOT)}")
     print(f"Cycle report: {run_dir / 'cycle_report.md'}")

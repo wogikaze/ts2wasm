@@ -21,11 +21,11 @@ trap 'rm -f "$report_file"' EXIT
 {
   echo "## 状態"
   echo
-  echo "pre-push gates passed; push is about to start."
+  echo "pre-push gate は成功しました。これから push を開始します。"
   echo
   echo "## 目的"
   echo
-  echo "Notify the development webhook before pushing local commits."
+  echo "ローカルコミットを push する前に、開発 webhook へ監査用レポートを送信する。"
   echo
   echo "## 実施内容"
   echo
@@ -37,23 +37,23 @@ trap 'rm -f "$report_file"' EXIT
   echo
   echo "## 判断と根拠"
   echo
-  echo "Webhook delivery is a required pre-push audit step."
+  echo "webhook 送信は push 前に必須の監査ステップとして扱う。"
   echo
   echo "## 詰まり・ロス"
   echo
-  echo "N/A"
+  echo "なし"
   echo
   echo "## リスク"
   echo
-  echo "Push can still be rejected by the remote after this local hook completes."
+  echo "この local hook が完了しても、remote 側で push が拒否される可能性は残る。"
   echo
   echo "## 次にやるべきこと"
   echo
-  echo "Review remote CI after push."
+  echo "push 後に remote CI の結果を確認する。"
   echo
   echo "## 完了・追加"
   echo
-  echo "pre-push webhook sent for ${run_id}."
+  echo "${run_id} の pre-push webhook を送信した。"
 } > "$report_file"
 scripts/manager discord-report --run-id "$run_id" < "$report_file"
 

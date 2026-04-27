@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Send development loop report to Discord via webhook.
+Send Japanese development loop report to Discord via webhook.
 
 Usage:
     cat cycle_report.md | python scripts/report/discord-report.py [--run-id <run_id>]
@@ -33,29 +33,29 @@ def load_env() -> dict[str, str]:
 
 
 def parse_cycle_report(content: str) -> dict[str, str]:
-    """Parse cycle report markdown and extract report fields."""
+    """Parse Japanese cycle report markdown and extract report fields."""
     # Default values
     fields = {
-        "status": "N/A",
-        "purpose": "N/A",
-        "actions": "N/A",
-        "reasoning": "N/A",
-        "blockers": "N/A",
-        "risks": "N/A",
-        "next": "N/A",
-        "issues": "N/A",
+        "status": "未記入",
+        "purpose": "未記入",
+        "actions": "未記入",
+        "reasoning": "未記入",
+        "blockers": "なし",
+        "risks": "未記入",
+        "next": "未記入",
+        "issues": "未記入",
     }
 
     # Parse sections using regex
     patterns = {
         "status": r"## 状態\s*\n+(.+?)(?=\n##|\n---|\Z)",
-        "purpose": r"## 目的\s*\n+(.+?)(?=\n##|\n---|\Z)",
+        "purpose": r"## (?:目的|今回の目的)\s*\n+(.+?)(?=\n##|\n---|\Z)",
         "actions": r"## 実施内容\s*\n+(.+?)(?=\n##|\n---|\Z)",
         "reasoning": r"## 判断と根拠\s*\n+(.+?)(?=\n##|\n---|\Z)",
         "blockers": r"## 詰まり・ロス\s*\n+(.+?)(?=\n##|\n---|\Z)",
         "risks": r"## リスク\s*\n+(.+?)(?=\n##|\n---|\Z)",
         "next": r"## 次にやるべきこと\s*\n+(.+?)(?=\n##|\n---|\Z)",
-        "issues": r"## 完了・追加\s*\n+(.+?)(?=\n##|\n---|\Z)",
+        "issues": r"## 完了(?:・|\s*/\s*)追加\s*\n+(.+?)(?=\n##|\n---|\Z)",
     }
 
     for key, pattern in patterns.items():
@@ -74,7 +74,7 @@ def parse_cycle_report(content: str) -> dict[str, str]:
 
 
 def create_discord_embed(fields: dict[str, str], run_id: Optional[str]) -> dict:
-    """Create Discord embed from report fields."""
+    """Create Japanese Discord embed from report fields."""
     embed = {
         "username": "ts2wasm-dev-loop",
         "embeds": [
@@ -143,22 +143,22 @@ def send_discord_webhook(webhook_url: str, embed: dict) -> bool:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Send development loop report to Discord")
+    parser = argparse.ArgumentParser(description="Discord に日本語の開発ループレポートを送信する")
     parser.add_argument("--run-id", help="Run ID (e.g., 20260426-120000) for footer")
-    parser.add_argument("--dry-run", action="store_true", help="Print embed without sending")
+    parser.add_argument("--dry-run", action="store_true", help="送信せずに embed JSON を表示する")
     args = parser.parse_args()
 
     # Load environment
     env = load_env()
     webhook_url = env.get("DISCORD_WEBHOOK_URL")
     if not webhook_url:
-        print("Error: DISCORD_WEBHOOK_URL not set in environment or .env", file=sys.stderr)
+        print("エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません", file=sys.stderr)
         sys.exit(1)
 
     # Read markdown from stdin
     content = sys.stdin.read()
     if not content:
-        print("Error: No input from stdin", file=sys.stderr)
+        print("エラー: 標準入力にレポート本文がありません", file=sys.stderr)
         sys.exit(1)
 
     # Parse cycle report
@@ -174,7 +174,7 @@ def main():
 
     # Send to Discord
     if send_discord_webhook(webhook_url, embed):
-        print("Report sent to Discord")
+        print("Discord にレポートを送信しました")
         sys.exit(0)
     else:
         sys.exit(1)
