@@ -170,7 +170,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
-| 204 | Add typed IR dump command | feature | cli | implementation-ready | P2 | 020 | Add typed IR dump command |
+| 205 | Add optimizer dump command | feature | cli | implementation-ready | P2 | 020, 204 | Add optimizer dump command |
 | 209 | Implement labeled break and continue | feature | frontend/semantics | implementation-ready | P2 | 035 | Implement labeled break and continue |
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | implementation-ready | P1 |  | Complete this receiver binding semantics |
 | 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
@@ -186,7 +186,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 017b | Implement GC strategy | feature | runtime/memory | class: blocked | Implement GC strategy |
 | 046 | Implement extends inheritance | feature | runtime/semantics | 045 | Implement extends inheritance |
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
-| 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
 | 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | 211 | Implement arrow function closure and lexical this semantics |
 | 218 | Implement GC mark root scanning | feature | runtime/memory | 217 | Implement GC mark root scanning |
 | 219 | Implement GC sweep reuse and fixtures | feature | runtime/memory | 218 | Implement GC sweep reuse and fixtures |
@@ -251,6 +250,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
+| 204 | Add typed IR dump command | feature | cli | see `issues/done/204-add-typed-ir-dump.md` |
 | 206 | Make CLI a thin toolchain wrapper | refactor | cli | see `issues/done/206-make-cli-a-thin-toolchain-wrapper.md` |
 | 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | see `issues/done/207-complete-instanceof-prototype-chain-semantics.md` |
 | 208 | Implement switch fall-through semantics | feature | frontend/semantics | see `issues/done/208-implement-switch-fall-through-semantics.md` |
