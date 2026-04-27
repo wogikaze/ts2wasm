@@ -7,7 +7,7 @@
 **Type**: feature
 **Area**: runtime/memory
 **Priority**: P1
-**Depends on**: 017b1, 017b2, 017b3
+**Depends on**: 217, 218, 219
 **Orchestration class**: blocked
 
 Problem: GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks.
@@ -16,9 +16,9 @@ Scope:
 
 This is now a tracking issue split into implementation slices:
 
-- 017b1: Implement heap object header and GC allocation trigger accounting.
-- 017b2: Implement mark phase root scanning for reachable heap objects.
-- 017b3: Implement sweep/free-list reuse and GC-relevant differential fixtures.
+- 217: Implement heap object header and GC allocation trigger accounting.
+- 218: Implement mark phase root scanning for reachable heap objects.
+- 219: Implement sweep/free-list reuse and GC-relevant differential fixtures.
 
 Out of scope:
 
@@ -26,9 +26,9 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] 017b1 is complete.
-- [ ] 017b2 is complete.
-- [ ] 017b3 is complete.
+- [ ] 217 is complete.
+- [ ] 218 is complete.
+- [ ] 219 is complete.
 - [ ] Node differential test passes for GC-relevant fixtures.
 
 Validation:

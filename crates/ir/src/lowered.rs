@@ -8,8 +8,14 @@ use ts2wasm_runtime_abi::ValueTag;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub usize);
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuncId(pub usize);
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct ClassPrototypeRef {
+    pub constructor: FuncId,
+    pub parent_constructors: Vec<FuncId>,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModuleInfo {
@@ -195,9 +201,11 @@ pub enum LoweredExpr {
     },
     New {
         constructor: FuncId,
+        prototype: ClassPrototypeRef,
         args: Vec<LoweredExpr>,
         base_local: LocalId,
     },
+    ClassPrototype(ClassPrototypeRef),
     ModuleLoad {
         module_id: usize,
     },
@@ -925,10 +933,21 @@ impl<'a> Resolver<'a> {
             }
             ResolvedExpr::Binary { left, op, right } => {
                 if *op == BinaryOp::InstanceOf {
-                    // Lower instanceof to RuntimeCall
+                    let prototype = match right.as_ref() {
+                        ResolvedExpr::Ident(name) => self
+                            .class_prototype_ref(name)
+                            .map(LoweredExpr::ClassPrototype)?,
+                        _ => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "issue-207: instanceof right-hand side must be a supported class constructor".to_owned(),
+                                span: None,
+                            });
+                        }
+                    };
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "$instanceof".to_string(),
-                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                        args: vec![self.lower_expr(left)?, prototype],
                     })
                 } else if *op == BinaryOp::In {
                     // Lower in to PropertyIn or PropertyInDynamic
@@ -1275,15 +1294,7 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::New { class_name, args } => {
-                let constructor = self
-                    .class_constructor_ids
-                    .get(class_name)
-                    .copied()
-                    .ok_or_else(|| Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!("unknown class constructor `{}`", class_name),
-                        span: None,
-                    })?;
+                let prototype = self.class_prototype_ref(class_name)?;
 
                 let lowered_args = args
                     .iter()
@@ -1291,7 +1302,8 @@ impl<'a> Resolver<'a> {
                     .collect::<Result<Vec<_>, _>>()?;
 
                 Ok(LoweredExpr::New {
-                    constructor,
+                    constructor: prototype.constructor,
+                    prototype,
                     args: lowered_args,
                     base_local: self.alloc_temp(),
                 })
@@ -1382,6 +1394,45 @@ impl<'a> Resolver<'a> {
             current = self.class_parents.get(&class).and_then(|p| p.clone());
         }
         None
+    }
+
+    fn class_prototype_ref(&self, class_name: &str) -> Result<ClassPrototypeRef, Diagnostic> {
+        let constructor = self
+            .class_constructor_ids
+            .get(class_name)
+            .copied()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-207: instanceof right-hand side must be a supported class constructor `{}`",
+                    class_name
+                ),
+                span: None,
+            })?;
+
+        let mut parent_constructors = Vec::new();
+        let mut current = self.class_parents.get(class_name).and_then(|p| p.clone());
+        while let Some(parent) = current {
+            let parent_constructor = self
+                .class_constructor_ids
+                .get(&parent)
+                .copied()
+                .ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-207: superclass constructor `{}` is not available for instanceof",
+                        parent
+                    ),
+                    span: None,
+                })?;
+            parent_constructors.push(parent_constructor);
+            current = self.class_parents.get(&parent).and_then(|p| p.clone());
+        }
+
+        Ok(ClassPrototypeRef {
+            constructor,
+            parent_constructors,
+        })
     }
 
     fn infer_class_for_expr(&self, expr: &ResolvedExpr) -> Option<String> {
@@ -1764,6 +1815,29 @@ fn validate_expr(
             validate_expr(index, local_count, num_funcs, program, errors, true);
             validate_expr(value, local_count, num_funcs, program, errors, true);
         }
+        LoweredExpr::New {
+            constructor,
+            prototype,
+            args,
+            base_local,
+        } => {
+            check_func_id(*constructor, num_funcs, errors);
+            check_func_id(prototype.constructor, num_funcs, errors);
+            for parent in &prototype.parent_constructors {
+                check_func_id(*parent, num_funcs, errors);
+            }
+            check_local_id(*base_local, local_count, errors);
+            validate_constructor_arity(*constructor, args, num_funcs, program, errors);
+            for arg in args {
+                validate_expr(arg, local_count, num_funcs, program, errors, true);
+            }
+        }
+        LoweredExpr::ClassPrototype(prototype) => {
+            check_func_id(prototype.constructor, num_funcs, errors);
+            for parent in &prototype.parent_constructors {
+                check_func_id(*parent, num_funcs, errors);
+            }
+        }
         LoweredExpr::MethodCall { object, .. } => {
             validate_expr(object, local_count, num_funcs, program, errors, true);
             errors.push(Diagnostic {
@@ -1785,6 +1859,47 @@ fn check_local_id(id: LocalId, local_count: usize, errors: &mut Vec<Diagnostic>)
             message: format!(
                 "LocalId {} is out of range (scope has {} local(s))",
                 id.0, local_count
+            ),
+            span: None,
+        });
+    }
+}
+
+fn check_func_id(id: FuncId, num_funcs: usize, errors: &mut Vec<Diagnostic>) {
+    if id.0 >= num_funcs {
+        errors.push(Diagnostic {
+            code: DiagCode::InvariantViolation,
+            message: format!(
+                "FuncId {} is out of range (program has {} function(s))",
+                id.0, num_funcs
+            ),
+            span: None,
+        });
+    }
+}
+
+fn validate_constructor_arity(
+    constructor: FuncId,
+    args: &[LoweredExpr],
+    num_funcs: usize,
+    program: &LoweredProgram,
+    errors: &mut Vec<Diagnostic>,
+) {
+    if constructor.0 >= num_funcs {
+        return;
+    }
+    let func = &program.functions[constructor.0];
+    let min_required = func.min_required_params.saturating_sub(1);
+    let max_allowed = func.params.len().saturating_sub(1);
+    if args.len() < min_required || args.len() > max_allowed {
+        errors.push(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "constructor {} expects between {} and {} argument(s), got {}",
+                constructor.0,
+                min_required,
+                max_allowed,
+                args.len()
             ),
             span: None,
         });

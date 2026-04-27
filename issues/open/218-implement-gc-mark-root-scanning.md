@@ -3,11 +3,11 @@
 **Status**: open
 **Created**: 2026-04-28
 **Updated**: 2026-04-28
-**ID**: 017b2
+**ID**: 218
 **Type**: feature
 **Area**: runtime/memory
 **Priority**: P1
-**Depends on**: 017b1
+**Depends on**: 217
 **Orchestration class**: implementation-ready
 
 Problem: GC can only reclaim safely after reachable heap objects are marked from runtime roots.
@@ -21,7 +21,7 @@ Scope:
 
 Out of scope:
 
-- Sweep/free-list reuse and long-running leak fixtures (017b3)
+- Sweep/free-list reuse and long-running leak fixtures (219)
 
 Acceptance Criteria:
 

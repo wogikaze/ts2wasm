@@ -3,7 +3,7 @@
 **Status**: open
 **Created**: 2026-04-28
 **Updated**: 2026-04-28
-**ID**: 017b1
+**ID**: 217
 **Type**: feature
 **Area**: runtime/memory
 **Priority**: P1
@@ -22,8 +22,8 @@ Scope:
 
 Out of scope:
 
-- Root scanning and marking (017b2)
-- Sweep/free-list reuse and long-running leak fixtures (017b3)
+- Root scanning and marking (218)
+- Sweep/free-list reuse and long-running leak fixtures (219)
 
 Acceptance Criteria:
 

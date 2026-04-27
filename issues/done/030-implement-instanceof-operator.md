@@ -29,7 +29,7 @@ In scope:
 
 - [x] Add `instanceof` to lexer/parser
 - [x] Lower `instanceof` expression to runtime call
-- [x] Implement prototype chain lookup (deferred to follow-up: `issues/open/207-complete-instanceof-prototype-chain-semantics.md`)
+- [x] Implement prototype chain lookup (completed by follow-up: `issues/done/207-complete-instanceof-prototype-chain-semantics.md`)
 - [x] Add fixtures for instanceof behavior
 
 Out of scope:
@@ -51,7 +51,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] `instanceof` expression parses correctly
-- [x] `instanceof` checks prototype chain correctly (deferred to follow-up: `issues/open/207-complete-instanceof-prototype-chain-semantics.md`)
+- [x] `instanceof` checks prototype chain correctly (completed by follow-up: `issues/done/207-complete-instanceof-prototype-chain-semantics.md`)
 - [x] Fixtures cover instanceof behavior
 - [x] No regression in existing fixtures
 
@@ -87,11 +87,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] Instanceof prototype chain lookup tracked by `issues/open/207-complete-instanceof-prototype-chain-semantics.md`
+- [x] Instanceof prototype chain lookup completed by `issues/done/207-complete-instanceof-prototype-chain-semantics.md`
 
 ## Notes
 
-Basic instanceof operator syntax is implemented. Full prototype chain traversal semantics are deferred to `issues/open/207-complete-instanceof-prototype-chain-semantics.md`. Current implementation returns false for all instanceof checks as a placeholder.
+Basic instanceof operator syntax was implemented here. Full prototype chain traversal semantics were completed by `issues/done/207-complete-instanceof-prototype-chain-semantics.md`.
 
 ## Completion evidence
 
@@ -109,4 +109,4 @@ date: 2026-04-27
 
 Remaining risks:
 
-- Full prototype-chain semantics remain tracked by `issues/open/207-complete-instanceof-prototype-chain-semantics.md`
+- Full prototype-chain semantics were completed by `issues/done/207-complete-instanceof-prototype-chain-semantics.md`

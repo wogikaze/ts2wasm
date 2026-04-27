@@ -3,11 +3,11 @@
 **Status**: open
 **Created**: 2026-04-28
 **Updated**: 2026-04-28
-**ID**: 017b3
+**ID**: 219
 **Type**: feature
 **Area**: runtime/memory
 **Priority**: P1
-**Depends on**: 017b2
+**Depends on**: 218
 **Orchestration class**: implementation-ready
 
 Problem: Marked/unmarked heap metadata must be converted into reusable memory and covered by runtime fixtures before the GC tracking issue can close.
