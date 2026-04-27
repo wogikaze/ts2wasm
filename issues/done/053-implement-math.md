@@ -89,7 +89,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] none
+- [x] Math.random capability/randomness policy tracked by `issues/open/215-define-math-random-capability-policy.md`
 
 ## Notes
 
@@ -112,4 +112,4 @@ date: 2026-04-26
 
 Remaining risks:
 
-- Math.random() currently returns a placeholder value (0.5) instead of true random. Proper random number generation would require host import or WASI random support.
+- Math.random() currently returns a placeholder value (0.5) instead of true random. Proper random number generation requires a host/WASI capability policy and is tracked by `issues/open/215-define-math-random-capability-policy.md`.

@@ -24,6 +24,7 @@
 
 - [ ] Issue (if any) can record exact commands to reproduce verification
 - [ ] `reports/runs/<run_id>/test_report.json` will be produced (or a recorded reason not to) before closing
+- [ ] Any done issue that mentions `placeholder`, `deferred to follow-up`, or `new issue needed` links an open follow-up issue or records a documented scope decision
 
 ## Capability manifest schema
 
