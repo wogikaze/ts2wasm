@@ -1,0 +1,98 @@
+{
+  "run_id": "20260427T231045Z-issue-211",
+  "task_id": "issue-211",
+  "git": {
+    "sha": "cf15528",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/ir/src/lowered.rs",
+      "crates/backend-wasm/src/expr_emit.rs",
+      "crates/backend-wasm/src/lib.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/core-semantics/this-receiver-method.ts",
+      "fixtures/core-semantics/this-receiver-nested-method-boundary.ts",
+      "fixtures/core-semantics/this-extracted-method-unsupported.ts",
+      "fixtures/core-semantics/this-top-level-unsupported.ts",
+      "docs/language-reference/javascript-features.md",
+      "current-state.md",
+      "issues/done/211-complete-this-receiver-binding-semantics.md",
+      "issues/index.md"
+    ],
+    "commits": [
+      {
+        "sha": "cf15528",
+        "message": "issue-211: implement receiver-bound this semantics"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 129
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(this_receiver_method) | test(emit_wat_rejects_residual_this)'",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 1673
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(this) | test(method)'",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 507
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 2662
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 87
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 282
+    }
+  ],
+  "fixtures": {
+    "passed": 233,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [
+      "fixtures/core-semantics/this-receiver-method.ts",
+      "fixtures/core-semantics/this-receiver-nested-method-boundary.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "assigned_impacted_selector": "cargo nextest run -E 'test(this|method)'",
+    "assigned_impacted_selector_result": "no tests selected because nextest treated this|method as a literal pattern",
+    "corrected_impacted_selector": "cargo nextest run -E 'test(this) | test(method)'"
+  }
+}
