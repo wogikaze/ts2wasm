@@ -43,7 +43,7 @@ Out of scope:
 Expected:
 
 - `crates/cli/src/lib.rs` (lexer/parser)
-- `crates/cli/src/backend/` (lowering)
+- `crates/backend-wasm/src/` (lowering)
 - `fixtures/`
 
 Do not touch:
@@ -112,7 +112,7 @@ date: 2026-04-26
   - Parser: while_statement() and do_while_statement() functions already exist in crates/cli/src/lib.rs
   - AST: Stmt::While and Stmt::DoWhile variants already exist
   - Lowering: LoweredStmt::While and LoweredStmt::DoWhile already implemented in crates/ir/src/lowered.rs
-  - Emitter: Loop statement emission already implemented in crates/cli/src/backend/stmt_emit.rs
+  - Emitter: Loop statement emission already implemented in crates/backend-wasm/src/stmt_emit.rs
   - Fixtures: fixtures/control-flow-and-exceptions/while.ts and do-while.ts already exist
   - Tests: 5 while/do-while related tests already pass
 

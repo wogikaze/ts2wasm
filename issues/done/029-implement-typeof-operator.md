@@ -49,7 +49,7 @@ Out of scope:
 Expected:
 
 - `crates/cli/src/lib.rs` (lexer/parser)
-- `crates/cli/src/backend/` (lowering)
+- `crates/backend-wasm/src/` (lowering)
 - `fixtures/`
 
 Do not touch:

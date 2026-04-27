@@ -31,7 +31,8 @@ In scope:
 - [ ] Move build pipeline orchestration out of `crates/cli/src/lib.rs`.
 - [ ] Move dump orchestration out of `crates/cli/src/dump.rs` or make it call reusable compiler APIs only.
 - [ ] Ensure `crates/cli/src/main.rs` handles command parsing, path conversion, output rendering, and exit codes only.
-- [ ] Add architecture checks that prevent backend/parser/compiler pipeline modules from reappearing under `crates/cli/src/`.
+- [x] Add architecture checks that prevent backend modules from reappearing under `crates/cli/src/`.
+- [ ] Add architecture checks that prevent parser/compiler pipeline modules from reappearing under `crates/cli/src/`.
 - [ ] Keep CLI command behavior stable during migration.
 
 Out of scope:
@@ -108,7 +109,7 @@ Follow-up issues:
 
 Suggested migration order:
 
-1. Finish backend usage migration from `crates/cli/src/backend` to `crates/backend-wasm`.
+1. Finish backend usage migration from the old CLI backend directory to `crates/backend-wasm`.
 2. Finish frontend parser extraction tracked by issue 010.
 3. Add compiler/driver crate and move build/dump orchestration out of CLI.
 4. Tighten architecture checks once the desired boundary exists.

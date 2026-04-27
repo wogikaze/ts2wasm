@@ -42,7 +42,7 @@ Out of scope:
 Expected:
 
 - `crates/cli/src/lib.rs` (lexer/parser)
-- `crates/cli/src/backend/` (lowering)
+- `crates/backend-wasm/src/` (lowering)
 - `fixtures/`
 
 Do not touch:
@@ -119,7 +119,7 @@ date: 2026-04-26
   - Parser: switch_statement() function already exists in crates/cli/src/lib.rs
   - AST: Stmt::Switch variant already exists
   - Lowering: LoweredStmt::Switch already implemented in crates/ir/src/lowered.rs
-  - Emitter: Switch statement emission already implemented in crates/cli/src/backend/stmt_emit.rs
+  - Emitter: Switch statement emission already implemented in crates/backend-wasm/src/stmt_emit.rs
   - Fixture: fixtures/control-flow-and-exceptions/switch-case.ts already exists
   - Tests: 3 switch-related tests already pass
 

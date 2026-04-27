@@ -43,7 +43,7 @@ Out of scope:
 Expected:
 
 - `crates/cli/src/lib.rs` (lexer/parser)
-- `crates/cli/src/backend/` (lowering)
+- `crates/backend-wasm/src/` (lowering)
 - `fixtures/`
 
 Do not touch:
@@ -112,7 +112,7 @@ date: 2026-04-26
   - Parser: break_statement() and continue_statement() functions already exist in crates/cli/src/lib.rs
   - AST: Stmt::Break and Stmt::Continue variants already exist
   - Lowering: LoweredStmt::Break and LoweredStmt::Continue already implemented in crates/ir/src/lowered.rs
-  - Emitter: Break/continue statement emission already implemented in crates/cli/src/backend/stmt_emit.rs
+  - Emitter: Break/continue statement emission already implemented in crates/backend-wasm/src/stmt_emit.rs
   - Fixtures: fixtures/control-flow-and-exceptions/while.ts already includes break/continue
   - Tests: 5 break/continue related tests already pass
 

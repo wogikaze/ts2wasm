@@ -5,6 +5,8 @@ Usage: python scripts/manager.py check-architecture-rules
 
 Current checks:
   - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).
+  - crates/cli/src/backend must not be reintroduced after backend-wasm extraction.
+  - crates/cli/src/lib.rs must not declare a local backend module.
   - Warn when a repo-owned source/document file exceeds 2000 lines.
 """
 
@@ -47,6 +49,8 @@ def usage():
     print()
     print("Current checks:")
     print("  - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).")
+    print("  - crates/cli/src/backend must not be reintroduced.")
+    print("  - crates/cli/src/lib.rs must not declare a local backend module.")
     print("  - Warn when a repo-owned source/document file exceeds the line limit.")
 
 
@@ -120,10 +124,31 @@ def warn_oversized_files(max_file_lines: int) -> None:
         print(f"check_architecture_rules: WARN {path}: {count} lines", file=sys.stderr)
 
 
+def check_cli_backend_boundary() -> None:
+    backend_dir = REPO_ROOT / "crates" / "cli" / "src" / "backend"
+    if backend_dir.exists():
+        print(
+            "check_architecture_rules: crates/cli/src/backend must not be reintroduced; "
+            "put WASM backend implementation under crates/backend-wasm/src",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    cli_lib = REPO_ROOT / "crates" / "cli" / "src" / "lib.rs"
+    if cli_lib.exists() and "mod backend;" in cli_lib.read_text():
+        print(
+            "check_architecture_rules: crates/cli/src/lib.rs must not declare mod backend; "
+            "use ts2wasm-backend-wasm instead",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
 def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
     warn_oversized_files(max_file_lines)
+    check_cli_backend_boundary()
     
     if not shutil.which("cargo"):
         print("check_architecture_rules: cargo is required", file=sys.stderr)
