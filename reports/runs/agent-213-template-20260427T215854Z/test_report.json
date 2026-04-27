@@ -1,0 +1,99 @@
+{
+  "run_id": "agent-213-template-20260427T215854Z",
+  "task_id": "213",
+  "git": {
+    "sha": "fcef2aa",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/frontend/src/parser.rs",
+      "crates/cli/tests/ir_lowering.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/core-semantics/template-literal.ts",
+      "docs/language-reference/javascript-features.md",
+      "current-state.md",
+      "issues/done/041-implement-template-literals.md",
+      "issues/done/213-implement-template-literal-interpolation.md",
+      "issues/index.md"
+    ],
+    "commits": [
+      {
+        "sha": "3af66ea",
+        "message": "issue-213: implement template interpolation"
+      },
+      {
+        "sha": "fcef2aa",
+        "message": "issue-213: close template interpolation"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo test -p ts2wasm-frontend template --lib -- --nocapture",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo test -p ts2wasm-cli --test ir_lowering template -- --nocapture",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo test -p ts2wasm-cli --test m2_node_diff template_literal_fixture_matches_node_output_under_iwasm -- --nocapture",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(template)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/core-semantics/template-literal.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "cargo_nextest_run": "199 passed, 4 skipped",
+    "webhook": "deferred: DISCORD_WEBHOOK_URL is not configured"
+  }
+}
