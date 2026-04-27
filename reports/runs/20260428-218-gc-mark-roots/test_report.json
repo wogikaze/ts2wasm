@@ -2,7 +2,7 @@
   "run_id": "20260428-218-gc-mark-roots",
   "issue": "218",
   "status": "pass",
-  "commit": null,
+  "commit": "7677e00",
   "commands": [
     {
       "command": "cargo fmt --all --check",
