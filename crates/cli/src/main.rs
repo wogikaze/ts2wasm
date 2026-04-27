@@ -15,6 +15,9 @@ fn main() -> ExitCode {
 fn run() -> Result<(), String> {
     let args = env::args().skip(1).collect::<Vec<_>>();
     match args.as_slice() {
+        [command, input] if command == "check" => {
+            ts2wasm_cli::check_typescript_file(&PathBuf::from(input)).map_err(|e| e.to_string())
+        }
         [command, rest @ ..] if command == "dump" => run_dump(rest),
         [command, input, flag, output] if command == "build" && flag == "-o" => {
             ts2wasm_cli::build_file_with_options(
@@ -64,7 +67,7 @@ fn run() -> Result<(), String> {
             .map_err(|e| e.to_string())
         }
         _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm dump [--tokens|--ast|--resolved|--lowered|--wat] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm dump [--tokens|--ast|--resolved|--lowered|--wat] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
                 .to_owned(),
         ),
     }

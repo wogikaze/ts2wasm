@@ -44,6 +44,8 @@ pub enum DiagCode {
     UnsupportedSyntax,
     /// I/O or command execution failure at the backend boundary.
     BackendIo,
+    /// TypeScript compiler API reported a type-checking diagnostic.
+    TypeScriptTypeCheck,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

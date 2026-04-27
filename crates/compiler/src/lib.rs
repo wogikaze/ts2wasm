@@ -16,6 +16,10 @@ use ts2wasm_ir::name_resolver;
 const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
 
 pub use dump::{DumpOptions, DumpPhase, dump_file_with_options};
+pub use ts2wasm_frontend::{
+    TypeScriptCheckReport, TypeScriptDiagnostic, check_typescript_file,
+    collect_typescript_diagnostics,
+};
 
 pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
     build_file_with_options(input, output, None)

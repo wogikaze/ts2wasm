@@ -2,7 +2,7 @@
 
 **Status**: open
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-28
 **ID**: 019
 **Type**: feature
 **Area**: frontend
@@ -15,7 +15,7 @@ Problem: TypeScript parser/checker integration is not implemented. Current parse
 Scope:
 
 This is a parent issue coordinating TypeScript integration work. Sub-issues:
-- 019a: Integrate TypeScript compiler API for type checking (implementation-ready)
+- 019a: Integrate TypeScript compiler API for type checking (done)
 - 019b: Extract type information for optimization hints (implementation-ready, depends on 019a)
 
 Out of scope:
@@ -24,10 +24,10 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] 019a (basic integration) is complete.
+- [x] 019a (basic integration) is complete.
 - [ ] 019b (optimization hints) is complete.
-- [ ] TypeScript compiler API is integrated.
-- [ ] Production compiler does not require tsc at runtime.
+- [x] TypeScript compiler API is integrated.
+- [x] Production compiler does not require tsc at runtime.
 
 Validation:
 

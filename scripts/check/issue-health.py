@@ -175,7 +175,7 @@ def main() -> int:
             sub_seen[key] = issue.path
             parent_needed.add(parent)
 
-        all_ids_for_parent = {i.name_id for i in by_state[state]} | done_ids
+        all_ids_for_parent = open_ids | done_ids
         for parent in sorted(parent_needed):
             if parent not in all_ids_for_parent:
                 err(errors, f"sub-issues exist for parent {parent} but parent issue not found in open/ or done/")

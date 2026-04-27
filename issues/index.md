@@ -19,7 +19,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 017b | Implement GC strategy | feature | runtime/memory | implementation-ready | P1 | 017a | GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks. |
 | 019 | Integrate TypeScript parser/checker | feature | frontend | implementation-ready | P1 | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 specifies using tsc as o... |
-| 019a | Integrate TypeScript compiler API for type checking | feature | frontend | implementation-ready | P1 | 010 | TypeScript parser/checker integration is not implemented. Current parser is minimal. docs/04 specifies using tsc as o... |
+| 019b | Extract type information for optimization hints | feature | frontend | implementation-ready | P1 | 019a | TypeScript compiler API is integrated in 019a but type information is not yet extracted for optimization hints. |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 048 | Implement prototype chain | feature | runtime/semantics | implementation-ready | P1 |  | Implement prototype chain |
@@ -188,7 +188,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 019b | Extract type information for optimization hints | feature | frontend | 019a | Extract type information for optimization hints |
 | 020 | Implement generic JavaScript semantic IR | feature | ir/semantics | 019 | Implement generic JavaScript semantic IR |
 | 020a | Design JavaScript semantic IR | feature | ir/semantics | 019 | Design JavaScript semantic IR |
 | 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | 020a | Implement IR lowering from TypeScript AST |
@@ -227,6 +226,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 017 | Design and implement GC strategy | feature | runtime/memory | see file |
 | 017a | Design GC strategy | feature | runtime/memory | see `issues/done/017a-design-gc-strategy.md` |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
+| 019a | Integrate TypeScript compiler API for type checking | feature | frontend | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |

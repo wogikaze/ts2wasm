@@ -84,6 +84,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 - frontend crate（`crates/frontend`）: AST/span/diagnostic/token definitions plus lexer/parser implementation
 - compiler/driver crate（`crates/compiler`）: build pipeline, dump pipeline, AST validation, lowering orchestration
+- TypeScript compiler API oracle: explicit `ts2wasm check <input.ts>` and `ts2wasm_frontend::check_typescript_file` type-check through the local TypeScript devDependency; normal `build` does not invoke tsc.
 - WAT/WASM emitter と runtime subset（`crates/backend-wasm`）
 - shared schema crate（`crates/shared`）: ABI/capability/test status
 - IR crate（`crates/ir`）: resolved/lowered IR
@@ -98,7 +99,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 - **Crates module migration**: `crates/frontend`, `crates/ir`, `crates/runtime-abi`, and `crates/backend-wasm` code migrations are complete. Issue 026 is closed with full workspace nextest evidence.
 - **CLI ownership**: `crates/cli` is now a thin binary/re-export wrapper for compiler APIs. Lexer/parser implementation has moved to `crates/frontend`; backend runtime emission is split into focused modules and no repo-owned source file currently exceeds the 2000-line architecture warning threshold.
-- TypeScript parser/checker integration は未実装
+- TypeScript compiler API の明示 type-check oracle は実装済み。production build pipeline は tsc を必須にしない。型情報を最適化 hint として取り込む作業は issue 019b。
 - 汎用 JavaScript semantic IR は未実装
 - typed IR dump (`ts2wasm dump --tir`) and optimizer dump (`ts2wasm dump --optimize`) are tracked by issues 204 and 205.
 - full wasm backend は未実装（現状は WAT 中心）
