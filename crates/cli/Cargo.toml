@@ -20,3 +20,4 @@ ts2wasm-shared = { path = "../shared" }
 ts2wasm-runtime-abi = { path = "../runtime-abi" }
 ts2wasm-frontend = { path = "../frontend" }
 ts2wasm-ir = { path = "../ir" }
+ts2wasm-backend-wasm = { path = "../backend-wasm" }

@@ -8,7 +8,7 @@ priority: P1
 depends_on: [024, 025]
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-28
 ---
 
 ## Summary
@@ -30,18 +30,19 @@ Backend code is currently in `crates/cli/src/backend/`, violating the target cra
 
 In scope:
 
-- [ ] Move `crates/cli/src/backend/capability_manifest.rs` → `crates/backend-wasm/src/capability_manifest.rs`
-- [ ] Move `crates/cli/src/backend/emitter.rs` → `crates/backend-wasm/src/emitter.rs`
-- [ ] Move `crates/cli/src/backend/expr_emit.rs` → `crates/backend-wasm/src/expr_emit.rs`
-- [ ] Move `crates/cli/src/backend/runtime_builder.rs` → `crates/backend-wasm/src/runtime_builder.rs`
-- [ ] Move `crates/cli/src/backend/runtime_fn.rs` → `crates/backend-wasm/src/runtime_fn.rs`
-- [ ] Move `crates/cli/src/backend/runtime_link_plan.rs` → `crates/backend-wasm/src/runtime_link_plan.rs`
-- [ ] Move `crates/cli/src/backend/stmt_emit.rs` → `crates/backend-wasm/src/stmt_emit.rs`
-- [ ] Move `crates/cli/src/backend/string_intern.rs` → `crates/backend-wasm/src/string_intern.rs`
+- [x] Move `crates/cli/src/backend/capability_manifest.rs` → `crates/backend-wasm/src/capability_manifest.rs`
+- [x] Move `crates/cli/src/backend/emitter.rs` → `crates/backend-wasm/src/emitter.rs`
+- [x] Move `crates/cli/src/backend/expr_emit.rs` → `crates/backend-wasm/src/expr_emit.rs`
+- [x] Move `crates/cli/src/backend/runtime_builder.rs` → `crates/backend-wasm/src/runtime_builder.rs`
+- [x] Move `crates/cli/src/backend/runtime_fn.rs` → `crates/backend-wasm/src/runtime_fn.rs`
+- [x] Move `crates/cli/src/backend/runtime_link_plan.rs` → `crates/backend-wasm/src/runtime_link_plan.rs`
+- [x] Move `crates/cli/src/backend/stmt_emit.rs` → `crates/backend-wasm/src/stmt_emit.rs`
+- [x] Move `crates/cli/src/backend/string_intern.rs` → `crates/backend-wasm/src/string_intern.rs`
+- [x] Move `crates/cli/src/backend/wat_writer.rs` → `crates/backend-wasm/src/wat_writer.rs`
 - [ ] Remove `crates/cli/src/backend/mod.rs`
-- [ ] Add `ts2wasm-backend-wasm` dependency to `crates/cli/Cargo.toml`
-- [ ] Update all imports in `crates/cli/src/` from `crate::backend::` to `ts2wasm_backend_wasm::`
-- [ ] Update `crates/cli/src/lib.rs` to remove `mod backend;`
+- [x] Add `ts2wasm-backend-wasm` dependency to `crates/cli/Cargo.toml`
+- [x] Update all imports in `crates/cli/src/` from `crate::backend::` to `ts2wasm_backend_wasm::`
+- [x] Update `crates/cli/src/lib.rs` to remove `mod backend;`
 
 Out of scope:
 

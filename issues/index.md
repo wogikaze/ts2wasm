@@ -193,6 +193,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 047 | Implement super keyword | feature | runtime/semantics | 045, 046 | Implement super keyword |
 | 204 | Add typed IR dump command | feature | cli | 020 | Add typed IR dump command |
 | 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
+| 206 | Make CLI a thin toolchain wrapper | refactor | cli | 010, 026 | Make CLI a thin toolchain wrapper |
 <!-- generated:blocked:end -->
 
 ## Done queue

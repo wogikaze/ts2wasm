@@ -1,4 +1,3 @@
-mod backend;
 mod dump;
 
 use std::collections::HashMap;
@@ -6,6 +5,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+use ts2wasm_backend_wasm as backend;
 use ts2wasm_frontend::{
     BinaryOp, DiagCode, Diagnostic, Expr, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
 };
@@ -2983,23 +2983,6 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
     }
 }
 
-fn align_to(value: u32, alignment: u32) -> u32 {
-    value.div_ceil(alignment) * alignment
-}
-
-fn wat_bytes(bytes: &[u8]) -> String {
-    let mut encoded = String::new();
-    for byte in bytes {
-        match *byte {
-            b'"' => encoded.push_str("\\22"),
-            b'\\' => encoded.push_str("\\5c"),
-            0x20..=0x7e => encoded.push(*byte as char),
-            other => encoded.push_str(&format!("\\{other:02x}")),
-        }
-    }
-    encoded
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -3118,11 +3101,6 @@ mod tests {
             }
             other => panic!("unexpected stmt: {other:?}"),
         }
-    }
-
-    #[test]
-    fn encodes_wat_string_bytes() {
-        assert_eq!(wat_bytes(b"a\n\"\\\0"), "a\\0a\\22\\5c\\00");
     }
 
     #[test]
