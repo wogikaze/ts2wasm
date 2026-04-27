@@ -229,7 +229,7 @@
 |---|---|---|---|---|---|
 | string literal `"..."` | ES1 | heap object | 実装済み (UTF-8 storage; UTF-16 parity は部分) | P2 | 018 |
 | template literal `` `...` `` | ES6 | string interpolation | 実装済み（basic interpolation） | - | 213 |
-| string methods (`trim`, `split`, etc.) | ES5+ | runtime builtin | 部分実装（一部 placeholder） | P1 | 214 |
+| string methods (`trim`, `split`, etc.) | ES5+ | runtime builtin | 実装済み (basic; `trim` は ASCII whitespace、case conversion は ASCII only) | - | 214 |
 | string indexing `str[n]` | ES5 | UTF-16 code unit | 実装済み (basic) | - | 043 |
 | `String.fromCharCode` | ES1 | code unit to string | 実装済み (basic) | - | 044 |
 | `String.prototype.charCodeAt` | ES1 | string to code unit | 実装済み (basic) | - | 044 |
