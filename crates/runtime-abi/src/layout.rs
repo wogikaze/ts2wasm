@@ -63,12 +63,36 @@ impl Layout {
     pub const OBJECT_ENTRY_SIZE: u32 = 8;
 
     // ---- GC layout --------------------------------------------------------
-    /// Initial GC threshold in bytes (trigger GC when heap exceeds this).
+    /// Bytes in the runtime GC header immediately before every heap payload.
+    pub const GC_HEADER_SIZE: u32 = 16;
+    /// Offset of flags/type metadata relative to the hidden header base.
+    pub const GC_HEADER_FLAGS_AND_TYPE_OFFSET: u32 = 0;
+    /// Offset of aligned payload size relative to the hidden header base.
+    pub const GC_HEADER_BODY_SIZE_OFFSET: u32 = 4;
+    /// Offset of sweep/free-list linkage relative to the hidden header base.
+    pub const GC_HEADER_SWEEP_NEXT_OFFSET: u32 = 8;
+    /// Offset of reserved generation metadata relative to the hidden header base.
+    pub const GC_HEADER_RESERVED_OFFSET: u32 = 12;
+    /// Initial GC threshold in accounted allocation bytes.
     pub const GC_THRESHOLD: u32 = 64 * 1024;
-    /// Bit mask for object type in type_tag field.
-    pub const OBJECT_TYPE_MASK: u32 = 0x7F;
+    /// Per-GC allocation byte threshold before `$alloc_heap` calls the GC hook.
+    pub const GC_ALLOCATION_TRIGGER_BYTES: u32 = 4 * 1024;
+    /// Heap occupancy percentage threshold before `$alloc_heap` calls the GC hook.
+    pub const GC_HEAP_USAGE_TRIGGER_PERCENT: u32 = 80;
+    /// Bit mask for heap kind metadata in the flags/type field.
+    pub const GC_KIND_MASK: u32 = 0x1C;
+    /// Heap kind value for allocations whose precise kind is not yet passed to `$alloc_heap`.
+    pub const GC_KIND_UNKNOWN: u32 = 0 << 2;
+    /// Heap kind value for string payloads.
+    pub const GC_KIND_STRING: u32 = 1 << 2;
+    /// Heap kind value for array payloads.
+    pub const GC_KIND_ARRAY: u32 = 2 << 2;
+    /// Heap kind value for object payloads.
+    pub const GC_KIND_OBJECT: u32 = 3 << 2;
     /// Mark bit for GC mark phase.
-    pub const GC_MARK_BIT: u32 = 0x80000000;
+    pub const GC_MARK_BIT: u32 = 0x00000001;
+    /// Finalizer-reserved bit.
+    pub const GC_FINALIZABLE_BIT: u32 = 0x00000002;
 
     // ---- Module cache layout -----------------------------------------------
     /// Maximum number of concurrently cached modules.
@@ -136,5 +160,32 @@ mod tests {
         let stdin_end = Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE;
         assert!(scratch_end <= Layout::STDIN_BUFFER_OFFSET);
         assert!(stdin_end <= Layout::HEAP_START);
+    }
+
+    #[test]
+    fn gc_header_layout_is_payload_aligned() {
+        assert_eq!(Layout::GC_HEADER_SIZE % Layout::ALIGN, 0);
+        assert_eq!(
+            Layout::GC_HEADER_RESERVED_OFFSET + 4,
+            Layout::GC_HEADER_SIZE
+        );
+    }
+
+    #[test]
+    fn gc_kind_bits_do_not_overlap_mark_flags() {
+        assert_eq!(Layout::GC_KIND_MASK & Layout::GC_MARK_BIT, 0);
+        assert_eq!(Layout::GC_KIND_MASK & Layout::GC_FINALIZABLE_BIT, 0);
+        assert_eq!(
+            Layout::GC_KIND_STRING & Layout::GC_KIND_MASK,
+            Layout::GC_KIND_STRING
+        );
+        assert_eq!(
+            Layout::GC_KIND_ARRAY & Layout::GC_KIND_MASK,
+            Layout::GC_KIND_ARRAY
+        );
+        assert_eq!(
+            Layout::GC_KIND_OBJECT & Layout::GC_KIND_MASK,
+            Layout::GC_KIND_OBJECT
+        );
     }
 }

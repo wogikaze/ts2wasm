@@ -952,29 +952,85 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_gc_collect_stub(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $gc_collect_stub
+    (global.set $alloc_bytes_since_last_gc (i32.const 0)))
+"#,
+        );
+    }
+
     pub(super) fn emit_alloc_heap(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
   (func $alloc_heap (param $size i32) (result i32)
+    (local $header_base i32)
     (local $base i32)
+    (local $payload_size i32)
+    (local $alloc_delta i32)
     (local $new_heap i32)
     (local $memory_pages i32)
     (local $memory_bytes i32)
-    (local.set $base
+    (local $pressure_after i32)
+    (local $trigger i32)
+    (local.set $header_base
       (i32.and
         (i32.add (global.get $heap) (i32.const {align_mask}))
         (i32.const {heap_align})))
-    (local.set $new_heap (i32.add (local.get $base) (local.get $size)))
-    ;; OOM check: verify allocation fits within current memory
+    (local.set $payload_size
+      (i32.and
+        (i32.add (local.get $size) (i32.const {align_mask}))
+        (i32.const {heap_align})))
+    (local.set $base (i32.add (local.get $header_base) (i32.const {gc_header_size})))
+    (local.set $alloc_delta
+      (i32.add (i32.const {gc_header_size}) (local.get $payload_size)))
+    (local.set $new_heap (i32.add (local.get $base) (local.get $payload_size)))
     (local.set $memory_pages (memory.size))
     (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
+    (local.set $pressure_after
+      (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $alloc_delta)))
+    (local.set $trigger
+      (i32.or
+        (i32.ge_u (local.get $pressure_after) (global.get $gc_threshold))
+        (i32.ge_u
+          (local.get $new_heap)
+          (i32.div_u
+            (i32.mul (local.get $memory_bytes) (i32.const {gc_heap_usage_percent}))
+            (i32.const 100)))))
+    (if (local.get $trigger)
+      (then
+        (call $gc_collect_stub)
+        (global.set $alloc_bytes_since_last_gc (local.get $alloc_delta)))
+      (else
+        (global.set $alloc_bytes_since_last_gc (local.get $pressure_after))))
+    ;; OOM check: verify allocation fits within current memory after the GC trigger point.
     (if (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))
       (then (unreachable)))
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_flags_offset}))
+      (i32.const {gc_kind_unknown}))
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_body_size_offset}))
+      (local.get $payload_size))
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_sweep_next_offset}))
+      (i32.const 0))
+    (i32.store
+      (i32.add (local.get $header_base) (i32.const {gc_reserved_offset}))
+      (i32.const 0))
     (global.set $heap (local.get $new_heap))
     (local.get $base))
 "#,
             align_mask = Layout::ALIGN_MASK,
             heap_align = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_HEADER_FLAGS_AND_TYPE_OFFSET,
+            gc_body_size_offset = Layout::GC_HEADER_BODY_SIZE_OFFSET,
+            gc_sweep_next_offset = Layout::GC_HEADER_SWEEP_NEXT_OFFSET,
+            gc_reserved_offset = Layout::GC_HEADER_RESERVED_OFFSET,
+            gc_kind_unknown = Layout::GC_KIND_UNKNOWN,
+            gc_heap_usage_percent = Layout::GC_HEAP_USAGE_TRIGGER_PERCENT,
             page_size = Layout::WASM_PAGE_SIZE,
         ));
     }
@@ -998,5 +1054,53 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
         ));
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::emit_wat;
+    use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt};
+    use ts2wasm_runtime_abi::Layout;
+
+    #[test]
+    fn alloc_heap_emits_gc_header_and_trigger_accounting_contract() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ArrayNew {
+                elements: vec![LoweredExpr::Number(1), LoweredExpr::Number(2)],
+            })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("array allocation should emit WAT");
+
+        assert!(wat.contains("(global $alloc_bytes_since_last_gc (mut i32) (i32.const 0))"));
+        assert!(wat.contains(&format!(
+            "(global $gc_threshold (mut i32) (i32.const {}))",
+            Layout::GC_ALLOCATION_TRIGGER_BYTES
+        )));
+        assert!(wat.contains("(func $gc_collect_stub"));
+        assert!(wat.contains("(call $gc_collect_stub)"));
+        assert!(wat.contains(&format!("(i32.const {})", Layout::GC_HEADER_SIZE)));
+        assert!(wat.contains("(local.get $header_base)"));
+        assert!(wat.contains(&format!(
+            "(i32.const {})",
+            Layout::GC_HEADER_FLAGS_AND_TYPE_OFFSET
+        )));
+        assert!(wat.contains(&format!(
+            "(i32.const {})",
+            Layout::GC_HEADER_BODY_SIZE_OFFSET
+        )));
+        assert!(wat.contains(&format!(
+            "(i32.const {})",
+            Layout::GC_HEADER_SWEEP_NEXT_OFFSET
+        )));
+        assert!(wat.contains(&format!(
+            "(i32.const {})",
+            Layout::GC_HEADER_RESERVED_OFFSET
+        )));
+        assert!(wat.contains("(local.get $base)"));
     }
 }

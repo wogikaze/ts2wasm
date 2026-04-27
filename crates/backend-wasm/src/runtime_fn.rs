@@ -1,5 +1,5 @@
 use ts2wasm_ir::builtin::BuiltinId;
-use ts2wasm_runtime_abi::RuntimeString;
+use ts2wasm_runtime_abi::{Layout, RuntimeString};
 
 /// ABI contract type for host imports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -64,6 +64,8 @@ pub(crate) enum RuntimeFn {
     StrictNotEqual,
     And,
     Or,
+    /// Stop-the-world GC hook. This slice only accounts and resets allocation pressure.
+    GcCollectStub,
     /// Bump-allocate `size` bytes on the heap, aligned to `Layout::ALIGN`.
     AllocHeap,
     /// Byte-by-byte memory equality check used by `PropertyGet`.
@@ -383,6 +385,8 @@ pub(crate) enum RuntimeResult {
 pub(crate) enum RuntimeGlobal {
     ModuleCache,
     CurrentModuleId,
+    AllocBytesSinceLastGc,
+    GcThreshold,
 }
 
 impl RuntimeGlobal {
@@ -390,12 +394,16 @@ impl RuntimeGlobal {
         match self {
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
+            Self::AllocBytesSinceLastGc => "$alloc_bytes_since_last_gc",
+            Self::GcThreshold => "$gc_threshold",
         }
     }
 
     pub(crate) const fn initial_value(self) -> i32 {
         match self {
             Self::ModuleCache | Self::CurrentModuleId => 0,
+            Self::AllocBytesSinceLastGc => 0,
+            Self::GcThreshold => Layout::GC_ALLOCATION_TRIGGER_BYTES as i32,
         }
     }
 }
@@ -417,6 +425,10 @@ const NO_RUNTIME_STRINGS: &[&str] = &[];
 
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
+const GLOBALS_GC_ACCOUNTING: &[RuntimeGlobal] = &[
+    RuntimeGlobal::AllocBytesSinceLastGc,
+    RuntimeGlobal::GcThreshold,
+];
 
 const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
@@ -441,6 +453,7 @@ const BANG_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::EqualEqual];
 const STRICT_NOT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
+const ALLOC_HEAP_DEPS: &[RuntimeFn] = &[RuntimeFn::GcCollectStub];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
@@ -838,9 +851,17 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::GcCollectStub => RuntimeSpec {
+                symbol: "$gc_collect_stub",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::EffectOnly,
+            },
             Self::AllocHeap => RuntimeSpec {
                 symbol: "$alloc_heap",
-                deps: NO_DEPS,
+                deps: ALLOC_HEAP_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1282,6 +1303,7 @@ impl RuntimeFn {
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 GLOBALS_MODULE_RUNTIME
             }
+            Self::GcCollectStub | Self::AllocHeap => GLOBALS_GC_ACCOUNTING,
             _ => NO_GLOBALS,
         }
     }
@@ -1334,6 +1356,7 @@ impl RuntimeFn {
             Self::StrictNotEqual => "strict_not_equal",
             Self::And => "and",
             Self::Or => "or",
+            Self::GcCollectStub => "gc_collect_stub",
             Self::AllocHeap => "alloc_heap",
             Self::MemEqual => "mem_equal",
             Self::ArrayGet => "array_get",
@@ -1429,6 +1452,7 @@ impl RuntimeFn {
             Self::StrictNotEqual,
             Self::And,
             Self::Or,
+            Self::GcCollectStub,
             Self::AllocHeap,
             Self::MemEqual,
             Self::ArrayGet,
@@ -1533,6 +1557,7 @@ impl RuntimeFn {
             Self::StrictNotEqual,
             Self::And,
             Self::Or,
+            Self::GcCollectStub,
             Self::AllocHeap,
             Self::MemEqual,
             Self::ArrayGet,

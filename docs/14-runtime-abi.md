@@ -96,7 +96,7 @@ Rationale:
 - `arena` は明示的な生存区間が必要で、現行の型付けと実行モデルでは閉じ込めが困難
 - `string`/`array`/`object` が同一ヒープを使う現状では、最初に `mark+list-based sweep` を導入するのが既存 runtime の変更面積を最小化できる
 
-### Planned heap object header
+### Heap object header
 
 GC enabled allocation uses a **separate runtime header** before each heap block.
 ユーザから観測される `RawValue` ポインタは header より `GC_HEADER_SIZE` 分だけ進んだ本体先頭を指す。
@@ -116,7 +116,12 @@ Flag layout:
 - bits2-4: heap kind (`001` string, `010` array, `011` object)
 - bits5-31: reserved
 
-### Heap payload layout (planned)
+Current `$alloc_heap(size)` keeps its existing one-parameter ABI and therefore writes heap kind `000`
+(`unknown`) in the flags/type word. String/array/object users still receive the payload pointer (`obj_ptr`)
+and keep their existing payload layout; typed allocation entrypoints can refine the kind bits later without
+changing observed payload pointers.
+
+### Heap payload layout
 
 The existing logical payload shape is kept; header is additive.
 
@@ -183,17 +188,20 @@ backend が直接 import 文字列を持つことは禁止（`RuntimeLinkPlan` �
 この分類は `docs/03-api-and-host-capability.md` と `docs/11-shared-definitions.md` に正式定義する。
 backend が API 分類を決めることは禁止。必ず capability manifest / semantic pass を通す。
 
-## Bump Allocator
+## Heap Allocator
 
 `$heap` global は `HEAP_START` 初期値を持つ。
-string alloc 時は以下の手順で行う。
+heap alloc 時は以下の手順で行う。
 
 ```text
-1. align_to($heap, ALIGN) → base
-2. i32.store(base, len)
-3. $copy(src, base + 4, len)
-4. $heap = align_to(base + 4 + len, ALIGN)
-5. return base | STRING_TAG
+1. align_to($heap, ALIGN) → header_base
+2. align_to(size, ALIGN) → payload_size
+3. header_base + GC_HEADER_SIZE → base
+4. next_free = base + payload_size
+5. threshold / occupancy trigger may call $gc_collect_stub before OOM
+6. header stores flags/type, payload_size, sweep_next, reserved
+7. $heap = next_free
+8. return base
 ```
 
 ### OOM Handling
@@ -216,32 +224,29 @@ string alloc 時は以下の手順で行う。
 
 ### Heap Object Header Design
 
-すべての heap object は以下の header を持つ:
+すべての heap object は hidden runtime header と既存 payload を持つ。定数は
+`crates/runtime-abi/src/layout.rs` の `Layout` で定義する:
 
-```text
-[offset + 0 .. +4)   : i32 size (バイト数、header を含む)
-[offset + 4 .. +8)   : i32 type_tag (object type と mark bit をエンコード)
-[offset + 8 .. +N)   : type-specific payload
-```
-
-type_tag encoding:
-- bit 0-7: object type (OBJECT, ARRAY, STRING, CLOSURE)
-- bit 31: mark bit (GC mark phase で使用)
-
-定数は `runtime/layout.rs` の `Layout` で定義:
-- `OBJECT_HEADER_SIZE`: 8 (size + type_tag)
-- `OBJECT_TYPE_MASK`: 0x7F
-- `GC_MARK_BIT`: 0x80000000
+- `GC_HEADER_SIZE`: 16
+- `GC_HEADER_FLAGS_AND_TYPE_OFFSET`: 0
+- `GC_HEADER_BODY_SIZE_OFFSET`: 4
+- `GC_HEADER_SWEEP_NEXT_OFFSET`: 8
+- `GC_HEADER_RESERVED_OFFSET`: 12
+- `GC_MARK_BIT`: bit0
+- `GC_FINALIZABLE_BIT`: bit1
+- `GC_KIND_MASK`: bits2-4
 
 ### GC Trigger Points
 
 GC は以下のタイミングで実行:
 
-1. **Allocation threshold**: `$heap` が `HEAP_START + GC_THRESHOLD` を超えた場合
-   - `GC_THRESHOLD` は初期値として 64KB
-   - threshold は GC 後に動的に調整可能
+1. **Allocation threshold**: `alloc_bytes_since_last_gc` が `GC_ALLOCATION_TRIGGER_BYTES`
+   （初期値 4096 bytes）以上になる場合
+   - `$gc_threshold` global は初期値 4096 を持ち、後続 GC slice で動的調整可能
 
-2. **Explicit collection**: 将来的に `gc()` API を追加可能
+2. **Heap occupancy threshold**: `next_free >= memory.size * 80 / 100` の場合
+
+3. **Explicit collection**: 将来的に `gc()` API を追加可能
 
 ### Mark Phase
 

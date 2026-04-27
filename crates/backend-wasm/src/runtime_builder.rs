@@ -48,6 +48,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::StrictNotEqual => self.emit_strict_not_equal(wat),
                 RuntimeFn::And => self.emit_and(wat),
                 RuntimeFn::Or => self.emit_or(wat),
+                RuntimeFn::GcCollectStub => self.emit_gc_collect_stub(wat),
                 RuntimeFn::AllocHeap => self.emit_alloc_heap(wat),
                 RuntimeFn::MemEqual => self.emit_mem_equal(wat),
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
