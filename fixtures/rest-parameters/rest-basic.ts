@@ -1,6 +1,5 @@
 // Basic rest parameter test
-// Note: Full rest parameter implementation requires collecting remaining arguments
-// This fixture tests that rest parameters parse and compile without errors
+// Verifies that rest parameters collect remaining arguments.
 
 function sum(...args) {
     return args.length;

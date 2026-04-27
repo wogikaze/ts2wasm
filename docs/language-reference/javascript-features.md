@@ -181,7 +181,7 @@
 | arrow function | ES6 | lexical `this` | 部分実装（syntax/placeholder; closure semantics は追跡中） | P1 | 210 |
 | `this` | ES1 | call site receiver | 実装済み (class constructor / instance method receiver; top-level・static・extracted method は issue-linked diagnostic) | - | 211 |
 | `arguments` | ES1 | function arguments object | 未実装 | P2 | - |
-| rest parameters | ES6 | variadic parameters | 部分実装（empty-array placeholder） | P1 | 212 |
+| rest parameters | ES6 | variadic parameters | 実装済み (argument collection) | - | 212 |
 | spread arguments | ES6 | argument spreading | 実装済み (basic) | - | 039 |
 | default parameters | ES6 | parameter defaults | 実装済み (basic) | - | 040 |
 | destructuring parameters | ES6 | pattern matching | 未実装 | P2 | - |

@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,10 +28,10 @@ Issue 038 parses rest parameters but records that lowering creates an empty-arra
 
 In scope:
 
-- [ ] Pass argument-count and argument values through call lowering/emission as needed.
-- [ ] Populate rest arrays with arguments after the last named parameter.
-- [ ] Add Node differential fixtures for zero, one, and multiple rest arguments.
-- [ ] Preserve behavior of ordinary fixed parameters.
+- [x] Pass argument-count and argument values through call lowering/emission as needed.
+- [x] Populate rest arrays with arguments after the last named parameter.
+- [x] Add Node differential fixtures for zero, one, and multiple rest arguments.
+- [x] Preserve behavior of ordinary fixed parameters.
 
 Out of scope:
 
@@ -54,10 +55,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Rest parameters no longer always produce an empty array.
-- [ ] Rest arrays preserve argument order and length.
-- [ ] Node differential fixtures cover zero/extra argument cases.
-- [ ] Docs/current-state/issues are synchronized after behavior changes.
+- [x] Rest parameters no longer always produce an empty array.
+- [x] Rest arrays preserve argument order and length.
+- [x] Node differential fixtures cover zero/extra argument cases.
+- [x] Docs/current-state/issues are synchronized after behavior changes.
 
 ## Validation
 
@@ -82,15 +83,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update `docs/language-reference/javascript-features.md`
+- [x] update `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] update `current-state.md`
+- [x] update `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -102,14 +103,29 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- Rest parameter calls now pass a dense rest array built from extra call-site arguments.
+- Regression coverage: `fixtures/core-semantics/rest-params-zero.ts`,
+  `fixtures/core-semantics/rest-params-one.ts`, and
+  `fixtures/core-semantics/rest-params-multiple.ts`.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run -E 'test(rest)'
+result: PASS (1 passed)
+date: 2026-04-28
+
+command: cargo nextest run
+result: PASS (240 passed, 4 skipped)
+date: 2026-04-28
+
+command: scripts/manager check-issue-health
+result: PASS
+date: 2026-04-28
 ```
 
 Remaining risks:

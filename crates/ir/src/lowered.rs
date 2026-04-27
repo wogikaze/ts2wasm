@@ -38,6 +38,7 @@ pub struct LoweredFunction {
     pub id: FuncId,
     pub params: Vec<LocalId>,
     pub min_required_params: usize,
+    pub rest_param_index: Option<usize>,
     pub locals: Vec<LocalId>,
     pub body: Vec<LoweredStmt>,
 }
@@ -489,16 +490,14 @@ fn lower_function(
         in_constructor,
     )?;
 
-    // Insert default parameter assignments and rest parameter collection at the start of the body
+    let rest_param_index = params.iter().position(|(_, _, is_rest)| *is_rest);
+
+    // Insert default parameter assignments at the start of the body.
     let mut body_with_defaults = Vec::new();
     for (param_name, default_expr, is_rest) in params {
         if *is_rest {
-            // Rest parameter: collect remaining arguments into an array
-            let param_local = resolver.resolve_local(param_name)?;
-            body_with_defaults.push(LoweredStmt::Assign(
-                param_local,
-                LoweredExpr::ArrayNew { elements: vec![] },
-            ));
+            // Rest parameters are populated by call lowering/emission.
+            continue;
         } else if let Some(default) = default_expr {
             let param_local = resolver.resolve_local(param_name)?;
             let lowered_default = resolver.lower_expr(default)?;
@@ -524,6 +523,7 @@ fn lower_function(
         id,
         params: param_ids,
         min_required_params: min_required,
+        rest_param_index,
         locals: resolver.locals,
         body: body_with_defaults,
     })
@@ -1565,6 +1565,29 @@ fn validate_functions(program: &LoweredProgram, errors: &mut Vec<Diagnostic>) {
             }
         }
 
+        if let Some(rest_param_index) = function.rest_param_index {
+            if rest_param_index >= function.params.len() {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "rest parameter index {} is out of range (function has {} parameter(s))",
+                        rest_param_index,
+                        function.params.len()
+                    ),
+                    span: None,
+                });
+            } else if rest_param_index + 1 != function.params.len() {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "rest parameter index {} must be the final parameter",
+                        rest_param_index
+                    ),
+                    span: None,
+                });
+            }
+        }
+
         let base = function.params.len();
         for (local_index, local_id) in function.locals.iter().enumerate() {
             let expected = base + local_index;
@@ -1775,19 +1798,32 @@ fn validate_expr(
                     } else {
                         let func = &program.functions[func_id.0];
                         let min_required = func.min_required_params;
-                        let max_allowed = func.params.len();
-                        if args.len() < min_required || args.len() > max_allowed {
+                        if args.len() < min_required {
                             errors.push(Diagnostic {
                                 code: DiagCode::ArityMismatch,
                                 message: format!(
-                                    "function {} expects between {} and {} argument(s), got {}",
+                                    "function {} expects at least {} argument(s), got {}",
                                     func_id.0,
                                     min_required,
-                                    max_allowed,
                                     args.len()
                                 ),
                                 span: None,
                             });
+                        } else if func.rest_param_index.is_none() {
+                            let max_allowed = func.params.len();
+                            if args.len() > max_allowed {
+                                errors.push(Diagnostic {
+                                    code: DiagCode::ArityMismatch,
+                                    message: format!(
+                                        "function {} expects between {} and {} argument(s), got {}",
+                                        func_id.0,
+                                        min_required,
+                                        max_allowed,
+                                        args.len()
+                                    ),
+                                    span: None,
+                                });
+                            }
                         }
                     }
                 }
@@ -1937,18 +1973,31 @@ fn validate_constructor_arity(
     }
     let func = &program.functions[constructor.0];
     let min_required = func.min_required_params.saturating_sub(1);
-    let max_allowed = func.params.len().saturating_sub(1);
-    if args.len() < min_required || args.len() > max_allowed {
+    if args.len() < min_required {
         errors.push(Diagnostic {
             code: DiagCode::ArityMismatch,
             message: format!(
-                "constructor {} expects between {} and {} argument(s), got {}",
+                "constructor {} expects at least {} argument(s), got {}",
                 constructor.0,
                 min_required,
-                max_allowed,
                 args.len()
             ),
             span: None,
         });
+    } else if func.rest_param_index.is_none() {
+        let max_allowed = func.params.len().saturating_sub(1);
+        if args.len() > max_allowed {
+            errors.push(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "constructor {} expects between {} and {} argument(s), got {}",
+                    constructor.0,
+                    min_required,
+                    max_allowed,
+                    args.len()
+                ),
+                span: None,
+            });
+        }
     }
 }

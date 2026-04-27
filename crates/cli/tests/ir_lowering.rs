@@ -122,6 +122,7 @@ fn validate_rejects_arity_mismatch() {
         id: FuncId(0),
         params: vec![LocalId(0), LocalId(1)],
         min_required_params: 2,
+        rest_param_index: None,
         locals: vec![],
         body: vec![],
     };

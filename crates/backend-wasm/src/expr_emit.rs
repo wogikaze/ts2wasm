@@ -274,65 +274,20 @@ impl WatEmitter<'_> {
                     }
                 }
             }
-            LoweredExpr::Call { kind, args } => {
-                match kind {
-                    FunctionCallKind::User(func_id) => {
-                        // Get the function to check parameter count
-                        let func = self.program.functions.get(func_id.0);
-                        let param_count = func.map(|f| f.params.len()).unwrap_or(0);
-
-                        // Emit provided arguments
-                        for arg in args {
-                            self.emit_expr(wat, arg, indent, frame);
-                        }
-
-                        // Fill missing arguments with undefined
-                        for _ in args.len()..param_count {
-                            wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
-                        }
-
-                        wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*func_id)));
-                    }
-                    FunctionCallKind::Builtin(builtin) => {
-                        for arg in args {
-                            self.emit_expr(wat, arg, indent, frame);
-                        }
-                        let runtime_fn = RuntimeFn::from_builtin(*builtin);
-                        wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
-                    }
+            LoweredExpr::Call { kind, args } => match kind {
+                FunctionCallKind::User(func_id) => {
+                    self.emit_user_call_args(wat, *func_id, args, indent, frame);
                 }
-            }
+                FunctionCallKind::Builtin(builtin) => {
+                    for arg in args {
+                        self.emit_expr(wat, arg, indent, frame);
+                    }
+                    let runtime_fn = RuntimeFn::from_builtin(*builtin);
+                    wat.push_str(&format!("{pad}(call {})\n", runtime_fn.symbol()));
+                }
+            },
             LoweredExpr::ArrayNew { elements } => {
-                let elem_count = elements.len();
-                let size = Layout::ARRAY_HEADER_SIZE + (elem_count as u32) * 4;
-                wat.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const {})))\n",
-                    frame.heap_base_tmp(),
-                    RuntimeFn::AllocHeap.symbol(),
-                    size,
-                ));
-                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
-                wat.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    elem_count,
-                ));
-                for (i, elem) in elements.iter().enumerate() {
-                    let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
-                    self.emit_expr(wat, elem, indent, frame);
-                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp(),));
-                    wat.push_str(&format!(
-                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
-                        frame.heap_base_tmp(),
-                        offset,
-                        frame.heap_value_tmp(),
-                    ));
-                }
-                wat.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    frame.heap_base_tmp(),
-                    ValueTag::ARRAY_TAG,
-                ));
+                self.emit_array_literal(wat, elements, indent, frame);
             }
             LoweredExpr::ArrayGet { arr, index } => {
                 self.emit_expr(wat, arr, indent, frame);
@@ -521,13 +476,36 @@ impl WatEmitter<'_> {
                 ));
 
                 // Call constructor with implicit `this` first argument.
-                wat.push_str(&format!(
-                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
-                    local_index(*base_local),
-                    ValueTag::OBJECT,
-                ));
-                for arg in args {
-                    self.emit_expr(wat, arg, indent, frame);
+                if let Some(func) = self.program.functions.get(constructor.0) {
+                    if let Some(rest_index) = func.rest_param_index {
+                        wat.push_str(&format!(
+                            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                            local_index(*base_local),
+                            ValueTag::OBJECT,
+                        ));
+                        let explicit_fixed_count = rest_index.saturating_sub(1);
+                        for arg_index in 0..explicit_fixed_count {
+                            if let Some(arg) = args.get(arg_index) {
+                                self.emit_expr(wat, arg, indent, frame);
+                            } else {
+                                wat.push_str(&format!(
+                                    "{pad}(i32.const {})\n",
+                                    ValueTag::UNDEFINED
+                                ));
+                            }
+                        }
+                        let rest_start = explicit_fixed_count.min(args.len());
+                        self.emit_array_literal(wat, &args[rest_start..], indent, frame);
+                    } else {
+                        wat.push_str(&format!(
+                            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                            local_index(*base_local),
+                            ValueTag::OBJECT,
+                        ));
+                        for arg in args {
+                            self.emit_expr(wat, arg, indent, frame);
+                        }
+                    }
                 }
                 wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));
                 wat.push_str(&format!("{pad}(drop)\n"));
@@ -546,6 +524,83 @@ impl WatEmitter<'_> {
                 ));
             }
         }
+    }
+
+    fn emit_user_call_args(
+        &self,
+        wat: &mut String,
+        func_id: ts2wasm_ir::lowered::FuncId,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let func = self.program.functions.get(func_id.0);
+
+        if let Some(func) = func {
+            if let Some(rest_index) = func.rest_param_index {
+                for arg_index in 0..rest_index {
+                    if let Some(arg) = args.get(arg_index) {
+                        self.emit_expr(wat, arg, indent, frame);
+                    } else {
+                        wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                    }
+                }
+                let rest_start = rest_index.min(args.len());
+                self.emit_array_literal(wat, &args[rest_start..], indent, frame);
+                wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
+                return;
+            }
+        }
+
+        let param_count = func.map(|f| f.params.len()).unwrap_or(0);
+        for arg in args {
+            self.emit_expr(wat, arg, indent, frame);
+        }
+        for _ in args.len()..param_count {
+            wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+        }
+        wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
+    }
+
+    fn emit_array_literal(
+        &self,
+        wat: &mut String,
+        elements: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let elem_count = elements.len();
+        let size = Layout::ARRAY_HEADER_SIZE + (elem_count as u32) * 4;
+        wat.push_str(&format!(
+            "{pad}(local.set {} (call {} (i32.const {})))\n",
+            frame.heap_base_tmp(),
+            RuntimeFn::AllocHeap.symbol(),
+            size,
+        ));
+        self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+        wat.push_str(&format!(
+            "{pad}(i32.store (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            elem_count,
+        ));
+        for (i, elem) in elements.iter().enumerate() {
+            let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
+            self.emit_expr(wat, elem, indent, frame);
+            wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp(),));
+            wat.push_str(&format!(
+                "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                frame.heap_base_tmp(),
+                offset,
+                frame.heap_value_tmp(),
+            ));
+        }
+        wat.push_str(&format!(
+            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            ValueTag::ARRAY_TAG,
+        ));
     }
 }
 
