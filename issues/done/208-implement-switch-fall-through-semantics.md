@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,10 +28,10 @@ After the matching case is found, execution continues through subsequent cases u
 
 In scope:
 
-- [ ] Preserve fall-through across case clauses when no control transfer exits the case.
-- [ ] Keep default-case matching behavior compatible with ECMAScript ordering.
-- [ ] Add Node differential fixtures for fall-through, default placement, and explicit `break`.
-- [ ] Update docs/current-state/issues when semantic status changes.
+- [x] Preserve fall-through across case clauses when no control transfer exits the case.
+- [x] Keep default-case matching behavior compatible with ECMAScript ordering.
+- [x] Add Node differential fixtures for fall-through, default placement, and explicit `break`.
+- [x] Update docs/current-state/issues when semantic status changes.
 
 Out of scope:
 
@@ -54,10 +55,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Switch fall-through matches Node.js for cases without `break`.
-- [ ] Existing switch fixtures with explicit/default behavior still pass.
-- [ ] Regression fixtures distinguish build success from semantic differential success.
-- [ ] Docs/current-state/issues are synchronized after behavior changes.
+- [x] Switch fall-through matches Node.js for cases without `break`.
+- [x] Existing switch fixtures with explicit/default behavior still pass.
+- [x] Regression fixtures distinguish build success from semantic differential success.
+- [x] Docs/current-state/issues are synchronized after behavior changes.
 
 ## Validation
 
@@ -82,15 +83,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update `docs/language-reference/javascript-features.md`
+- [x] update `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] update `current-state.md`
+- [x] update `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -102,14 +103,39 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `f07ee0a` implements switch fall-through dispatch and Node differential coverage.
+- close commit records docs/issue synchronization.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -E 'test(switch)'
+result: passed, 5 tests run including switch_fallthrough_fixture_matches_node_output_under_iwasm
+date: 2026-04-28
+
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-28
+
+command: cargo nextest run
+result: passed
+date: 2026-04-28
+
+command: scripts/manager update-issue-index --check
+result: passed
+date: 2026-04-28
+
+command: scripts/manager check-issue-health
+result: passed
+date: 2026-04-28
+
+command: scripts/manager check-agent-state
+result: passed
+date: 2026-04-28
+
+command: scripts/manager check-repo-smoke
+result: passed
+date: 2026-04-28
 ```
 
 Remaining risks:

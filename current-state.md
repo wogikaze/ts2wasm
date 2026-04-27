@@ -112,7 +112,7 @@ Semantic gap tracking:
 - class 系: `crates/cli/tests/m8_oop_classes.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の class gap アサーションで管理。
 - module 系: `crates/cli/tests/m9_modules.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の module gap アサーションで管理。
 - node API 系: `crates/cli/tests/m10_node_apis.rs`（build_smoke）。semantic status は `crates/cli/tests/m2_node_diff.rs` の node_api gap アサーションで管理。
-- Partial feature semantics from historical done issues are tracked by dedicated open issues, not by the done queue: `instanceof` prototype-chain semantics (207), switch fall-through (208), labeled break/continue (209), arrow closure and lexical `this` (210), `this` receiver binding (211), rest parameter argument collection (212), string method placeholders (214), and `Math.random` capability/randomness policy (215). Template literal interpolation now has basic Node differential coverage. Abstract equality now has primitive coercion coverage for nullish, boolean, number, and string values; object `ToPrimitive` remains tied to object-model follow-up work.
+- Partial feature semantics from historical done issues are tracked by dedicated open issues, not by the done queue: `instanceof` prototype-chain semantics (207), labeled break/continue (209), arrow closure and lexical `this` (210), `this` receiver binding (211), rest parameter argument collection (212), string method placeholders (214), and `Math.random` capability/randomness policy (215). Switch fall-through/default ordering, template literal interpolation, and primitive abstract equality now have Node differential coverage; object `ToPrimitive` remains tied to object-model follow-up work.
 
 ## Risk Management
 
