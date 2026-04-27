@@ -5,7 +5,32 @@ Use this prompt to invoke the compiler-autonomy skill and begin the FSM-driven d
 ## Prompt
 
 ```
-Start autonomous compiler development loop. Invoke the compiler-autonomy skill, read workflows/compiler_dev_fsm.md and state/current_task.json, then follow the FSM states (SYNC → TRIAGE → TASK_SELECT → PLAN → IMPLEMENT → VERIFY → RETRO).
+Start autonomous compiler development loop.
+
+Invoke the compiler-autonomy skill. Read:
+- workflows/compiler_dev_fsm.md
+- state/current_task.json
+- state/project_state.json
+- issues/index.md
+- docs/11-shared-definitions.md
+- docs/12-coding-standard.md
+
+Follow the FSM:
+SYNC → TRIAGE → TASK_SELECT → PLAN → IMPLEMENT → VERIFY → RETRO.
+
+Use Anti-Stall Policy:
+- Do not stop on first failure.
+- On command failure, enter RECOVER mode.
+- Retry transient failures once.
+- Narrow failing gates before changing code.
+- Preserve useful progress.
+- If an issue cannot be completed, leave it open with evidence and continue to another Ready issue.
+- Treat DONE, PROGRESS, and BLOCKED as valid cycle outcomes.
+- Only move an issue to done when all close requirements are satisfied.
+- External reporting failures must not erase local progress.
+
+Primary goal:
+maximize safe forward progress while preventing false-done.
 ```
 
 ## When to use
@@ -38,6 +63,20 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 - Prioritize P0 issues, then P1, then P2
 - Check dependencies are satisfied (issue must not be in Blocked queue)
 - Update `current_task.json` with selected task details
+
+#### Task Selection fallback
+
+If no Ready issue is safely selectable:
+
+1. Check whether the current task can be resumed
+2. Check Blocked issues for dependencies that are now satisfied
+3. Run issue health checks
+4. Generate new issues from reference coverage
+5. Update issue index
+6. Commit issue/index changes
+7. If still no task exists, write `reports/runs/<run_id>/no_task.md` and stop cleanly
+
+Never stop at TASK_SELECT without writing why no task was selectable.
 
 ### Planning (PLAN state)
 
