@@ -2,7 +2,7 @@
   "run_id": "20260428-217-gc-header-accounting",
   "issue": "217",
   "status": "pass",
-  "commit": null,
+  "commit": "a2e17d6",
   "commands": [
     {
       "command": "cargo fmt --all --check",
