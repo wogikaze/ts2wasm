@@ -34,11 +34,11 @@ date: 2026-04-26
 ```
 
 **Implementation:**
-- Removed unused `wat_writer` module from `crates/cli/src/backend/mod.rs`
-- Deleted `crates/cli/src/backend/wat_writer.rs` (unused after reverting emitter changes in issue 023)
-- Removed unused `emit_imports_from_catalog_typed` method from `crates/cli/src/backend/emitter.rs`
-- Removed wat_writer imports from `crates/cli/src/backend/emitter.rs`
-- Added missing `RuntimeLinkPlan` import to `crates/cli/src/backend/emitter.rs`
+- Removed unused `wat_writer` module from `crates/backend-wasm/src/lib.rs`
+- Deleted `crates/backend-wasm/src/wat_writer.rs` (unused after reverting emitter changes in issue 023)
+- Removed unused `emit_imports_from_catalog_typed` method from `crates/backend-wasm/src/emitter.rs`
+- Removed wat_writer imports from `crates/backend-wasm/src/emitter.rs`
+- Added missing `RuntimeLinkPlan` import to `crates/backend-wasm/src/emitter.rs`
 - Fixed useless comparison warnings in `crates/cli/src/lib.rs` (span.start >= 0 -> span.start < usize::MAX)
 - Added `#[allow(dead_code)]` with rationale to:
   - `extract_wat_imports` in `capability_manifest.rs` (kept for future manifest audit)
@@ -47,4 +47,3 @@ date: 2026-04-26
   - `manifest_target` method in `runtime_link_plan.rs` (kept for future manifest emission)
   - `term` method in `lib.rs` (kept for future expression parsing extensions)
   - `compile_fixture` in `m7_control_flow.rs` (kept for future control flow tests)
-

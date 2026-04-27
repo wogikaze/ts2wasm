@@ -39,7 +39,7 @@ In scope:
 - [x] Move `crates/cli/src/backend/stmt_emit.rs` → `crates/backend-wasm/src/stmt_emit.rs`
 - [x] Move `crates/cli/src/backend/string_intern.rs` → `crates/backend-wasm/src/string_intern.rs`
 - [x] Move `crates/cli/src/backend/wat_writer.rs` → `crates/backend-wasm/src/wat_writer.rs`
-- [ ] Remove `crates/cli/src/backend/mod.rs`
+- [x] Remove `crates/cli/src/backend/mod.rs`
 - [x] Add `ts2wasm-backend-wasm` dependency to `crates/cli/Cargo.toml`
 - [x] Update all imports in `crates/cli/src/` from `crate::backend::` to `ts2wasm_backend_wasm::`
 - [x] Update `crates/cli/src/lib.rs` to remove `mod backend;`
@@ -75,9 +75,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `crates/backend-wasm/src/` contains full backend implementation
-- [ ] `crates/cli/src/backend/` directory is removed
-- [ ] `cargo check` passes
+- [x] `crates/backend-wasm/src/` contains full backend implementation
+- [x] `crates/cli/src/backend/` directory is removed
+- [x] `cargo check` passes
 - [ ] `cargo nextest run` passes (all 205 tests)
 - [ ] No behavior changes in backend semantics
 

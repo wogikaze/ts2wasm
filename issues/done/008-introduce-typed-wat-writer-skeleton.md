@@ -50,7 +50,7 @@ date: 2026-04-26
 ```
 
 **Implementation:**
-- Created `crates/cli/src/backend/wat_writer.rs` with minimal typed API:
+- Created `crates/backend-wasm/src/wat_writer.rs` with minimal typed API:
   - `WatFuncSig`: Structured function signature with params and results
   - `WatImport`: Structured import statement with module, name, symbol, and signature
   - `WatWriter`: Builder for collecting WAT content
@@ -68,4 +68,3 @@ date: 2026-04-26
 **Non-string-concatenation path:**
 - `emit_imports_from_catalog` now uses `WatWriter` for all import generation
 - This is the first non-string-concatenation WAT generation path in the codebase
-

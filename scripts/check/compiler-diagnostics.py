@@ -6,7 +6,7 @@ Tests and lib.rs monolith may still use panics inside #[cfg(test)]; tighten over
 
 Usage: python scripts/manager.py check-compiler-diagnostics
 
-Fails if `panic!(` appears under crates/cli/src/backend, crates/cli/src/runtime, or main.rs.
+Fails if `panic!(` appears under crates/backend-wasm/src, crates/cli/src/runtime, or main.rs.
 """
 
 import sys
@@ -19,7 +19,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py check-compiler-diagnostics")
     print()
-    print("Fails if `panic!(` appears under crates/cli/src/backend, crates/cli/src/runtime, or main.rs.")
+    print("Fails if `panic!(` appears under crates/backend-wasm/src, crates/cli/src/runtime, or main.rs.")
 
 def main():
     args = sys.argv[1:]
@@ -30,7 +30,7 @@ def main():
     
     # Search for panic! in specified directories
     search_paths = [
-        "crates/cli/src/backend",
+        "crates/backend-wasm/src",
         "crates/cli/src/runtime",
         "crates/cli/src/main.rs"
     ]

@@ -43,7 +43,7 @@ Out of scope:
 Expected:
 
 - `crates/cli/src/lib.rs` (lexer/parser)
-- `crates/cli/src/backend/` (module loading)
+- `crates/backend-wasm/src/` (module loading)
 - `fixtures/`
 
 Do not touch:

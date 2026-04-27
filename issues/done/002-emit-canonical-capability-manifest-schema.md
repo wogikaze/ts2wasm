@@ -53,5 +53,5 @@ jq '.schema_version, .standalone, .wasi.stdout, .node_host.required' /tmp/hello.
 - All validation commands passed (2026-04-26)
 - `--emit-manifest` outputs canonical schema with `schema_version: 1`, `standalone: true`, `wasi.stdout: true`, `node_host.required: false` for hello.ts
 - Test suite `cargo nextest run manifest` passes all 5 tests
-- Implementation in `crates/cli/src/backend/capability_manifest.rs` uses `CapabilityManifest` from `crates/shared`
+- Implementation in `crates/backend-wasm/src/capability_manifest.rs` uses `CapabilityManifest` from `crates/shared`
 - Deprecated alias `--emit-capabilities` handled in main.rs (same code path)

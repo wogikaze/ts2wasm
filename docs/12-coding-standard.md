@@ -906,8 +906,8 @@ cargo nextest run --include-ignored
 ```bash
 rg "as_console_log_call" crates/cli/src
 rg 'property == "length"' crates/cli/src/ir/lowered.rs
-rg 'fd_write|fd_read' crates/cli/src/backend -g'*.rs'
-rg 'RuntimeString::.*intern|intern_required_runtime_strings' crates/cli/src/backend
+rg 'fd_write|fd_read' crates/backend-wasm/src -g'*.rs'
+rg 'RuntimeString::.*intern|intern_required_runtime_strings' crates/backend-wasm/src
 rg 'span: None' crates/cli/src
 rg 'unwrap\\(|expect\\(|panic!' crates/cli/src
 ```

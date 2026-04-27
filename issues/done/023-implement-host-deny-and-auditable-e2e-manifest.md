@@ -54,7 +54,7 @@ date: 2026-04-26
 **Implementation:**
 - Added `build_file_with_host_deny` function to `crates/cli/src/lib.rs` to support host-deny mode
 - Added `validate_host_deny` function to reject Node host imports when host-deny mode is enabled
-- Added `has_node_host_imports` helper function to `crates/cli/src/backend/mod.rs` to check for Node host imports
+- Added `has_node_host_imports` helper function to `crates/backend-wasm/src/lib.rs` to check for Node host imports
 - Added `--host-deny` CLI flag to `crates/cli/src/main.rs` with support for both standalone and manifest emission modes
 - Created `crates/cli/tests/m11_host_deny.rs` with E2E tests:
   - `host_deny_allows_standalone_console_log`: Verifies standalone programs pass host-deny
@@ -65,4 +65,3 @@ date: 2026-04-26
 - Standalone programs (e.g., console.log) use WASI imports only and pass host-deny validation
 - Node host imports (e.g., fs.readFileSync) are rejected in host-deny mode
 - Manifest emission works correctly with host-deny mode enabled
-
