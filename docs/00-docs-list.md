@@ -75,7 +75,7 @@ scripts/manager coverage-report -- --format markdown
 | 種別 | 正本 | 個別 doc / artifact の役割 |
 |---|---|---|
 | Policy（何を pass と呼ぶか、gate の意味） | `docs/11-shared-definitions.md` | `docs/06`, `docs/15` は運用・taxonomy を補足のみ |
-| Coverage schema と列定義 | `docs/15-coverage-matrix.md` + `scripts/run/reference-coverage.sh` の stdout キー | `docs/06` はテスト分類。実測行は artifact のみ |
+| Coverage schema と列定義 | `docs/15-coverage-matrix.md` + `scripts/manager reference-coverage` の stdout キー | `docs/06` はテスト分類。実測行は artifact のみ |
 | Coverage 実測値 | `artifacts/coverage/reference-coverage-matrix.md` | `docs/15` に数値を複製しない |
 | Capability / manifest schema | `docs/11`, `docs/09` | `docs/03` は API 方針 |
 | 実装の現在地・代表コマンド | `current-state.md` | README は入口に留める |

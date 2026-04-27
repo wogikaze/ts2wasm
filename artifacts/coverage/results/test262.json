@@ -14,5 +14,5 @@
   "unsupported_diagcodes": {"UnresolvedFunction":5,"UnresolvedName":8,"UnsupportedSyntax":37},
   "unsupported_features": {"function":1,"name-resolution":8,"regexp-literal":18,"property-access":1,"date":17,"function-resolution":5},
   "status": "in-progress",
-  "evidence": "scripts/run/reference-coverage.sh test262 --limit 50"
+  "evidence": "scripts/manager reference-coverage test262 --limit 50"
 }

@@ -68,7 +68,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/run/reference-coverage.sh test262 --limit 118
+scripts/manager reference-coverage test262 --limit 118
 ```
 
 Not run:

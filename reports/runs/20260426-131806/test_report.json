@@ -3,6 +3,7 @@
   "task_id": "003",
   "git": {
     "sha": "c0fac42",
+    "exit_code": 0,
     "changed_files": [
       "issues/index.md",
       "issues/open/003-verify-manifest-against-emitted-wat-imports.md",
@@ -49,6 +50,11 @@
       "ts2wasm-cli::backend::capability_manifest"
     ],
     "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
   },
   "meta": {
     "notes": "Issues moved from open to done and index regenerated in this cycle."

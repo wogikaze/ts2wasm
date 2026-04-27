@@ -140,7 +140,7 @@
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | `===` (strict equality) | ES3 | primitive fast path | 実装済み | - | - |
-| `==` (abstract equality) | ES1 | runtime helper | 実装済み | - | - |
+| `==` (abstract equality) | ES1 | runtime helper | 部分実装（strict equality fallback; coercion は追跡中） | P1 | 203 |
 | `!==`, `!=` | ES1 | derived from equality | 実装済み | - | - |
 | `<`, `>`, `<=`, `>=` | ES1 | number/string comparison | 実装済み | - | - |
 | `+` (addition) | ES1 | number/string overload | 実装済み | - | - |
@@ -149,10 +149,10 @@
 | `&&`, `\|\|`, `!` | ES1 | logical operators | 実装済み | - | - |
 | `??` (nullish coalescing) | ES2020 | lowering candidate | 未実装 | P2 | - |
 | `?.` (optional chaining) | ES2020 | lowering candidate | 未実装 | P2 | - |
-| `typeof` | ES1 | type tag check | 未実装 | P1 | - |
-| `instanceof` | ES1 | prototype chain check | 未実装 | P1 | - |
-| `in` | ES1 | property existence check | 未実装 | P1 | - |
-| `delete` | ES1 | property deletion | 未実装 | P1 | - |
+| `typeof` | ES1 | type tag check | 実装済み (basic) | - | 029 |
+| `instanceof` | ES1 | prototype chain check | 部分実装（syntax/placeholder; full semantics は追跡中） | P1 | 203 |
+| `in` | ES1 | property existence check | 実装済み (basic) | - | 031 |
+| `delete` | ES1 | property deletion | 実装済み (basic) | - | 032 |
 | `void` | ES1 | return undefined | 未実装 | P2 | - |
 
 ## 文
@@ -160,12 +160,12 @@
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | `if` / `else` | ES1 | conditional branch | 実装済み | - | - |
-| `switch` / `case` | ES3 | multi-way branch | 未実装 | P1 | - |
+| `switch` / `case` | ES3 | multi-way branch | 部分実装（fall-through なし） | P2 | 203 |
 | `for` | ES1 | loop | 実装済み | - | - |
-| `while` / `do-while` | ES1 | loop | 未実装 | P1 | - |
+| `while` / `do-while` | ES1 | loop | 実装済み | - | 034 |
 | `for...in` | ES1 | property enumeration | 未実装 | P2 | - |
 | `for...of` | ES6 | iterator protocol | 未実装 | P2 | - |
-| `break` / `continue` | ES1 | loop control | 未実装 | P1 | - |
+| `break` / `continue` | ES1 | loop control | 実装済み (unlabeled) | - | 035 |
 | `return` | ES1 | function return | 実装済み | - | - |
 | `throw` | ES3 | exception | 実装済み (diagnostic付き) | - | - |
 | `try` / `catch` / `finally` | ES3 | exception handling | 実装済み (diagnostic付き) | - | - |
@@ -178,12 +178,12 @@
 |---|---|---|---|---|---|
 | function declaration | ES1 | hoisted function | 実装済み (basic) | - | - |
 | function expression | ES1 | anonymous function | 実装済み (basic) | - | - |
-| arrow function | ES6 | lexical `this` | 未実装 | P1 | - |
-| `this` | ES1 | call site receiver | 未実装 | P1 | - |
+| arrow function | ES6 | lexical `this` | 部分実装（syntax/placeholder; closure semantics は追跡中） | P1 | 203 |
+| `this` | ES1 | call site receiver | 部分実装（method-call semantics 要検証） | P1 | 203 |
 | `arguments` | ES1 | function arguments object | 未実装 | P2 | - |
-| rest parameters | ES6 | variadic parameters | 未実装 | P1 | - |
-| spread arguments | ES6 | argument spreading | 未実装 | P1 | - |
-| default parameters | ES6 | parameter defaults | 未実装 | P1 | - |
+| rest parameters | ES6 | variadic parameters | 部分実装（empty-array placeholder） | P1 | 203 |
+| spread arguments | ES6 | argument spreading | 実装済み (basic) | - | 039 |
+| default parameters | ES6 | parameter defaults | 実装済み (basic) | - | 040 |
 | destructuring parameters | ES6 | pattern matching | 未実装 | P2 | - |
 
 ## オブジェクト
@@ -191,7 +191,7 @@
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | object literal `{k: v}` | ES1 | heap object | 実装済み (identifier keys only) | - | - |
-| computed property `obj[key]` | ES1 | dynamic property access | 未実装 (意味論バグ) | P0 | 012 |
+| computed property `obj[key]` | ES1 | dynamic property access | 実装済み (basic) | - | 014 |
 | property access `obj.key` | ES1 | static property access | 実装済み | - | - |
 | method shorthand | ES2015 | object method | 未実装 | P2 | - |
 | computed property literal | ES2015 | `{[expr]: v}` | 未実装 | P2 | - |
@@ -227,12 +227,12 @@
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
-| string literal `"..."` | ES1 | heap object | 実装済み (ASCII only) | - | - |
-| template literal `` `...` `` | ES6 | string interpolation | 未実装 | P1 | - |
-| string methods (`trim`, `split`, etc.) | ES5+ | runtime builtin | 未実装 | P1 | - |
-| string indexing `str[n]` | ES5 | UTF-16 code unit | 未実装 | P1 | - |
-| `String.fromCharCode` | ES1 | code unit to string | 未実装 | P1 | - |
-| `String.prototype.charCodeAt` | ES1 | string to code unit | 未実装 | P1 | - |
+| string literal `"..."` | ES1 | heap object | 実装済み (UTF-8 storage; UTF-16 parity は部分) | P2 | 018 |
+| template literal `` `...` `` | ES6 | string interpolation | 部分実装（literal syntax only） | P1 | 203 |
+| string methods (`trim`, `split`, etc.) | ES5+ | runtime builtin | 部分実装（一部 placeholder） | P1 | 203 |
+| string indexing `str[n]` | ES5 | UTF-16 code unit | 実装済み (basic) | - | 043 |
+| `String.fromCharCode` | ES1 | code unit to string | 実装済み (basic) | - | 044 |
+| `String.prototype.charCodeAt` | ES1 | string to code unit | 実装済み (basic) | - | 044 |
 
 ## 非同期処理
 
@@ -263,7 +263,7 @@
 | `Date` | ES1 | date/time | 未実装 | P1 | - |
 | `RegExp` | ES3 | regular expressions | 未実装 | P1 | - |
 | `JSON` | ES5 | JSON parsing/stringifying | 未実装 | P1 | - |
-| `Math` | ES1 | math functions | 未実装 | P1 | - |
+| `Math` | ES1 | math functions | 部分実装（common methods; random は deterministic placeholder） | P1 | 203 |
 | `Error` / `TypeError` etc. | ES3 | error types | 未実装 | P1 | - |
 | `ArrayBuffer` / `TypedArray` | ES6 | binary data | 未実装 | P2 | - |
 | `Intl` | ES5.1 | internationalization | 未実装 | P3 | - |

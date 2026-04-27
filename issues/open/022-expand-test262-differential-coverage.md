@@ -32,6 +32,6 @@ Validation:
 
 ```sh
 cargo fmt --all --check
-scripts/run/reference-coverage.sh test262
-scripts/gen/coverage-matrix.sh --check
+scripts/manager reference-coverage test262
+scripts/manager update-coverage-matrix --check
 ```

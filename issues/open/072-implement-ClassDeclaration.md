@@ -68,7 +68,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/run/reference-coverage.sh tsc --limit 22
+scripts/manager reference-coverage tsc --limit 22
 ```
 
 Not run:

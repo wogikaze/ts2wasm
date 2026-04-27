@@ -1,6 +1,6 @@
 # Current State
 
-Last updated: 2026-04-26
+Last updated: 2026-04-28
 
 この文書は、現在の実装状態と検証の事実だけを記録する。設計は `docs/` 側に置き、ここでは「今何が動くか」「何が未実装か」「何を確認すればよいか」を扱う。
 
@@ -9,7 +9,7 @@ Last updated: 2026-04-26
 正本は `docs/11-shared-definitions.md` の Workstreams / Gates。実装・レビューでまず満たすのは次の組み合わせとする。
 
 - **Gate A（テスト）**: `cargo fmt --all --check` と `cargo nextest run`（フル suite。重いテストを分離する場合は `docs/11` の filterset 方針に従う）。
-- **Gate D（coverage artifact）**: `scripts/gen/coverage-matrix.sh --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
+- **Gate D（coverage artifact）**: `scripts/manager update-coverage-matrix --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
 - **その他（B–C, E–G）**: ポリシーと checklist は `docs/11` / `docs/12-coding-standard.md`（§19）に記載。証拠コマンドは下記「Last verified commands」。
 
 ## Last verified commands（代表）
@@ -19,22 +19,22 @@ Last updated: 2026-04-26
 ```bash
 cargo fmt --all --check
 cargo nextest run
-mise run check-coverage-matrix
-mise run check-shell-syntax
-mise run check-fast-gate --skip-nextest
-mise run check-manifest-imports
-mise run check-fixture-catalog
-mise run check-architecture-rules
-mise run check-compiler-diagnostics
-mise run update-issue-index --check
+scripts/manager update-coverage-matrix --check
+scripts/manager check-scripts
+scripts/manager check-fast-gate --skip-nextest
+scripts/manager check-manifest-imports
+scripts/manager check-fixture-catalog
+scripts/manager check-architecture-rules
+scripts/manager check-compiler-diagnostics
+scripts/manager update-issue-index --check
 scripts/manager check-issue-health
 ```
 
 reference coverage を更新する場合（実測値を変えるとき）:
 
 ```bash
-mise run update-coverage-matrix
-# または単 suite: mise run reference-coverage -- test262 --limit 50
+scripts/manager update-coverage-matrix
+# または単 suite: scripts/manager reference-coverage test262 --limit 50
 ```
 
 ## Snapshot
@@ -78,7 +78,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
 - ポリシーと列定義: `docs/15-coverage-matrix.md`
-- 列 `build_pass` / `semantic_pass` は `scripts/run/reference-coverage.sh` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
+- 列 `build_pass` / `semantic_pass` は `scripts/manager reference-coverage` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
 
 ## Implemented (high-level)
 
@@ -87,7 +87,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - shared schema crate（`crates/shared`）: ABI/capability/test status
 - IR crate（`crates/ir`）: resolved/lowered IR
 - runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
-- reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run check-coverage`）
+- reference coverage パイプライン（`scripts/manager reference-coverage`, `scripts/manager update-coverage-matrix`, `scripts/manager update-coverage-matrix --check`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
 - issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `scripts/manager update-issue-index` が生成、`scripts/manager check-issue-health` で整合検証。`scripts/manager check-issue-index` は互換 alias）
 - harness scripts（`mise run check-fast-gate`、`mise run check-manifest-imports`、`mise run check-test-records-schema`、`mise run check-fixture-catalog`、`mise run check-architecture-rules`、`mise run check-compiler-diagnostics`；pre-push は `.githooks/pre-push`）
@@ -99,8 +99,8 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - 汎用 JavaScript semantic IR は未実装
 - full wasm backend は未実装（現状は WAT 中心）
 - test262 full differential 運用は未完（sample/ramp が中心）
-- OOM/GC/UTF-8 完全対応は未完
-- host-deny / capability manifest の「監査可能な」E2E は `docs/06` の required test classes に沿って拡張予定
+- GC 実装は未完。OOM check と UTF-8 literal basic support は完了済みだが、UTF-16 parity / encode-decode helper は追跡対象。
+- host-deny / capability manifest の base path は実装済み。`docs/06` の required test classes に沿った監査範囲の拡張は継続対象。
 
 Semantic gap tracking:
 
@@ -128,15 +128,7 @@ Semantic gap tracking:
 ## Next Priority Steps
 
 See `issues/index.md` for the auto-generated Ready queue and Blocked queue.
-Run `scripts/manager update-issue-index` to refresh after adding, closing, or moving issues.
-
-The current top Ready items (実務上優先する順) are:
-- Harden reference coverage prerequisites (007)
-- Introduce typed WAT writer skeleton (008)
-- Select first coverage-improvement feature slice (009)
-- Fix module/extractor wiring for top-level exports (010)
-
-For exact ordering and full queue, refer to the generated table in `issues/index.md`.
+Run `scripts/manager update-issue-index` to refresh after adding, closing, or moving issues. The generated Ready queue in `issues/index.md` is the source of truth for current ordering.
 
 ## Current Policy
 

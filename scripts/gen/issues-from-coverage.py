@@ -3,7 +3,7 @@
 Auto-generate issues from reference-coverage --detail output.
 
 Usage:
-  scripts/run/reference-coverage.sh test262 --limit 500 --detail | \
+  scripts/manager reference-coverage test262 --limit 500 --detail | \
     python3 scripts/gen/issues-from-coverage.py --start-id 061
 """
 
@@ -134,7 +134,7 @@ def generate_issue_content(
         file_list += f"\n- ... and {count - 10} more files"
     
     # Build validation command
-    validation_cmd = f"scripts/run/reference-coverage.sh {suite} --limit {count * 2}"
+    validation_cmd = f"scripts/manager reference-coverage {suite} --limit {count * 2}"
     
     # Adjust description based on suite
     if suite in ["test262", "tsgo"]:

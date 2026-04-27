@@ -58,15 +58,15 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | array literal `[e0, e1, ...]` | 実装済み | heap block `[i32 len, elem₀, ...]` tagged `ptr\|5` |
 | numeric array index `arr[n]` | 実装済み | tag check あり; 範囲外は `undefined` |
 | `arr.length` | 実装済み | tag check あり; 非 array/string は `undefined` |
-| `str.length` (ASCII only) | 実装済み | byte length = JS length; 非 ASCII は compile error |
+| `str.length` | 実装済み (basic) | UTF-8 byte storage を使う。完全な UTF-16 code unit parity は追跡中 |
 | object literal `{k: v}` | 実装済み | heap block `[i32 count, (key_raw, value)×n]` tagged `ptr\|7` |
 | data property read `obj.key` | 実装済み | reverse scan; last duplicate key wins (JS 仕様) |
-| dynamic property key | 未実装 | `unsupported-dynamic-property` |
-| prototype / method call | 未実装 | `unsupported-method-call` / `unsupported-prototype` |
-| non-ASCII string literal | 意図的に非対応 | 当面 ASCII-only; `DiagCode::UnsupportedSyntax` |
+| dynamic property key | 実装済み (basic) | string key による `obj[key]` / assignment をサポート |
+| prototype / method call | 実装済み (basic) | `[[Prototype]]` slot と method receiver の basic path をサポート |
+| non-ASCII string literal | 実装済み (basic) | UTF-8 byte storage。decode/encode runtime helper は追跡中 |
 | object literal key (string literal) | 未実装 | `{key: v}` の key は identifier only; `{"x": v}` は parse error |
-| `obj["key"]` computed property | 意味論バグ | `$array_get` 経由になり object tag check で `undefined` を返す; JS semantics 不正 |
-| heap OOM check | 未実装 | `$alloc_heap` は memory.size を検査しない; 大きな allocation は未定義動作 |
+| `obj["key"]` computed property | 実装済み (basic) | object property lookup path を使う |
+| heap OOM check | 実装済み | `$alloc_heap` は memory.size を検査し、超過時に trap する |
 
 `$property_get` の reverse scan により、`{a:1, a:2}.a === 2` が成立する (JS 仕様準拠)。
 
