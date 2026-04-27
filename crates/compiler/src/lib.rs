@@ -266,6 +266,7 @@ fn validate_stmt(
             span: Some(*span),
         }),
         Stmt::Throw { .. } => Ok(()),
+        Stmt::Labeled { body, .. } => validate_stmt(body, in_top_level, scope, top_functions),
         Stmt::Break { .. } => Ok(()),
         Stmt::Continue { .. } => Ok(()),
         Stmt::Assign { .. } => Ok(()),

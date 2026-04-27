@@ -53,8 +53,16 @@ pub enum ResolvedStmt {
         iter: ResolvedExpr,
         body: Vec<ResolvedStmt>,
     },
-    Break,
-    Continue,
+    Labeled {
+        label: String,
+        body: Box<ResolvedStmt>,
+    },
+    Break {
+        label: Option<String>,
+    },
+    Continue {
+        label: Option<String>,
+    },
     Export {
         name: String,
         expr: Box<ResolvedExpr>,

@@ -105,6 +105,17 @@ fn build_smoke_while_continue() {
 }
 
 #[test]
+fn build_smoke_labeled_control() {
+    for fixture in [
+        "control-flow-and-exceptions/labeled-break.ts",
+        "control-flow-and-exceptions/labeled-break-statement.ts",
+        "control-flow-and-exceptions/labeled-continue.ts",
+    ] {
+        assert_fixture_build_smoke(fixture);
+    }
+}
+
+#[test]
 fn build_smoke_throw_test262() {
     assert_fixture_build_smoke("control-flow-and-exceptions/throw-test262.ts");
 }

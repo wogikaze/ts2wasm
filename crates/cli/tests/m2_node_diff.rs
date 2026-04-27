@@ -111,6 +111,37 @@ fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn labeled_control_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/control-flow-and-exceptions/labeled-break.ts",
+        "fixtures/control-flow-and-exceptions/labeled-break-statement.ts",
+        "fixtures/control-flow-and-exceptions/labeled-continue.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn labeled_control_invalid_fixtures_report_source_diagnostics() {
+    for (fixture, expected) in [
+        (
+            "fixtures/control-flow-and-exceptions/labeled-continue-non-loop-invalid.ts",
+            "does not target a loop",
+        ),
+        (
+            "fixtures/control-flow-and-exceptions/labeled-duplicate-invalid.ts",
+            "duplicate label `duplicate`",
+        ),
+        (
+            "fixtures/control-flow-and-exceptions/labeled-undefined-invalid.ts",
+            "undefined break label `missingLabel`",
+        ),
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, expected);
+    }
+}
+
+#[test]
 fn instanceof_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/instanceof.ts");
 }
@@ -196,6 +227,35 @@ fn assert_fixture_matches_node(fixture: &str) {
         String::from_utf8_lossy(&iwasm.output.stdout),
         String::from_utf8_lossy(&node.stdout),
         "stdout mismatch for {fixture}"
+    );
+}
+
+fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "invalid fixture should not build successfully: {fixture}"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]"),
+        "expected UnsupportedSyntax diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains(expected),
+        "expected diagnostic containing {expected:?} for {fixture}, got:\n{stderr}"
     );
 }
 

@@ -94,8 +94,16 @@ pub enum LoweredStmt {
         len_local: LocalId,
         body: Vec<LoweredStmt>,
     },
-    Break,
-    Continue,
+    Labeled {
+        label: String,
+        body: Box<LoweredStmt>,
+    },
+    Break {
+        label: Option<String>,
+    },
+    Continue {
+        label: Option<String>,
+    },
     Export {
         name: String,
         expr: LoweredExpr,
@@ -873,8 +881,16 @@ impl<'a> Resolver<'a> {
                     body: self.lower_nested_block(body)?,
                 })
             }
-            ResolvedStmt::Break => Ok(LoweredStmt::Break),
-            ResolvedStmt::Continue => Ok(LoweredStmt::Continue),
+            ResolvedStmt::Labeled { label, body } => Ok(LoweredStmt::Labeled {
+                label: label.clone(),
+                body: Box::new(self.lower_stmt(body)?),
+            }),
+            ResolvedStmt::Break { label } => Ok(LoweredStmt::Break {
+                label: label.clone(),
+            }),
+            ResolvedStmt::Continue { label } => Ok(LoweredStmt::Continue {
+                label: label.clone(),
+            }),
             ResolvedStmt::Export { name, expr } => Ok(LoweredStmt::Export {
                 name: name.clone(),
                 expr: self.lower_expr(expr)?,
@@ -1675,7 +1691,10 @@ fn validate_stmt(
             validate_expr(iter, local_count, num_funcs, program, errors, true);
             validate_stmts(body, local_count, num_funcs, program, errors);
         }
-        LoweredStmt::Break | LoweredStmt::Continue => {}
+        LoweredStmt::Labeled { body, .. } => {
+            validate_stmt(body, local_count, num_funcs, program, errors)
+        }
+        LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => {}
         LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }

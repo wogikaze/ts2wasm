@@ -380,11 +380,23 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
             write_indent(out, indent);
             let _ = writeln!(out, "}}");
         }
-        Stmt::Break { .. } => {
-            let _ = writeln!(out, "break;");
+        Stmt::Labeled { label, body, .. } => {
+            let _ = writeln!(out, "{label}:");
+            unparse_stmt(out, body, indent + 1);
         }
-        Stmt::Continue { .. } => {
-            let _ = writeln!(out, "continue;");
+        Stmt::Break { label, .. } => {
+            let suffix = label
+                .as_ref()
+                .map(|label| format!(" {label}"))
+                .unwrap_or_default();
+            let _ = writeln!(out, "break{suffix};");
+        }
+        Stmt::Continue { label, .. } => {
+            let suffix = label
+                .as_ref()
+                .map(|label| format!(" {label}"))
+                .unwrap_or_default();
+            let _ = writeln!(out, "continue{suffix};");
         }
     }
 }

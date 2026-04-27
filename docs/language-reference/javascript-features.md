@@ -165,7 +165,7 @@
 | `while` / `do-while` | ES1 | loop | 実装済み | - | 034 |
 | `for...in` | ES1 | property enumeration | 未実装 | P2 | - |
 | `for...of` | ES6 | iterator protocol | 未実装 | P2 | - |
-| `break` / `continue` | ES1 | loop control | 実装済み (unlabeled; labeled は未実装) | P2 | 035, 209 |
+| `break` / `continue` | ES1 | loop control | 実装済み (unlabeled / labeled) | - | 035, 209 |
 | `return` | ES1 | function return | 実装済み | - | - |
 | `throw` | ES3 | exception | 実装済み (diagnostic付き) | - | - |
 | `try` / `catch` / `finally` | ES3 | exception handling | 実装済み (diagnostic付き) | - | - |
