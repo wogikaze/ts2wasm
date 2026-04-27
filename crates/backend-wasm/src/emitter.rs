@@ -36,7 +36,11 @@ impl LocalFrame {
     }
 
     pub(super) const fn total_local_count(self) -> usize {
-        self.user_local_count + 2
+        self.user_local_count + self.backend_local_count()
+    }
+
+    pub(super) const fn backend_local_count(self) -> usize {
+        3
     }
 
     pub(super) const fn heap_base_tmp(self) -> usize {
@@ -45,6 +49,10 @@ impl LocalFrame {
 
     pub(super) const fn heap_value_tmp(self) -> usize {
         self.backend_base + 1
+    }
+
+    pub(super) const fn switch_value_tmp(self) -> usize {
+        self.backend_base + 2
     }
 }
 
@@ -482,9 +490,10 @@ impl<'a> WatEmitter<'a> {
                 wat.push_str("    (local i32)\n");
             }
             let frame = LocalFrame::new(function.params.len() + function.locals.len());
-            // Backend-owned temporaries for ArrayNew/ObjectNew construction.
-            wat.push_str("    (local i32)\n");
-            wat.push_str("    (local i32)\n");
+            // Backend-owned temporaries for heap construction and switch dispatch.
+            for _ in 0..frame.backend_local_count() {
+                wat.push_str("    (local i32)\n");
+            }
             let mut loop_ctx = super::stmt_emit::LoopContext::Root;
             self.emit_statements(wat, &function.body, 4, &mut loop_ctx, &frame);
             wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));

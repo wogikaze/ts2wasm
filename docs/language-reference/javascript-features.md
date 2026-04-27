@@ -160,7 +160,7 @@
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | `if` / `else` | ES1 | conditional branch | 実装済み | - | - |
-| `switch` / `case` | ES3 | multi-way branch | 部分実装（fall-through なし） | P2 | 208 |
+| `switch` / `case` | ES3 | multi-way branch | 実装済み (fall-through / default ordering differential coverage) | - | 208 |
 | `for` | ES1 | loop | 実装済み | - | - |
 | `while` / `do-while` | ES1 | loop | 実装済み | - | 034 |
 | `for...in` | ES1 | property enumeration | 未実装 | P2 | - |

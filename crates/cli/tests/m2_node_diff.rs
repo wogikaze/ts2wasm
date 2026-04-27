@@ -103,6 +103,11 @@ fn string_method_fixtures_match_node_output_under_iwasm() {
     }
 }
 
+#[test]
+fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
+}
+
 fn assert_fixture_matches_node(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
