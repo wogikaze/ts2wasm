@@ -337,8 +337,9 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::ObjectNew { props } => {
                 let prop_count = props.len();
+                let prop_capacity = prop_count + 8;
                 let size =
-                    Layout::OBJECT_HEADER_SIZE + (prop_count as u32) * Layout::OBJECT_ENTRY_SIZE;
+                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
                 wat.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
                     frame.heap_base_tmp(),

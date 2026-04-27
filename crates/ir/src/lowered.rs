@@ -1066,10 +1066,9 @@ impl<'a> Resolver<'a> {
                 let lowered_object = self.lower_expr(object)?;
                 let lowered_index = self.lower_expr(index)?;
 
-                // If the object is a string literal, use StringIndex
-                // If the object is an array literal or ArrayNew, use ArrayGet
-                // For now, use ArrayGet for all cases (this is a simplification)
-                // TODO: Proper type inference to distinguish arrays from objects
+                // Keep obvious array literals on the compact array helper. Unknown
+                // receivers must use the generic index helper so object[stringKey]
+                // and array[numberIndex] both preserve JavaScript semantics.
                 if matches!(object.as_ref(), ResolvedExpr::String(_)) {
                     Ok(LoweredExpr::Index {
                         object: Box::new(lowered_object),
@@ -1083,10 +1082,8 @@ impl<'a> Resolver<'a> {
                         index: Box::new(lowered_index),
                     })
                 } else {
-                    // For now, use ArrayGet for all non-string cases
-                    // This handles array variables and dynamic array access
-                    Ok(LoweredExpr::ArrayGet {
-                        arr: Box::new(lowered_object),
+                    Ok(LoweredExpr::Index {
+                        object: Box::new(lowered_object),
                         index: Box::new(lowered_index),
                     })
                 }
