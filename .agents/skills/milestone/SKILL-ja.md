@@ -29,7 +29,7 @@ mise run clippy
 mise run check-repo-smoke
 ```
 
-スライスが参照カバレッジまたはベンチマークポリシー期待を変更する場合、`mise run reference-coverage` / `mise run check-coverage-gate`も使用（`scripts/*`と`docs/15`を参照）
+スライスが参照カバレッジまたはベンチマークポリシー期待を変更する場合、`mise run reference-coverage` / `scripts/manager update-coverage-matrix --check-gate`も使用（`scripts/*`と`docs/15`を参照）
 
 ## ワークフロー
 

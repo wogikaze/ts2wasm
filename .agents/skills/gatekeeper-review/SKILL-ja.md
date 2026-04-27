@@ -29,7 +29,7 @@ mise run check-repo-smoke
 ```bash
 mise run clippy
 mise run reference-coverage
-mise run check-coverage-gate   # マトリクス比較時（引数はscript --help参照）
+scripts/manager update-coverage-matrix --check-gate   # マトリクス比較時（引数はscript --help参照）
 ```
 
 ## 目標
@@ -195,7 +195,7 @@ mise run check-coverage-gate   # マトリクス比較時（引数はscript --he
 
 - cargo fmt --all --check: pass/fail
 - cargo nextest run: pass/fail
-- scripts/gen/coverage-matrix.sh --check: pass/fail/not applicable
+- scripts/manager update-coverage-matrix --check: pass/fail/not applicable
 - iwasm差分: pass/fail/not applicable
 - grepゲート:
   - as_console_log_call: 0/non-zero

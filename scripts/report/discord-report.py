@@ -22,7 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 def load_env() -> dict[str, str]:
     """Load .env file if it exists."""
     env_file = REPO_ROOT / ".env"
-    env = {}
+    env = dict(os.environ)
     if env_file.exists():
         for line in env_file.read_text().splitlines():
             line = line.strip()
@@ -152,7 +152,7 @@ def main():
     env = load_env()
     webhook_url = env.get("DISCORD_WEBHOOK_URL")
     if not webhook_url:
-        print("Error: DISCORD_WEBHOOK_URL not set in .env", file=sys.stderr)
+        print("Error: DISCORD_WEBHOOK_URL not set in environment or .env", file=sys.stderr)
         sys.exit(1)
 
     # Read markdown from stdin

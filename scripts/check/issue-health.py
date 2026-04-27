@@ -221,6 +221,27 @@ def main() -> int:
         expected_blocked = render_blocked_table(issues, blocked_ids)
         expected_done = render_done_table(issues)
 
+        expected_index = replace_generated_block(
+            index_content,
+            "<!-- generated:ready:start -->",
+            "<!-- generated:ready:end -->",
+            expected_ready,
+        )
+        expected_index = replace_generated_block(
+            expected_index,
+            "<!-- generated:blocked:start -->",
+            "<!-- generated:blocked:end -->",
+            expected_blocked,
+        )
+        expected_index = replace_generated_block(
+            expected_index,
+            "<!-- generated:done:start -->",
+            "<!-- generated:done:end -->",
+            expected_done,
+        )
+        if expected_index != index_content:
+            err(errors, "issues/index.md is stale; run scripts/manager update-issue-index")
+
         # Extract actual IDs from index
         actual_ready_ids = extract_table_ids(index_content, "<!-- generated:ready:start -->", "<!-- generated:ready:end -->")
         actual_blocked_ids = extract_table_ids(index_content, "<!-- generated:blocked:start -->", "<!-- generated:blocked:end -->")

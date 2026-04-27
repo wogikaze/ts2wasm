@@ -155,6 +155,7 @@ Start autonomous compiler development loop. Invoke the compiler-autonomy skill, 
 - **State files validated** with `scripts/manager check-agent-state`
 - **Command outputs saved** to `reports/runs/<run_id>/stdout.log` and `stderr.log`
 - **Discord report sent** with `scripts/manager discord-report --run-id <run_id>` (see retrospective-codify skill for format)
+- **Pre-push webhook is mandatory**: `.githooks/pre-push` sends a webhook report after local gates pass and blocks push if delivery fails
 
 Do not mark an issue as done without completing these steps.
 

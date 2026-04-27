@@ -29,7 +29,7 @@ mise run clippy
 mise run check-repo-smoke
 ```
 
-If the slice changes reference coverage or benchmark policy expectations, also use `mise run reference-coverage` / `mise run check-coverage-gate` (see `scripts/*` and `docs/15`).
+If the slice changes reference coverage or benchmark policy expectations, also use `mise run reference-coverage` / `scripts/manager update-coverage-matrix --check-gate` (see `scripts/*` and `docs/15`).
 
 ## Workflow
 

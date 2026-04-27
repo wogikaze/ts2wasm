@@ -355,7 +355,7 @@ cargo nextest run -p ts2wasm-cli --test m10_node_apis
 ドキュメントがカバレッジアーティファクトに言及する場合、関連する場合カバレッジマトリクスチェックを検証:
 
 ```bash
-scripts/gen/coverage-matrix.sh --check
+scripts/manager update-coverage-matrix --check
 ```
 
 通常のプロジェクトフィクスチャ編集で参照コーパススクリプトを実行しない（変更が参照カバレッジ、TestRecordスキーマ、差分分類、またはCIカバレッジスクリプトに影響する場合を除く）。
@@ -456,7 +456,7 @@ TestRecord:
 - cargo nextest run -p ts2wasm-cli <impacted>:
 - cargo nextest run:
 - scripts/check/shell-syntax.sh:
-- scripts/gen/coverage-matrix.sh --check:
+- scripts/manager update-coverage-matrix --check:
 - iwasm依存チェック:
 
 検索ゲート:

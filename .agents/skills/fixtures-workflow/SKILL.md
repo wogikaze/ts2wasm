@@ -356,7 +356,7 @@ If the fixture requires `iwasm`, state whether `iwasm` was available. Do not rep
 If docs mention coverage artifacts, validate the coverage matrix check when relevant:
 
 ```bash
-scripts/gen/coverage-matrix.sh --check
+scripts/manager update-coverage-matrix --check
 ```
 
 Do not run reference corpus scripts for ordinary project fixture edits unless the change affects reference coverage, TestRecord schema, differential classification, or CI coverage scripts.
@@ -457,7 +457,7 @@ Validation:
 - cargo nextest run -p ts2wasm-cli <impacted>:
 - cargo nextest run:
 - scripts/check/shell-syntax.sh:
-- scripts/gen/coverage-matrix.sh --check:
+- scripts/manager update-coverage-matrix --check:
 - iwasm-dependent checks:
 
 Search gates:

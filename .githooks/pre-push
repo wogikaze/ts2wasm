@@ -14,4 +14,47 @@ scripts/manager check-manifest-imports
 echo "pre-push: one Node differential smoke (m2)"
 cargo nextest run -p ts2wasm-cli --test m2_node_diff m2_fixtures_match_node_output_under_iwasm
 
+echo "pre-push: required webhook report"
+run_id="pre-push-$(date -u +%Y%m%d-%H%M%S)"
+report_file="$(mktemp)"
+trap 'rm -f "$report_file"' EXIT
+{
+  echo "## 状態"
+  echo
+  echo "pre-push gates passed; push is about to start."
+  echo
+  echo "## 目的"
+  echo
+  echo "Notify the development webhook before pushing local commits."
+  echo
+  echo "## 実施内容"
+  echo
+  echo "- scripts/manager check-fast-gate --skip-nextest"
+  echo "- scripts/manager check-manifest-imports"
+  echo "- cargo nextest run -p ts2wasm-cli --test m2_node_diff m2_fixtures_match_node_output_under_iwasm"
+  echo "- git status --short:"
+  git status --short | sed 's/^/  /'
+  echo
+  echo "## 判断と根拠"
+  echo
+  echo "Webhook delivery is a required pre-push audit step."
+  echo
+  echo "## 詰まり・ロス"
+  echo
+  echo "N/A"
+  echo
+  echo "## リスク"
+  echo
+  echo "Push can still be rejected by the remote after this local hook completes."
+  echo
+  echo "## 次にやるべきこと"
+  echo
+  echo "Review remote CI after push."
+  echo
+  echo "## 完了・追加"
+  echo
+  echo "pre-push webhook sent for ${run_id}."
+} > "$report_file"
+scripts/manager discord-report --run-id "$run_id" < "$report_file"
+
 echo "pre-push: OK"

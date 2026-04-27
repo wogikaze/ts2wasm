@@ -128,6 +128,7 @@ push 前の必須条件:
 
 ```bash
 git status --short
+cat reports/runs/<run_id>/cycle_report.md | scripts/manager discord-report --run-id <run_id>
 ```
 
 確認事項:
@@ -137,6 +138,14 @@ git status --short
 - 秘密情報が含まれていない
 - 明らかな壊れた中間状態ではない
 - 必要な軽量 gate が通っている
+- webhook 送信が成功している
+
+webhook 送信ルール:
+
+- push 前に必ず `scripts/manager discord-report` で webhook に送信する。
+- `.githooks/pre-push` は gate 成功後に pre-push report を生成して webhook 送信し、送信失敗時は push を止める。
+- `DISCORD_WEBHOOK_URL` は環境変数または `.env` で設定する。
+- webhook URL は secret として扱い、commit しない。
 
 push 前に可能なら実行:
 
@@ -154,6 +163,7 @@ scripts/manager check-issue-health
 以下の場合は自動 push しない。
 
 - secret / token / credential の混入が疑われる
+- webhook 送信に失敗している、または `DISCORD_WEBHOOK_URL` が未設定
 - merge conflict が残っている
 - working tree に分類不能な差分がある
 - failing test を既知の失敗として記録していない

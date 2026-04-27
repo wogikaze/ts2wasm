@@ -44,7 +44,7 @@ miseタスク利用推奨（`mise tasks` で一覧）。mise未利用時は `scr
 
 ```bash
 # reference coverage の運用:
-# - check: 集計状態を既存 artifacts と照合して壊れを検知 (`mise run check-coverage-matrix` / `scripts/manager update-coverage-matrix --check`)
+# - check: 集計状態を既存 artifacts と照合して壊れを検知 (`scripts/manager update-coverage-matrix --check` / `scripts/manager update-coverage-matrix --check`)
 # - ramp: --limit を上げて reference-coverage を再実行し、実行結果から matrix を更新
 
 mise run check-issue-health              # 一括ゲート
