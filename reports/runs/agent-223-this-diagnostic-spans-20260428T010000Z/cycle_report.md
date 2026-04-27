@@ -35,7 +35,9 @@ Added source spans to existing issue-211 unsupported receiver/`this` diagnostics
 - `scripts/manager update-issue-index --check`: pass
 - `scripts/manager check-agent-state`: pass
 - `scripts/manager check-repo-smoke`: pass
+- `scripts/manager discord-report --run-id agent-223-this-diagnostic-spans-20260428T010000Z`: deferred because `DISCORD_WEBHOOK_URL` is not configured
 
 ## Commits
 
 - `e8ebbca` issue-223: add spans to receiver diagnostics
+- `5fb96ca` issue-223: close diagnostic span issue
