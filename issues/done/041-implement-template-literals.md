@@ -28,7 +28,7 @@ Template literals are not implemented. They are a common ES6 feature for string 
 In scope:
 
 - [x] Add template literal syntax to lexer/parser
-- [x] Implement string interpolation (follow-up issue needed)
+- [x] Implement string interpolation (follow-up tracked by `issues/open/213-implement-template-literal-interpolation.md`)
 - [x] Add fixtures for template literal behavior
 
 Out of scope:
@@ -40,7 +40,7 @@ Out of scope:
 Expected:
 
 - `crates/cli/src/lib.rs` (lexer/parser)
-- `crates/cli/src/backend/` (lowering)
+- `crates/backend-wasm/src/` (lowering/backend)
 - `fixtures/`
 
 Do not touch:
@@ -50,7 +50,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Template literal parses correctly
-- [x] Template literal interpolates expressions (deferred to follow-up)
+- [x] Template literal interpolates expressions (deferred to follow-up: `issues/open/213-implement-template-literal-interpolation.md`)
 - [x] Fixtures cover template literal behavior
 - [x] No regression in existing fixtures
 
@@ -86,11 +86,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] Template literal interpolation support (new issue needed)
+- [x] Template literal interpolation support tracked by `issues/open/213-implement-template-literal-interpolation.md`
 
 ## Notes
 
-Basic template literal syntax is implemented (backtick strings parse correctly). Full `${}` interpolation support requires parsing expressions within template literals and will be addressed in a follow-up issue.
+Basic template literal syntax is implemented (backtick strings parse correctly). Full `${}` interpolation support requires parsing expressions within template literals and is tracked by `issues/open/213-implement-template-literal-interpolation.md`.
 
 ## Completion evidence
 
@@ -108,4 +108,4 @@ date: 2026-04-27
 
 Remaining risks:
 
-- none
+- Template interpolation remains tracked by `issues/open/213-implement-template-literal-interpolation.md`

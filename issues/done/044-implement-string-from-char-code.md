@@ -40,7 +40,7 @@ Out of scope:
 
 Expected:
 
-- `crates/cli/src/backend/` (runtime builtins)
+- `crates/backend-wasm/src/` (runtime builtins)
 - `fixtures/`
 
 Do not touch:

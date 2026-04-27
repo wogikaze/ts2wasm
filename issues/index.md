@@ -173,7 +173,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | implementation-ready | P1 |  | RegExp literals are currently reported as unsupported in the test262 coverage sweep (`unsupported_features.regexp-lit... |
-| 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | implementation-ready | P1 |  | Reconcile partial feature semantics and placeholder completions |
+| 208 | Implement switch fall-through semantics | feature | frontend/semantics | implementation-ready | P2 |  | Implement switch fall-through semantics |
+| 209 | Implement labeled break and continue | feature | frontend/semantics | implementation-ready | P2 | 035 | Implement labeled break and continue |
+| 211 | Complete this receiver binding semantics | feature | runtime/semantics | implementation-ready | P1 |  | Complete this receiver binding semantics |
+| 212 | Implement rest parameter argument collection | feature | frontend/semantics | implementation-ready | P1 |  | Implement rest parameter argument collection |
+| 213 | Implement template literal interpolation | feature | frontend/semantics | implementation-ready | P1 |  | Implement template literal interpolation |
+| 214 | Replace string method placeholders | feature | runtime/builtins | implementation-ready | P1 |  | Replace string method placeholders |
+| 215 | Define Math.random capability policy | feature | runtime/builtins | design-ready | P1 |  | Define Math.random capability policy |
+| 216 | Implement abstract equality coercion | feature | runtime/semantics | implementation-ready | P1 |  | Implement abstract equality coercion |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -194,6 +201,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 204 | Add typed IR dump command | feature | cli | 020 | Add typed IR dump command |
 | 205 | Add optimizer dump command | feature | cli | 020, 204 | Add optimizer dump command |
 | 206 | Make CLI a thin toolchain wrapper | refactor | cli | 010, 026 | Make CLI a thin toolchain wrapper |
+| 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | 048 | Complete instanceof prototype-chain semantics |
+| 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | 211 | Implement arrow function closure and lexical this semantics |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -244,6 +253,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
+| 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

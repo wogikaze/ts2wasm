@@ -108,7 +108,7 @@ Follow-up issues:
 
 Suggested migration order:
 
-1. Finish backend usage migration from `crates/cli/src/backend` to `crates/backend-wasm`.
+1. Finish backend usage migration from the old CLI backend module to `crates/backend-wasm/`.
 2. Finish frontend parser extraction tracked by issue 010.
 3. Add compiler/driver crate and move build/dump orchestration out of CLI.
 4. Tighten architecture checks once the desired boundary exists.
