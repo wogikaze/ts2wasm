@@ -55,6 +55,14 @@ date: 2026-04-28
 command: cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm
 result: PASS (1 passed, 17 skipped)
 date: 2026-04-28
+
+command: scripts/manager check-repo-smoke
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run
+result: PASS (223 passed, 4 skipped)
+date: 2026-04-28
 ```
 
 Remaining risks:

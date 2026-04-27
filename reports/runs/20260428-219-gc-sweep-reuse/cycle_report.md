@@ -27,6 +27,10 @@ Issue 219 を完了。GC mark bit を sweep で消費し、free-list reuse と l
 - PASS: `cargo fmt --all --check`
 - PASS: `cargo nextest run -p ts2wasm-backend-wasm`（9 passed）
 - PASS: `cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm`（1 passed / 17 skipped）
+- PASS: `scripts/manager update-issue-index --check`
+- PASS: `scripts/manager check-issue-health`
+- PASS: `scripts/manager check-repo-smoke`
+- PASS: `cargo nextest run`（223 passed / 4 skipped）
 
 ## リスク
 
