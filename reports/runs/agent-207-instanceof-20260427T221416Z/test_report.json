@@ -2,7 +2,7 @@
   "run_id": "agent-207-instanceof-20260427T221416Z",
   "task_id": "issue-207",
   "git": {
-    "sha": "pending",
+    "sha": "c4d56af",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/emitter.rs",
@@ -19,7 +19,12 @@
       "issues/done/207-complete-instanceof-prototype-chain-semantics.md",
       "issues/index.md"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "c4d56af",
+        "message": "issue-207: implement instanceof prototype chain"
+      }
+    ]
   },
   "commands": [
     {

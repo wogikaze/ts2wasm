@@ -100,7 +100,7 @@ Created from issue 203 audit of `issues/done/030-implement-instanceof-operator.m
 
 Commits:
 
-- pending in this worktree
+- `c4d56af` `issue-207: implement instanceof prototype chain`
 
 Validation result:
 
