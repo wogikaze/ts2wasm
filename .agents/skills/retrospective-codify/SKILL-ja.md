@@ -1,6 +1,6 @@
 ---
 name: retrospective-codify
-description: 完了したタスクからの学びをルール、skills、またはCLAUDE.mdに体系化するときに使用。
+description: 完了したタスクからの学びをルール、skills、またはAGENTS.mdに体系化するときに使用。
 ---
 
 # レトロスペクティブ体系化
@@ -45,9 +45,9 @@ description: 完了したタスクからの学びをルール、skills、また�
    ls .agents/skills/
    Grep "<キー>" .agents/skills/*/SKILL.md
 
-   # CLAUDE.md重複
-   Grep "<キー>" ~/.claude/CLAUDE.md
-   Grep "<キー>" <project-root>/CLAUDE.md   # 該当プロジェクトがある場合
+   # AGENTS.md重複
+   Grep "<キー>" ~/.claude/AGENTS.md
+   Grep "<キー>" <project-root>/AGENTS.md   # 該当プロジェクトがある場合
 
    # lintルール重複
    ls <project-root>/rules/
@@ -71,13 +71,13 @@ digraph classify {
     "毎回適用すべき短い指示？" [shape=diamond];
     "複数ステップの手順や判断を伴う？" [shape=diamond];
     "ast-grep ルール / lint" [shape=box];
-    "CLAUDE.md ルール" [shape=box];
+    "AGENTS.md ルール" [shape=box];
     "skill" [shape=box];
     "メモに留める" [shape=box];
 
     "機械的に検出可能？" -> "ast-grep ルール / lint" [label="yes"];
     "機械的に検出可能？" -> "毎回適用すべき短い指示？" [label="no"];
-    "毎回適用すべき短い指示？" -> "CLAUDE.md ルール" [label="yes"];
+    "毎回適用すべき短い指示？" -> "AGENTS.md ルール" [label="yes"];
     "毎回適用すべき短い指示？" -> "複数ステップの手順や判断を伴う？" [label="no"];
     "複数ステップの手順や判断を伴う？" -> "skill" [label="yes"];
     "複数ステップの手順や判断を伴う？" -> "メモに留める" [label="no"];
@@ -87,16 +87,16 @@ digraph classify {
 | 判定軸 | 出力先 | 例 |
 |---|---|---|
 | コード/設定の構文レベルで検出可能 | `ast-grep`ルールまたは既存linter設定 | "`Array.from(set).length`を使うな、`set.size`を使え" |
-| 短く、常時適用、判断を伴わない | `CLAUDE.md`（user global / project） | "pnpmはv10以上を使う" |
+| 短く、常時適用、判断を伴わない | `AGENTS.md`（user global / project） | "pnpmはv10以上を使う" |
 | 手順・文脈判断・テンプレが必要 | 新規skillまたは既存skillへの追記 | "MoonBitのC bindingを書く手順" |
 | プロジェクト固有で一回限り | 採用しない（コミットメッセージ / PR説明に留める） | — |
 
 **ast-grepを優先する原則**: 静的に検出可能なものはプロンプトやドキュメントに書かず、必ず`ast-grep`ルールにする（ユーザーのglobalルール）。
 
-**CLAUDE.mdの書き出し先**:
+**AGENTS.mdの書き出し先**:
 
-- 言語横断・ツール横断の一般則 → `~/.claude/CLAUDE.md`
-- 特定リポジトリ限定 → そのリポジトリの`CLAUDE.md`
+- 言語横断・ツール横断の一般則 → `~/.claude/AGENTS.md`
+- 特定リポジトリ限定 → そのリポジトリの`AGENTS.md`
 
 ## 出力テンプレート
 
@@ -104,7 +104,7 @@ digraph classify {
 
 `ast-grep-practice` skillを参照。`rules/`ディレクトリにYAMLを追加し、`rule-tests/`にvalid / invalidペアを必ず書く。
 
-### CLAUDE.mdへの追記
+### AGENTS.mdへの追記
 
 ```markdown
 # <既存セクションに追記>
@@ -148,13 +148,13 @@ rule:
 message: Set/Mapのサイズは.sizeプロパティを使う。
 ```
 
-### 例2: CLAUDE.mdルール化（短い常時ルール）
+### 例2: AGENTS.mdルール化（短い常時ルール）
 
 - 最初の試行: `pnpm install`を実行したらlockfile形式の差分でCIが落ちた。
 - 最終解: pnpmのバージョンをv10系に揃えた。
 - 気付き: pnpmはバージョン差でlockfileが変わる。常にv10以上を使う。
 
-`~/.claude/CLAUDE.md`の「ツール」節に追記:
+`~/.claude/AGENTS.md`の「ツール」節に追記:
 
 ```markdown
 - pnpmはv10以上を使う（理由: lockfile形式がv9以前と非互換でCI差分が出る）
@@ -175,7 +175,7 @@ message: Set/Mapのサイズは.sizeプロパティを使う。
 | 出てくる合理化 | 実態 |
 |---|---|
 | 「プロジェクト固有だけど一応skillにしておこう」 | skillが肥大化し検索性が落ちる。コミットメッセージ / PRで十分。 |
-| 「承認は省いて先に書き出しておこう、後で見せればいい」 | 勝手にCLAUDE.md / skillを変更すると将来の挙動が読めなくなる。必ず提案 → 承認 → 書き出し。 |
+| 「承認は省いて先に書き出しておこう、後で見せればいい」 | 勝手にAGENTS.md / skillを変更すると将来の挙動が読めなくなる。必ず提案 → 承認 → 書き出し。 |
 | 「ast-grepで書ける気もするけど、自然言語でルールに書いた方が早い」 | 静的検出可能なものを散文で書くと、エージェントが守らない。ast-grepを優先。 |
 | 「気付きが薄いけど、何か書かないと格好がつかない」 | 提案ゼロも正解。空のretrospectiveは害がない。 |
 | 「重複チェックは面倒だから飛ばそう、被ったら後で消せばいい」 | 重複ルールが残ると挙動が割れる。dedupは必須工程。 |
@@ -204,7 +204,7 @@ message: Set/Mapのサイズは.sizeプロパティを使う。
 - [lint] <ルール名>: <1行>（artifact: <path>, 学びN由来）
 - [skill 追記] <既存skill名>: <1行>（学びN由来）
 - [skill 新規] <skill名>: <1行>（学びN由来）
-- [rule] CLAUDE.md（global/project）: <1行>（学びN由来）
+- [rule] AGENTS.md（global/project）: <1行>（学びN由来）
 
 重複検出（提案不要）:
 - <学びN>: 既存<skill/rule名>の<該当節名 or 行番号>が完全カバー → 追加なし
@@ -250,15 +250,15 @@ message: Set/Mapのサイズは.sizeプロパティを使う。
 - [skill 追記] <既存skill名>: <新規部分の1行>（学び1由来, 既存節`<節名>`への補完）
 
 重複検出（提案不要）:
-- 学び1（version値部分）: 既存`~/.claude/CLAUDE.md`ツール節が既にカバー → 追記不要
+- 学び1（version値部分）: 既存`~/.claude/AGENTS.md`ツール節が既にカバー → 追記不要
 ```
 
 ## よくある失敗
 
 - **粒度が細かすぎる**: その一回限りの事情（特定の関数名、特定のバージョン）までルール化してしまう → 抽象化して「何を確認するか」レベルに引き上げる
-- **プロンプトで書きがち**: 静的に検出可能な規則を自然言語でCLAUDE.mdに書く → `ast-grep`ルールに移す
+- **プロンプトで書きがち**: 静的に検出可能な規則を自然言語でAGENTS.mdに書く → `ast-grep`ルールに移す
 - **理由を書かない**: ルールの根拠が残らず、将来の自分がなぜそれを守るのか判断できなくなる → 必ず`Why:`を添える
-- **勝手に書き出す**: ユーザー承認なしにCLAUDE.mdやskillを更新する → 必ず提案 → 承認 → 書き出しの順を守る
+- **勝手に書き出す**: ユーザー承認なしにAGENTS.mdやskillを更新する → 必ず提案 → 承認 → 書き出しの順を守る
 - **失敗の言語化を省く**: 「最終解はX」だけ書いて、なぜ初手で詰まったかを残さない → 失敗側の記述がないと、将来の自分は同じ落とし穴にまた落ちる
 
 ## 関連スキル

@@ -1,6 +1,6 @@
 ---
 name: retrospective-codify
-description: Use when codifying learnings from completed tasks into rules, skills, or CLAUDE.md.
+description: Use when codifying learnings from completed tasks into rules, skills, or AGENTS.md.
 ---
 
 # Retrospective Codify
@@ -45,9 +45,9 @@ description: Use when codifying learnings from completed tasks into rules, skill
    ls .agents/skills/
    Grep "<キー>" .agents/skills/*/SKILL.md
 
-   # CLAUDE.md 重複
-   Grep "<キー>" ~/.claude/CLAUDE.md
-   Grep "<キー>" <project-root>/CLAUDE.md   # 該当プロジェクトがある場合
+   # AGENTS.md 重複
+   Grep "<キー>" ~/.claude/AGENTS.md
+   Grep "<キー>" <project-root>/AGENTS.md   # 該当プロジェクトがある場合
 
    # lint ルール重複
    ls <project-root>/rules/
@@ -75,13 +75,13 @@ digraph classify {
     "毎回適用すべき短い指示？" [shape=diamond];
     "複数ステップの手順や判断を伴う？" [shape=diamond];
     "ast-grep ルール / lint" [shape=box];
-    "CLAUDE.md ルール" [shape=box];
+    "AGENTS.md ルール" [shape=box];
     "skill" [shape=box];
     "メモに留める" [shape=box];
 
     "機械的に検出可能？" -> "ast-grep ルール / lint" [label="yes"];
     "機械的に検出可能？" -> "毎回適用すべき短い指示？" [label="no"];
-    "毎回適用すべき短い指示？" -> "CLAUDE.md ルール" [label="yes"];
+    "毎回適用すべき短い指示？" -> "AGENTS.md ルール" [label="yes"];
     "毎回適用すべき短い指示？" -> "複数ステップの手順や判断を伴う？" [label="no"];
     "複数ステップの手順や判断を伴う？" -> "skill" [label="yes"];
     "複数ステップの手順や判断を伴う？" -> "メモに留める" [label="no"];
@@ -91,16 +91,16 @@ digraph classify {
 | 判定軸 | 出力先 | 例 |
 |---|---|---|
 | コード/設定の構文レベルで検出可能 | `ast-grep` ルール または既存 linter 設定 | "`Array.from(set).length` を使うな、`set.size` を使え" |
-| 短く、常時適用、判断を伴わない | `CLAUDE.md`（user global / project） | "pnpm は v10 以上を使う" |
+| 短く、常時適用、判断を伴わない | `AGENTS.md`（user global / project） | "pnpm は v10 以上を使う" |
 | 手順・文脈判断・テンプレが必要 | 新規 skill または既存 skill への追記 | "MoonBit の C binding を書く手順" |
 | プロジェクト固有で一回限り | 採用しない（コミットメッセージ / PR 説明に留める） | — |
 
 **ast-grep を優先する原則**: 静的に検出可能なものはプロンプトやドキュメントに書かず、必ず `ast-grep` ルールにする（ユーザーの global ルール）。
 
-**CLAUDE.md の書き出し先**:
+**AGENTS.md の書き出し先**:
 
-- 言語横断・ツール横断の一般則 → `~/.claude/CLAUDE.md`
-- 特定リポジトリ限定 → そのリポジトリの `CLAUDE.md`
+- 言語横断・ツール横断の一般則 → `~/.claude/AGENTS.md`
+- 特定リポジトリ限定 → そのリポジトリの `AGENTS.md`
 
 ## 出力テンプレート
 
@@ -108,7 +108,7 @@ digraph classify {
 
 `ast-grep-practice` skill を参照。`rules/` ディレクトリに YAML を追加し、`rule-tests/` に valid / invalid ペアを必ず書く。
 
-### CLAUDE.md への追記
+### AGENTS.md への追記
 
 ```markdown
 # <既存セクションに追記>
@@ -152,13 +152,13 @@ rule:
 message: Set/Map のサイズは .size プロパティを使う。
 ```
 
-### 例 2: CLAUDE.md ルール化（短い常時ルール）
+### 例 2: AGENTS.md ルール化（短い常時ルール）
 
 - 最初の試行: `pnpm install` を実行したら lockfile 形式の差分で CI が落ちた。
 - 最終解: pnpm のバージョンを v10 系に揃えた。
 - 気付き: pnpm はバージョン差で lockfile が変わる。常に v10 以上を使う。
 
-→ `~/.claude/CLAUDE.md` の「ツール」節に追記:
+→ `~/.claude/AGENTS.md` の「ツール」節に追記:
 
 ```markdown
 - pnpm は v10 以上を使う（理由: lockfile 形式が v9 以前と非互換で CI 差分が出る）
@@ -179,7 +179,7 @@ message: Set/Map のサイズは .size プロパティを使う。
 | 出てくる合理化 | 実態 |
 |---|---|
 | 「プロジェクト固有だけど一応 skill にしておこう」 | skill が肥大化し検索性が落ちる。コミットメッセージ / PR で十分。 |
-| 「承認は省いて先に書き出しておこう、後で見せればいい」 | 勝手に CLAUDE.md / skill を変更すると将来の挙動が読めなくなる。必ず提案 → 承認 → 書き出し。 |
+| 「承認は省いて先に書き出しておこう、後で見せればいい」 | 勝手に AGENTS.md / skill を変更すると将来の挙動が読めなくなる。必ず提案 → 承認 → 書き出し。 |
 | 「ast-grep で書ける気もするけど、自然言語でルールに書いた方が早い」 | 静的検出可能なものを散文で書くと、エージェントが守らない。ast-grep を優先。 |
 | 「気付きが薄いけど、何か書かないと格好がつかない」 | 提案ゼロも正解。空の retrospective は害がない。 |
 | 「重複チェックは面倒だから飛ばそう、被ったら後で消せばいい」 | 重複ルールが残ると挙動が割れる。dedup は必須工程。 |
@@ -208,7 +208,7 @@ message: Set/Map のサイズは .size プロパティを使う。
 - [lint] <ルール名>: <1 行>（artifact: <path>, 学び N 由来）
 - [skill 追記] <既存 skill 名>: <1 行>（学び N 由来）
 - [skill 新規] <skill 名>: <1 行>（学び N 由来）
-- [rule] CLAUDE.md（global/project）: <1 行>（学び N 由来）
+- [rule] AGENTS.md（global/project）: <1 行>（学び N 由来）
 
 重複検出（提案不要）:
 - <学び N>: 既存 <skill/rule 名> の <該当節名 or 行番号> が完全カバー → 追加なし
@@ -254,15 +254,15 @@ message: Set/Map のサイズは .size プロパティを使う。
 - [skill 追記] <既存 skill 名>: <新規部分の 1 行>（学び 1 由来, 既存節 `<節名>` への補完）
 
 重複検出（提案不要）:
-- 学び 1（version 値部分）: 既存 `~/.claude/CLAUDE.md` ツール節が既にカバー → 追記不要
+- 学び 1（version 値部分）: 既存 `~/.claude/AGENTS.md` ツール節が既にカバー → 追記不要
 ```
 
 ## よくある失敗
 
 - **粒度が細かすぎる**: その一回限りの事情（特定の関数名、特定のバージョン）までルール化してしまう → 抽象化して「何を確認するか」レベルに引き上げる
-- **プロンプトで書きがち**: 静的に検出可能な規則を自然言語で CLAUDE.md に書く → `ast-grep` ルールに移す
+- **プロンプトで書きがち**: 静的に検出可能な規則を自然言語で AGENTS.md に書く → `ast-grep` ルールに移す
 - **理由を書かない**: ルールの根拠が残らず、将来の自分がなぜそれを守るのか判断できなくなる → 必ず `Why:` を添える
-- **勝手に書き出す**: ユーザー承認なしに CLAUDE.md や skill を更新する → 必ず提案 → 承認 → 書き出し の順を守る
+- **勝手に書き出す**: ユーザー承認なしに AGENTS.md や skill を更新する → 必ず提案 → 承認 → 書き出し の順を守る
 - **失敗の言語化を省く**: 「最終解は X」だけ書いて、なぜ初手で詰まったかを残さない → 失敗側の記述が無いと、将来の自分は同じ落とし穴にまた落ちる
 
 ## 開発ループレポート形式
