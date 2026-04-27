@@ -77,7 +77,7 @@ pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::emit_wat;
+    use super::{emit_canonical_manifest_json, emit_wat};
     use ts2wasm_frontend::DiagCode;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
@@ -346,5 +346,48 @@ mod tests {
         assert!(wat.contains("(global $class_proto_0 (mut i32) (i32.const 0))"));
         assert!(wat.contains("(call $gc_mark_value (i32.or (global.get $class_proto_0)"));
         assert!(wat.contains("(i32.const 7)"));
+    }
+
+    #[test]
+    fn math_random_imports_wasi_random_get() {
+        let program = math_random_program();
+
+        let wat = emit_wat(&program).expect("Math.random should emit with WASI random");
+
+        assert!(wat.contains("(import \"wasi_snapshot_preview1\" \"random_get\""));
+        assert!(wat.contains("(call $random_get"));
+        assert!(!wat.contains("$random_counter"));
+    }
+
+    #[test]
+    fn math_random_manifest_declares_wasi_random() {
+        let program = math_random_program();
+
+        let manifest: serde_json::Value =
+            serde_json::from_str(&emit_canonical_manifest_json(&program))
+                .expect("manifest should be valid JSON");
+
+        assert_eq!(manifest["standalone"], true);
+        assert_eq!(manifest["node_host"]["required"], false);
+        assert_eq!(manifest["wasi"]["random"], true);
+        let reasons = manifest["capability_reasons"]["wasi.random"]
+            .as_array()
+            .expect("wasi.random should record audit reasons");
+        assert!(
+            reasons.iter().any(|reason| reason == "Math.random"),
+            "wasi.random reasons should include Math.random: {reasons:?}"
+        );
+    }
+
+    fn math_random_program() -> LoweredProgram {
+        LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                runtime_fn: "MathRandom".to_owned(),
+                args: vec![],
+            })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        }
     }
 }

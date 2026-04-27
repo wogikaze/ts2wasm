@@ -36,6 +36,14 @@ impl CapabilityManifest {
             return Err("node_host.required requires at least one import".to_owned());
         }
 
+        if self.wasi.random && !self.capability_reasons.contains_key("wasi.random") {
+            return Err("wasi.random requires an auditable capability reason".to_owned());
+        }
+
+        if !self.wasi.random && self.capability_reasons.contains_key("wasi.random") {
+            return Err("wasi.random capability reason requires wasi.random=true".to_owned());
+        }
+
         for import in &self.node_host.imports {
             if !import.starts_with("host.") {
                 return Err(format!("node host import must start with host.: {import}"));
@@ -49,6 +57,14 @@ impl CapabilityManifest {
         self.wasi.env = true;
         self.capability_reasons
             .entry("wasi.env".to_owned())
+            .or_default()
+            .push(reason.into());
+    }
+
+    pub fn require_wasi_random(&mut self, reason: impl Into<String>) {
+        self.wasi.random = true;
+        self.capability_reasons
+            .entry("wasi.random".to_owned())
             .or_default()
             .push(reason.into());
     }
@@ -131,5 +147,17 @@ mod tests {
         manifest.require_node_host("node_process_all", "bad import");
 
         assert!(manifest.validate().is_err());
+    }
+
+    #[test]
+    fn wasi_random_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.wasi.random = true;
+
+        assert!(manifest.validate().is_err());
+
+        manifest.require_wasi_random("Math.random");
+
+        assert!(manifest.validate().is_ok());
     }
 }

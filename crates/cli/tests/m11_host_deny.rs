@@ -142,3 +142,60 @@ fn host_deny_with_manifest_emission() {
     let _: serde_json::Value =
         serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
 }
+
+#[test]
+fn math_random_declares_wasi_random_without_node_host() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("builtins-and-io/math-random.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-host-deny-math-random-{}.wasm",
+        std::process::id()
+    ));
+
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-host-deny-math-random-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .arg("--host-deny")
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "Math.random should compile as standalone WASI random: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+
+    assert_eq!(manifest["standalone"], true);
+    assert_eq!(manifest["node_host"]["required"], false);
+    assert_eq!(manifest["wasi"]["random"], true);
+    assert!(
+        manifest["capability_reasons"]["wasi.random"]
+            .as_array()
+            .expect("wasi.random should have reasons")
+            .iter()
+            .any(|reason| reason == "Math.random")
+    );
+
+    let wasm = std::fs::read(&output_wasm).expect("Failed to read wasm");
+    assert!(
+        wasm.windows(b"random_get".len())
+            .any(|window| window == b"random_get"),
+        "wasm import section should include random_get"
+    );
+}

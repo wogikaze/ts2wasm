@@ -153,6 +153,7 @@ pub(crate) enum RuntimeFn {
 pub(crate) enum HostImport {
     FdRead,
     FdWrite,
+    RandomGet,
     FsReadFileSync,
     FsWriteFileSync,
     FsAppendFileSync,
@@ -184,6 +185,14 @@ impl HostImport {
                 wat_symbol: "$fd_write",
                 abi: HostAbi::WasiPreview1,
                 params: "param i32 i32 i32 i32",
+                result: "result i32",
+            },
+            Self::RandomGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "random_get",
+                wat_symbol: "$random_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i32",
                 result: "result i32",
             },
             Self::FsReadFileSync => HostImportSpec {
@@ -284,6 +293,7 @@ impl HostImport {
         match self {
             Self::FdRead => "wasi_snapshot_preview1.fd_read",
             Self::FdWrite => "wasi_snapshot_preview1.fd_write",
+            Self::RandomGet => "wasi_snapshot_preview1.random_get",
             Self::FsReadFileSync => "host.fs.readFileSync",
             Self::FsWriteFileSync => "host.fs.writeFileSync",
             Self::FsAppendFileSync => "host.fs.appendFileSync",
@@ -339,6 +349,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
 pub(crate) enum Capability {
     StdinRead,
     StdoutWrite,
+    WasiRandom,
     HostFsReadFileSync,
     HostFsWriteFileSync,
     HostFsAppendFileSync,
@@ -358,6 +369,7 @@ impl Capability {
         match self {
             Self::StdinRead => "stdin.read",
             Self::StdoutWrite => "stdout.write",
+            Self::WasiRandom => "wasi.random",
             Self::HostFsReadFileSync => "host.fs.readFileSync",
             Self::HostFsWriteFileSync => "host.fs.writeFileSync",
             Self::HostFsAppendFileSync => "host.fs.appendFileSync",
@@ -466,6 +478,7 @@ const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
+const IMPORT_RANDOM_GET: &[HostImport] = &[HostImport::RandomGet];
 const IMPORT_FS_READ_FILE_SYNC: &[HostImport] = &[HostImport::FsReadFileSync];
 const IMPORT_FS_WRITE_FILE_SYNC: &[HostImport] = &[HostImport::FsWriteFileSync];
 const IMPORT_FS_APPEND_FILE_SYNC: &[HostImport] = &[HostImport::FsAppendFileSync];
@@ -479,6 +492,7 @@ const IMPORT_PATH_DIRNAME: &[HostImport] = &[HostImport::PathDirname];
 const IMPORT_CRYPTO_RANDOM_BYTES: &[HostImport] = &[HostImport::CryptoRandomBytes];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
+const CAP_WASI_RANDOM: &[Capability] = &[Capability::WasiRandom];
 const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
 const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
 const CAP_HOST_FS_APPEND_FILE_SYNC: &[Capability] = &[Capability::HostFsAppendFileSync];
@@ -1159,8 +1173,8 @@ impl RuntimeFn {
             Self::MathRandom => RuntimeSpec {
                 symbol: "$math_random",
                 deps: MATH_RANDOM_DEPS,
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
+                imports: IMPORT_RANDOM_GET,
+                capability: CAP_WASI_RANDOM,
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },

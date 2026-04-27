@@ -263,7 +263,7 @@
 | `Date` | ES1 | date/time | 未実装 | P1 | - |
 | `RegExp` | ES3 | regular expressions | 未実装 | P1 | - |
 | `JSON` | ES5 | JSON parsing/stringifying | 未実装 | P1 | - |
-| `Math` | ES1 | math functions | 部分実装（common methods; random は deterministic placeholder） | P1 | 215 |
+| `Math` | ES1 | math functions | 部分実装（common methods; `Math.random` は WASI `random_get` capability を manifest に記録して使用。現行 tagged-int number model では fractional double parity は未達） | P1 | - |
 | `Error` / `TypeError` etc. | ES3 | error types | 未実装 | P1 | - |
 | `ArrayBuffer` / `TypedArray` | ES6 | binary data | 未実装 | P2 | - |
 | `Intl` | ES5.1 | internationalization | 未実装 | P3 | - |

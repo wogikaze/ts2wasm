@@ -49,7 +49,9 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | `with`          | 初期非対応、診断必須                                |
 | Proxy           | 初期非対応、object model 安定後に検討                 |
 
-Compatibility evidence distinguishes syntax/build support from semantic parity. A feature that parses, lowers, or builds with placeholder behavior is recorded as `部分実装` in `docs/language-reference/javascript-features.md` and must have an open issue with Node differential acceptance criteria before it can count toward semantic gates. Current placeholder or partial semantic trackers include issues 207-215 for `instanceof`, switch fall-through, labeled control flow, arrow closures, `this`, rest parameters, template interpolation, string methods, and `Math.random`.
+Compatibility evidence distinguishes syntax/build support from semantic parity. A feature that parses, lowers, or builds with placeholder behavior is recorded as `部分実装` in `docs/language-reference/javascript-features.md` and must have an open issue with Node differential acceptance criteria before it can count toward semantic gates. Current placeholder or partial semantic trackers include issues 207-214 for `instanceof`, switch fall-through, labeled control flow, arrow closures, `this`, rest parameters, template interpolation, and string methods.
+
+`Math.random` is capability-gated for standalone WASI output: use of `Math.random()` imports `wasi_snapshot_preview1.random_get`, sets `wasi.random: true` in the capability manifest, and remains valid under host-deny because it does not require a Node host import. The current tagged-int runtime can only expose an integer-backed random payload; full ECMAScript fractional double parity is part of the broader number representation model, not a silent deterministic placeholder.
 
 Abstract equality (`==` / `!=`) supports the current primitive runtime value set: `undefined`, `null`, booleans, tagged integer numbers, and strings that coerce to tagged integers. Full object `ToPrimitive`, floating point, `NaN`, and `-0` behavior remain tied to the broader object and number-model work.
 
