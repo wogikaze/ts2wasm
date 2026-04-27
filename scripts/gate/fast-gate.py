@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Single local gate: fmt + issue queue + coverage matrix check + nextest (optional).
+"""Single local gate: fmt + issue queue + architecture + coverage matrix + nextest (optional).
 
 Usage:
   python scripts/manager.py check-fast-gate [--skip-nextest]
@@ -25,6 +25,7 @@ def usage():
     print("Runs:")
     print("  - cargo fmt --all --check")
     print("  - python scripts/check/issue-health.py")
+    print("  - python scripts/check/architecture-rules.py")
     print("  - python scripts/gen/coverage-matrix.py --check")
     print("  - cargo nextest run (unless --skip-nextest)")
     print()
@@ -69,6 +70,7 @@ def main():
     # Run checks
     run(["cargo", "fmt", "--all", "--check"])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")])
+    run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/gen/coverage-matrix.py"), "--check"])
     
     if not skip_nextest:

@@ -90,7 +90,7 @@ python scripts/manager.py clippy
 # テスト実行
 python scripts/manager.py nextest
 
-# ファストゲート（fmt + issue health + coverage matrix + tests）
+# ファストゲート（fmt + issue health + architecture + coverage matrix + tests）
 python scripts/manager.py check-fast-gate
 
 # テストをスキップしてファストゲート
@@ -105,7 +105,7 @@ python scripts/manager.py help
 - `fmt` - cargo fmt --all --check
 - `clippy` - cargo clippy --all-targets
 - `nextest` - cargo nextest run
-- `check-fast-gate` - fmt + issue health + coverage matrix + nextest
+- `check-fast-gate` - fmt + issue health + architecture + coverage matrix + nextest
 - `check-issue-health` - issues/ ディレクトリの検証
 - `update-issue-index` - issues/index.md の再生成
 - `check-agent-state` - エージェント状態の検証

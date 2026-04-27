@@ -71,11 +71,11 @@ def usage():
     # Format command list
     cmd_list = [
         ("check-scripts", "Bash -n on scripts/*.sh (syntax)"),
-        ("check-fast-gate", "fmt + scripts + issues + coverage matrix + nextest"),
+        ("check-fast-gate", "fmt + issues + architecture + coverage matrix + nextest"),
         ("check-manifest-imports", "Manifest JSON imports vs wasm import section"),
         ("check-test-records-schema", "Validate TestRecord JSONL lines"),
         ("check-fixture-catalog", "Fixtures/ top-level layout rules"),
-        ("check-architecture-rules", "Lightweight crate boundary checks"),
+        ("check-architecture-rules", "Lightweight crate boundary and file-size checks"),
         ("check-compiler-diagnostics", "No panic! in backend/runtime/main.rs"),
         ("check-harness-installation", "Full harness baseline: P0 tools + nextest"),
         ("check-toolchain", "Verify rust/node/iwasm/wasm-tools exist"),

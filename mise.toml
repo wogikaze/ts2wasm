@@ -73,7 +73,7 @@ description = "fmt + check-scripts + check-issue-health (no cargo test)"
 run = "python scripts/manager.py check-repo-smoke"
 
 [tasks."check-fast-gate"]
-description = "fmt + issues + coverage matrix check + nextest (see script --help)"
+description = "fmt + issues + architecture + coverage matrix check + nextest (see script --help)"
 run = "python scripts/manager.py check-fast-gate"
 
 [tasks."check-manifest-imports"]
@@ -85,7 +85,7 @@ description = "fixtures/ top-level layout rules"
 run = "python scripts/manager.py check-fixture-catalog"
 
 [tasks."check-architecture-rules"]
-description = "Crate boundary smoke (shared must not depend on cli)"
+description = "Crate boundary smoke and file-size warnings"
 run = "python scripts/manager.py check-architecture-rules"
 
 [tasks."check-compiler-diagnostics"]
