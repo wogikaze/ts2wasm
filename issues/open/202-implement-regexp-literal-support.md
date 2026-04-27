@@ -2,7 +2,7 @@
 
 **Status**: open
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-28
 **ID**: 202
 **Type**: feature
 **Area**: frontend/semantics
@@ -33,3 +33,17 @@ cargo fmt --all --check
 cargo nextest run
 python scripts/manager.py reference-coverage test262 --limit 50 --detail
 ```
+
+## Progress evidence
+
+- 2026-04-28: Existing frontend implementation tokenizes RegExp literals as `Token::RegExp` and parser support routes supported literals to the existing string-backed expression subset.
+- 2026-04-28: `fixtures/core-semantics/regexp-literal.ts` covers `/abc/i`, `/a*/g`, escaped slash, and slash inside a character class with Node/iwasm differential coverage.
+- 2026-04-28: `fixtures/core-semantics/regexp-unsupported-flag.ts` verifies unsupported flag diagnostics remain issue-linked.
+- 2026-04-28: `cargo fmt --all --check` passed.
+- 2026-04-28: `cargo nextest run -E 'test(regexp)'` passed: 6 tests run, 6 passed.
+- 2026-04-28: `python scripts/manager.py reference-coverage test262 --limit 50 --detail` passed after initializing ignored `reference/test262`; measured `unsupported_features.regexp-literal:13`, reduced from the checked-in artifact baseline of 18.
+- 2026-04-28: `artifacts/coverage/results/test262.json` updated with the measured limit-50 coverage result.
+
+## Close blocker
+
+Closing this issue requires moving it to `issues/done/` and regenerating the index, but `scripts/manager check-issue-health` then fails because `issues/done/009-select-first-coverage-improvement-feature-slice.md` still references `issues/open/202-implement-regexp-literal-support.md`. Updating issue 009 is outside this child assignment's allowed file list, so this work remains open with validated progress until the parent authorizes the cross-issue reference update.
