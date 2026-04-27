@@ -144,6 +144,11 @@ mod tests {
 
         assert!(wat.contains("(func $gc_sweep"));
         assert!(wat.contains("(global.get $gc_free_list)"));
+        assert!(wat.contains("(global.set $gc_free_list (i32.const 0))"));
+        assert!(wat.contains("(local $next_flags i32)"));
+        assert!(wat.contains("(loop $coalesce"));
+        assert!(wat.contains("(local $split_header i32)"));
+        assert!(wat.contains("(local $split_body_size i32)"));
         assert!(wat.contains("(global.set $gc_free_list (local.get $cursor))"));
         assert!(wat.contains("(local $free_header i32)"));
         assert!(wat.contains("(local $free_body_size i32)"));

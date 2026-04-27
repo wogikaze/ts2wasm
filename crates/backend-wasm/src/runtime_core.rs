@@ -604,28 +604,64 @@ impl WatEmitter<'_> {
     (local $data i32)
     (local $len_a i32)
     (local $len_b i32)
-    (local.set $ptr (global.get $heap))
+    (local.set $len_a (call $value_string_len (local.get $a)))
+    (local.set $len_b (call $value_string_len (local.get $b)))
+    (local.set $ptr
+      (call $alloc_heap
+        (i32.add
+          (i32.const {string_header_size})
+          (i32.add (local.get $len_a) (local.get $len_b)))))
     (local.set $data (i32.add (local.get $ptr) (i32.const {string_header_size})))
-    (local.set $len_a (call $value_to_string_into (local.get $a) (local.get $data)))
-    (local.set $len_b
+    (drop (call $value_to_string_into (local.get $a) (local.get $data)))
+    (drop
       (call $value_to_string_into
         (local.get $b)
         (i32.add (local.get $data) (local.get $len_a))))
     (i32.store (local.get $ptr) (i32.add (local.get $len_a) (local.get $len_b)))
-    (global.set $heap
-      (i32.and
-        (i32.add
-          (local.get $ptr)
-          (i32.add
-            (i32.add (local.get $len_a) (local.get $len_b))
-            (i32.const {heap_bump_padding})))
-        (i32.const {heap_mask})))
     (i32.or (local.get $ptr) (i32.const {string_tag})))
+
+  (func $value_string_len (param $v i32) (result i32)
+    (local $obj i32)
+    (local $n i32)
+    (local $abs i32)
+    (local $len i32)
+    (if (i32.eq (local.get $v) (i32.const 0))
+      (then (return (i32.const {undefined_len}))))
+    (if (i32.eq (local.get $v) (i32.const 1))
+      (then (return (i32.const {null_len}))))
+    (if (i32.eq (local.get $v) (i32.const 2))
+      (then (return (i32.const {false_len}))))
+    (if (i32.eq (local.get $v) (i32.const 3))
+      (then (return (i32.const {true_len}))))
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {string_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (return (i32.load (local.get $obj)))))
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (if (i32.eq (local.get $n) (i32.const 0))
+      (then (return (i32.const 1))))
+    (if (i32.lt_s (local.get $n) (i32.const 0))
+      (then
+        (local.set $len (i32.const 1))
+        (local.set $abs (i32.sub (i32.const 0) (local.get $n))))
+      (else
+        (local.set $abs (local.get $n))))
+    (block $done
+      (loop $digits
+        (local.set $len (i32.add (local.get $len) (i32.const 1)))
+        (local.set $abs (i32.div_u (local.get $abs) (i32.const 10)))
+        (br_if $digits (i32.gt_u (local.get $abs) (i32.const 0)))))
+    (local.get $len))
 "#,
             string_header_size = Layout::STRING_HEADER_SIZE,
-            heap_bump_padding = Layout::HEAP_BUMP_PADDING,
             heap_mask = ValueTag::HEAP_MASK,
             string_tag = ValueTag::STRING,
+            tag_mask = ValueTag::TAG_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            undefined_len = RuntimeString::UNDEFINED.len() as i32,
+            null_len = RuntimeString::NULL.len() as i32,
+            false_len = RuntimeString::FALSE.len() as i32,
+            true_len = RuntimeString::TRUE.len() as i32,
         ));
     }
 
@@ -1024,6 +1060,8 @@ impl WatEmitter<'_> {
     (local $free_header i32)
     (local $free_next i32)
     (local $free_body_size i32)
+    (local $split_header i32)
+    (local $split_body_size i32)
     (local.set $header_base
       (i32.and
         (i32.add (global.get $heap) (i32.const {align_mask}))
@@ -1058,13 +1096,59 @@ impl WatEmitter<'_> {
             (i32.add (local.get $free_header) (i32.const {gc_sweep_next_offset}))))
         (if (i32.ge_u (local.get $free_body_size) (local.get $payload_size))
           (then
-            (if (i32.eqz (local.get $free_prev))
+            (if
+              (i32.ge_u
+                (local.get $free_body_size)
+                (i32.add
+                  (local.get $payload_size)
+                  (i32.const {min_split_block_size})))
               (then
-                (global.set $gc_free_list (local.get $free_next)))
-              (else
+                (local.set $split_header
+                  (i32.add
+                    (local.get $free_header)
+                    (i32.add (i32.const {gc_header_size}) (local.get $payload_size))))
+                (local.set $split_body_size
+                  (i32.sub
+                    (local.get $free_body_size)
+                    (i32.add (i32.const {gc_header_size}) (local.get $payload_size))))
                 (i32.store
-                  (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
-                  (local.get $free_next))))
+                  (i32.add (local.get $split_header) (i32.const {gc_flags_offset}))
+                  (i32.const {gc_kind_unknown}))
+                (i32.store
+                  (i32.add (local.get $split_header) (i32.const {gc_body_size_offset}))
+                  (local.get $split_body_size))
+                (i32.store
+                  (i32.add (local.get $split_header) (i32.const {gc_sweep_next_offset}))
+                  (local.get $free_next))
+                (i32.store
+                  (i32.add (local.get $split_header) (i32.const {gc_reserved_offset}))
+                  (i32.const 0))
+                (if (i32.eqz (local.get $free_prev))
+                  (then
+                    (global.set $gc_free_list (local.get $split_header)))
+                  (else
+                    (i32.store
+                      (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
+                      (local.get $split_header))))
+                (i32.store
+                  (i32.add (local.get $free_header) (i32.const {gc_body_size_offset}))
+                  (local.get $payload_size))
+                (global.set $alloc_bytes_since_last_gc
+                  (i32.add
+                    (global.get $alloc_bytes_since_last_gc)
+                    (local.get $block_size))))
+              (else
+                (if (i32.eqz (local.get $free_prev))
+                  (then
+                    (global.set $gc_free_list (local.get $free_next)))
+                  (else
+                    (i32.store
+                      (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
+                      (local.get $free_next))))
+                (global.set $alloc_bytes_since_last_gc
+                  (i32.add
+                    (global.get $alloc_bytes_since_last_gc)
+                    (i32.add (i32.const {gc_header_size}) (local.get $free_body_size))))))
             (i32.store
               (i32.add (local.get $free_header) (i32.const {gc_flags_offset}))
               (i32.const {gc_kind_unknown}))
@@ -1074,10 +1158,6 @@ impl WatEmitter<'_> {
             (i32.store
               (i32.add (local.get $free_header) (i32.const {gc_reserved_offset}))
               (i32.const 0))
-            (global.set $alloc_bytes_since_last_gc
-              (i32.add
-                (global.get $alloc_bytes_since_last_gc)
-                (i32.add (i32.const {gc_header_size}) (local.get $free_body_size))))
             (return (i32.add (local.get $free_header) (i32.const {gc_header_size})))))
         (local.set $free_prev (local.get $free_header))
         (local.set $free_header (local.get $free_next))
@@ -1215,8 +1295,11 @@ impl WatEmitter<'_> {
     (local $flags i32)
     (local $body_size i32)
     (local $next i32)
+    (local $next_flags i32)
+    (local $next_body_size i32)
     (local.set $cursor (i32.const {heap_start}))
     (local.set $heap_end (global.get $heap))
+    (global.set $gc_free_list (i32.const 0))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $cursor) (local.get $heap_end)))
@@ -1239,6 +1322,31 @@ impl WatEmitter<'_> {
               (i32.add (local.get $cursor) (i32.const {gc_flags_offset}))
               (i32.and (local.get $flags) (i32.const {gc_mark_clear_mask}))))
           (else
+            (block $coalesce_done
+              (loop $coalesce
+                (br_if $coalesce_done (i32.ge_u (local.get $next) (local.get $heap_end)))
+                (local.set $next_flags
+                  (i32.load
+                    (i32.add (local.get $next) (i32.const {gc_flags_offset}))))
+                (br_if $coalesce_done
+                  (i32.ne
+                    (i32.and (local.get $next_flags) (i32.const {gc_mark_flag}))
+                    (i32.const 0)))
+                (local.set $next_body_size
+                  (i32.load
+                    (i32.add (local.get $next) (i32.const {gc_body_size_offset}))))
+                (local.set $body_size
+                  (i32.add
+                    (local.get $body_size)
+                    (i32.add (i32.const {gc_header_size}) (local.get $next_body_size))))
+                (local.set $next
+                  (i32.add
+                    (local.get $next)
+                    (i32.add (i32.const {gc_header_size}) (local.get $next_body_size))))
+                (br $coalesce)))
+            (i32.store
+              (i32.add (local.get $cursor) (i32.const {gc_body_size_offset}))
+              (local.get $body_size))
             (i32.store
               (i32.add (local.get $cursor) (i32.const {gc_sweep_next_offset}))
               (global.get $gc_free_list))
@@ -1259,6 +1367,7 @@ impl WatEmitter<'_> {
             gc_kind_unknown = Layout::GC_KIND_UNKNOWN,
             gc_mark_flag = Layout::GC_MARK_FLAG,
             gc_mark_clear_mask = !(Layout::GC_MARK_FLAG as i32),
+            min_split_block_size = Layout::GC_HEADER_SIZE + Layout::ALIGN,
             page_size = Layout::WASM_PAGE_SIZE,
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
