@@ -27,6 +27,11 @@ HIR (High-level IR) — 初期 slice 実装済み
   `ts2wasm dump --tir` はこの phase を structural debug output として表示する。
   `ts2wasm dump --tir --unparse` は local/function ID を保持した pseudo source を表示する。
 
+Optimized HIR
+  HIR に optimization level と safety mode に応じた optimizer pass を適用した診断用 IR。
+  `ts2wasm dump --optimize -O0..-O3` はこの phase を structural debug output として表示する。
+  `ts2wasm dump --optimize --unparse -O2` は optimizer 後の HIR を pseudo source として表示する。
+
 MIR (Mid-level IR / Runtime IR) — 未実装（予定）
   runtime ABI 呼び出しに寄せた表現。
   RawValue / HeapPtr を直接扱う。
@@ -150,6 +155,12 @@ HIR は次の命令群を持つ。命令名は設計上の契約であり、実�
 `dump --tir` は `BuiltinResolved AST` から `HirProgram` を構築し、`validate_hir` に成功した結果だけを出力する。これは backend 用の runtime lowering である `LoweredProgram` の別名ではない。
 
 構造出力は Rust の debug representation を使い、`HirProgram` / `HirStmt` / `HirExpr` をそのまま表示する。`--unparse` は source の識別子名ではなく HIR の `local$N` / `fn$N` ID を表示し、`JsAdd`、`ToBoolean`、`CallBuiltin` 相当の semantic operation を残した pseudo source にする。
+
+### dump --optimize の仕様
+
+`dump --optimize -O0..-O3` は `HirProgram` に optimizer pipeline を適用し、`validate_hir` に成功した optimized HIR だけを出力する。これは `LoweredProgram` の別名ではなく、optimizer pass の実行結果を `OptimizedHirProgram` として表示する。
+
+構造出力は optimization level、`applied_passes`、optimized `HirProgram` を含む。`-O0` は pass を適用しない基準出力であり、`-O1` 以上の pass は observable JavaScript semantics を壊さない場合にだけ IR を変更する。`--unparse` は optimizer 後の HIR を pseudo source として表示し、source の識別子名ではなく `local$N` / `fn$N` ID を保持する。
 
 ### validate_hir の仕様
 

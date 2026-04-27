@@ -20,6 +20,7 @@ pub use ts2wasm_frontend::{
     TypeScriptCheckReport, TypeScriptDiagnostic, check_typescript_file,
     collect_typescript_diagnostics,
 };
+pub use ts2wasm_ir::OptimizationLevel;
 
 pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
     build_file_with_options(input, output, None)
@@ -49,7 +50,7 @@ pub fn build_file_with_host_deny(
     validate_ast(&program)?;
     let name_resolved = name_resolver::resolve_names(&program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
-    validate_supported_hir_slice(&resolved)?;
+    validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
@@ -76,15 +77,12 @@ pub fn build_file_with_host_deny(
     write_wasm_from_wat(&wat, output)
 }
 
-fn validate_supported_hir_slice(resolved: &[ts2wasm_ir::ResolvedStmt]) -> Result<(), Diagnostic> {
+fn validate_optimized_hir_slice(
+    resolved: &[ts2wasm_ir::ResolvedStmt],
+    level: OptimizationLevel,
+) -> Result<(), Diagnostic> {
     match ts2wasm_ir::semantic::lower_to_hir(resolved) {
-        Ok(hir) => ts2wasm_ir::semantic::validate_hir(&hir).map_err(|errs| {
-            errs.into_iter().next().unwrap_or(Diagnostic {
-                code: DiagCode::InvariantViolation,
-                message: "validate_hir failed with empty diagnostic list".to_owned(),
-                span: None,
-            })
-        }),
+        Ok(hir) => dump::optimize_typed_ir(&hir, level).map(|_| ()),
         Err(error) if error.code == DiagCode::UnsupportedSyntax => Ok(()),
         Err(error) => Err(error),
     }
