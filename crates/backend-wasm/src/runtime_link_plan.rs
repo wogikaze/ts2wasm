@@ -46,6 +46,9 @@ impl RuntimeLinkPlan {
         for function in &program.functions {
             plan.collect_required_runtime_stmts(&function.body);
         }
+        for module in &program.modules {
+            plan.collect_required_runtime_stmts(&module.statements);
+        }
         if program
             .functions
             .iter()
@@ -504,5 +507,75 @@ impl RuntimeLinkPlan {
                 self.add_required_runtime(RuntimeFn::PropertyHas);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo};
+
+    use super::{RuntimeFn, RuntimeLinkPlan};
+
+    #[test]
+    fn empty_module_metadata_does_not_select_es_module_export_helpers() {
+        let program = LoweredProgram {
+            top_level_statements: vec![],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![ModuleInfo {
+                id: 1,
+                specifier: "./dep".to_owned(),
+                statements: vec![],
+                locals_count: 0,
+            }],
+        };
+
+        let plan = RuntimeLinkPlan::from_program(&program);
+
+        assert!(
+            !plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::ModuleRequire)
+        );
+        assert!(
+            !plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::ModuleExportsSet)
+        );
+        assert!(
+            !plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::ModuleExportsAssign)
+        );
+    }
+
+    #[test]
+    fn explicit_module_export_statement_selects_es_module_export_helpers() {
+        let program = LoweredProgram {
+            top_level_statements: vec![],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![ModuleInfo {
+                id: 1,
+                specifier: "./dep".to_owned(),
+                statements: vec![LoweredStmt::Export {
+                    name: "value".to_owned(),
+                    expr: LoweredExpr::Number(1),
+                }],
+                locals_count: 0,
+            }],
+        };
+
+        let plan = RuntimeLinkPlan::from_program(&program);
+
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::ModuleExportsSet)
+        );
+        assert!(
+            !plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::ModuleRequire)
+        );
     }
 }
