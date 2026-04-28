@@ -147,6 +147,10 @@ null
   - `cargo fmt --all --check`
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
+  - `scripts/manager check-issue-health`
+  - `cargo nextest run`
   - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-nested-array.ts -o /tmp/ts2wasm-json-parse-nested-array.wasm`
   - `iwasm /tmp/ts2wasm-json-parse-nested-array.wasm`
   - `node fixtures/builtins-and-io/json-parse-nested-array.ts`
@@ -735,6 +739,26 @@ abcdefghij1
   - `cargo nextest run`
 - Full validation report for run `052-json-close-slice-20260428T133852Z` is recorded under `reports/runs/052-json-close-slice-20260428T133852Z/`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
+
+2026-04-28:
+
+- Implemented a narrow `JSON.stringify` array replacer continuation slice for numeric literal property-list entries in the existing object-literal filtering path.
+- Numeric replacer entries are converted to their JavaScript property-list string keys during lowering, while existing property-list order and duplicate suppression behavior is preserved.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-replacer-array-number.ts` for:
+  - `JSON.stringify({ "1": "one", a: 2 }, [1, "a"])`
+  - `JSON.stringify({ "1": "one", a: 2 }, ["1", 1, "a"])`
+- Updated `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts` to keep unsupported property-list diagnostics on a boolean entry after numeric entries became supported.
+- Pre-change reproduction with `/tmp/ts2wasm-json-replacer-number.ts` showed Node printed `{"1":"one","a":2}` twice, while ts2wasm rejected the source with `issue-052: JSON.stringify array replacer property lists outside the string-literal object subset are not supported yet`.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-stringify-replacer-array-number.ts` prints `{"1":"one","a":2}` twice.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-number.ts -o /tmp/ts2wasm-json-replacer-array-number.wasm && iwasm /tmp/ts2wasm-json-replacer-array-number.wasm` prints the same two lines.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm` rejects with an issue-052 `UnsupportedSyntax` diagnostic for unsupported boolean property-list entries.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+- Remaining final checks for this child run are recorded in `reports/runs/052-json-replacer-next-20260428T135136Z/`.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string/numeric-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
 
 ## Completion evidence
 
