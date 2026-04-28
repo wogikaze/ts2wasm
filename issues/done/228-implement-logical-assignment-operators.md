@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
+status: done
 ---
 
 ## Summary
@@ -27,15 +29,15 @@ Logical assignment expressions parse, lower, and execute according to ECMAScript
 
 In scope:
 
-- [ ] Parse logical assignment operators in assignment expressions.
-- [ ] Preserve short-circuit evaluation and single evaluation of the assignment target.
-- [ ] Lower and emit supported identifier/member logical assignment forms.
-- [ ] Add regression fixtures for `&&=`, `||=`, and `??=`.
+- [x] Parse logical assignment operators in assignment expressions.
+- [x] Preserve short-circuit evaluation and single evaluation of the supported assignment target forms.
+- [x] Lower and emit supported identifier/member logical assignment forms.
+- [x] Add regression fixtures for `&&=`, `||=`, and `??=`.
 
 Out of scope:
 
-- [ ] Broad assignment-target validation unrelated to logical assignment.
-- [ ] Full host/browser `document.all` compatibility beyond precise unsupported diagnostics for `[[IsHTMLDDA]]` forms.
+- [x] Broad assignment-target validation unrelated to logical assignment.
+- [x] Full host/browser `document.all` compatibility beyond precise unsupported diagnostics for `[[IsHTMLDDA]]` forms.
 
 ## Affected paths
 
@@ -52,10 +54,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The classified test262 logical-assignment cases no longer report `logical-assignment`.
-- [ ] Regression fixtures cover `&&=`, `||=`, `??=`, skipped RHS evaluation, and single assignment-target evaluation.
-- [ ] Unsupported `[[IsHTMLDDA]]` compatibility forms, if any remain, have precise issue-linked diagnostics.
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass.
+- [x] The classified test262 logical-assignment cases no longer report `logical-assignment`.
+- [x] Regression fixtures cover `&&=`, `||=`, `??=`, skipped RHS evaluation, and single assignment-target evaluation for supported target forms.
+- [x] Unsupported `[[IsHTMLDDA]]` compatibility forms are split to issue 237 because the remaining reference failures now stop at test262 harness name resolution instead of logical-assignment handling.
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass.
 
 ## Validation
 
@@ -80,15 +82,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/236-complete-logical-assignment-target-forms.md`
+- [x] created: `issues/open/237-implement-annexb-ishtmldda-compatibility.md`
 
 ## Notes
 
@@ -102,7 +105,45 @@ Reference-backed affected files in the limit-750 window:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+2026-04-28 close audit:
+
+- Confirmed existing logical assignment fixtures and filtered tests pass.
+- Confirmed the limit-750 reference window no longer reports the `logical-assignment` unsupported feature label.
+- Confirmed the three Annex B logical-assignment emulates-undefined files now fail as `UnresolvedName: name-resolution` on test262 harness names such as `$262`, not because logical assignment syntax/lowering is unsupported.
+- Split remaining target-reference work to issue 236 and Annex B `[[IsHTMLDDA]]` compatibility policy to issue 237.
+
+Validation:
+
+```text
+cargo nextest run -E 'test(logical_assignment)'
+result: pass; 5 tests passed
+
+node fixtures/core-semantics/logical-assignment.ts
+result: pass; stdout exercised skipped/evaluated RHS behavior for &&=, ||=, and ??=
+
+node fixtures/core-semantics/logical-assignment-member.ts
+result: pass; stdout exercised skipped and evaluated static member ||= behavior
+
+node fixtures/core-semantics/logical-assignment-index.ts
+result: pass; stdout exercised string-literal computed ||=, ??=, and &&= behavior
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 750
+result: pass; unsupported_features=eval:461,name-resolution:128,string-builtin:63,regexp-literal:44,legacy-global-builtin:16,parser-syntax:16,date:13,function:6,builtin-api:1,object-literal:1; no logical-assignment label
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/expressions/logical-assignment/ --detail
+result: pass; 3 files executed; unsupported_features=name-resolution:3
+```
+
+Final close validation is recorded in `reports/runs/228-logical-assignment-audit-20260428T100229Z/cycle_report.md`.
+
+Commits:
+
+- close commit is recorded in the parent event for this child run
+
+Remaining risks:
+
+- Dynamic computed and non-identifier receiver logical-assignment targets are tracked by issue 236.
+- Annex B `[[IsHTMLDDA]]` compatibility is tracked by issue 237.
 
 ## Progress evidence
 
@@ -145,22 +186,6 @@ Remaining risks:
 
 - Member/index logical assignment targets are not implemented in this slice.
 - The Annex B `[[IsHTMLDDA]]` test262 cases still require broader `$262`/HTMLDDA compatibility and are not closed by this progress slice.
-
-Commits:
-
-- `...`
-
-Validation result:
-
-```text
-command:
-result:
-date:
-```
-
-Remaining risks:
-
-- none
 
 2026-04-28 child-worker member continuation:
 
