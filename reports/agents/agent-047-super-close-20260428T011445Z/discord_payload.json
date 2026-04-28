@@ -1,7 +1,0 @@
-{
-  "run_id": "20260428T011957Z-047-super",
-  "status": "DEFERRED",
-  "reason": "DISCORD_WEBHOOK_URL not configured",
-  "summary": "Issue 047 DONE; super constructor and super method fixtures now have Node/iwasm differential coverage.",
-  "cycle_report": "reports/runs/20260428T011957Z-047-super/cycle_report.md"
-}

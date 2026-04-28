@@ -1,9 +1,0 @@
-first attempt command: scripts/manager discord-report --run-id 20260428T020322Z-227-type-ref-directive
-first attempt result: failed
-stderr: エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
-
-retry command: scripts/manager discord-report --run-id 20260428T020322Z-227-type-ref-directive
-retry stdout:
-retry stderr:
-エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
-reporting: DEFERRED

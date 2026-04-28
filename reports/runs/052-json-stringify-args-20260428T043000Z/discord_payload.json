@@ -1,5 +1,0 @@
-{
-  "run_id": "052-json-stringify-args-20260428T043000Z",
-  "status": "not_generated",
-  "reason": "scripts/manager discord-report requires DISCORD_WEBHOOK_URL even with --dry-run in this environment"
-}

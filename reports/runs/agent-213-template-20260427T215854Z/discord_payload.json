@@ -1,5 +1,0 @@
-{
-  "source": "reports/agents/agent-213-template-20260427T215854Z/webhook-deferred.json",
-  "status": "deferred",
-  "reason": "DISCORD_WEBHOOK_URL is not configured"
-}

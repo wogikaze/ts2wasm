@@ -1,4 +1,0 @@
-scripts/manager discord-report --run-id 052-json-array-object-20260428T074900Z
-exit_code=1
-stderr=DISCORD_WEBHOOK_URL is not set in the environment or .env.
-status=DEFERRED

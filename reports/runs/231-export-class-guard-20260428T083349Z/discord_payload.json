@@ -1,7 +1,0 @@
-{
-  "status": "DEFERRED",
-  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
-  "run_id": "231-export-class-guard-20260428T083349Z",
-  "cycle_report": "reports/runs/231-export-class-guard-20260428T083349Z/cycle_report.md",
-  "error_log": "reports/runs/231-export-class-guard-20260428T083349Z/reporting_error.log"
-}

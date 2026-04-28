@@ -1,5 +1,0 @@
-    Blocking waiting for file lock on package cache
-    Blocking waiting for file lock on package cache
-    Blocking waiting for file lock on package cache
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s
-     Running `target/debug/ts2wasm build fixtures/builtins-and-io/json-parse-escaped-string.ts -o /tmp/ts2wasm-json-parse-escaped-string.wasm`

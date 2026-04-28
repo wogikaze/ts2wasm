@@ -1,3 +1,0 @@
-scripts/manager discord-report --run-id 060-coverage-ramp4000-20260428T041000Z
-exit_code=1
-error=DISCORD_WEBHOOK_URL is not configured in environment or .env

@@ -1,8 +1,0 @@
-{
-  "run_id": "052-json-parse-array-object-20260428T101232Z",
-  "status": "deferred",
-  "command": "scripts/manager discord-report --run-id 052-json-parse-array-object-20260428T101232Z",
-  "exit_code": 1,
-  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
-  "secrets_included": false
-}

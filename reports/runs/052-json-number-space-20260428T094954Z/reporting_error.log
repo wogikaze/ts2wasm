@@ -1,4 +1,0 @@
-scripts/manager discord-report --run-id 052-json-number-space-20260428T094954Z
-exit_code=1
-error=DISCORD_WEBHOOK_URL is not set in the environment or .env
-retry=same command failed with the same missing webhook configuration

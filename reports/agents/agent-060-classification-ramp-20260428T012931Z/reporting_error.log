@@ -1,5 +1,0 @@
-command: scripts/manager discord-report --run-id 20260428T012931Z-060-classification-ramp < reports/agents/agent-060-classification-ramp-20260428T012931Z/cycle_report.md
-attempts: 2
-result: deferred
-stderr:
-DISCORD_WEBHOOK_URL is not configured in the environment or .env.

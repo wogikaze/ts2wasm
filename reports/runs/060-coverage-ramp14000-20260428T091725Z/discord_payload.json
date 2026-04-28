@@ -1,9 +1,0 @@
-{
-  "run_id": "060-coverage-ramp14000-20260428T091725Z",
-  "status": "DEFERRED",
-  "issue": "060",
-  "branch": "agent/060-coverage-ramp14000-20260428T091725Z",
-  "commit": "2c772a3",
-  "report": "reports/runs/060-coverage-ramp14000-20260428T091725Z/cycle_report.md",
-  "summary": "PROGRESS: ramped stored test262 reference coverage to limit 14000 with zero unknown-unsupported entries."
-}
