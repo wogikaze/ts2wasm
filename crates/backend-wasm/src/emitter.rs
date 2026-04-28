@@ -503,8 +503,13 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(val);
                 }
             }
-            LoweredExpr::ErrorNew { message, .. } => {
+            LoweredExpr::ErrorNew {
+                constructor,
+                message,
+            } => {
                 self.intern_string("message");
+                self.intern_string("stack");
+                self.intern_string(builtin_error_stack_prefix(*constructor));
                 self.collect_expr_strings(message);
             }
             LoweredExpr::PropertyGet { obj, key } => {
@@ -1281,6 +1286,15 @@ pub(super) fn builtin_error_prototype_global(constructor: BuiltinErrorConstructo
         BuiltinErrorConstructor::TypeError => "error_proto_type_error",
         BuiltinErrorConstructor::ReferenceError => "error_proto_reference_error",
         BuiltinErrorConstructor::SyntaxError => "error_proto_syntax_error",
+    }
+}
+
+pub(super) fn builtin_error_stack_prefix(constructor: BuiltinErrorConstructor) -> &'static str {
+    match constructor {
+        BuiltinErrorConstructor::Error => "Error: ",
+        BuiltinErrorConstructor::TypeError => "TypeError: ",
+        BuiltinErrorConstructor::ReferenceError => "ReferenceError: ",
+        BuiltinErrorConstructor::SyntaxError => "SyntaxError: ",
     }
 }
 

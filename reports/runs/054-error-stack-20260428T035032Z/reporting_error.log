@@ -1,0 +1,4 @@
+scripts/manager discord-report --run-id 054-error-stack-20260428T035032Z
+exit_code: 1
+stderr:
+DISCORD_WEBHOOK_URL is not configured in the environment or .env.

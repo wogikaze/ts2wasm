@@ -193,6 +193,11 @@ fn error_instanceof_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn error_stack_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/error-stack.ts");
+}
+
+#[test]
 fn map_set_collection_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/map-set.ts");
 }
