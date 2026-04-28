@@ -10,6 +10,8 @@
       "fixtures/builtins-and-io/json-stringify-escaped-string.ts",
       "issues/open/052-implement-json.md",
       "reports/runs/052-json-number-space-20260428T094954Z/cycle_report.md",
+      "reports/runs/052-json-number-space-20260428T094954Z/discord_payload.json",
+      "reports/runs/052-json-number-space-20260428T094954Z/reporting_error.log",
       "reports/runs/052-json-number-space-20260428T094954Z/test_report.json"
     ],
     "commits": [
@@ -69,6 +71,16 @@
       "cmd": "python -m jsonschema -i reports/runs/052-json-number-space-20260428T094954Z/test_report.json .agents/state/schemas/test_report.schema.json",
       "status": "pass",
       "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 052-json-number-space-20260428T094954Z",
+      "status": "fail",
+      "exit_code": 1
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 052-json-number-space-20260428T094954Z",
+      "status": "fail",
+      "exit_code": 1
     }
   ],
   "fixtures": {
@@ -89,6 +101,7 @@
     "completion": "PROGRESS",
     "issue": "052",
     "full_nextest": "not run; PROGRESS slice with targeted JSON validation",
+    "reporting": "DEFERRED: DISCORD_WEBHOOK_URL is not configured",
     "node_iwasm_output": "{\"a\":\"x\\\"y\",\"b\":\"c\\\\d\",\"c\":\"line\\nend\",\"d\":[\"tab\\tend\"]}\n\"quote\\\"slash\\\\\""
   }
 }
