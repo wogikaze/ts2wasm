@@ -805,6 +805,13 @@ abcdefghij1
   - `scripts/manager update-issue-index --check`
   - `scripts/manager check-agent-state`
 - Gate note: `scripts/manager check-issue-health` failed only because this fresh child worktree lacks gitignored `reports/runs/...` evidence paths referenced by existing issue history, matching the assignment's documented acceptable failure mode.
+- Parent validation note: after rebasing onto master `d8b8919` and syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `scripts/manager check-issue-health` and `scripts/manager check-repo-smoke` passed. Parent focused validation also passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json_parse_invalid_incomplete_numbers_rejected_under_node_and_iwasm)'`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
 - Full `cargo nextest run` was skipped for this regression-only PROGRESS slice because no runtime code changed and the assignment allows focused validation for regression-only progress.
 
 ## Completion evidence
