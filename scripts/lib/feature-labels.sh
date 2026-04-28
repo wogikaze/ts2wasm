@@ -48,6 +48,8 @@ ts2wasm_feature_label() {
     *"/annexb/language/eval-code/"*) echo "eval"; return ;;
     *"/annexb/language/expressions/logical-assignment/"*) echo "logical-assignment"; return ;;
     *"/annexb/language/expressions/template-literal/legacy-octal-escape-sequence-"*) echo "legacy-octal-escape"; return ;;
+    *"/annexb/language/expressions/"*"/emulates-undefined.js") echo "annexb-ishtmldda"; return ;;
+    *"/annexb/language/statements/if/emulated-undefined.js") echo "annexb-ishtmldda"; return ;;
     *"/for-await-of/"*) echo "async-iteration"; return ;;
     *"/class/"*|*"/class-"*|*"/classes/"*) echo "class"; return ;;
     *"/module/"*|*"/import/"*|*"/export/"*) echo "import-export"; return ;;

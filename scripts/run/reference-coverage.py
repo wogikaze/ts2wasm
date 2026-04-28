@@ -253,6 +253,11 @@ def feature_label(diag_code, err_file, file_path):
         return "logical-assignment"
     elif "/annexb/language/expressions/template-literal/legacy-octal-escape-sequence-" in path_lc:
         return "legacy-octal-escape"
+    elif (
+        "/annexb/language/expressions/" in path_lc
+        and path_lc.endswith("/emulates-undefined.js")
+    ) or path_lc.endswith("/annexb/language/statements/if/emulated-undefined.js"):
+        return "annexb-ishtmldda"
     elif "/for-await-of/" in path_lc:
         return "async-iteration"
     elif "/class/" in path_lc or "/class-" in path_lc or "/classes/" in path_lc:
