@@ -107,6 +107,16 @@ Progress 2026-04-28 continuation:
 - Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/error-message.ts -o /tmp/ts2wasm-054-error-message.wasm && iwasm /tmp/ts2wasm-054-error-message.wasm`; `cargo nextest run`; `scripts/manager check-issue-health`; `scripts/manager check-agent-state`.
 - Remaining criteria before close: `.stack` is still not implemented; Error prototype identity / `instanceof Error` remains uncovered.
 
+Progress 2026-04-28 continuation 2:
+
+- Reproduced the remaining prototype gap with a temporary fixture: Node printed `true` for `new Error("generic") instanceof Error`, `new TypeError("type") instanceof TypeError`, and `new TypeError("type") instanceof Error`, while the compiler failed at build time with `issue-207: instanceof right-hand side must be a supported class constructor \`Error\``.
+- Added built-in Error prototype lowering for Error, TypeError, ReferenceError, and SyntaxError. Error instances now carry built-in prototype payloads, subclass prototypes chain through Error.prototype, and the existing `$instanceof` runtime helper observes those chains.
+- Added `fixtures/builtins-and-io/error-instanceof.ts` and `error_instanceof_fixture_matches_node_output_under_iwasm`, covering self `instanceof`, subclass-to-Error `instanceof`, cross-subclass negatives, plain object negative, and primitive left-hand negative.
+- Direct Node vs iwasm evidence for `fixtures/builtins-and-io/error-instanceof.ts` matched:
+  `true true true true true true true false false false false` on separate stdout lines.
+- Validation passed: `cargo check -p ts2wasm-backend-wasm -p ts2wasm-ir -p ts2wasm-cli`; `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `node fixtures/builtins-and-io/error-instanceof.ts`; `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/error-instanceof.ts -o /tmp/ts2wasm-054-error-instanceof.wasm && iwasm /tmp/ts2wasm-054-error-instanceof.wasm`; `scripts/manager check-issue-health`; `scripts/manager check-agent-state`.
+- Remaining criteria before close: `.stack` is still not implemented; full Error spec compliance and full `cargo nextest run` close validation remain outstanding.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

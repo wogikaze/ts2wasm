@@ -8,7 +8,7 @@ use ts2wasm_ir::lowered::{
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::emitter::{class_prototype_global, function_symbol};
+use super::emitter::{builtin_error_prototype_global, class_prototype_global, function_symbol};
 
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
@@ -365,6 +365,53 @@ impl WatEmitter<'_> {
                     ValueTag::OBJECT_TAG,
                 ));
             }
+            LoweredExpr::ErrorNew {
+                constructor,
+                message,
+            } => {
+                let prop_count = 1;
+                let prop_capacity = prop_count + 8;
+                let size =
+                    Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
+                wat.push_str(&format!(
+                    "{pad}(local.set {} (call {} (i32.const {})))\n",
+                    frame.heap_base_tmp(),
+                    RuntimeFn::AllocHeap.symbol(),
+                    size,
+                ));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+                wat.push_str(&format!(
+                    "{pad}(i32.store (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    prop_count,
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_PROTOTYPE_OFFSET,
+                    builtin_error_prototype_global(*constructor),
+                ));
+                let key_raw = self.string_value("message");
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_ENTRIES_OFFSET,
+                    key_raw,
+                ));
+                self.emit_expr(wat, message, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    ValueTag::OBJECT_TAG,
+                ));
+            }
             LoweredExpr::PropertyGet { obj, key } => {
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
                 let key_len = self.string_len(key);
@@ -538,6 +585,13 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!(
                     "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
                     class_prototype_global(prototype.constructor),
+                    ValueTag::OBJECT,
+                ));
+            }
+            LoweredExpr::BuiltinErrorPrototype(constructor) => {
+                wat.push_str(&format!(
+                    "{pad}(i32.or (global.get ${}) (i32.const {}))\n",
+                    builtin_error_prototype_global(*constructor),
                     ValueTag::OBJECT,
                 ));
             }
@@ -810,6 +864,7 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::RuntimeCall { .. }
         | LoweredExpr::ArrayNew { .. }
         | LoweredExpr::ObjectNew { .. }
+        | LoweredExpr::ErrorNew { .. }
         | LoweredExpr::New { .. } => true,
         LoweredExpr::Binary { left, right, .. } => {
             expr_may_collect(left) || expr_may_collect(right)
@@ -853,7 +908,8 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This
         | LoweredExpr::ArrowFn { .. }
-        | LoweredExpr::ClassPrototype(_) => false,
+        | LoweredExpr::ClassPrototype(_)
+        | LoweredExpr::BuiltinErrorPrototype(_) => false,
     }
 }
 
@@ -861,6 +917,7 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
     match expr {
         LoweredExpr::ArrayNew { .. }
         | LoweredExpr::ObjectNew { .. }
+        | LoweredExpr::ErrorNew { .. }
         | LoweredExpr::PropertyGetDynamic { .. }
         | LoweredExpr::PropertyInDynamic { .. }
         | LoweredExpr::PropertyDeleteDynamic { .. }
@@ -896,6 +953,7 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This
         | LoweredExpr::ArrowFn { .. }
-        | LoweredExpr::ClassPrototype(_) => false,
+        | LoweredExpr::ClassPrototype(_)
+        | LoweredExpr::BuiltinErrorPrototype(_) => false,
     }
 }

@@ -17,6 +17,33 @@ pub struct ClassPrototypeRef {
     pub parent_constructors: Vec<FuncId>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum BuiltinErrorConstructor {
+    Error,
+    TypeError,
+    ReferenceError,
+    SyntaxError,
+}
+
+impl BuiltinErrorConstructor {
+    pub fn from_name(name: &str) -> Option<Self> {
+        match name {
+            "Error" => Some(Self::Error),
+            "TypeError" => Some(Self::TypeError),
+            "ReferenceError" => Some(Self::ReferenceError),
+            "SyntaxError" => Some(Self::SyntaxError),
+            _ => None,
+        }
+    }
+
+    pub fn parent(self) -> Option<Self> {
+        match self {
+            Self::Error => None,
+            Self::TypeError | Self::ReferenceError | Self::SyntaxError => Some(Self::Error),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ModuleInfo {
     pub id: usize,
@@ -185,6 +212,10 @@ pub enum LoweredExpr {
     ObjectNew {
         props: Vec<(String, LoweredExpr)>,
     },
+    ErrorNew {
+        constructor: BuiltinErrorConstructor,
+        message: Box<LoweredExpr>,
+    },
     PropertyGet {
         obj: Box<LoweredExpr>,
         key: String,
@@ -226,6 +257,7 @@ pub enum LoweredExpr {
         base_local: LocalId,
     },
     ClassPrototype(ClassPrototypeRef),
+    BuiltinErrorPrototype(BuiltinErrorConstructor),
     ModuleLoad {
         module_id: usize,
     },
@@ -518,13 +550,6 @@ fn class_constructor_key(class_name: &str) -> String {
 
 fn class_method_key(class_name: &str, method_name: &str) -> String {
     format!("class::{class_name}::{method_name}")
-}
-
-fn is_builtin_error_constructor(class_name: &str) -> bool {
-    matches!(
-        class_name,
-        "Error" | "TypeError" | "ReferenceError" | "SyntaxError"
-    )
 }
 
 fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<String>> {
@@ -1345,9 +1370,14 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Binary { left, op, right } => {
                 if *op == BinaryOp::InstanceOf {
                     let prototype = match right.as_ref() {
-                        ResolvedExpr::Ident(name) => self
-                            .class_prototype_ref(name)
-                            .map(LoweredExpr::ClassPrototype)?,
+                        ResolvedExpr::Ident(name) => {
+                            if let Some(constructor) = BuiltinErrorConstructor::from_name(name) {
+                                LoweredExpr::BuiltinErrorPrototype(constructor)
+                            } else {
+                                self.class_prototype_ref(name)
+                                    .map(LoweredExpr::ClassPrototype)?
+                            }
+                        }
                         _ => {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
@@ -1830,7 +1860,7 @@ impl<'a> Resolver<'a> {
                         args: Vec::new(),
                     });
                 }
-                if is_builtin_error_constructor(class_name) {
+                if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
                     let message = match args.first() {
                         Some(message) => LoweredExpr::RuntimeCall {
                             runtime_fn: "ErrorMessage".to_owned(),
@@ -1838,8 +1868,9 @@ impl<'a> Resolver<'a> {
                         },
                         None => LoweredExpr::String(String::new()),
                     };
-                    return Ok(LoweredExpr::ObjectNew {
-                        props: vec![("message".to_owned(), message)],
+                    return Ok(LoweredExpr::ErrorNew {
+                        constructor,
+                        message: Box::new(message),
                     });
                 }
 
@@ -2461,6 +2492,9 @@ fn validate_expr(
                 validate_expr(val, local_count, num_funcs, program, errors, true);
             }
         }
+        LoweredExpr::ErrorNew { message, .. } => {
+            validate_expr(message, local_count, num_funcs, program, errors, true);
+        }
         LoweredExpr::PropertyGet { obj, .. } => {
             validate_expr(obj, local_count, num_funcs, program, errors, true);
         }
@@ -2500,6 +2534,7 @@ fn validate_expr(
                 check_func_id(*parent, num_funcs, errors);
             }
         }
+        LoweredExpr::BuiltinErrorPrototype(_) => {}
         LoweredExpr::This => {
             errors.push(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,

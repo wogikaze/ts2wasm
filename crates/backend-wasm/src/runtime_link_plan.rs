@@ -421,6 +421,10 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(val);
                 }
             }
+            LoweredExpr::ErrorNew { message, .. } => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+                self.collect_required_runtime_expr(message);
+            }
             LoweredExpr::PropertyGet { obj, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
@@ -453,6 +457,9 @@ impl RuntimeLinkPlan {
                 }
             }
             LoweredExpr::ClassPrototype(_) => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+            }
+            LoweredExpr::BuiltinErrorPrototype(_) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
             }
             LoweredExpr::MethodCall { .. } => {}
