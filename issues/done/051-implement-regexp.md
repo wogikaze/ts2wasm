@@ -319,6 +319,7 @@ result: pass
 
 ## Completion evidence
 
+- Close commit: `1e5ebd4` (`issue-051: close regexp subset`)
 - 2026-04-28 close audit: issue 051 is complete for the constrained RegExp subset in scope:
   literal syntax, `new RegExp("plain")`, optional empty/`g` constructor flags,
   `RegExp.prototype.test`, `RegExp.prototype.exec`, `String.prototype.match`, fixture coverage,
