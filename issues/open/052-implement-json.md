@@ -341,6 +341,7 @@ x/y
 2026-04-28:
 
 - Implemented a `JSON.stringify` string `space` continuation slice for null/undefined replacer values, carrying a clamped gap string through runtime indentation emission.
+- Progress commit: `49f07b5`.
 - String `space` now supports simple ASCII prefix strings and clamps the gap to ECMAScript's 10-character limit.
 - Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-space-string.ts`; Node and iwasm both print:
 
