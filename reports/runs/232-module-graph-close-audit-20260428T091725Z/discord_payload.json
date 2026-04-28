@@ -1,8 +1,0 @@
-{
-  "run_id": "232-module-graph-close-audit-20260428T091725Z",
-  "issue": 232,
-  "branch": "agent/232-module-graph-close-audit-20260428T091725Z",
-  "status": "DEFERRED",
-  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
-  "report": "reports/runs/232-module-graph-close-audit-20260428T091725Z/cycle_report.md"
-}

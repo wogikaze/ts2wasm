@@ -1,9 +1,0 @@
-attempt 1: scripts/manager discord-report --run-id 20260428T010000Z-issue-212-rest-params
-exit: 1
-stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
-
-attempt 2: scripts/manager discord-report --run-id 20260428T010000Z-issue-212-rest-params
-exit: 1
-stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
-
-status: DEFERRED

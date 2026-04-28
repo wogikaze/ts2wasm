@@ -1,9 +1,0 @@
-{
-  "run_id": "20260428T010000Z-issue-212-rest-params",
-  "issue": 212,
-  "branch": "agent/212-rest-params-20260428T010000Z",
-  "commit": "67223b3aa636aa77b094dc9b84bf8d794d205e59",
-  "status": "DONE",
-  "merge_request": true,
-  "summary": "Implemented rest parameter argument collection and closed issue 212."
-}

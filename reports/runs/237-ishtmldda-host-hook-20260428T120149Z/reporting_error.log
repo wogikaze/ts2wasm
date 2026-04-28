@@ -1,9 +1,0 @@
-attempt 1: scripts/manager discord-report --run-id 237-ishtmldda-host-hook-20260428T120149Z
-exit code: 1
-stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
-
-attempt 2: scripts/manager discord-report --run-id 237-ishtmldda-host-hook-20260428T120149Z
-exit code: 1
-stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
-
-reporting: DEFERRED

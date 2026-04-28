@@ -1,4 +1,0 @@
-command: scripts/manager discord-report --run-id 233-static-named-import-build-20260428T092830Z
-attempts: 2
-result: DEFERRED
-error: DISCORD_WEBHOOK_URL is not set in the environment or .env.

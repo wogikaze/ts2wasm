@@ -1,9 +1,0 @@
-{
-  "run_id": "052-json-unsupported-space-20260428T104521Z",
-  "issue": "052",
-  "branch": "agent/052-json-unsupported-space-20260428T104521Z",
-  "status": "PROGRESS",
-  "commit": "fbb91fc",
-  "summary": "Accepted boolean JSON.stringify space values in IR validation and added Node/iwasm regression coverage.",
-  "report": "reports/runs/052-json-unsupported-space-20260428T104521Z/cycle_report.md"
-}

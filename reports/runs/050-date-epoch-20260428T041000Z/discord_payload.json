@@ -1,6 +1,0 @@
-{
-  "run_id": "050-date-epoch-20260428T041000Z",
-  "status": "DEFERRED",
-  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
-  "source_report": "reports/agents/050-date-epoch-20260428T041000Z/cycle_report.md"
-}

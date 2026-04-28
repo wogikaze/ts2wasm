@@ -1,9 +1,0 @@
-{
-  "run_id": "20260428T014549Z-054-error-next",
-  "agent_id": "agent-054-error-next-20260428T014053Z",
-  "branch": "agent/054-error-next-20260428T014053Z",
-  "issue": "054",
-  "status": "PROGRESS",
-  "merge_request": "no",
-  "summary": "Implemented Error constructor non-string message coercion with Node differential fixture coverage. Issue remains open for stack and prototype identity."
-}
