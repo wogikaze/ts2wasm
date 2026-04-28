@@ -469,6 +469,13 @@ impl<'a> WatEmitter<'a> {
                 self.intern_string(key);
                 self.collect_expr_strings(expr);
             }
+            LoweredExpr::LogicalMemberAssign {
+                object, key, expr, ..
+            } => {
+                self.collect_expr_strings(object);
+                self.intern_string(key);
+                self.collect_expr_strings(expr);
+            }
             LoweredExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
                 self.collect_expr_strings(key);
                 self.collect_expr_strings(expr);
@@ -943,6 +950,10 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::LogicalPropertyAssign { expr, .. } => {
                 self.collect_class_prototypes_from_expr(expr, prototypes);
             }
+            LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
+                self.collect_class_prototypes_from_expr(object, prototypes);
+                self.collect_class_prototypes_from_expr(expr, prototypes);
+            }
             LoweredExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
                 self.collect_class_prototypes_from_expr(key, prototypes);
                 self.collect_class_prototypes_from_expr(expr, prototypes);
@@ -1034,6 +1045,10 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::Assign { expr, .. }
             | LoweredExpr::LogicalAssign { expr, .. }
             | LoweredExpr::LogicalPropertyAssign { expr, .. } => {
+                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
+                self.collect_builtin_error_prototypes_from_expr(object, prototypes);
                 self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
