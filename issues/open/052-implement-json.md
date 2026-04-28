@@ -130,6 +130,31 @@ null
   - `scripts/manager check-repo-smoke`
 - Remaining gaps before close: escaped strings, decimals/exponents, nested arrays/objects in parsed values, arrays inside parsed object values, object elements inside parsed arrays, replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a nested `JSON.parse` continuation slice for arrays containing nested arrays.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-parse-nested-array.ts`; Node and iwasm both print:
+
+```text
+2
+2
+2
+3
+```
+
+- Reproduced the pre-change gap with the same nested-array case using `/tmp/ts2wasm-json-nested-array.ts`: Node printed `2`, `2`, `2`, `3`, while iwasm printed four `undefined` lines.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-nested-array.ts -o /tmp/ts2wasm-json-parse-nested-array.wasm`
+  - `iwasm /tmp/ts2wasm-json-parse-nested-array.wasm`
+  - `node fixtures/builtins-and-io/json-parse-nested-array.ts`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because the change is scoped to the JSON runtime helper and the assignment only requires full nextest before merge when the runtime parsing change is broad enough to justify it. The JSON-targeted nextest filters and direct Node/iwasm fixture evidence passed.
+- Remaining gaps before close: escaped strings, decimals/exponents, nested objects, arrays inside parsed object values, object elements inside parsed arrays, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
