@@ -198,6 +198,8 @@ fn feature_label_from_diag(diag_code: &str, stderr: &str, case: &str) -> &'stati
         "import-export"
     } else if path.contains("/regexp/") || text.contains("regexp") {
         "regexp-literal"
+    } else if path.contains("/built-ins/string/") || text.contains("string.prototype") {
+        "string-builtin"
     } else if path.contains("/async") || text.contains(" async ") || text.contains("await ") {
         "async"
     } else if path.contains("/destructuring/") || text.contains("destructur") {
