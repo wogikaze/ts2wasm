@@ -547,6 +547,7 @@ impl NameResolver {
             Expr::LogicalPropertyAssign {
                 object,
                 property,
+                computed_key,
                 op,
                 expr,
                 span,
@@ -555,6 +556,11 @@ impl NameResolver {
                 Ok(Expr::LogicalPropertyAssign {
                     object: object.clone(),
                     property: property.clone(),
+                    computed_key: computed_key
+                        .as_ref()
+                        .map(|key| self.resolve_expr(key))
+                        .transpose()?
+                        .map(Box::new),
                     op: *op,
                     expr: Box::new(self.resolve_expr(expr)?),
                     span: *span,
