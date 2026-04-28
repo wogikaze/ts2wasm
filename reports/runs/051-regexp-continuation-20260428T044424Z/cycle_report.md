@@ -47,3 +47,5 @@ result: pass
 ## Notes
 
 This is a progress slice, not issue completion. Full `cargo nextest run` was not required by the assignment because the issue remains open and the change is RegExp-scoped.
+
+Discord reporting was attempted twice and deferred because `DISCORD_WEBHOOK_URL` is not configured. Deferred payload and error artifacts are saved in this run directory.
