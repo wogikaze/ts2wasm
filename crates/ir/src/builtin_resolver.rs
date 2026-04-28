@@ -13,6 +13,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         Stmt::ImportSideEffect { span, .. }
         | Stmt::ImportNamed { span, .. }
         | Stmt::ImportDefault { span, .. }
+        | Stmt::ImportNamespace { span, .. }
         | Stmt::ExportNamed { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "issue-055: static module declarations parse in the frontend but module resolution and loading are not implemented".to_owned(),
