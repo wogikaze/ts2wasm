@@ -2,7 +2,7 @@
   "run_id": "060-coverage-ramp10000-20260428T065856Z",
   "task_id": "060",
   "git": {
-    "sha": "9fe3b603ec96930c7ab9d908c11eeefacdcb38f8",
+    "sha": "e742398",
     "exit_code": 0,
     "changed_files": [
       "artifacts/coverage/results/test262.json",
@@ -16,6 +16,10 @@
       {
         "sha": "7ae5e31",
         "message": "issue-060: ramp test262 coverage to 10000"
+      },
+      {
+        "sha": "e742398",
+        "message": "issue-060: record deferred coverage report"
       }
     ]
   },
