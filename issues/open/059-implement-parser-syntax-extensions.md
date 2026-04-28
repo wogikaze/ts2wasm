@@ -158,6 +158,7 @@ Start with basic TypeScript type annotations before adding advanced features.
 - Validation not clean due unrelated pre-existing local-report references:
   - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
   - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+- Parent validation note: after syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `scripts/manager check-issue-health` and `scripts/manager check-repo-smoke` passed.
 - Issue 059 remains open. Generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 ## Completion evidence
