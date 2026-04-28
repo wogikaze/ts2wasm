@@ -1,2 +1,2 @@
-// Static namespace re-export parses in the frontend; module graph support is issue-055.
+// Diagnostic fixture for missing local static namespace re-exports tracked by issue 232.
 export * as mod from "./module-source";

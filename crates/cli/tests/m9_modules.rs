@@ -38,7 +38,7 @@ fn assert_fixture_build_smoke(fixture: &str) {
     compile_fixture(fixture);
 }
 
-fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
+fn assert_build_fails_with_diagnostic(fixture: &str, expected_code: &str, expected: &str) {
     let input = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
         .join(fixture);
@@ -64,13 +64,21 @@ fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains("[UnsupportedSyntax]"),
-        "expected UnsupportedSyntax diagnostic for {fixture}, got:\n{stderr}"
+        stderr.contains(expected_code),
+        "expected {expected_code} diagnostic for {fixture}, got:\n{stderr}"
     );
     assert!(
         stderr.contains(expected),
         "expected diagnostic containing {expected:?} for {fixture}, got:\n{stderr}"
     );
+}
+
+fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax]", expected);
+}
+
+fn assert_build_fails_with_module_graph_diagnostic(fixture: &str, expected: &str) {
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax]", expected);
 }
 
 #[test]
@@ -94,50 +102,50 @@ fn build_smoke_module_exports_assign() {
 }
 
 #[test]
-fn static_named_import_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_named_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-named-import-unsupported.ts",
-        "issue-055: unsupported named import",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
 #[test]
-fn static_side_effect_import_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_side_effect_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-side-effect-import-unsupported.ts",
-        "issue-055: unsupported side-effect import",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
 #[test]
-fn static_namespace_import_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_namespace_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-namespace-import-unsupported.ts",
-        "issue-055: unsupported namespace import",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
 #[test]
-fn static_default_import_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_default_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-default-import-unsupported.ts",
-        "issue-055: unsupported default import",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
 #[test]
-fn static_combined_named_import_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_combined_named_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-combined-named-import-unsupported.ts",
-        "issue-055: unsupported default import with named imports",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
 #[test]
-fn static_combined_namespace_import_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_combined_namespace_import_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-combined-namespace-import-unsupported.ts",
-        "issue-055: unsupported default import with namespace import",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
@@ -150,26 +158,34 @@ fn static_named_export_reports_issue_055() {
 }
 
 #[test]
-fn static_re_export_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_re_export_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-re-export-unsupported.ts",
-        "issue-055: unsupported star re-export",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
 #[test]
-fn static_named_re_export_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_named_re_export_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-named-re-export-unsupported.ts",
-        "issue-055: unsupported named re-export",
+        "issue-232: missing local module `./module-source`",
     );
 }
 
 #[test]
-fn static_namespace_re_export_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
+fn static_namespace_re_export_reports_issue_232_missing_module() {
+    assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-namespace-re-export-unsupported.ts",
-        "issue-055: unsupported namespace re-export",
+        "issue-232: missing local module `./module-source`",
+    );
+}
+
+#[test]
+fn static_bare_module_import_reports_issue_232_unsupported_specifier() {
+    assert_build_fails_with_module_graph_diagnostic(
+        "module-system/static-bare-import-unsupported.ts",
+        "issue-232: unsupported non-local module specifier `pkg`",
     );
 }
 
@@ -178,6 +194,14 @@ fn static_declaration_export_reports_issue_055() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-declaration-export-unsupported.ts",
         "issue-055: unsupported declaration export",
+    );
+}
+
+#[test]
+fn static_class_export_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-class-export-unsupported.ts",
+        "issue-055: unsupported class export",
     );
 }
 
