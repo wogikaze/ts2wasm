@@ -254,6 +254,17 @@ fn json_parse_invalid_literal_rejected_under_node_and_iwasm() {
 }
 
 #[test]
+fn json_parse_invalid_control_chars_rejected_under_node_and_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-parse-invalid-control-string.ts",
+        "fixtures/builtins-and-io/json-parse-invalid-control-string-array.ts",
+        "fixtures/builtins-and-io/json-parse-invalid-control-string-object.ts",
+    ] {
+        assert_fixture_rejected_by_node_and_iwasm(fixture);
+    }
+}
+
+#[test]
 fn json_parse_invalid_leading_zero_numbers_rejected_under_node_and_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-invalid-number-leading-zero.ts",
