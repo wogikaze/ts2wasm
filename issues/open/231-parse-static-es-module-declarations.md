@@ -195,6 +195,31 @@ Remaining work before close:
 - star re-export, export default, combined default+named/default+namespace imports, and declaration exports still need parser AST coverage or narrower follow-up split.
 - broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
 
+2026-04-28 child worker `231-star-re-export-parser-20260428T065856Z` completed a parser-only star re-export continuation:
+
+- Added frontend AST representation for star re-exports with `export *` span, module specifier, and declaration span preservation.
+- Parsed `export * from "./module-source";` into `Stmt::ExportAllFrom`.
+- Kept namespace re-export, export default, combined default imports, declaration exports, dynamic import, and module execution semantics issue-linked or out of scope.
+- Added downstream unsupported guards so parsed star re-exports still stop before module graph, resolver, lowering, backend, or runtime semantics.
+- Updated the CLI module guard fixture/test to prove parsed star re-exports still report issue-055 before module graph support.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (42 tests)
+cargo nextest run -p ts2wasm-cli static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_default_import_reports_issue_055 static_namespace_import_reports_issue_055 static_named_import_reports_issue_055 static_named_export_reports_issue_055: PASS (6 tests)
+cargo check --workspace: PASS
+cargo nextest run: PASS (344 tests, 4 skipped)
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
+Remaining work before close:
+
+- export default, combined default+named/default+namespace imports, namespace re-export, and declaration exports still need parser AST coverage or narrower follow-up split.
+- broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
