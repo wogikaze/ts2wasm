@@ -12,16 +12,41 @@
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 63,
-    "UnresolvedName": 37
+    "UnsupportedSyntax": 67,
+    "UnresolvedName": 33
   },
   "unsupported_features": {
     "function": 2,
-    "name-resolution": 37,
-    "date": 13,
+    "name-resolution": 33,
+    "date": 16,
     "regexp-literal": 47,
+    "arrow-function": 1,
     "unknown-unsupported": 1
   },
   "status": "in-progress",
+  "evidence_rows": [
+    {
+      "suite": "test262",
+      "suite_name": "test262 semantic-core seeds",
+      "denominator": 53445,
+      "executed": 60,
+      "build_coverage_percent": "0.11",
+      "semantic_coverage_percent": "0.11",
+      "build_pass": 60,
+      "semantic_pass": 60,
+      "fail": 0,
+      "unsupported": 0,
+      "blocked": 0,
+      "skip_with_reason": 0,
+      "unsupported_diagcodes": {},
+      "unsupported_features": {},
+      "status": "in-progress",
+      "selection": {
+        "paths_file": "scripts/data/test262-semantic-core-seeds.txt",
+        "path_filters": []
+      },
+      "evidence": "python scripts/manager.py reference-coverage test262 --paths-file scripts/data/test262-semantic-core-seeds.txt"
+    }
+  ],
   "evidence": "python scripts/manager.py reference-coverage test262 --limit 100"
 }
