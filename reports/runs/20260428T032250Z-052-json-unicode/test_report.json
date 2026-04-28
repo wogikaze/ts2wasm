@@ -1,0 +1,78 @@
+{
+  "run_id": "20260428T032250Z-052-json-unicode",
+  "task_id": "052",
+  "git": {
+    "sha": "645da75",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/backend-wasm/src/runtime_builtins_host.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
+      "issues/open/052-implement-json.md",
+      "reports/runs/20260428T032250Z-052-json-unicode/cycle_report.md",
+      "reports/runs/20260428T032250Z-052-json-unicode/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "645da75",
+        "message": "issue-052: parse ascii json unicode escapes"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "node fixtures/builtins-and-io/json-parse-unicode-escape.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unicode-escape.ts -o /tmp/ts2wasm-json-parse-unicode-escape.wasm && iwasm /tmp/ts2wasm-json-parse-unicode-escape.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(json)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-parse-unicode-escape.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "full_nextest": "skipped: issue remains open and focused validated PROGRESS is allowed by assignment",
+    "pre_change_gap": "Node printed AZ and x/y; iwasm printed two undefined lines for /tmp/ts2wasm-json-unicode-escape.ts"
+  }
+}

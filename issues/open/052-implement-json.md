@@ -244,6 +244,30 @@ c\d
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment allows focused validation for narrow runtime progress.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, `\uXXXX` string escapes, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.parse` unicode escape continuation slice for `\uXXXX` sequences that decode to the current runtime's supported single-byte ASCII string representation.
+- Progress commit: `645da75`.
+- Added shared runtime hex decoding for parsed JSON strings and wired it into object keys, object string values, array string values, nested container scanning, and top-level parsed strings through the existing string parse/skip paths.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-parse-unicode-escape.ts`; Node and iwasm both print:
+
+```text
+AZ
+x/y
+```
+
+- Pre-change gap check with `/tmp/ts2wasm-json-unicode-escape.ts` showed Node printed `AZ` and `x/y`, while iwasm printed two `undefined` lines.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-unicode-escape.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unicode-escape.ts -o /tmp/ts2wasm-json-parse-unicode-escape.wasm && iwasm /tmp/ts2wasm-json-parse-unicode-escape.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment explicitly allows focused validated progress.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
