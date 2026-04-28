@@ -192,3 +192,44 @@ scripts/manager check-agent-state: PASS
 scripts/manager nextest: PASS (369 tests, 4 skipped)
 scripts/manager check-repo-smoke: PASS
 ```
+
+2026-04-28 child worker `233-module-init-once-20260428T100229Z` added a narrow source-backed module initialization contract slice:
+
+- Added `ModuleInitializationStep` plus `ModuleGraph::dependency_first_initialization_steps()` so the issue-232 graph can produce dependency-first module initialization steps with each resolved module ID scheduled once.
+- Added compiler regression coverage using a real local graph where an entry imports the same source module twice and that source imports a nested module; the asserted initialization step order is nested module, source module, entry module, and the repeated source import contributes one dependency edge in the entry step.
+- Preserved the current temporary static named import build rewrite and did not add backend runtime initialization, export storage, live bindings, or runtime semantic parity claims. Issue 233 remains open.
+
+Validation:
+
+```text
+cargo nextest run -p ts2wasm-compiler builds_dependency_first_once_only_initialization_steps_from_static_graph: PASS (1 test, 36 skipped; first run found an assertion type inference compile error, fixed before validation)
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-compiler: PASS (37 tests)
+cargo nextest run -p ts2wasm-ir: PASS (16 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (16 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 219 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-init-entry.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-init-alias.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-init-shadow.wasm: PASS
+```
+
+2026-04-28 child worker `233-module-runtime-plan-20260428T102446Z` added a narrow backend runtime-link contract slice:
+
+- `RuntimeLinkPlan` now scans explicit lowered `ModuleInfo.statements`, so future module export statements select module export helpers through the runtime catalog.
+- Added backend link-plan coverage proving empty module metadata does not select ES module export helpers, while an explicit lowered module `Export` statement selects `ModuleExportsSet` without selecting `ModuleRequire`.
+- Preserved current static module build smokes and CommonJS module-cache behavior; no dependency-order runtime execution, export storage wiring, live binding behavior, or runtime semantic parity claims were added. Issue 233 remains open.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (16 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (18 tests)
+cargo nextest run -p ts2wasm-compiler: PASS (37 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 219 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-runtime-entry.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-runtime-alias.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-runtime-shadow.wasm: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```

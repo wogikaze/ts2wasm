@@ -1,3 +1,5 @@
 let target = { value: 0 };
-let key = "value";
-target[key] &&= 1;
+function getTarget() {
+  return target;
+}
+getTarget().value &&= 1;

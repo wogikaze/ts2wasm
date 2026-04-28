@@ -1,0 +1,4 @@
+scripts/manager discord-report --run-id 236-logical-assignment-targets-20260428T102123Z
+attempts: 2
+status: DEFERRED
+error: DISCORD_WEBHOOK_URL was not configured in the environment or .env.
