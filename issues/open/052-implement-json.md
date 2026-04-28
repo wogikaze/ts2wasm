@@ -659,6 +659,24 @@ abcdefghij1
 - Full `cargo nextest run` was skipped for this PROGRESS slice because no backend runtime code changed and issue 052 remains open.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, non-stringify `space` ignored-value parity requiring IR validation work, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.stringify` ignored `space` parity slice for boolean third arguments.
+- Progress commit: `7dc7b71`.
+- IR validation now accepts boolean `space` values for `JSON.stringify`; the existing runtime gap handling ignores non-number/non-string `space` values, matching Node for this narrow case.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-space-boolean.ts` for:
+  - `JSON.stringify({ a: 1, b: 2 }, null, true)`
+  - `JSON.stringify([1, 2], null, false)`
+- Pre-change reproduction with `/tmp/ts2wasm-json-space-bool.ts` showed Node printed compact JSON while ts2wasm rejected the source with `UnsupportedSyntax: JSON.stringify space currently supports integer numeric or string values`.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-stringify-space-boolean.ts` prints `{"a":1,"b":2}` and `[1,2]`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space-boolean.ts -o /tmp/ts2wasm-052-json-space.wasm && iwasm /tmp/ts2wasm-052-json-space.wasm` prints the same two lines.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, object/function/symbol `space` ignored-value parity, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
