@@ -13,7 +13,7 @@ updated: 2026-04-26
 
 ## Summary
 
-Implement Date object for date/time operations.
+Implement Date object for date/time operations. The current supported subset is deterministic epoch-millisecond Date values only: integer-literal `new Date(<epoch-ms integer>)`, `Date.prototype.getTime()`, and `Date.prototype.valueOf()`.
 
 Problem: Date support is currently tracked as a broad epic; direct selection leaves live-time policy, frontend recognition, runtime helpers, and Annex B behavior mixed in one work item.
 
@@ -22,14 +22,18 @@ Queue design note:
 - This is an epic-level issue and must not be selected directly from the Ready queue.
 - Use child slices for deterministic Date behavior, host time policy, timezone formatting policy, and Annex B legacy methods.
 - Keep live host time work out of implementation slices until a capability policy child is complete.
+- Current child slices:
+  - issue 239: live-time capability policy for `new Date()` / `Date.now()`
+  - issue 240: timezone-aware `Date.prototype.toString()` policy/implementation
+  - issue 241: Annex B legacy `getYear` / `setYear` / `toGMTString`
 
 ## Problem
 
-Date is not implemented. It is a common built-in for date/time operations.
+Full Date is not implemented. Deterministic epoch-millisecond Date slices exist, but live host time, timezone formatting, non-integer/non-literal inputs, and Annex B legacy Date methods remain separate policy-backed child work.
 
 ## Desired final state
 
-`new Date()` and Date methods work for basic operations.
+`new Date()` and Date methods work for basic operations, with deterministic epoch behavior, live-time capability policy, timezone formatting policy, and Annex B legacy behavior completed through child issues before this epic closes.
 
 ## Scope
 
