@@ -75,7 +75,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- close commit pending in current branch
+- `e9737f9` (`issue-052a: close json subset contract`)
 
 Validation result:
 
