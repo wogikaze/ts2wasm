@@ -795,6 +795,20 @@ fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(),
     Ok(())
 }
 
+fn unsupported_live_time_diagnostic(operation: &str, span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-050: {operation} requires live host time; define an auditable time capability policy before enabling it. Use new Date(<epoch-ms integer>) for deterministic Date values"
+        ),
+        span,
+    }
+}
+
+fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
+    matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
+}
+
 fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
     if args.len() != 1 {
         return Err(Diagnostic {
@@ -863,7 +877,9 @@ fn regexp_string_match_runtime(
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "String.prototype.match literal")?;
         }
-        ResolvedExpr::New { class_name, args } if class_name == "RegExp" => {
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "RegExp" => {
             regexp_constructor_literal(args)?;
         }
         _ => {
@@ -906,6 +922,7 @@ fn regexp_exec_runtime(
         ResolvedExpr::New {
             class_name,
             args: ctor_args,
+            ..
         } if class_name == "RegExp" => {
             regexp_constructor_literal(ctor_args)?;
             Ok(Some(vec![object.clone(), args[0].clone()]))
@@ -1669,6 +1686,8 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "JsonStringify".to_owned(),
                         args: lowered_args,
                     })
+                } else if is_date_now_live_time_call(object, method) {
+                    Err(unsupported_live_time_diagnostic("Date.now()", Some(*span)))
                 } else if let Some(runtime_fn) = regexp_literal_test_runtime(object, method)? {
                     if args.len() != 1 {
                         return Err(Diagnostic {
@@ -1915,11 +1934,21 @@ impl<'a> Resolver<'a> {
                     value: Box::new(self.lower_expr(value)?),
                 })
             }
-            ResolvedExpr::New { class_name, args } => {
+            ResolvedExpr::New {
+                class_name,
+                args,
+                span,
+            } => {
                 if class_name == "RegExp" {
                     return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
                 }
                 if class_name == "Date" {
+                    if args.is_empty() {
+                        return Err(unsupported_live_time_diagnostic(
+                            "new Date()",
+                            Some(*span),
+                        ));
+                    }
                     if args.len() != 1 {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
