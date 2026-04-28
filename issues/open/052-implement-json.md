@@ -444,6 +444,34 @@ abcdefghij1
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added explicit `JSON.parse` unicode escape diagnostic regression coverage for the current narrow runtime behavior.
+- Progress commit: `b034261`.
+- Covered:
+  - top-level invalid unicode escape hex with `fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts` (`JSON.parse('"\\u00G0"')`): Node rejects with a JSON `SyntaxError`; iwasm rejects with `Exception: unreachable`.
+  - array string value unsupported non-ASCII unicode escape with `fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts` (`JSON.parse('["\\u00e9"]')`): Node accepts; iwasm rejects with `Exception: unreachable` instead of producing a wrong single-byte string.
+  - object string value unsupported surrogate unicode escape with `fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts` (`JSON.parse('{"s":"\\ud800"}')`): Node accepts; iwasm rejects with `Exception: unreachable` instead of producing a wrong string.
+- The existing runtime `$json_parse_unicode_escape_byte` helper already rejected invalid hex and code points above the current ASCII string representation; this slice pins that behavior in `crates/cli/tests/m2_node_diff.rs`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts` (expected JSON `SyntaxError`, status 1)
+  - `node fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts` (expected accept, status 0)
+  - `node fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts` (expected accept, status 0)
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts -o /tmp/ts2wasm-json-parse-invalid-unicode-escape.wasm`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts -o /tmp/ts2wasm-json-parse-unsupported-unicode-array.wasm`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts -o /tmp/ts2wasm-json-parse-unsupported-unicode-object.wasm`
+  - `iwasm /tmp/ts2wasm-json-parse-invalid-unicode-escape.wasm` (expected `Exception: unreachable`, status 1)
+  - `iwasm /tmp/ts2wasm-json-parse-unsupported-unicode-array.wasm` (expected `Exception: unreachable`, status 1)
+  - `iwasm /tmp/ts2wasm-json-parse-unsupported-unicode-object.wasm` (expected `Exception: unreachable`, status 1)
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Additional gate note: `cargo clippy --all-targets --all-features -- -D warnings` was run and failed on pre-existing `clippy::assertions_on_constants` diagnostics in `crates/runtime-abi/src/layout.rs`, outside this child assignment's allowed files.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
