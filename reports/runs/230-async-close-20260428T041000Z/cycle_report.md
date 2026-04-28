@@ -69,3 +69,7 @@ result: passed
 ## Remaining risks
 
 None for the accepted closure path. Full async iteration, Promise, and async iterator runtime implementation remain out of scope for this issue.
+
+## Reporting
+
+Discord reporting was deferred because `DISCORD_WEBHOOK_URL` is not configured. The deferred payload and retry error are saved in this run directory.
