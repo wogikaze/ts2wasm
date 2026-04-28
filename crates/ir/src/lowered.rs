@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
-use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, Span, UnaryOp};
 use ts2wasm_runtime_abi::ValueTag;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -751,10 +751,51 @@ fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     }
 }
 
-fn unsupported_live_time_diagnostic(
-    operation: &str,
-    span: Option<ts2wasm_frontend::Span>,
-) -> Diagnostic {
+fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
+    matches!(object, ResolvedExpr::Ident(name) if name == "JSON") && method == "stringify"
+}
+
+fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(), Diagnostic> {
+    if args.is_empty() || args.len() > 3 {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "JSON.stringify expects 1 to 3 arguments, got {}",
+                args.len()
+            ),
+            span: Some(span),
+        });
+    }
+
+    if let Some(replacer) = args.get(1) {
+        if !matches!(replacer, ResolvedExpr::Null | ResolvedExpr::Undefined) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "JSON.stringify replacer is not supported; pass null or undefined"
+                    .to_owned(),
+                span: Some(span),
+            });
+        }
+    }
+
+    if let Some(space) = args.get(2) {
+        if !matches!(
+            space,
+            ResolvedExpr::Number(_) | ResolvedExpr::Null | ResolvedExpr::Undefined
+        ) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "JSON.stringify space currently supports integer numeric values"
+                    .to_owned(),
+                span: Some(span),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+fn unsupported_live_time_diagnostic(operation: &str, span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
@@ -1629,7 +1670,23 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
-                if is_date_now_live_time_call(object, method) {
+                if is_json_static_call(object, method) {
+                    validate_json_stringify_args(args, *span)?;
+                    let mut lowered_args = Vec::with_capacity(3);
+                    lowered_args.push(self.lower_expr(&args[0])?);
+                    lowered_args.push(match args.get(1) {
+                        Some(replacer) => self.lower_expr(replacer)?,
+                        None => LoweredExpr::Undefined,
+                    });
+                    lowered_args.push(match args.get(2) {
+                        Some(space) => self.lower_expr(space)?,
+                        None => LoweredExpr::Undefined,
+                    });
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "JsonStringify".to_owned(),
+                        args: lowered_args,
+                    })
+                } else if is_date_now_live_time_call(object, method) {
                     Err(unsupported_live_time_diagnostic("Date.now()", Some(*span)))
                 } else if let Some(runtime_fn) = regexp_literal_test_runtime(object, method)? {
                     if args.len() != 1 {
