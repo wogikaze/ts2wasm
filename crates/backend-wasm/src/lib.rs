@@ -363,6 +363,23 @@ mod tests {
     }
 
     #[test]
+    fn module_runtime_helpers_are_not_emitted_without_module_ir() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(1))],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("non-module program should emit WAT");
+
+        assert!(!wat.contains("$module_require"));
+        assert!(!wat.contains("$module_exports_set"));
+        assert!(!wat.contains("$module_exports_assign"));
+        assert!(!wat.contains("$module_cache"));
+    }
+
+    #[test]
     fn gc_collect_marks_class_prototype_globals() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ClassPrototype(

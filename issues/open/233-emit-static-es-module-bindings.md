@@ -120,3 +120,30 @@ date:
 Remaining risks:
 
 - none
+
+## Progress evidence
+
+2026-04-28 child worker `233-static-named-import-build-20260428T092830Z` completed the first static named import build slice:
+
+- Reused the issue-232 compiler module graph during build and rewrote only resolved local `ImportNamed` declarations whose source module exports literal `export const` bindings.
+- `fixtures/module-system/static-entry.ts` now builds to WASM with `import { value } from "./static-entry-source";` backed by `fixtures/module-system/static-entry-source.ts`.
+- Unsupported static module forms remain on their existing issue-055/issue-232 diagnostics; default imports/exports, namespace imports/re-exports, declaration/class/default export unsupported fixtures were not broadened.
+- Added CLI build-smoke coverage for the static named import entry fixture.
+- Added backend coverage proving module runtime helpers are not emitted for plain non-module IR.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (16 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (16 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (12 tests, 219 skipped)
+cargo nextest run -p ts2wasm-cli static_named_import_build_smoke: PASS (1 test, 230 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-esm.wasm: PASS
+```
+
+Remaining work before close:
+
+- Lower named exports/imports into explicit resolved/lowered module binding IR instead of the current literal export build rewrite.
+- Emit dependency-order module initialization and once-only execution semantics.
+- Add runtime execution/differential coverage under issue 234 before making semantic parity claims.
