@@ -280,7 +280,11 @@ fn validate_stmt(
         | Stmt::ExportNamed { .. }
         | Stmt::ExportNamedFrom { .. }
         | Stmt::ExportAllFrom { .. }
-        | Stmt::ExportNamespaceFrom { .. } => Ok(()),
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::ExportDefault { .. } => Ok(()),
+        Stmt::ExportDecl { declaration, .. } => {
+            validate_stmt(declaration, in_top_level, scope, top_functions)
+        }
     }
 }
 
