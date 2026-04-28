@@ -57,6 +57,13 @@ result: pass
 
 `cargo fmt --all --check` was not run because this slice changed no Rust or script files.
 
+## Reporting
+
+```text
+scripts/manager discord-report --run-id 20260428T033513Z-060-coverage-ramp2500
+result: deferred; DISCORD_WEBHOOK_URL is not configured in the environment or .env
+```
+
 ## Changed files
 
 - `artifacts/coverage/results/test262.json`
@@ -65,6 +72,8 @@ result: pass
 - `issues/open/060-investigate-unknown-unsupported-cases.md`
 - `reports/agents/060-coverage-ramp2500-20260428T033000Z/assignment.md`
 - `reports/runs/20260428T033513Z-060-coverage-ramp2500/cycle_report.md`
+- `reports/runs/20260428T033513Z-060-coverage-ramp2500/discord_payload.json`
+- `reports/runs/20260428T033513Z-060-coverage-ramp2500/reporting_error.log`
 
 ## Notes
 
