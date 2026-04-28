@@ -222,6 +222,11 @@ fn date_epoch_get_time_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn date_epoch_value_of_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-epoch-value-of.ts");
+}
+
+#[test]
 fn date_live_time_fixtures_report_capability_policy_diagnostic() {
     for fixture in [
         "fixtures/builtins-and-io/date-now-live-time-unsupported.ts",
