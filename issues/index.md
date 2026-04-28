@@ -167,7 +167,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | feature | frontend | design-ready | P1 |  | Implement Compiler |
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
-| 224 | Implement Annex B HTML-like comments | feature | frontend | design-ready | P3 |  | Implement Annex B HTML-like comments |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 <!-- generated:ready:end -->
 
@@ -263,6 +262,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 221 | Implement GC call-frame roots for closure escape | feature | runtime/memory | see file |
 | 222 | Investigate GC high-pressure OOB under repeated local-root allocation | bug | runtime/memory | see file |
 | 223 | Add spans to receiver this diagnostics | bug | frontend/diagnostics | see file |
+| 224 | Implement Annex B HTML-like comments | feature | frontend | see `issues/done/224-implement-annexb-html-comments.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
