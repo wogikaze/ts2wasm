@@ -965,6 +965,8 @@ fn feature_label_from_diag(diag_code: &str, stderr: &str, case: &str) -> &'stati
         "import-export"
     } else if path.contains("/regexp/") || text.contains("regexp") {
         "regexp-literal"
+    } else if path.contains("/built-ins/string/") || text.contains("string.prototype") {
+        "string-builtin"
     } else if path.contains("/async") || text.contains(" async ") || text.contains("await ") {
         "async"
     } else if path.contains("/destructuring/") || text.contains("destructur") {
@@ -1058,6 +1060,15 @@ fn regexp_unsupported_flag_fixture_reports_issue_202() {
     assert!(
         stderr.contains("issue-202: unsupported RegExp flag `d`"),
         "expected issue-linked RegExp flag diagnostic, got:\n{stderr}"
+    );
+}
+
+#[test]
+fn annex_b_string_anchor_fixture_reports_issue_067() {
+    let fixture = "fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts";
+    assert_build_fails_with_unsupported_syntax(
+        fixture,
+        "issue-067: Annex B String.prototype.anchor is not supported yet",
     );
 }
 

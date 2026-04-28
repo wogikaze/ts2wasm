@@ -91,6 +91,41 @@ Follow-up issues:
 
 ## Notes
 
+2026-04-28 child progress (`067-string-annexb-diagnostics-20260428T051924Z`):
+
+- Commit: `3071f1cb44e51bbac0e264e8bee4de4d4bd7f1c6`
+- Added a narrow issue-linked diagnostic for string-literal calls to Annex B `String.prototype.anchor`, `fontcolor`, `fontsize`, `link`, and `substr`.
+- Added `fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts` to cover `String.prototype.anchor`.
+- Classified `/built-ins/String/` reference diagnostics and `String.prototype` diagnostic text as `string-builtin` instead of `unknown-unsupported` in CLI reference harnesses.
+- Kept issue open; this is a diagnostic/classification slice only, not full Annex B implementation.
+
+Validation:
+
+```text
+cargo fmt --all --check
+result: pass
+
+cargo test -p ts2wasm-cli --test m2_node_diff annex_b_string_anchor_fixture_reports_issue_067
+result: pass
+
+node fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts
+result: pass; stdout includes <a name="name">x</a>
+
+cargo run -q -- build fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts -o /tmp/ts2wasm-string-anchor-annexb-unsupported.wasm
+result: expected fail; [UnsupportedSyntax] issue-067: Annex B String.prototype.anchor is not supported yet at 92..110
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+
+cargo nextest run
+result: fail before completion in existing backend tests:
+- ts2wasm-backend-wasm tests::function_locals_are_mirrored_into_activation_gc_root_frames
+- ts2wasm-backend-wasm tests::top_level_locals_are_mirrored_into_gc_root_table
+```
+
 ## Affected test files
 
 - `reference/test262/test/annexB/built-ins/String/prototype/anchor/B.2.3.2.js`
