@@ -97,6 +97,23 @@ Reference-backed affected files in the limit-750 window:
 - `reference/test262/test/annexB/language/expressions/template-literal/legacy-octal-escape-sequence-non-strict.js`
 - `reference/test262/test/annexB/language/expressions/template-literal/legacy-octal-escape-sequence-strict.js`
 
+## Progress evidence
+
+2026-04-28:
+
+- Supported the selected non-strict slice: legacy octal escapes inside string literals parsed from template interpolation, e.g. `` `${'\07'}` `` cooks to `\u0007`.
+- Preserved strict-mode behavior by emitting an issue-linked `UnsupportedSyntax` diagnostic for legacy octal string escapes in strict code.
+- Added an issue-linked `UnsupportedSyntax` diagnostic for legacy octal escapes in template literal text such as `` `\07` ``.
+- Added Node differential coverage for `fixtures/core-semantics/template-literal-legacy-octal.ts`.
+- Added strict diagnostic regression coverage for `fixtures/core-semantics/template-literal-legacy-octal-strict-unsupported.ts`.
+- Filtered reference evidence:
+
+```text
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter legacy-octal-escape-sequence --limit 750 --detail
+result: PASS; unsupported_features no longer includes legacy-octal-escape. The two Annex B template legacy-octal cases now classify as name-resolution after escape handling.
+date: 2026-04-28
+```
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

@@ -5,6 +5,7 @@ use crate::{
 pub struct Parser {
     tokens: Vec<SpannedToken>,
     cursor: usize,
+    strict_mode: bool,
 }
 
 struct ParsedParam {
@@ -17,7 +18,16 @@ struct ParsedParam {
 
 impl Parser {
     pub fn new(tokens: Vec<SpannedToken>) -> Self {
-        Self { tokens, cursor: 0 }
+        let strict_mode = tokens_start_with_use_strict_directive(&tokens);
+        Self::new_with_strict_mode(tokens, strict_mode)
+    }
+
+    pub fn new_with_strict_mode(tokens: Vec<SpannedToken>, strict_mode: bool) -> Self {
+        Self {
+            tokens,
+            cursor: 0,
+            strict_mode,
+        }
     }
 
     pub fn parse_program(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
@@ -1609,7 +1619,7 @@ impl Parser {
     }
 
     fn template_literal_expr(&self, raw: &str, span: Span) -> Result<Expr, Diagnostic> {
-        let parts = parse_template_parts(raw, span)?;
+        let parts = parse_template_parts(raw, span, self.strict_mode)?;
         let mut expr = Expr::String {
             value: String::new(),
             span,
@@ -1885,7 +1895,11 @@ enum TemplatePart {
     Expr(Expr),
 }
 
-fn parse_template_parts(raw: &str, span: Span) -> Result<Vec<TemplatePart>, Diagnostic> {
+fn parse_template_parts(
+    raw: &str,
+    span: Span,
+    strict_mode: bool,
+) -> Result<Vec<TemplatePart>, Diagnostic> {
     let mut parts = Vec::new();
     let mut segment_start = 0;
     let mut cursor = 0;
@@ -1903,7 +1917,7 @@ fn parse_template_parts(raw: &str, span: Span) -> Result<Vec<TemplatePart>, Diag
         }
 
         if ch == '$' && raw[offset + ch.len_utf8()..].starts_with('{') {
-            let cooked = cook_template_segment(&raw[segment_start..offset]);
+            let cooked = cook_template_segment(&raw[segment_start..offset], span)?;
             if !cooked.is_empty() {
                 parts.push(TemplatePart::String(cooked));
             }
@@ -1918,7 +1932,11 @@ fn parse_template_parts(raw: &str, span: Span) -> Result<Vec<TemplatePart>, Diag
                     span: Some(span),
                 });
             }
-            parts.push(TemplatePart::Expr(parse_template_expression(source, span)?));
+            parts.push(TemplatePart::Expr(parse_template_expression(
+                source,
+                span,
+                strict_mode,
+            )?));
             cursor = expr_end + 1;
             segment_start = cursor;
             continue;
@@ -1927,7 +1945,7 @@ fn parse_template_parts(raw: &str, span: Span) -> Result<Vec<TemplatePart>, Diag
         cursor = offset + ch.len_utf8();
     }
 
-    let cooked = cook_template_segment(&raw[segment_start..]);
+    let cooked = cook_template_segment(&raw[segment_start..], span)?;
     if !cooked.is_empty() {
         parts.push(TemplatePart::String(cooked));
     }
@@ -1935,9 +1953,13 @@ fn parse_template_parts(raw: &str, span: Span) -> Result<Vec<TemplatePart>, Diag
     Ok(parts)
 }
 
-fn parse_template_expression(source: &str, span: Span) -> Result<Expr, Diagnostic> {
-    let tokens = crate::Lexer::new(source).tokenize()?;
-    let mut parser = Parser::new(tokens);
+fn parse_template_expression(
+    source: &str,
+    span: Span,
+    strict_mode: bool,
+) -> Result<Expr, Diagnostic> {
+    let tokens = crate::Lexer::new_with_strict_mode(source, strict_mode).tokenize()?;
+    let mut parser = Parser::new_with_strict_mode(tokens, strict_mode);
     let expr = parser.expression()?;
     if !parser.is_at_end() {
         return Err(Diagnostic {
@@ -1999,7 +2021,7 @@ fn find_template_expr_end(raw: &str, start: usize, span: Span) -> Result<usize, 
     })
 }
 
-fn cook_template_segment(raw: &str) -> String {
+fn cook_template_segment(raw: &str, span: Span) -> Result<String, Diagnostic> {
     let mut cooked = String::new();
     let mut cursor = 0;
     let mut escaped = false;
@@ -2018,6 +2040,38 @@ fn cook_template_segment(raw: &str) -> String {
                 'n' => '\n',
                 'r' => '\r',
                 't' => '\t',
+                'x' => {
+                    let (value, next_cursor) = read_fixed_hex_escape(raw, cursor, 2, span, "hex")?;
+                    cursor = next_cursor;
+                    value
+                }
+                'u' => {
+                    let (value, next_cursor) =
+                        read_fixed_hex_escape(raw, cursor, 4, span, "unicode")?;
+                    cursor = next_cursor;
+                    value
+                }
+                '0' => {
+                    if matches!(next_char_at(raw, cursor), Some((_, '0'..='9'))) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message:
+                                "issue-229: legacy octal escapes are not allowed in template literal text"
+                                    .to_owned(),
+                            span: Some(span),
+                        });
+                    }
+                    '\0'
+                }
+                '1'..='9' => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-229: legacy octal escapes are not allowed in template literal text"
+                                .to_owned(),
+                        span: Some(span),
+                    });
+                }
                 other => other,
             });
             escaped = false;
@@ -2032,7 +2086,7 @@ fn cook_template_segment(raw: &str) -> String {
         cooked.push('\\');
     }
 
-    cooked
+    Ok(cooked)
 }
 
 fn next_char_at(source: &str, start: usize) -> Option<(usize, char)> {
@@ -2040,6 +2094,71 @@ fn next_char_at(source: &str, start: usize) -> Option<(usize, char)> {
         .char_indices()
         .next()
         .map(|(offset, ch)| (start + offset, ch))
+}
+
+fn read_fixed_hex_escape(
+    source: &str,
+    mut cursor: usize,
+    digit_count: usize,
+    span: Span,
+    label: &str,
+) -> Result<(char, usize), Diagnostic> {
+    let mut value = 0u32;
+    for _ in 0..digit_count {
+        let Some((_, ch)) = next_char_at(source, cursor) else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("unterminated {label} escape sequence"),
+                span: Some(span),
+            });
+        };
+        let Some(digit) = ch.to_digit(16) else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("invalid {label} escape sequence"),
+                span: Some(span),
+            });
+        };
+        value = (value << 4) | digit;
+        cursor += ch.len_utf8();
+    }
+
+    let ch = char::from_u32(value).ok_or(Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("invalid {label} escape scalar value"),
+        span: Some(span),
+    })?;
+    Ok((ch, cursor))
+}
+
+fn tokens_start_with_use_strict_directive(tokens: &[SpannedToken]) -> bool {
+    let mut cursor = 0usize;
+    loop {
+        while matches!(
+            tokens.get(cursor).map(|token| &token.kind),
+            Some(Token::Semicolon)
+        ) {
+            cursor += 1;
+        }
+        let Some(SpannedToken {
+            kind: Token::String(value),
+            ..
+        }) = tokens.get(cursor)
+        else {
+            return false;
+        };
+        if value == "use strict" {
+            return true;
+        }
+        cursor += 1;
+        if !matches!(
+            tokens.get(cursor).map(|token| &token.kind),
+            Some(Token::Semicolon)
+        ) {
+            return false;
+        }
+        cursor += 1;
+    }
 }
 
 #[cfg(test)]
@@ -2142,6 +2261,22 @@ mod tests {
             } => assert_eq!(value, "tick ` and ${name}"),
             other => panic!("unexpected escaped template statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn template_interpolation_inherits_strict_legacy_octal_rejection() {
+        let err = parse_program("\"use strict\"; let message = `${'\\07'}`;").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-229"));
+    }
+
+    #[test]
+    fn rejects_legacy_octal_escape_in_template_text() {
+        let err = parse_program("let message = `\\07`;").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-229"));
     }
 
     #[test]

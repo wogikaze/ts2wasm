@@ -297,15 +297,21 @@ pub struct Lexer<'a> {
     cursor: usize,
     prev_token: Option<Token>,
     at_line_start: bool,
+    strict_mode: bool,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(source: &'a str) -> Self {
+        Self::new_with_strict_mode(source, source_has_use_strict_directive(source))
+    }
+
+    pub fn new_with_strict_mode(source: &'a str, strict_mode: bool) -> Self {
         Self {
             source,
             cursor: 0,
             prev_token: None,
             at_line_start: true,
+            strict_mode,
         }
     }
 
@@ -1376,6 +1382,22 @@ impl<'a> Lexer<'a> {
                     'n' => '\n',
                     'r' => '\r',
                     't' => '\t',
+                    'x' => self.hex_escape_value(2, start, "hex")?,
+                    'u' => self.hex_escape_value(4, start, "unicode")?,
+                    '0'..='7' => self.legacy_octal_escape_value(ch, start)?,
+                    '8' | '9' if self.strict_mode => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-229: legacy decimal escape \\{ch} is not allowed in strict mode"
+                            ),
+                            span: Some(Span {
+                                start: self.cursor.saturating_sub(2),
+                                end: self.cursor,
+                            }),
+                        });
+                    }
+                    '8' | '9' => ch,
                     other => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1412,6 +1434,97 @@ impl<'a> Lexer<'a> {
             message: "unterminated string literal".to_owned(),
             span: Some(Span {
                 start,
+                end: self.cursor,
+            }),
+        })
+    }
+
+    fn legacy_octal_escape_value(
+        &mut self,
+        first: char,
+        string_start: usize,
+    ) -> Result<char, Diagnostic> {
+        let escape_start = self.cursor.saturating_sub(2);
+        if self.strict_mode {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-229: legacy octal escape sequences are not allowed in strict mode"
+                    .to_owned(),
+                span: Some(Span {
+                    start: escape_start,
+                    end: self.cursor,
+                }),
+            });
+        }
+
+        let mut digits = String::from(first);
+        let max_digits = if matches!(first, '0'..='3') { 3 } else { 2 };
+        while digits.len() < max_digits {
+            let Some(next) = self.peek_char() else {
+                break;
+            };
+            if !matches!(next, '0'..='7') {
+                break;
+            }
+            digits.push(next);
+            self.advance_char();
+        }
+
+        let value = u32::from_str_radix(&digits, 8).map_err(|error| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("issue-229: invalid legacy octal escape sequence: {error}"),
+            span: Some(Span {
+                start: string_start,
+                end: self.cursor,
+            }),
+        })?;
+        char::from_u32(value).ok_or(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-229: invalid legacy octal escape scalar value".to_owned(),
+            span: Some(Span {
+                start: escape_start,
+                end: self.cursor,
+            }),
+        })
+    }
+
+    fn hex_escape_value(
+        &mut self,
+        digit_count: usize,
+        string_start: usize,
+        label: &str,
+    ) -> Result<char, Diagnostic> {
+        let escape_start = self.cursor.saturating_sub(2);
+        let mut value = 0u32;
+        for _ in 0..digit_count {
+            let Some(ch) = self.advance_char() else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("unterminated {label} escape sequence"),
+                    span: Some(Span {
+                        start: string_start,
+                        end: self.cursor,
+                    }),
+                });
+            };
+            let Some(digit) = ch.to_digit(16) else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("invalid {label} escape sequence"),
+                    span: Some(Span {
+                        start: escape_start,
+                        end: self.cursor,
+                    }),
+                });
+            };
+            value = (value << 4) | digit;
+        }
+
+        char::from_u32(value).ok_or(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("invalid {label} escape scalar value"),
+            span: Some(Span {
+                start: escape_start,
                 end: self.cursor,
             }),
         })
@@ -1500,6 +1613,92 @@ impl<'a> Lexer<'a> {
 
 fn is_line_terminator(ch: char) -> bool {
     matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+}
+
+fn source_has_use_strict_directive(source: &str) -> bool {
+    let mut cursor = 0usize;
+    loop {
+        cursor = skip_directive_trivia(source, cursor);
+        let Some(quote) = source[cursor..].chars().next() else {
+            return false;
+        };
+        if quote != '"' && quote != '\'' {
+            return false;
+        }
+        let Some((value, end)) = read_simple_directive_literal(source, cursor, quote) else {
+            return false;
+        };
+        cursor = skip_inline_whitespace(source, end);
+        match source[cursor..].chars().next() {
+            Some(';') => cursor += 1,
+            Some(ch) if is_line_terminator(ch) => {}
+            None => {}
+            _ => return false,
+        }
+        if value == "use strict" {
+            return true;
+        }
+    }
+}
+
+fn skip_directive_trivia(source: &str, mut cursor: usize) -> usize {
+    loop {
+        let rest = &source[cursor..];
+        if let Some(ch) = rest.chars().next()
+            && ch.is_whitespace()
+        {
+            cursor += ch.len_utf8();
+            continue;
+        }
+        if rest.starts_with("//") {
+            cursor += 2;
+            while let Some(ch) = source[cursor..].chars().next() {
+                if is_line_terminator(ch) {
+                    break;
+                }
+                cursor += ch.len_utf8();
+            }
+            continue;
+        }
+        if rest.starts_with("/*") {
+            if let Some(end) = rest.find("*/") {
+                cursor += end + 2;
+                continue;
+            }
+            return source.len();
+        }
+        return cursor;
+    }
+}
+
+fn skip_inline_whitespace(source: &str, mut cursor: usize) -> usize {
+    while let Some(ch) = source[cursor..].chars().next() {
+        if is_line_terminator(ch) || !ch.is_whitespace() {
+            break;
+        }
+        cursor += ch.len_utf8();
+    }
+    cursor
+}
+
+fn read_simple_directive_literal(
+    source: &str,
+    start: usize,
+    quote: char,
+) -> Option<(String, usize)> {
+    let mut cursor = start + quote.len_utf8();
+    let mut value = String::new();
+    while let Some(ch) = source[cursor..].chars().next() {
+        cursor += ch.len_utf8();
+        if ch == '\\' || is_line_terminator(ch) {
+            return None;
+        }
+        if ch == quote {
+            return Some((value, cursor));
+        }
+        value.push(ch);
+    }
+    None
 }
 
 #[cfg(test)]
@@ -1593,6 +1792,38 @@ mod tests {
                 Token::Semicolon
             ]
         ));
+    }
+
+    #[test]
+    fn cooks_legacy_octal_string_escape_in_non_strict_code() {
+        let tokens = Lexer::new(r"let value = '\07';").tokenize().unwrap();
+
+        assert!(
+            tokens
+                .iter()
+                .any(|token| matches!(&token.kind, Token::String(value) if value == "\u{0007}"))
+        );
+    }
+
+    #[test]
+    fn rejects_legacy_octal_string_escape_in_strict_code() {
+        let err = Lexer::new("\"use strict\"; let value = '\\07';")
+            .tokenize()
+            .unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-229"));
+    }
+
+    #[test]
+    fn cooks_unicode_string_escape() {
+        let tokens = Lexer::new(r"let value = '\u0007';").tokenize().unwrap();
+
+        assert!(
+            tokens
+                .iter()
+                .any(|token| matches!(&token.kind, Token::String(value) if value == "\u{0007}"))
+        );
     }
 
     #[test]
