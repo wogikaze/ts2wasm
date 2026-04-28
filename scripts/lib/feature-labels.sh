@@ -56,11 +56,13 @@ ts2wasm_feature_label() {
     *".tsx"*|*"jsx"*) echo "jsx"; return ;;
     *"declarationemit"*|*"declarationmap"*|*"declare"*) echo "declaration-emit"; return ;;
     *"accessor"*) echo "class-accessor"; return ;;
+    *"parameterproperty"*) echo "parameter-property"; return ;;
     *"anonymousclass"*|*"anonclass"*|*"unnamedclass"*|*"classfields"*|*"classfield"*) echo "class"; return ;;
     *"alias"*) echo "type-alias"; return ;;
     *"ambient"*) echo "ambient-declaration"; return ;;
     *"amd"*|*"systemmodule"*) echo "module-system-amd"; return ;;
     *"package"*|*"nodemodules"*|*"paths"*|*"resolution"*) echo "module-resolution"; return ;;
+    *"processingdiagnostic"*) echo "type-directive-resolution"; return ;;
     *"exportassignment"*|*"import"*|*"export"*|*"module"*) echo "import-export"; return ;;
     *"enum"*) echo "enum"; return ;;
     *"decorator"*) echo "decorator"; return ;;
@@ -78,6 +80,7 @@ ts2wasm_feature_label() {
     *" import "*|*" export "*|*"require("*|*"require(\""*) echo "import-export"; return ;;
     *"regexp"*|*"regular expression"*) echo "regexp-literal"; return ;;
     *"type annotation"*|*"typescript"*|*"interface "*|*" enum "*) echo "type-annotation"; return ;;
+    *"reference types"*|*"type directive"*) echo "type-directive-resolution"; return ;;
     *"destructur"*) echo "destructuring"; return ;;
     *" async "*|*"await "*|*"generator"*) echo "async"; return ;;
     *"=>"*|*"arrow"*) echo "arrow-function"; return ;;

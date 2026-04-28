@@ -269,6 +269,8 @@ def feature_label(diag_code, err_file, file_path):
         return "declaration-emit"
     elif "accessor" in path_lc:
         return "class-accessor"
+    elif "parameterproperty" in path_lc:
+        return "parameter-property"
     elif "anonymousclass" in path_lc or "anonclass" in path_lc or "unnamedclass" in path_lc or "classfields" in path_lc or "classfield" in path_lc:
         return "class"
     elif "alias" in path_lc:
@@ -279,6 +281,8 @@ def feature_label(diag_code, err_file, file_path):
         return "module-system-amd"
     elif "package" in path_lc or "nodemodules" in path_lc or "paths" in path_lc or "resolution" in path_lc:
         return "module-resolution"
+    elif "processingdiagnostic" in path_lc:
+        return "type-directive-resolution"
     elif "exportassignment" in path_lc or "import" in path_lc or "export" in path_lc or "module" in path_lc:
         return "import-export"
     elif "enum" in path_lc:
@@ -311,6 +315,8 @@ def feature_label(diag_code, err_file, file_path):
         return "regexp-literal"
     elif "type annotation" in text or "typescript" in text or "interface " in text or " enum " in text:
         return "type-annotation"
+    elif "reference types" in text or "type directive" in text:
+        return "type-directive-resolution"
     elif "destructur" in text:
         return "destructuring"
     elif " async " in text or "await " in text or "generator" in text:
