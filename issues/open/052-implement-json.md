@@ -6,26 +6,58 @@ area: runtime/builtins
 class: blocked
 priority: P1
 depends_on: []
-blocks: []
+blocks: [052b, 052c, 052d, 052e, 052f]
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-29
 ---
 
 ## Summary
 
-Implement JSON.parse and JSON.stringify.
+Implement full JSON.parse and JSON.stringify.
 
-Problem: JSON support has accumulated many validated slices and remaining spec gaps; direct selection no longer exposes the smallest closeable behavior.
+Problem: JSON support has a validated subset, but full ECMAScript JSON compatibility still depends on separately tracked number, string, replacer, boxed-edge, and diagnostic follow-up work.
 
 Queue design note:
 
 - This is an epic-level issue and must not be selected directly from the Ready queue.
-- First close the currently supported JSON subset contract in issue 052a.
-- Track remaining behavior as separate child issues for numeric representation, UTF-16/surrogates, replacer semantics, and throw-compatible errors.
+- The currently supported subset contract was closed by issue 052a.
+- Track remaining behavior as separate child issues: 052b, 052c, 052d, 052e, and 052f.
+- Keep this parent issue `blocked` until those child issues close or the final-state goal changes.
+
+## Supported subset contract
+
+Current validated JSON behavior is intentionally a subset, not full JSON support.
+
+`JSON.parse` currently has Node/iwasm differential or rejection evidence for:
+
+- whitespace-trimmed primitives: `true`, `false`, `null`, supported strings, and supported numbers;
+- small integer numbers plus decimal/exponent forms that reduce exactly to the current tagged small-int representation;
+- ASCII strings with standard single-byte escapes (`\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, and `\t`);
+- `\uXXXX` escapes only when the decoded code point fits the current single-byte ASCII string representation;
+- arrays and objects containing supported primitive values, nested arrays, nested objects, arrays inside objects, and objects inside arrays;
+- rejection of trailing tokens, incomplete object/array/string/number paths, invalid literals, leading-zero numbers, invalid unicode escapes, unsupported non-ASCII/surrogate unicode escapes, unsupported non-integer values, and unescaped control characters.
+
+`JSON.stringify` currently has Node/iwasm differential or diagnostic evidence for:
+
+- primitives and aggregate values representable by the current runtime: small integers, booleans, null, ASCII strings, arrays, flat objects, and nested object/array literal values;
+- escaping of `"`, `\`, `\b`, `\f`, `\n`, `\r`, and `\t` for string values and object keys;
+- numeric `space`, string `space`, ignored boolean/object/function/symbol `space`, and narrow boxed `Number`/`String`/`Boolean` `space` forms covered by fixtures;
+- object-literal array replacer property lists containing string and numeric literal entries, preserving property-list order and duplicate suppression in the validated subset;
+- issue-linked diagnostics for unsupported function replacers and unsupported array replacer property-list contents/forms outside the validated subset.
+
+Remaining full-spec work is not part of this parent issue's Ready queue surface:
+
+- 052b: arbitrary non-integer JSON number representation.
+- 052c: full UTF-16, non-ASCII, and surrogate-pair string handling.
+- 052d: broader `JSON.stringify` replacer semantics.
+- 052e: remaining boxed/object coercion edge cases for `JSON.stringify` arguments.
+- 052f: broader throw-compatible `JSON.parse` diagnostics.
+
+Close decision: issue 052 remains open as a blocked parent epic for full JSON compatibility. The closeable subset milestone is issue 052a; implementation workers should select child issues instead of this parent.
 
 ## Problem
 
-JSON is not implemented. It is essential for data serialization.
+Full JSON compatibility is not implemented. JSON support is essential for data serialization, and the current subset is documented above.
 
 ## Desired final state
 
@@ -35,13 +67,14 @@ JSON is not implemented. It is essential for data serialization.
 
 In scope:
 
-- [ ] Implement JSON.parse
-- [ ] Implement JSON.stringify
-- [ ] Add fixtures for JSON behavior
+- [ ] Implement full JSON.parse through child issues.
+- [ ] Implement full JSON.stringify through child issues.
+- [ ] Add fixtures for each completed JSON behavior.
 
 Out of scope:
 
-- Full JSON spec compliance (start with common cases)
+- Direct work against this parent issue.
+- Marking the validated subset as full JSON spec compliance.
 
 ## Affected paths
 
@@ -56,10 +89,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] JSON.parse works correctly
-- [ ] JSON.stringify works correctly
-- [ ] Fixtures cover JSON behavior
-- [ ] No regression in existing fixtures
+- [ ] Child issues 052b through 052f are closed or superseded by narrower follow-ups.
+- [ ] JSON.parse works correctly for the full supported final-state contract.
+- [ ] JSON.stringify works correctly for the full supported final-state contract.
+- [ ] Fixtures cover completed JSON behavior.
+- [ ] No regression in existing fixtures.
 
 ## Validation
 

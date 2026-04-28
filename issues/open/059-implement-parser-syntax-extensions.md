@@ -268,12 +268,12 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse /tmp/ts2wasm-059-satisfies-erasure-probe.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/satisfies-erasure.ts -o /tmp/ts2wasm-059-satisfies-erasure.wasm`
   - `iwasm /tmp/ts2wasm-059-satisfies-erasure.wasm` (stdout: `3`)
-  - `scripts/manager update-issue-index --check`
-  - `scripts/manager check-agent-state`
+  - `mise run update-issue-index -- --check`
+  - `mise run check agent-state`
   - `cargo nextest run`
 - Validation not clean due unrelated pre-existing local-report references:
-  - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
-  - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+  - `mise run check issues` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
+  - `mise run check` failed at the same `check issues` step after shell syntax checks passed.
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 ## Completion evidence

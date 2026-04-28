@@ -133,7 +133,7 @@ command: mise run check-issue-health
 result: failed due unrelated pre-existing missing gitignored report paths in issues/open/052-implement-json.md and issues/done/228-implement-logical-assignment-operators.md
 date: 2026-04-28
 
-command: scripts/manager check-agent-state
+command: mise run check agent-state
 result: pass
 date: 2026-04-28
 

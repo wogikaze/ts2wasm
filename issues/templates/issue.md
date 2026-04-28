@@ -3,7 +3,7 @@ id: 001
 title: "Short imperative title"
 type: feature | bug | refactor | docs | test | infra | cleanup | spike
 area: frontend | ir | runtime | abi | wasi | cli | fixtures | scripts | docs | tests | coverage | reference
-class: design-ready | implementation-ready | verification-ready | docs-ready | blocked
+class: triage-needed | design-ready | implementation-ready | verification-ready | docs-ready | blocked
 priority: P0 | P1 | P2 | P3
 depends_on: []
 blocks: []

@@ -757,13 +757,13 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 18000 --detail
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 18000 --detail
 result: pass; unsupported_features=name-resolution:5513,builtin-api:4434,array-builtin:2120,object-builtin:2058,regexp-literal:1476,string-builtin:715,function:595,eval:460,date:405,parser-syntax:131,duplicate-local:45,legacy-global-builtin:16,annexb-ishtmldda:12,declaration-emit:4,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; blocked=1; unknown-unsupported=0
 
-tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 18000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
+tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 18000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=18000, build_pass=5, semantic_pass=3, unsupported=17995, blocked=0, unknown-unsupported=0
 
-scripts/manager update-coverage-matrix
+mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
