@@ -133,11 +133,20 @@ fn populate_static_module_exports_for_build(
     mut lowered: lowered::LoweredProgram,
     module_graph: &ModuleGraph,
 ) -> Result<lowered::LoweredProgram, Diagnostic> {
-    for module in module_graph
-        .modules()
-        .iter()
-        .filter(|module| module.id() != 0)
-    {
+    for step in module_graph.dependency_first_initialization_steps() {
+        if step.module_id() == 0 {
+            continue;
+        }
+        let module = module_graph
+            .module(step.module_id())
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "module graph initialization step references missing module {}",
+                    step.module_id()
+                ),
+                span: None,
+            })?;
         if lowered
             .modules
             .iter()
@@ -1084,6 +1093,49 @@ console.log(value);
         assert!(wat.contains("$module_require"));
         assert!(wat.contains("$property_get"));
         assert!(wat.contains("$module_exports_set"));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn static_module_export_lowering_orders_module_metadata_dependency_first() {
+        let dir = unique_temp_dir("static-module-export-order");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source_module = dir.join("source.ts");
+        let nested_module = dir.join("nested.ts");
+        let entry_source = r#"import { value } from "./source";"#;
+        std::fs::write(&entry, entry_source).expect("entry should be written");
+        std::fs::write(
+            &source_module,
+            r#"
+import { nested } from "./nested";
+export const value = 1;
+"#,
+        )
+        .expect("source module should be written");
+        std::fs::write(&nested_module, "export const nested = 2;\n")
+            .expect("nested module should be written");
+
+        let program = parse_program(entry_source).expect("entry should parse");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let lowered_program = lowered::LoweredProgram {
+            top_level_statements: vec![],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph)
+            .expect("static module exports should populate lowered metadata");
+
+        let module_ids = lowered_program
+            .modules
+            .iter()
+            .map(|module| module.id)
+            .collect::<Vec<_>>();
+        assert_eq!(module_ids, vec![2, 1]);
+        assert_eq!(lowered_program.modules[0].specifier, "./nested");
+        assert_eq!(lowered_program.modules[1].specifier, "./source");
 
         let _ = std::fs::remove_dir_all(&dir);
     }

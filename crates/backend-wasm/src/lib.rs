@@ -380,6 +380,65 @@ mod tests {
     }
 
     #[test]
+    fn module_initializers_are_emitted_and_called_in_metadata_order() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Let(
+                LocalId(0),
+                LoweredExpr::PropertyGet {
+                    obj: Box::new(LoweredExpr::ModuleLoad { module_id: 1 }),
+                    key: "value".to_owned(),
+                },
+            )],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![
+                ModuleInfo {
+                    id: 2,
+                    specifier: "./nested".to_owned(),
+                    statements: vec![LoweredStmt::Export {
+                        name: "nested".to_owned(),
+                        expr: LoweredExpr::Number(2),
+                    }],
+                    locals_count: 0,
+                },
+                ModuleInfo {
+                    id: 1,
+                    specifier: "./source".to_owned(),
+                    statements: vec![LoweredStmt::Export {
+                        name: "value".to_owned(),
+                        expr: LoweredExpr::Number(1),
+                    }],
+                    locals_count: 0,
+                },
+            ],
+        };
+
+        let wat = emit_wat(&program).expect("module initializers should emit WAT");
+
+        assert!(wat.contains("(func $module_init_2"));
+        assert!(wat.contains("(func $module_init_1"));
+        assert!(wat.contains("(global.set $current_module_id (i32.const 2))"));
+        assert!(wat.contains("(global.set $current_module_id (i32.const 1))"));
+        let call_nested = wat
+            .find("(call $module_init_2)")
+            .expect("nested module init should be called");
+        let call_source = wat
+            .find("(call $module_init_1)")
+            .expect("source module init should be called");
+        let top_level_import = wat
+            .find("(call $module_require (i32.const 1))")
+            .expect("top-level static import read should remain module-backed");
+        assert!(
+            call_nested < call_source,
+            "module initializer calls should preserve dependency-first metadata order"
+        );
+        assert!(
+            call_source < top_level_import,
+            "module initializer calls should run before top-level import reads"
+        );
+    }
+
+    #[test]
     fn gc_collect_marks_class_prototype_globals() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ClassPrototype(

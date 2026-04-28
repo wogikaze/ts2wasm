@@ -138,6 +138,9 @@ impl<'a> WatEmitter<'a> {
         for function in &program.functions {
             emitter.collect_program_strings(&function.body);
         }
+        for module in &program.modules {
+            emitter.collect_program_strings(&module.statements);
+        }
         emitter
     }
 
@@ -163,6 +166,7 @@ impl<'a> WatEmitter<'a> {
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
         self.emit_functions(&mut wat);
+        self.emit_module_initializers(&mut wat);
         self.emit_start(&mut wat);
         wat.push_str(")\n");
         Ok(wat)
@@ -1120,6 +1124,29 @@ impl<'a> WatEmitter<'a> {
         }
     }
 
+    fn emit_module_initializers(&self, wat: &mut String) {
+        for module in &self.program.modules {
+            if module.statements.is_empty() {
+                continue;
+            }
+            wat.push_str(&format!("  (func ${}\n", module_init_symbol(module.id)));
+            let frame =
+                LocalFrame::activation(module.locals_count, self.gc_call_frame_roots_enabled());
+            for _ in 0..frame.total_local_count() {
+                wat.push_str("    (local i32)\n");
+            }
+            self.emit_gc_activation_frame_push(wat, &frame, 4);
+            wat.push_str(&format!(
+                "    (global.set $current_module_id (i32.const {}))\n",
+                module.id
+            ));
+            let mut loop_ctx = super::stmt_emit::LoopContext::default();
+            self.emit_statements(wat, &module.statements, 4, &mut loop_ctx, &frame);
+            self.emit_gc_activation_frame_pop(wat, &frame, 4);
+            wat.push_str("  )\n");
+        }
+    }
+
     fn emit_start(&self, wat: &mut String) {
         wat.push_str("  (func $_start (export \"_start\")\n");
         let extra_locals = if self.module_runtime_enabled() { 1 } else { 0 };
@@ -1140,8 +1167,22 @@ impl<'a> WatEmitter<'a> {
         }
         self.emit_class_prototype_initializers(wat, 4);
         self.emit_builtin_error_prototype_initializers(wat, 4);
+        self.emit_module_initializer_calls(wat, 4);
+        if self.module_runtime_enabled() {
+            wat.push_str("    (global.set $current_module_id (i32.const 1))\n");
+        }
         self.emit_top_level_statements(wat, 4, &frame);
         wat.push_str("  )\n");
+    }
+
+    fn emit_module_initializer_calls(&self, wat: &mut String, indent: usize) {
+        let pad = " ".repeat(indent);
+        for module in &self.program.modules {
+            if module.statements.is_empty() {
+                continue;
+            }
+            wat.push_str(&format!("{pad}(call ${})\n", module_init_symbol(module.id)));
+        }
     }
 
     fn emit_gc_root_table_initializer(&self, wat: &mut String, indent: usize) {
@@ -1335,6 +1376,10 @@ impl<'a> WatEmitter<'a> {
 
 pub(super) fn function_symbol(id: FuncId) -> String {
     format!("func_{}", id.0)
+}
+
+pub(super) fn module_init_symbol(module_id: usize) -> String {
+    format!("module_init_{module_id}")
 }
 
 pub(super) fn class_prototype_global(id: FuncId) -> String {

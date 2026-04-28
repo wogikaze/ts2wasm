@@ -1,0 +1,10 @@
+{
+  "run_id": "233-module-init-runtime-20260428T114113Z",
+  "issue": "233",
+  "branch": "agent/233-module-init-runtime-20260428T114113Z",
+  "commit": "6b2d9f1",
+  "status": "PROGRESS",
+  "merge_request": true,
+  "reporting": "DEFERRED",
+  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env"
+}
