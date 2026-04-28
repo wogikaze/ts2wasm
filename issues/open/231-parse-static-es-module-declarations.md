@@ -321,6 +321,20 @@ Remaining work before close:
 
 - broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
 
+2026-04-28 child worker `231-close-audit-20260428T083200Z` performed a close-readiness audit and did not close the issue.
+
+Verified acceptance coverage:
+
+- Current frontend parser tests cover explicit AST nodes and span/specifier/name preservation for side-effect imports, named imports, default imports, combined default imports, namespace imports, named exports, named re-exports, star re-exports, namespace re-exports, `export const`, and expression `export default`.
+- Current CLI module guard tests cover all `static_*_reports_issue_055` fixtures and prove parsed static module declarations still stop with issue-055 before module graph/resolution/lowering/runtime support.
+- `cargo fmt --all --check`: PASS
+- `cargo nextest run -p ts2wasm-frontend`: PASS (47 tests)
+- `cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_side_effect_import_reports_issue_055 static_namespace_import_reports_issue_055 static_default_import_reports_issue_055 static_combined_named_import_reports_issue_055 static_combined_namespace_import_reports_issue_055 static_named_export_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_namespace_re_export_reports_issue_055 static_declaration_export_reports_issue_055 static_default_export_reports_issue_055`: PASS (12 tests)
+
+Blocker:
+
+- Acceptance criterion "Unsupported forms still produce issue-linked diagnostics" is not fully met: `export class C {}` currently builds successfully instead of producing an issue-055 unsupported module diagnostic, because the parser consumes `export` and returns a plain `Stmt::ClassDecl`. Control probes confirmed `export function f() {}` and `export var value = 1;` do produce issue-055 diagnostics. Leave 231 open until `export class` is either represented as an export declaration AST node or rejected with an issue-linked unsupported diagnostic.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

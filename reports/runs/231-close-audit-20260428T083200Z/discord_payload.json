@@ -1,0 +1,18 @@
+{
+  "run_id": "231-close-audit-20260428T083200Z",
+  "issue": "231",
+  "branch": "agent/231-close-audit-20260428T083200Z",
+  "status": "PROGRESS",
+  "summary": "Close-readiness audit left issue 231 open because export class C {} builds successfully instead of producing an issue-055 unsupported module diagnostic.",
+  "validation": [
+    "cargo fmt --all --check: PASS",
+    "cargo nextest run -p ts2wasm-frontend: PASS (47 tests)",
+    "cargo nextest run -p ts2wasm-cli static_*_reports_issue_055 guards: PASS (12 tests)",
+    "scripts/manager update-issue-index --check: PASS",
+    "scripts/manager check-issue-index: PASS",
+    "scripts/manager check-issue-health: PASS",
+    "scripts/manager check-agent-state: PASS"
+  ],
+  "report_path": "reports/runs/231-close-audit-20260428T083200Z/cycle_report.md",
+  "merge_request": "no"
+}
