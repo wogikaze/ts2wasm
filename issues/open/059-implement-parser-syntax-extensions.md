@@ -97,6 +97,23 @@ Follow-up issues:
 
 Start with basic TypeScript type annotations before adding advanced features.
 
+2026-04-28 progress evidence:
+
+- Implemented a narrow erasable TypeScript type-annotation parser slice for variable declarations, function parameter annotations, and return annotations.
+- Uninitialized `let` / `var` declarations after optional type annotations now parse as `undefined`; uninitialized `const` declarations still report a diagnostic.
+- Added fixture `fixtures/basics-types/type-annotation-erasure.ts`.
+- Added CLI coverage showing `dump --ast --unparse` erases annotations and build accepts the fixture.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -p ts2wasm-frontend`
+  - `cargo nextest run -p ts2wasm-cli --test dump_cli`
+  - `cargo nextest run`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `scripts/manager check-repo-smoke`
+- Issue 059 remains open. Interfaces, generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
