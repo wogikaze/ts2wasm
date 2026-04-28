@@ -84,6 +84,30 @@ fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn static_named_module_import_fixtures_match_node_output_under_iwasm() {
+    for (fixture, node_entry_source) in [
+        (
+            "fixtures/module-system/static-entry.ts",
+            "import { value } from './static-entry-source.ts';\nconsole.log(value);\n",
+        ),
+        (
+            "fixtures/module-system/static-entry-alias.ts",
+            "import { value as renamed } from './static-entry-source.ts';\nconsole.log(renamed);\n",
+        ),
+        (
+            "fixtures/module-system/static-entry-shadow.ts",
+            "import { value as importedValue } from './static-entry-source.ts';\nconst value = 99;\nconsole.log(importedValue);\n",
+        ),
+        (
+            "fixtures/module-system/static-entry-repeated.ts",
+            "import { value as first } from './static-entry-source.ts';\nimport { value as second } from './static-entry-source.ts';\nconsole.log(first + second);\n",
+        ),
+    ] {
+        assert_static_module_fixture_matches_node_variant(fixture, node_entry_source);
+    }
+}
+
+#[test]
 fn regexp_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
 }
@@ -739,6 +763,78 @@ fn assert_fixture_matches_js_baseline(fixture: &str, js_baseline: &str) {
         String::from_utf8_lossy(&node.stdout),
         "stdout mismatch for {fixture}"
     );
+}
+
+fn assert_static_module_fixture_matches_node_variant(fixture: &str, node_entry_source: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+    let node_dir = unique_temp_dir("static-module-node");
+    fs::create_dir_all(&node_dir).expect("node module temp dir should be created");
+    fs::write(node_dir.join("entry.ts"), node_entry_source)
+        .expect("node module entry should be written");
+    fs::write(
+        node_dir.join("static-entry-source.ts"),
+        "export const value = 1;\n",
+    )
+    .expect("node module source should be written");
+
+    let node = Command::new("node")
+        .arg(node_dir.join("entry.ts"))
+        .output()
+        .unwrap();
+    let _ = fs::remove_dir_all(&node_dir);
+    assert!(
+        node.status.success(),
+        "node module variant failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+    assert_no_precomputed_stdout(fixture, &output, &node.stdout);
+
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        iwasm.output.status.success(),
+        "iwasm failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+
+    assert_eq!(
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&node.stdout),
+        "stdout mismatch for {fixture}"
+    );
+}
+
+fn unique_temp_dir(label: &str) -> PathBuf {
+    let unique = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .expect("system time should be after UNIX_EPOCH")
+        .as_nanos();
+    std::env::temp_dir().join(format!("ts2wasm-{label}-{unique}-{}", std::process::id()))
 }
 
 fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
