@@ -1,0 +1,9 @@
+{
+  "run_id": "20260428T024516Z-227-type-ref-close",
+  "agent_id": "codex-227-type-ref-close-20260428T024058Z",
+  "branch": "agent/227-type-ref-close-20260428T024058Z",
+  "issue": 227,
+  "outcome": "DONE",
+  "summary": "Issue 227 moved to done after closure verification. Type-reference directives produce precise issue-227 diagnostics or are suppressed for covered skipLibCheck/@ts-ignore cases. Full fmt, targeted tests, reference coverage, nextest, issue health, and agent-state checks passed.",
+  "merge_request": true
+}
