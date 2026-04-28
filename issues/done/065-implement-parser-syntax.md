@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-26
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -20,7 +21,7 @@ Problem: This duplicates the parser syntax epic in issue 059 and should not comp
 Queue design note:
 
 - Do not select this issue directly.
-- Merge useful affected-test evidence into issue 059 child slices, then close this issue as superseded when references are preserved.
+- Superseded by issue 059. Useful affected-test evidence was copied into issue 059 on 2026-04-29.
 
 ## Problem
 
@@ -32,16 +33,16 @@ parser-syntax feature is correctly implemented according to JavaScript/TypeScrip
 
 ## Scope
 
-In scope:
+Original in-scope implementation work, now superseded by issue 059:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for parser-syntax feature
-- [ ] Add fixtures for parser-syntax feature behavior
-- [ ] Update diagnostics appropriately
+- Add required syntax to lexer/parser
+- Implement semantics for parser-syntax feature
+- Add fixtures for parser-syntax feature behavior
+- Update diagnostics appropriately
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- Related features (separate issues)
 
 ## Affected paths
 
@@ -56,12 +57,16 @@ Do not touch:
 - `crates/runtime-abi/`
 - `crates/backend-wasm/`
 
-## Acceptance criteria
+## Original acceptance criteria
 
-- [ ] parser-syntax feature passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for parser-syntax feature
-- [ ] Docs updated if semantics change
+- parser-syntax feature passes for basic cases
+- Related diagnostics reduced in reference tests
+- Regression test added for parser-syntax feature
+- Docs updated if semantics change
+
+These implementation criteria were not completed in issue 065 because the issue was
+closed as a duplicate of issue 059. Parser syntax implementation work remains
+tracked there.
 
 ## Validation
 
@@ -86,15 +91,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- not updated by this superseded close
 
 Follow-up issues:
 
-- [ ] none
+- issue 059 remains the canonical parser syntax epic
 
 ## Notes
 
@@ -114,20 +119,20 @@ Follow-up issues:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as superseded by issue 059. No parser implementation was performed in this cleanup.
 
 Commits:
 
-- `...`
+- closing commit on branch `agent/061a-065a-issue-dedupe-20260428T233550Z` (hash recorded in cycle report)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run update-issue-index; mise run update-issue-index -- --check; mise run check issues; mise run check issue-index
+result: index update/check passed; issue-health commands returned nonzero only for unrelated pre-existing missing reports in issues 052 and 228
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Parser syntax behavior remains tracked by issue 059 and its child slices.

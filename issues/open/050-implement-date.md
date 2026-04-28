@@ -99,6 +99,17 @@ Follow-up issues:
 
 ## Notes
 
+2026-04-29 superseded-reference merge note:
+
+- Duplicate issue 061 has been closed as superseded by this Date epic.
+- Its reference affected-test evidence remains preserved here for Date child-slice planning:
+  Annex B `Date.prototype.getYear`, `setYear`, and `toGMTString` cases, including
+  NaN return behavior, not-a-constructor checks, receiver validation, and setYear
+  valid/invalid date-value handling.
+- Keep those legacy Annex B methods as child Date work rather than a competing parent
+  issue. The existing deterministic Date slices below remain the implemented evidence;
+  this merge note is issue-queue deduplication only.
+
 2026-04-28 progress evidence:
 
 - Implemented deterministic `new Date(<epoch-ms integer>)` lowering for integer epoch

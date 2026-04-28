@@ -22,9 +22,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 052a | Close JSON supported subset contract | docs | runtime/builtins | docs-ready | P1 |  | JSON has many validated progress slices, but the parent issue still reads as a full-spec implementation target and is... |
 | 059a | Implement TypeScript satisfies and const assertion erasure | feature | frontend | implementation-ready | P1 |  | Parser syntax work needs the next small erasable TypeScript syntax slice instead of another broad parser epic selection. |
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | verification-ready | P1 |  | Unknown-unsupported classification has reached zero in large test262 windows, but the parent spike has no fixed compl... |
-| 061a | Merge Date reference issue into Date epic | cleanup | issues | docs-ready | P1 |  | Issue 061 duplicates issue 050 and keeps Date reference cases as a separate Ready candidate. |
 | 062a | Split function epic into callable child issues | cleanup | issues | docs-ready | P1 |  | Issue 062 mixes unrelated function surfaces, so implementation starts with scope design instead of code. |
-| 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | docs-ready | P1 |  | Issue 065 duplicates the parser syntax epic in issue 059 and makes the Ready queue present the same work twice. |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 238 | Make strict warning gates pass | infra | tests | implementation-ready | P0 |  | Make strict warning gates pass |
 <!-- generated:ready:end -->
@@ -40,11 +38,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | class: blocked | Investigate and classify unknown-unsupported diagnostic cases |
-| 061 | Implement Date object support | feature | frontend | class: blocked | Implement Date object support |
 | 062 | Implement function support | feature | frontend | class: blocked | Implement function support |
 | 063 | Implement function resolution | feature | frontend | class: blocked | Implement function resolution |
 | 064 | Implement name resolution | feature | frontend | class: blocked | Implement name resolution |
-| 065 | Implement parser syntax extensions | feature | frontend | class: blocked | Implement parser syntax extensions |
 | 066 | Implement RegExp literal support | feature | frontend | class: blocked | Implement RegExp literal support |
 | 067 | Investigate and classify unknown-unsupported cases | feature | frontend | class: blocked | Investigate and classify unknown-unsupported cases |
 | 068 | Implement unsupported expression types | feature | frontend | class: blocked | Implement unsupported expression types |
@@ -249,7 +245,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
+| 061 | Implement Date object support | feature | frontend | see `issues/done/061-implement-date.md` |
+| 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
+| 065 | Implement parser syntax extensions | feature | frontend | see `issues/done/065-implement-parser-syntax.md` |
+| 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | see `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | see `issues/done/202-implement-regexp-literal-support.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 | 204 | Add typed IR dump command | feature | cli | see `issues/done/204-add-typed-ir-dump.md` |
