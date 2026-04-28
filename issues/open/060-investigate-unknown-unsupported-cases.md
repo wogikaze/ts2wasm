@@ -219,6 +219,31 @@ result: pass
 
 This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
+2026-04-28 child coverage ramp2 continuation:
+
+- Expanded the stored test262 coverage window from limit 750 to limit 1000.
+- The limit-1000 window had zero `unknown-unsupported` entries; no classifier changes or new follow-up issues were required for this slice.
+- Refreshed `artifacts/coverage/results/test262.json` and `artifacts/coverage/reference-coverage-matrix.md`.
+- A first detail run reported one transient blocked timeout for `annexB/built-ins/Array/from/iterator-method-emulates-undefined.js`; a targeted rerun classified that case as `array-builtin`, and the stored JSON artifact has `blocked=0`.
+
+Validated classification commands:
+
+```text
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 1000 --detail
+result: pass; unsupported_features=eval:461,parser-syntax:168,name-resolution:138,function:87,string-builtin:63,regexp-literal:46,date:16,legacy-global-builtin:16,arguments-object:1,builtin-api:1,object-literal:1,switch:1; unknown-unsupported=0
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
+result: pass; unsupported_features=array-builtin:1; blocked=0; unknown-unsupported=0
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 1000 --json > artifacts/coverage/results/test262.json
+result: pass; stored artifacts/coverage/results/test262.json with executed=1000, unsupported=1000, blocked=0, unknown-unsupported=0
+
+scripts/manager update-coverage-matrix
+result: pass; artifacts/coverage/reference-coverage-matrix.md updated
+```
+
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
