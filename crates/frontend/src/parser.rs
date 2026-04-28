@@ -915,22 +915,53 @@ impl Parser {
         }
         if let Some(op) = self.logical_assignment_operator() {
             let target_span = expr.span();
-            if let Expr::Ident { name, span } = expr {
-                let value = self.assignment()?;
-                return Ok(Expr::LogicalAssign {
-                    name,
-                    op,
-                    span: Span {
-                        start: span.start,
-                        end: value.span().end,
-                    },
-                    expr: Box::new(value),
-                });
+            match expr {
+                Expr::Ident { name, span } => {
+                    let value = self.assignment()?;
+                    return Ok(Expr::LogicalAssign {
+                        name,
+                        op,
+                        span: Span {
+                            start: span.start,
+                            end: value.span().end,
+                        },
+                        expr: Box::new(value),
+                    });
+                }
+                Expr::Member {
+                    object,
+                    property,
+                    span,
+                } if !property.is_empty() => {
+                    let Expr::Ident {
+                        name: object_name, ..
+                    } = object.as_ref()
+                    else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-228: member logical assignment currently supports only identifier object targets".to_owned(),
+                            span: Some(target_span),
+                        });
+                    };
+                    let value = self.assignment()?;
+                    return Ok(Expr::LogicalPropertyAssign {
+                        object: object_name.clone(),
+                        property,
+                        op,
+                        span: Span {
+                            start: span.start,
+                            end: value.span().end,
+                        },
+                        expr: Box::new(value),
+                    });
+                }
+                _ => {}
             }
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-228: logical assignment currently supports only identifier targets"
-                    .to_owned(),
+                message:
+                    "issue-228: logical assignment currently supports only identifier and member targets"
+                        .to_owned(),
                 span: Some(target_span),
             });
         }

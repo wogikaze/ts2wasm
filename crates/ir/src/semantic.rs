@@ -463,7 +463,9 @@ impl<'a> HirLowerer<'a> {
                 method: method.clone(),
                 args: self.lower_args(args)?,
             }),
-            ResolvedExpr::Assign { .. } | ResolvedExpr::LogicalAssign { .. } => Err(unsupported(
+            ResolvedExpr::Assign { .. }
+            | ResolvedExpr::LogicalAssign { .. }
+            | ResolvedExpr::LogicalPropertyAssign { .. } => Err(unsupported(
                 "assignment expressions are not part of the initial HIR slice",
             )),
             _ => Err(unsupported(

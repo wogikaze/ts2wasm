@@ -529,6 +529,19 @@ fn unparse_expr(expr: &Expr) -> String {
                 unparse_expr(expr)
             )
         }
+        Expr::LogicalPropertyAssign {
+            object,
+            property,
+            op,
+            expr,
+            ..
+        } => {
+            format!(
+                "{object}.{property} {} {}",
+                logical_assign_op_text(*op),
+                unparse_expr(expr)
+            )
+        }
         Expr::Array { elements, .. } => format!("[{}]", unparse_expr_list(elements)),
         Expr::Object { props, .. } => {
             let props = props

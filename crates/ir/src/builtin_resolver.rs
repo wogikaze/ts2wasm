@@ -409,6 +409,18 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op: *op,
             expr: Box::new(resolve_expr(expr)?),
         }),
+        Expr::LogicalPropertyAssign {
+            object,
+            property,
+            op,
+            expr,
+            ..
+        } => Ok(ResolvedExpr::LogicalPropertyAssign {
+            object: object.clone(),
+            key: property.clone(),
+            op: *op,
+            expr: Box::new(resolve_expr(expr)?),
+        }),
         Expr::Member {
             object, property, ..
         } => {
@@ -726,6 +738,7 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Call { span, .. }
         | Expr::Assign { span, .. }
         | Expr::LogicalAssign { span, .. }
+        | Expr::LogicalPropertyAssign { span, .. }
         | Expr::Array { span, .. }
         | Expr::Object { span, .. }
         | Expr::Index { span, .. }

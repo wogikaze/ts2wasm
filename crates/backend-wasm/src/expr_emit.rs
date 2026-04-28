@@ -164,6 +164,14 @@ impl WatEmitter<'_> {
             LoweredExpr::LogicalAssign { local, op, expr } => {
                 self.emit_logical_assign(wat, *local, *op, expr, indent, frame);
             }
+            LoweredExpr::LogicalPropertyAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => {
+                self.emit_logical_property_assign(wat, *object, key, *op, expr, indent, frame);
+            }
             LoweredExpr::Binary { left, op, right } => {
                 let left_ty = left.inferred_type();
                 let right_ty = right.inferred_type();
@@ -677,6 +685,119 @@ impl WatEmitter<'_> {
         wat.push_str(&format!("{pad}(local.tee {local})\n"));
         self.emit_gc_root_mirror_index(wat, &pad, local, frame);
     }
+
+    fn emit_logical_property_assign(
+        &self,
+        wat: &mut String,
+        object: LocalId,
+        key: &str,
+        op: LoweredLogicalAssignOp,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let object = local_index(object);
+        let current = frame.heap_value_tmp();
+        self.emit_property_get_into_tmp(wat, object, key, current, indent, frame);
+        match op {
+            LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
+                wat.push_str(&format!("{pad}(local.get {current})\n"));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                if op == LoweredLogicalAssignOp::And {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    self.emit_logical_property_assign_rhs(
+                        wat,
+                        object,
+                        key,
+                        expr,
+                        indent + 4,
+                        frame,
+                    );
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                } else {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    self.emit_logical_property_assign_rhs(
+                        wat,
+                        object,
+                        key,
+                        expr,
+                        indent + 4,
+                        frame,
+                    );
+                    wat.push_str(&format!("{pad}  )\n"));
+                }
+                wat.push_str(&format!("{pad})\n"));
+            }
+            LoweredLogicalAssignOp::Nullish => {
+                wat.push_str(&format!(
+                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
+                    ValueTag::NULL,
+                    ValueTag::UNDEFINED
+                ));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                wat.push_str(&format!("{pad}  (then\n"));
+                self.emit_logical_property_assign_rhs(wat, object, key, expr, indent + 4, frame);
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad}  (else\n"));
+                wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad})\n"));
+            }
+        }
+    }
+
+    fn emit_property_get_into_tmp(
+        &self,
+        wat: &mut String,
+        object: usize,
+        key: &str,
+        tmp: usize,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+        let key_len = self.string_len(key);
+        wat.push_str(&format!("{pad}(local.get {object})\n"));
+        wat.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
+        wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        wat.push_str(&format!(
+            "{pad}(call {})\n",
+            RuntimeFn::PropertyGet.symbol()
+        ));
+        wat.push_str(&format!("{pad}(local.set {tmp})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
+    }
+
+    fn emit_logical_property_assign_rhs(
+        &self,
+        wat: &mut String,
+        object: usize,
+        key: &str,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+        let key_len = self.string_len(key);
+        wat.push_str(&format!("{pad}(local.get {object})\n"));
+        wat.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
+        wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        self.emit_expr(wat, expr, indent, frame);
+        wat.push_str(&format!(
+            "{pad}(call {})\n",
+            RuntimeFn::PropertySet.symbol()
+        ));
+    }
 }
 
 fn local_index(id: LocalId) -> usize {
@@ -696,7 +817,8 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         LoweredExpr::Unary { expr, .. }
         | LoweredExpr::GetLength(expr)
         | LoweredExpr::Assign { expr, .. }
-        | LoweredExpr::LogicalAssign { expr, .. } => expr_may_collect(expr),
+        | LoweredExpr::LogicalAssign { expr, .. }
+        | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_may_collect(expr),
         LoweredExpr::PropertyGet { obj, .. }
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. } => expr_may_collect(obj),
@@ -750,7 +872,8 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         LoweredExpr::Unary { expr, .. }
         | LoweredExpr::GetLength(expr)
         | LoweredExpr::Assign { expr, .. }
-        | LoweredExpr::LogicalAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
+        | LoweredExpr::LogicalAssign { expr, .. }
+        | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
         LoweredExpr::PropertyGet { obj, .. }
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. }
