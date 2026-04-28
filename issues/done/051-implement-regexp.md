@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-26
+status: done
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,12 +29,12 @@ RegExp is not implemented. It is essential for pattern matching.
 
 In scope:
 
-- [ ] Add RegExp literal syntax to lexer/parser
-- [ ] Implement RegExp constructor
-- [ ] Implement RegExp.prototype.test
-- [ ] Implement RegExp.prototype.exec
-- [ ] Implement String.prototype.match
-- [ ] Add fixtures for RegExp behavior
+- [x] Add RegExp literal syntax to lexer/parser
+- [x] Implement RegExp constructor
+- [x] Implement RegExp.prototype.test
+- [x] Implement RegExp.prototype.exec
+- [x] Implement String.prototype.match
+- [x] Add fixtures for RegExp behavior
 
 Out of scope:
 
@@ -52,10 +54,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] RegExp literal parses correctly
-- [ ] RegExp basic operations work correctly
-- [ ] Fixtures cover RegExp behavior
-- [ ] No regression in existing fixtures
+- [x] RegExp literal parses correctly
+- [x] RegExp basic operations work correctly
+- [x] Fixtures cover RegExp behavior
+- [x] No regression in existing fixtures
 
 ## Validation
 
@@ -81,15 +83,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -317,18 +319,72 @@ result: pass
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+- 2026-04-28 close audit: issue 051 is complete for the constrained RegExp subset in scope:
+  literal syntax, `new RegExp("plain")`, optional empty/`g` constructor flags,
+  `RegExp.prototype.test`, `RegExp.prototype.exec`, `String.prototype.match`, fixture coverage,
+  and issue-linked diagnostics for unsupported forms. This does not claim full RegExp syntax,
+  full match-array objects, global `lastIndex` state, or complex metacharacter semantics.
+- RegExp literal parsing is covered by frontend parser tests and
+  `fixtures/core-semantics/regexp-literal.ts`.
+- RegExp runtime semantics are covered by `fixtures/core-semantics/regexp-test.ts`, including
+  literal and constructor-backed `.test`, `.exec`, and `String.prototype.match` hit/miss cases.
+- Unsupported diagnostics are covered by `fixtures/core-semantics/regexp-compile-unsupported.ts`,
+  parser flag diagnostics, and IR lowering tests for unsupported metacharacter patterns and flags.
 
-Commits:
-
-- `...`
-
-Validation result:
+Validation on 2026-04-28 before close:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 27 tests run, 27 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 24 tests run, 24 passed
+
+node fixtures/core-semantics/regexp-test.ts
+result: pass; stdout matched the iwasm output, aside from Node's experimental type-stripping warning on stderr
+
+cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-051-regexp-close.wasm
+result: pass
+
+iwasm /tmp/ts2wasm-051-regexp-close.wasm
+result: pass; stdout matched Node stdout:
+true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true / true / plain / needle
+
+scripts/manager update-issue-index --check
+result: pass before moving issue; index was up to date
+
+scripts/manager check-agent-state
+result: pass
+
+scripts/manager check-issue-health
+result: fail before close due to unrelated missing local ignored report paths referenced by issues 052 and 228
+
+scripts/manager check-repo-smoke
+result: fail before close for the same unrelated check-issue-health missing local report paths
+
+scripts/manager update-issue-index
+result: pass; moved issue 051 from Ready to Done
+
+scripts/manager update-issue-index --check
+result: pass after moving issue
+
+cargo fmt --all --check
+result: pass after moving issue
+
+scripts/manager check-agent-state
+result: pass after moving issue
+
+scripts/manager check-issue-health
+result: pass after moving issue, once older gitignored local report paths referenced by unrelated issues existed in this worktree
+
+scripts/manager check-repo-smoke
+result: pass after moving issue, once older gitignored local report paths referenced by unrelated issues existed in this worktree
+
+cargo nextest run
+result: pass; 382 tests run, 382 passed, 4 skipped
 ```
 
 Remaining risks:
