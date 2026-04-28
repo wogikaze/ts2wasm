@@ -1,0 +1,93 @@
+{
+  "run_id": "052-json-parse-diagnostics-20260428T060834Z",
+  "task_id": "052",
+  "git": {
+    "sha": "cc4e48bacc58d9809c4676ef229d8b8444101586",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/backend-wasm/src/runtime_builtins_host.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/builtins-and-io/json-parse-invalid-literal.ts",
+      "issues/open/052-implement-json.md",
+      "reports/runs/052-json-parse-diagnostics-20260428T060834Z/cycle_report.md",
+      "reports/runs/052-json-parse-diagnostics-20260428T060834Z/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "node /tmp/ts2wasm-json-invalid-literal.ts",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build /tmp/ts2wasm-json-invalid-literal.ts -o /tmp/ts2wasm-json-invalid-literal.wasm && iwasm /tmp/ts2wasm-json-invalid-literal.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-literal.ts -o /tmp/ts2wasm-json-parse-invalid-literal.wasm && iwasm /tmp/ts2wasm-json-parse-invalid-literal.wasm",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "node fixtures/builtins-and-io/json-parse-invalid-literal.ts",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array.ts -o /tmp/ts2wasm-json-parse-array-check.wasm && iwasm /tmp/ts2wasm-json-parse-array-check.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(json)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-parse-invalid-literal.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "status": "PROGRESS",
+    "issue_remaining_open": true,
+    "notes": "The pre-change command is recorded as pass because it successfully reproduced the acceptance bug."
+  }
+}
