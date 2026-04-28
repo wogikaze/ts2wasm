@@ -97,6 +97,10 @@ Follow-up issues:
 
 ## Notes
 
+- 2026-04-28 PROGRESS (`agent/049-map-set-20260428T011445Z`): implemented a narrow runtime slice for `new Map()`, `Map.prototype.set/get/has`, `new Set()`, and `Set.prototype.add/has` with Node/iwasm differential coverage in `fixtures/builtins-and-io/map-set.ts`.
+- Remaining criteria: `.delete()` calls are not fully closable in this slice because `m.delete("a")` / `s.delete("a")` currently fail in the parser before IR/backend lowering (`delete` is tokenized as a keyword after `.`). Parser changes are outside this child assignment's allowed paths. Runtime helpers for `MapDelete` and `SetDelete` were wired for the future parser fix.
+- Semantic limitation of this progress slice: collection keys are normalized through the current runtime `value_to_string_into` path, so string and number key identity is not yet full ES SameValueZero parity.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

@@ -1,0 +1,16 @@
+{
+  "run_id": "agent-049-map-set-20260428T011445Z",
+  "issue": "049",
+  "branch": "agent/049-map-set-20260428T011445Z",
+  "status": "PROGRESS",
+  "summary": "Implemented validated basic Map/Set constructor plus set/get/has/add runtime slice with Node/iwasm differential fixture. Delete remains blocked by parser keyword member syntax outside this assignment scope.",
+  "validation": [
+    "cargo fmt --all --check",
+    "cargo nextest run -E 'test(map) or test(set)'",
+    "cargo nextest run -p ts2wasm-cli map",
+    "cargo nextest run -p ts2wasm-cli set",
+    "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/map-set.ts -o /tmp/ts2wasm-049-map-set.wasm && iwasm /tmp/ts2wasm-049-map-set.wasm",
+    "scripts/manager check-issue-health"
+  ],
+  "reporting": "deferred: DISCORD_WEBHOOK_URL not configured"
+}

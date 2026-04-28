@@ -82,6 +82,16 @@ pub(crate) enum RuntimeFn {
     PropertyDelete,
     /// Check if a property exists on a heap object.
     PropertyHas,
+    /// Issue 049: basic Map/Set runtime collection helpers.
+    MapNew,
+    MapGet,
+    MapSet,
+    MapHas,
+    MapDelete,
+    SetNew,
+    SetAdd,
+    SetHas,
+    SetDelete,
     /// M10: String methods
     StringCharAt,
     StringSubstring,
@@ -344,6 +354,15 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
         "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
         "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
+        "MapNew" => Some(RuntimeFn::MapNew),
+        "MapGet" => Some(RuntimeFn::MapGet),
+        "MapSet" => Some(RuntimeFn::MapSet),
+        "MapHas" => Some(RuntimeFn::MapHas),
+        "MapDelete" => Some(RuntimeFn::MapDelete),
+        "SetNew" => Some(RuntimeFn::SetNew),
+        "SetAdd" => Some(RuntimeFn::SetAdd),
+        "SetHas" => Some(RuntimeFn::SetHas),
+        "SetDelete" => Some(RuntimeFn::SetDelete),
         _ => None,
     }
 }
@@ -571,6 +590,15 @@ const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
 const INDEX_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::ValueToStringInto];
+const MAP_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const MAP_GET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyGet];
+const MAP_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];
+const MAP_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
+const MAP_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
+const SET_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];
+const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
+const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
 
 // Math function dependencies (no deps)
 const MATH_DEPS: &[RuntimeFn] = &[];
@@ -961,6 +989,78 @@ impl RuntimeFn {
             Self::PropertyHas => RuntimeSpec {
                 symbol: "$property_has",
                 deps: &[Self::MemEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MapNew => RuntimeSpec {
+                symbol: "$map_new",
+                deps: MAP_NEW_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MapGet => RuntimeSpec {
+                symbol: "$map_get",
+                deps: MAP_GET_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MapSet => RuntimeSpec {
+                symbol: "$map_set",
+                deps: MAP_SET_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MapHas => RuntimeSpec {
+                symbol: "$map_has",
+                deps: MAP_HAS_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MapDelete => RuntimeSpec {
+                symbol: "$map_delete",
+                deps: MAP_DELETE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SetNew => RuntimeSpec {
+                symbol: "$set_new",
+                deps: SET_NEW_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SetAdd => RuntimeSpec {
+                symbol: "$set_add",
+                deps: SET_ADD_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SetHas => RuntimeSpec {
+                symbol: "$set_has",
+                deps: SET_HAS_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SetDelete => RuntimeSpec {
+                symbol: "$set_delete",
+                deps: SET_DELETE_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1408,6 +1508,15 @@ impl RuntimeFn {
             Self::PropertySet => "property_set",
             Self::PropertyDelete => "property_delete",
             Self::PropertyHas => "property_has",
+            Self::MapNew => "map_new",
+            Self::MapGet => "map_get",
+            Self::MapSet => "map_set",
+            Self::MapHas => "map_has",
+            Self::MapDelete => "map_delete",
+            Self::SetNew => "set_new",
+            Self::SetAdd => "set_add",
+            Self::SetHas => "set_has",
+            Self::SetDelete => "set_delete",
             Self::StringCharAt => "string_char_at",
             Self::StringSubstring => "string_substring",
             Self::StringSlice => "string_slice",
@@ -1504,6 +1613,15 @@ impl RuntimeFn {
             Self::PropertySet,
             Self::PropertyDelete,
             Self::PropertyHas,
+            Self::MapNew,
+            Self::MapGet,
+            Self::MapSet,
+            Self::MapHas,
+            Self::MapDelete,
+            Self::SetNew,
+            Self::SetAdd,
+            Self::SetHas,
+            Self::SetDelete,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,
@@ -1609,6 +1727,15 @@ impl RuntimeFn {
             Self::PropertySet,
             Self::PropertyDelete,
             Self::PropertyHas,
+            Self::MapNew,
+            Self::MapGet,
+            Self::MapSet,
+            Self::MapHas,
+            Self::MapDelete,
+            Self::SetNew,
+            Self::SetAdd,
+            Self::SetHas,
+            Self::SetDelete,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,

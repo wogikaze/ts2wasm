@@ -130,6 +130,11 @@ fn error_message_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn map_set_collection_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/map-set.ts");
+}
+
+#[test]
 fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
 }
