@@ -17,6 +17,7 @@ Ramped the stored test262 reference coverage window from limit 2500 to limit 300
 - The required JSON artifact rerun completed with `executed=3000`, `unsupported=3000`, `blocked=0`.
 - Refreshed `artifacts/coverage/results/test262.json` and `artifacts/coverage/reference-coverage-matrix.md`.
 - Updated `current-state.md` and issue 060 progress evidence to record the new limit-3000 fact.
+- Discord reporting is deferred because `DISCORD_WEBHOOK_URL` is not configured.
 
 ## Validation
 
