@@ -164,6 +164,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-escaped-nested.ts",
         "fixtures/builtins-and-io/json-parse-escaped-string.ts",
         "fixtures/builtins-and-io/json-parse-nested-array.ts",
+        "fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts",
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
         "fixtures/builtins-and-io/json-parse.ts",
         "fixtures/builtins-and-io/json-stringify.ts",
