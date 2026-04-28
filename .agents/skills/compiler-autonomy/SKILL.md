@@ -12,7 +12,7 @@ This skill is the **thin entry** for the autonomous build/test loop. The authori
 The autonomous loop is considered complete when:
 - FSM state transition is validated against workflow rules
 - current_task.json is updated with verification results
-- All required gates (fmt, nextest, check-issue-health) pass
+- All required gates (fmt, nextest, check issues) pass
 - **All acceptance criteria from the issue are explicitly verified and documented**
 - Test report is generated and saved to reports/runs/
 - Failure patterns are recorded in failure pattern DB if applicable
@@ -24,8 +24,8 @@ The autonomous loop is considered complete when:
 
 - `current_task.json` または issue が示す `commands.fast` / `commands.full` 相当（通常は少なくとも `mise run fmt` と `mise run nextest`）
 - **CRITICAL: Full test suite must pass, not just filtered tests. If `cargo nextest run` fails, you MUST investigate before marking done.**
-- Issue / index と整合: `mise run check-issue-health`（`issues` を扱う場合は `mise run update-issue-index` も）
-- 軽い一括: `mise run check-repo-smoke`
+- Issue / index と整合: `mise run check issues`（`issues` を扱う場合は `mise run update-issue-index` も）
+- 軽い一括: `mise run check`
 
 ## Acceptance Criteria Verification (CRITICAL)
 
@@ -55,7 +55,7 @@ The autonomous loop is considered complete when:
    - Change `Status: open` → `Status: done`
    - Add `Completed: <date>` field
 3. **Regenerate issues index**: Run `mise run update-issue-index`
-4. **Verify index consistency**: Run `mise run check-issue-index` to ensure the index reflects the change
+4. **Verify index consistency**: Run `mise run check issue-index` to ensure the index reflects the change
 5. **Document completion evidence**: In the issue file or cycle report, explicitly state how each acceptance criterion was verified with specific commands/outputs.
 
 **Failure to complete these steps means the issue is NOT done.**
@@ -69,7 +69,7 @@ The autonomous loop is considered complete when:
 - Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
 - **REQUIRED**: If new failure pattern discovered, add to `failure_patterns.md` with mechanical guards
 - **REQUIRED**: If new guard needed, add to `review_checklist.md`
-- **REQUIRED**: Run `mise run check-agent-state` to validate state files
+- **REQUIRED**: Run `mise run check agent-state` to validate state files
 
 ## Read order
 
@@ -111,7 +111,7 @@ cargo fmt --all --check
 # Run required gates
 mise run fmt
 mise run nextest
-mise run check-issue-health
+mise run check issues
 # Generate test report to reports/runs/<run_id>/test_report.json
 # Write cycle report with evidence
 # Update current_task.json with verification results
@@ -122,12 +122,12 @@ mise run check-issue-health
 ```bash
 mise run fmt
 mise run nextest
-mise run check-issue-health
-mise run check-repo-smoke
+mise run check issues
+mise run check
 ```
 
 ## Post-change auto-execution
 
 After completing issue work (code changes, issue file updates, cycle report), automatically:
-1. Run `mise run fmt`, `mise run nextest`, and `mise run check-issue-health`
+1. Run `mise run fmt`, `mise run nextest`, and `mise run check issues`
 2. Commit changes with auto-generated commit message based on issue completion evidence

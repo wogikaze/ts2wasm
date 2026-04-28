@@ -34,7 +34,7 @@ description: fixtures/以下のフィクスチャ追加/編集/移動/リネー�
 
 - `mise run fmt`と`mise run nextest`（最小）
 - コンパイラ/ランタイム/フィクスチャ参照が変更された場合: `mise run clippy`も
-- 軽い一括: `mise run check-repo-smoke`（fmt + script syntax + `issues`不変条件）
+- 軽い一括: `mise run check`（fmt + script syntax + `issues`不変条件）
 - 参照カバレッジまたはマトリクス内のフィクスチャが影響を受けた場合: `mise run update-coverage-matrix` / `mise run reference-coverage`（`scripts/`のフラグを参照）
 
 このskillはフィクスチャ入力ファイル、フィクスチャ命名、フィクスチャ移行、フィクスチャ参照同期用。スクリプトパス参照を更新する場合もあるが、スクリプト振る舞いを再設計してはならない。スクリプトロジック、スクリプト出力スキーマ、コマンドラインオプション、CIスクリプトオーケストレーション、カバレッジパイプライン振る舞いの変更には`scripts-workflow`を使用。

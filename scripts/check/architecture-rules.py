@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Lightweight architecture checks (complement to docs/12 + ast-grep rules).
 
-Usage: python scripts/manager.py check-architecture-rules
+Usage: mise run check architecture
 
 Current checks:
   - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).
@@ -45,7 +45,7 @@ EXCLUDED_FILENAMES = {
 
 def usage():
     print("Usage:")
-    print("  python scripts/manager.py check-architecture-rules [--max-file-lines N]")
+    print("  mise run check architecture -- [--max-file-lines N]")
     print()
     print("Current checks:")
     print("  - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).")

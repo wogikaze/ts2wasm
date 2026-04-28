@@ -4,7 +4,7 @@
 Default: P0 harnesses and required gates must exist and pass.
 Nextest runs with RUSTFLAGS='-D warnings' so Rust warnings are reported as errors.
 
-Usage: python scripts/manager.py check-harness-installation
+Usage: mise run gate-all
 """
 
 import sys
@@ -118,8 +118,8 @@ def main():
     run_check("P0: check_wasm_validation", [sys.executable, str(REPO_ROOT / "scripts/check/wasm-validation.py")])
     
     print("", file=sys.stderr)
-    print("== run aggregate gates (fast gate without nextest first) ==", file=sys.stderr)
-    run_check("scripts/manager check-fast-gate --skip-nextest", [sys.executable, str(REPO_ROOT / "scripts/gate/fast-gate.py"), "--skip-nextest"])
+    print("== run aggregate gates (gate-fast first) ==", file=sys.stderr)
+    run_check("mise run gate-fast", [sys.executable, str(REPO_ROOT / "scripts/gate/fast-gate.py"), "--skip-nextest"])
     
     env = os.environ.copy()
     env["RUSTFLAGS"] = "-D warnings"
@@ -127,11 +127,11 @@ def main():
     
     print("", file=sys.stderr)
     print("== additional custom harnesses ==", file=sys.stderr)
-    run_check("scripts/manager check-manifest-imports", [sys.executable, str(REPO_ROOT / "scripts/check/manifest-imports.py")])
-    run_check("scripts/manager check-test-records-schema (empty)", [sys.executable, str(REPO_ROOT / "scripts/check/test-records-schema.py")], input=b"")
-    run_check("scripts/manager check-fixture-catalog", [sys.executable, str(REPO_ROOT / "scripts/check/fixture-catalog.py")])
-    run_check("scripts/manager check-architecture-rules", [sys.executable, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
-    run_check("scripts/manager check-compiler-diagnostics", [sys.executable, str(REPO_ROOT / "scripts/check/compiler-diagnostics.py")])
+    run_check("mise run check manifest", [sys.executable, str(REPO_ROOT / "scripts/check/manifest-imports.py")])
+    run_check("mise run check records (empty)", [sys.executable, str(REPO_ROOT / "scripts/check/test-records-schema.py")], input=b"")
+    run_check("mise run check fixtures", [sys.executable, str(REPO_ROOT / "scripts/check/fixture-catalog.py")])
+    run_check("mise run check architecture", [sys.executable, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
+    run_check("mise run check diagnostics", [sys.executable, str(REPO_ROOT / "scripts/check/compiler-diagnostics.py")])
     
     print("", file=sys.stderr)
     if fail == 0:

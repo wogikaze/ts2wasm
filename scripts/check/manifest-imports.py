@@ -2,8 +2,8 @@
 """Compare capability manifest "imports" with wasm module imports (wasm-tools print).
 
 Usage:
-  python scripts/manager.py check-manifest-imports [--fixture PATH.ts]
-  python scripts/manager.py check-manifest-imports PATH.ts
+  mise run check manifest -- [--fixture PATH.ts]
+  mise run check manifest -- PATH.ts
 
 Default fixture: fixtures/basics-hello/hello.ts
 
@@ -21,8 +21,8 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
 def usage():
     print("Usage:")
-    print("  python scripts/manager.py check-manifest-imports [--fixture PATH.ts]")
-    print("  python scripts/manager.py check-manifest-imports PATH.ts")
+    print("  mise run check manifest -- [--fixture PATH.ts]")
+    print("  mise run check manifest -- PATH.ts")
     print()
     print("A single path ending in .ts may be given without --fixture.")
     print("Default fixture: fixtures/basics-hello/hello.ts")

@@ -4,7 +4,7 @@
 Policy (incremental): backend/, runtime/, and main.rs must not contain `panic!(`.
 Tests and lib.rs monolith may still use panics inside #[cfg(test)]; tighten over time.
 
-Usage: python scripts/manager.py check-compiler-diagnostics
+Usage: mise run check diagnostics
 
 Fails if `panic!(` appears under crates/backend-wasm/src, crates/cli/src/runtime, or main.rs.
 """
@@ -17,7 +17,7 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
 def usage():
     print("Usage:")
-    print("  python scripts/manager.py check-compiler-diagnostics")
+    print("  mise run check diagnostics")
     print()
     print("Fails if `panic!(` appears under crates/backend-wasm/src, crates/cli/src/runtime, or main.rs.")
 

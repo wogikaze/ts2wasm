@@ -30,9 +30,9 @@ Use this skill only for documentation changes under docs/ and README-level docum
 **Automatically run and pass the commands that match your change after making changes.** Without `mise`, use `mise` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
 - Always: `mise run fmt` (touches `*.md` / Rust in examples)
-- Default smoke: `mise run check-repo-smoke`
+- Default smoke: `mise run check`
 - If docs claim test or compiler behavior: `mise run nextest` (and `mise run clippy` if Rust examples changed)
-- If you edited `issues/` cross-links or agent/issue docs: `mise run check-issue-health`
+- If you edited `issues/` cross-links or agent/issue docs: `mise run check issues`
 - **Auto-commit changes after verification passes** (commit message based on change description)
 
 This skill enforces a strict separation between:

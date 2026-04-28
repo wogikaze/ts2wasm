@@ -28,7 +28,7 @@ cargo nextest run
 
 スクリプト: `mise` または `mise tasks` / `mise run <task>`。
 
-**Note**: `mise run check-agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
+**Note**: `mise run check agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
 
 ## 3) ファイル構成
 
@@ -40,16 +40,19 @@ docs/: 設計ドキュメント。fixtures/: テストフィクスチャ。scrip
 
 ## 4) scripts の使い方
 
-miseタスク利用推奨（`mise tasks` で一覧）。mise未利用時は `mise`。
+miseタスク利用推奨（`mise tasks` で一覧）。
 
 ```bash
 # reference coverage の運用:
 # - check: 集計状態を既存 artifacts と照合して壊れを検知 (`mise run update-coverage-matrix -- --check` / `mise run update-coverage-matrix -- --check`)
 # - ramp: --limit を上げて reference-coverage を再実行し、実行結果から matrix を更新
 
-mise run check-issue-health              # 一括ゲート
+mise run gate                      # 標準ゲート
+mise run gate-fast                 # nextest抜きの高速ゲート
+mise run gate-all                  # harness/toolchain含むフルゲート
+mise run check issues              # issue health
 mise run update-issue-index           # issue index更新
-mise run check-manifest-imports       # manifest/wasm import一致確認
+mise run check manifest       # manifest/wasm import一致確認
 mise run reference-coverage -- test262 --limit 50  # カバレッジ計測（ramp）
 mise run update-coverage-matrix       # カバレッジ表更新
 mise run test262 -- --sample 50 --jobs 4  # test262実行

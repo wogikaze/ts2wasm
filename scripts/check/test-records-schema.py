@@ -2,9 +2,10 @@
 """Validate JSONL TestRecord lines (suite, case, target, status + required reason/tracking).
 
 Usage:
-  python scripts/manager.py check-test-records-schema [file.jsonl]
-  some-runner | python scripts/manager.py check-test-records-schema
-  some-runner | python scripts/manager.py check-test-records-schema -
+  mise run check records [file.jsonl]
+  mise run check records -- --self-test
+  some-runner | mise run check records
+  some-runner | mise run check records -
 
 When no file arg or file is "-", reads stdin.
 
@@ -23,8 +24,8 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
 def usage():
     print("Usage:")
-    print("  python scripts/manager.py check-test-records-schema [file.jsonl|-]")
-    print("  python scripts/manager.py check-test-records-schema --self-test")
+    print("  mise run check records [file.jsonl|-]")
+    print("  mise run check records -- --self-test")
     print()
     print("One JSON object per line. Each line must include suite, case, target, status.")
     print("status must be one of: pass fail unsupported blocked skip-with-reason")

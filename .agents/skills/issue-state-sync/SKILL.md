@@ -21,8 +21,8 @@ issue ファイルや index に触ったら、必ず:
 ```bash
 mise run update-issue-index
 mise run update-issue-index -- --check
-mise run check-issue-index
-mise run check-issue-health
+mise run check issue-index
+mise run check issues
 ```
 
 ## ファイル規約
@@ -61,8 +61,8 @@ git mv issues/done/012-fix-bug.md issues/open/012-fix-bug.md
 ```bash
 mise run update-issue-index
 mise run update-issue-index -- --check
-mise run check-issue-index
-mise run check-issue-health
+mise run check issue-index
+mise run check issues
 # Index regenerated, queue validated
 ```
 
@@ -70,12 +70,12 @@ mise run check-issue-health
 
 ```bash
 mise run update-issue-index
-mise run check-issue-index
-mise run check-issue-health
+mise run check issue-index
+mise run check issues
 ```
 
 ## Post-change auto-execution
 
 After syncing issue state (index regeneration, cross-link updates), automatically:
-1. Run `mise run update-issue-index -- --check` and `mise run check-issue-health`
+1. Run `mise run update-issue-index -- --check` and `mise run check issues`
 2. Commit changes with auto-generated commit message based on sync operation

@@ -158,7 +158,7 @@ push 前に可能なら実行:
 ```bash
 cargo fmt --all --check
 cargo nextest run
-mise run check-issue-health
+mise run check issues
 ```
 
 ただし、重い gate は毎回必須にしない。

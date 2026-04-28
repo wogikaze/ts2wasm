@@ -218,10 +218,10 @@ result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 mise run update-issue-index
 result: pass; issues/index.md updated
 
-mise run check-issue-health
+mise run check issues
 result: pass
 
-mise run check-agent-state
+mise run check agent-state
 result: pass
 ```
 
@@ -629,10 +629,10 @@ result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 mise run update-coverage-matrix -- --check
 result: pass; coverage matrix OK
 
-mise run check-issue-health
+mise run check issues
 result: pass
 
-mise run check-agent-state
+mise run check agent-state
 result: pass
 ```
 

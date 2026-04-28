@@ -54,6 +54,41 @@ COMMANDS = {
     "nextest": ("cargo", "nextest run"),
 }
 
+CHECK_PARTS = {
+    "scripts": "check-scripts",
+    "shell-syntax": "check-scripts",
+    "issue": "check-issue-health",
+    "issues": "check-issue-health",
+    "issue-health": "check-issue-health",
+    "issue-index": "check-issue-index",
+    "issue-readiness": "check-issue-readiness",
+    "readiness": "check-issue-readiness",
+    "agent": "check-agent-state",
+    "agent-state": "check-agent-state",
+    "manifest": "check-manifest-imports",
+    "manifest-imports": "check-manifest-imports",
+    "records": "check-test-records-schema",
+    "test-records": "check-test-records-schema",
+    "test-records-schema": "check-test-records-schema",
+    "fixtures": "check-fixture-catalog",
+    "fixture-catalog": "check-fixture-catalog",
+    "architecture": "check-architecture-rules",
+    "architecture-rules": "check-architecture-rules",
+    "diagnostics": "check-compiler-diagnostics",
+    "compiler-diagnostics": "check-compiler-diagnostics",
+    "coverage": "check-coverage-gate",
+    "coverage-gate": "check-coverage-gate",
+    "toolchain": "check-toolchain",
+    "differential": "check-fixture-differential",
+    "fixture-differential": "check-fixture-differential",
+    "host": "check-host-deny",
+    "host-deny": "check-host-deny",
+    "runtimefn": "check-runtimefn-invariants",
+    "runtimefn-invariants": "check-runtimefn-invariants",
+    "wasm": "check-wasm-validation",
+    "wasm-validation": "check-wasm-validation",
+}
+
 def usage():
     """Print usage information."""
     print("ts2wasm — script manager (one entry; arguments pass through to the underlying script)")
@@ -63,7 +98,9 @@ def usage():
     print("  python scripts/manager.py <command> [args...]")
     print()
     print("Examples:")
-    print("  python scripts/manager.py check-issue-health")
+    print("  python scripts/manager.py gate")
+    print("  python scripts/manager.py gate-fast")
+    print("  python scripts/manager.py check issues")
     print("  python scripts/manager.py update-issue-index --check")
     print("  python scripts/manager.py nextest -- --no-fail-fast")
     print()
@@ -71,26 +108,12 @@ def usage():
     
     # Format command list
     cmd_list = [
-        ("check-scripts", "Bash -n on scripts/*.sh (syntax)"),
-        ("check-fast-gate", "fmt + issues + architecture + coverage matrix + nextest"),
-        ("check-manifest-imports", "Manifest JSON imports vs wasm import section"),
-        ("check-test-records-schema", "Validate TestRecord JSONL lines"),
-        ("check-fixture-catalog", "Fixtures/ top-level layout rules"),
-        ("check-architecture-rules", "Lightweight crate boundary and file-size checks"),
-        ("check-compiler-diagnostics", "No panic! in backend/runtime/main.rs"),
-        ("check-harness-installation", "Full harness baseline: P0 tools + nextest"),
-        ("check-toolchain", "Verify rust/node/iwasm/wasm-tools exist"),
-        ("check-fixture-differential", "Node vs iwasm: runs nextest m2_node_diff"),
-        ("check-host-deny", "Standalone fixtures must not emit wasm (import \"host\")"),
-        ("check-runtimefn-invariants", "Unit tests: runtime_link_plan invariants"),
-        ("check-wasm-validation", "Build sample fixtures; wasm-tools validate"),
-        ("check-agent-state", "Validate .agents/state JSON files against schemas"),
-        ("check-issue-index", "Fail if issues/index.md is stale"),
-        ("check-issue-health", "Mechanical invariants: ids, paths, index+tables"),
-        ("check-issue-readiness", "Score open issues for actionability and measurement quality"),
+        ("gate", "Standard gate: fmt + issues + architecture + coverage matrix + nextest"),
+        ("gate-fast", "Fast gate: standard gate without nextest"),
+        ("gate-all", "Full gate: harness/toolchain baseline plus project gates"),
+        ("check", "Run check-repo-smoke, or run a part with `check <part>`"),
         ("update-issue-index", "Regenerate index tables (add --check to verify only)"),
         ("install-hooks", "Install .githooks via git config core.hooksPath"),
-        ("check-coverage-gate", "Compare two coverage matrix docs"),
         ("update-coverage-matrix", "Refresh reference coverage table"),
         ("reference-coverage", "Reference suite coverage runner"),
         ("coverage-report", "Language coverage report from language-reference"),
@@ -104,7 +127,6 @@ def usage():
         ("fmt", "cargo fmt --all --check"),
         ("clippy", "cargo clippy --all-targets -- -D warnings"),
         ("nextest", "cargo nextest run"),
-        ("check-repo-smoke", "cargo fmt + check-scripts + check-issue-health"),
     ]
     
     max_cmd_len = max(len(cmd) for cmd, _ in cmd_list)
@@ -136,6 +158,30 @@ def run_command(script_type, script_path, args):
     result = subprocess.run(cmd, cwd=REPO_ROOT)
     sys.exit(result.returncode)
 
+def run_sequence(commands):
+    """Run commands in order and stop at the first failure."""
+    for cmd in commands:
+        print(f"manager: {' '.join(cmd)}", file=sys.stderr)
+        result = subprocess.run(cmd, cwd=REPO_ROOT)
+        if result.returncode != 0:
+            sys.exit(result.returncode)
+    sys.exit(0)
+
+def run_repo_smoke():
+    """Run the lightweight repository smoke check."""
+    run_sequence([
+        ["cargo", "fmt", "--all", "--check"],
+        [PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")],
+        [PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")],
+    ])
+
+def check_usage():
+    parts = ", ".join(sorted(CHECK_PARTS))
+    print("Usage: python scripts/manager.py check [part] [args...]")
+    print()
+    print("No part runs check-repo-smoke.")
+    print(f"Parts: {parts}")
+
 def main():
     """Main entry point."""
     if len(sys.argv) < 2 or sys.argv[1] in ("help", "-h", "--help"):
@@ -144,22 +190,35 @@ def main():
     
     target = sys.argv[1]
     args = sys.argv[2:]
+
+    if target == "gate":
+        run_command("python", "scripts/gate/fast-gate.py", args)
+
+    if target == "gate-fast":
+        run_command("python", "scripts/gate/fast-gate.py", ["--skip-nextest"] + args)
+
+    if target == "gate-all":
+        run_command("python", "scripts/check/harness-installation.py", args)
+
+    if target == "check":
+        if not args:
+            run_repo_smoke()
+        if args[0] in ("-h", "--help"):
+            check_usage()
+            sys.exit(0)
+        part = args[0]
+        if part not in CHECK_PARTS:
+            print(f"Unknown check part: {part}", file=sys.stderr)
+            check_usage()
+            sys.exit(1)
+        target = CHECK_PARTS[part]
+        args = args[1:]
+        if args and args[0] == "--":
+            args = args[1:]
     
     # Special case: check-repo-smoke is a composite command
     if target == "check-repo-smoke":
-        # Run cargo fmt
-        result = subprocess.run(["cargo", "fmt", "--all", "--check"], cwd=REPO_ROOT)
-        if result.returncode != 0:
-            sys.exit(result.returncode)
-        
-        # Run check-scripts (Python version)
-        result = subprocess.run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/shell-syntax.py")], cwd=REPO_ROOT)
-        if result.returncode != 0:
-            sys.exit(result.returncode)
-        
-        # Run check-issue-health
-        result = subprocess.run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")], cwd=REPO_ROOT)
-        sys.exit(result.returncode)
+        run_repo_smoke()
     
     # Look up command
     if target not in COMMANDS:

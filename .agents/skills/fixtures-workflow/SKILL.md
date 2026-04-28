@@ -34,7 +34,7 @@ Use this skill when a change touches `fixtures/**` or fixture path references ca
 
 - `mise run fmt` and `mise run nextest` (minimum)
 - If compiler/runtime/Fixture references change: `mise run clippy` as well
-- `mise run check-repo-smoke` as a light aggregate (fmt + script syntax + `issues` invariants)
+- `mise run check` as a light aggregate (fmt + script syntax + `issues` invariants)
 - If reference coverage or fixtures in matrix were affected: `mise run update-coverage-matrix` / `mise run reference-coverage` (see `scripts/` for flags)
 - **Auto-commit changes after verification passes** (commit message based on change description)
 

@@ -5,7 +5,7 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 
 # スクリプトワークフロー
 
-**発見:** repoエントリは`mise`とroot `mise.toml`（一覧: `mise tasks`）。使用法を見つけるためにすべての`scripts/*.sh`を読むことを避ける。スクリプトを追加するとき、`manager`と`mise.toml`の`[tasks.*]`に登録。**レイアウト（第1層）:** `scripts/check/`（静的、非破壊）、`scripts/gate/`（pass/fail）、`scripts/gen/`（追跡生成アーティファクトの更新）、`scripts/run/`（実行/測定）、`scripts/report/`（人間向けフォーマット）、`scripts/perf/`（ベンチマーク）、`scripts/dev/`（ローカルセットアップ）、`scripts/lib/`（ソースヘルパーのみ、実行しない）。非推奨のトップレベル名は移行中に薄い`exec`ラッパーとして残る可能性。**ハーネスベースライン:** `mise run check-harness-installation`はツールチェーン + P0 checksをインベントリし、プロジェクトゲートの残りを実行。Rust警告は`RUSTFLAGS=-D warnings`でエラー扱い。clippyは`cargo clippy --all-targets -- -D warnings`で実行。
+**発見:** repoエントリは`mise`とroot `mise.toml`（一覧: `mise tasks`）。使用法を見つけるためにすべての`scripts/*.sh`を読むことを避ける。スクリプトを追加するとき、`manager`と`mise.toml`の`[tasks.*]`に登録。**レイアウト（第1層）:** `scripts/check/`（静的、非破壊）、`scripts/gate/`（pass/fail）、`scripts/gen/`（追跡生成アーティファクトの更新）、`scripts/run/`（実行/測定）、`scripts/report/`（人間向けフォーマット）、`scripts/perf/`（ベンチマーク）、`scripts/dev/`（ローカルセットアップ）、`scripts/lib/`（ソースヘルパーのみ、実行しない）。非推奨のトップレベル名は移行中に薄い`exec`ラッパーとして残る可能性。**ハーネスベースライン:** `mise run gate-all`はツールチェーン + P0 checksをインベントリし、プロジェクトゲートの残りを実行。Rust警告は`RUSTFLAGS=-D warnings`でエラー扱い。clippyは`cargo clippy --all-targets -- -D warnings`で実行。
 
 ## 目次
 
@@ -33,8 +33,8 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 
 **該当するすべてを実行。ローカルゲートが緑でないスクリプト変更を出荷しない。** `mise`を repo 標準入口として使用。`mise run <task>`は同じ task への任意の糖衣。
 
-- 常に: `mise run check-scripts`（スクリプトがテストから呼び出されるか、diffがRustに触れる場合は`mise run fmt`も）
-- `issues`パスまたはmanagerに触れた後: `mise run check-repo-smoke`
+- 常に: `mise run check scripts`（スクリプトがテストから呼び出されるか、diffがRustに触れる場合は`mise run fmt`も）
+- `issues`パスまたはmanagerに触れた後: `mise run check`
 - カバレッジ/CIスクリプトの場合: そのスクリプトの`scripts`ドキュメントで実行するのと同じコマンドファミリーも実行（例: そのスクリプトがサポートする場合、小さなlimitで`mise run reference-coverage`）
 - 新しい`mise run <task>`が`mise.toml`に追加した後に現れることを`mise tasks`で確認
 
@@ -55,12 +55,12 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
    - 実行可能でなければならない
    - `mise` にディスパッチしなければならない
 3. ファイルが意図的に公開でない限り、実装ファイルへの直接呼び出しをドキュメント化しない。
-   - 推奨: `mise run check-issue-health`
+   - 推奨: `mise run check issues`
    - 避ける: `python scripts/check/issue-health.py`
 4. manager またはスクリプトコマンド変更後、実行:
-   - `mise run check-scripts`
-   - `mise run check-repo-smoke`
-   - `mise run check-agent-state`
+   - `mise run check scripts`
+   - `mise run check`
+   - `mise run check agent-state`
 5. `mise.toml` タスク追加後、実行:
    - `mise tasks`
 
@@ -100,7 +100,7 @@ Issueキュースクリプトはインフラ重要。checker と generator を d
 1. 共有解析/レンダリングは `scripts/lib/` に置かなければならない。
 2. `scripts/check/issue-health.py` と `scripts/gen/update-issue-index.py` は同じ parser と table renderer を使用しなければならない。
 3. `mise run update-issue-index -- --check` は生成テーブル内容が異なる場合に失敗しなければならない（ID欠落のみではない）。
-4. `mise run check-issue-health` は以下を検証しなければならない:
+4. `mise run check issues` は以下を検証しなければならない:
    - 重複ID
    - open/done競合
    - 欠落依存
@@ -138,8 +138,8 @@ Autonomous-loopスクリプトは監査可能なstateを保持しなければな
 必須preflight:
 
 ```sh
-mise run check-agent-state
-mise run check-repo-smoke
+mise run check agent-state
+mise run check
 ```
 
 ルール:
@@ -370,46 +370,46 @@ JSONL TestRecord出力の場合:
 スクリプト変更の場合:
 
 ```sh
-mise run check-scripts
+mise run check scripts
 bash -n <touched-shell-script>   # シェルスクリプトが変更された場合のみ
-mise run check-repo-smoke
+mise run check
 ```
 
 manager、issue、state、または生成indexスクリプトの場合:
 
 ```sh
 mise run update-issue-index -- --check
-mise run check-issue-health
-mise run check-agent-state
-mise run check-repo-smoke
+mise run check issues
+mise run check agent-state
+mise run check
 ```
 
 CI workflow変更の場合:
 
 ```sh
-mise run check-repo-smoke
-mise run check-fast-gate -- --skip-nextest
+mise run check
+mise run gate-fast
 ```
 
 coverage/reference/test262スクリプトの場合:
 
 ```sh
 mise run update-coverage-matrix -- --check
-mise run check-coverage-gate -- <base-doc> <current-doc>
+mise run check coverage -- <base-doc> <current-doc>
 mise run test262 -- --sample 1 --jobs 1
 ```
 
 JSONL/TestRecordを生成するスクリプトの場合:
 
 ```sh
-mise run check-test-records-schema -- <file.jsonl>
+mise run check records -- <file.jsonl>
 ```
 
 フィクスチャを消費するスクリプトの場合:
 
 ```sh
-mise run check-fixture-catalog
-mise run check-fast-gate -- --skip-nextest
+mise run check fixtures
+mise run gate-fast
 ```
 
 Rustに影響するスクリプト変更の場合:

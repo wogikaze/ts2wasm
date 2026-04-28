@@ -17,7 +17,7 @@ Strict warning handling now reports clippy and check warnings as errors. The rep
 
 ## Problem
 
-`mise run clippy` now runs with `-D warnings` and fails on existing clippy diagnostics. `mise run check-architecture-rules` now reports oversized source files as `ERROR` and fails on `crates/frontend/src/parser.rs` and `crates/ir/src/lowered.rs`.
+`mise run clippy` now runs with `-D warnings` and fails on existing clippy diagnostics. `mise run check architecture` now reports oversized source files as `ERROR` and fails on `crates/frontend/src/parser.rs` and `crates/ir/src/lowered.rs`.
 
 ## Desired final state
 
@@ -64,9 +64,9 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] `mise run clippy` passes.
-- [ ] `mise run check-architecture-rules` passes.
-- [ ] `mise run check-fast-gate -- --skip-nextest` passes.
-- [ ] `mise run check-harness-installation` passes or records only environment-specific missing tools as separate blockers.
+- [ ] `mise run check architecture` passes.
+- [ ] `mise run gate-fast` passes.
+- [ ] `mise run gate-all` passes or records only environment-specific missing tools as separate blockers.
 - [ ] No check/gate script emits `WARN` or `warning:` for blocking diagnostics.
 
 ## Validation
@@ -76,15 +76,15 @@ Required commands:
 ```sh
 mise run fmt
 mise run clippy
-mise run check-architecture-rules
-mise run check-fast-gate -- --skip-nextest
-mise run check-harness-installation
+mise run check architecture
+mise run gate-fast
+mise run gate-all
 ```
 
 Impacted commands:
 
 ```sh
-mise run check-repo-smoke
+mise run check
 ```
 
 Not run:

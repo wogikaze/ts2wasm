@@ -65,7 +65,7 @@ cargo install ast-grep
 python -m pip install jsonschema
 ```
 
-これは `check-agent-state` で必須です。
+これは `mise run check agent-state` で必須です。
 
 ### 3. リポジトリのクローン
 
@@ -90,11 +90,11 @@ mise run clippy
 # テスト実行
 mise run nextest
 
-# ファストゲート（fmt + issue health + architecture + coverage matrix + tests）
-mise run check-fast-gate
+# 標準ゲート（fmt + issue health + architecture + coverage matrix + tests）
+mise run gate
 
-# テストをスキップしてファストゲート
-mise run check-fast-gate -- --skip-nextest
+# nextest をスキップした高速ゲート
+mise run gate-fast
 
 # ヘルプ表示
 mise tasks
@@ -105,11 +105,13 @@ mise tasks
 - `fmt` - cargo fmt --all --check
 - `clippy` - cargo clippy --all-targets -- -D warnings
 - `nextest` - cargo nextest run
-- `check-fast-gate` - fmt + issue health + architecture + coverage matrix + nextest
-- `check-issue-health` - issues/ ディレクトリの検証
+- `check` - repo smoke。引数付きで個別 check（例: `mise run check issues`）
+- `gate` - fmt + issue health + architecture + coverage matrix + nextest
+- `gate-fast` - `gate` から nextest を除いた高速ゲート
+- `gate-all` - harness/toolchain を含むフルゲート
+- `check issues` - issues/ ディレクトリの検証
 - `update-issue-index` - issues/index.md の再生成
-- `check-agent-state` - エージェント状態の検証
-- `check-repo-smoke` - fmt + check-scripts + check-issue-health
+- `check agent-state` - エージェント状態の検証
 - その他多数（`mise tasks` で確認）
 
 ### 5. 開発ワークフロー
@@ -127,14 +129,14 @@ mise run clippy
 mise run nextest
 
 # 4. フルゲート実行（コミット前）
-mise run check-fast-gate
+mise run gate
 ```
 
 #### Issue 管理
 
 ```powershell
 # Issue 検証
-mise run check-issue-health
+mise run check issues
 
 # Issue index 更新
 mise run update-issue-index
@@ -150,16 +152,16 @@ mise run gen-issues-from-coverage -- --suite test262
 mise run update-issue-index -- --check
 
 # Issue health 検証
-mise run check-issue-health
+mise run check issues
 
 # Agent state 検証
-mise run check-agent-state
+mise run check agent-state
 
 # Repo smoke 検証
-mise run check-repo-smoke
+mise run check
 
 # ファストゲート（テストスキップ）
-mise run check-fast-gate -- --skip-nextest
+mise run gate-fast
 ```
 
 これら5つがすべて通れば開発を開始できます。
@@ -174,16 +176,14 @@ mise run check-fast-gate -- --skip-nextest
 
 **Python 移行済み（Windows互換）:**
 
-- check-toolchain, check-manifest-imports, check-test-records-schema
-- check-fixture-catalog, check-architecture-rules, check-compiler-diagnostics
-- check-harness-installation, check-fixture-differential, check-host-deny
-- check-runtimefn-invariants, check-wasm-validation, check-agent-state
-- check-issue-health, update-issue-index, gen-issues-from-coverage
-- update-coverage-matrix, install-hooks, check-scripts
-- check-repo-smoke, check-coverage-gate, coverage-report
-- reference-coverage, test262, test-differential-reporter
-- test-regression-gate, benchmark-tracker, fmt, clippy, nextest
-- check-fast-gate
+- `check`, `gate`, `gate-fast`, `gate-all`
+- `fmt`, `clippy`, `nextest`
+- `update-issue-index`, `gen-issues-from-coverage`
+- `update-coverage-matrix`, `coverage-report`, `reference-coverage`
+- `test262`, `test-differential-reporter`, `test-regression-gate`
+- `benchmark-tracker`, `install-hooks`
+
+旧 `check-*` task は互換 alias として残っています。通常は `mise run check <part>` を使ってください。
 
 test262 とカバレッジレポートの完全機能には WSL2 の使用を検討してください。WSL セットアップはメイン README を参照。
 

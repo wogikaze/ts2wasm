@@ -11,8 +11,8 @@ description: Use when codifying learnings from completed tasks into rules, skill
 
 **学びの反映がコード・`issues`・`scripts` に及ぶなら、報告前に下を実行し通す。** `mise` なしは `mise` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
 
-- ルールや `scripts` を直した: `mise run check-scripts` および `mise run check-repo-smoke`
-- `issues` / PR 方針を直した: `mise run check-issue-health` と `mise run update-issue-index`（必要に応じ `mise run update-issue-index -- --check`）
+- ルールや `scripts` を直した: `mise run check scripts` および `mise run check`
+- `issues` / PR 方針を直した: `mise run check issues` と `mise run update-issue-index`（必要に応じ `mise run update-issue-index -- --check`）
 - Rust/テスト手直しを含めた: `mise run fmt` と `mise run nextest`
 
 ## いつ使うか
@@ -63,7 +63,7 @@ description: Use when codifying learnings from completed tasks into rules, skill
 5. **書き出し**: 選んだ形式のテンプレート（後述）に沿って artifact を生成する。
 6. **確認**: ユーザーに diff を見せて採用可否を取る。棄却された場合は skill ではなくセッション内のメモに留める。
 7. **採用後の自動実行**: ユーザーが採用を指示した場合、以下を自動実行する：
-   - Mise コマンドを実行（ルールや scripts を直した場合は `mise run check-scripts` および `mise run check-repo-smoke`）
+   - Mise コマンドを実行（ルールや scripts を直した場合は `mise run check scripts` および `mise run check`）
    - 変更をコミット（コミットメッセージは学びの内容に基づいて自動生成）
    - 採用されなかった場合は何もしない
 

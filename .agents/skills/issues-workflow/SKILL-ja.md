@@ -11,8 +11,8 @@ description: issues/以下のissue追加/クローズ/移動/分割/再分類時
 
 **関連する以下のコマンドを実行し通過するまでissue作業を完了と主張しない。** `mise`が利用できない場合、`mise`を同じサブコマンドで使用（root `mise.toml`を参照）。初回使用時: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
-- `issues/open/`、`issues/done/`、またはindexジェネレータの**任意の**変更後: `mise run update-issue-index`、次に`mise run check-issue-index`と`mise run check-issue-health`
-- 軽い機械的ゲートのみが必要な場合: `mise run check-repo-smoke`（fmt + `check-scripts` + `check-issue-health`）
+- `issues/open/`、`issues/done/`、またはindexジェネレータの**任意の**変更後: `mise run update-issue-index`、次に`mise run check issue-index`と`mise run check issues`
+- 軽い機械的ゲートのみが必要な場合: `mise run check`（fmt + `check scripts` + `check issues`）
 
 ## ルール
 
@@ -22,7 +22,7 @@ description: issues/以下のissue追加/クローズ/移動/分割/再分類時
 - `issues/templates/issue.md`のテンプレートを優先。`**ID**`、`**Depends on**`、`**Orchestration class**`、1行の`Problem:`を使用し、indexジェネレータがissueを要約できるようにする
 - `**Depends on**`はこのissueをブロックするopen-issue IDをリスト、または`none`。カンマ区切りIDを使用（例: `003,004`）。ジェネレータはリストされた依存のいずれかがまだopenの場合、または`**Orchestration class**`が正確に`blocked`（大文字小文字不問）の場合、issueをblockedとして扱う
 - issueをクローズする場合: 完了証拠を記入、`**Status**`を`done`に設定、ファイルを`issues/done/`に移動、次にindexを再生成
-- キューの検証: `mise run update-issue-index -- --check`と`mise run check-issue-index`（stderrに人間ステータス。終了コードが契約）
+- キューの検証: `mise run update-issue-index -- --check`と`mise run check issue-index`（stderrに人間ステータス。終了コードが契約）
 
 ## アンチパターン
 
@@ -53,13 +53,13 @@ cp issues/templates/issue.md issues/open/025-fix-memory-leak.md
 # 必須フィールドを記入
 # 同期コマンドを実行
 mise run update-issue-index
-mise run check-issue-health
+mise run check issues
 ```
 
 ### 実行コマンド
 
 ```bash
 mise run update-issue-index
-mise run check-issue-index
-mise run check-issue-health
+mise run check issue-index
+mise run check issues
 ```

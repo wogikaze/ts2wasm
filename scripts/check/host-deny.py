@@ -5,7 +5,7 @@ Pure WASI + in-wasm runtime must not need host.* imports in emitted wasm.
 Builds with the ts2wasm CLI, prints wasm, and fails if a `(import "host" ...` appears.
 Override list with TS2WASM_HOST_FREE_FIXTURES (space-separated paths) if needed.
 
-Usage: python scripts/manager.py check-host-deny
+Usage: mise run check host
 Dependencies: cargo, wasm-tools
 """
 

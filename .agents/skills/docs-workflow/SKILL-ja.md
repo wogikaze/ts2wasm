@@ -30,9 +30,9 @@ description: docs/以下のドキュメント追加/編集時に使用。最終�
 **完了を報告する前に、変更に一致するコマンドを実行し通過させる。** `mise`がない場合、`mise`を同じサブコマンドで使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
 - 常に: `mise run fmt`（`*.md` / Rustの例に触れるため）
-- デフォルトスモーク: `mise run check-repo-smoke`
+- デフォルトスモーク: `mise run check`
 - ドキュメントがテストまたはコンパイラ振る舞いを主張する場合: `mise run nextest`（Rustの例が変更された場合は`mise run clippy`も）
-- `issues/`の相互リンクまたはagent/issueドキュメントを編集した場合: `mise run check-issue-health`
+- `issues/`の相互リンクまたはagent/issueドキュメントを編集した場合: `mise run check issues`
 
 このskillは以下の厳格な分離を強制:
 

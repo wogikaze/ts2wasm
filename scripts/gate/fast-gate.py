@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Single local gate: fmt + issue queue + architecture + coverage matrix + nextest (optional).
+"""Standard local gate: fmt + issue queue + architecture + coverage matrix + nextest (optional).
 
 Usage:
-  python scripts/manager.py check-fast-gate [--skip-nextest]
+  mise run gate [-- --skip-nextest]
+  mise run gate-fast
 
 Environment:
   TS2WASM_FAST_GATE_SKIP_NEXTEST=1  Same as --skip-nextest (for pre-push).
@@ -20,7 +21,9 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 PYTHON_BIN = os.environ.get("PYTHON_BIN", sys.executable)
 
 def usage():
-    print("Usage: python scripts/manager.py check-fast-gate [--skip-nextest]")
+    print("Usage:")
+    print("  mise run gate [-- --skip-nextest]")
+    print("  mise run gate-fast")
     print()
     print("Runs:")
     print("  - cargo fmt --all --check")
@@ -34,7 +37,7 @@ def usage():
 
 def run(cmd, cwd=REPO_ROOT):
     """Run a command and exit if it fails."""
-    print(f"check_fast_gate: {' '.join(cmd)}", file=sys.stderr)
+    print(f"gate: {' '.join(cmd)}", file=sys.stderr)
     result = subprocess.run(cmd, cwd=cwd)
     if result.returncode != 0:
         sys.exit(result.returncode)
@@ -51,7 +54,7 @@ def main():
             usage()
             sys.exit(0)
         else:
-            print(f"check_fast_gate: unknown option: {args[0]}", file=sys.stderr)
+            print(f"gate: unknown option: {args[0]}", file=sys.stderr)
             usage()
             sys.exit(1)
     
@@ -60,11 +63,11 @@ def main():
         if shutil.which(cmd):
             break
     else:
-        print("check_fast_gate: missing required command: python/python3", file=sys.stderr)
+        print("gate: missing required command: python/python3", file=sys.stderr)
         sys.exit(1)
 
     if not shutil.which("cargo"):
-        print("check_fast_gate: missing required command: cargo", file=sys.stderr)
+        print("gate: missing required command: cargo", file=sys.stderr)
         sys.exit(1)
     
     # Run checks
@@ -76,9 +79,9 @@ def main():
     if not skip_nextest:
         run(["cargo", "nextest", "run"])
     else:
-        print("check_fast_gate: skipping cargo nextest (--skip-nextest)", file=sys.stderr)
+        print("gate: skipping cargo nextest (--skip-nextest)", file=sys.stderr)
     
-    print("check_fast_gate: OK", file=sys.stderr)
+    print("gate: OK", file=sys.stderr)
 
 if __name__ == "__main__":
     main()

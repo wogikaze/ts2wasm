@@ -143,9 +143,9 @@ Layer 2:
 Layer 3:
 
 ```bash
-mise run check-agent-state
-mise run check-issue-health
-mise run check-repo-smoke
+mise run check agent-state
+mise run check issues
+mise run check
 ```
 
 Layer 4:

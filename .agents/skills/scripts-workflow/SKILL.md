@@ -5,7 +5,7 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 
 # Scripts workflow
 
-**Discovery:** the repo entry is `mise` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register the task in `mise.toml` and keep the underlying dispatcher mapping in sync. **Layout (first tier):** `scripts/check/` (static, non-destructive), `scripts/gate/` (pass/fail), `scripts/gen/` (refresh tracked generated artifacts), `scripts/run/` (execute/measure), `scripts/report/` (human-facing formatting), `scripts/perf/` (benchmarks), `scripts/dev/` (local setup), `scripts/lib/` (sourced helpers only; not executed). Deprecated top-level names may remain as compatibility wrappers during migration. **Harness baseline:** `mise run check-harness-installation` inventories toolchain + P0 checks and runs the rest of the project gates; Rust warnings are errors via `RUSTFLAGS=-D warnings`; clippy runs as `cargo clippy --all-targets -- -D warnings`.
+**Discovery:** the repo entry is `mise` and root `mise.toml` (list: `mise tasks`); avoid making people read every `scripts/*.sh` to find usage. When you add a script, register the task in `mise.toml` and keep the underlying dispatcher mapping in sync. **Layout (first tier):** `scripts/check/` (static, non-destructive), `scripts/gate/` (pass/fail), `scripts/gen/` (refresh tracked generated artifacts), `scripts/run/` (execute/measure), `scripts/report/` (human-facing formatting), `scripts/perf/` (benchmarks), `scripts/dev/` (local setup), `scripts/lib/` (sourced helpers only; not executed). Deprecated top-level names may remain as compatibility wrappers during migration. **Harness baseline:** `mise run gate-all` inventories toolchain + P0 checks and runs the rest of the project gates; Rust warnings are errors via `RUSTFLAGS=-D warnings`; clippy runs as `cargo clippy --all-targets -- -D warnings`.
 
 ## Table of Contents
 
@@ -33,8 +33,8 @@ description: Use when adding/editing scripts under scripts/. Covers layout conve
 
 **Automatically execute the following after making script changes.** Use `mise` as the primary repo entry. `mise run <task>` is optional sugar for the same tasks.
 
-- Always: `mise run check-scripts` (plus `mise run fmt` if the script is invoked from tests or the diff touches Rust)
-- `mise run check-repo-smoke` after touching `issues` paths or task dispatch
+- Always: `mise run check scripts` (plus `mise run fmt` if the script is invoked from tests or the diff touches Rust)
+- `mise run check` after touching `issues` paths or task dispatch
 - For coverage/ CI scripts: also run the same command family you would run in `scripts` docs (e.g. `mise run reference-coverage` with a small limit when that script supports it)
 - `mise tasks` to confirm your new `mise run <task>` appears after you add it to `mise.toml`
 - **Auto-commit changes after verification passes** (commit message based on change description)
@@ -52,12 +52,12 @@ Required rules:
    - docs / skills that mention the command
    - CI workflow path filters if the command affects CI behavior
 2. Do not document direct calls to implementation files unless the file is intentionally public.
-   - Prefer: `mise run check-issue-health`
+   - Prefer: `mise run check issues`
    - Avoid: `python scripts/check/issue-health.py`
 3. After task or script command changes, run:
-   - `mise run check-scripts`
-   - `mise run check-repo-smoke`
-   - `mise run check-agent-state`
+   - `mise run check scripts`
+   - `mise run check`
+   - `mise run check agent-state`
 4. After adding a `mise.toml` task, run:
    - `mise tasks`
 
@@ -97,7 +97,7 @@ Required rules:
 1. Shared parsing/rendering must live in `scripts/lib/`.
 2. `scripts/check/issue-health.py` and `scripts/gen/update-issue-index.py` must use the same parser and table renderer.
 3. `mise run update-issue-index -- --check` must fail if generated table content differs, not only if IDs are missing.
-4. `mise run check-issue-health` must verify:
+4. `mise run check issues` must verify:
    - duplicate IDs
    - open/done conflicts
    - missing dependencies
@@ -135,8 +135,8 @@ Autonomous-loop scripts must preserve auditable state.
 Required preflight:
 
 ```sh
-mise run check-agent-state
-mise run check-repo-smoke
+mise run check agent-state
+mise run check
 ```
 
 Rules:
@@ -368,46 +368,46 @@ Always run the smallest valid set, but never stop at syntax-only checks.
 For any script change:
 
 ```sh
-mise run check-scripts
+mise run check scripts
 bash -n <touched-shell-script>   # only when a shell script changed
-mise run check-repo-smoke
+mise run check
 ```
 
 For manager, issue, state, or generated-index scripts:
 
 ```sh
 mise run update-issue-index -- --check
-mise run check-issue-health
-mise run check-agent-state
-mise run check-repo-smoke
+mise run check issues
+mise run check agent-state
+mise run check
 ```
 
 For CI workflow changes:
 
 ```sh
-mise run check-repo-smoke
-mise run check-fast-gate -- --skip-nextest
+mise run check
+mise run gate-fast
 ```
 
 For coverage/reference/test262 scripts:
 
 ```sh
 mise run update-coverage-matrix -- --check
-mise run check-coverage-gate -- <base-doc> <current-doc>
+mise run check coverage -- <base-doc> <current-doc>
 mise run test262 -- --sample 1 --jobs 1
 ```
 
 For scripts that produce JSONL/TestRecord:
 
 ```sh
-mise run check-test-records-schema -- <file.jsonl>
+mise run check records -- <file.jsonl>
 ```
 
 For scripts that consume fixtures:
 
 ```sh
-mise run check-fixture-catalog
-mise run check-fast-gate -- --skip-nextest
+mise run check fixtures
+mise run gate-fast
 ```
 
 For Rust-impacting script changes:

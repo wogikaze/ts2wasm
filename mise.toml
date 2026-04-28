@@ -7,15 +7,33 @@
 # attempts every task, including long reference/test262 and arg-required gates.
 [tasks.default]
 description = "Default smoke check: no reference corpus or argument-required gates"
-run = "python scripts/manager.py check-repo-smoke"
+run = "python scripts/manager.py check"
+
+[tasks.check]
+description = "Smoke check by default; pass a part name for one check (example: mise run check issues)"
+run = "python scripts/manager.py check"
+
+[tasks.gate]
+description = "Standard gate: fmt + issues + architecture + coverage matrix check + nextest"
+run = "python scripts/manager.py gate"
+
+[tasks."gate-fast"]
+description = "Fast gate: standard gate without nextest"
+run = "python scripts/manager.py gate-fast"
+
+[tasks."gate-all"]
+description = "Full gate: harness/toolchain baseline plus project gates"
+run = "python scripts/manager.py gate-all"
 
 # Use Python manager for cross-platform support
 [tasks."check-scripts"]
 description = "Bash -n on scripts/**/*.sh (syntax only)"
+hide = true
 run = "python scripts/manager.py check-scripts"
 
 [tasks."check-issue-index"]
 description = "Compatibility alias for check-issue-health"
+hide = true
 run = "python scripts/manager.py check-issue-index"
 
 [tasks."update-issue-index"]
@@ -32,6 +50,7 @@ run = "python scripts/manager.py install-hooks"
 
 [tasks."check-coverage-gate"]
 description = "Compare two coverage matrix documents (see script for args)"
+hide = true
 run = "python scripts/manager.py check-coverage-gate"
 
 [tasks."update-coverage-matrix"]
@@ -75,67 +94,83 @@ description = "cargo nextest run (default project test entry)"
 run = "python scripts/manager.py nextest"
 
 [tasks."check-repo-smoke"]
-description = "fmt + check-scripts + check-issue-health (no cargo test)"
+description = "Compatibility alias for check"
+hide = true
 run = "python scripts/manager.py check-repo-smoke"
 
 [tasks."check-fast-gate"]
-description = "fmt + issues + architecture + coverage matrix check + nextest (see script --help)"
-run = "python scripts/manager.py check-fast-gate"
+description = "Compatibility alias for gate"
+hide = true
+run = "python scripts/manager.py gate"
 
 [tasks."check-manifest-imports"]
 description = "Manifest JSON imports vs wasm import section"
+hide = true
 run = "python scripts/manager.py check-manifest-imports"
 
 [tasks."check-fixture-catalog"]
 description = "fixtures/ top-level layout rules"
+hide = true
 run = "python scripts/manager.py check-fixture-catalog"
 
 [tasks."check-architecture-rules"]
 description = "Crate boundary smoke and file-size errors"
+hide = true
 run = "python scripts/manager.py check-architecture-rules"
 
 [tasks."check-compiler-diagnostics"]
 description = "No panic! in backend/runtime/main.rs"
+hide = true
 run = "python scripts/manager.py check-compiler-diagnostics"
 
 [tasks."check-harness-installation"]
-description = "P0 + fast gate + all project check_* harnesses (slow)"
+description = "Compatibility alias for gate-all"
+hide = true
 run = "python scripts/manager.py check-harness-installation"
 
 [tasks."check-toolchain"]
 description = "Verify required CLI tools (cargo, node, wasm-tools, …)"
+hide = true
 run = "python scripts/manager.py check-toolchain"
 
 [tasks."check-host-deny"]
 description = "Standalone fixtures must not import wasm module name host"
+hide = true
 run = "python scripts/manager.py check-host-deny"
 
 [tasks."check-runtimefn-invariants"]
 description = "Unit tests for runtime link plan and RuntimeFn invariants"
+hide = true
 run = "python scripts/manager.py check-runtimefn-invariants"
 
 [tasks."check-wasm-validation"]
 description = "wasm-tools validate on representative build outputs"
+hide = true
 run = "python scripts/manager.py check-wasm-validation"
 
 [tasks."check-agent-state"]
 description = "Validate .agents/state JSON files against schemas"
+hide = true
 run = "python scripts/manager.py check-agent-state"
 
 [tasks."check-issue-health"]
 description = "Mechanical invariants: ids, paths, index+tables"
+hide = true
 run = "python scripts/manager.py check-issue-health"
 
 [tasks."check-issue-readiness"]
 description = "Score open issues for actionability and measurement quality"
+hide = true
 run = "python scripts/manager.py check-issue-readiness"
 
 [tasks."check-test-records-schema"]
 description = "Validate TestRecord JSONL lines (stdin or file)"
+hide = true
 run = "python scripts/manager.py check-test-records-schema"
 
 [tasks."check-fixture-differential"]
 description = "Node vs iwasm: runs nextest m2_node_diff"
+hide = true
 run = "python scripts/manager.py check-fixture-differential"
 
 [tasks.manager]
