@@ -474,6 +474,9 @@ impl NameResolver {
                 span: *span,
             }),
             Expr::Call { callee, args, span } => {
+                if self.is_unshadowed_function_constructor(callee) {
+                    return Err(unsupported_function_constructor(*span));
+                }
                 let resolved_callee = self.resolve_expr(callee)?;
                 let resolved_args = args
                     .iter()
@@ -558,14 +561,19 @@ impl NameResolver {
                 index: Box::new(self.resolve_expr(index)?),
                 span: *span,
             }),
-            Expr::New { expr, args, span } => Ok(Expr::New {
-                expr: Box::new(self.resolve_expr(expr)?),
-                args: args
-                    .iter()
-                    .map(|a| self.resolve_expr(a))
-                    .collect::<Result<Vec<_>, _>>()?,
-                span: *span,
-            }),
+            Expr::New { expr, args, span } => {
+                if self.is_unshadowed_function_constructor(expr) {
+                    return Err(unsupported_function_constructor(*span));
+                }
+                Ok(Expr::New {
+                    expr: Box::new(self.resolve_expr(expr)?),
+                    args: args
+                        .iter()
+                        .map(|a| self.resolve_expr(a))
+                        .collect::<Result<Vec<_>, _>>()?,
+                    span: *span,
+                })
+            }
             Expr::PropertyAssign {
                 object,
                 property,
@@ -681,6 +689,21 @@ impl NameResolver {
             .any(|scope| scope.contains_key(name))
     }
 
+    fn is_unshadowed_function_constructor(&self, expr: &Expr) -> bool {
+        matches!(expr, Expr::Ident { name, .. } if name == "Function")
+            && !self.is_user_declared("Function")
+    }
+
+    fn is_user_declared(&self, name: &str) -> bool {
+        self.functions.contains_key(name)
+            || self.classes.contains_key(name)
+            || self
+                .scopes
+                .iter()
+                .rev()
+                .any(|scope| scope.contains_key(name))
+    }
+
     fn resolve_identifier(&mut self, name: &str, span: Span) -> Result<(), Diagnostic> {
         if !self.is_declared(name) {
             Err(Diagnostic {
@@ -691,6 +714,14 @@ impl NameResolver {
         } else {
             Ok(())
         }
+    }
+}
+
+fn unsupported_function_constructor(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-062: dynamic Function constructor is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
+        span: Some(span),
     }
 }
 

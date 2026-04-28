@@ -1037,6 +1037,49 @@ fn regexp_unsupported_flag_fixture_reports_issue_202() {
     );
 }
 
+#[test]
+fn function_constructor_call_fixture_reports_issue_062() {
+    assert_build_fails_with_issue_062_function_constructor(
+        "fixtures/core-semantics/function-constructor-call-unsupported.ts",
+    );
+}
+
+#[test]
+fn new_function_constructor_fixture_reports_issue_062() {
+    assert_build_fails_with_issue_062_function_constructor(
+        "fixtures/core-semantics/new-function-constructor-unsupported.ts",
+    );
+}
+
+fn assert_build_fails_with_issue_062_function_constructor(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "Function constructor fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]"),
+        "expected UnsupportedSyntax diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-062: dynamic Function constructor is not supported"),
+        "expected issue-linked Function constructor diagnostic for {fixture}, got:\n{stderr}"
+    );
+}
+
 fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
     use std::io::Write;
 
