@@ -399,6 +399,23 @@ abcdefghij1
   - `cargo nextest run -p ts2wasm-cli json`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.parse` invalid-literal diagnostics slice so top-level and nested `true`/`false`/`null` parsing requires exact keyword bytes instead of accepting any same-length token with the same first character.
+- Added rejection coverage in `fixtures/builtins-and-io/json-parse-invalid-literal.ts` for `JSON.parse("turd")`.
+- Pre-change gap check with `/tmp/ts2wasm-json-invalid-literal.ts` showed Node rejected `turd` with a JSON `SyntaxError` and status 1, while iwasm accepted the same parse and printed `accepted` with status 0.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-parse-invalid-literal.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-literal.ts -o /tmp/ts2wasm-json-parse-invalid-literal.wasm && iwasm /tmp/ts2wasm-json-parse-invalid-literal.wasm` rejects with `Exception: unreachable` and status 1.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
