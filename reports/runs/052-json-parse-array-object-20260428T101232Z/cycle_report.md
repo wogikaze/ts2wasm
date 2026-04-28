@@ -49,6 +49,10 @@ Passed:
 - `scripts/manager check-issue-health`
 - `scripts/manager check-agent-state`
 
+Deferred:
+
+- `scripts/manager discord-report --run-id 052-json-parse-array-object-20260428T101232Z` failed because no `DISCORD_WEBHOOK_URL` is configured. Deferred artifact: `reports/runs/052-json-parse-array-object-20260428T101232Z/discord_report_deferred.json`.
+
 Skipped:
 
 - `cargo nextest run`: not required for this PROGRESS slice because no backend runtime code changed and issue 052 remains open.
