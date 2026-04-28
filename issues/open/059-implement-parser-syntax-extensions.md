@@ -161,6 +161,32 @@ Start with basic TypeScript type annotations before adding advanced features.
 - Parent validation note: after syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `scripts/manager check-issue-health` and `scripts/manager check-repo-smoke` passed.
 - Issue 059 remains open. Generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
+2026-04-28 progress evidence (generic-erasure slice):
+
+- Implemented a narrow parser-only TypeScript generic erasure slice for simple generic function declarations and directly attached simple generic call type arguments.
+- Generic declarations such as `function id<T>(value: T): T { return value; }` parse as ordinary runtime functions, and generic calls such as `id<number>(3)` parse as ordinary runtime calls before AST/lowering.
+- Added fixture `fixtures/basics-types/generic-erasure.ts`.
+- Added frontend parser coverage for erased generic function declarations and generic call type arguments.
+- Added CLI coverage showing dump unparse erases generic syntax and build accepts the fixture.
+- Validation passed:
+  - `cargo test -p ts2wasm-frontend parses_typescript_generic_functions_and_calls_as_erased_syntax -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_typescript_generics -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli build_accepts_erasable_typescript_generics -- --nocapture`
+  - `cargo fmt --all --check`
+  - `scripts/manager fmt`
+  - `cargo nextest run -p ts2wasm-frontend`
+  - `cargo nextest run -p ts2wasm-cli --test dump_cli`
+  - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse fixtures/basics-types/generic-erasure.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/generic-erasure.ts -o /tmp/ts2wasm-059-generic-erasure.wasm`
+  - `iwasm /tmp/ts2wasm-059-generic-erasure.wasm` (stdout: `3`, `7`)
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Validation not clean due unrelated pre-existing local-report references:
+  - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
+  - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+- Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
