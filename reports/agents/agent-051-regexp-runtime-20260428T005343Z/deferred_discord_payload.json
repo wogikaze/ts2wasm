@@ -1,0 +1,14 @@
+{
+  "run_id": "20260428T010053Z-051-regexp",
+  "issue": "051",
+  "branch": "agent/051-regexp-runtime-20260428T005343Z",
+  "status": "PROGRESS",
+  "merge_request": true,
+  "summary": "Validated literal-backed RegExp.prototype.test progress for plain byte patterns; issue remains open for constructor, exec, match, variable receiver state, and broader syntax.",
+  "validation": [
+    "cargo fmt --all --check: pass",
+    "cargo nextest run -E 'test(regexp)': pass, 9 tests",
+    "cargo nextest run -p ts2wasm-cli regexp: pass, 6 tests",
+    "cargo nextest run: pass, 250 tests, 4 skipped"
+  ]
+}

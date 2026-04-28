@@ -93,6 +93,8 @@ pub(crate) enum RuntimeFn {
     StringToLowerCase,
     StringCharCodeAt,
     StringFromCharCode,
+    /// Issue 051: RegExp.prototype.test for literal-backed plain byte patterns.
+    RegExpTest,
     /// M10: Array methods
     ArrayPush,
     ArrayPop,
@@ -336,6 +338,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringToLowerCase" => Some(RuntimeFn::StringToLowerCase),
         "StringCharCodeAt" => Some(RuntimeFn::StringCharCodeAt),
         "StringFromCharCode" => Some(RuntimeFn::StringFromCharCode),
+        "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
@@ -548,6 +551,7 @@ const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeF
 const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 
 // Array method dependencies
 const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1042,6 +1046,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::RegExpTest => RuntimeSpec {
+                symbol: "$regexp_test",
+                deps: REGEXP_TEST_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPush => RuntimeSpec {
                 symbol: "$array_push",
                 deps: ARRAY_PUSH_DEPS,
@@ -1406,6 +1418,7 @@ impl RuntimeFn {
             Self::StringToLowerCase => "string_to_lower_case",
             Self::StringCharCodeAt => "string_char_code_at",
             Self::StringFromCharCode => "string_from_char_code",
+            Self::RegExpTest => "regexp_test",
             Self::ArrayPush => "array_push",
             Self::ArrayPop => "array_pop",
             Self::ArraySlice => "array_slice",
@@ -1502,6 +1515,7 @@ impl RuntimeFn {
             Self::StringToLowerCase,
             Self::StringCharCodeAt,
             Self::StringFromCharCode,
+            Self::RegExpTest,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,
@@ -1606,6 +1620,7 @@ impl RuntimeFn {
             Self::StringToLowerCase,
             Self::StringCharCodeAt,
             Self::StringFromCharCode,
+            Self::RegExpTest,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,

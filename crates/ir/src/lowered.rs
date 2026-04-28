@@ -665,6 +665,66 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
     }
 }
 
+fn regexp_literal_test_runtime(
+    object: &ResolvedExpr,
+    method: &str,
+) -> Result<Option<String>, Diagnostic> {
+    if method != "test" {
+        return Ok(None);
+    }
+    let ResolvedExpr::String(raw) = object else {
+        return Ok(None);
+    };
+    if !looks_like_regexp_literal(raw) {
+        return Ok(None);
+    }
+    validate_regexp_test_literal(raw)?;
+    Ok(Some("RegExpTest".to_owned()))
+}
+
+fn looks_like_regexp_literal(raw: &str) -> bool {
+    raw.starts_with('/') && raw[1..].contains('/')
+}
+
+fn validate_regexp_test_literal(raw: &str) -> Result<(), Diagnostic> {
+    let Some(delimiter) = raw.rfind('/') else {
+        return Err(unsupported_regexp_test(raw, "missing closing delimiter"));
+    };
+    if delimiter == 0 {
+        return Err(unsupported_regexp_test(raw, "missing pattern"));
+    }
+    let flags = &raw[delimiter + 1..];
+    if flags.chars().any(|ch| ch != 'g') {
+        return Err(unsupported_regexp_test(
+            raw,
+            "only the empty flag set or `g` is supported",
+        ));
+    }
+    let pattern = &raw[1..delimiter];
+    if pattern.chars().any(|ch| {
+        matches!(
+            ch,
+            '^' | '$' | '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '\\'
+        )
+    }) {
+        return Err(unsupported_regexp_test(
+            raw,
+            "only plain literal byte patterns are supported",
+        ));
+    }
+    Ok(())
+}
+
+fn unsupported_regexp_test(raw: &str, reason: &str) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-051: RegExp.prototype.test literal `{raw}` is not supported yet: {reason}"
+        ),
+        span: None,
+    }
+}
+
 fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut Vec<String>) {
     match expr {
         ResolvedExpr::This { .. } => push_capture("this", params, captures),
@@ -1322,7 +1382,24 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
-                if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                if let Some(runtime_fn) = regexp_literal_test_runtime(object, method)? {
+                    if args.len() != 1 {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "RegExp.prototype.test expects 1 argument, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    let mut lowered_args = vec![self.lower_expr(object)?];
+                    lowered_args.extend(self.lower_call_args(args)?);
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn,
+                        args: lowered_args,
+                    })
+                } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
                         object.as_ref(),

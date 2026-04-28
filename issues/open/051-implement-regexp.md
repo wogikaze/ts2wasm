@@ -93,6 +93,43 @@ Follow-up issues:
 
 ## Notes
 
+## Progress evidence
+
+- 2026-04-28: Added a constrained runtime slice for literal-backed `RegExp.prototype.test`.
+  Plain byte patterns such as `/abc/.test("zabcx")` and `/needle/g.test("haystack needle")`
+  now lower to a dedicated `RegExpTest` runtime helper and match Node/iwasm output.
+- 2026-04-28: Unsupported `.test` patterns with metacharacters, such as `/a*/.test("aaa")`,
+  remain rejected with an `issue-051` diagnostic instead of being executed with incorrect
+  literal-substring semantics.
+- 2026-04-28: Remaining acceptance criteria are not complete. `new RegExp(...)`,
+  `RegExp.prototype.exec`, `String.prototype.match`, and variable-backed RegExp receiver state
+  still need implementation before this issue can move to done.
+
+Validation:
+
+```text
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 9 tests run, 9 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 6 tests run, 6 passed
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-test.wasm && iwasm /tmp/ts2wasm-issue051-regexp-test.wasm
+result: pass; stdout matched Node: true / false / true
+
+scripts/manager check-agent-state
+result: pass
+
+scripts/manager check-issue-health
+result: pass
+
+cargo nextest run
+result: pass; 250 tests run, 250 passed, 4 skipped
+```
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

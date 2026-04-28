@@ -89,6 +89,11 @@ fn regexp_literal_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn regexp_test_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/regexp-test.ts");
+}
+
+#[test]
 fn abstract_equality_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/abstract-equality.ts");
 }
