@@ -1,0 +1,6 @@
+{
+  "run_id": "232-module-graph-diagnostics-20260428T085234Z",
+  "status": "DEFERRED",
+  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
+  "cycle_report": "reports/runs/232-module-graph-diagnostics-20260428T085234Z/cycle_report.md"
+}
