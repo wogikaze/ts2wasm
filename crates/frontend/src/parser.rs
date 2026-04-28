@@ -49,15 +49,28 @@ impl Parser {
 
     fn consume_erasable_typescript_declaration(&mut self) -> Result<bool, Diagnostic> {
         let start = self.cursor;
-        let Some((interface_span, exported)) = self.try_consume_interface_keyword() else {
-            return Ok(false);
-        };
+        if let Some((interface_span, exported)) = self.try_consume_interface_keyword() {
+            if exported && !matches!(self.peek(), Some(Token::Ident(_))) {
+                self.cursor = start;
+                return Ok(false);
+            }
+            self.consume_typescript_interface_declaration(interface_span)?;
+            return Ok(true);
+        }
+        self.cursor = start;
 
-        if exported && !matches!(self.peek(), Some(Token::Ident(_))) {
-            self.cursor = start;
-            return Ok(false);
+        if let Some(type_span) = self.try_consume_type_alias_keyword() {
+            self.consume_typescript_type_alias_declaration(type_span)?;
+            return Ok(true);
         }
 
+        Ok(false)
+    }
+
+    fn consume_typescript_interface_declaration(
+        &mut self,
+        interface_span: Span,
+    ) -> Result<(), Diagnostic> {
         self.expect_ident()?;
         while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
             self.advance();
@@ -72,7 +85,23 @@ impl Parser {
 
         self.skip_balanced_brace_block(interface_span)?;
         self.consume(TokenKind::Semicolon);
-        Ok(true)
+        Ok(())
+    }
+
+    fn consume_typescript_type_alias_declaration(
+        &mut self,
+        type_span: Span,
+    ) -> Result<(), Diagnostic> {
+        self.expect_ident()?;
+        self.expect(TokenKind::Equal)?;
+        self.skip_type_annotation_until(&[TokenKind::Semicolon])
+            .map_err(|_| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "unterminated TypeScript type alias declaration".to_owned(),
+                span: Some(type_span),
+            })?;
+        self.expect(TokenKind::Semicolon)?;
+        Ok(())
     }
 
     fn try_consume_interface_keyword(&mut self) -> Option<(Span, bool)> {
@@ -94,6 +123,30 @@ impl Parser {
         };
         self.advance();
         Some((span, exported))
+    }
+
+    fn try_consume_type_alias_keyword(&mut self) -> Option<Span> {
+        let start = self.cursor;
+        if matches!(self.peek(), Some(Token::Export))
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "type")
+        {
+            self.advance();
+        }
+
+        let span = match self.peek() {
+            Some(Token::Ident(name)) if name == "type" => self.peek_span()?,
+            _ => {
+                self.cursor = start;
+                return None;
+            }
+        };
+        self.advance();
+        if matches!(self.peek(), Some(Token::Ident(_))) {
+            Some(span)
+        } else {
+            self.cursor = start;
+            None
+        }
     }
 
     fn skip_balanced_brace_block(&mut self, start_span: Span) -> Result<(), Diagnostic> {
@@ -2844,6 +2897,25 @@ mod tests {
                 name: string;
                 meta: { created: number };
             }
+            function read(point: Point): number { return point.x; }
+            let origin: Point = { x: 1 };
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(matches!(program[0], Stmt::Function { .. }));
+        assert!(matches!(program[1], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn parses_typescript_type_alias_declarations_as_erased_syntax() {
+        let source = r#"
+            type Id = number;
+            export type Point = {
+                x: number;
+                y?: number;
+                meta: { created: number };
+                translate: (dx: number, dy: number) => Point;
+            };
             function read(point: Point): number { return point.x; }
             let origin: Point = { x: 1 };
         "#;

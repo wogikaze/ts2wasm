@@ -137,6 +137,29 @@ Start with basic TypeScript type annotations before adding advanced features.
 - Parent validation note: after syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `scripts/manager check-issue-health` and `scripts/manager check-repo-smoke` passed.
 - Issue 059 remains open. Type aliases, generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
+2026-04-28 progress evidence (type-alias-erasure slice):
+
+- Implemented a narrow parser-only TypeScript `type` / `export type` alias declaration erasure slice.
+- Type alias declarations are consumed before AST construction, so dump `--ast --unparse` and build output omit aliases while preserving subsequent runtime statements.
+- Alias bodies are skipped with balanced parentheses, brackets, and braces, covering simple aliases plus object/function type bodies.
+- Added fixture `fixtures/basics-types/type-alias-erasure.ts`.
+- Added frontend parser coverage for erased type aliases with nested object type braces and function type members.
+- Added CLI coverage showing dump unparse erases type alias declarations and build accepts the fixture.
+- Validation passed:
+  - `cargo test -p ts2wasm-frontend parses_typescript_type_alias_declarations_as_erased_syntax -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_typescript_type_alias_declarations -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli build_accepts_erasable_typescript_type_alias_declarations -- --nocapture`
+  - `cargo fmt --all --check`
+  - `scripts/manager fmt`
+  - `cargo nextest run -p ts2wasm-frontend`
+  - `cargo nextest run -p ts2wasm-cli --test dump_cli`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
+- Validation not clean due unrelated pre-existing local-report references:
+  - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
+  - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+- Issue 059 remains open. Generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
