@@ -126,6 +126,14 @@ fn static_default_import_reports_issue_055() {
 }
 
 #[test]
+fn static_combined_namespace_import_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-combined-namespace-import-unsupported.ts",
+        "issue-055: unsupported default import with namespace import",
+    );
+}
+
+#[test]
 fn static_named_export_reports_issue_055() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-named-export-unsupported.ts",
