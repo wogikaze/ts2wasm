@@ -766,7 +766,11 @@ fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "JSON") && method == "stringify"
 }
 
-fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(), Diagnostic> {
+fn validate_json_stringify_args(
+    args: &[ResolvedExpr],
+    span: Span,
+    function_ids: &HashMap<String, FuncId>,
+) -> Result<(), Diagnostic> {
     if args.is_empty() || args.len() > 3 {
         return Err(Diagnostic {
             code: DiagCode::ArityMismatch,
@@ -779,13 +783,29 @@ fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(),
     }
 
     if let Some(replacer) = args.get(1) {
-        if !matches!(replacer, ResolvedExpr::Null | ResolvedExpr::Undefined) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "JSON.stringify replacer is not supported; pass null or undefined"
-                    .to_owned(),
-                span: Some(span),
-            });
+        match replacer {
+            ResolvedExpr::Null | ResolvedExpr::Undefined => {}
+            ResolvedExpr::ArrowFn { .. } => {
+                return Err(json_stringify_replacer_diagnostic(
+                    "function replacer callbacks",
+                    span,
+                ));
+            }
+            ResolvedExpr::Ident(name) if function_ids.contains_key(name) => {
+                return Err(json_stringify_replacer_diagnostic(
+                    "function replacer callbacks",
+                    span,
+                ));
+            }
+            ResolvedExpr::Array(_) => {
+                return Err(json_stringify_replacer_diagnostic(
+                    "array replacer property lists",
+                    span,
+                ));
+            }
+            _ => {
+                return Err(json_stringify_replacer_diagnostic("replacer values", span));
+            }
         }
     }
 
@@ -807,6 +827,16 @@ fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(),
     }
 
     Ok(())
+}
+
+fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-052: JSON.stringify {kind} are not supported yet; pass null or undefined until replacer semantics are implemented"
+        ),
+        span: Some(span),
+    }
 }
 
 fn unsupported_live_time_diagnostic(operation: &str, span: Option<Span>) -> Diagnostic {
@@ -1745,7 +1775,7 @@ impl<'a> Resolver<'a> {
                 span,
             } => {
                 if is_json_static_call(object, method) {
-                    validate_json_stringify_args(args, *span)?;
+                    validate_json_stringify_args(args, *span, self.function_ids)?;
                     let mut lowered_args = Vec::with_capacity(3);
                     lowered_args.push(self.lower_expr(&args[0])?);
                     lowered_args.push(match args.get(1) {
