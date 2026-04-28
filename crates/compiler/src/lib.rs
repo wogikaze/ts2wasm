@@ -279,7 +279,8 @@ fn validate_stmt(
         | Stmt::ImportDefaultNamespace { .. }
         | Stmt::ExportNamed { .. }
         | Stmt::ExportNamedFrom { .. }
-        | Stmt::ExportAllFrom { .. } => Ok(()),
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. } => Ok(()),
     }
 }
 
