@@ -2,7 +2,7 @@
   "run_id": "20260428T033130Z-051-regexp-new-exec",
   "task_id": "issue-051",
   "git": {
-    "sha": "c5b68ec",
+    "sha": "88ec4d6",
     "exit_code": 0,
     "changed_files": [
       "crates/frontend/src/parser.rs",
@@ -14,7 +14,7 @@
     ],
     "commits": [
       {
-        "sha": "c5b68ec",
+        "sha": "88ec4d6",
         "message": "issue-051: support direct new RegExp exec"
       }
     ]

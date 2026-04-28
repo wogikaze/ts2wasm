@@ -3,7 +3,7 @@
 Agent: 051-regexp-new-exec-20260428T033000Z
 Branch: agent/051-regexp-new-exec-20260428T033000Z
 Worktree: /home/wogikaze/wgkz/ts2wasm-051-regexp-new-exec-20260428T033000Z
-Commit: c5b68ec
+Implementation commit: 88ec4d6
 Outcome: PROGRESS
 
 ## Scope
