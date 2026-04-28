@@ -108,7 +108,7 @@ Node differential evidence is required for semantic claims in this issue.
 
 Commits:
 
-- `989f388` issue-234: close static esm execution coverage
+- `f7fb0de` issue-234: close static esm execution coverage
 
 Validation result:
 
