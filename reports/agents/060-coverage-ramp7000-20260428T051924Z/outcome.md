@@ -24,7 +24,10 @@ Ramped stored test262 reference coverage from limit 6000 to limit 7000. No new `
 - `scripts/manager update-coverage-matrix --check`: pass
 - `scripts/manager check-issue-health`: pass
 - `scripts/manager check-agent-state`: pass
+- `scripts/manager discord-report --run-id 060-coverage-ramp7000-20260428T051924Z`: failed twice, `DISCORD_WEBHOOK_URL` not configured; deferred payload saved.
 
 ## Notes
 
 Issue 060 remains open because broader reference windows still need exhaustion. The exact assigned tsc root `/home/wogikaze/wgkz/ts2wasm/reference` still lacks `TypeScript`, as recorded in issue 060/current-state.
+
+Webhook reporting is DEFERRED. See `reports/runs/060-coverage-ramp7000-20260428T051924Z/discord_payload.json` and `reports/runs/060-coverage-ramp7000-20260428T051924Z/reporting_error.log`.
