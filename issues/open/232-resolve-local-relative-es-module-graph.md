@@ -146,5 +146,28 @@ cargo run -q -p ts2wasm-cli -- dump fixtures/module-system/static-entry.ts --res
 Remaining work before close:
 
 - Preserve module graph IDs/paths in the downstream resolved/lowered representation for issue 233.
-- Decide and implement cycle representation or explicit cycle diagnostics for the final issue-232 close.
+- Cover cycle representation or explicit cycle diagnostics for the final issue-232 close.
+- The assignment's combined `dump --ast --resolved` command still cannot run as one CLI invocation because `dump` currently accepts only one phase flag.
+
+2026-04-28 child worker `232-module-cycle-diagnostics-20260428T090325Z` covered static local module cycle behavior:
+
+- Confirmed the existing compiler module graph builder represents local cycles safely by inserting a module node before walking dependencies and resolving later back-edges to existing stable module IDs.
+- Added `module_graph::tests::represents_static_local_cycles_with_existing_module_ids`, covering an entry -> dependency -> entry cycle plus an entry self-edge through local relative imports.
+- Verified the graph remains finite, deterministic, and preserves dependency edges to module IDs 0 and 1 without implementing module execution or lowering semantics.
+
+Validation:
+
+```text
+cargo nextest run -p ts2wasm-compiler module_graph: PASS (4 tests)
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-compiler: PASS (35 tests)
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+scripts/manager discord-report --run-id 232-module-cycle-diagnostics-20260428T090325Z: DEFERRED (DISCORD_WEBHOOK_URL missing; payload/error saved)
+```
+
+Remaining work before close:
+
+- Preserve or expose module graph IDs/paths for downstream resolved/lowered module binding work.
+- Run the full required validation set for final close.
 - The assignment's combined `dump --ast --resolved` command still cannot run as one CLI invocation because `dump` currently accepts only one phase flag.
