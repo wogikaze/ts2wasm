@@ -61,7 +61,10 @@ result: pass
 
 ## Reporting
 
-Discord reporting will be attempted after commit with `scripts/manager discord-report --run-id 20260428T025222Z-060-coverage-ramp`. If unavailable, a deferred payload and error log will be saved in this directory.
+Discord reporting was deferred because `DISCORD_WEBHOOK_URL` is not configured in the environment or `.env`. Deferred payload and error details are saved in this directory:
+
+- `discord_payload.json`
+- `reporting_error.log`
 
 ## Next Steps
 
