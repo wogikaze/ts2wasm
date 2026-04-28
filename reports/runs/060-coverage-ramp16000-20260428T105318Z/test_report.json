@@ -1,0 +1,128 @@
+{
+  "run_id": "060-coverage-ramp16000-20260428T105318Z",
+  "task_id": "issue-060",
+  "git": {
+    "sha": "005985358f4685bd4dc9c0a54923b0cddab67406",
+    "exit_code": 0,
+    "changed_files": [
+      "artifacts/coverage/reference-coverage-matrix.md",
+      "artifacts/coverage/results/test262.json",
+      "current-state.md",
+      "issues/index.md",
+      "issues/open/060-investigate-unknown-unsupported-cases.md",
+      "scripts/lib/feature-labels.sh",
+      "scripts/run/reference-coverage.py",
+      "reports/runs/060-coverage-ramp16000-20260428T105318Z/"
+    ],
+    "commits": [
+      {
+        "sha": "e3f5871e2cc30528fe5f996ab9ab9a5a80f4df4b",
+        "message": "issue-060: ramp test262 coverage to 16000"
+      },
+      {
+        "sha": "005985358f4685bd4dc9c0a54923b0cddab67406",
+        "message": "Merge branch 'master' into agent/060-coverage-ramp16000-20260428T105318Z"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 16000 --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "bash -n scripts/lib/feature-labels.sh",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m py_compile scripts/run/reference-coverage.py",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 16000 --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 16000 --json > \"$tmp\"; mv \"$tmp\" artifacts/coverage/results/test262.json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager fmt",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager nextest",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 376,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "issue": "060",
+    "coverage": {
+      "suite": "test262",
+      "limit": 16000,
+      "executed": 16000,
+      "build_pass": 5,
+      "semantic_pass": 3,
+      "unsupported": 15995,
+      "blocked": 0,
+      "unknown_unsupported": 0,
+      "new_label": "annexb-ishtmldda"
+    },
+    "report_path": "reports/runs/060-coverage-ramp16000-20260428T105318Z/cycle_report.md"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "run_id": "060-coverage-ramp16000-20260428T105318Z",
+  "branch": "agent/060-coverage-ramp16000-20260428T105318Z",
+  "issue": "060",
+  "status": "PROGRESS",
+  "merge_request": true,
+  "summary": "Ramped test262 reference coverage from stored limit 15000 to 16000. Newly surfaced Annex B emulates-undefined unknowns are now classified as annexb-ishtmldda and tracked by existing issue 237. Stored test262 coverage has executed=16000, build_pass=5, semantic_pass=3, unsupported=15995, blocked=0, unknown-unsupported=0.",
+  "validation": [
+    "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 16000 --detail: pass after classifier update; unknown-unsupported=0",
+    "tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 16000 --json > \"$tmp\"; mv \"$tmp\" artifacts/coverage/results/test262.json: pass",
+    "scripts/manager update-coverage-matrix --check: pass",
+    "scripts/manager check-issue-health: pass",
+    "scripts/manager check-agent-state: pass",
+    "scripts/manager nextest: pass; 376 passed, 4 skipped",
+    "scripts/manager check-repo-smoke: pass"
+  ],
+  "report_path": "reports/runs/060-coverage-ramp16000-20260428T105318Z/cycle_report.md",
+  "reporting": "DEFERRED",
+  "reporting_reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env"
+}
