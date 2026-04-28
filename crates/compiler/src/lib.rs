@@ -271,6 +271,9 @@ fn validate_stmt(
         Stmt::Break { .. } => Ok(()),
         Stmt::Continue { .. } => Ok(()),
         Stmt::Assign { .. } => Ok(()),
+        Stmt::ImportSideEffect { .. } | Stmt::ImportNamed { .. } | Stmt::ExportNamed { .. } => {
+            Ok(())
+        }
     }
 }
 
