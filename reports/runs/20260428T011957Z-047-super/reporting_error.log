@@ -1,0 +1,4 @@
+scripts/manager discord-report --run-id 20260428T011957Z-047-super
+exit_code: 1
+stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
+retry: same command retried once; same failure.
