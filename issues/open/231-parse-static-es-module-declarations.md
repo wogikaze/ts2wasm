@@ -226,14 +226,14 @@ Remaining work before close:
 - Parsed `import defaultName, { value as renamed } from "./module-source";` into `Stmt::ImportDefaultNamed`.
 - Parsed `import defaultName, * as ns from "./module-source";` into `Stmt::ImportDefaultNamespace`.
 - Added downstream unsupported guards so parsed combined imports still stop with issue-055 before module graph, resolver, lowering, backend, or runtime semantics.
-- Updated CLI module guard fixtures/tests to prove parsed combined imports still report issue-055 before module graph support.
+- Updated CLI module guard fixtures/tests to prove parsed combined imports still report issue-055 before module graph support, while preserving the standalone default-import guard fixture.
 
 Validation:
 
 ```text
 cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-frontend: PASS (43 tests)
-cargo nextest run -p ts2wasm-cli static_default_import_reports_issue_055 static_named_import_reports_issue_055 static_namespace_import_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_combined_namespace_import_reports_issue_055: PASS (6 tests)
+cargo nextest run -p ts2wasm-cli static_default_import_reports_issue_055 static_combined_named_import_reports_issue_055 static_named_import_reports_issue_055 static_namespace_import_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_combined_namespace_import_reports_issue_055: PASS (7 tests after parent merge review fix)
 cargo check --workspace: PASS
 cargo nextest run: PASS (347 tests, 4 skipped)
 scripts/manager check-issue-health: PASS
