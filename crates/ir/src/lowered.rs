@@ -728,6 +728,48 @@ fn regexp_literal_test_runtime(
     Ok(Some("RegExpTest".to_owned()))
 }
 
+fn regexp_string_match_runtime(
+    object: &ResolvedExpr,
+    method: &str,
+    args: &[ResolvedExpr],
+    span: ts2wasm_frontend::Span,
+) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
+    if method != "match" {
+        return Ok(None);
+    }
+    if args.len() != 1 {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "String.prototype.match expects 1 argument, got {}",
+                args.len()
+            ),
+            span: Some(span),
+        });
+    }
+    if !matches!(object, ResolvedExpr::String(_) | ResolvedExpr::Ident(_)) {
+        return Ok(None);
+    }
+    match &args[0] {
+        ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
+            validate_regexp_plain_literal(raw, "String.prototype.match literal")?;
+        }
+        ResolvedExpr::New { class_name, args } if class_name == "RegExp" => {
+            regexp_constructor_literal(args)?;
+        }
+        _ => {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-051: String.prototype.match supports only RegExp literal or new RegExp(\"plain\") arguments in this subset"
+                        .to_owned(),
+                span: Some(span),
+            });
+        }
+    }
+    Ok(Some(vec![args[0].clone(), object.clone()]))
+}
+
 fn looks_like_regexp_literal(raw: &str) -> bool {
     raw.starts_with('/') && raw[1..].contains('/')
 }
@@ -1447,6 +1489,17 @@ impl<'a> Resolver<'a> {
                     lowered_args.extend(self.lower_call_args(args)?);
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn,
+                        args: lowered_args,
+                    })
+                } else if let Some(regexp_args) =
+                    regexp_string_match_runtime(object, method, args, *span)?
+                {
+                    let lowered_args = regexp_args
+                        .iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "RegExpMatch".to_owned(),
                         args: lowered_args,
                     })
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
