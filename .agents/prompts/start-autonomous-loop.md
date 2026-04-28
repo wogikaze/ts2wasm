@@ -11,9 +11,16 @@ Act as the parent orchestrator.
 
 Use `.agents/prompts/autonomous-parent-orchestrator.md`.
 
-Maximize safe subagent/worktree expansion.
+Primary KPI: reduce `issues/open/` by closing verified issues, not by producing plans or reports.
+Every parent cycle must assign concrete open issues, review merge requests, merge validated child work, and move completed issues to `issues/done/`.
+Do not spend a cycle only reorganizing, reporting, auditing, or generating new issues while closable open issues remain.
+
+Maximize safe subagent/worktree expansion only when it increases verified issue throughput.
 Keep child agents continuously supplied with issue lists.
 Each child must work in its own worktree, close or progress all assigned issues, commit validated work, send or defer webhook reports, and request merge from the parent.
+Prefer small slices that can be validated, committed, merged, and closed in the current cycle.
+If a child reports only PROGRESS twice on the same issue without a mergeable commit, split the issue smaller or reassign it.
+If a child produces a DONE claim, the parent must immediately verify evidence, merge or reject it, update `issues/index.md`, and commit the close state.
 
 Discord reporting is part of the loop, not an afterthought:
 
@@ -34,10 +41,12 @@ Do not stop when Ready issues run out before generating more reference-backed is
 If issues are exhausted, generate more from reference coverage and continue.
 If no safe work can be generated, write a clean stop report.
 
-Use subagents for high-load investigation, design, implementation, testing, and review.
+Use subagents for implementation, testing, and review that directly closes or progresses assigned issues.
 Do not use subagents as search engines.
+Do not accept investigation-only work unless it creates a concrete follow-up issue, a mergeable fix, or a documented BLOCKED state with evidence.
 
 End each parent cycle with:
+ISSUE_THROUGHPUT: done=<n> merged=<n> progressed=<n> blocked=<n> open=<n>
 ORCHESTRATOR_STATUS: CONTINUE
 or a justified clean stop status.
 ```
