@@ -147,3 +147,21 @@ Remaining work before close:
 - Lower named exports/imports into explicit resolved/lowered module binding IR instead of the current literal export build rewrite.
 - Emit dependency-order module initialization and once-only execution semantics.
 - Add runtime execution/differential coverage under issue 234 before making semantic parity claims.
+
+2026-04-28 child worker `233-named-import-alias-diagnostics-20260428T093927Z` hardened the current graph-backed static named import build rewrite:
+
+- Added `fixtures/module-system/static-entry-alias.ts` for `import { value as renamed } from "./static-entry-source";` backed by literal `export const value = 1;`.
+- Added CLI build-smoke coverage proving the alias form emits WASM through the existing imported-name lookup plus local-binding rewrite.
+- Added `fixtures/module-system/static-missing-named-export.ts` and CLI diagnostic coverage proving an existing local module with no requested export reports `issue-233` at the imported name span.
+- No broader module binding IR, dependency-order initialization, live binding, namespace/default, or execution parity claims were added.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-compiler: PASS (35 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (14 tests, 219 skipped)
+cargo nextest run -p ts2wasm-cli static_module_named_import_alias_build_smoke: PASS (1 test, 232 skipped)
+cargo nextest run -p ts2wasm-cli static_module_named_import_missing_export_reports_issue_233_at_imported_name: PASS (1 test, 232 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-esm-alias.wasm: PASS
+```
