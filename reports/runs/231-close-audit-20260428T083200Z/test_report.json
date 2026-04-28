@@ -1,0 +1,103 @@
+{
+  "run_id": "231-close-audit-20260428T083200Z",
+  "task_id": "issue-231-close-readiness-audit",
+  "git": {
+    "sha": "920898c",
+    "exit_code": 0,
+    "changed_files": [
+      "issues/open/231-parse-static-es-module-declarations.md",
+      "reports/agents/231-close-audit-20260428T083200Z/assignment.md",
+      "reports/runs/231-close-audit-20260428T083200Z/cycle_report.md",
+      "reports/runs/231-close-audit-20260428T083200Z/test_report.json",
+      "reports/runs/231-close-audit-20260428T083200Z/discord_payload.json",
+      "reports/runs/231-close-audit-20260428T083200Z/reporting_error.log"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-frontend",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_side_effect_import_reports_issue_055 static_namespace_import_reports_issue_055 static_default_import_reports_issue_055 static_combined_named_import_reports_issue_055 static_combined_namespace_import_reports_issue_055 static_named_export_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_namespace_re_export_reports_issue_055 static_declaration_export_reports_issue_055 static_default_export_reports_issue_055",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "build probe: export class C {} should produce issue-055 unsupported diagnostic",
+      "status": "fail",
+      "exit_code": 0
+    },
+    {
+      "cmd": "build probe: export function f() {} should produce issue-055 unsupported diagnostic",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "build probe: export var value = 1; should produce issue-055 unsupported diagnostic",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "scripts/manager update-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 231-close-audit-20260428T083200Z",
+      "status": "error",
+      "exit_code": 1
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 231-close-audit-20260428T083200Z (retry)",
+      "status": "error",
+      "exit_code": 1
+    }
+  ],
+  "fixtures": {
+    "passed": 59,
+    "failed": 1,
+    "skipped": 216,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "issue_closed": false,
+    "blocker": "export class C {} builds successfully instead of producing an issue-055 unsupported module diagnostic",
+    "reporting": "DEFERRED: DISCORD_WEBHOOK_URL is not configured",
+    "full_nextest": "not run; issue was not closed"
+  }
+}
