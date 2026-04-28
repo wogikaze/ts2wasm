@@ -230,6 +230,17 @@ fn json_parse_unicode_escape_diagnostics_reject_invalid_or_unsupported_forms() {
 }
 
 #[test]
+fn json_parse_noninteger_numbers_are_unsupported_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts",
+    ] {
+        assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture);
+    }
+}
+
+#[test]
 fn json_stringify_replacer_unsupported_forms_report_issue_052() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts",
@@ -634,7 +645,7 @@ fn assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture: &str) {
     );
     assert!(
         !iwasm.output.status.success(),
-        "iwasm unexpectedly accepted unsupported unicode escape fixture {fixture}\nstdout:\n{}\nstderr:\n{}",
+        "iwasm unexpectedly accepted unsupported fixture {fixture}\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&iwasm.output.stdout),
         String::from_utf8_lossy(&iwasm.output.stderr)
     );
@@ -646,7 +657,7 @@ fn assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture: &str) {
     .to_ascii_lowercase();
     assert!(
         iwasm_output.contains("unreachable"),
-        "expected iwasm trap for unsupported unicode escape fixture {fixture}, got:\n{iwasm_output}"
+        "expected iwasm trap for unsupported fixture {fixture}, got:\n{iwasm_output}"
     );
 }
 
