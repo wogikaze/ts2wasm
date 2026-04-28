@@ -169,7 +169,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 | 227 | Implement type reference directive resolution | feature | frontend/semantics | design-ready | P2 |  | Implement type reference directive resolution |
 | 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
-| 229 | Implement legacy octal escape handling | feature | frontend | design-ready | P3 |  | Implement legacy octal escape handling |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -267,6 +266,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 223 | Add spans to receiver this diagnostics | bug | frontend/diagnostics | see file |
 | 224 | Implement Annex B HTML-like comments | feature | frontend | see `issues/done/224-implement-annexb-html-comments.md` |
 | 226 | Implement TypeScript parameter properties | feature | frontend/semantics | see `issues/done/226-implement-parameter-properties.md` |
+| 229 | Implement legacy octal escape handling | feature | frontend | see `issues/done/229-implement-legacy-octal-escape-handling.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

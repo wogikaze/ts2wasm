@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
+status: done
 ---
 
 ## Summary
@@ -27,15 +29,15 @@ Legacy octal escape sequences in template literals are accepted or rejected acco
 
 In scope:
 
-- [ ] Decide the supported strict and non-strict behavior for legacy octal escapes in template literals.
-- [ ] Parse or explicitly diagnose legacy octal escape sequences in template literal text.
-- [ ] Add regression fixtures for strict and non-strict legacy octal escape behavior.
-- [ ] Preserve existing template literal interpolation behavior.
+- [x] Decide the supported strict and non-strict behavior for legacy octal escapes in template literals.
+- [x] Parse or explicitly diagnose legacy octal escape sequences in template literal text.
+- [x] Add regression fixtures for strict and non-strict legacy octal escape behavior.
+- [x] Preserve existing template literal interpolation behavior.
 
 Out of scope:
 
-- [ ] Full Unicode escape or UTF-16 parity work beyond the legacy octal cases.
-- [ ] Broad template literal semantic changes not required by these cases.
+- Full Unicode escape or UTF-16 parity work beyond the legacy octal cases.
+- Broad template literal semantic changes not required by these cases.
 
 ## Affected paths
 
@@ -50,10 +52,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The classified test262 legacy-octal-escape cases no longer report `legacy-octal-escape`.
-- [ ] Strict and non-strict template literal legacy octal escape cases have regression coverage.
-- [ ] Existing template literal interpolation fixtures still pass.
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass.
+- [x] The classified test262 legacy-octal-escape cases no longer report `legacy-octal-escape`.
+- [x] Strict and non-strict template literal legacy octal escape cases have regression coverage.
+- [x] Existing template literal interpolation fixtures still pass.
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass.
 
 ## Validation
 
@@ -78,15 +80,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] already reflected in `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -120,14 +122,30 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `6512527` issue-229: handle legacy octal template slice
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-28
+
+command: cargo test -p ts2wasm-frontend legacy_octal -- --nocapture
+result: passed; 4 passed, including non-strict cooking, strict string rejection, strict interpolation rejection, and template-text rejection.
+date: 2026-04-28
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff template_literal -- --nocapture
+result: passed; 3 passed, including the existing interpolation fixture, non-strict legacy octal differential fixture, and strict issue-229 diagnostic fixture.
+date: 2026-04-28
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter legacy-octal-escape-sequence --limit 750 --detail
+result: passed; unsupported_features were name-resolution:4, template-literal:3, function:1, with no legacy-octal-escape label. The two Annex B template legacy-octal cases classified as name-resolution.
+date: 2026-04-28
+
+command: cargo nextest run
+result: passed; 296 passed, 4 skipped
+date: 2026-04-28
 ```
 
 Remaining risks:
