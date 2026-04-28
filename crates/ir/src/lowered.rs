@@ -781,11 +781,14 @@ fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(),
     if let Some(space) = args.get(2) {
         if !matches!(
             space,
-            ResolvedExpr::Number(_) | ResolvedExpr::Null | ResolvedExpr::Undefined
+            ResolvedExpr::Number(_)
+                | ResolvedExpr::String(_)
+                | ResolvedExpr::Null
+                | ResolvedExpr::Undefined
         ) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "JSON.stringify space currently supports integer numeric values"
+                message: "JSON.stringify space currently supports integer numeric or string values"
                     .to_owned(),
                 span: Some(span),
             });

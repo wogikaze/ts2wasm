@@ -175,6 +175,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse.ts",
         "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
         "fixtures/builtins-and-io/json-stringify-space.ts",
+        "fixtures/builtins-and-io/json-stringify-space-string.ts",
         "fixtures/builtins-and-io/json-stringify.ts",
     ] {
         assert_fixture_matches_node(fixture);
