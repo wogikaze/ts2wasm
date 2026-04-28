@@ -1,0 +1,86 @@
+{
+  "run_id": "20260428T125921Z",
+  "task_id": "054",
+  "git": {
+    "sha": "893369a",
+    "exit_code": 0,
+    "changed_files": [
+      "issues/done/054-implement-error-types.md",
+      "issues/index.md",
+      "reports/agents/054-error-close-20260428T035800Z/cycle_report.md",
+      "reports/runs/20260428T125921Z/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "6258e84",
+        "message": "issue-054: add error message constructor slice"
+      },
+      {
+        "sha": "3c843a5",
+        "message": "issue-054: coerce error message arguments"
+      },
+      {
+        "sha": "8ab8f62",
+        "message": "issue-054: implement error instanceof prototypes"
+      },
+      {
+        "sha": "37482ef",
+        "message": "issue-054: add minimal error stack property"
+      },
+      {
+        "sha": "893369a",
+        "message": "issue-054: close error types"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(error)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node/iwasm direct differential for fixtures/builtins-and-io/error-message.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node/iwasm direct differential for fixtures/builtins-and-io/error-instanceof.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node/iwasm direct differential for fixtures/builtins-and-io/error-stack.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "DONE",
+    "reporting": "DEFERRED",
+    "reporting_reason": "DISCORD_WEBHOOK_URL not configured",
+    "assignment": "reports/agents/054-error-close-20260428T035800Z/assignment.md"
+  }
+}
