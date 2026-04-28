@@ -27,33 +27,23 @@ def bad(msg):
     print(f"harness: FAIL: {msg}", file=sys.stderr)
     fail = 1
 
-def warn(msg):
-    print(f"harness: WARN: {msg}", file=sys.stderr)
-
 def need_cmd(cmd):
     if shutil.which(cmd):
         ok(f"command: {cmd}")
     else:
         bad(f"missing command: {cmd}")
 
-def need_exec_required(path):
+def need_script_required(path):
     full_path = REPO_ROOT / path
-    if full_path.exists() and os.access(full_path, os.X_OK):
-        ok(f"executable: {path}")
+    if full_path.is_file() and os.access(full_path, os.R_OK):
+        ok(f"script file: {path}")
     else:
-        bad(f"missing executable: {path}")
+        bad(f"missing script file: {path}")
 
-def need_exec_optional(path):
-    full_path = REPO_ROOT / path
-    if full_path.exists() and os.access(full_path, os.X_OK):
-        ok(f"executable: {path}")
-    else:
-        warn(f"not installed (optional in default mode): {path}")
-
-def run_check(name, cmd, cwd=REPO_ROOT):
+def run_check(name, cmd, cwd=REPO_ROOT, **kwargs):
     print("", file=sys.stderr)
     print(f"== {name} ==", file=sys.stderr)
-    result = subprocess.run(cmd, cwd=cwd)
+    result = subprocess.run(cmd, cwd=cwd, **kwargs)
     if result.returncode == 0:
         ok(name)
     else:
@@ -98,13 +88,10 @@ def main():
         "scripts/check/wasm-validation.py",
     ]
     for f in p0_harnesses:
-        need_exec_required(f)
+        need_script_required(f)
     
     print("", file=sys.stderr)
     print("== P1+ planned harnesses (default: optional) ==", file=sys.stderr)
-    require_all = os.environ.get("REQUIRE_ALL_HARNESSES", "0") == "1"
-    check_func = need_exec_required if require_all else need_exec_optional
-    
     # P1+ harnesses have been removed (migrated to Python or deprecated)
     print("harness: (info) P1+ harnesses removed - all high-priority scripts migrated to Python", file=sys.stderr)
     
@@ -122,7 +109,7 @@ def main():
         "scripts/check/compiler-diagnostics.py",
     ]
     for f in required_gates:
-        need_exec_required(f)
+        need_script_required(f)
     
     print("", file=sys.stderr)
     print("== run P0 harnesses ==", file=sys.stderr)
