@@ -25,6 +25,13 @@ pub struct ModuleDependency {
     resolved_path: PathBuf,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModuleInitializationStep {
+    module_id: usize,
+    path: PathBuf,
+    dependency_module_ids: Vec<usize>,
+}
+
 impl ModuleGraph {
     pub fn modules(&self) -> &[ModuleNode] {
         &self.modules
@@ -36,6 +43,47 @@ impl ModuleGraph {
 
     pub fn module(&self, id: usize) -> Option<&ModuleNode> {
         self.modules.get(id)
+    }
+
+    pub fn dependency_first_initialization_steps(&self) -> Vec<ModuleInitializationStep> {
+        let mut visiting = vec![false; self.modules.len()];
+        let mut visited = vec![false; self.modules.len()];
+        let mut steps = Vec::new();
+
+        self.push_dependency_first_initialization_steps(0, &mut visiting, &mut visited, &mut steps);
+
+        steps
+    }
+
+    fn push_dependency_first_initialization_steps(
+        &self,
+        module_id: usize,
+        visiting: &mut [bool],
+        visited: &mut [bool],
+        steps: &mut Vec<ModuleInitializationStep>,
+    ) {
+        if module_id >= self.modules.len() || visited[module_id] || visiting[module_id] {
+            return;
+        }
+
+        visiting[module_id] = true;
+        let dependency_module_ids = direct_dependency_module_ids(&self.modules[module_id]);
+        for dependency_module_id in &dependency_module_ids {
+            self.push_dependency_first_initialization_steps(
+                *dependency_module_id,
+                visiting,
+                visited,
+                steps,
+            );
+        }
+        visiting[module_id] = false;
+        visited[module_id] = true;
+
+        steps.push(ModuleInitializationStep {
+            module_id,
+            path: self.modules[module_id].path.clone(),
+            dependency_module_ids,
+        });
     }
 }
 
@@ -64,6 +112,20 @@ impl ModuleDependency {
 
     pub fn resolved_path(&self) -> &Path {
         &self.resolved_path
+    }
+}
+
+impl ModuleInitializationStep {
+    pub fn module_id(&self) -> usize {
+        self.module_id
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
+    pub fn dependency_module_ids(&self) -> &[usize] {
+        &self.dependency_module_ids
     }
 }
 
@@ -157,6 +219,16 @@ fn collect_static_module_specifiers(program: &[Stmt]) -> Vec<&ModuleSpecifier> {
             _ => None,
         })
         .collect()
+}
+
+fn direct_dependency_module_ids(module: &ModuleNode) -> Vec<usize> {
+    let mut ids = Vec::new();
+    for dependency in &module.dependencies {
+        if !ids.contains(&dependency.resolved_module_id) {
+            ids.push(dependency.resolved_module_id);
+        }
+    }
+    ids
 }
 
 fn resolve_local_specifier(
@@ -337,6 +409,53 @@ export const b = 1;
         assert_eq!(graph.modules[1].dependencies.len(), 1);
         assert_eq!(graph.modules[1].dependencies[0].specifier, "./entry");
         assert_eq!(graph.modules[1].dependencies[0].resolved_module_id, 0);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn builds_dependency_first_once_only_initialization_steps_from_static_graph() {
+        let dir = unique_temp_dir("init-plan");
+        fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source = dir.join("source.ts");
+        let nested = dir.join("nested.ts");
+
+        let entry_source = r#"
+import { value } from "./source";
+import { value as again } from "./source";
+console.log(value, again);
+"#;
+        fs::write(&entry, entry_source).expect("entry should be written");
+        fs::write(
+            &source,
+            r#"
+import { nested } from "./nested";
+export const value = nested;
+"#,
+        )
+        .expect("source should be written");
+        fs::write(&nested, "export const nested = 1;\n").expect("nested should be written");
+
+        let program = parse_module_source(entry_source).expect("entry should parse");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let steps = graph.dependency_first_initialization_steps();
+        let step_module_ids = steps
+            .iter()
+            .map(ModuleInitializationStep::module_id)
+            .collect::<Vec<_>>();
+
+        assert_eq!(step_module_ids, vec![2, 1, 0]);
+        assert_eq!(steps[0].path(), nested.canonicalize().unwrap());
+        assert!(steps[0].dependency_module_ids().is_empty());
+        assert_eq!(steps[1].path(), source.canonicalize().unwrap());
+        assert_eq!(steps[1].dependency_module_ids(), &[2]);
+        assert_eq!(steps[2].path(), entry.canonicalize().unwrap());
+        assert_eq!(
+            steps[2].dependency_module_ids(),
+            &[1],
+            "repeated imports of the same source module should schedule one init dependency"
+        );
 
         let _ = fs::remove_dir_all(&dir);
     }
