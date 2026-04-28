@@ -1,0 +1,55 @@
+Discord embed (dry run):
+{
+  "username": "ts2wasm-dev-loop",
+  "embeds": [
+    {
+      "title": "ts2wasm 開発ループレポート",
+      "color": 5814783,
+      "fields": [
+        {
+          "name": "📊 状態",
+          "value": "DONE. Issue 235 was fixed, validated, moved to `issues/done/`, and the issue\nindex was regenerated.",
+          "inline": false
+        },
+        {
+          "name": "🎯 目的",
+          "value": "Restore the two backend GC-root tests that failed after backend local-frame\nsizing changed.",
+          "inline": false
+        },
+        {
+          "name": "🔄 実施内容",
+          "value": "- Updated top-level GC root count/allocation assertions to derive values from\n`LocalFrame`.\n- Updated function activation-root assertions to derive static root bytes,\ncall-frame offsets, and frame byte counts from `LocalFrame`/`Layout`.\n- Preserved explicit mirror assertions for user locals and backend temporaries.",
+          "inline": false
+        },
+        {
+          "name": "🧠 判断と根拠",
+          "value": "The implementation was correct and the stale expectations were wrong. The\nemitter mirrors `LocalFrame::total_local_count()` roots, and the current\nbackend frame has 12 backend temporaries.\nTop-level evidence: one user local plus 12 backend temporaries gives\n`$gc_root_count = 13` and a 52-byte root allocation.",
+          "inline": false
+        },
+        {
+          "name": "⚠️ 詰まり・ロス",
+          "value": "Discord reporting is deferred because `DISCORD_WEBHOOK_URL` is not configured\nin the environment or `.env`. Payload and error artifacts were saved under this\nrun directory.",
+          "inline": false
+        },
+        {
+          "name": "📉 リスク",
+          "value": "None known. Full workspace validation passed.",
+          "inline": false
+        },
+        {
+          "name": "➡️ 次にやるべきこと",
+          "value": "Merge the child branch after parent review.",
+          "inline": false
+        },
+        {
+          "name": "📌 完了 / 追加",
+          "value": "Completed: issue 235. Follow-up issues: none.",
+          "inline": false
+        }
+      ],
+      "footer": {
+        "text": "run: 235-gc-root-count-20260428T055606Z"
+      }
+    }
+  ]
+}
