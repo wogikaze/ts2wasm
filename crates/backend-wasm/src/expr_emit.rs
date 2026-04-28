@@ -343,6 +343,7 @@ impl WatEmitter<'_> {
                     frame.heap_base_tmp(),
                     Layout::OBJECT_PROTOTYPE_OFFSET,
                 ));
+                let child_frame = frame.child_temp_frame();
                 for (i, (key, val)) in props.iter().enumerate() {
                     let entry_offset =
                         Layout::OBJECT_ENTRIES_OFFSET + (i as u32) * Layout::OBJECT_ENTRY_SIZE;
@@ -353,13 +354,16 @@ impl WatEmitter<'_> {
                         entry_offset,
                         key_raw,
                     ));
-                    self.emit_expr(wat, val, indent, frame);
-                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp(),));
+                    self.emit_expr(wat, val, indent, &child_frame);
+                    wat.push_str(&format!(
+                        "{pad}(local.set {})\n",
+                        child_frame.heap_value_tmp(),
+                    ));
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                         frame.heap_base_tmp(),
                         entry_offset + Layout::OBJECT_VALUE_OFFSET,
-                        frame.heap_value_tmp(),
+                        child_frame.heap_value_tmp(),
                     ));
                 }
                 wat.push_str(&format!(
@@ -681,15 +685,19 @@ impl WatEmitter<'_> {
             frame.heap_base_tmp(),
             elem_count,
         ));
+        let child_frame = frame.child_temp_frame();
         for (i, elem) in elements.iter().enumerate() {
             let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
-            self.emit_expr(wat, elem, indent, frame);
-            wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp(),));
+            self.emit_expr(wat, elem, indent, &child_frame);
+            wat.push_str(&format!(
+                "{pad}(local.set {})\n",
+                child_frame.heap_value_tmp(),
+            ));
             wat.push_str(&format!(
                 "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                 frame.heap_base_tmp(),
                 offset,
-                frame.heap_value_tmp(),
+                child_frame.heap_value_tmp(),
             ));
         }
         wat.push_str(&format!(
