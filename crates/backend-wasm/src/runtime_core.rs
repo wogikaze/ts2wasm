@@ -1,5 +1,5 @@
 use super::{
-    emitter::{WatEmitter, class_prototype_global},
+    emitter::{WatEmitter, builtin_error_prototype_global, class_prototype_global},
     runtime_fn::RuntimeGlobal,
 };
 use ts2wasm_runtime_abi::{
@@ -1058,8 +1058,19 @@ impl WatEmitter<'_> {
                 )
             })
             .collect::<String>();
+        let builtin_error_prototype_roots = self
+            .builtin_error_prototypes()
+            .into_iter()
+            .map(|constructor| {
+                format!(
+                    "\n    (call $gc_mark_value (i32.or (global.get ${}) (i32.const {})))",
+                    builtin_error_prototype_global(constructor),
+                    ValueTag::OBJECT,
+                )
+            })
+            .collect::<String>();
         let gc_roots = format!(
-            "\n    (call $gc_mark_registered_roots)\n    (call $gc_mark_call_frame_roots){gc_collect_roots}{class_prototype_roots}"
+            "\n    (call $gc_mark_registered_roots)\n    (call $gc_mark_call_frame_roots){gc_collect_roots}{class_prototype_roots}{builtin_error_prototype_roots}"
         );
 
         wat.push_str(&format!(

@@ -1,8 +1,9 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use crate::{DiagCode, Diagnostic};
 use ts2wasm_ir::lowered::{
-    ClassPrototypeRef, FuncId, LocalId, LoweredExpr, LoweredProgram, LoweredStmt,
+    BuiltinErrorConstructor, ClassPrototypeRef, FuncId, LocalId, LoweredExpr, LoweredProgram,
+    LoweredStmt,
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
@@ -145,6 +146,7 @@ impl<'a> WatEmitter<'a> {
         ));
         self.emit_required_globals(&mut wat);
         self.emit_class_prototype_globals(&mut wat);
+        self.emit_builtin_error_prototype_globals(&mut wat);
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
         self.emit_functions(&mut wat);
@@ -501,6 +503,10 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(val);
                 }
             }
+            LoweredExpr::ErrorNew { message, .. } => {
+                self.intern_string("message");
+                self.collect_expr_strings(message);
+            }
             LoweredExpr::PropertyGet { obj, key } => {
                 self.collect_expr_strings(obj);
                 self.intern_string(key);
@@ -531,7 +537,7 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(arg);
                 }
             }
-            LoweredExpr::ClassPrototype(_) => {}
+            LoweredExpr::ClassPrototype(_) | LoweredExpr::BuiltinErrorPrototype(_) => {}
             LoweredExpr::ModuleLoad { .. } => {}
             LoweredExpr::RuntimeCall { args, .. } => {
                 for arg in args {
@@ -546,6 +552,15 @@ impl<'a> WatEmitter<'a> {
             wat.push_str(&format!(
                 "  (global ${} (mut i32) (i32.const 0))\n",
                 class_prototype_global(*constructor),
+            ));
+        }
+    }
+
+    fn emit_builtin_error_prototype_globals(&self, wat: &mut String) {
+        for constructor in self.builtin_error_prototypes() {
+            wat.push_str(&format!(
+                "  (global ${} (mut i32) (i32.const 0))\n",
+                builtin_error_prototype_global(constructor),
             ));
         }
     }
@@ -567,6 +582,33 @@ impl<'a> WatEmitter<'a> {
             ));
             let parent_expr = parent
                 .map(|id| format!("global.get ${}", class_prototype_global(id)))
+                .unwrap_or_else(|| "i32.const 0".to_owned());
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) ({parent_expr}))\n",
+                Layout::OBJECT_PROTOTYPE_OFFSET,
+            ));
+            wat.push_str(&format!("{pad}  )\n{pad})\n"));
+        }
+    }
+
+    fn emit_builtin_error_prototype_initializers(&self, wat: &mut String, indent: usize) {
+        let pad = " ".repeat(indent);
+        for constructor in self.builtin_error_prototypes() {
+            let global = builtin_error_prototype_global(constructor);
+            wat.push_str(&format!(
+                "{pad}(if (i32.eqz (global.get ${global}))\n{pad}  (then\n"
+            ));
+            wat.push_str(&format!(
+                "{pad}    (global.set ${global} (call {} (i32.const {})))\n",
+                RuntimeFn::AllocHeap.symbol(),
+                Layout::OBJECT_HEADER_SIZE,
+            ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (global.get ${global}) (i32.const 0))\n"
+            ));
+            let parent_expr = constructor
+                .parent()
+                .map(|parent| format!("global.get ${}", builtin_error_prototype_global(parent)))
                 .unwrap_or_else(|| "i32.const 0".to_owned());
             wat.push_str(&format!(
                 "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) ({parent_expr}))\n",
@@ -603,6 +645,18 @@ impl<'a> WatEmitter<'a> {
         );
         for function in &self.program.functions {
             self.collect_class_prototypes_from_stmts(&function.body, &mut prototypes);
+        }
+        prototypes
+    }
+
+    pub(super) fn builtin_error_prototypes(&self) -> BTreeSet<BuiltinErrorConstructor> {
+        let mut prototypes = BTreeSet::new();
+        self.collect_builtin_error_prototypes_from_stmts(
+            &self.program.top_level_statements,
+            &mut prototypes,
+        );
+        for function in &self.program.functions {
+            self.collect_builtin_error_prototypes_from_stmts(&function.body, &mut prototypes);
         }
         prototypes
     }
@@ -695,6 +749,95 @@ impl<'a> WatEmitter<'a> {
         }
     }
 
+    fn collect_builtin_error_prototypes_from_stmts(
+        &self,
+        stmts: &[LoweredStmt],
+        prototypes: &mut BTreeSet<BuiltinErrorConstructor>,
+    ) {
+        for stmt in stmts {
+            match stmt {
+                LoweredStmt::Let(_, expr)
+                | LoweredStmt::Assign(_, expr)
+                | LoweredStmt::Expr(expr)
+                | LoweredStmt::Return(expr)
+                | LoweredStmt::Throw(expr)
+                | LoweredStmt::Export { expr, .. }
+                | LoweredStmt::ModuleExportsAssign { expr } => {
+                    self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                }
+                LoweredStmt::If {
+                    condition,
+                    then_body,
+                    else_body,
+                } => {
+                    self.collect_builtin_error_prototypes_from_expr(condition, prototypes);
+                    self.collect_builtin_error_prototypes_from_stmts(then_body, prototypes);
+                    self.collect_builtin_error_prototypes_from_stmts(else_body, prototypes);
+                }
+                LoweredStmt::While { condition, body }
+                | LoweredStmt::DoWhile { body, condition } => {
+                    self.collect_builtin_error_prototypes_from_expr(condition, prototypes);
+                    self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                }
+                LoweredStmt::TryCatch {
+                    try_body,
+                    catch_body,
+                    finally_body,
+                    ..
+                } => {
+                    self.collect_builtin_error_prototypes_from_stmts(try_body, prototypes);
+                    if let Some(body) = catch_body {
+                        self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                    }
+                    if let Some(body) = finally_body {
+                        self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                    }
+                }
+                LoweredStmt::Switch { expr, cases } => {
+                    self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                    for (case_expr, body) in cases {
+                        if let Some(case_expr) = case_expr {
+                            self.collect_builtin_error_prototypes_from_expr(case_expr, prototypes);
+                        }
+                        self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                    }
+                }
+                LoweredStmt::For {
+                    init,
+                    condition,
+                    update,
+                    body,
+                } => {
+                    if let Some(stmt) = init {
+                        self.collect_builtin_error_prototypes_from_stmts(
+                            std::slice::from_ref(stmt.as_ref()),
+                            prototypes,
+                        );
+                    }
+                    if let Some(condition) = condition {
+                        self.collect_builtin_error_prototypes_from_expr(condition, prototypes);
+                    }
+                    if let Some(update) = update {
+                        self.collect_builtin_error_prototypes_from_expr(update, prototypes);
+                    }
+                    self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                }
+                LoweredStmt::ForIn { iter, body, .. } | LoweredStmt::ForOf { iter, body, .. } => {
+                    self.collect_builtin_error_prototypes_from_expr(iter, prototypes);
+                    self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                }
+                LoweredStmt::Labeled { body, .. } => self
+                    .collect_builtin_error_prototypes_from_stmts(
+                        std::slice::from_ref(body.as_ref()),
+                        prototypes,
+                    ),
+                LoweredStmt::Break { .. }
+                | LoweredStmt::Continue { .. }
+                | LoweredStmt::ClassDecl { .. } => {}
+            }
+        }
+    }
+
     fn collect_class_prototypes_from_expr(
         &self,
         expr: &LoweredExpr,
@@ -704,6 +847,7 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::ClassPrototype(prototype) => {
                 add_class_prototype_ref(prototype, prototypes);
             }
+            LoweredExpr::BuiltinErrorPrototype(_) | LoweredExpr::ErrorNew { .. } => {}
             LoweredExpr::New {
                 prototype, args, ..
             } => {
@@ -789,6 +933,99 @@ impl<'a> WatEmitter<'a> {
         }
     }
 
+    fn collect_builtin_error_prototypes_from_expr(
+        &self,
+        expr: &LoweredExpr,
+        prototypes: &mut BTreeSet<BuiltinErrorConstructor>,
+    ) {
+        match expr {
+            LoweredExpr::BuiltinErrorPrototype(constructor) => {
+                add_builtin_error_prototype_ref(*constructor, prototypes);
+            }
+            LoweredExpr::ErrorNew {
+                constructor,
+                message,
+            } => {
+                add_builtin_error_prototype_ref(*constructor, prototypes);
+                self.collect_builtin_error_prototypes_from_expr(message, prototypes);
+            }
+            LoweredExpr::Unary { expr, .. }
+            | LoweredExpr::GetLength(expr)
+            | LoweredExpr::PropertyGet { obj: expr, .. }
+            | LoweredExpr::MethodCall { object: expr, .. }
+            | LoweredExpr::PropertyDelete { object: expr, .. } => {
+                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::Binary { left, right, .. }
+            | LoweredExpr::PropertyGetDynamic {
+                obj: left,
+                key: right,
+            }
+            | LoweredExpr::Index {
+                object: left,
+                index: right,
+            }
+            | LoweredExpr::ArrayGet {
+                arr: left,
+                index: right,
+            }
+            | LoweredExpr::PropertyDeleteDynamic {
+                object: left,
+                key: right,
+            }
+            | LoweredExpr::PropertyInDynamic {
+                obj: left,
+                key: right,
+            } => {
+                self.collect_builtin_error_prototypes_from_expr(left, prototypes);
+                self.collect_builtin_error_prototypes_from_expr(right, prototypes);
+            }
+            LoweredExpr::PropertySet { object, value, .. }
+            | LoweredExpr::PropertySetDynamic { object, value, .. } => {
+                self.collect_builtin_error_prototypes_from_expr(object, prototypes);
+                self.collect_builtin_error_prototypes_from_expr(value, prototypes);
+            }
+            LoweredExpr::Call { args, .. } | LoweredExpr::RuntimeCall { args, .. } => {
+                for arg in args {
+                    self.collect_builtin_error_prototypes_from_expr(arg, prototypes);
+                }
+            }
+            LoweredExpr::ArrayNew { elements } => {
+                for elem in elements {
+                    self.collect_builtin_error_prototypes_from_expr(elem, prototypes);
+                }
+            }
+            LoweredExpr::ObjectNew { props } => {
+                for (_, value) in props {
+                    self.collect_builtin_error_prototypes_from_expr(value, prototypes);
+                }
+            }
+            LoweredExpr::New { args, .. } => {
+                for arg in args {
+                    self.collect_builtin_error_prototypes_from_expr(arg, prototypes);
+                }
+            }
+            LoweredExpr::Assign { expr, .. }
+            | LoweredExpr::LogicalAssign { expr, .. }
+            | LoweredExpr::LogicalPropertyAssign { expr, .. } => {
+                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::PropertyIn { obj, .. } => {
+                self.collect_builtin_error_prototypes_from_expr(obj, prototypes);
+            }
+            LoweredExpr::Number(_)
+            | LoweredExpr::String(_)
+            | LoweredExpr::Bool(_)
+            | LoweredExpr::Null
+            | LoweredExpr::Undefined
+            | LoweredExpr::Local(_)
+            | LoweredExpr::ClassPrototype(_)
+            | LoweredExpr::ModuleLoad { .. }
+            | LoweredExpr::This
+            | LoweredExpr::ArrowFn { .. } => {}
+        }
+    }
+
     fn emit_functions(&self, wat: &mut String) {
         for function in &self.program.functions {
             wat.push_str(&format!("  (func ${} ", function_symbol(function.id)));
@@ -836,6 +1073,7 @@ impl<'a> WatEmitter<'a> {
             wat.push_str("    (global.set $current_module_id (i32.const 1))\n");
         }
         self.emit_class_prototype_initializers(wat, 4);
+        self.emit_builtin_error_prototype_initializers(wat, 4);
         self.emit_top_level_statements(wat, 4, &frame);
         wat.push_str("  )\n");
     }
@@ -1035,6 +1273,26 @@ pub(super) fn function_symbol(id: FuncId) -> String {
 
 pub(super) fn class_prototype_global(id: FuncId) -> String {
     format!("class_proto_{}", id.0)
+}
+
+pub(super) fn builtin_error_prototype_global(constructor: BuiltinErrorConstructor) -> &'static str {
+    match constructor {
+        BuiltinErrorConstructor::Error => "error_proto_error",
+        BuiltinErrorConstructor::TypeError => "error_proto_type_error",
+        BuiltinErrorConstructor::ReferenceError => "error_proto_reference_error",
+        BuiltinErrorConstructor::SyntaxError => "error_proto_syntax_error",
+    }
+}
+
+fn add_builtin_error_prototype_ref(
+    constructor: BuiltinErrorConstructor,
+    prototypes: &mut BTreeSet<BuiltinErrorConstructor>,
+) {
+    let mut current = Some(constructor);
+    while let Some(constructor) = current {
+        prototypes.insert(constructor);
+        current = constructor.parent();
+    }
 }
 
 fn add_class_prototype_ref(
