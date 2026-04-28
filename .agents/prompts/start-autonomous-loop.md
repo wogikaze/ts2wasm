@@ -17,8 +17,10 @@ Each child must work in its own worktree, close or progress all assigned issues,
 
 Discord reporting is part of the loop, not an afterthought:
 
+- Keep Discord reports very brief: status, issue IDs, validation, blockers, next action only.
 - After every child outcome, require a `reports/runs/<run_id>/cycle_report.md` or saved `discord_payload.json`.
 - Send reports with `scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>`.
+- `discord-report` automatically splits oversized messages into two sends; do not manually skip reporting because of Discord limits.
 - If sending fails, save the payload/error under `reports/runs/<run_id>/`, retry once, mark `DEFERRED` if it still fails, and continue.
 - Before merging a child or assigning the next wave, the parent must record whether reporting was `SENT` or `DEFERRED`.
 - At the end of every parent cycle, send or defer the parent cycle report the same way.

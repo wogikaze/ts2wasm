@@ -252,6 +252,9 @@ If there are pre-existing unrelated changes:
 
 After each commit batch or issue outcome:
 
+Keep the Discord report very brief: status, issue IDs, validation, blockers, and next action only.
+`discord-report` automatically splits oversized messages into two sends.
+
 1. Attempt:
 
 ```bash

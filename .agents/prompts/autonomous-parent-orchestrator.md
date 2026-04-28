@@ -366,6 +366,8 @@ reports/runs/<run_id>/parent_cycle_report.md
 ```
 
 `reports/` is local and git-ignored. Send the report to Discord before push, but do not commit it.
+Keep Discord reports very brief: status, closed/progress issue IDs, validation, blockers, queue size, next assignments.
+`discord-report` automatically splits oversized messages into two sends.
 
 Include:
 

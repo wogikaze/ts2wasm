@@ -143,6 +143,8 @@ scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <r
 webhook 送信ルール:
 
 - push 前に必ず `scripts/manager discord-report` で webhook に送信する。
+- Discord 送信用レポートは非常に簡潔にする（状態、issue ID、検証、blocker、次アクションのみ）。
+- Discord 制限に近い payload は `discord-report` が自動的に 2 通へ分割して送信する。
 - `reports/` は git 追跡しないローカル生成物として扱う。
 - `.md` / `.json` ファイルを `discord-report` で送信した場合、送信済み registry に記録し、同じファイルの再送をエラーにする。
 - `.githooks/pre-push` は gate 成功後に pre-push report を生成して webhook 送信し、送信失敗時は push を止める。
