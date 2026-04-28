@@ -3,7 +3,7 @@ mod module_graph;
 
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use ts2wasm_backend_wasm as backend;
@@ -127,7 +127,31 @@ fn rewrite_static_named_imports_for_build(
     program: &[Stmt],
     module_graph: &ModuleGraph,
 ) -> Result<Vec<Stmt>, Diagnostic> {
+    Ok(lower_static_named_import_bindings_for_build(program, module_graph)?.rewritten_program)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StaticModuleBindingLowering {
+    rewritten_program: Vec<Stmt>,
+    named_imports: Vec<StaticNamedImportBinding>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StaticNamedImportBinding {
+    source_specifier: String,
+    source_module_id: usize,
+    source_path: PathBuf,
+    imported_name: String,
+    local_name: String,
+    initializer: Expr,
+}
+
+fn lower_static_named_import_bindings_for_build(
+    program: &[Stmt],
+    module_graph: &ModuleGraph,
+) -> Result<StaticModuleBindingLowering, Diagnostic> {
     let mut rewritten = Vec::new();
+    let mut named_imports = Vec::new();
 
     for stmt in program {
         match stmt {
@@ -157,18 +181,30 @@ fn rewrite_static_named_imports_for_build(
                         ),
                         span: Some(specifier.imported_span),
                     })?;
+                    let binding = StaticNamedImportBinding {
+                        source_specifier: source.value.clone(),
+                        source_module_id: dependency.resolved_module_id(),
+                        source_path: dependency.resolved_path().to_path_buf(),
+                        imported_name: specifier.imported.clone(),
+                        local_name: specifier.local.clone(),
+                        initializer: expr.clone(),
+                    };
                     rewritten.push(Stmt::Let {
-                        name: specifier.local.clone(),
-                        expr: expr.clone(),
+                        name: binding.local_name.clone(),
+                        expr: binding.initializer.clone(),
                         span: specifier.local_span,
                     });
+                    named_imports.push(binding);
                 }
             }
             other => rewritten.push(other.clone()),
         }
     }
 
-    Ok(rewritten)
+    Ok(StaticModuleBindingLowering {
+        rewritten_program: rewritten,
+        named_imports,
+    })
 }
 
 fn collect_literal_named_exports(path: &Path) -> Result<HashMap<String, Expr>, Diagnostic> {
@@ -806,5 +842,61 @@ mod tests {
             Stmt::Switch { .. } => {}
             other => panic!("unexpected: {other:?}"),
         }
+    }
+
+    #[test]
+    fn static_named_import_binding_lowering_uses_source_export_when_importer_shadows_name() {
+        let dir = unique_temp_dir("static-binding-shadow");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source_module = dir.join("source.ts");
+        let entry_source = r#"
+import { value as importedValue } from "./source";
+const value = 99;
+console.log(importedValue);
+"#;
+        std::fs::write(&entry, entry_source).expect("entry should be written");
+        std::fs::write(&source_module, "export const value = 1;\n")
+            .expect("source module should be written");
+
+        let program = parse_program(entry_source).expect("entry should parse");
+        validate_ast(&program).expect("entry should validate");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let lowering = lower_static_named_import_bindings_for_build(&program, &graph)
+            .expect("binding lowering should succeed");
+
+        assert_eq!(lowering.named_imports.len(), 1);
+        let binding = &lowering.named_imports[0];
+        assert_eq!(binding.source_specifier, "./source");
+        assert_eq!(binding.source_module_id, 1);
+        assert_eq!(binding.source_path, source_module.canonicalize().unwrap());
+        assert_eq!(binding.imported_name, "value");
+        assert_eq!(binding.local_name, "importedValue");
+        assert!(matches!(binding.initializer, Expr::Number { value: 1, .. }));
+
+        match &lowering.rewritten_program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "importedValue");
+                assert!(matches!(expr, Expr::Number { value: 1, .. }));
+            }
+            other => panic!("unexpected rewritten import stmt: {other:?}"),
+        }
+        match &lowering.rewritten_program[1] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "value");
+                assert!(matches!(expr, Expr::Number { value: 99, .. }));
+            }
+            other => panic!("unexpected importer shadow stmt: {other:?}"),
+        }
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    fn unique_temp_dir(label: &str) -> std::path::PathBuf {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time should be after epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("ts2wasm-compiler-{label}-{unique}"))
     }
 }
