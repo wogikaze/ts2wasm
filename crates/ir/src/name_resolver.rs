@@ -546,15 +546,24 @@ impl NameResolver {
             }
             Expr::LogicalPropertyAssign {
                 object,
+                object_expr,
                 property,
                 computed_key,
                 op,
                 expr,
                 span,
             } => {
-                self.resolve_identifier(object, *span)?;
+                let resolved_object_expr = object_expr
+                    .as_ref()
+                    .map(|object| self.resolve_expr(object))
+                    .transpose()?
+                    .map(Box::new);
+                if resolved_object_expr.is_none() {
+                    self.resolve_identifier(object, *span)?;
+                }
                 Ok(Expr::LogicalPropertyAssign {
                     object: object.clone(),
+                    object_expr: resolved_object_expr,
                     property: property.clone(),
                     computed_key: computed_key
                         .as_ref()

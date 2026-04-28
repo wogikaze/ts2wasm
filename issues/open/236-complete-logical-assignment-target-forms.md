@@ -107,6 +107,16 @@ and RHS side effects for the supported dynamic-key slice. Non-identifier
 receivers remain issue-linked unsupported coverage in
 `fixtures/core-semantics/logical-assignment-member-unsupported.ts`.
 
+2026-04-28 progress: static member logical-assignment targets with
+non-identifier receivers now lower through an explicit receiver-temporary path
+(`getObj().value ||= rhs()`, `&&=`, `??=`). The backend evaluates the receiver
+once into a rooted temporary before the property read and reuses that temporary
+for any short-circuited write. Regression coverage in
+`fixtures/core-semantics/logical-assignment-member.ts` records receiver and RHS
+side-effect markers for skip/run branches. Dynamic computed keys on
+non-identifier receivers remain issue-linked unsupported coverage in
+`fixtures/core-semantics/logical-assignment-member-unsupported.ts`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
