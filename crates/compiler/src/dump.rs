@@ -309,6 +309,11 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
                 .join(", ");
             let _ = writeln!(out, "import {{ {specifiers} }} from '{}';", source.value);
         }
+        Stmt::ImportDefault {
+            specifier, source, ..
+        } => {
+            let _ = writeln!(out, "import {} from '{}';", specifier.local, source.value);
+        }
         Stmt::ExportNamed { specifiers, .. } => {
             let specifiers = specifiers
                 .iter()
