@@ -2,7 +2,7 @@
   "run_id": "060-coverage-ramp16000-20260428T105318Z",
   "task_id": "issue-060",
   "git": {
-    "sha": "0028a97",
+    "sha": "005985358f4685bd4dc9c0a54923b0cddab67406",
     "exit_code": 0,
     "changed_files": [
       "artifacts/coverage/reference-coverage-matrix.md",
@@ -16,8 +16,12 @@
     ],
     "commits": [
       {
-        "sha": "0028a97",
+        "sha": "e3f5871e2cc30528fe5f996ab9ab9a5a80f4df4b",
         "message": "issue-060: ramp test262 coverage to 16000"
+      },
+      {
+        "sha": "005985358f4685bd4dc9c0a54923b0cddab67406",
+        "message": "Merge branch 'master' into agent/060-coverage-ramp16000-20260428T105318Z"
       }
     ]
   },
