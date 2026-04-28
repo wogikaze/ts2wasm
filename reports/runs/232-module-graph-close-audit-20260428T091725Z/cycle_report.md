@@ -5,7 +5,7 @@ Branch: `agent/232-module-graph-close-audit-20260428T091725Z`
 Worktree: `/home/wogikaze/wgkz/ts2wasm-232-module-graph-close-audit-20260428T091725Z`
 Issue: `232`
 Outcome: DONE
-Commit: pending final close commit
+Commit: `d96750d`
 
 ## Scope
 

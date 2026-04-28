@@ -109,7 +109,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `pending final close commit`
+- `d96750d` issue-232: close module graph contract
 
 Validation result:
 
