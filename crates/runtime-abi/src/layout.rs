@@ -80,6 +80,16 @@ impl Layout {
     pub const GC_RESERVED_OFFSET: u32 = 12;
     /// Initial GC threshold in bytes (trigger GC when heap exceeds this).
     pub const GC_THRESHOLD: u32 = 64 * 1024;
+    /// Bytes reserved in the root table allocation for active function call frames.
+    ///
+    /// Function entry/exit manages this as a LIFO stack so call-frame roots can be
+    /// registered without allocating during the call prologue.
+    pub const GC_CALL_FRAME_ROOT_STACK_BYTES: u32 = 16 * 1024;
+    /// Header words stored before each call-frame root slot payload:
+    /// previous frame pointer and slot count.
+    pub const GC_CALL_FRAME_HEADER_WORDS: u32 = 2;
+    /// Header size, in bytes, before the first call-frame root slot.
+    pub const GC_CALL_FRAME_HEADER_SIZE: u32 = Self::GC_CALL_FRAME_HEADER_WORDS * 4;
     /// Mark flag for the 017a GC header flags/type field.
     pub const GC_MARK_FLAG: u32 = 0x1;
     /// Reserved finalizer flag for the 017a GC header flags/type field.
@@ -164,6 +174,12 @@ mod tests {
             Layout::GC_KIND_OBJECT & (Layout::GC_MARK_FLAG | Layout::GC_FINALIZABLE_FLAG),
             0
         );
+    }
+
+    #[test]
+    fn gc_call_frame_stack_layout_is_word_aligned() {
+        assert_eq!(Layout::GC_CALL_FRAME_ROOT_STACK_BYTES % 4, 0);
+        assert_eq!(Layout::GC_CALL_FRAME_HEADER_SIZE, 8);
     }
 
     #[test]

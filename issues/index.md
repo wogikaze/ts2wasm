@@ -168,7 +168,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | feature | frontend | design-ready | P1 |  | Implement Compiler |
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
-| 221 | Implement GC call-frame roots for closure escape | feature | runtime/memory | implementation-ready | P1 | 220 | Top-level locals are mirrored into GC roots, but function/call-frame locals and closure captures are still not regist... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -259,6 +258,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 218 | Implement GC mark root scanning | feature | runtime/memory | see file |
 | 219 | Implement GC sweep reuse and fixtures | feature | runtime/memory | see file |
 | 220 | Implement GC top-level local roots for object escape fixtures | feature | runtime/memory | see file |
+| 221 | Implement GC call-frame roots for closure escape | feature | runtime/memory | see file |
 | 222 | Investigate GC high-pressure OOB under repeated local-root allocation | bug | runtime/memory | see file |
 | 223 | Add spans to receiver this diagnostics | bug | frontend/diagnostics | see file |
 <!-- generated:done:end -->

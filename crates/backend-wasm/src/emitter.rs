@@ -27,7 +27,14 @@ pub(super) struct WatEmitter<'a> {
 pub(super) struct LocalFrame {
     pub(super) user_local_count: usize,
     pub(super) backend_base: usize,
-    gc_root_base_slot: Option<usize>,
+    gc_roots: GcRootStorage,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum GcRootStorage {
+    Disabled,
+    StaticTable { base_slot: usize },
+    ActivationFrame,
 }
 
 impl LocalFrame {
@@ -35,7 +42,21 @@ impl LocalFrame {
         Self {
             user_local_count,
             backend_base: user_local_count,
-            gc_root_base_slot,
+            gc_roots: gc_root_base_slot
+                .map(|base_slot| GcRootStorage::StaticTable { base_slot })
+                .unwrap_or(GcRootStorage::Disabled),
+        }
+    }
+
+    pub(super) fn activation(user_local_count: usize, enabled: bool) -> Self {
+        Self {
+            user_local_count,
+            backend_base: user_local_count,
+            gc_roots: if enabled {
+                GcRootStorage::ActivationFrame
+            } else {
+                GcRootStorage::Disabled
+            },
         }
     }
 
@@ -64,15 +85,27 @@ impl LocalFrame {
     }
 
     pub(super) fn gc_root_slot_for_index(self, local_index: usize) -> Option<usize> {
-        self.gc_root_base_slot
-            .filter(|_| local_index < self.total_local_count())
-            .map(|base| base + local_index)
+        if local_index >= self.total_local_count() {
+            return None;
+        }
+        match self.gc_roots {
+            GcRootStorage::Disabled | GcRootStorage::ActivationFrame => None,
+            GcRootStorage::StaticTable { base_slot } => Some(base_slot + local_index),
+        }
     }
 
     pub(super) fn gc_root_slots(self) -> impl Iterator<Item = (usize, usize)> {
-        self.gc_root_base_slot.into_iter().flat_map(move |base| {
+        let base_slot = match self.gc_roots {
+            GcRootStorage::StaticTable { base_slot } => Some(base_slot),
+            GcRootStorage::Disabled | GcRootStorage::ActivationFrame => None,
+        };
+        base_slot.into_iter().flat_map(move |base| {
             (0..self.total_local_count()).map(move |local| (local, base + local))
         })
+    }
+
+    pub(super) fn uses_activation_roots(self) -> bool {
+        matches!(self.gc_roots, GcRootStorage::ActivationFrame)
     }
 }
 
@@ -746,7 +779,6 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn emit_functions(&self, wat: &mut String) {
-        let function_root_offsets = self.function_gc_root_offsets();
         for function in &self.program.functions {
             wat.push_str(&format!("  (func ${} ", function_symbol(function.id)));
             for _ in &function.params {
@@ -756,18 +788,19 @@ impl<'a> WatEmitter<'a> {
             for _ in &function.locals {
                 wat.push_str("    (local i32)\n");
             }
-            let frame = LocalFrame::new(
+            let frame = LocalFrame::activation(
                 function.params.len() + function.locals.len(),
-                self.gc_root_table_enabled()
-                    .then(|| function_root_offsets[function.id.0]),
+                self.gc_call_frame_roots_enabled(),
             );
             // Backend-owned temporaries for heap construction and switch dispatch.
             for _ in 0..frame.backend_local_count() {
                 wat.push_str("    (local i32)\n");
             }
+            self.emit_gc_activation_frame_push(wat, &frame, 4);
             self.emit_gc_root_param_initializer(wat, &frame, 4);
             let mut loop_ctx = super::stmt_emit::LoopContext::default();
             self.emit_statements(wat, &function.body, 4, &mut loop_ctx, &frame);
+            self.emit_gc_activation_frame_pop(wat, &frame, 4);
             wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
             wat.push_str("  )\n");
         }
@@ -798,11 +831,18 @@ impl<'a> WatEmitter<'a> {
 
     fn emit_gc_root_table_initializer(&self, wat: &mut String, indent: usize) {
         let root_count = self.gc_root_slot_count();
-        if root_count == 0 || !self.gc_root_table_enabled() {
+        if (root_count == 0 && !self.gc_call_frame_roots_enabled()) || !self.gc_root_table_enabled()
+        {
             return;
         }
         let pad = " ".repeat(indent);
-        let root_bytes = root_count * std::mem::size_of::<u32>();
+        let static_root_bytes = root_count * std::mem::size_of::<u32>();
+        let call_frame_root_bytes = if self.gc_call_frame_roots_enabled() {
+            Layout::GC_CALL_FRAME_ROOT_STACK_BYTES as usize
+        } else {
+            0
+        };
+        let root_bytes = static_root_bytes + call_frame_root_bytes;
         wat.push_str(&format!(
             "{pad}(global.set $gc_root_count (i32.const {root_count}))\n",
         ));
@@ -810,6 +850,20 @@ impl<'a> WatEmitter<'a> {
             "{pad}(global.set $gc_root_base (call {} (i32.const {root_bytes})))\n",
             RuntimeFn::AllocHeap.symbol(),
         ));
+        if self.gc_call_frame_roots_enabled() {
+            wat.push_str(&format!(
+                "{pad}(global.set $gc_call_frame_base (i32.add (global.get $gc_root_base) (i32.const {static_root_bytes})))\n",
+            ));
+            wat.push_str(&format!(
+                "{pad}(global.set $gc_call_frame_top (global.get $gc_call_frame_base))\n",
+            ));
+            wat.push_str(&format!(
+                "{pad}(global.set $gc_call_frame_limit (i32.add (global.get $gc_call_frame_base) (i32.const {call_frame_root_bytes})))\n",
+            ));
+            wat.push_str(&format!(
+                "{pad}(global.set $gc_call_frame_current (i32.const 0))\n"
+            ));
+        }
     }
 
     fn emit_gc_root_param_initializer(&self, wat: &mut String, frame: &LocalFrame, indent: usize) {
@@ -820,6 +874,15 @@ impl<'a> WatEmitter<'a> {
                 "{pad}(i32.store (i32.add (global.get $gc_root_base) (i32.const {offset})) (local.get {local}))\n",
             ));
         }
+        if frame.uses_activation_roots() {
+            for local in 0..frame.total_local_count() {
+                let offset =
+                    Layout::GC_CALL_FRAME_HEADER_SIZE as usize + local * std::mem::size_of::<u32>();
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const {offset})) (local.get {local}))\n",
+                ));
+            }
+        }
     }
 
     pub(super) fn emit_gc_root_mirror(
@@ -829,6 +892,10 @@ impl<'a> WatEmitter<'a> {
         local_id: LocalId,
         frame: &LocalFrame,
     ) {
+        if frame.uses_activation_roots() {
+            self.emit_gc_activation_root_mirror_slot(wat, pad, local_id.0, frame);
+            return;
+        }
         let Some(slot) = frame.gc_root_slot(local_id) else {
             return;
         };
@@ -842,6 +909,10 @@ impl<'a> WatEmitter<'a> {
         local_index: usize,
         frame: &LocalFrame,
     ) {
+        if frame.uses_activation_roots() {
+            self.emit_gc_activation_root_mirror_slot(wat, pad, local_index, frame);
+            return;
+        }
         let Some(slot) = frame.gc_root_slot_for_index(local_index) else {
             return;
         };
@@ -862,37 +933,72 @@ impl<'a> WatEmitter<'a> {
         ));
     }
 
+    fn emit_gc_activation_root_mirror_slot(
+        &self,
+        wat: &mut String,
+        pad: &str,
+        local_index: usize,
+        frame: &LocalFrame,
+    ) {
+        if local_index >= frame.total_local_count() {
+            return;
+        }
+        let offset =
+            Layout::GC_CALL_FRAME_HEADER_SIZE as usize + local_index * std::mem::size_of::<u32>();
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const {offset})) (local.get {}))\n",
+            local_index,
+        ));
+    }
+
+    fn emit_gc_activation_frame_push(&self, wat: &mut String, frame: &LocalFrame, indent: usize) {
+        if !frame.uses_activation_roots() {
+            return;
+        }
+        let pad = " ".repeat(indent);
+        let frame_bytes = Layout::GC_CALL_FRAME_HEADER_SIZE as usize
+            + frame.total_local_count() * std::mem::size_of::<u32>();
+        wat.push_str(&format!(
+            "{pad}(if (i32.gt_u (i32.add (global.get $gc_call_frame_top) (i32.const {frame_bytes})) (global.get $gc_call_frame_limit))\n",
+        ));
+        wat.push_str(&format!("{pad}  (then (unreachable)))\n"));
+        wat.push_str(&format!(
+            "{pad}(i32.store (global.get $gc_call_frame_top) (global.get $gc_call_frame_current))\n",
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (global.get $gc_call_frame_top) (i32.const 4)) (i32.const {}))\n",
+            frame.total_local_count(),
+        ));
+        wat.push_str(&format!(
+            "{pad}(global.set $gc_call_frame_current (global.get $gc_call_frame_top))\n",
+        ));
+        wat.push_str(&format!(
+            "{pad}(global.set $gc_call_frame_top (i32.add (global.get $gc_call_frame_top) (i32.const {frame_bytes})))\n",
+        ));
+    }
+
+    pub(super) fn emit_gc_activation_frame_pop(
+        &self,
+        wat: &mut String,
+        frame: &LocalFrame,
+        indent: usize,
+    ) {
+        if !frame.uses_activation_roots() {
+            return;
+        }
+        let pad = " ".repeat(indent);
+        wat.push_str(&format!(
+            "{pad}(global.set $gc_call_frame_top (global.get $gc_call_frame_current))\n",
+        ));
+        wat.push_str(&format!(
+            "{pad}(global.set $gc_call_frame_current (i32.load (global.get $gc_call_frame_current)))\n",
+        ));
+    }
+
     fn gc_root_slot_count(&self) -> usize {
         self.program.top_level_locals.len()
             + if self.module_runtime_enabled() { 1 } else { 0 }
             + LocalFrame::new(0, None).backend_local_count()
-            + self
-                .program
-                .functions
-                .iter()
-                .map(|function| {
-                    function.params.len()
-                        + function.locals.len()
-                        + LocalFrame::new(0, None).backend_local_count()
-                })
-                .sum::<usize>()
-    }
-
-    fn function_gc_root_offsets(&self) -> Vec<usize> {
-        let mut next = self.program.top_level_locals.len()
-            + if self.module_runtime_enabled() { 1 } else { 0 }
-            + LocalFrame::new(0, None).backend_local_count();
-        self.program
-            .functions
-            .iter()
-            .map(|function| {
-                let base = next;
-                next += function.params.len()
-                    + function.locals.len()
-                    + LocalFrame::new(0, None).backend_local_count();
-                base
-            })
-            .collect()
     }
 
     fn module_runtime_enabled(&self) -> bool {
@@ -905,6 +1011,10 @@ impl<'a> WatEmitter<'a> {
         self.link_plan
             .required_runtime_functions()
             .contains(&RuntimeFn::AllocHeap)
+    }
+
+    fn gc_call_frame_roots_enabled(&self) -> bool {
+        self.gc_root_table_enabled() && !self.program.functions.is_empty()
     }
 }
 

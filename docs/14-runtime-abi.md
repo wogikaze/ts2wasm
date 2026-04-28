@@ -248,8 +248,15 @@ GC は以下のタイミングで実行:
 Mark phase は以下の root set から開始:
 
 1. Global variables (将来の実装)
-2. Stack locals (実行時のスタックフレーム)
+2. Top-level local root table and active function call-frame roots
 3. Runtime strings (interned strings は GC 対象外)
+
+Function call-frame roots are stored in a fixed root-frame stack allocated once
+from `_start` as part of the GC root table allocation. Function entry registers a
+frame containing the previous-frame pointer, slot count, and mirrored local
+slots; every function return unregisters that frame before returning the saved
+result. This avoids allocating during function prologue, so heap parameters are
+not exposed to collection before registration.
 
 Mark algorithm:
 

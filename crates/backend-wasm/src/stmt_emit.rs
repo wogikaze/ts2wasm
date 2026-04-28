@@ -166,11 +166,21 @@ impl WatEmitter<'_> {
             }
             LoweredStmt::Return(expr) => {
                 self.emit_expr(wat, expr, indent, frame);
+                if frame.uses_activation_roots() {
+                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                    self.emit_gc_activation_frame_pop(wat, frame, indent);
+                    wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
+                }
                 wat.push_str(&format!("{pad}(return)\n"));
             }
             LoweredStmt::Throw(expr) => {
                 // Exception runtime is not implemented yet; model throw as immediate return.
                 self.emit_expr(wat, expr, indent, frame);
+                if frame.uses_activation_roots() {
+                    wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                    self.emit_gc_activation_frame_pop(wat, frame, indent);
+                    wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
+                }
                 wat.push_str(&format!("{pad}(return)\n"));
             }
             LoweredStmt::DoWhile { body, condition } => {
