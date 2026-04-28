@@ -98,6 +98,15 @@ Follow-up issues:
 
 Split from issue 228 close audit. Existing diagnostics point to this issue for target forms that need temporary reference storage.
 
+2026-04-28 progress: dynamic computed logical-assignment keys on identifier receivers
+(`target[key] ||= rhs()`, `&&=`, `??=`) now lower through a computed
+property assignment path that evaluates the key expression before the
+short-circuit branch and reuses the stored key value for any write. Regression
+coverage in `fixtures/core-semantics/logical-assignment-index.ts` records key
+and RHS side effects for the supported dynamic-key slice. Non-identifier
+receivers remain issue-linked unsupported coverage in
+`fixtures/core-semantics/logical-assignment-member-unsupported.ts`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
