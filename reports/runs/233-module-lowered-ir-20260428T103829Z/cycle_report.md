@@ -41,6 +41,21 @@ scripts/manager check-issue-health: PASS
 scripts/manager check-agent-state: PASS
 ```
 
+Post-merge validation after merging local `master`:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (18 tests)
+cargo nextest run -p ts2wasm-compiler: PASS (38 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (18 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 220 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-lowered-entry.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-lowered-alias.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-lowered-shadow.wasm: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
 ## Remaining Work
 
 - Lower named imports to reads from emitted module exports instead of the temporary build rewrite.
