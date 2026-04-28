@@ -2,7 +2,7 @@
 
 **Status**: open
 **Created**: 2026-04-26
-**Updated**: 2026-04-26
+**Updated**: 2026-04-28
 **ID**: 022
 **Type**: feature
 **Area**: tests/coverage
@@ -22,11 +22,18 @@ Scope:
 
 Acceptance Criteria:
 
-- [ ] test262 executed count >= 100 (Gate D).
+- [x] test262 executed count >= 100 (Gate D).
 - [ ] test262 build-pass count >= 50 (Gate E).
 - [ ] test262 semantic-pass count >= 20 (Gate E).
-- [ ] Build-pass and semantic-pass are separately tracked.
-- [ ] reference-coverage-matrix.md is updated.
+- [x] Build-pass and semantic-pass are separately tracked.
+- [x] reference-coverage-matrix.md is updated.
+
+Progress evidence (2026-04-28):
+
+- Ran `python scripts/manager.py reference-coverage test262 --limit 100 --detail`; result: `executed=100`, `build_pass=0`, `semantic_pass=0`, `unsupported=100`, `fail=0`, `blocked=0`, `semantic_enabled=1`.
+- Updated `artifacts/coverage/results/test262.json` and regenerated `artifacts/coverage/reference-coverage-matrix.md`; the generated test262 row records denominator `53445`, executed `100`, build-pass `0`, semantic-pass `0`.
+- Gate D executed-count evidence is satisfied. Gate E remains open because the first 100 sorted test262 files are all unsupported, dominated by `regexp-literal:47`, `name-resolution:37`, and `date:13`.
+- Next safe ramp recommendation: keep issue 022 open and either add a harness selection mode for known runnable semantic-core test262 seeds or implement the dominant unsupported feature slices before expecting the sorted `--limit` ramp to produce build-pass and semantic-pass counts.
 
 Validation:
 
