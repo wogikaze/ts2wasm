@@ -19,7 +19,9 @@ use ts2wasm_ir::name_resolver;
 const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
 
 pub use dump::{DumpOptions, DumpPhase, dump_file_with_options};
-pub use module_graph::{ModuleDependency, ModuleGraph, ModuleNode, build_entry_module_graph};
+pub use module_graph::{
+    ModuleDependency, ModuleGraph, ModuleInitializationStep, ModuleNode, build_entry_module_graph,
+};
 pub use ts2wasm_frontend::{
     TypeScriptCheckReport, TypeScriptDiagnostic, check_typescript_file,
     collect_typescript_diagnostics,
