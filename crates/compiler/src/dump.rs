@@ -337,6 +337,22 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
                 .join(", ");
             let _ = writeln!(out, "export {{ {specifiers} }};");
         }
+        Stmt::ExportNamedFrom {
+            specifiers, source, ..
+        } => {
+            let specifiers = specifiers
+                .iter()
+                .map(|specifier| {
+                    if specifier.imported == specifier.exported {
+                        specifier.imported.clone()
+                    } else {
+                        format!("{} as {}", specifier.imported, specifier.exported)
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            let _ = writeln!(out, "export {{ {specifiers} }} from '{}';", source.value);
+        }
         Stmt::Let { name, expr, .. } => {
             let _ = writeln!(out, "let {name} = {};", unparse_expr(expr));
         }
