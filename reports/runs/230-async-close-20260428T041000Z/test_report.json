@@ -2,7 +2,7 @@
   "run_id": "230-async-close-20260428T041000Z",
   "task_id": "issue-230",
   "git": {
-    "sha": "pending-close-commit",
+    "sha": "6aa3283",
     "exit_code": 0,
     "changed_files": [
       "issues/done/230-implement-async-iteration-for-await-of.md",
@@ -12,7 +12,7 @@
     ],
     "commits": [
       {
-        "sha": "pending-close-commit",
+        "sha": "6aa3283",
         "message": "issue-230: close async iteration diagnostics"
       }
     ]

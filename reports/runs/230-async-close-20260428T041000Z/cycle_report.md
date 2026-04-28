@@ -4,6 +4,7 @@ Agent: `230-async-close-20260428T041000Z`
 Branch: `agent/230-async-close-20260428T041000Z`
 Worktree: `/home/wogikaze/wgkz/ts2wasm-230-async-close-20260428T041000Z`
 Date: 2026-04-28
+Close commit: `6aa3283`
 
 ## Outcome
 
