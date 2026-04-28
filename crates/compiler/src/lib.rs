@@ -276,7 +276,8 @@ fn validate_stmt(
         | Stmt::ImportDefault { .. }
         | Stmt::ImportNamespace { .. }
         | Stmt::ExportNamed { .. }
-        | Stmt::ExportNamedFrom { .. } => Ok(()),
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. } => Ok(()),
     }
 }
 
