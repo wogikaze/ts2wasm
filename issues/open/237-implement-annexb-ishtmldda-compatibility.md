@@ -95,6 +95,14 @@ Follow-up issues:
 
 Split from issue 228 close audit after the reference files stopped reporting the `logical-assignment` feature label and instead failed earlier on test262 harness name resolution.
 
+2026-04-28 progress:
+
+- Policy slice selected: unsupported host/browser compatibility form. The unshadowed test262 host hook `$262.IsHTMLDDA` now reports `UnsupportedSyntax` with `issue-237` instead of falling through to generic `UnresolvedName` on `$262`.
+- Reference classification evidence: `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/expressions/logical-assignment/ --detail` executes the three logical-assignment emulates-undefined cases and reports `unsupported=3`, `unsupported_diagcodes=UnsupportedSyntax:3`, `unsupported_features=logical-assignment:3`; per-file details cover `emulates-undefined-and.js`, `emulates-undefined-coalesce.js`, and `emulates-undefined-or.js`.
+- Direct diagnostic evidence: building `reference/test262/test/annexB/language/expressions/logical-assignment/emulates-undefined-or.js` reports `[UnsupportedSyntax] issue-237: Annex B [[IsHTMLDDA]] test262 host hook`$262.IsHTMLDDA`is not modeled; document.all compatibility semantics are unsupported`.
+- Regression fixture evidence: `fixtures/core-semantics/annexb-ishtmldda-unsupported.ts` plus `annexb_ishtmldda_host_hook_reports_issue_237` verifies the issue-linked diagnostic through the CLI.
+- This is progress only. Full `[[IsHTMLDDA]]` truthiness/nullish/equality semantics, `reference/test262/test/annexB/built-ins/Object/is/emulates-undefined.js`, and full `cargo nextest run` close evidence remain open.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
