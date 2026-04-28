@@ -1,0 +1,1 @@
+scripts/manager discord-report --run-id 231-close-audit-20260428T083200Z failed because DISCORD_WEBHOOK_URL is not configured in the environment or .env.
