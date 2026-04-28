@@ -93,6 +93,11 @@ impl NameResolver {
 
     fn resolve_stmt(&mut self, stmt: &Stmt) -> Result<Stmt, Diagnostic> {
         match stmt {
+            Stmt::ImportSideEffect { span, .. } => {
+                Err(unsupported_module_decl(*span, "side-effect import"))
+            }
+            Stmt::ImportNamed { span, .. } => Err(unsupported_module_decl(*span, "named import")),
+            Stmt::ExportNamed { span, .. } => Err(unsupported_module_decl(*span, "named export")),
             Stmt::Let { name, expr, span } => {
                 self.declare_variable(name, Some(*span))?;
                 Ok(Stmt::Let {
@@ -721,6 +726,16 @@ fn unsupported_function_constructor(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-062: dynamic Function constructor is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn unsupported_module_decl(span: Span, form: &str) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-055: unsupported {form}; module resolution and loading are not implemented"
+        ),
         span: Some(span),
     }
 }

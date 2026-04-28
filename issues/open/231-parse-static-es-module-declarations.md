@@ -101,6 +101,32 @@ Follow-up issues:
 
 This is parser/build-only work. Node differential evidence is not required until execution semantics are added.
 
+## Progress evidence
+
+2026-04-28 child worker `231-parse-static-esm-20260428T054045Z` completed a parser-only subset:
+
+- Added frontend AST representation for side-effect imports, named imports, and local named exports with module specifier/name/span preservation.
+- Converted those supported parser forms from issue-055 parser diagnostics into successful AST nodes.
+- Kept namespace import, default import, star re-export, named re-export, and dynamic import issue-linked unsupported diagnostics.
+- Added parser regression tests for supported forms and remaining unsupported forms.
+- Added minimal downstream unsupported guards so full workspace compile remains green without implementing module graph, resolver, lowering, backend, or runtime semantics.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (40 tests)
+cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_named_export_reports_issue_055: PASS (2 tests)
+cargo check --workspace: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
+Remaining work before close:
+
+- default import, namespace import, re-export declarations, export default, and declaration exports still need full parser AST coverage or narrower follow-up split.
+- fixtures under `fixtures/module-system/` were not converted in this subset.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

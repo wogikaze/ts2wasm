@@ -50,7 +50,44 @@ pub enum LogicalAssignOp {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModuleSpecifier {
+    pub value: String,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ImportNamedSpecifier {
+    pub imported: String,
+    pub imported_span: Span,
+    pub local: String,
+    pub local_span: Span,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ExportNamedSpecifier {
+    pub local: String,
+    pub local_span: Span,
+    pub exported: String,
+    pub exported_span: Span,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stmt {
+    ImportSideEffect {
+        specifier: ModuleSpecifier,
+        span: Span,
+    },
+    ImportNamed {
+        specifiers: Vec<ImportNamedSpecifier>,
+        source: ModuleSpecifier,
+        span: Span,
+    },
+    ExportNamed {
+        specifiers: Vec<ExportNamedSpecifier>,
+        span: Span,
+    },
     Let {
         name: String,
         expr: Expr,
@@ -272,7 +309,10 @@ pub enum Expr {
 impl Stmt {
     pub fn span(&self) -> Span {
         match self {
-            Self::Let { span, .. }
+            Self::ImportSideEffect { span, .. }
+            | Self::ImportNamed { span, .. }
+            | Self::ExportNamed { span, .. }
+            | Self::Let { span, .. }
             | Self::Assign { span, .. }
             | Self::Expr { span, .. }
             | Self::If { span, .. }

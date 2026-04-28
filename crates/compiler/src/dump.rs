@@ -290,6 +290,39 @@ fn unparse_program(program: &[Stmt]) -> String {
 fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
     write_indent(out, indent);
     match stmt {
+        Stmt::ImportSideEffect { specifier, .. } => {
+            let _ = writeln!(out, "import '{}';", specifier.value);
+        }
+        Stmt::ImportNamed {
+            specifiers, source, ..
+        } => {
+            let specifiers = specifiers
+                .iter()
+                .map(|specifier| {
+                    if specifier.imported == specifier.local {
+                        specifier.imported.clone()
+                    } else {
+                        format!("{} as {}", specifier.imported, specifier.local)
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            let _ = writeln!(out, "import {{ {specifiers} }} from '{}';", source.value);
+        }
+        Stmt::ExportNamed { specifiers, .. } => {
+            let specifiers = specifiers
+                .iter()
+                .map(|specifier| {
+                    if specifier.local == specifier.exported {
+                        specifier.local.clone()
+                    } else {
+                        format!("{} as {}", specifier.local, specifier.exported)
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            let _ = writeln!(out, "export {{ {specifiers} }};");
+        }
         Stmt::Let { name, expr, .. } => {
             let _ = writeln!(out, "let {name} = {};", unparse_expr(expr));
         }
