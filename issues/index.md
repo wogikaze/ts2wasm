@@ -21,7 +21,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 050 | Implement Date | feature | runtime/builtins | implementation-ready | P1 |  | Implement Date |
 | 051 | Implement RegExp | feature | runtime/builtins | implementation-ready | P1 |  | Implement RegExp |
 | 052 | Implement JSON | feature | runtime/builtins | implementation-ready | P1 |  | Implement JSON |
-| 055 | Implement import and export | feature | frontend/semantics | implementation-ready | P1 |  | Implement import and export |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported diagnostic cases |
 | 061 | Implement Date object support | feature | frontend | design-ready | P1 |  | Implement Date object support |
@@ -167,6 +166,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 | 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
+| 231 | Parse static ES module declarations | feature | frontend | implementation-ready | P1 |  | Parse static ES module declarations |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -175,6 +175,10 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
 | 017b | Implement GC strategy | feature | runtime/memory | class: blocked | Implement GC strategy |
+| 055 | Umbrella: implement import and export | feature | frontend/semantics | 231, 232, 233, 234 | Umbrella: implement import and export |
+| 232 | Resolve local relative ES module graph | feature | compiler/frontend | 231 | Resolve local relative ES module graph |
+| 233 | Emit static ES module bindings | feature | ir/backend | 231, 232 | Emit static ES module bindings |
+| 234 | Cover static ES module execution | test | tests/fixtures | 231, 232, 233 | Cover static ES module execution |
 <!-- generated:blocked:end -->
 
 ## Done queue
