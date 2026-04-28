@@ -10,6 +10,13 @@ pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnosti
 
 fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
     match stmt {
+        Stmt::ImportSideEffect { span, .. }
+        | Stmt::ImportNamed { span, .. }
+        | Stmt::ExportNamed { span, .. } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-055: static module declarations parse in the frontend but module resolution and loading are not implemented".to_owned(),
+            span: Some(*span),
+        }),
         Stmt::Let { name, expr, .. } => Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?)),
         Stmt::Assign { name, expr, .. } => {
             Ok(ResolvedStmt::Assign(name.clone(), resolve_expr(expr)?))

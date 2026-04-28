@@ -1,6 +1,6 @@
 use crate::{
-    BinaryOp, DiagCode, Diagnostic, Expr, LogicalAssignOp, Span, SpannedToken, Stmt, Token,
-    TokenKind, UnaryOp,
+    BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportNamedSpecifier,
+    LogicalAssignOp, ModuleSpecifier, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
 };
 
 pub struct Parser {
@@ -84,20 +84,24 @@ impl Parser {
 
     fn import_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let import_span = self.expect(TokenKind::Import)?;
-        let form = match self.peek() {
-            Some(Token::String(_)) => "side-effect import",
-            Some(Token::LeftBrace) => "named import",
-            Some(Token::Star) => "namespace import",
-            Some(Token::Ident(_)) => "default import",
-            _ => "static import",
-        };
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-055: unsupported {form}; module resolution and loading are not implemented"
-            ),
-            span: Some(import_span),
-        })
+        match self.peek() {
+            Some(Token::String(_)) => {
+                let specifier = self.expect_module_specifier()?;
+                let semi = self.expect(TokenKind::Semicolon)?;
+                Ok(Stmt::ImportSideEffect {
+                    specifier,
+                    span: Span {
+                        start: import_span.start,
+                        end: semi.end,
+                    },
+                })
+            }
+            Some(Token::LeftBrace) => self.named_import_statement(import_span),
+            Some(Token::Star) => self.unsupported_module_form(import_span, "namespace import"),
+            Some(Token::Ident(_)) => self.unsupported_module_form(import_span, "default import"),
+            Some(Token::LeftParen) => self.unsupported_module_form(import_span, "dynamic import"),
+            _ => self.unsupported_module_form(import_span, "static import"),
+        }
     }
 
     fn export_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -105,6 +109,8 @@ impl Parser {
         let has_default = self.consume(TokenKind::Default);
         if matches!(self.peek(), Some(Token::Class)) {
             self.class_statement()
+        } else if !has_default && matches!(self.peek(), Some(Token::LeftBrace)) {
+            self.named_export_statement(export_span)
         } else {
             let form = match self.peek() {
                 Some(Token::LeftBrace) => "named export",
@@ -123,6 +129,128 @@ impl Parser {
                 span: Some(export_span),
             })
         }
+    }
+
+    fn named_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
+        let specifiers = self.parse_import_named_specifiers()?;
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ImportNamed {
+            specifiers,
+            source,
+            span: Span {
+                start: import_span.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn named_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
+        let specifiers = self.parse_export_named_specifiers()?;
+        if self.peek_contextual_keyword("from") {
+            return self.unsupported_module_form(export_span, "re-export");
+        }
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ExportNamed {
+            specifiers,
+            span: Span {
+                start: export_span.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn parse_import_named_specifiers(&mut self) -> Result<Vec<ImportNamedSpecifier>, Diagnostic> {
+        self.expect(TokenKind::LeftBrace)?;
+        let mut specifiers = Vec::new();
+        if self.consume(TokenKind::RightBrace) {
+            return Ok(specifiers);
+        }
+        loop {
+            let (imported, imported_span) = self.expect_ident()?;
+            let (local, local_span) = if self.consume_contextual_keyword("as") {
+                self.expect_ident()?
+            } else {
+                (imported.clone(), imported_span)
+            };
+            specifiers.push(ImportNamedSpecifier {
+                imported,
+                imported_span,
+                local,
+                local_span,
+                span: Span {
+                    start: imported_span.start,
+                    end: local_span.end,
+                },
+            });
+            if self.consume(TokenKind::RightBrace) {
+                break;
+            }
+            self.expect(TokenKind::Comma)?;
+            if self.consume(TokenKind::RightBrace) {
+                break;
+            }
+        }
+        Ok(specifiers)
+    }
+
+    fn parse_export_named_specifiers(&mut self) -> Result<Vec<ExportNamedSpecifier>, Diagnostic> {
+        self.expect(TokenKind::LeftBrace)?;
+        let mut specifiers = Vec::new();
+        if self.consume(TokenKind::RightBrace) {
+            return Ok(specifiers);
+        }
+        loop {
+            let (local, local_span) = self.expect_ident()?;
+            let (exported, exported_span) = if self.consume_contextual_keyword("as") {
+                self.expect_ident()?
+            } else {
+                (local.clone(), local_span)
+            };
+            specifiers.push(ExportNamedSpecifier {
+                local,
+                local_span,
+                exported,
+                exported_span,
+                span: Span {
+                    start: local_span.start,
+                    end: exported_span.end,
+                },
+            });
+            if self.consume(TokenKind::RightBrace) {
+                break;
+            }
+            self.expect(TokenKind::Comma)?;
+            if self.consume(TokenKind::RightBrace) {
+                break;
+            }
+        }
+        Ok(specifiers)
+    }
+
+    fn expect_module_specifier(&mut self) -> Result<ModuleSpecifier, Diagnostic> {
+        match self.advance() {
+            Some(SpannedToken {
+                kind: Token::String(value),
+                span,
+            }) => Ok(ModuleSpecifier { value, span }),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("expected module specifier string literal, got {other:?}"),
+                span: self.peek_span(),
+            }),
+        }
+    }
+
+    fn unsupported_module_form(&self, span: Span, form: &str) -> Result<Stmt, Diagnostic> {
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-055: unsupported {form}; module resolution and loading are not implemented"
+            ),
+            span: Some(span),
+        })
     }
 
     fn expression_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -1820,6 +1948,33 @@ impl Parser {
         }
     }
 
+    fn expect_contextual_keyword(&mut self, keyword: &str) -> Result<Span, Diagnostic> {
+        if self.peek_contextual_keyword(keyword) {
+            let span = self.peek_span().expect("peeked token must have a span");
+            self.cursor += 1;
+            Ok(span)
+        } else {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("expected `{keyword}`, got {:?}", self.peek()),
+                span: self.peek_span(),
+            })
+        }
+    }
+
+    fn consume_contextual_keyword(&mut self, keyword: &str) -> bool {
+        if self.peek_contextual_keyword(keyword) {
+            self.cursor += 1;
+            true
+        } else {
+            false
+        }
+    }
+
+    fn peek_contextual_keyword(&self, keyword: &str) -> bool {
+        matches!(self.peek(), Some(Token::Ident(name)) if name == keyword)
+    }
+
     fn expect_member_property_name(&mut self) -> Result<(String, Span), Diagnostic> {
         match self.advance() {
             Some(SpannedToken {
@@ -2547,29 +2702,49 @@ mod tests {
     }
 
     #[test]
-    fn rejects_static_import_with_issue_linked_diagnostic() {
-        let err = parse_program("import { value } from './module-source';").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported named import"));
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_named_import_with_specifier_spans() {
+        let program =
+            parse_program("import { value, original as alias } from './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportNamed {
+                specifiers,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 59 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 41, end: 58 });
+                assert_eq!(specifiers.len(), 2);
+                assert_eq!(specifiers[0].imported, "value");
+                assert_eq!(specifiers[0].imported_span, Span { start: 9, end: 14 });
+                assert_eq!(specifiers[0].local, "value");
+                assert_eq!(specifiers[0].local_span, Span { start: 9, end: 14 });
+                assert_eq!(specifiers[0].span, Span { start: 9, end: 14 });
+                assert_eq!(specifiers[1].imported, "original");
+                assert_eq!(specifiers[1].imported_span, Span { start: 16, end: 24 });
+                assert_eq!(specifiers[1].local, "alias");
+                assert_eq!(specifiers[1].local_span, Span { start: 28, end: 33 });
+                assert_eq!(specifiers[1].span, Span { start: 16, end: 33 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
     }
 
     #[test]
-    fn rejects_side_effect_import_with_issue_linked_diagnostic() {
-        let err = parse_program("import './module-source';").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported side-effect import"));
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_side_effect_import_with_specifier_span() {
+        let program = parse_program("import './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportSideEffect { specifier, span } => {
+                assert_eq!(*span, Span { start: 0, end: 25 });
+                assert_eq!(specifier.value, "./module-source");
+                assert_eq!(specifier.span, Span { start: 7, end: 24 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
     }
 
     #[test]
@@ -2599,16 +2774,27 @@ mod tests {
     }
 
     #[test]
-    fn rejects_named_export_with_issue_linked_diagnostic() {
-        let err = parse_program("let value = 1; export { value };").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported named export"));
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
-        assert_eq!(err.span, Some(Span { start: 15, end: 21 }));
+    fn parses_named_export_with_specifier_spans() {
+        let program = parse_program("let value = 1; export { value, local as exported };").unwrap();
+        assert_eq!(program.len(), 2);
+
+        match &program[1] {
+            Stmt::ExportNamed { specifiers, span } => {
+                assert_eq!(*span, Span { start: 15, end: 51 });
+                assert_eq!(specifiers.len(), 2);
+                assert_eq!(specifiers[0].local, "value");
+                assert_eq!(specifiers[0].local_span, Span { start: 24, end: 29 });
+                assert_eq!(specifiers[0].exported, "value");
+                assert_eq!(specifiers[0].exported_span, Span { start: 24, end: 29 });
+                assert_eq!(specifiers[0].span, Span { start: 24, end: 29 });
+                assert_eq!(specifiers[1].local, "local");
+                assert_eq!(specifiers[1].local_span, Span { start: 31, end: 36 });
+                assert_eq!(specifiers[1].exported, "exported");
+                assert_eq!(specifiers[1].exported_span, Span { start: 40, end: 48 });
+                assert_eq!(specifiers[1].span, Span { start: 31, end: 48 });
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
     }
 
     #[test]
@@ -2617,6 +2803,32 @@ mod tests {
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-055"));
         assert!(err.message.contains("unsupported re-export"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn rejects_named_re_export_with_issue_linked_diagnostic() {
+        let err = parse_program("export { value } from './module-source';").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported re-export"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn rejects_dynamic_import_with_issue_linked_diagnostic() {
+        let err = parse_program("import('./module-source');").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported dynamic import"));
         assert!(
             err.message
                 .contains("module resolution and loading are not implemented")
