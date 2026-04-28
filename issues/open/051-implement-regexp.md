@@ -124,6 +124,11 @@ Follow-up issues:
   metacharacter patterns such as `/a*/.exec("aaa")` remain rejected with an `issue-051`
   diagnostic. Direct `new RegExp("plain").exec(...)` remains outside this slice because the
   current parser rejects member access immediately after `new RegExp(...)`.
+- 2026-04-28: Added the direct `new RegExp("plain").exec(...)` continuation slice. The parser now
+  permits member/call suffixes after a constructed expression, direct constructor-backed `.exec`
+  lowers to `RegExpMatch`, and the fixture covers both hit and miss cases. Unsupported
+  metacharacter constructor patterns such as `new RegExp("a*").exec("aaa")` remain rejected with
+  an `issue-051` diagnostic through the existing plain-pattern guard.
 
 Validation:
 
@@ -223,6 +228,36 @@ result: pass
 
 cargo nextest run
 result: not run; skipped because this slice only routes RegExp.prototype.exec to the existing RegExp-only `RegExpMatch` helper and does not alter shared non-RegExp runtime behavior
+
+cargo run -p ts2wasm-cli -- build /tmp/ts2wasm-051-direct-new-regexp-exec.ts -o /tmp/ts2wasm-051-direct-new-regexp-exec.wasm
+result: fail before fix; parser rejected direct new RegExp receiver with `expected Comma, got Some(Dot) at 36..37`
+
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 19 tests run, 19 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 16 tests run, 16 passed
+
+node fixtures/core-semantics/regexp-test.ts
+result: pass; stdout true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-direct-new-regexp-exec.wasm && iwasm /tmp/ts2wasm-issue051-direct-new-regexp-exec.wasm
+result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true
+
+scripts/manager fmt
+result: pass
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+
+cargo nextest run
+result: not run; full suite is required only for DONE by this assignment; this remains PROGRESS because RegExp literals, full exec match arrays, String.prototype.match completeness, flags/state, and full RegExp syntax remain incomplete
 ```
 
 ## Completion evidence

@@ -16,3 +16,5 @@ console.log("" + execNeedle.exec("haystack needle"));
 console.log(execNeedle.exec("haystack") === null);
 let execPlain = new RegExp("plain");
 console.log("" + execPlain.exec("very plain text"));
+console.log("" + new RegExp("plain").exec("very plain text"));
+console.log(new RegExp("plain").exec("very loud") === null);
