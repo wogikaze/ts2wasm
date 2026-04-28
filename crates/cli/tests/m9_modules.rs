@@ -102,9 +102,41 @@ fn static_named_import_reports_issue_055() {
 }
 
 #[test]
+fn static_side_effect_import_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-side-effect-import-unsupported.ts",
+        "issue-055: unsupported side-effect import",
+    );
+}
+
+#[test]
+fn static_namespace_import_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-namespace-import-unsupported.ts",
+        "issue-055: unsupported namespace import",
+    );
+}
+
+#[test]
+fn static_default_import_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-default-import-unsupported.ts",
+        "issue-055: unsupported default import",
+    );
+}
+
+#[test]
 fn static_named_export_reports_issue_055() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-named-export-unsupported.ts",
         "issue-055: unsupported named export",
+    );
+}
+
+#[test]
+fn static_re_export_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-re-export-unsupported.ts",
+        "issue-055: unsupported re-export",
     );
 }
