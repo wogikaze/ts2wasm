@@ -6,8 +6,8 @@ Do not edit manually.
 <!-- coverage-table:start -->
 | suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | fail | unsupported | blocked | skip-with-reason | unsupported (DiagCode breakdown) | unsupported (feature breakdown) | status | evidence |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|
-| test262 | 53445 | 100 | 0.00 | 0.00 | 0 | 0 | 0 | 100 | 0 | 0 | UnsupportedSyntax:67,UnresolvedName:33 | regexp-literal:47,name-resolution:33,date:16,function:2,arrow-function:1,unknown-unsupported:1 | in-progress | `python scripts/manager.py reference-coverage test262 --limit 100` |
+| test262 | 53445 | 100 | 0.00 | 0.00 | 0 | 0 | 0 | 100 | 0 | 0 | UnsupportedSyntax:67,UnresolvedName:33 | regexp-literal:47,name-resolution:33,date:16,string-builtin:3,array-builtin:1 | in-progress | `python scripts/manager.py reference-coverage test262 --limit 100` |
 | test262 semantic-core seeds | 53445 | 60 | 0.11 | 0.11 | 60 | 60 | 0 | 0 | 0 | 0 | - | - | in-progress | `python scripts/manager.py reference-coverage test262 --paths-file scripts/data/test262-semantic-core-seeds.txt` |
-| TypeScript compiler cases | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | - | in-progress | `scripts/manager reference-coverage tsc --limit 30` |
-| typescript-go testdata | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | - | in-progress | `scripts/manager reference-coverage tsgo --limit 20` |
+| tsc | 6419 | 100 | 0.06 | 0.02 | 4 | 1 | 0 | 96 | 0 | 0 | UnsupportedSyntax:96 | parser-syntax:47,type-alias:23,class-accessor:17,import-export:3,declaration-emit:2,scope-analysis:2,jsdoc:1,module-system-amd:1 | in-progress | `python scripts/manager.py reference-coverage tsc --limit 100` |
+| tsgo | 166 | 82 | 2.41 | 1.81 | 4 | 3 | 0 | 78 | 0 | 0 | UnsupportedSyntax:78 | import-export:17,declaration-emit:16,parser-syntax:10,class:6,type-system:6,module-resolution:4,jsx:3,type-assertion:3,decorator:2,destructuring:2,jsdoc:2,object-literal:2,type-alias:2,enum:1,module-system-amd:1,scope-analysis:1 | in-progress | `python scripts/manager.py reference-coverage tsgo --limit 82` |
 <!-- coverage-table:end -->

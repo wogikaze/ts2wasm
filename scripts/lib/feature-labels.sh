@@ -37,15 +37,38 @@ ts2wasm_feature_label() {
 
   case "$path_lc" in
     *"/built-ins/date/"*) echo "date"; return ;;
+    *"/built-ins/array/"*) echo "array-builtin"; return ;;
     *"/built-ins/function/"*) echo "function"; return ;;
+    *"/built-ins/object/"*) echo "object-builtin"; return ;;
+    *"/regexp/"*|*"/regular-expressions/"*|*"/built-ins/regexp/"*) echo "regexp-literal"; return ;;
+    *"/built-ins/string/"*) echo "string-builtin"; return ;;
+    *"/built-ins/escape/"*|*"/built-ins/unescape/"*) echo "legacy-global-builtin"; return ;;
+    *"/built-ins/"*) echo "builtin-api"; return ;;
     *"/class/"*|*"/class-"*|*"/classes/"*) echo "class"; return ;;
     *"/module/"*|*"/import/"*|*"/export/"*) echo "import-export"; return ;;
-    *"/regexp/"*|*"/regular-expressions/"*) echo "regexp-literal"; return ;;
     *"/async-"*|*"/async/"*|*"/generators/"*) echo "async"; return ;;
     *"/destructuring/"*) echo "destructuring"; return ;;
     *"/template/"*) echo "template-literal"; return ;;
     *"/arrow-function/"*|*"/arrow/"*) echo "arrow-function"; return ;;
     *"/spread/"*) echo "spread"; return ;;
+    *".tsx"*|*"jsx"*) echo "jsx"; return ;;
+    *"declarationemit"*|*"declarationmap"*|*"declare"*) echo "declaration-emit"; return ;;
+    *"accessor"*) echo "class-accessor"; return ;;
+    *"anonymousclass"*|*"anonclass"*|*"unnamedclass"*|*"classfields"*|*"classfield"*) echo "class"; return ;;
+    *"alias"*) echo "type-alias"; return ;;
+    *"ambient"*) echo "ambient-declaration"; return ;;
+    *"amd"*|*"systemmodule"*) echo "module-system-amd"; return ;;
+    *"package"*|*"nodemodules"*|*"paths"*|*"resolution"*) echo "module-resolution"; return ;;
+    *"exportassignment"*|*"import"*|*"export"*|*"module"*) echo "import-export"; return ;;
+    *"enum"*) echo "enum"; return ;;
+    *"decorator"*) echo "decorator"; return ;;
+    *"assertion"*|*"satisfies"*|*"asconst"*) echo "type-assertion"; return ;;
+    *"bindingpattern"*|*"destructur"*) echo "destructuring"; return ;;
+    *"conditional"*|*"keyof"*|*"infer"*|*"generic"*|*"typepredicate"*) echo "type-system"; return ;;
+    *"scope"*) echo "scope-analysis"; return ;;
+    *"arguments"*|*"args"*) echo "arguments-object"; return ;;
+    *"objectliteral"*|*"object"*) echo "object-literal"; return ;;
+    *"jsdoc"*) echo "jsdoc"; return ;;
   esac
 
   case "$text" in
