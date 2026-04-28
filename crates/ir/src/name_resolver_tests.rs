@@ -56,6 +56,71 @@ mod tests {
     }
 
     #[test]
+    fn resolves_date_global_namespace_for_deterministic_constructor() {
+        let program = vec![Stmt::Let {
+            name: "epoch".to_string(),
+            expr: Expr::New {
+                expr: Box::new(Expr::Ident {
+                    name: "Date".to_string(),
+                    span: Span { start: 16, end: 20 },
+                }),
+                args: vec![Expr::Number {
+                    value: 0,
+                    span: Span { start: 21, end: 22 },
+                }],
+                span: Span { start: 12, end: 23 },
+            },
+            span: Span { start: 0, end: 24 },
+        }];
+
+        assert!(name_resolver::resolve_names(&program).is_ok());
+    }
+
+    #[test]
+    fn resolves_date_global_namespace_for_static_now_diagnostic_path() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "Date".to_string(),
+                        span: Span { start: 0, end: 4 },
+                    }),
+                    property: "now".to_string(),
+                    span: Span { start: 0, end: 8 },
+                }),
+                args: vec![],
+                span: Span { start: 0, end: 10 },
+            },
+            span: Span { start: 0, end: 11 },
+        }];
+
+        assert!(name_resolver::resolve_names(&program).is_ok());
+    }
+
+    #[test]
+    fn rejects_unknown_global_after_date_namespace_resolution() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "NotDate".to_string(),
+                        span: Span { start: 0, end: 7 },
+                    }),
+                    property: "now".to_string(),
+                    span: Span { start: 0, end: 11 },
+                }),
+                args: vec![],
+                span: Span { start: 0, end: 13 },
+            },
+            span: Span { start: 0, end: 14 },
+        }];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnresolvedName);
+        assert!(err.message.contains("NotDate"));
+    }
+
+    #[test]
     fn test_function_hoisting() {
         let program = vec![
             Stmt::Expr {
