@@ -2,7 +2,7 @@
   "run_id": "052-json-noninteger-number-20260428T072707Z",
   "task_id": "issue-052-json-noninteger-number",
   "git": {
-    "sha": "bf28b76ea3cb58a95561d7748dca2becfc7287f6",
+    "sha": "5cbb6487d18b21ab367fcbc1ba12e2d3e74e06b0",
     "exit_code": 0,
     "changed_files": [
       "crates/cli/tests/m2_node_diff.rs",
@@ -13,7 +13,12 @@
       "reports/runs/052-json-noninteger-number-20260428T072707Z/cycle_report.md",
       "reports/runs/052-json-noninteger-number-20260428T072707Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "5cbb6487d18b21ab367fcbc1ba12e2d3e74e06b0",
+        "message": "issue-052: cover unsupported JSON noninteger numbers"
+      }
+    ]
   },
   "commands": [
     {"cmd": "cargo fmt --all --check", "status": "pass", "exit_code": 0},
