@@ -1,0 +1,9 @@
+{
+  "run_id": "237-ishtmldda-host-hook-20260428T120149Z",
+  "status": "DONE",
+  "issue": 237,
+  "branch": "agent/237-ishtmldda-host-hook-20260428T120149Z",
+  "summary": "Issue 237 closed with precise unsupported diagnostics for Annex B IsHTMLDDA host-hook forms.",
+  "cycle_report": "reports/runs/237-ishtmldda-host-hook-20260428T120149Z/cycle_report.md",
+  "test_report": "reports/runs/237-ishtmldda-host-hook-20260428T120149Z/test_report.json"
+}

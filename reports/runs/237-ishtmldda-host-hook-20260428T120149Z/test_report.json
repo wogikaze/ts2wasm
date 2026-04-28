@@ -1,0 +1,110 @@
+{
+  "run_id": "237-ishtmldda-host-hook-20260428T120149Z",
+  "task_id": "issue-237",
+  "git": {
+    "sha": "4a60707",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/cli/tests/m2_node_diff.rs",
+      "scripts/run/reference-coverage.py",
+      "fixtures/core-semantics/annexb-ishtmldda-equality-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-if-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-and-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-coalesce-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-or-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-typeof-unsupported.ts",
+      "current-state.md",
+      "issues/done/228-implement-logical-assignment-operators.md",
+      "issues/done/237-implement-annexb-ishtmldda-compatibility.md",
+      "issues/index.md"
+    ],
+    "commits": [
+      {
+        "sha": "4a60707",
+        "message": "issue-237: classify ishtmldda host hook cases"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli annexb_ishtmldda",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/expressions/logical-assignment/ --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/expressions/typeof/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-scripts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 380,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [
+      "fixtures/core-semantics/annexb-ishtmldda-equality-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-if-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-and-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-coalesce-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-or-unsupported.ts",
+      "fixtures/core-semantics/annexb-ishtmldda-typeof-unsupported.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "issue": 237,
+    "outcome": "DONE",
+    "policy": "unsupported-host-browser-compatibility",
+    "reference_evidence": {
+      "logical_assignment": "unsupported=3; unsupported_diagcodes=UnsupportedSyntax:3; unsupported_features=annexb-ishtmldda:3",
+      "equals_typeof_if": "unsupported=3; unsupported_diagcodes=UnsupportedSyntax:3; unsupported_features=annexb-ishtmldda:3"
+    },
+    "reporting": "deferred",
+    "reporting_reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env"
+  }
+}

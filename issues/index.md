@@ -166,7 +166,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 | 233 | Emit static ES module bindings | feature | ir/backend | implementation-ready | P1 | 231, 232 | Emit static ES module bindings |
-| 237 | Implement Annex B IsHTMLDDA compatibility | feature | runtime/semantics | design-ready | P3 |  | Implement Annex B IsHTMLDDA compatibility |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -275,6 +274,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 232 | Resolve local relative ES module graph | feature | compiler/frontend | see `issues/done/232-resolve-local-relative-es-module-graph.md` |
 | 235 | Fix GC root count backend tests | bug | backend/memory | see `issues/done/235-fix-gc-root-count-tests.md` |
 | 236 | Complete logical assignment target forms | feature | frontend/semantics | see `issues/done/236-complete-logical-assignment-target-forms.md` |
+| 237 | Implement Annex B IsHTMLDDA compatibility | feature | runtime/semantics | see `issues/done/237-implement-annexb-ishtmldda-compatibility.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
