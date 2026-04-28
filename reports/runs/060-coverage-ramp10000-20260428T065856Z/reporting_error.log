@@ -1,0 +1,2 @@
+attempt1: DISCORD_WEBHOOK_URL is not configured in the environment or .env
+attempt2: DISCORD_WEBHOOK_URL is not configured in the environment or .env
