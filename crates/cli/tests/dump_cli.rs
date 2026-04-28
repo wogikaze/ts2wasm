@@ -135,6 +135,16 @@ fn dump_ast_unparse_erases_typescript_as_assertions() {
 }
 
 #[test]
+fn dump_ast_unparse_erases_typescript_satisfies_expressions() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let value = { x: 3 } satisfies { x: number };\nconsole.log(value.x);\n",
+    );
+
+    assert_eq!(output, "let value = {x: 3};\nconsole.log(value.x);\n");
+}
+
+#[test]
 fn build_accepts_erasable_typescript_type_annotations() {
     build_fixture("basics-types/type-annotation-erasure.ts");
 }
@@ -157,6 +167,11 @@ fn build_accepts_erasable_typescript_generics() {
 #[test]
 fn build_accepts_erasable_typescript_as_assertions() {
     build_fixture("basics-types/as-assertion-erasure.ts");
+}
+
+#[test]
+fn build_accepts_erasable_typescript_satisfies_expressions() {
+    build_fixture("basics-types/satisfies-erasure.ts");
 }
 
 #[test]
