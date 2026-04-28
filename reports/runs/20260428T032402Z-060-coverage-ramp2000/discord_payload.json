@@ -1,0 +1,20 @@
+{
+  "run_id": "20260428T032402Z-060-coverage-ramp2000",
+  "agent_id": "060-coverage-ramp2000-20260428T031700Z",
+  "issue": "060",
+  "branch": "agent/060-coverage-ramp2000-20260428T031700Z",
+  "commit": "a58d260",
+  "outcome": "PROGRESS",
+  "summary": "Expanded stored test262 reference coverage from limit 1500 to 2000 with unknown-unsupported=0; no classifier changes required.",
+  "validation": [
+    "reference-coverage test262 --limit 2000 --detail: pass, unknown-unsupported=0",
+    "reference-coverage test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail: pass, blocked=0",
+    "reference-coverage test262 --limit 2000 --json: pass, stored blocked=0",
+    "update-coverage-matrix: pass",
+    "update-issue-index: pass",
+    "check-issue-health: pass",
+    "check-agent-state: pass",
+    "update-coverage-matrix --check: pass"
+  ],
+  "reporting": "DEFERRED"
+}

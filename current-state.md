@@ -79,7 +79,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
 - ポリシーと列定義: `docs/15-coverage-matrix.md`
 - 列 `build_pass` / `semantic_pass` は `scripts/manager reference-coverage` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
-- issue 060 progress classified current `unknown-unsupported` coverage windows into concrete feature labels; stored matrix rows now include test262 limit 1500, tsc limit 200, and tsgo limit 120. The test262 limit-1500 row has zero `unknown-unsupported`; no new classifier labels were needed beyond the limit-1250 `async-iteration` slice. The exact assigned tsc root `/home/wogikaze/wgkz/ts2wasm/reference` lacks `TypeScript`, so the stored tsc row was refreshed with the existing `/tmp/ts2wasm-issue060-reference` checkout.
+- issue 060 progress classified current `unknown-unsupported` coverage windows into concrete feature labels; stored matrix rows now include test262 limit 2000, tsc limit 200, and tsgo limit 120. The test262 limit-2000 row has zero `unknown-unsupported`; no new classifier labels were needed beyond the limit-1250 `async-iteration` slice. The exact assigned tsc root `/home/wogikaze/wgkz/ts2wasm/reference` lacks `TypeScript`, so the stored tsc row was refreshed with the existing `/tmp/ts2wasm-issue060-reference` checkout.
 
 ## Implemented (high-level)
 
