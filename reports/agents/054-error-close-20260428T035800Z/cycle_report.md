@@ -50,7 +50,7 @@ result: pass; 303 tests passed, 4 skipped
 
 - `reports/runs/20260428T125921Z/test_report.json` records the validation summary.
 - Close commit: `893369a` (`issue-054: close error types`)
-- Discord reporting will be attempted after the close commit, per child-worker prompt.
+- Discord reporting: DEFERRED. `scripts/manager discord-report --run-id 20260428T125921Z` failed twice because `DISCORD_WEBHOOK_URL` was not configured. Dry-run payload and error log were saved under `reports/runs/20260428T125921Z/`.
 
 ## Remaining Risks
 

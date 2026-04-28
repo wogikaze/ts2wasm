@@ -79,6 +79,8 @@
   },
   "meta": {
     "outcome": "DONE",
+    "reporting": "DEFERRED",
+    "reporting_reason": "DISCORD_WEBHOOK_URL not configured",
     "assignment": "reports/agents/054-error-close-20260428T035800Z/assignment.md"
   }
 }
