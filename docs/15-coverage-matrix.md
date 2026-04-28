@@ -1,6 +1,6 @@
 # Coverage Matrix
 
-Last updated: 2026-04-26
+Last updated: 2026-04-28
 
 この文書は reference 配下のテスト資産を分母にして coverage を可視化する dashboard である。
 workstream の進行度ではなく、外部参照スイートに対してどこまで実行・分類できているかを 1 行ずつ管理する。
@@ -18,7 +18,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 
 基準日 (2026-04-25) に集計した分母:
 
-- test262: 53,444 files (`reference/test262/test/**/*.js`)
+- test262: 53,445 files (`reference/test262/test/**/*.js`)
 - TypeScript compiler cases: 6,419 files (`reference/TypeScript/tests/cases/compiler/**/*.ts`)
 - typescript-go testdata: 165 files (`reference/typescript-go/testdata/tests/**`)
 

@@ -6,7 +6,7 @@ Do not edit manually.
 <!-- coverage-table:start -->
 | suite | denominator | executed | build_coverage% | semantic_coverage% | build_pass | semantic_pass | fail | unsupported | blocked | skip-with-reason | unsupported (DiagCode breakdown) | unsupported (feature breakdown) | status | evidence |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|---|---|---|
-| test262 | 53444 | 50 | 0.00 | 0.00 | 0 | 0 | 0 | 50 | 0 | 0 | UnsupportedSyntax:37,UnresolvedName:8,UnresolvedFunction:5 | regexp-literal:18,date:17,name-resolution:8,function-resolution:5,function:1,property-access:1 | in-progress | `scripts/manager reference-coverage test262 --limit 50` |
+| test262 | 53445 | 100 | 0.00 | 0.00 | 0 | 0 | 0 | 100 | 0 | 0 | UnsupportedSyntax:63,UnresolvedName:37 | regexp-literal:47,name-resolution:37,date:13,function:2,unknown-unsupported:1 | in-progress | `python scripts/manager.py reference-coverage test262 --limit 100` |
 | TypeScript compiler cases | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | - | in-progress | `scripts/manager reference-coverage tsc --limit 30` |
 | typescript-go testdata | 0 | 0 | 0.00 | 0.00 | 0 | 0 | 0 | 0 | 0 | 0 | - | - | in-progress | `scripts/manager reference-coverage tsgo --limit 20` |
 <!-- coverage-table:end -->
