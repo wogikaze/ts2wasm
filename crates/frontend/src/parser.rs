@@ -2066,6 +2066,8 @@ impl Parser {
                     end,
                 },
             })
+        } else if self.consume_typescript_const_angle_assertion() {
+            self.unary()
         } else if let Some(new_span) = self.consume_span(TokenKind::New) {
             let expr = self.call_member_no_call()?;
             let mut args = Vec::new();
@@ -2199,6 +2201,22 @@ impl Parser {
             break;
         }
         Ok(expr)
+    }
+
+    fn consume_typescript_const_angle_assertion(&mut self) -> bool {
+        let start = self.cursor;
+        if !self.consume(TokenKind::Less) {
+            return false;
+        }
+        if !self.consume(TokenKind::Const) {
+            self.cursor = start;
+            return false;
+        }
+        if !self.consume(TokenKind::Greater) {
+            self.cursor = start;
+            return false;
+        }
+        true
     }
 
     fn consume_typescript_generic_parameter_list(&mut self) -> Result<bool, Diagnostic> {
@@ -3231,6 +3249,32 @@ mod tests {
             panic!("expected let statement");
         };
         assert!(matches!(chained, Expr::Ident { name, .. } if name == "value"));
+    }
+
+    #[test]
+    fn parses_typescript_const_assertions_as_erased_syntax() {
+        let source = r#"
+            let value = { x: 3 } as const;
+            let nested = <const>{ x: value.x };
+            let chained = (<const>{ x: nested.x }) satisfies { x: number };
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 3);
+
+        let Stmt::Let { expr: value, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(value, Expr::Object { .. }));
+
+        let Stmt::Let { expr: nested, .. } = &program[1] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(nested, Expr::Object { .. }));
+
+        let Stmt::Let { expr: chained, .. } = &program[2] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(chained, Expr::Object { .. }));
     }
 
     #[test]
