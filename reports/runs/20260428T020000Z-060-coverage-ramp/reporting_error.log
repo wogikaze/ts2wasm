@@ -1,0 +1,1 @@
+DISCORD_WEBHOOK_URL is not configured in environment or .env; discord-report exited 1.

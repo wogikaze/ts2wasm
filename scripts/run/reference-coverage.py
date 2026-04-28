@@ -249,6 +249,10 @@ def feature_label(diag_code, err_file, file_path):
         return "html-comment"
     elif "/annexb/language/eval-code/" in path_lc:
         return "eval"
+    elif "/annexb/language/expressions/logical-assignment/" in path_lc:
+        return "logical-assignment"
+    elif "/annexb/language/expressions/template-literal/legacy-octal-escape-sequence-" in path_lc:
+        return "legacy-octal-escape"
     elif "/class/" in path_lc or "/class-" in path_lc or "/classes/" in path_lc:
         return "class"
     elif "/module/" in path_lc or "/import/" in path_lc or "/export/" in path_lc:

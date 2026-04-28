@@ -86,6 +86,8 @@ def group_key_to_title(group_key: str, files: List[Tuple[str, str, str]], suite:
             "async": "Implement async/await support",
             "destructuring": "Implement destructuring",
             "template-literal": "Implement template literals",
+            "legacy-octal-escape": "Implement legacy octal escape handling",
+            "logical-assignment": "Implement logical assignment operators",
             "arrow-function": "Implement arrow functions",
             "spread": "Implement spread operator",
             "rest-parameter": "Implement rest parameters",

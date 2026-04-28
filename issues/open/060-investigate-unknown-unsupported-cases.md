@@ -178,6 +178,47 @@ result: pass; unsupported_features=import-export:20,parser-syntax:17,declaration
 
 This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
+2026-04-28 child coverage ramp continuation:
+
+- Expanded the stored test262 coverage window from limit 500 to limit 750.
+- The first limit-750 detail run surfaced 4 `unknown-unsupported` entries:
+  - 2 logical assignment cases under `annexB/language/expressions/logical-assignment/`.
+  - 2 template literal legacy octal escape cases under `annexB/language/expressions/template-literal/`.
+- Added classifier labels:
+  - `logical-assignment` for Annex B logical assignment operator cases.
+  - `legacy-octal-escape` for strict/non-strict legacy octal escape cases in template literals.
+- Created follow-up feature issues:
+  - issue 228: logical assignment operators (`logical-assignment`, 3 cases in the limit-750 test262 window).
+  - issue 229: legacy octal escape handling (`legacy-octal-escape`, 2 cases in the limit-750 test262 window).
+- Refreshed `artifacts/coverage/results/test262.json`, `artifacts/coverage/reference-coverage-matrix.md`, and `issues/index.md`.
+
+Validated classification commands:
+
+```text
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 750 --detail
+result before classifier update: pass; unsupported_features=eval:461,name-resolution:118,string-builtin:63,regexp-literal:47,legacy-global-builtin:20,parser-syntax:17,date:16,unknown-unsupported:4,builtin-api:1,function:1,object-literal:1
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 750 --detail
+result after classifier update: pass; unsupported_features=eval:461,name-resolution:118,string-builtin:63,regexp-literal:47,legacy-global-builtin:20,date:16,parser-syntax:16,logical-assignment:3,legacy-octal-escape:2,array-builtin:1,builtin-api:1,function:1,object-literal:1; unknown-unsupported=0
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 750 --json
+result: pass; stored artifacts/coverage/results/test262.json with executed=750 and unknown-unsupported=0
+
+scripts/manager update-coverage-matrix
+result: pass; artifacts/coverage/reference-coverage-matrix.md updated
+
+scripts/manager update-issue-index
+result: pass; issues/index.md updated
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+```
+
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
