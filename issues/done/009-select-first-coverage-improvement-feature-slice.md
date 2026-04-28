@@ -39,5 +39,5 @@ python scripts/manager.py reference-coverage tsgo --limit 165 --detail
 
 Close evidence:
 
-- 2026-04-26: Created follow-up implementation issue `issues/open/202-implement-regexp-literal-support.md` from coverage data (`unsupported_features.regexp-literal` priority area).
+- 2026-04-26: Created follow-up implementation issue `issues/done/202-implement-regexp-literal-support.md` from coverage data (`unsupported_features.regexp-literal` priority area).
 - 2026-04-26: Issue 202 targets `frontend/semantics` and a parser-level implementation slice.

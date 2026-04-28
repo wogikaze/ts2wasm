@@ -1,7 +1,7 @@
 {
   "suite": "test262",
   "suite_name": "test262",
-  "denominator": 53444,
+  "denominator": 53445,
   "executed": 50,
   "build_coverage_percent": "0.00",
   "semantic_coverage_percent": "0.00",
@@ -11,8 +11,8 @@
   "unsupported": 50,
   "blocked": 0,
   "skip_with_reason": 0,
-  "unsupported_diagcodes": {"UnresolvedFunction":5,"UnresolvedName":8,"UnsupportedSyntax":37},
-  "unsupported_features": {"function":1,"name-resolution":8,"regexp-literal":18,"property-access":1,"date":17,"function-resolution":5},
+  "unsupported_diagcodes": {"UnsupportedSyntax":27,"UnresolvedName":23},
+  "unsupported_features": {"function":1,"name-resolution":23,"date":13,"regexp-literal":13},
   "status": "in-progress",
-  "evidence": "scripts/manager reference-coverage test262 --limit 50"
+  "evidence": "python scripts/manager.py reference-coverage test262 --limit 50"
 }
