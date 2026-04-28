@@ -167,7 +167,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 | 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
 | 231 | Parse static ES module declarations | feature | frontend | implementation-ready | P1 |  | Parse static ES module declarations |
-| 235 | Fix GC root count backend tests | bug | backend/memory | implementation-ready | P0 |  | Fix GC root count backend tests |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -273,6 +272,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 227 | Implement type reference directive resolution | feature | frontend/semantics | see `issues/done/227-implement-type-reference-directive-resolution.md` |
 | 229 | Implement legacy octal escape handling | feature | frontend | see `issues/done/229-implement-legacy-octal-escape-handling.md` |
 | 230 | Implement async iteration and for-await-of | feature | frontend/semantics | see `issues/done/230-implement-async-iteration-for-await-of.md` |
+| 235 | Fix GC root count backend tests | bug | backend/memory | see `issues/done/235-fix-gc-root-count-tests.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
