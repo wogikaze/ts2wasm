@@ -7,7 +7,7 @@ Usage:
 Compares current test results against baseline to detect regressions:
 - Fail if pass count decreases
 - Fail if fail count increases (new failures)
-- Warn if unsupported count increases
+- Fail if unsupported count increases
 """
 
 import sys
@@ -109,7 +109,8 @@ def main():
             print(f"OK: fail {baseline_fail} -> {current_fail} (-{delta} fixed)", file=sys.stderr)
     
     if current_unsupported > baseline_unsupported:
-        print(f"WARN: unsupported increased from {baseline_unsupported} to {current_unsupported}", file=sys.stderr)
+        print(f"ERROR: unsupported increased from {baseline_unsupported} to {current_unsupported}", file=sys.stderr)
+        regression = 1
     else:
         delta = baseline_unsupported - current_unsupported
         if delta == 0:

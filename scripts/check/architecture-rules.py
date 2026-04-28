@@ -7,7 +7,7 @@ Current checks:
   - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).
   - crates/cli/src/backend must not be reintroduced after backend-wasm extraction.
   - crates/cli/src must not declare local backend/parser/compiler implementation modules.
-  - Warn when a repo-owned source/document file exceeds 2000 lines.
+  - Error when a repo-owned source/document file exceeds 2000 lines.
 """
 
 import os
@@ -51,7 +51,7 @@ def usage():
     print("  - ts2wasm-shared must not depend on ts2wasm-cli (inverted crate boundary).")
     print("  - crates/cli/src/backend must not be reintroduced.")
     print("  - crates/cli/src must not declare local backend/parser/compiler modules.")
-    print("  - Warn when a repo-owned source/document file exceeds the line limit.")
+    print("  - Error when a repo-owned source/document file exceeds the line limit.")
 
 
 def parse_max_file_lines(args: list[str]) -> int:
@@ -103,7 +103,7 @@ def line_count(path: Path) -> int:
     return data.count(b"\n") + (0 if data.endswith(b"\n") else 1)
 
 
-def warn_oversized_files(max_file_lines: int) -> None:
+def check_oversized_files(max_file_lines: int) -> None:
     oversized: list[tuple[int, Path]] = []
     for path in REPO_ROOT.rglob("*"):
         if not path.is_file() or not should_count_lines(path):
@@ -116,12 +116,13 @@ def warn_oversized_files(max_file_lines: int) -> None:
         return
 
     print(
-        "check_architecture_rules: WARN files exceed "
-        f"{max_file_lines} lines; consider splitting ownership/modules",
+        "check_architecture_rules: ERROR files exceed "
+        f"{max_file_lines} lines; split ownership/modules or raise the documented limit",
         file=sys.stderr,
     )
     for count, path in sorted(oversized, key=lambda item: (-item[0], item[1])):
-        print(f"check_architecture_rules: WARN {path}: {count} lines", file=sys.stderr)
+        print(f"check_architecture_rules: ERROR {path}: {count} lines", file=sys.stderr)
+    sys.exit(1)
 
 
 def check_cli_thin_wrapper_boundary() -> None:
@@ -177,7 +178,7 @@ def check_cli_thin_wrapper_boundary() -> None:
 def main():
     args = sys.argv[1:]
     max_file_lines = parse_max_file_lines(args)
-    warn_oversized_files(max_file_lines)
+    check_oversized_files(max_file_lines)
     check_cli_thin_wrapper_boundary()
     
     if not shutil.which("cargo"):

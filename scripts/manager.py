@@ -49,7 +49,7 @@ COMMANDS = {
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
     "discord-report": ("python", "scripts/report/discord-report.py"),
     "fmt": ("cargo", "fmt --all --check"),
-    "clippy": ("cargo", "clippy --all-targets"),
+    "clippy": ("cargo", "clippy --all-targets -- -D warnings"),
     "nextest": ("cargo", "nextest run"),
 }
 
@@ -100,7 +100,7 @@ def usage():
         ("create-run-dir", "Create reports/runs/<run_id>/ directory"),
         ("discord-report", "Send a Markdown report or Discord JSON payload to Discord"),
         ("fmt", "cargo fmt --all --check"),
-        ("clippy", "cargo clippy --all-targets"),
+        ("clippy", "cargo clippy --all-targets -- -D warnings"),
         ("nextest", "cargo nextest run"),
         ("check-repo-smoke", "cargo fmt + check-scripts + check-issue-health"),
     ]
