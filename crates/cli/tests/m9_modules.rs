@@ -102,6 +102,11 @@ fn build_smoke_module_exports_assign() {
 }
 
 #[test]
+fn static_named_import_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-entry.ts");
+}
+
+#[test]
 fn static_named_import_reports_issue_232_missing_module() {
     assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-named-import-unsupported.ts",
