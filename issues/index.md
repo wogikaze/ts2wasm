@@ -165,8 +165,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
-| 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
 | 233 | Emit static ES module bindings | feature | ir/backend | implementation-ready | P1 | 231, 232 | Emit static ES module bindings |
+| 236 | Complete logical assignment target forms | feature | frontend/semantics | design-ready | P2 |  | Complete logical assignment target forms |
+| 237 | Implement Annex B IsHTMLDDA compatibility | feature | runtime/semantics | design-ready | P3 |  | Implement Annex B IsHTMLDDA compatibility |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -268,6 +269,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 224 | Implement Annex B HTML-like comments | feature | frontend | see `issues/done/224-implement-annexb-html-comments.md` |
 | 226 | Implement TypeScript parameter properties | feature | frontend/semantics | see `issues/done/226-implement-parameter-properties.md` |
 | 227 | Implement type reference directive resolution | feature | frontend/semantics | see `issues/done/227-implement-type-reference-directive-resolution.md` |
+| 228 | Implement logical assignment operators | feature | frontend/semantics | see `issues/done/228-implement-logical-assignment-operators.md` |
 | 229 | Implement legacy octal escape handling | feature | frontend | see `issues/done/229-implement-legacy-octal-escape-handling.md` |
 | 230 | Implement async iteration and for-await-of | feature | frontend/semantics | see `issues/done/230-implement-async-iteration-for-await-of.md` |
 | 231 | Parse static ES module declarations | feature | frontend | see `issues/done/231-parse-static-es-module-declarations.md` |

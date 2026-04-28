@@ -428,15 +428,27 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::LogicalPropertyAssign {
             object,
             property,
+            computed_key,
             op,
             expr,
             ..
-        } => Ok(ResolvedExpr::LogicalPropertyAssign {
-            object: object.clone(),
-            key: property.clone(),
-            op: *op,
-            expr: Box::new(resolve_expr(expr)?),
-        }),
+        } => {
+            if let Some(key) = computed_key {
+                Ok(ResolvedExpr::LogicalComputedPropertyAssign {
+                    object: object.clone(),
+                    key: Box::new(resolve_expr(key)?),
+                    op: *op,
+                    expr: Box::new(resolve_expr(expr)?),
+                })
+            } else {
+                Ok(ResolvedExpr::LogicalPropertyAssign {
+                    object: object.clone(),
+                    key: property.clone(),
+                    op: *op,
+                    expr: Box::new(resolve_expr(expr)?),
+                })
+            }
+        }
         Expr::Member {
             object, property, ..
         } => {

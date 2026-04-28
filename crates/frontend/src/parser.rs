@@ -1363,7 +1363,7 @@ impl Parser {
                     else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-228: member logical assignment currently supports only identifier object targets".to_owned(),
+                            message: "issue-236: member logical assignment currently supports only identifier object targets".to_owned(),
                             span: Some(target_span),
                         });
                     };
@@ -1371,6 +1371,7 @@ impl Parser {
                     return Ok(Expr::LogicalPropertyAssign {
                         object: object_name.clone(),
                         property,
+                        computed_key: None,
                         op,
                         span: Span {
                             start: span.start,
@@ -1390,7 +1391,7 @@ impl Parser {
                     else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-228: computed logical assignment currently supports only identifier object targets".to_owned(),
+                            message: "issue-236: computed logical assignment currently supports only identifier object targets".to_owned(),
                             span: Some(target_span),
                         });
                     };
@@ -1398,16 +1399,24 @@ impl Parser {
                         value: property, ..
                     } = index.as_ref()
                     else {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-228: computed logical assignment currently supports only string literal keys".to_owned(),
-                            span: Some(target_span),
+                        let value = self.assignment()?;
+                        return Ok(Expr::LogicalPropertyAssign {
+                            object: object_name.clone(),
+                            property: String::new(),
+                            computed_key: Some(index),
+                            op,
+                            span: Span {
+                                start: span.start,
+                                end: value.span().end,
+                            },
+                            expr: Box::new(value),
                         });
                     };
                     let value = self.assignment()?;
                     return Ok(Expr::LogicalPropertyAssign {
                         object: object_name.clone(),
                         property: property.clone(),
+                        computed_key: None,
                         op,
                         span: Span {
                             start: span.start,
@@ -1421,7 +1430,7 @@ impl Parser {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-228: logical assignment currently supports only identifier, member, and string-literal computed member targets"
+                    "issue-236: logical assignment currently supports only identifier, member, and string-literal computed member targets"
                         .to_owned(),
                 span: Some(target_span),
             });

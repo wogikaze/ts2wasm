@@ -1,0 +1,8 @@
+command: scripts/manager discord-report --run-id 233-module-init-once-20260428T100229Z
+attempt: 1
+exit_code: 1
+stderr: DISCORD_WEBHOOK_URL was not configured in the environment or .env.
+attempt: 2
+exit_code: 1
+stderr: DISCORD_WEBHOOK_URL was not configured in the environment or .env.
+status: DEFERRED pending webhook configuration

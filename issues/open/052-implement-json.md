@@ -632,6 +632,33 @@ abcdefghij1
 - Remaining final checks for this child run are recorded in `reports/runs/052-json-number-space-20260428T094954Z/`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, non-stringify `space` ignored-value parity requiring IR validation work, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added focused Node differential regression coverage for `JSON.parse` arrays whose object elements contain nested object and array/object values in `fixtures/builtins-and-io/json-parse-array-object-nested.ts`, covering `JSON.parse('[{"a":{"b":1}},{"c":[2,{"d":3}]}]')`.
+- Direct probe before adding the fixture showed the current runtime already handled this continuation slice, so this child records PROGRESS as regression coverage only and made no backend/runtime changes.
+- Node and iwasm both print:
+
+```text
+2
+1
+2
+2
+3
+```
+
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-array-object.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object.ts -o /tmp/ts2wasm-052-json-array-object.wasm && iwasm /tmp/ts2wasm-052-json-array-object.wasm`
+  - `node fixtures/builtins-and-io/json-parse-array-object-nested.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object-nested.ts -o /tmp/ts2wasm-052-json-array-object-nested.wasm && iwasm /tmp/ts2wasm-052-json-array-object-nested.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because no backend runtime code changed and issue 052 remains open.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, non-stringify `space` ignored-value parity requiring IR validation work, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
