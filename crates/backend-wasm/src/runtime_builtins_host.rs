@@ -514,25 +514,41 @@ impl WatEmitter<'_> {
             (then (return (i32.const {undefined}))))
           (br $parsed_value)))
       (if
-        (i32.and
-          (i32.eq (local.get $ch) (i32.const {ascii_n}))
-          (i32.le_u (i32.add (local.get $pos) (i32.const 4)) (local.get $s_len)))
+        (call $json_match_literal4
+          (local.get $s_obj)
+          (local.get $s_len)
+          (local.get $pos)
+          (i32.const {ascii_n})
+          (i32.const {ascii_u})
+          (i32.const {ascii_l})
+          (i32.const {ascii_l}))
         (then
           (local.set $value (i32.const {null_tag}))
           (local.set $pos (i32.add (local.get $pos) (i32.const 4)))
           (br $parsed_value)))
       (if
-        (i32.and
-          (i32.eq (local.get $ch) (i32.const {ascii_t}))
-          (i32.le_u (i32.add (local.get $pos) (i32.const 4)) (local.get $s_len)))
+        (call $json_match_literal4
+          (local.get $s_obj)
+          (local.get $s_len)
+          (local.get $pos)
+          (i32.const {ascii_t})
+          (i32.const {ascii_r})
+          (i32.const {ascii_u})
+          (i32.const {ascii_e}))
         (then
           (local.set $value (i32.const {true_tag}))
           (local.set $pos (i32.add (local.get $pos) (i32.const 4)))
           (br $parsed_value)))
       (if
-        (i32.and
-          (i32.eq (local.get $ch) (i32.const {ascii_f}))
-          (i32.le_u (i32.add (local.get $pos) (i32.const 5)) (local.get $s_len)))
+        (call $json_match_literal5
+          (local.get $s_obj)
+          (local.get $s_len)
+          (local.get $pos)
+          (i32.const {ascii_f})
+          (i32.const {ascii_a})
+          (i32.const {ascii_l})
+          (i32.const {ascii_s})
+          (i32.const {ascii_e}))
         (then
           (local.set $value (i32.const {false_tag}))
           (local.set $pos (i32.add (local.get $pos) (i32.const 5)))
@@ -548,6 +564,41 @@ impl WatEmitter<'_> {
     (if (i32.ne (local.get $pos) (local.get $s_len))
       (then (unreachable)))
     (local.get $value))
+
+  (func $json_match_literal4 (param $obj i32) (param $len i32) (param $pos i32) (param $c0 i32) (param $c1 i32) (param $c2 i32) (param $c3 i32) (result i32)
+    (if (i32.gt_u (i32.add (local.get $pos) (i32.const 4)) (local.get $len))
+      (then (return (i32.const {zero}))))
+    (i32.and
+      (i32.and
+        (i32.eq
+          (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (local.get $pos)))
+          (local.get $c0))
+        (i32.eq
+          (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $pos) (i32.const {one}))))
+          (local.get $c1)))
+      (i32.and
+        (i32.eq
+          (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $pos) (i32.const 2))))
+          (local.get $c2))
+        (i32.eq
+          (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $pos) (i32.const 3))))
+          (local.get $c3)))))
+
+  (func $json_match_literal5 (param $obj i32) (param $len i32) (param $pos i32) (param $c0 i32) (param $c1 i32) (param $c2 i32) (param $c3 i32) (param $c4 i32) (result i32)
+    (if (i32.gt_u (i32.add (local.get $pos) (i32.const 5)) (local.get $len))
+      (then (return (i32.const {zero}))))
+    (i32.and
+      (call $json_match_literal4
+        (local.get $obj)
+        (local.get $len)
+        (local.get $pos)
+        (local.get $c0)
+        (local.get $c1)
+        (local.get $c2)
+        (local.get $c3))
+      (i32.eq
+        (i32.load8_u (i32.add (i32.add (local.get $obj) (i32.const {str_header})) (i32.add (local.get $pos) (i32.const 4))))
+        (local.get $c4))))
 
   (func $json_hex_value (param $ch i32) (result i32)
     (if
@@ -1103,17 +1154,42 @@ impl WatEmitter<'_> {
                 (if (i32.gt_u (local.get $pos) (local.get $len))
                   (then (return (i32.const {undefined})))))
               (else
-                (if (i32.eq (local.get $ch) (i32.const {ascii_t}))
+                (if
+                  (call $json_match_literal4
+                    (local.get $obj)
+                    (local.get $len)
+                    (local.get $pos)
+                    (i32.const {ascii_t})
+                    (i32.const {ascii_r})
+                    (i32.const {ascii_u})
+                    (i32.const {ascii_e}))
                   (then
                     (local.set $value (i32.const {true_tag}))
                     (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
                   (else
-                    (if (i32.eq (local.get $ch) (i32.const {ascii_f}))
+                    (if
+                      (call $json_match_literal5
+                        (local.get $obj)
+                        (local.get $len)
+                        (local.get $pos)
+                        (i32.const {ascii_f})
+                        (i32.const {ascii_a})
+                        (i32.const {ascii_l})
+                        (i32.const {ascii_s})
+                        (i32.const {ascii_e}))
                       (then
                         (local.set $value (i32.const {false_tag}))
                         (local.set $pos (i32.add (local.get $pos) (i32.const 5))))
                       (else
-                        (if (i32.eq (local.get $ch) (i32.const {ascii_n}))
+                        (if
+                          (call $json_match_literal4
+                            (local.get $obj)
+                            (local.get $len)
+                            (local.get $pos)
+                            (i32.const {ascii_n})
+                            (i32.const {ascii_u})
+                            (i32.const {ascii_l})
+                            (i32.const {ascii_l}))
                           (then
                             (local.set $value (i32.const {null_tag}))
                             (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
@@ -1202,17 +1278,42 @@ impl WatEmitter<'_> {
                 (if (i32.gt_u (local.get $pos) (local.get $len))
                   (then (return (i32.const {undefined})))))
               (else
-                (if (i32.eq (local.get $ch) (i32.const {ascii_t}))
+                (if
+                  (call $json_match_literal4
+                    (local.get $obj)
+                    (local.get $len)
+                    (local.get $pos)
+                    (i32.const {ascii_t})
+                    (i32.const {ascii_r})
+                    (i32.const {ascii_u})
+                    (i32.const {ascii_e}))
                   (then
                     (local.set $value (i32.const {true_tag}))
                     (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
                   (else
-                    (if (i32.eq (local.get $ch) (i32.const {ascii_f}))
+                    (if
+                      (call $json_match_literal5
+                        (local.get $obj)
+                        (local.get $len)
+                        (local.get $pos)
+                        (i32.const {ascii_f})
+                        (i32.const {ascii_a})
+                        (i32.const {ascii_l})
+                        (i32.const {ascii_s})
+                        (i32.const {ascii_e}))
                       (then
                         (local.set $value (i32.const {false_tag}))
                         (local.set $pos (i32.add (local.get $pos) (i32.const 5))))
                       (else
-                        (if (i32.eq (local.get $ch) (i32.const {ascii_n}))
+                        (if
+                          (call $json_match_literal4
+                            (local.get $obj)
+                            (local.get $len)
+                            (local.get $pos)
+                            (i32.const {ascii_n})
+                            (i32.const {ascii_u})
+                            (i32.const {ascii_l})
+                            (i32.const {ascii_l}))
                           (then
                             (local.set $value (i32.const {null_tag}))
                             (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
@@ -1337,6 +1438,7 @@ impl WatEmitter<'_> {
             ascii_nine = 57,
             ascii_upper_a = 65,
             ascii_upper_f = 70,
+            ascii_a = 97,
             ascii_lower_a = 97,
             ascii_lower_f = 102,
             ascii_max = 127,
@@ -1344,8 +1446,10 @@ impl WatEmitter<'_> {
             ascii_e = 101,
             ascii_E = 69,
             ascii_f = 102,
+            ascii_l = 108,
             ascii_n = 110,
             ascii_r = 114,
+            ascii_s = 115,
             ascii_t = 116,
             ascii_u = 117,
             backspace = 8,
