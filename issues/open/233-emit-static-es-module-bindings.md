@@ -234,6 +234,29 @@ scripts/manager check-issue-health: PASS
 scripts/manager check-agent-state: PASS
 ```
 
+2026-04-28 child worker `233-module-import-exports-20260428T105318Z` added a narrow named-import lowered read slice:
+
+- The compiler build path now keeps the source-level static named import rewrite only as declaration scaffolding for name resolution, then replaces the lowered import local initializer with `PropertyGet(ModuleLoad { module_id }, export_name)`.
+- `StaticNamedImportBinding` records the lowered top-level statement index so the importer read is connected back to the resolved issue-232 module ID and imported export name after lowering.
+- Extended compiler regression coverage to assert `import { value } from "./source"` lowers the importer local as a module export read while the resolved source module still appears in `LoweredProgram.modules` as `LoweredStmt::Export`.
+- The resulting WAT includes `$module_require`, `$property_get`, and `$module_exports_set` through existing lowered IR and runtime-link planning. No dependency-order runtime execution, module initialization body emission, live binding behavior, or runtime semantic parity claim was added; issue 233 remains open.
+
+Validation:
+
+```text
+cargo nextest run -p ts2wasm-compiler static_module_export_lowering_populates_explicit_lowered_module_statements: PASS (1 test)
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (18 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (18 tests)
+cargo nextest run -p ts2wasm-compiler: PASS (38 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 220 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-import-exports-entry.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-import-exports-alias.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-import-exports-shadow.wasm: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
 2026-04-28 child worker `233-module-lowered-ir-20260428T103829Z` added a narrow explicit lowered-module population slice:
 
 - The compiler build path now attaches source-backed literal `export const` declarations from reachable local static modules into `LoweredProgram.modules` as `LoweredStmt::Export` statements, keyed by the issue-232 module graph IDs.
