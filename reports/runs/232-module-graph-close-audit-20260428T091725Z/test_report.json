@@ -2,7 +2,7 @@
   "run_id": "232-module-graph-close-audit-20260428T091725Z",
   "task_id": "issue-232",
   "git": {
-    "sha": "pending final close commit",
+    "sha": "d96750d",
     "exit_code": 0,
     "changed_files": [
       "crates/compiler/src/lib.rs",
@@ -16,7 +16,12 @@
       "reports/runs/232-module-graph-close-audit-20260428T091725Z/reporting_error.log",
       "reports/runs/232-module-graph-close-audit-20260428T091725Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "d96750d",
+        "message": "issue-232: close module graph contract"
+      }
+    ]
   },
   "commands": [
     {
