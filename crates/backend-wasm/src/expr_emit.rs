@@ -175,6 +175,14 @@ impl WatEmitter<'_> {
             } => {
                 self.emit_logical_property_assign(wat, *object, key, *op, expr, indent, frame);
             }
+            LoweredExpr::LogicalMemberAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => {
+                self.emit_logical_member_assign(wat, object, key, *op, expr, indent, frame);
+            }
             LoweredExpr::LogicalComputedPropertyAssign {
                 object,
                 key,
@@ -183,6 +191,16 @@ impl WatEmitter<'_> {
             } => {
                 self.emit_logical_computed_property_assign(
                     wat, *object, key, *op, expr, indent, frame,
+                );
+            }
+            LoweredExpr::LogicalComputedMemberAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => {
+                self.emit_logical_computed_member_assign(
+                    wat, object, key, *op, expr, indent, frame,
                 );
             }
             LoweredExpr::Binary { left, op, right } => {
@@ -873,6 +891,93 @@ impl WatEmitter<'_> {
         self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
     }
 
+    fn emit_logical_member_assign(
+        &self,
+        wat: &mut String,
+        object_expr: &LoweredExpr,
+        key: &str,
+        op: LoweredLogicalAssignOp,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let object = frame.heap_base_tmp();
+        let current = frame.heap_value_tmp();
+
+        self.emit_expr(wat, object_expr, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
+        self.emit_property_get_into_tmp(wat, object, key, current, indent, frame);
+
+        match op {
+            LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
+                wat.push_str(&format!("{pad}(local.get {current})\n"));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                if op == LoweredLogicalAssignOp::And {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    self.emit_logical_member_assign_rhs(wat, object, key, expr, indent + 4, frame);
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                } else {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    self.emit_logical_member_assign_rhs(wat, object, key, expr, indent + 4, frame);
+                    wat.push_str(&format!("{pad}  )\n"));
+                }
+                wat.push_str(&format!("{pad})\n"));
+            }
+            LoweredLogicalAssignOp::Nullish => {
+                wat.push_str(&format!(
+                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
+                    ValueTag::NULL,
+                    ValueTag::UNDEFINED
+                ));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                wat.push_str(&format!("{pad}  (then\n"));
+                self.emit_logical_member_assign_rhs(wat, object, key, expr, indent + 4, frame);
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad}  (else\n"));
+                wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad})\n"));
+            }
+        }
+    }
+
+    fn emit_logical_member_assign_rhs(
+        &self,
+        wat: &mut String,
+        object: usize,
+        key: &str,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let child_frame = frame.child_temp_frame();
+        let rhs = child_frame.heap_value_tmp();
+        let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+        let key_len = self.string_len(key);
+
+        self.emit_expr(wat, expr, indent, &child_frame);
+        wat.push_str(&format!("{pad}(local.set {rhs})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, rhs, &child_frame);
+        wat.push_str(&format!("{pad}(local.get {object})\n"));
+        wat.push_str(&format!("{pad}(i32.const {key_ptr})\n"));
+        wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
+        wat.push_str(&format!("{pad}(local.get {rhs})\n"));
+        wat.push_str(&format!(
+            "{pad}(call {})\n",
+            RuntimeFn::PropertySet.symbol()
+        ));
+    }
+
     fn emit_logical_property_assign_rhs(
         &self,
         wat: &mut String,
@@ -989,6 +1094,105 @@ impl WatEmitter<'_> {
         }
     }
 
+    fn emit_logical_computed_member_assign(
+        &self,
+        wat: &mut String,
+        object_expr: &LoweredExpr,
+        key: &LoweredExpr,
+        op: LoweredLogicalAssignOp,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let object = frame.heap_base_tmp();
+        let key_value = frame.heap_value_tmp();
+        let key_len = frame.switch_value_tmp();
+        let current_frame = frame.child_temp_frame();
+        let current = current_frame.heap_base_tmp();
+
+        self.emit_expr(wat, object_expr, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
+
+        self.emit_expr(wat, key, indent, &current_frame);
+        wat.push_str(&format!("{pad}(local.set {key_value})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, key_value, frame);
+        self.emit_key_value_to_scratch(wat, key_value, key_len, indent);
+        wat.push_str(&format!("{pad}(local.get {object})\n"));
+        wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+        wat.push_str(&format!("{pad}(local.get {key_len})\n"));
+        wat.push_str(&format!(
+            "{pad}(call {})\n",
+            RuntimeFn::PropertyGet.symbol()
+        ));
+        wat.push_str(&format!("{pad}(local.set {current})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, current, &current_frame);
+
+        match op {
+            LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
+                wat.push_str(&format!("{pad}(local.get {current})\n"));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                if op == LoweredLogicalAssignOp::And {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    self.emit_logical_computed_property_assign_rhs(
+                        wat,
+                        object,
+                        key_value,
+                        key_len,
+                        expr,
+                        indent + 4,
+                        &current_frame,
+                    );
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                } else {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    self.emit_logical_computed_property_assign_rhs(
+                        wat,
+                        object,
+                        key_value,
+                        key_len,
+                        expr,
+                        indent + 4,
+                        &current_frame,
+                    );
+                    wat.push_str(&format!("{pad}  )\n"));
+                }
+                wat.push_str(&format!("{pad})\n"));
+            }
+            LoweredLogicalAssignOp::Nullish => {
+                wat.push_str(&format!(
+                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {current}) (i32.const {}))\n{pad}  (i32.eq (local.get {current}) (i32.const {})))\n",
+                    ValueTag::NULL,
+                    ValueTag::UNDEFINED
+                ));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                wat.push_str(&format!("{pad}  (then\n"));
+                self.emit_logical_computed_property_assign_rhs(
+                    wat,
+                    object,
+                    key_value,
+                    key_len,
+                    expr,
+                    indent + 4,
+                    &current_frame,
+                );
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad}  (else\n"));
+                wat.push_str(&format!("{pad}    (local.get {current})\n"));
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad})\n"));
+            }
+        }
+    }
+
     fn emit_key_value_to_scratch(
         &self,
         wat: &mut String,
@@ -1054,6 +1258,12 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::Assign { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_may_collect(expr),
+        LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_may_collect(object) || expr_may_collect(expr)
+        }
+        LoweredExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => expr_may_collect(object) || expr_may_collect(key) || expr_may_collect(expr),
         LoweredExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
             expr_may_collect(key) || expr_may_collect(expr)
         }
@@ -1114,6 +1324,8 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::Assign { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
+        LoweredExpr::LogicalMemberAssign { .. } => true,
+        LoweredExpr::LogicalComputedMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedPropertyAssign { .. } => true,
         LoweredExpr::PropertyGet { obj, .. }
         | LoweredExpr::PropertyIn { obj, .. }

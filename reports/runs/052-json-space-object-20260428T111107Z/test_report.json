@@ -1,0 +1,116 @@
+{
+  "run_id": "052-json-space-object-20260428T111107Z",
+  "task_id": "issue-052",
+  "git": {
+    "sha": "18e6b24c6b7bb59b8c262a8461ee71f801a86230",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/ir/src/lowered.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/builtins-and-io/json-stringify-space-object-function.ts",
+      "issues/open/052-implement-json.md",
+      "reports/runs/052-json-space-object-20260428T111107Z/cycle_report.md",
+      "reports/runs/052-json-space-object-20260428T111107Z/discord-report.deferred.json",
+      "reports/runs/052-json-space-object-20260428T111107Z/discord-report.error.txt",
+      "reports/runs/052-json-space-object-20260428T111107Z/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "8f279a5ab2ad9f81d8b624020e1530bb9a7fd69a",
+        "message": "issue-052: ignore object function json space"
+      },
+      {
+        "sha": "9df847758974a2f90c3f4aac57ce00cba91f6059",
+        "message": "issue-052: record json space progress"
+      },
+      {
+        "sha": "18e6b24c6b7bb59b8c262a8461ee71f801a86230",
+        "message": "issue-052: defer json space webhook report"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "node /tmp/ts2wasm-json-space-object-function.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build /tmp/ts2wasm-json-space-object-function.ts -o /tmp/ts2wasm-json-space-object-function.wasm",
+      "status": "fail",
+      "exit_code": 1,
+      "note": "pre-change reproduction rejected object/function space with UnsupportedSyntax"
+    },
+    {
+      "cmd": "node fixtures/builtins-and-io/json-stringify-space-object-function.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space-object-function.ts -o /tmp/ts2wasm-json-stringify-space-object-function.wasm && iwasm /tmp/ts2wasm-json-stringify-space-object-function.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(json)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "skip",
+      "exit_code": 0,
+      "note": "skipped by assignment policy for PROGRESS: issue remains open and change is a narrow IR validation/lowering slice"
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 052-json-space-object-20260428T111107Z",
+      "status": "fail",
+      "exit_code": 1,
+      "note": "deferred because DISCORD_WEBHOOK_URL is not configured"
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-stringify-space-object-function.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "issue": "052",
+    "discord_report": "deferred: DISCORD_WEBHOOK_URL is not configured",
+    "full_nextest_skip_reason": "Issue remains open; assignment only requires full cargo nextest run when closing issue 052 or changing broad runtime JSON behavior.",
+    "direct_output": [
+      "{\"a\":1,\"b\":2}",
+      "[1,2]"
+    ]
+  }
+}

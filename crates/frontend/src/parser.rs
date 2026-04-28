@@ -1357,25 +1357,34 @@ impl Parser {
                     property,
                     span,
                 } if !property.is_empty() => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
                     let Expr::Ident {
                         name: object_name, ..
                     } = object.as_ref()
                     else {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-236: member logical assignment currently supports only identifier object targets".to_owned(),
-                            span: Some(target_span),
+                        return Ok(Expr::LogicalPropertyAssign {
+                            object: String::new(),
+                            object_expr: Some(object),
+                            property,
+                            computed_key: None,
+                            op,
+                            span: Span {
+                                start: span.start,
+                                end,
+                            },
+                            expr: Box::new(value),
                         });
                     };
-                    let value = self.assignment()?;
                     return Ok(Expr::LogicalPropertyAssign {
                         object: object_name.clone(),
+                        object_expr: None,
                         property,
                         computed_key: None,
                         op,
                         span: Span {
                             start: span.start,
-                            end: value.span().end,
+                            end,
                         },
                         expr: Box::new(value),
                     });
@@ -1385,42 +1394,69 @@ impl Parser {
                     index,
                     span,
                 } => {
+                    let value = self.assignment()?;
+                    let end = value.span().end;
+                    if let Expr::String {
+                        value: property, ..
+                    } = index.as_ref()
+                    {
+                        let Expr::Ident {
+                            name: object_name, ..
+                        } = object.as_ref()
+                        else {
+                            return Ok(Expr::LogicalPropertyAssign {
+                                object: String::new(),
+                                object_expr: Some(object),
+                                property: property.clone(),
+                                computed_key: None,
+                                op,
+                                span: Span {
+                                    start: span.start,
+                                    end,
+                                },
+                                expr: Box::new(value),
+                            });
+                        };
+                        return Ok(Expr::LogicalPropertyAssign {
+                            object: object_name.clone(),
+                            object_expr: None,
+                            property: property.clone(),
+                            computed_key: None,
+                            op,
+                            span: Span {
+                                start: span.start,
+                                end,
+                            },
+                            expr: Box::new(value),
+                        });
+                    }
+
                     let Expr::Ident {
                         name: object_name, ..
                     } = object.as_ref()
                     else {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-236: computed logical assignment currently supports only identifier object targets".to_owned(),
-                            span: Some(target_span),
-                        });
-                    };
-                    let Expr::String {
-                        value: property, ..
-                    } = index.as_ref()
-                    else {
-                        let value = self.assignment()?;
                         return Ok(Expr::LogicalPropertyAssign {
-                            object: object_name.clone(),
+                            object: String::new(),
+                            object_expr: Some(object),
                             property: String::new(),
                             computed_key: Some(index),
                             op,
                             span: Span {
                                 start: span.start,
-                                end: value.span().end,
+                                end,
                             },
                             expr: Box::new(value),
                         });
                     };
-                    let value = self.assignment()?;
                     return Ok(Expr::LogicalPropertyAssign {
                         object: object_name.clone(),
-                        property: property.clone(),
-                        computed_key: None,
+                        object_expr: None,
+                        property: String::new(),
+                        computed_key: Some(index),
                         op,
                         span: Span {
                             start: span.start,
-                            end: value.span().end,
+                            end,
                         },
                         expr: Box::new(value),
                     });
@@ -2899,6 +2935,54 @@ mod tests {
                 assert_eq!(object, "target");
                 assert_eq!(property, "value");
                 assert_eq!(*op, LogicalAssignOp::Or);
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_non_identifier_member_logical_assignment_as_member_assignment() {
+        let program = parse_program("getTarget().value ||= rhs();").unwrap();
+
+        match &program[0] {
+            Stmt::Expr {
+                expr:
+                    Expr::LogicalPropertyAssign {
+                        object_expr: Some(object),
+                        property,
+                        op,
+                        ..
+                    },
+                ..
+            } => {
+                assert!(matches!(object.as_ref(), Expr::Call { .. }));
+                assert_eq!(property, "value");
+                assert_eq!(*op, LogicalAssignOp::Or);
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_non_identifier_computed_logical_assignment_as_member_assignment() {
+        let program = parse_program("getTarget()[key()] &&= rhs();").unwrap();
+
+        match &program[0] {
+            Stmt::Expr {
+                expr:
+                    Expr::LogicalPropertyAssign {
+                        object_expr: Some(object),
+                        computed_key: Some(key),
+                        property,
+                        op,
+                        ..
+                    },
+                ..
+            } => {
+                assert!(matches!(object.as_ref(), Expr::Call { .. }));
+                assert!(matches!(key.as_ref(), Expr::Call { .. }));
+                assert!(property.is_empty());
+                assert_eq!(*op, LogicalAssignOp::And);
             }
             other => panic!("unexpected statement: {other:?}"),
         }

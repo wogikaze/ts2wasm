@@ -56,11 +56,14 @@ pub fn build_file_with_host_deny(
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
     let module_graph = module_graph::build_entry_module_graph(input, &program)?;
-    let build_program = rewrite_static_named_imports_for_build(&program, &module_graph)?;
-    let name_resolved = name_resolver::resolve_names(&build_program)?;
+    let static_module_binding =
+        lower_static_named_import_bindings_for_build(&program, &module_graph)?;
+    let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
+    let lowered =
+        lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)?;
     let lowered = populate_static_module_exports_for_build(lowered, &module_graph)?;
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
@@ -126,22 +129,24 @@ fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnosti
     Ok(())
 }
 
-fn rewrite_static_named_imports_for_build(
-    program: &[Stmt],
-    module_graph: &ModuleGraph,
-) -> Result<Vec<Stmt>, Diagnostic> {
-    Ok(lower_static_named_import_bindings_for_build(program, module_graph)?.rewritten_program)
-}
-
 fn populate_static_module_exports_for_build(
     mut lowered: lowered::LoweredProgram,
     module_graph: &ModuleGraph,
 ) -> Result<lowered::LoweredProgram, Diagnostic> {
-    for module in module_graph
-        .modules()
-        .iter()
-        .filter(|module| module.id() != 0)
-    {
+    for step in module_graph.dependency_first_initialization_steps() {
+        if step.module_id() == 0 {
+            continue;
+        }
+        let module = module_graph
+            .module(step.module_id())
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "module graph initialization step references missing module {}",
+                    step.module_id()
+                ),
+                span: None,
+            })?;
         if lowered
             .modules
             .iter()
@@ -189,6 +194,7 @@ struct StaticNamedImportBinding {
     source_path: PathBuf,
     imported_name: String,
     local_name: String,
+    lowered_statement_index: usize,
     initializer: Expr,
 }
 
@@ -198,6 +204,7 @@ fn lower_static_named_import_bindings_for_build(
 ) -> Result<StaticModuleBindingLowering, Diagnostic> {
     let mut rewritten = Vec::new();
     let mut named_imports = Vec::new();
+    let mut lowered_statement_index = 0;
 
     for stmt in program {
         match stmt {
@@ -233,6 +240,7 @@ fn lower_static_named_import_bindings_for_build(
                         source_path: dependency.resolved_path().to_path_buf(),
                         imported_name: specifier.imported.clone(),
                         local_name: specifier.local.clone(),
+                        lowered_statement_index,
                         initializer: expr.clone(),
                     };
                     rewritten.push(Stmt::Let {
@@ -241,9 +249,15 @@ fn lower_static_named_import_bindings_for_build(
                         span: specifier.local_span,
                     });
                     named_imports.push(binding);
+                    lowered_statement_index += 1;
                 }
             }
-            other => rewritten.push(other.clone()),
+            other => {
+                rewritten.push(other.clone());
+                if lowers_to_top_level_statement(other) {
+                    lowered_statement_index += 1;
+                }
+            }
         }
     }
 
@@ -251,6 +265,52 @@ fn lower_static_named_import_bindings_for_build(
         rewritten_program: rewritten,
         named_imports,
     })
+}
+
+fn lower_static_named_import_reads_for_build(
+    mut lowered: lowered::LoweredProgram,
+    bindings: &[StaticNamedImportBinding],
+) -> Result<lowered::LoweredProgram, Diagnostic> {
+    for binding in bindings {
+        let stmt = lowered
+            .top_level_statements
+            .get_mut(binding.lowered_statement_index)
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "static import `{}` from module `{}` lowered outside top-level statement range",
+                    binding.local_name, binding.source_specifier
+                ),
+                span: None,
+            })?;
+
+        match stmt {
+            lowered::LoweredStmt::Let(_, expr) => {
+                *expr = lowered::LoweredExpr::PropertyGet {
+                    obj: Box::new(lowered::LoweredExpr::ModuleLoad {
+                        module_id: binding.source_module_id,
+                    }),
+                    key: binding.imported_name.clone(),
+                };
+            }
+            other => {
+                return Err(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "static import `{}` from module `{}` lowered to non-let statement: {other:?}",
+                        binding.local_name, binding.source_specifier
+                    ),
+                    span: None,
+                });
+            }
+        }
+    }
+
+    Ok(lowered)
+}
+
+fn lowers_to_top_level_statement(stmt: &Stmt) -> bool {
+    !matches!(stmt, Stmt::Function { .. } | Stmt::ClassDecl { .. })
 }
 
 fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, Diagnostic> {
@@ -950,6 +1010,7 @@ console.log(importedValue);
         assert_eq!(binding.source_path, source_module.canonicalize().unwrap());
         assert_eq!(binding.imported_name, "value");
         assert_eq!(binding.local_name, "importedValue");
+        assert_eq!(binding.lowered_statement_index, 0);
         assert!(matches!(binding.initializer, Expr::Number { value: 1, .. }));
 
         match &lowering.rewritten_program[0] {
@@ -987,16 +1048,31 @@ console.log(value);
         let program = parse_program(entry_source).expect("entry should parse");
         validate_ast(&program).expect("entry should validate");
         let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
-        let build_program = rewrite_static_named_imports_for_build(&program, &graph)
-            .expect("static named import rewrite should succeed");
-        let name_resolved =
-            name_resolver::resolve_names(&build_program).expect("names should resolve");
+        let static_module_binding = lower_static_named_import_bindings_for_build(&program, &graph)
+            .expect("static named import binding should lower");
+        let name_resolved = name_resolver::resolve_names(&static_module_binding.rewritten_program)
+            .expect("names should resolve");
         let resolved =
             builtin_resolver::resolve_builtins(&name_resolved).expect("builtins should resolve");
         let lowered_program = lowered::lower_program(&resolved).expect("program should lower");
+        let lowered_program = lower_static_named_import_reads_for_build(
+            lowered_program,
+            &static_module_binding.named_imports,
+        )
+        .expect("static named import reads should lower through module exports");
         let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph)
             .expect("static module exports should populate lowered metadata");
 
+        match &lowered_program.top_level_statements[0] {
+            lowered::LoweredStmt::Let(_, lowered::LoweredExpr::PropertyGet { obj, key }) => {
+                assert_eq!(key, "value");
+                assert!(matches!(
+                    obj.as_ref(),
+                    lowered::LoweredExpr::ModuleLoad { module_id: 1 }
+                ));
+            }
+            other => panic!("unexpected lowered import read statement: {other:?}"),
+        }
         assert_eq!(lowered_program.modules.len(), 1);
         let module = &lowered_program.modules[0];
         assert_eq!(module.id, 1);
@@ -1014,8 +1090,52 @@ console.log(value);
 
         let wat = backend::emit_wat(&lowered_program)
             .expect("lowered module metadata should remain buildable");
+        assert!(wat.contains("$module_require"));
+        assert!(wat.contains("$property_get"));
         assert!(wat.contains("$module_exports_set"));
-        assert!(!wat.contains("$module_require"));
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn static_module_export_lowering_orders_module_metadata_dependency_first() {
+        let dir = unique_temp_dir("static-module-export-order");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source_module = dir.join("source.ts");
+        let nested_module = dir.join("nested.ts");
+        let entry_source = r#"import { value } from "./source";"#;
+        std::fs::write(&entry, entry_source).expect("entry should be written");
+        std::fs::write(
+            &source_module,
+            r#"
+import { nested } from "./nested";
+export const value = 1;
+"#,
+        )
+        .expect("source module should be written");
+        std::fs::write(&nested_module, "export const nested = 2;\n")
+            .expect("nested module should be written");
+
+        let program = parse_program(entry_source).expect("entry should parse");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let lowered_program = lowered::LoweredProgram {
+            top_level_statements: vec![],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+        let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph)
+            .expect("static module exports should populate lowered metadata");
+
+        let module_ids = lowered_program
+            .modules
+            .iter()
+            .map(|module| module.id)
+            .collect::<Vec<_>>();
+        assert_eq!(module_ids, vec![2, 1]);
+        assert_eq!(lowered_program.modules[0].specifier, "./nested");
+        assert_eq!(lowered_program.modules[1].specifier, "./source");
 
         let _ = std::fs::remove_dir_all(&dir);
     }

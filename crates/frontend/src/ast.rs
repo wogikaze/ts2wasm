@@ -319,6 +319,7 @@ pub enum Expr {
     },
     LogicalPropertyAssign {
         object: String,
+        object_expr: Option<Box<Expr>>,
         property: String,
         computed_key: Option<Box<Expr>>,
         op: LogicalAssignOp,

@@ -1,0 +1,117 @@
+{
+  "run_id": "236-logical-assignment-receivers-20260428T105318Z",
+  "task_id": "issue-236",
+  "git": {
+    "sha": "3271983e278d91bf463e5c687760029f67cf340e",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/backend-wasm/src/emitter.rs",
+      "crates/backend-wasm/src/expr_emit.rs",
+      "crates/backend-wasm/src/runtime_link_plan.rs",
+      "crates/frontend/src/ast.rs",
+      "crates/frontend/src/parser.rs",
+      "crates/ir/src/builtin_resolved.rs",
+      "crates/ir/src/builtin_resolver.rs",
+      "crates/ir/src/lowered.rs",
+      "crates/ir/src/name_resolver.rs",
+      "crates/ir/src/semantic.rs",
+      "fixtures/core-semantics/logical-assignment-member-unsupported.ts",
+      "fixtures/core-semantics/logical-assignment-member.ts",
+      "issues/open/236-complete-logical-assignment-target-forms.md",
+      "reports/runs/236-logical-assignment-receivers-20260428T105318Z/cycle_report.md",
+      "reports/runs/236-logical-assignment-receivers-20260428T105318Z/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "43d9b04dffcbbe636e461c4b75ab741576d5a2a7",
+        "message": "issue-236: support logical assignment member receivers"
+      },
+      {
+        "sha": "3271983e278d91bf463e5c687760029f67cf340e",
+        "message": "issue-236: record deferred child report"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo check -q",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(logical_assignment)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node fixtures/core-semantics/logical-assignment-member.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node fixtures/core-semantics/logical-assignment-index.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-member.ts -o /tmp/issue236-member.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "iwasm /tmp/issue236-member.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-index.ts -o /tmp/issue236-index.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "iwasm /tmp/issue236-index.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-member-unsupported.ts -o /tmp/issue236-unsupported.wasm",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 6,
+    "failed": 0,
+    "skipped": 375,
+    "newly_passed": [
+      "fixtures/core-semantics/logical-assignment-member.ts static non-identifier receiver slice"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "reporting": "DEFERRED: DISCORD_WEBHOOK_URL is not configured",
+    "full_nextest": "skipped: issue remains open and assignment requires full suite only for close or broad shared backend semantics",
+    "unsupported_remaining": "dynamic computed logical-assignment keys on non-identifier receivers"
+  }
+}
