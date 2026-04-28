@@ -107,6 +107,9 @@ impl NameResolver {
             Stmt::ExportNamedFrom { span, .. } => {
                 Err(unsupported_module_decl(*span, "named re-export"))
             }
+            Stmt::ExportAllFrom { span, .. } => {
+                Err(unsupported_module_decl(*span, "star re-export"))
+            }
             Stmt::Let { name, expr, span } => {
                 self.declare_variable(name, Some(*span))?;
                 Ok(Stmt::Let {
