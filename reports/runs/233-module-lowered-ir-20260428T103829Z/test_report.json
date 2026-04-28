@@ -2,7 +2,7 @@
   "run_id": "233-module-lowered-ir-20260428T103829Z",
   "task_id": "issue-233",
   "git": {
-    "sha": "9b08b720a20b1b55df49c33dfba393fd0b025072",
+    "sha": "a3fd24bb971f09265a3b09a18f5708253f536be0",
     "exit_code": 0,
     "changed_files": [
       "crates/compiler/src/lib.rs",
@@ -12,7 +12,12 @@
       "reports/runs/233-module-lowered-ir-20260428T103829Z/cycle_report.md",
       "reports/runs/233-module-lowered-ir-20260428T103829Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "a3fd24bb971f09265a3b09a18f5708253f536be0",
+        "message": "issue-233: populate lowered module exports"
+      }
+    ]
   },
   "commands": [
     {
