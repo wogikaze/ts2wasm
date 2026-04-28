@@ -467,6 +467,7 @@ impl<'a> HirLowerer<'a> {
             | ResolvedExpr::LogicalAssign { .. }
             | ResolvedExpr::LogicalPropertyAssign { .. }
             | ResolvedExpr::LogicalMemberAssign { .. }
+            | ResolvedExpr::LogicalComputedMemberAssign { .. }
             | ResolvedExpr::LogicalComputedPropertyAssign { .. } => Err(unsupported(
                 "assignment expressions are not part of the initial HIR slice",
             )),

@@ -90,7 +90,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/236-complete-logical-assignment-target-forms.md`
+- [x] created and later completed: `issues/done/236-complete-logical-assignment-target-forms.md`
 - [x] created: `issues/open/237-implement-annexb-ishtmldda-compatibility.md`
 
 ## Notes
