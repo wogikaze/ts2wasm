@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
+status: done
 ---
 
 ## Summary
@@ -27,15 +29,15 @@ Dynamic computed and non-identifier receiver logical assignment targets either e
 
 In scope:
 
-- [ ] Implement or design lowering for non-identifier member receivers such as `getObj().value ||= rhs()`.
-- [ ] Implement or design lowering for dynamic computed keys such as `target[key] &&= rhs()`.
-- [ ] Preserve one evaluation of object and key expressions and short-circuit RHS behavior.
-- [ ] Add Node/iwasm differential fixtures for object, key, and RHS evaluation counts.
+- [x] Implement or design lowering for non-identifier member receivers such as `getObj().value ||= rhs()`.
+- [x] Implement or design lowering for dynamic computed keys such as `target[key] &&= rhs()`.
+- [x] Preserve one evaluation of object and key expressions and short-circuit RHS behavior.
+- [x] Add Node/iwasm differential fixtures for object, key, and RHS evaluation counts.
 
 Out of scope:
 
-- Broad assignment-target validation unrelated to logical assignment.
-- Annex B `[[IsHTMLDDA]]` browser compatibility, tracked separately by issue 237.
+- [x] Broad assignment-target validation unrelated to logical assignment.
+- [x] Annex B `[[IsHTMLDDA]]` browser compatibility, tracked separately by issue 237.
 
 ## Affected paths
 
@@ -53,11 +55,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `fixtures/core-semantics/logical-assignment-computed-member.ts` replaces the previous unsupported receiver/key fixture with positive regression coverage.
-- [ ] Dynamic computed logical assignment keys are evaluated exactly once.
-- [ ] Non-identifier receiver logical assignment targets are evaluated exactly once.
-- [ ] RHS evaluation still follows `&&=`, `||=`, and `??=` short-circuit semantics.
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass.
+- [x] `fixtures/core-semantics/logical-assignment-computed-member.ts` replaces the previous unsupported receiver/key fixture with positive regression coverage.
+- [x] Dynamic computed logical assignment keys are evaluated exactly once.
+- [x] Non-identifier receiver logical assignment targets are evaluated exactly once.
+- [x] RHS evaluation still follows `&&=`, `||=`, and `??=` short-circuit semantics.
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass.
 
 ## Validation
 
@@ -84,15 +86,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated when behavior changes
+- [x] not affected beyond issue evidence and regression fixtures
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -127,20 +129,48 @@ receiver, key, and RHS side-effect markers for skip/run branches.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Issue 236 is closed by the cumulative logical-assignment target-form work:
 
 Commits:
 
-- `...`
+- `43d9b04dffcbbe636e461c4b75ab741576d5a2a7` - static member logical assignment on non-identifier receivers.
+- `2b963e4e766db6864af2f644a704cd2864d3644e` - dynamic computed logical assignment on non-identifier receivers.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check
+result: pass
+date: 2026-04-28
+
+cargo nextest run -E 'test(logical_assignment)'
+result: pass; 7 tests passed
+date: 2026-04-28
+
+node fixtures/core-semantics/logical-assignment-member.ts
+node fixtures/core-semantics/logical-assignment-index.ts
+node fixtures/core-semantics/logical-assignment-computed-member.ts
+result: pass; direct Node fixture commands produced expected side-effect traces
+date: 2026-04-28
+
+cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-member.ts -o /tmp/ts2wasm-issue236-member.wasm && iwasm /tmp/ts2wasm-issue236-member.wasm
+cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-index.ts -o /tmp/ts2wasm-issue236-index.wasm && iwasm /tmp/ts2wasm-issue236-index.wasm
+cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-computed-member.ts -o /tmp/ts2wasm-issue236-computed-member.wasm && iwasm /tmp/ts2wasm-issue236-computed-member.wasm
+result: pass; iwasm outputs matched Node for receiver/key/RHS side-effect coverage
+date: 2026-04-28
+
+scripts/manager check-agent-state
+scripts/manager check-issue-health
+scripts/manager check-repo-smoke
+result: pass
+date: 2026-04-28
+
+cargo nextest run
+result: pass; 378 passed, 4 skipped in child validation
+date: 2026-04-28
 ```
 
 Remaining risks:
 
-- none
+- Broad assignment target validation remains out of scope.
+- Annex B `[[IsHTMLDDA]]` compatibility remains tracked by issue 237.
