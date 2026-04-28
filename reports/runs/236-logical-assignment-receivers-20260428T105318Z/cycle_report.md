@@ -85,3 +85,10 @@ result: expected failure, [UnsupportedSyntax] issue-236 diagnostic
 - Dynamic computed logical assignment keys on non-identifier receivers, such as
   `getObj()[key()] &&= rhs()`, still need the combined receiver/key temporary
   design.
+
+## Reporting
+
+- Discord report attempt 1 failed because `DISCORD_WEBHOOK_URL` is not
+  configured in the environment or `.env`.
+- Deferred payload saved to `discord_payload.json`; retry result is recorded in
+  `reporting_error.log`.

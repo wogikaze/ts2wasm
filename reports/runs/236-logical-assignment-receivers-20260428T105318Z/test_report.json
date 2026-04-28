@@ -21,7 +21,12 @@
       "reports/runs/236-logical-assignment-receivers-20260428T105318Z/cycle_report.md",
       "reports/runs/236-logical-assignment-receivers-20260428T105318Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "43d9b04",
+        "message": "issue-236: support logical assignment member receivers"
+      }
+    ]
   },
   "commands": [
     {
@@ -101,6 +106,7 @@
   },
   "meta": {
     "outcome": "PROGRESS",
+    "reporting": "DEFERRED: DISCORD_WEBHOOK_URL is not configured",
     "full_nextest": "skipped: issue remains open and assignment requires full suite only for close or broad shared backend semantics",
     "unsupported_remaining": "dynamic computed logical-assignment keys on non-identifier receivers"
   }
