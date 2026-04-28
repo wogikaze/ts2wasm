@@ -8,20 +8,31 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-29
 ---
 
 ## Summary
 
-Implement function feature to handle 47 failing test cases in reference tests.
+Epic for function support. The implementation work is split into callable child
+issues because function support spans unrelated semantic surfaces.
 
-Problem: Function support spans dynamic Function diagnostics, ordinary call semantics, this/arguments, closures, and function object behavior; direct selection is too broad.
+Problem: Function support spans dynamic Function diagnostics, ordinary call
+semantics, `this`/`arguments`, closures, and function object behavior; direct
+selection is too broad.
 
 Queue design note:
 
 - This is an epic-level issue and must not be selected directly from the Ready queue.
 - Use child slices with a single function semantic surface and Node/iwasm differential evidence.
 - Function constructor / eval-like behavior should remain diagnostic-only unless an explicit dynamic evaluation policy exists.
+- Child issues:
+  - issue 062b: dynamic `Function(...)` / `new Function(...)` diagnostics and policy
+  - issue 062c: ordinary function declarations and direct calls
+  - issue 062d: function receiver `this` and `arguments`
+  - issue 062e: closures and captured lexical environments
+  - issue 062f: function object metadata
+- Issue 063 was closed as superseded by issue 062b; its Annex B dynamic
+  Function constructor cases are owned there.
 
 ## Problem
 
@@ -33,12 +44,19 @@ function feature is correctly implemented according to JavaScript/TypeScript spe
 
 ## Scope
 
-In scope:
+In scope for the epic:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for function feature
-- [ ] Add fixtures for function feature behavior
-- [ ] Update diagnostics appropriately
+- [ ] Track the child issue list.
+- [ ] Keep shared function support constraints discoverable.
+- [ ] Close only after all child issues are closed or explicitly superseded.
+
+Implementation scope belongs to child issues:
+
+- [ ] Dynamic Function constructor diagnostics and policy: issue 062b
+- [ ] Ordinary function declarations and direct calls: issue 062c
+- [ ] Function receiver `this` and `arguments`: issue 062d
+- [ ] Closures and captured lexical environments: issue 062e
+- [ ] Function object metadata: issue 062f
 
 Out of scope:
 
@@ -59,10 +77,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] function feature passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for function feature
-- [ ] Docs updated if semantics change
+- [ ] All child issues listed in the queue design note are closed or explicitly superseded.
+- [ ] Related function diagnostics are reduced in reference tests through child issues.
+- [ ] Regression coverage exists for each supported function semantic surface.
+- [ ] Docs/current-state are updated by child issues when semantics change.
 
 ## Validation
 
@@ -98,6 +116,14 @@ Follow-up issues:
 - [ ] none
 
 ## Notes
+
+2026-04-29 split note:
+
+- Issue 062 is now a blocked parent epic only.
+- The callable implementation/verification surfaces are split into issues
+  062b, 062c, 062d, 062e, and 062f.
+- Issue 063 is superseded by issue 062b because its affected tests are Annex B
+  dynamic Function constructor cases.
 
 2026-04-28 child progress (`062-function-constructor-diagnostics-20260428T050359Z`):
 

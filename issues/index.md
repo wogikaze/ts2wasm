@@ -21,7 +21,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 050a | Document Date deterministic subset and live-time policy gap | docs | runtime/builtins | docs-ready | P1 |  | Date has validated deterministic slices, but the open epic still presents live time, timezone formatting, frontend re... |
 | 052a | Close JSON supported subset contract | docs | runtime/builtins | docs-ready | P1 |  | JSON has many validated progress slices, but the parent issue still reads as a full-spec implementation target and is... |
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | verification-ready | P1 |  | Unknown-unsupported classification has reached zero in large test262 windows, but the parent spike has no fixed compl... |
-| 062a | Split function epic into callable child issues | cleanup | issues | docs-ready | P1 |  | Issue 062 mixes unrelated function surfaces, so implementation starts with scope design instead of code. |
+| 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | verification-ready | P1 |  | Dynamic `Function(...)` and `new Function(...)` behave like runtime |
+| 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | implementation-ready | P1 |  | Ordinary function declarations and direct calls are a separate callable |
+| 062d | Implement function this and arguments semantics | feature | frontend/semantics | implementation-ready | P1 |  | Function receiver binding and the `arguments` object have observable |
+| 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
+| 062f | Implement function object metadata | feature | frontend/semantics | implementation-ready | P2 |  | Function object metadata such as `name`, `length`, and prototype |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 238 | Make strict warning gates pass | infra | tests | implementation-ready | P0 |  | Make strict warning gates pass |
 <!-- generated:ready:end -->
@@ -38,7 +42,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | class: blocked | Investigate and classify unknown-unsupported diagnostic cases |
 | 062 | Implement function support | feature | frontend | class: blocked | Implement function support |
-| 063 | Implement function resolution | feature | frontend | class: blocked | Implement function resolution |
 | 064 | Implement name resolution | feature | frontend | class: blocked | Implement name resolution |
 | 066 | Implement RegExp literal support | feature | frontend | class: blocked | Implement RegExp literal support |
 | 067 | Investigate and classify unknown-unsupported cases | feature | frontend | class: blocked | Investigate and classify unknown-unsupported cases |
@@ -247,6 +250,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 059a | Implement TypeScript satisfies and const assertion erasure | feature | frontend | see `issues/done/059a-implement-typescript-satisfies-and-const-assertion-erasure.md` |
 | 061 | Implement Date object support | feature | frontend | see `issues/done/061-implement-date.md` |
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |
+| 062a | Split function epic into callable child issues | cleanup | issues | see `issues/done/062a-split-function-epic-into-callable-child-issues.md` |
+| 063 | Implement function resolution | feature | frontend | see `issues/done/063-implement-function-resolution.md` |
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
 | 065 | Implement parser syntax extensions | feature | frontend | see `issues/done/065-implement-parser-syntax.md` |
 | 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | see `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` |
