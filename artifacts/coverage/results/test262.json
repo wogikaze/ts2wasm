@@ -2,58 +2,33 @@
   "suite": "test262",
   "suite_name": "test262",
   "denominator": 53445,
-  "executed": 300,
+  "executed": 500,
   "build_coverage_percent": "0.00",
   "semantic_coverage_percent": "0.00",
   "build_pass": 0,
   "semantic_pass": 0,
   "fail": 0,
-  "unsupported": 300,
+  "unsupported": 500,
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 207,
-    "UnresolvedName": 93
+    "UnsupportedSyntax": 394,
+    "UnresolvedName": 106
   },
   "unsupported_features": {
     "array-builtin": 1,
-    "name-resolution": 93,
+    "name-resolution": 106,
     "date": 16,
     "regexp-literal": 47,
     "string-builtin": 63,
     "builtin-api": 1,
     "legacy-global-builtin": 20,
-    "html-comment": 8,
-    "eval": 51
+    "eval": 246
   },
   "status": "in-progress",
   "selection": {
     "paths_file": null,
     "path_filters": []
   },
-  "evidence": "python scripts/manager.py reference-coverage test262 --limit 300",
-  "evidence_rows": [
-    {
-      "suite": "test262",
-      "suite_name": "test262 semantic-core seeds",
-      "denominator": 53445,
-      "executed": 60,
-      "build_coverage_percent": "0.11",
-      "semantic_coverage_percent": "0.11",
-      "build_pass": 60,
-      "semantic_pass": 60,
-      "fail": 0,
-      "unsupported": 0,
-      "blocked": 0,
-      "skip_with_reason": 0,
-      "unsupported_diagcodes": {},
-      "unsupported_features": {},
-      "status": "in-progress",
-      "selection": {
-        "paths_file": "scripts/data/test262-semantic-core-seeds.txt",
-        "path_filters": []
-      },
-      "evidence": "python scripts/manager.py reference-coverage test262 --paths-file scripts/data/test262-semantic-core-seeds.txt"
-    }
-  ]
+  "evidence": "python scripts/manager.py reference-coverage test262 --limit 500"
 }

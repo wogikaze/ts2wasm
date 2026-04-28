@@ -2,35 +2,42 @@
   "suite": "tsc",
   "suite_name": "tsc",
   "denominator": 6419,
-  "executed": 150,
-  "build_coverage_percent": "0.09",
-  "semantic_coverage_percent": "0.05",
-  "build_pass": 6,
-  "semantic_pass": 3,
+  "executed": 200,
+  "build_coverage_percent": "0.11",
+  "semantic_coverage_percent": "0.06",
+  "build_pass": 7,
+  "semantic_pass": 4,
   "fail": 0,
-  "unsupported": 144,
+  "unsupported": 193,
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 144
+    "UnsupportedSyntax": 191,
+    "UnresolvedName": 2
   },
   "unsupported_features": {
-    "parser-syntax": 50,
+    "parser-syntax": 59,
     "jsdoc": 1,
-    "import-export": 20,
+    "import-export": 21,
     "class-accessor": 17,
-    "module-system-amd": 1,
-    "scope-analysis": 2,
+    "module-system-amd": 10,
+    "scope-analysis": 3,
     "type-alias": 23,
-    "declaration-emit": 3,
+    "declaration-emit": 8,
     "function": 1,
-    "module-resolution": 1,
-    "ambient-declaration": 25
+    "module-resolution": 2,
+    "ambient-declaration": 30,
+    "type-assertion": 1,
+    "class": 3,
+    "type-system": 1,
+    "object-literal": 1,
+    "arguments-object": 10,
+    "name-resolution": 2
   },
   "status": "in-progress",
   "selection": {
     "paths_file": null,
     "path_filters": []
   },
-  "evidence": "python scripts/manager.py reference-coverage tsc --limit 150"
+  "evidence": "python scripts/manager.py reference-coverage tsc --limit 200"
 }
