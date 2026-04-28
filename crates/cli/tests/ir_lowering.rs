@@ -82,6 +82,33 @@ fn lowering_routes_regexp_literal_to_string_subset() {
 }
 
 #[test]
+fn lowering_routes_regexp_literal_test_to_runtime_call() {
+    let program = parse_and_resolve("let ok = /abc/.test(\"zabcx\");");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+        ) => {
+            assert_eq!(runtime_fn, "RegExpTest");
+            assert_eq!(args.len(), 2);
+        }
+        other => panic!("unexpected lowered statement: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_rejects_unsupported_regexp_test_pattern() {
+    let program = parse_and_resolve("let ok = /a*/.test(\"aaa\");");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-051"));
+    assert!(err.message.contains("plain literal byte patterns"));
+}
+
+#[test]
 fn lowering_routes_template_interpolation_through_addition() {
     let program = parse_and_resolve("let name = \"world\"; let message = `Hello, ${name}!`;");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();

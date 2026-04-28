@@ -8,6 +8,7 @@ mod runtime_collections;
 mod runtime_core;
 mod runtime_fn;
 mod runtime_link_plan;
+mod runtime_regexp;
 mod runtime_strings;
 mod stmt_emit;
 mod string_intern;

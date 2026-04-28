@@ -67,6 +67,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringToLowerCase => self.emit_string_to_lower_case(wat),
                 RuntimeFn::StringCharCodeAt => self.emit_string_char_code_at(wat),
                 RuntimeFn::StringFromCharCode => self.emit_string_from_char_code(wat),
+                RuntimeFn::RegExpTest => self.emit_regexp_test(wat),
                 RuntimeFn::ArrayPush => self.emit_array_push(wat),
                 RuntimeFn::ArrayPop => self.emit_array_pop(wat),
                 RuntimeFn::ArraySlice => self.emit_array_slice(wat),
