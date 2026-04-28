@@ -144,6 +144,7 @@ webhook 送信ルール:
 
 - push 前に必ず `scripts/manager discord-report` で webhook に送信する。
 - Discord 送信用レポートは非常に簡潔にする（状態、issue ID、検証、blocker、次アクションのみ）。
+- `未記入` だらけのレポートは `discord-report` が reject する。
 - Discord 制限に近い payload は `discord-report` が自動的に 2 通へ分割して送信する。
 - `reports/` は git 追跡しないローカル生成物として扱う。
 - `.md` / `.json` ファイルを `discord-report` で送信した場合、送信済み registry に記録し、同じファイルの再送をエラーにする。

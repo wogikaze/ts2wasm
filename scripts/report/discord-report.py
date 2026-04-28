@@ -26,6 +26,7 @@ CONTENT_LIMIT = 1900
 EMBED_TOTAL_LIMIT = 5600
 FIELD_VALUE_LIMIT = 900
 SECTION_LINE_LIMIT = 2
+PLACEHOLDER_VALUES = {"未記入", "なし", "-", "n/a", "N/A"}
 
 
 def load_env() -> dict[str, str]:
@@ -79,6 +80,22 @@ def parse_cycle_report(content: str) -> dict[str, str]:
             fields[key] = "\n".join(lines)[:FIELD_VALUE_LIMIT]
 
     return fields
+
+
+def reject_placeholder_report(fields: dict[str, str]) -> None:
+    meaningful = [
+        value.strip()
+        for value in fields.values()
+        if value.strip() and value.strip() not in PLACEHOLDER_VALUES
+    ]
+    placeholder_count = sum(1 for value in fields.values() if value.strip() in PLACEHOLDER_VALUES)
+    if len(meaningful) < 3 or placeholder_count >= 5:
+        print(
+            "エラー: Discord レポートが未記入または実質空です。"
+            " 状態、目的、実施内容、検証、blocker/next action を簡潔に埋めてください。",
+            file=sys.stderr,
+        )
+        sys.exit(1)
 
 
 def create_discord_embed(fields: dict[str, str], run_id: Optional[str]) -> dict[str, Any]:
@@ -162,6 +179,7 @@ def create_json_payload(content: str, source_path: Path) -> dict[str, Any]:
 
 def create_markdown_payload(content: str, run_id: Optional[str]) -> dict[str, Any]:
     fields = parse_cycle_report(content)
+    reject_placeholder_report(fields)
     return create_discord_embed(fields, run_id)
 
 
