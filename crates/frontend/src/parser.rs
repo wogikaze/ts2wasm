@@ -4,11 +4,13 @@ use crate::{
     ReExportNamedSpecifier, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
     ast::ReExportNamespaceSpecifier,
 };
+use std::collections::HashSet;
 
 pub struct Parser {
     tokens: Vec<SpannedToken>,
     cursor: usize,
     strict_mode: bool,
+    typescript_generic_functions: HashSet<String>,
 }
 
 struct ParsedParam {
@@ -30,6 +32,7 @@ impl Parser {
             tokens,
             cursor: 0,
             strict_mode,
+            typescript_generic_functions: HashSet::new(),
         }
     }
 
@@ -835,7 +838,10 @@ impl Parser {
     fn function_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Function)?;
         let (name, _) = self.expect_ident()?;
-        self.consume_typescript_generic_parameter_list()?;
+        let has_generic_params = self.consume_typescript_generic_parameter_list()?;
+        if has_generic_params {
+            self.typescript_generic_functions.insert(name.clone());
+        }
         self.expect(TokenKind::LeftParen)?;
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
@@ -2153,7 +2159,7 @@ impl Parser {
                 continue;
             }
             if allow_call {
-                self.try_consume_typescript_call_type_arguments(expr.span().end)?;
+                self.try_consume_typescript_call_type_arguments(&expr)?;
             }
             if allow_call && self.consume(TokenKind::LeftParen) {
                 let mut args = Vec::new();
@@ -2195,22 +2201,27 @@ impl Parser {
         Ok(expr)
     }
 
-    fn consume_typescript_generic_parameter_list(&mut self) -> Result<(), Diagnostic> {
+    fn consume_typescript_generic_parameter_list(&mut self) -> Result<bool, Diagnostic> {
         let Some(less_span) = self.consume_span(TokenKind::Less) else {
-            return Ok(());
+            return Ok(false);
         };
         self.skip_typescript_angle_list_after_less(less_span, "generic parameter list")?;
-        Ok(())
+        Ok(true)
     }
 
     fn try_consume_typescript_call_type_arguments(
         &mut self,
-        callee_end: usize,
+        callee: &Expr,
     ) -> Result<bool, Diagnostic> {
+        if !self.is_typescript_generic_call_callee(callee) {
+            return Ok(false);
+        }
+
         let start = self.cursor;
         let Some(less_span) = self.consume_span(TokenKind::Less) else {
             return Ok(false);
         };
+        let callee_end = callee.span().end;
         if less_span.start != callee_end {
             self.cursor = start;
             return Ok(false);
@@ -2233,6 +2244,10 @@ impl Parser {
             self.cursor = start;
             Ok(false)
         }
+    }
+
+    fn is_typescript_generic_call_callee(&self, callee: &Expr) -> bool {
+        matches!(callee, Expr::Ident { name, .. } if self.typescript_generic_functions.contains(name))
     }
 
     fn skip_typescript_angle_list_after_less(
@@ -3032,6 +3047,31 @@ mod tests {
         assert!(matches!(program[1], Stmt::Function { .. }));
         assert!(matches!(program[2], Stmt::Let { .. }));
         assert!(matches!(program[3], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn preserves_adjacent_relational_expression_that_resembles_generic_call() {
+        let program = parse_program("let result = a<b>(c);").unwrap();
+        let Stmt::Let { expr, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        let Expr::Binary {
+            left,
+            op: BinaryOp::Greater,
+            right,
+            ..
+        } = expr
+        else {
+            panic!("expected greater-than comparison, got {expr:?}");
+        };
+        assert!(matches!(
+            left.as_ref(),
+            Expr::Binary {
+                op: BinaryOp::Less,
+                ..
+            }
+        ));
+        assert!(matches!(right.as_ref(), Expr::Ident { name, .. } if name == "c"));
     }
 
     #[test]
