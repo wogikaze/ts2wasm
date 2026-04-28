@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-26
+status: done
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,16 +29,16 @@ Map and Set are not implemented. They are common ES6 collection types.
 
 In scope:
 
-- [ ] Implement Map constructor
-- [ ] Implement Map.prototype.get
-- [ ] Implement Map.prototype.set
-- [ ] Implement Map.prototype.has
-- [ ] Implement Map.prototype.delete
-- [ ] Implement Set constructor
-- [ ] Implement Set.prototype.add
-- [ ] Implement Set.prototype.has
-- [ ] Implement Set.prototype.delete
-- [ ] Add fixtures for Map/Set behavior
+- [x] Implement Map constructor
+- [x] Implement Map.prototype.get
+- [x] Implement Map.prototype.set
+- [x] Implement Map.prototype.has
+- [x] Implement Map.prototype.delete
+- [x] Implement Set constructor
+- [x] Implement Set.prototype.add
+- [x] Implement Set.prototype.has
+- [x] Implement Set.prototype.delete
+- [x] Add fixtures for Map/Set behavior
 
 Out of scope:
 
@@ -56,10 +58,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Map basic operations work correctly
-- [ ] Set basic operations work correctly
-- [ ] Fixtures cover Map/Set behavior
-- [ ] No regression in existing fixtures
+- [x] Map basic operations work correctly
+- [x] Set basic operations work correctly
+- [x] Fixtures cover Map/Set behavior
+- [x] No regression in existing fixtures
 
 ## Validation
 
@@ -85,15 +87,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -103,20 +105,46 @@ Follow-up issues:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `1b26026` (`Fix Map Set delete member parsing`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-frontend parses_delete_keyword_after_dot_as_member_property_name
+result: pass
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli map_set_collection_fixture_matches_node_output_under_iwasm
+result: pass
+date: 2026-04-28
+
+command: node fixtures/builtins-and-io/map-set.ts
+result: pass; stdout covered Map get/set/has/delete and Set add/has/delete
+date: 2026-04-28
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/map-set.ts -o /tmp/issue049-map-set-delete.wasm && iwasm /tmp/issue049-map-set-delete.wasm
+result: pass; iwasm stdout matched Node for the Map/Set fixture
+date: 2026-04-28
+
+command: cargo nextest run -E 'test(map) or test(set)'
+result: pass; 4 tests
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli map
+result: pass; 1 test
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli set
+result: pass; 2 tests
+date: 2026-04-28
 ```
 
 Remaining risks:
 
-- none
+- Map/Set key identity remains limited by the current runtime string-key normalization noted above; no follow-up was created because that limitation was already recorded before this delete completion slice and is outside issue 049's basic-operation closure.

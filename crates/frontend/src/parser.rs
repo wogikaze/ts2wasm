@@ -1325,7 +1325,7 @@ impl Parser {
         let mut expr = self.primary()?;
         loop {
             if self.consume(TokenKind::Dot) {
-                let (property, prop_span) = self.expect_ident()?;
+                let (property, prop_span) = self.expect_member_property_name()?;
                 let start = expr.span().start;
                 expr = Expr::Member {
                     object: Box::new(expr),
@@ -1360,7 +1360,7 @@ impl Parser {
         let mut expr = self.primary()?;
         loop {
             if self.consume(TokenKind::Dot) {
-                let (property, prop_span) = self.expect_ident()?;
+                let (property, prop_span) = self.expect_member_property_name()?;
                 let start = expr.span().start;
                 expr = Expr::Member {
                     object: Box::new(expr),
@@ -1598,6 +1598,24 @@ impl Parser {
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected identifier, got {other:?}"),
+                span: self.peek_span(),
+            }),
+        }
+    }
+
+    fn expect_member_property_name(&mut self) -> Result<(String, Span), Diagnostic> {
+        match self.advance() {
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) => Ok((name, span)),
+            Some(SpannedToken {
+                kind: Token::Delete,
+                span,
+            }) => Ok((String::from("delete"), span)),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("expected member property name, got {other:?}"),
                 span: self.peek_span(),
             }),
         }
@@ -1999,6 +2017,22 @@ mod tests {
                 ..
             } => assert_eq!(value, "tick ` and ${name}"),
             other => panic!("unexpected escaped template statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_delete_keyword_after_dot_as_member_property_name() {
+        let program = parse_program("let ok = map.delete(\"a\");").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Call { callee, .. },
+                ..
+            } => match callee.as_ref() {
+                Expr::Member { property, .. } => assert_eq!(property, "delete"),
+                other => panic!("unexpected callee expression: {other:?}"),
+            },
+            other => panic!("unexpected delete member call statement: {other:?}"),
         }
     }
 
