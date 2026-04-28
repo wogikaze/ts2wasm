@@ -2,7 +2,7 @@
   "run_id": "054-error-types-20260428T010400Z",
   "task_id": "054",
   "git": {
-    "sha": "pending-commit",
+    "sha": "6258e84834fe38d3d2ba52178907a25cfe4f43d2",
     "exit_code": 0,
     "changed_files": [
       "crates/ir/src/lowered.rs",
@@ -12,9 +12,16 @@
       "reports/agents/agent-054-error-types-20260428T010400Z/assignment.md",
       "reports/agents/agent-054-error-types-20260428T010400Z/progress.md",
       "reports/agents/agent-054-error-types-20260428T010400Z/discord_payload.deferred.json",
-      "reports/runs/054-error-types-20260428T010400Z/test_report.json"
+      "reports/runs/054-error-types-20260428T010400Z/test_report.json",
+      "reports/runs/054-error-types-20260428T010400Z/discord_payload.json",
+      "reports/runs/054-error-types-20260428T010400Z/reporting_error.log"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "6258e84834fe38d3d2ba52178907a25cfe4f43d2",
+        "message": "issue-054: add error message constructor slice"
+      }
+    ]
   },
   "commands": [
     {
@@ -85,6 +92,7 @@
       "Error prototype identity and instanceof",
       "non-string constructor message coercion"
     ],
-    "clippy_note": "command exited 0; warnings are pre-existing and unrelated to this slice"
+    "clippy_note": "command exited 0; warnings are pre-existing and unrelated to this slice",
+    "reporting": "DEFERRED: scripts/manager discord-report failed twice because DISCORD_WEBHOOK_URL is not configured"
   }
 }

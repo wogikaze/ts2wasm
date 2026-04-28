@@ -46,3 +46,5 @@ All validation commands below passed on 2026-04-28:
 - `scripts/manager check-issue-health`
 - `scripts/manager check-repo-smoke`
 - `scripts/manager clippy` exited 0 with pre-existing warning-only output outside this slice.
+
+Webhook reporting was deferred: `scripts/manager discord-report --run-id 054-error-types-20260428T010400Z` failed twice because `DISCORD_WEBHOOK_URL` is not configured. Deferred payload and error evidence are saved under `reports/runs/054-error-types-20260428T010400Z/`.
