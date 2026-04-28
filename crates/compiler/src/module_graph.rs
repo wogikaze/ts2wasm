@@ -258,6 +258,48 @@ export const value = nested;
     }
 
     #[test]
+    fn represents_static_local_cycles_with_existing_module_ids() {
+        let dir = unique_temp_dir("cycle");
+        fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let cycle_b = dir.join("cycle-b.ts");
+
+        let source = r#"
+import { b } from "./cycle-b";
+import "./entry";
+export const a = b;
+"#;
+        fs::write(&entry, source).expect("entry should be written");
+        fs::write(
+            &cycle_b,
+            r#"
+import { a } from "./entry";
+export const b = 1;
+"#,
+        )
+        .expect("cycle module should be written");
+
+        let program = parse_module_source(source).expect("entry should parse");
+        let graph = build_entry_module_graph(&entry, &program).expect("cycle graph should build");
+
+        assert_eq!(graph.modules.len(), 2);
+        assert_eq!(graph.modules[0].id, 0);
+        assert_eq!(graph.modules[0].path, entry.canonicalize().unwrap());
+        assert_eq!(graph.modules[0].dependencies.len(), 2);
+        assert_eq!(graph.modules[0].dependencies[0].specifier, "./cycle-b");
+        assert_eq!(graph.modules[0].dependencies[0].resolved_module_id, 1);
+        assert_eq!(graph.modules[0].dependencies[1].specifier, "./entry");
+        assert_eq!(graph.modules[0].dependencies[1].resolved_module_id, 0);
+        assert_eq!(graph.modules[1].id, 1);
+        assert_eq!(graph.modules[1].path, cycle_b.canonicalize().unwrap());
+        assert_eq!(graph.modules[1].dependencies.len(), 1);
+        assert_eq!(graph.modules[1].dependencies[0].specifier, "./entry");
+        assert_eq!(graph.modules[1].dependencies[0].resolved_module_id, 0);
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
     fn rejects_bare_module_specifier_at_specifier_span() {
         let dir = unique_temp_dir("bare");
         fs::create_dir_all(&dir).expect("temp dir should be created");
