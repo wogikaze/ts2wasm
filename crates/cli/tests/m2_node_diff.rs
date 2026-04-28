@@ -167,6 +167,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",
         "fixtures/builtins-and-io/json-parse-array-object.ts",
+        "fixtures/builtins-and-io/json-parse-array-object-properties.ts",
         "fixtures/builtins-and-io/json-parse-escaped-nested.ts",
         "fixtures/builtins-and-io/json-parse-escaped-string.ts",
         "fixtures/builtins-and-io/json-parse-nested-array.ts",
@@ -224,6 +225,17 @@ fn json_parse_unicode_escape_diagnostics_reject_invalid_or_unsupported_forms() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
+    ] {
+        assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture);
+    }
+}
+
+#[test]
+fn json_parse_noninteger_numbers_are_unsupported_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts",
     ] {
         assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture);
     }
@@ -634,7 +646,7 @@ fn assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture: &str) {
     );
     assert!(
         !iwasm.output.status.success(),
-        "iwasm unexpectedly accepted unsupported unicode escape fixture {fixture}\nstdout:\n{}\nstderr:\n{}",
+        "iwasm unexpectedly accepted unsupported fixture {fixture}\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&iwasm.output.stdout),
         String::from_utf8_lossy(&iwasm.output.stderr)
     );
@@ -646,7 +658,7 @@ fn assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture: &str) {
     .to_ascii_lowercase();
     assert!(
         iwasm_output.contains("unreachable"),
-        "expected iwasm trap for unsupported unicode escape fixture {fixture}, got:\n{iwasm_output}"
+        "expected iwasm trap for unsupported fixture {fixture}, got:\n{iwasm_output}"
     );
 }
 
