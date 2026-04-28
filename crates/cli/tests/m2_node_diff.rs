@@ -161,6 +161,11 @@ fn instanceof_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn class_expression_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/classes-and-inheritance/class-expression.ts");
+}
+
+#[test]
 fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/this-receiver-method.ts",

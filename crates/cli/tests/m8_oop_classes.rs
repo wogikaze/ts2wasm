@@ -27,6 +27,11 @@ fn build_smoke_class_basic() {
 }
 
 #[test]
+fn build_smoke_class_expression() {
+    assert_fixture_build_smoke("classes-and-inheritance/class-expression.ts");
+}
+
+#[test]
 fn build_smoke_class_extends() {
     assert_fixture_build_smoke("classes-and-inheritance/class-extends.ts");
 }

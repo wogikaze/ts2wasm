@@ -3,12 +3,13 @@ id: 045
 title: "Implement class declaration and expression"
 type: feature
 area: frontend/semantics
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-28
+completed: 2026-04-28
 ---
 
 ## Summary
@@ -27,10 +28,10 @@ Class syntax is not implemented. It is a fundamental ES6 feature for object-orie
 
 In scope:
 
-- [ ] Add class declaration to lexer/parser
-- [ ] Add class expression to lexer/parser
-- [ ] Lower class to constructor function
-- [ ] Add fixtures for class syntax
+- [x] Add class declaration to lexer/parser
+- [x] Add class expression to lexer/parser
+- [x] Lower class to constructor function
+- [x] Add fixtures for class syntax
 
 Out of scope:
 
@@ -53,11 +54,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Class declaration parses correctly
-- [ ] Class expression parses correctly
-- [ ] Class creates constructor function
-- [ ] Fixtures cover class syntax
-- [ ] No regression in existing fixtures
+- [x] Class declaration parses correctly
+- [x] Class expression parses correctly
+- [x] Class creates constructor function
+- [x] Fixtures cover class syntax
+- [x] No regression in existing fixtures
 
 ## Validation
 
@@ -83,16 +84,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] 046 (extends)
-- [ ] 047 (super)
+- [x] 046 (extends)
+- [x] 047 (super)
 
 ## Notes
 
@@ -104,14 +105,31 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `3f32481` issue-045: support class expression bindings
+- `9c5e478` issue-045: close class syntax issue
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli class_expression
+result: 2 passed, including Node/iwasm differential for fixtures/classes-and-inheritance/class-expression.ts
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli class
+result: 13 passed
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli oop
+result: 5 passed
+date: 2026-04-28
+
+command: cargo nextest run
+result: 249 passed, 4 skipped
+date: 2026-04-28
 ```
 
 Remaining risks:

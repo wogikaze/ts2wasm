@@ -143,6 +143,9 @@ impl Parser {
             ])?;
         }
         self.expect(TokenKind::Equal)?;
+        if matches!(self.peek(), Some(Token::Class)) {
+            return self.class_expression_statement(name, start);
+        }
         let expr = self.expression()?;
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::Let {
@@ -592,16 +595,47 @@ impl Parser {
         let start = self.expect(TokenKind::Class)?;
         let (name, _) = self.expect_ident()?;
 
-        let extends = if self.consume(TokenKind::Extends) {
-            let expr = self.expression()?;
-            Some(Box::new(expr))
-        } else {
-            None
-        };
+        let extends = self.class_extends()?;
 
+        self.class_decl_body(name, extends, start.start)
+    }
+
+    fn class_expression_statement(
+        &mut self,
+        binding_name: String,
+        start: Span,
+    ) -> Result<Stmt, Diagnostic> {
+        self.expect(TokenKind::Class)?;
+        if matches!(self.peek(), Some(Token::Ident(_))) {
+            self.advance();
+        }
+        let extends = self.class_extends()?;
+        let mut class_decl = self.class_decl_body(binding_name, extends, start.start)?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        if let Stmt::ClassDecl { span, .. } = &mut class_decl {
+            span.end = semi.end;
+        }
+        Ok(class_decl)
+    }
+
+    fn class_extends(&mut self) -> Result<Option<Box<Expr>>, Diagnostic> {
+        if self.consume(TokenKind::Extends) {
+            let expr = self.expression()?;
+            Ok(Some(Box::new(expr)))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn class_decl_body(
+        &mut self,
+        name: String,
+        extends: Option<Box<Expr>>,
+        span_start: usize,
+    ) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::LeftBrace)?;
         let mut body = Vec::new();
-        while !self.consume(TokenKind::RightBrace) {
+        while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -664,14 +698,14 @@ impl Parser {
             });
         }
 
-        let end = body.last().map(|s| s.span().end).unwrap_or(start.end);
+        let end = self.expect(TokenKind::RightBrace)?.end;
 
         Ok(Stmt::ClassDecl {
             name,
             extends,
             body,
             span: Span {
-                start: start.start,
+                start: span_start,
                 end,
             },
         })
