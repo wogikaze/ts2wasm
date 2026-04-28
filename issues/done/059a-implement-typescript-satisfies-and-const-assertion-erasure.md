@@ -84,7 +84,7 @@ Not run:
 
 Commits:
 
-- `26c6dfa` issue-059a: erase const assertions
+- `1fbc95c` issue-059a: erase const assertions
 
 Validation result:
 
