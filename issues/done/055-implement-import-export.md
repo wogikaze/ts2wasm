@@ -9,6 +9,8 @@ depends_on: [232, 233, 234]
 blocks: [232, 233, 234]
 created: 2026-04-26
 updated: 2026-04-28
+completed: 2026-04-28
+status: done
 ---
 
 ## Summary
@@ -27,7 +29,7 @@ Static import/export currently produce issue-linked unsupported diagnostics. The
 
 In scope:
 
-- [ ] Coordinate split issues:
+- [x] Coordinate split issues:
   - [x] 231 parser AST representation for static module declarations
   - [x] 232 resolver/compiler module graph for local relative specifiers
   - [x] 233 export binding lowering and backend module initialization
@@ -53,9 +55,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Split issues exist with clear dependencies, scope, affected paths, acceptance criteria, and validation commands
-- [ ] `issues/index.md` is regenerated and shows this umbrella as blocked by the split issues
-- [ ] Remaining implementation work is tracked by the split issues instead of broad TODOs in this umbrella
+- [x] Split issues exist with clear dependencies, scope, affected paths, acceptance criteria, and validation commands
+- [x] `issues/index.md` is regenerated and shows this umbrella as blocked by the split issues
+- [x] Remaining implementation work is tracked by the split issues instead of broad TODOs in this umbrella
 
 ## Validation
 
@@ -82,11 +84,11 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
@@ -97,7 +99,7 @@ Follow-up issues:
 
 ## Notes
 
-Keep this issue open as the umbrella until the split issues are complete. Do not use this umbrella for direct Rust implementation work.
+This issue stayed open as the umbrella until the split issues were complete. Do not use this umbrella for direct Rust implementation work.
 
 ## Progress evidence
 
@@ -148,18 +150,29 @@ Remaining scope: parser representation for supported module declarations, module
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Issue 055 is a coordination umbrella. The implementation was split into issues 231, 232, 233, and 234, and all split issue files now live under `issues/done/` with completed frontmatter and completion evidence:
+
+- `issues/done/231-parse-static-es-module-declarations.md`
+- `issues/done/232-resolve-local-relative-es-module-graph.md`
+- `issues/done/233-emit-static-es-module-bindings.md`
+- `issues/done/234-cover-static-es-module-execution.md`
+
+The narrow supported static ES module subset remains documented by the split issue evidence. Broader import/export forms remain out of scope for this umbrella close and are not claimed as complete here.
 
 Commits:
 
-- `...`
+- close commit: recorded by child worker `055-import-export-umbrella-close-20260428T131500Z`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+scripts/manager update-issue-index: PASS
+scripts/manager update-issue-index --check: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+scripts/manager check-repo-smoke: PASS
+cargo nextest run -p ts2wasm-cli module: PASS
+date: 2026-04-28
 ```
 
 Remaining risks:

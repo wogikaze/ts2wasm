@@ -48,7 +48,7 @@ Expected:
 - `crates/cli/tests/m2_node_diff.rs`
 - `crates/cli/tests/m9_modules.rs`
 - `current-state.md`
-- `issues/open/055-implement-import-export.md`
+- `issues/done/055-implement-import-export.md`
 
 Do not touch:
 
