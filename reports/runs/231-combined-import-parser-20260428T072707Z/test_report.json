@@ -13,6 +13,7 @@
       "crates/ir/src/name_resolver.rs",
       "crates/cli/tests/m9_modules.rs",
       "fixtures/module-system/static-default-import-unsupported.ts",
+      "fixtures/module-system/static-combined-named-import-unsupported.ts",
       "fixtures/module-system/static-combined-namespace-import-unsupported.ts",
       "issues/open/231-parse-static-es-module-declarations.md",
       "reports/runs/231-combined-import-parser-20260428T072707Z/cycle_report.md",
@@ -74,6 +75,7 @@
     "skipped": 4,
     "newly_passed": [
       "fixtures/module-system/static-default-import-unsupported.ts",
+      "fixtures/module-system/static-combined-named-import-unsupported.ts",
       "fixtures/module-system/static-combined-namespace-import-unsupported.ts"
     ],
     "newly_failed": []
