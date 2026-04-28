@@ -558,11 +558,15 @@ impl Parser {
     }
 
     fn let_statement_with_name_span(&mut self) -> Result<(Stmt, String, Span), Diagnostic> {
-        let start = match self.advance() {
+        let (start, is_const) = match self.advance() {
             Some(SpannedToken {
-                kind: Token::Let | Token::Const | Token::Var,
+                kind: Token::Let | Token::Var,
                 span,
-            }) => span,
+            }) => (span, false),
+            Some(SpannedToken {
+                kind: Token::Const,
+                span,
+            }) => (span, true),
             other => {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -580,12 +584,21 @@ impl Parser {
                 TokenKind::RightParen,
             ])?;
         }
-        self.expect(TokenKind::Equal)?;
-        if matches!(self.peek(), Some(Token::Class)) {
-            let stmt = self.class_expression_statement(name.clone(), start)?;
-            return Ok((stmt, name, name_span));
-        }
-        let expr = self.expression()?;
+        let expr = if self.consume(TokenKind::Equal) {
+            if matches!(self.peek(), Some(Token::Class)) {
+                let stmt = self.class_expression_statement(name.clone(), start)?;
+                return Ok((stmt, name, name_span));
+            }
+            self.expression()?
+        } else if is_const {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "const declarations require an initializer".to_owned(),
+                span: Some(name_span),
+            });
+        } else {
+            Expr::Undefined { span: name_span }
+        };
         let semi = self.expect(TokenKind::Semicolon)?;
         let stmt = Stmt::Let {
             name: name.clone(),
@@ -2915,6 +2928,29 @@ mod tests {
                 other => panic!("unexpected constructor statement: {other:?}"),
             }
         }
+    }
+
+    #[test]
+    fn parses_uninitialized_typed_let_as_undefined() {
+        let program = parse_program("let value: number;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "value");
+                assert!(matches!(expr, Expr::Undefined { .. }));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_uninitialized_const_after_type_annotation() {
+        let err = parse_program("const value: number;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(
+            err.message
+                .contains("const declarations require an initializer")
+        );
     }
 
     #[test]

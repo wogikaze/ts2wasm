@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 fn write_temp_source(name: &str, source: &str) -> PathBuf {
@@ -37,11 +37,60 @@ fn run_dump(args: &[&str], source: &str) -> String {
     String::from_utf8(output.stdout).expect("dump output should be valid UTF-8")
 }
 
+fn fixture_path(fixture: &str) -> PathBuf {
+    Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join(fixture)
+}
+
+fn build_fixture(fixture: &str) {
+    let input = fixture_path(fixture);
+    assert!(input.exists(), "fixture should exist: {:?}", input);
+
+    let output = std::env::temp_dir().join(format!(
+        "ts2wasm-dump-build-{}-{}.wasm",
+        fixture.replace(['/', '.'], "_"),
+        unique_suffix()
+    ));
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&input)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .expect("ts2wasm build should execute");
+
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+}
+
 #[test]
 fn dump_ast_unparse_emits_pseudo_source() {
     let output = run_dump(&["--ast", "--unparse"], "let x = 1 + 2;");
 
     assert_eq!(output, "let x = (1 + 2);\n");
+}
+
+#[test]
+fn dump_ast_unparse_erases_typescript_type_annotations() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let value: number;\nfunction add(a: number, b: number): number { return a + b; }\n",
+    );
+
+    assert_eq!(
+        output,
+        "let value = undefined;\nfunction add(a, b) {\n  return (a + b);\n}\n"
+    );
+}
+
+#[test]
+fn build_accepts_erasable_typescript_type_annotations() {
+    build_fixture("basics-types/type-annotation-erasure.ts");
 }
 
 #[test]
