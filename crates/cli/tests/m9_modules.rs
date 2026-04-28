@@ -172,3 +172,11 @@ fn static_namespace_re_export_reports_issue_055() {
         "issue-055: unsupported namespace re-export",
     );
 }
+
+#[test]
+fn static_declaration_export_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-declaration-export-unsupported.ts",
+        "issue-055: unsupported declaration export",
+    );
+}

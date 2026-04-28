@@ -121,6 +121,9 @@ impl NameResolver {
             Stmt::ExportNamespaceFrom { span, .. } => {
                 Err(unsupported_module_decl(*span, "namespace re-export"))
             }
+            Stmt::ExportDecl { span, .. } => {
+                Err(unsupported_module_decl(*span, "declaration export"))
+            }
             Stmt::Let { name, expr, span } => {
                 self.declare_variable(name, Some(*span))?;
                 Ok(Stmt::Let {

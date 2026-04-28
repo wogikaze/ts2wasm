@@ -400,6 +400,10 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
                 namespace.exported, source.value
             );
         }
+        Stmt::ExportDecl { declaration, .. } => {
+            let _ = write!(out, "export ");
+            unparse_stmt(out, declaration, 0);
+        }
         Stmt::Let { name, expr, .. } => {
             let _ = writeln!(out, "let {name} = {};", unparse_expr(expr));
         }

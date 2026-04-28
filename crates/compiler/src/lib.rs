@@ -281,6 +281,9 @@ fn validate_stmt(
         | Stmt::ExportNamedFrom { .. }
         | Stmt::ExportAllFrom { .. }
         | Stmt::ExportNamespaceFrom { .. } => Ok(()),
+        Stmt::ExportDecl { declaration, .. } => {
+            validate_stmt(declaration, in_top_level, scope, top_functions)
+        }
     }
 }
 
