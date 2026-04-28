@@ -328,6 +328,36 @@ fn lowering_rejects_unsupported_direct_new_regexp_exec_pattern() {
 }
 
 #[test]
+fn lowering_rejects_regexp_literal_compile_with_issue_051() {
+    let program = parse_and_resolve("let r = /abc/; r.compile(\"def\");");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-051"));
+    assert!(err.message.contains("RegExp.prototype.compile"));
+}
+
+#[test]
+fn lowering_rejects_new_regexp_compile_with_issue_051() {
+    let program = parse_and_resolve("let r = new RegExp(\"abc\"); r.compile(\"def\");");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-051"));
+    assert!(err.message.contains("RegExp.prototype.compile"));
+}
+
+#[test]
+fn lowering_rejects_direct_new_regexp_compile_with_issue_051() {
+    let program = parse_and_resolve("new RegExp(\"abc\").compile(\"def\");");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-051"));
+    assert!(err.message.contains("RegExp.prototype.compile"));
+}
+
+#[test]
 fn lowering_routes_template_interpolation_through_addition() {
     let program = parse_and_resolve("let name = \"world\"; let message = `Hello, ${name}!`;");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();

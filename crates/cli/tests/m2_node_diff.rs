@@ -1064,6 +1064,37 @@ fn regexp_unsupported_flag_fixture_reports_issue_202() {
 }
 
 #[test]
+fn regexp_compile_fixture_reports_issue_051() {
+    let fixture = "fixtures/core-semantics/regexp-compile-unsupported.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "unsupported RegExp.prototype.compile fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]"),
+        "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-051: RegExp.prototype.compile is not supported"),
+        "expected issue-linked RegExp.prototype.compile diagnostic, got:\n{stderr}"
+    );
+}
+
+#[test]
 fn annex_b_string_anchor_fixture_reports_issue_067() {
     let fixture = "fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts";
     assert_build_fails_with_unsupported_syntax(

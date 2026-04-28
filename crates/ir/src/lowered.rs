@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
@@ -1038,6 +1038,15 @@ fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnos
     }
 }
 
+fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-051: RegExp.prototype.compile is not supported in this subset; create a new RegExp(\"plain\") value instead"
+            .to_owned(),
+        span,
+    }
+}
+
 fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut Vec<String>) {
     match expr {
         ResolvedExpr::This { .. } => push_capture("this", params, captures),
@@ -1161,6 +1170,7 @@ struct Resolver<'a> {
     class_static_method_ids: HashMap<(String, String), FuncId>,
     class_parents: HashMap<String, Option<String>>,
     local_classes: HashMap<LocalId, String>,
+    regexp_literal_locals: HashSet<LocalId>,
     current_class: Option<String>,
     in_constructor: bool,
 }
@@ -1194,6 +1204,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             local_classes: HashMap::new(),
+            regexp_literal_locals: HashSet::new(),
             current_class: None,
             in_constructor: false,
         }
@@ -1224,6 +1235,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             local_classes: HashMap::new(),
+            regexp_literal_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
         };
@@ -1299,6 +1311,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.local_classes.remove(&local_id);
                 }
+                self.update_regexp_literal_local(local_id, expr);
                 Ok(LoweredStmt::Let(local_id, lowered))
             }
             ResolvedStmt::Assign(name, expr) => {
@@ -1321,6 +1334,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.local_classes.remove(&local_id);
                 }
+                self.update_regexp_literal_local(local_id, expr);
                 Ok(LoweredStmt::Assign(local_id, lowered))
             }
             ResolvedStmt::Expr(expr) => Ok(LoweredStmt::Expr(self.lower_expr(expr)?)),
@@ -1748,6 +1762,8 @@ impl<'a> Resolver<'a> {
                     })
                 } else if is_date_now_live_time_call(object, method) {
                     Err(unsupported_live_time_diagnostic("Date.now()", Some(*span)))
+                } else if self.is_unsupported_regexp_compile_receiver(object, method) {
+                    Err(unsupported_regexp_compile_diagnostic(Some(*span)))
                 } else if let Some(regexp_args) = regexp_test_runtime(object, method, args, *span)?
                 {
                     let lowered_args = regexp_args
@@ -2258,6 +2274,32 @@ impl<'a> Resolver<'a> {
                 .and_then(|local_id| self.local_classes.get(&local_id))
                 .is_some_and(|class_name| class_name == "Date"),
             _ => false,
+        }
+    }
+
+    fn is_unsupported_regexp_compile_receiver(&self, expr: &ResolvedExpr, method: &str) -> bool {
+        if method != "compile" {
+            return false;
+        }
+        match expr {
+            ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => true,
+            ResolvedExpr::New { class_name, .. } => class_name == "RegExp",
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.regexp_literal_locals.contains(&local_id)
+                    || self
+                        .local_classes
+                        .get(&local_id)
+                        .is_some_and(|class_name| class_name == "RegExp")
+            }),
+            _ => false,
+        }
+    }
+
+    fn update_regexp_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if matches!(expr, ResolvedExpr::String(raw) if looks_like_regexp_literal(raw)) {
+            self.regexp_literal_locals.insert(local_id);
+        } else {
+            self.regexp_literal_locals.remove(&local_id);
         }
     }
 

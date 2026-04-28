@@ -136,6 +136,12 @@ Follow-up issues:
   diagnostics. The observable fixture covers one-shot `.test`, `.exec`, and
   `String.prototype.match` uses with constructor `g` flags without claiming full global
   `lastIndex` state semantics.
+- 2026-04-28: Added precise unsupported diagnostics for `RegExp.prototype.compile` in this
+  subset. Direct literal receivers, `new RegExp("plain").compile(...)`, and identifier-backed
+  `r.compile(...)` receivers now report an `issue-051` diagnostic instead of generic
+  `issue-211` or `method RegExp.compile not found` fallthrough errors. The diagnostic fixture
+  covers constructor-backed `r.compile(...)`; lowering unit coverage also covers direct literal
+  and direct constructor receivers. This slice does not implement Annex B `compile`.
 
 Validation:
 
@@ -280,6 +286,27 @@ result: pass; stdout true / false / true / true / false / abc / null / needle / 
 
 cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-flags.wasm && iwasm /tmp/ts2wasm-issue051-regexp-flags.wasm
 result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true / true / plain / needle
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 27 tests run, 27 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 24 tests run, 24 passed
+
+cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/regexp-compile-unsupported.ts -o /tmp/ts2wasm-issue051-regexp-compile.wasm
+result: expected fail; stderr contained `issue-051: RegExp.prototype.compile is not supported in this subset`
+
+cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-preserve.wasm && iwasm /tmp/ts2wasm-issue051-regexp-preserve.wasm
+result: pass; stdout preserved existing RegExp subset output
 
 scripts/manager check-issue-health
 result: pass
