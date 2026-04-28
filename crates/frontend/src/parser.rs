@@ -797,12 +797,22 @@ impl Parser {
         }
         self.expect(TokenKind::Arrow)?;
 
-        // Body can be an expression or a block
+        // Body can be an expression or a simple `{ return expr; }` block.
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
-            let _block_stmts = self.block()?;
-            // Convert block to expression (use undefined as placeholder for block expressions)
-            Expr::Undefined {
-                span: Span { start: 0, end: 0 },
+            let block_stmts = self.block()?;
+            match block_stmts.as_slice() {
+                [Stmt::Return { expr, .. }] => expr.clone(),
+                [] => Expr::Undefined {
+                    span: Span { start: 0, end: 0 },
+                },
+                _ => {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "arrow function block bodies support a single return statement in this milestone"
+                            .to_owned(),
+                        span: Some(start_span),
+                    });
+                }
             }
         } else {
             self.ternary()?

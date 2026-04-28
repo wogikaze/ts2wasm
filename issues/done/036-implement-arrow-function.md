@@ -28,8 +28,8 @@ Arrow functions are not implemented. They are a common ES6 feature with lexical 
 In scope:
 
 - [x] Add arrow function syntax to lexer/parser
-- [x] Implement lexical `this` binding (deferred to follow-up: `issues/open/210-implement-arrow-function-closure-lexical-this.md`)
-- [x] Lower arrow function to closure (deferred to follow-up: `issues/open/210-implement-arrow-function-closure-lexical-this.md`)
+- [x] Implement lexical `this` binding (completed by follow-up: `issues/done/210-implement-arrow-function-closure-lexical-this.md`)
+- [x] Lower arrow function to closure (completed by follow-up: `issues/done/210-implement-arrow-function-closure-lexical-this.md`)
 - [x] Add fixtures for arrow function behavior
 
 Out of scope:
@@ -51,7 +51,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Arrow function parses correctly
-- [x] Arrow function has lexical `this` (deferred to follow-up: `issues/open/210-implement-arrow-function-closure-lexical-this.md`)
+- [x] Arrow function has lexical `this` (completed by follow-up: `issues/done/210-implement-arrow-function-closure-lexical-this.md`)
 - [x] Fixtures cover arrow function behavior
 - [x] No regression in existing fixtures
 
@@ -87,11 +87,11 @@ Current state:
 
 Follow-up issues:
 
-- [x] Arrow function closure support with lexical this capture tracked by `issues/open/210-implement-arrow-function-closure-lexical-this.md`
+- [x] Arrow function closure support with lexical this capture completed by `issues/done/210-implement-arrow-function-closure-lexical-this.md`
 
 ## Notes
 
-Arrow function syntax is implemented in lexer/parser. Full closure support with lexical this capture is deferred to `issues/open/210-implement-arrow-function-closure-lexical-this.md`. Current implementation returns undefined as placeholder.
+Arrow function syntax is implemented in lexer/parser. Local binding closure calls with lexical this capture were completed by `issues/done/210-implement-arrow-function-closure-lexical-this.md`.
 
 ## Completion evidence
 
@@ -109,4 +109,4 @@ date: 2026-04-27
 
 Remaining risks:
 
-- Closure execution and lexical `this` semantics remain tracked by `issues/open/210-implement-arrow-function-closure-lexical-this.md`
+- Closure execution and lexical `this` semantics for local binding calls were completed by `issues/done/210-implement-arrow-function-closure-lexical-this.md`; escaping function values remain tied to issue 221.

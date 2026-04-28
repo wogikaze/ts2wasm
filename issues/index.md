@@ -169,7 +169,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | feature | frontend | design-ready | P1 |  | Implement Compiler |
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
-| 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | implementation-ready | P1 | 211 | Implement arrow function closure and lexical this semantics |
 | 221 | Implement GC call-frame roots for closure escape | feature | runtime/memory | implementation-ready | P1 | 220 | Top-level locals are mirrored into GC roots, but function/call-frame locals and closure captures are still not regist... |
 <!-- generated:ready:end -->
 
@@ -249,6 +248,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 207 | Complete instanceof prototype-chain semantics | feature | runtime/semantics | see `issues/done/207-complete-instanceof-prototype-chain-semantics.md` |
 | 208 | Implement switch fall-through semantics | feature | frontend/semantics | see `issues/done/208-implement-switch-fall-through-semantics.md` |
 | 209 | Implement labeled break and continue | feature | frontend/semantics | see `issues/done/209-implement-labeled-break-continue.md` |
+| 210 | Implement arrow function closure and lexical this semantics | feature | frontend/semantics | see `issues/done/210-implement-arrow-function-closure-lexical-this.md` |
 | 211 | Complete this receiver binding semantics | feature | runtime/semantics | see `issues/done/211-complete-this-receiver-binding-semantics.md` |
 | 212 | Implement rest parameter argument collection | feature | frontend/semantics | see `issues/done/212-implement-rest-parameter-argument-collection.md` |
 | 213 | Implement template literal interpolation | feature | frontend/semantics | see `issues/done/213-implement-template-literal-interpolation.md` |

@@ -578,11 +578,19 @@ impl NameResolver {
                 else_expr: Box::new(self.resolve_expr(else_expr)?),
                 span: *span,
             }),
-            Expr::ArrowFn { params, body, span } => Ok(Expr::ArrowFn {
-                params: params.clone(),
-                body: Box::new(self.resolve_expr(body)?),
-                span: *span,
-            }),
+            Expr::ArrowFn { params, body, span } => {
+                self.enter_scope();
+                for param in params {
+                    self.declare_variable(param, None)?;
+                }
+                let resolved_body = self.resolve_expr(body)?;
+                self.exit_scope();
+                Ok(Expr::ArrowFn {
+                    params: params.clone(),
+                    body: Box::new(resolved_body),
+                    span: *span,
+                })
+            }
             Expr::Spread { expr, span } => Ok(Expr::Spread {
                 expr: Box::new(self.resolve_expr(expr)?),
                 span: *span,

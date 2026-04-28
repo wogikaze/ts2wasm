@@ -87,7 +87,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] 036 (arrow function) - ArrowFn variant added to LoweredExpr with placeholder emission; full arrow semantics tracked by `issues/open/210-implement-arrow-function-closure-lexical-this.md`
+- [x] 036 (arrow function) - ArrowFn variant added to LoweredExpr; local arrow closure and lexical-this semantics completed by `issues/done/210-implement-arrow-function-closure-lexical-this.md`
 - [x] This receiver binding semantic completion tracked by `issues/done/211-complete-this-receiver-binding-semantics.md`
 
 ## Notes
@@ -122,4 +122,4 @@ date: 2026-04-26
 Remaining risks:
 
 - Proper this binding requires method call implementation evidence - currently emits undefined as placeholder and is tracked by `issues/done/211-complete-this-receiver-binding-semantics.md`
-- Arrow function lexical this (issue 036) is out of scope for this issue and is tracked by `issues/open/210-implement-arrow-function-closure-lexical-this.md`
+- Arrow function lexical this (issue 036) is out of scope for this issue and was completed by `issues/done/210-implement-arrow-function-closure-lexical-this.md`

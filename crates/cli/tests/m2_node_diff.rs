@@ -172,6 +172,18 @@ fn this_receiver_method_unsupported_forms_report_issue_211() {
 }
 
 #[test]
+fn arrow_function_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/core-semantics/arrow-expression-body.ts",
+        "fixtures/core-semantics/arrow-block-body.ts",
+        "fixtures/core-semantics/arrow-captured-local.ts",
+        "fixtures/core-semantics/arrow-lexical-this.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn rest_parameter_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/rest-params-zero.ts",
