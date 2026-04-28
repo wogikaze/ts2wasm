@@ -1,8 +1,0 @@
-{
-  "status": "deferred",
-  "run_id": "agent-208-switch-20260427T221416Z",
-  "reason": "DISCORD_WEBHOOK_URL is not configured",
-  "attempts": 2,
-  "payload_path": "reports/runs/agent-208-switch-20260427T221416Z/discord_payload.json",
-  "error_path": "reports/runs/agent-208-switch-20260427T221416Z/reporting_error.log"
-}

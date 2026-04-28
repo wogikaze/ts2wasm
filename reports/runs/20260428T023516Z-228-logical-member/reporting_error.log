@@ -1,6 +1,0 @@
-command: scripts/manager discord-report --run-id 20260428T023516Z-228-logical-member
-exit_code: 1
-stderr: DISCORD_WEBHOOK_URL is not set in the environment or .env.
-retry_exit_code: 1
-retry_stderr: DISCORD_WEBHOOK_URL is not set in the environment or .env.
-status: DEFERRED

@@ -1,5 +1,0 @@
-scripts/manager discord-report --run-id 20260428T010909Z-issue046-extends
-exit_code: 1
-stderr/stdout:
-エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
-

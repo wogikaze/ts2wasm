@@ -1,8 +1,0 @@
-{
-  "run_id": "050-date-runtime-blocker-20260428T102000Z",
-  "issue": "050",
-  "branch": "agent/050-date-runtime-20260428T102000Z",
-  "commit": "c827f9d",
-  "status": "BLOCKED",
-  "summary": "Date runtime slice blocked: Date constructor/static method lowering requires crates/ir changes outside allowed files, and Date.now/new Date need an audited time capability policy."
-}

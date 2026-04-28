@@ -3,7 +3,7 @@
 
 Usage: python scripts/manager.py install-hooks
 
-Sets core.hooksPath to .githooks to enable pre-commit and pre-push hooks.
+Sets core.hooksPath to .githooks to enable repository hooks.
 """
 
 import sys
@@ -21,12 +21,22 @@ def main():
     if result.returncode != 0:
         print(f"Failed to set core.hooksPath: {result.stderr}", file=sys.stderr)
         sys.exit(1)
+
+    for key, value in [("pull.ff", "only"), ("merge.ff", "only")]:
+        result = subprocess.run(
+            ["git", "config", key, value],
+            cwd=REPO_ROOT
+        )
+        if result.returncode != 0:
+            print(f"Failed to set {key}: {result.stderr}", file=sys.stderr)
+            sys.exit(1)
     
     # On Unix, we would chmod +x the hooks, but on Windows this is not needed
     # Git on Windows will execute the hooks using the shebang line
     
     print("Installed git hooks path: .githooks")
-    print("Active hooks: .githooks/pre-commit, .githooks/pre-push")
+    print("Active hooks: .githooks/pre-commit, .githooks/pre-push, .githooks/pre-merge-commit")
+    print("Merge policy: pull.ff=only, merge.ff=only")
 
 if __name__ == "__main__":
     main()

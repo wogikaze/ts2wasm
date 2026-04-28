@@ -1,3 +1,0 @@
-scripts/manager discord-report --run-id 20260428T021845Z-229-legacy-octal
-exit_code=1
-stderr=エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません

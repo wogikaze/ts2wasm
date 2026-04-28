@@ -1,7 +1,0 @@
-command: scripts/manager discord-report --run-id 232-module-graph-diagnostics-20260428T085234Z
-exit_code: 1
-stderr: エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
-
-retry_command: scripts/manager discord-report --run-id 232-module-graph-diagnostics-20260428T085234Z < reports/runs/232-module-graph-diagnostics-20260428T085234Z/cycle_report.md
-retry_exit_code: 1
-retry_stderr: エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません

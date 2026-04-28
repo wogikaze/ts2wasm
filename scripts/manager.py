@@ -47,7 +47,7 @@ COMMANDS = {
     "test-regression-gate": ("python", "scripts/gate/regression.py"),
     "gen-issues-from-coverage": ("python", "scripts/gen/issues-from-coverage.py"),
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
-    "discord-report": ("python", "scripts/report/discord-report.py"),  # reads from stdin
+    "discord-report": ("python", "scripts/report/discord-report.py"),
     "fmt": ("cargo", "fmt --all --check"),
     "clippy": ("cargo", "clippy --all-targets"),
     "nextest": ("cargo", "nextest run"),
@@ -98,7 +98,7 @@ def usage():
         ("test-regression-gate", "JSONL vs baseline"),
         ("gen-issues-from-coverage", "Generate issues from reference-coverage --detail"),
         ("create-run-dir", "Create reports/runs/<run_id>/ directory"),
-        ("discord-report", "Send development loop report to Discord"),
+        ("discord-report", "Send a Markdown report or Discord JSON payload to Discord"),
         ("fmt", "cargo fmt --all --check"),
         ("clippy", "cargo clippy --all-targets"),
         ("nextest", "cargo nextest run"),

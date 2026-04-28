@@ -1,8 +1,0 @@
-{
-  "status": "deferred",
-  "reason": "webhook not configured in child worker environment",
-  "issue": "054",
-  "branch": "agent/054-error-types-20260428T010400Z",
-  "outcome": "PROGRESS",
-  "summary": "Implemented Error constructor .message slice with Node/iwasm differential coverage; left .stack and prototype identity open."
-}

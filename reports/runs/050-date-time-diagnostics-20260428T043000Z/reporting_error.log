@@ -1,9 +1,0 @@
-command: scripts/manager discord-report --run-id 050-date-time-diagnostics-20260428T043000Z
-result: exit 1
-stderr: エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
-
-retry command: scripts/manager discord-report --run-id 050-date-time-diagnostics-20260428T043000Z
-retry result: exit 1
-retry stderr: エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
-
-reporting: DEFERRED

@@ -1,5 +1,0 @@
-scripts/manager discord-report --run-id 20260428-205-optimizer-dump
-exit_code: 1
-error: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
-retry: failed with the same configuration error.
-status: DEFERRED

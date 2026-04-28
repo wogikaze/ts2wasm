@@ -128,7 +128,7 @@ push 前の必須条件:
 
 ```bash
 git status --short
-cat reports/runs/<run_id>/cycle_report.md | scripts/manager discord-report --run-id <run_id>
+scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
 確認事項:
@@ -143,6 +143,8 @@ cat reports/runs/<run_id>/cycle_report.md | scripts/manager discord-report --run
 webhook 送信ルール:
 
 - push 前に必ず `scripts/manager discord-report` で webhook に送信する。
+- `reports/` は git 追跡しないローカル生成物として扱う。
+- `.md` / `.json` ファイルを `discord-report` で送信した場合、送信済み registry に記録し、同じファイルの再送をエラーにする。
 - `.githooks/pre-push` は gate 成功後に pre-push report を生成して webhook 送信し、送信失敗時は push を止める。
 - `DISCORD_WEBHOOK_URL` は環境変数または `.env` で設定する。
 - webhook URL は secret として扱い、commit しない。

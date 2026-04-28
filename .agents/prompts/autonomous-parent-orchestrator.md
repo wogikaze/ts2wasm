@@ -307,7 +307,7 @@ Then:
 scripts/manager update-issue-index
 scripts/manager update-issue-index --check
 scripts/manager check-issue-health
-git add issues/ reports/ .agents/state/ || true
+git add issues/ .agents/state/ || true
 git commit -m "issues: add reference-derived work" || true
 ```
 
@@ -364,6 +364,8 @@ At the end of each parent cycle, write:
 ```text
 reports/runs/<run_id>/parent_cycle_report.md
 ```
+
+`reports/` is local and git-ignored. Send the report to Discord before push, but do not commit it.
 
 Include:
 

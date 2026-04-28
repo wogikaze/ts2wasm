@@ -1,5 +1,0 @@
-scripts/manager discord-report --run-id 20260428T014053Z-051-regexp-next
-attempts: 2
-result: deferred
-stderr:
-エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
