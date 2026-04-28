@@ -2,7 +2,7 @@
   "run_id": "236-logical-assignment-computed-receivers-20260428T112342Z",
   "task_id": "issue-236",
   "git": {
-    "sha": "b7036dbf550f8c928b65ddb25bd372ec6272f0da",
+    "sha": "c721a06951a9964d99920449eef71681264ec590",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/emitter.rs",
@@ -20,7 +20,16 @@
       "reports/runs/236-logical-assignment-computed-receivers-20260428T112342Z/cycle_report.md",
       "reports/runs/236-logical-assignment-computed-receivers-20260428T112342Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "2b963e4e766db6864af2f644a704cd2864d3644e",
+        "message": "issue-236: support computed logical member assignment"
+      },
+      {
+        "sha": "c721a06951a9964d99920449eef71681264ec590",
+        "message": "issue-236: close logical assignment target forms"
+      }
+    ]
   },
   "commands": [
     {
@@ -119,7 +128,7 @@
     "runtime_delta_percent": 0.0
   },
   "meta": {
-    "outcome": "PROGRESS",
+    "outcome": "DONE",
     "issue": 236,
     "full_nextest": "378 passed, 4 skipped",
     "reporting": "DEFERRED"
