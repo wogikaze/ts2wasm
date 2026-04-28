@@ -162,10 +162,20 @@ fn logical_assignment_computed_member_fixture_matches_node_output_under_iwasm() 
 
 #[test]
 fn annexb_ishtmldda_host_hook_reports_issue_237() {
-    assert_build_fails_with_unsupported_syntax(
+    for fixture in [
         "fixtures/core-semantics/annexb-ishtmldda-unsupported.ts",
-        "issue-237: Annex B [[IsHTMLDDA]] test262 host hook `$262.IsHTMLDDA` is not modeled",
-    );
+        "fixtures/core-semantics/annexb-ishtmldda-equality-unsupported.ts",
+        "fixtures/core-semantics/annexb-ishtmldda-if-unsupported.ts",
+        "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-and-unsupported.ts",
+        "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-coalesce-unsupported.ts",
+        "fixtures/core-semantics/annexb-ishtmldda-logical-assignment-or-unsupported.ts",
+        "fixtures/core-semantics/annexb-ishtmldda-typeof-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(
+            fixture,
+            "issue-237: Annex B [[IsHTMLDDA]] test262 host hook `$262.IsHTMLDDA` is not modeled",
+        );
+    }
 }
 
 #[test]
