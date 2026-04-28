@@ -802,7 +802,7 @@ fn validate_json_stringify_args(
                     && is_supported_json_stringify_replacer_array(elements) => {}
             ResolvedExpr::Array(_) => {
                 return Err(json_stringify_replacer_diagnostic(
-                    "array replacer property lists outside the single string-literal object subset",
+                    "array replacer property lists outside the string-literal object subset",
                     span,
                 ));
             }
@@ -833,19 +833,20 @@ fn validate_json_stringify_args(
 }
 
 fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool {
-    elements.len() <= 1
-        && elements
-            .iter()
-            .all(|element| matches!(element, ResolvedExpr::String(_)))
+    elements
+        .iter()
+        .all(|element| matches!(element, ResolvedExpr::String(_)))
 }
 
-fn json_stringify_replacer_key(args: &[ResolvedExpr]) -> Option<Option<&str>> {
+fn json_stringify_replacer_keys(args: &[ResolvedExpr]) -> Option<Vec<&str>> {
     match args.get(1) {
-        Some(ResolvedExpr::Array(elements)) => match elements.as_slice() {
-            [] => Some(None),
-            [ResolvedExpr::String(key)] => Some(Some(key.as_str())),
-            _ => None,
-        },
+        Some(ResolvedExpr::Array(elements)) => elements
+            .iter()
+            .map(|element| match element {
+                ResolvedExpr::String(key) => Some(key.as_str()),
+                _ => None,
+            })
+            .collect(),
         _ => None,
     }
 }
@@ -1800,14 +1801,24 @@ impl<'a> Resolver<'a> {
                     let mut lowered_args = Vec::with_capacity(3);
                     let value = if let (
                         ResolvedExpr::Object(props),
-                        Some(replacer_key),
-                    ) = (&args[0], json_stringify_replacer_key(args))
+                        Some(replacer_keys),
+                    ) = (&args[0], json_stringify_replacer_keys(args))
                     {
-                        let lowered_props = props
-                            .iter()
-                            .filter(|(key, _)| replacer_key.is_some_and(|allowed| key == allowed))
-                            .map(|(key, value)| Ok((key.clone(), self.lower_expr(value)?)))
-                            .collect::<Result<Vec<_>, _>>()?;
+                        let mut lowered_props = Vec::new();
+                        for allowed_key in replacer_keys {
+                            if lowered_props
+                                .iter()
+                                .any(|(key, _): &(String, LoweredExpr)| key == allowed_key)
+                            {
+                                continue;
+                            }
+
+                            if let Some((key, value)) =
+                                props.iter().rev().find(|(key, _)| key == allowed_key)
+                            {
+                                lowered_props.push((key.clone(), self.lower_expr(value)?));
+                            }
+                        }
                         LoweredExpr::ObjectNew {
                             props: lowered_props,
                         }
