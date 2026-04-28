@@ -381,6 +381,24 @@ abcdefghij1
   - `cargo nextest run -p ts2wasm-cli json`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added precise issue-052 lowering diagnostics for unsupported `JSON.stringify` replacer forms:
+  - function replacer callbacks, including declared function identifiers and arrow function literals;
+  - array replacer property lists.
+- Preserved accepted null/undefined replacer behavior and numeric/string `space` handling through the existing JSON fixture set.
+- Added diagnostic fixtures:
+  - `fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts`
+  - `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts`
+- Direct build evidence:
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts -o /tmp/ts2wasm-json-replacer-function.wasm` rejects with `[UnsupportedSyntax] issue-052: JSON.stringify function replacer callbacks are not supported yet ... at 59..89`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array.wasm` rejects with `[UnsupportedSyntax] issue-052: JSON.stringify array replacer property lists are not supported yet ... at 12..49`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
