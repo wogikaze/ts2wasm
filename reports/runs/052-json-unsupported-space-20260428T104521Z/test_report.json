@@ -1,0 +1,87 @@
+{
+  "run_id": "052-json-unsupported-space-20260428T104521Z",
+  "task_id": "issue-052-json-unsupported-space",
+  "git": {
+    "sha": "7dc7b71a98b4cac4d6a85ca67f9a7a64b6898e88",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/cli/tests/m2_node_diff.rs",
+      "crates/ir/src/lowered.rs",
+      "fixtures/builtins-and-io/json-stringify-space-boolean.ts",
+      "issues/open/052-implement-json.md",
+      "reports/runs/052-json-unsupported-space-20260428T104521Z/cycle_report.md",
+      "reports/runs/052-json-unsupported-space-20260428T104521Z/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "7dc7b71a98b4cac4d6a85ca67f9a7a64b6898e88",
+        "message": "issue-052: accept boolean JSON stringify space"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(json)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node fixtures/builtins-and-io/json-stringify-space-boolean.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space-boolean.ts -o /tmp/ts2wasm-052-json-space.wasm && iwasm /tmp/ts2wasm-052-json-space.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python -m jsonschema -i reports/runs/052-json-unsupported-space-20260428T104521Z/test_report.json .agents/state/schemas/test_report.schema.json",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-stringify-space-boolean.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "status": "PROGRESS",
+    "full_nextest": "skipped by assignment; no broad backend runtime behavior change and issue 052 remains open"
+  }
+}
