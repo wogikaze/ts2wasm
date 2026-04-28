@@ -131,6 +131,18 @@ When splitting:
 
 Do not split merely to create noise. Split only when it improves parallelism or reduces stall risk.
 
+## Mandatory large-issue breakdown
+
+Some issues are large but unavoidable for project goals. Do not avoid or indefinitely block them because they are heavy. When a required issue is too large for one child cycle, decompose it and keep driving it through implementation:
+
+1. Overview: identify the goal, accepted decisions from README/docs, current failures, and close gate.
+2. File structure design: assign ownership boundaries and likely files.
+3. Code design: choose the smallest architecture-preserving implementation path.
+4. Implementation slices: create child issues or child assignments for independently verifiable slices.
+5. Integration: merge validated slices, rerun the close gate, and continue until done or a concrete external blocker remains.
+
+Apply this rule especially to backend wasm emission, dynamic JavaScript semantics such as `eval`, and strict gate debt. ADR-level decisions in README/docs are binding inputs; do not re-litigate them as blockers.
+
 ## Worktree assignment
 
 For each child assignment:

@@ -17,7 +17,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 021a | Implement wasm-encoder hello binary MVP | feature | backend | implementation-ready | P2 |  | The wasm backend epic is too broad to select directly; the first closeable slice is a minimal direct binary emission ... |
+| 021a | Implement wasm-encoder hello binary MVP | feature | backend | implementation-ready | P2 |  | The wasm backend needs a first direct binary emission slice for a WASI stdout fixture; WAT and wasm binary are equiva... |
 | 050a | Document Date deterministic subset and live-time policy gap | docs | runtime/builtins | docs-ready | P1 |  | Date has validated deterministic slices, but the open epic still presents live time, timezone formatting, frontend re... |
 | 052a | Close JSON supported subset contract | docs | runtime/builtins | docs-ready | P1 |  | JSON has many validated progress slices, but the parent issue still reads as a full-spec implementation target and is... |
 | 059a | Implement TypeScript satisfies and const assertion erasure | feature | frontend | implementation-ready | P1 |  | Parser syntax work needs the next small erasable TypeScript syntax slice instead of another broad parser epic selection. |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 062a | Split function epic into callable child issues | cleanup | issues | docs-ready | P1 |  | Issue 062 mixes unrelated function surfaces, so implementation starts with scope design instead of code. |
 | 064a | Resolve Date global builtin namespace | feature | frontend | implementation-ready | P1 |  | Date support is blocked by resolver failures for the global `Date` binding before deterministic Date lowering can be ... |
 | 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | docs-ready | P1 |  | Issue 065 duplicates the parser syntax epic in issue 059 and makes the Ready queue present the same work twice. |
-| 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
+| 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 238 | Make strict warning gates pass | infra | tests | implementation-ready | P0 |  | Make strict warning gates pass |
 <!-- generated:ready:end -->
 

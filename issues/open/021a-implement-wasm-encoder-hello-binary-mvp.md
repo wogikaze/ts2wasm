@@ -11,18 +11,25 @@ created: 2026-04-29
 updated: 2026-04-29
 ---
 
-Problem: The wasm backend epic is too broad to select directly; the first closeable slice is a minimal direct binary emission path for an existing hello-style fixture.
+Problem: The wasm backend needs a first direct binary emission slice for a WASI stdout fixture; WAT and wasm binary are equivalent backend outputs, and WASI `fd_write` support is an accepted prerequisite.
 
 ## Summary
 
-Add the smallest direct wasm binary emission path that can produce a runnable module for one existing stdout fixture without replacing the WAT path.
+Add the smallest direct wasm binary emission path that can produce a runnable WASI stdout module for one existing fixture without replacing the WAT path.
+
+ADR input:
+
+- WAT and wasm binary are equivalent backend outputs; neither changes observable semantics.
+- WASI is an accepted target prerequisite.
+- `fd_write` support is part of this slice if required for the selected stdout fixture.
 
 ## Scope
 
 In scope:
 
 - [ ] Add a binary-emission entry point using the existing runtime ABI and linker plan.
-- [ ] Support one known fixture that already works through the WAT path.
+- [ ] Emit the WASI imports/sections needed for stdout through `fd_write`.
+- [ ] Support one known stdout fixture that already works through the WAT path.
 - [ ] Add a parity test proving the direct wasm output matches the WAT path output for that fixture.
 
 Out of scope:
@@ -47,7 +54,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] A direct `.wasm` binary can be emitted for the selected fixture.
-- [ ] The emitted binary runs under `iwasm`.
+- [ ] The emitted binary imports/uses WASI `fd_write` consistently with the manifest/runtime link plan.
+- [ ] The emitted binary runs under `iwasm` and prints the same stdout as the WAT path.
 - [ ] Node/iwasm or WAT/binary parity is covered by a focused regression test.
 - [ ] Issue 021 remains open as the backend epic.
 
