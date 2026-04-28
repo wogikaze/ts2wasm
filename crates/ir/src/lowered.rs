@@ -917,6 +917,16 @@ fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
 }
 
+fn unsupported_date_timezone_diagnostic(method: &str, span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-050: Date.prototype.{method}() requires timezone/host formatting policy; use getTime() or valueOf() for deterministic epoch milliseconds"
+        ),
+        span,
+    }
+}
+
 fn is_annex_b_date_method(method: &str) -> bool {
     matches!(method, "getYear" | "setYear" | "toGMTString")
 }
@@ -1997,6 +2007,8 @@ impl<'a> Resolver<'a> {
                         method,
                         Some(*span),
                     ))
+                } else if method == "toString" && self.is_date_receiver(object) {
+                    Err(unsupported_date_timezone_diagnostic(method, Some(*span)))
                 } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
                     if let Some(diagnostic) = unsupported_annex_b_string_method(method, *span) {
                         Err(diagnostic)

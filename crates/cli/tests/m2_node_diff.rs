@@ -342,6 +342,14 @@ fn date_live_time_fixtures_report_capability_policy_diagnostic() {
 }
 
 #[test]
+fn date_to_string_fixture_reports_timezone_policy_diagnostic() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts",
+        "issue-050: Date.prototype.toString() requires timezone/host formatting policy",
+    );
+}
+
+#[test]
 fn date_annex_b_fixtures_report_issue_061() {
     for (fixture, method) in [
         (
