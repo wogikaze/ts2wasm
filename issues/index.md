@@ -165,7 +165,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
-| 233 | Emit static ES module bindings | feature | ir/backend | implementation-ready | P1 | 231, 232 | Emit static ES module bindings |
+| 234 | Cover static ES module execution | test | tests/fixtures | implementation-ready | P1 | 231, 232, 233 | Cover static ES module execution |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -175,7 +175,6 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|
 | 017b | Implement GC strategy | feature | runtime/memory | class: blocked | Implement GC strategy |
 | 055 | Umbrella: implement import and export | feature | frontend/semantics | 232, 233, 234 | Umbrella: implement import and export |
-| 234 | Cover static ES module execution | test | tests/fixtures | 231, 232, 233 | Cover static ES module execution |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -272,6 +271,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 230 | Implement async iteration and for-await-of | feature | frontend/semantics | see `issues/done/230-implement-async-iteration-for-await-of.md` |
 | 231 | Parse static ES module declarations | feature | frontend | see `issues/done/231-parse-static-es-module-declarations.md` |
 | 232 | Resolve local relative ES module graph | feature | compiler/frontend | see `issues/done/232-resolve-local-relative-es-module-graph.md` |
+| 233 | Emit static ES module bindings | feature | ir/backend | see `issues/done/233-emit-static-es-module-bindings.md` |
 | 235 | Fix GC root count backend tests | bug | backend/memory | see `issues/done/235-fix-gc-root-count-tests.md` |
 | 236 | Complete logical assignment target forms | feature | frontend/semantics | see `issues/done/236-complete-logical-assignment-target-forms.md` |
 | 237 | Implement Annex B IsHTMLDDA compatibility | feature | runtime/semantics | see `issues/done/237-implement-annexb-ishtmldda-compatibility.md` |
