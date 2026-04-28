@@ -2,3 +2,6 @@
 console.log(/abc/.test("zabcx"));
 console.log(/abc/.test("zabx"));
 console.log(/needle/g.test("haystack needle"));
+let plain = new RegExp("abc");
+console.log(plain.test("zabcx"));
+console.log(plain.test("zabx"));

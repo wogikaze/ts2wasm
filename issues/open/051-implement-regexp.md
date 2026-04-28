@@ -104,6 +104,14 @@ Follow-up issues:
 - 2026-04-28: Remaining acceptance criteria are not complete. `new RegExp(...)`,
   `RegExp.prototype.exec`, `String.prototype.match`, and variable-backed RegExp receiver state
   still need implementation before this issue can move to done.
+- 2026-04-28: Added a constrained `new RegExp("plain").test(...)` continuation slice.
+  `new RegExp("abc")` now lowers to the same plain byte pattern representation as supported
+  literals, and identifier-backed `RegExp` receivers dispatch `.test(...)` to the existing
+  runtime helper. Unsupported constructor patterns such as `new RegExp("a*")` remain rejected
+  with an `issue-051` diagnostic instead of falling back to incorrect substring semantics.
+- 2026-04-28: Remaining acceptance criteria are still not complete. `RegExp.prototype.exec`,
+  `String.prototype.match`, broader constructor flags/state, and full RegExp syntax still need
+  implementation before this issue can move to done.
 
 Validation:
 
@@ -128,6 +136,24 @@ result: pass
 
 cargo nextest run
 result: pass; 250 tests run, 250 passed, 4 skipped
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 11 tests run, 11 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 8 tests run, 8 passed
+
+node fixtures/core-semantics/regexp-test.ts
+result: pass; stdout matched iwasm: true / false / true / true / false
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-test.wasm && iwasm /tmp/ts2wasm-issue051-regexp-test.wasm
+result: pass; stdout matched Node: true / false / true / true / false
+
+cargo fmt --all --check
+result: pass
+
+scripts/manager check-agent-state
+result: pass
 ```
 
 ## Completion evidence

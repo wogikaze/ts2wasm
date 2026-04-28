@@ -681,8 +681,34 @@ fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'stat
         ("Set", "add") => Some("SetAdd"),
         ("Set", "has") => Some("SetHas"),
         ("Set", "delete") => Some("SetDelete"),
+        ("RegExp", "test") => Some("RegExpTest"),
         _ => None,
     }
+}
+
+fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
+    if args.len() != 1 {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-051: RegExp constructor supports exactly 1 string literal pattern in this subset, got {}",
+                args.len()
+            ),
+            span: None,
+        });
+    }
+    let ResolvedExpr::String(pattern) = &args[0] else {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "issue-051: RegExp constructor pattern must be a string literal in this subset"
+                    .to_owned(),
+            span: None,
+        });
+    };
+    let raw = format!("/{pattern}/");
+    validate_regexp_plain_literal(&raw, "RegExp constructor")?;
+    Ok(raw)
 }
 
 fn regexp_literal_test_runtime(
@@ -698,7 +724,7 @@ fn regexp_literal_test_runtime(
     if !looks_like_regexp_literal(raw) {
         return Ok(None);
     }
-    validate_regexp_test_literal(raw)?;
+    validate_regexp_plain_literal(raw, "RegExp.prototype.test literal")?;
     Ok(Some("RegExpTest".to_owned()))
 }
 
@@ -706,16 +732,21 @@ fn looks_like_regexp_literal(raw: &str) -> bool {
     raw.starts_with('/') && raw[1..].contains('/')
 }
 
-fn validate_regexp_test_literal(raw: &str) -> Result<(), Diagnostic> {
+fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnostic> {
     let Some(delimiter) = raw.rfind('/') else {
-        return Err(unsupported_regexp_test(raw, "missing closing delimiter"));
+        return Err(unsupported_regexp_literal(
+            context,
+            raw,
+            "missing closing delimiter",
+        ));
     };
     if delimiter == 0 {
-        return Err(unsupported_regexp_test(raw, "missing pattern"));
+        return Err(unsupported_regexp_literal(context, raw, "missing pattern"));
     }
     let flags = &raw[delimiter + 1..];
     if flags.chars().any(|ch| ch != 'g') {
-        return Err(unsupported_regexp_test(
+        return Err(unsupported_regexp_literal(
+            context,
             raw,
             "only the empty flag set or `g` is supported",
         ));
@@ -727,7 +758,8 @@ fn validate_regexp_test_literal(raw: &str) -> Result<(), Diagnostic> {
             '^' | '$' | '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '\\'
         )
     }) {
-        return Err(unsupported_regexp_test(
+        return Err(unsupported_regexp_literal(
+            context,
             raw,
             "only plain literal byte patterns are supported",
         ));
@@ -735,12 +767,10 @@ fn validate_regexp_test_literal(raw: &str) -> Result<(), Diagnostic> {
     Ok(())
 }
 
-fn unsupported_regexp_test(raw: &str, reason: &str) -> Diagnostic {
+fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-051: RegExp.prototype.test literal `{raw}` is not supported yet: {reason}"
-        ),
+        message: format!("issue-051: {context} `{raw}` is not supported yet: {reason}"),
         span: None,
     }
 }
@@ -1603,6 +1633,9 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::New { class_name, args } => {
+                if class_name == "RegExp" {
+                    return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
+                }
                 if class_name == "Map" || class_name == "Set" {
                     if !args.is_empty() {
                         return Err(Diagnostic {
