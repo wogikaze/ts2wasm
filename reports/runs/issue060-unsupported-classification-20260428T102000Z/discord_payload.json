@@ -1,0 +1,19 @@
+{
+  "run_id": "issue060-unsupported-classification-20260428T102000Z",
+  "issue": "060",
+  "branch": "agent/060-unsupported-classification-20260428T102000Z",
+  "outcome": "PROGRESS",
+  "commit": "classification:f8d51e9; reporting:git HEAD",
+  "summary": "Classified visible unknown-unsupported reference coverage windows into concrete feature labels and refreshed coverage artifacts.",
+  "validation": [
+    "cargo fmt --all --check: pass",
+    "scripts/manager update-coverage-matrix --check: pass",
+    "scripts/manager update-issue-index --check: pass",
+    "scripts/manager check-agent-state: pass",
+    "scripts/manager check-issue-health: pass",
+    "scripts/manager check-repo-smoke: pass",
+    "cargo nextest run: pass, 246 passed, 4 skipped"
+  ],
+  "reporting": "DEFERRED",
+  "defer_reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env."
+}

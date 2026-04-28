@@ -1,0 +1,101 @@
+{
+  "run_id": "agent-202-regexp-current-20260427T214721Z",
+  "task_id": "issue-202",
+  "git": {
+    "sha": "c5335e61364313b8303440af8898e78e7d1d8528",
+    "exit_code": 100,
+    "changed_files": [
+      "crates/frontend/src/lexer.rs",
+      "crates/frontend/src/parser.rs",
+      "crates/cli/tests/ir_lowering.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/core-semantics/regexp-literal.ts",
+      "fixtures/core-semantics/regexp-unsupported-flag.ts"
+    ],
+    "commits": [
+      {
+        "sha": "c5335e6",
+        "message": "issue-202: port regexp literals to frontend"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo test -p ts2wasm-frontend regexp --lib",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo test -p ts2wasm-cli --test ir_lowering lowering_routes_regexp_literal_to_string_subset",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo test -p ts2wasm-cli --test m2_node_diff regexp",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "python scripts/manager.py reference-coverage test262 --limit 50 --detail",
+      "status": "skip",
+      "exit_code": 0,
+      "reason": "reference/test262 is missing in this worktree"
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "fail",
+      "exit_code": 100,
+      "reason": "3 unrelated existing failures"
+    },
+    {
+      "cmd": "cargo nextest run --no-fail-fast",
+      "status": "fail",
+      "exit_code": 100,
+      "reason": "191 passed, 3 failed, 4 skipped"
+    }
+  ],
+  "fixtures": {
+    "passed": 191,
+    "failed": 3,
+    "skipped": 4,
+    "newly_passed": [
+      "fixtures/core-semantics/regexp-literal.ts",
+      "fixtures/core-semantics/regexp-unsupported-flag.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "blocked_acceptance": "coverage reduction not verified because reference/test262 is missing",
+    "known_failures": [
+      "official_corpora_smoke_gate_finds_reference_shards: missing reference/test262/test/language",
+      "m5_array_object_fixtures_match_node_output_under_iwasm: dynamic-property.ts stdout mismatch",
+      "m3_semantic_fixtures_match_node_output_under_iwasm: prototype.ts unsupported method receiver diagnostic"
+    ]
+  }
+}

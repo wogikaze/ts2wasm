@@ -1,0 +1,2 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.02s
+     Running `target/debug/ts2wasm build fixtures/builtins-and-io/json-parse-escaped-nested.ts -o /tmp/ts2wasm-json-parse-escaped-nested.wasm`

@@ -1,0 +1,6 @@
+{
+  "run_id": "20260428T020000Z-060-coverage-ramp",
+  "status": "DEFERRED",
+  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
+  "summary": "Issue 060 PROGRESS: test262 coverage ramped to limit 750, new unknown-unsupported cases classified as logical-assignment and legacy-octal-escape, follow-up issues 228 and 229 created."
+}

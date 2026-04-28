@@ -1,0 +1,91 @@
+{
+  "run_id": "061-date-annexb-diagnostics-20260428T051924Z",
+  "task_id": "issue-061",
+  "git": {
+    "sha": "cb72d09",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/ir/src/lowered.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/builtins-and-io/date-annexb-get-year-unsupported.ts",
+      "fixtures/builtins-and-io/date-annexb-set-year-unsupported.ts",
+      "fixtures/builtins-and-io/date-annexb-to-gmt-string-unsupported.ts",
+      "issues/open/061-implement-date.md"
+    ],
+    "commits": [
+      {
+        "sha": "cb72d09",
+        "message": "issue-061: add Annex B Date diagnostics"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli --test m2_node_diff date_annex_b_fixtures_report_issue_061",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli date --no-fail-fast",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "fail",
+      "exit_code": 100
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-backend-wasm top_level_locals_are_mirrored_into_gc_root_table function_locals_are_mirrored_into_activation_gc_root_frames --no-fail-fast",
+      "status": "fail",
+      "exit_code": 100
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 061-date-annexb-diagnostics-20260428T051924Z",
+      "status": "fail",
+      "exit_code": 1
+    }
+  ],
+  "fixtures": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "full_workspace_nextest": "failed in unrelated backend GC-root assertions",
+    "discord_report": "deferred after retry: DISCORD_WEBHOOK_URL missing"
+  }
+}

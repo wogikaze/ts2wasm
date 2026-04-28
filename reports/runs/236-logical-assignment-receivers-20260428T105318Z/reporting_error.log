@@ -1,0 +1,11 @@
+attempt 1:
+scripts/manager discord-report --run-id 236-logical-assignment-receivers-20260428T105318Z
+exit_code: 1
+error: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
+
+attempt 2:
+scripts/manager discord-report --run-id 236-logical-assignment-receivers-20260428T105318Z
+exit_code: 1
+error: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
+
+final reporting status: DEFERRED

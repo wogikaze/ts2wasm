@@ -1,0 +1,110 @@
+{
+  "run_id": "agent-216-equality-20260427T215854Z",
+  "task_id": "issue-216",
+  "git": {
+    "sha": "1a77159",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/backend-wasm/src/runtime_core.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/core-semantics/abstract-equality.ts",
+      "docs/language-reference/javascript-features.md",
+      "docs/05-compatibility-and-semantics.md",
+      "current-state.md",
+      "issues/done/216-implement-abstract-equality-coercion.md",
+      "issues/done/058-implement-equality-operators.md",
+      "issues/index.md"
+    ],
+    "commits": [
+      {
+        "sha": "c50ff75",
+        "message": "issue-216: implement primitive abstract equality"
+      },
+      {
+        "sha": "1a77159",
+        "message": "issue-216: close abstract equality coercion"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo test -p ts2wasm-cli --test m2_node_diff abstract_equality_fixture_matches_node_output_under_iwasm -- --nocapture",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(equal|equality)'",
+      "status": "fail",
+      "exit_code": 4
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(~equal) | test(~equality)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo test -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm -- --nocapture",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo clippy --all-targets --all-features -- -D warnings",
+      "status": "fail",
+      "exit_code": 101
+    },
+    {
+      "cmd": "cargo clippy --workspace -- -D warnings",
+      "status": "fail",
+      "exit_code": 101
+    }
+  ],
+  "fixtures": {
+    "passed": 195,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [
+      "fixtures/core-semantics/abstract-equality.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "ended_at": "2026-04-27T22:06:30Z",
+    "status": "done",
+    "clippy_failures": "pre-existing/out-of-scope"
+  }
+}

@@ -1,0 +1,3 @@
+{
+  "content": "PROGRESS issue 052: JSON.parse now handles integer-valued decimal/exponent numbers (`1.0`, `1e2`, `-2.5e1`, `120e-1`) in the assigned worktree. Focused JSON validation, direct Node/iwasm fixture evidence, issue health, and agent-state checks passed. Full nextest skipped because this is a PROGRESS slice."
+}

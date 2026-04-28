@@ -1,0 +1,54 @@
+{
+  "run_id": "20260428-019b-type-hints",
+  "issues": ["019b", "019"],
+  "status": "pass",
+  "commit": null,
+  "commands": [
+    {
+      "command": "node scripts/check/typescript-oracle.js fixtures/basics-types/optimization-hints.ts",
+      "status": "pass",
+      "notes": "emits parameter/binding hints and number-add-fast-path candidate"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-frontend",
+      "status": "pass",
+      "notes": "9 passed"
+    },
+    {
+      "command": "cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/optimization-hints.ts -o /tmp/optimization-hints.wasm",
+      "status": "pass",
+      "notes": "build validation passed"
+    },
+    {
+      "command": "cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/types.ts -o /tmp/types.wasm",
+      "status": "pass",
+      "notes": "parent issue validation passed"
+    },
+    {
+      "command": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "notes": "issue index up to date"
+    },
+    {
+      "command": "scripts/manager check-issue-health",
+      "status": "pass",
+      "notes": "issue queue healthy"
+    },
+    {
+      "command": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "notes": "smoke gate passed"
+    },
+    {
+      "command": "scripts/manager check-architecture-rules",
+      "status": "pass",
+      "notes": "architecture gate passed"
+    },
+    {
+      "command": "cargo nextest run --no-fail-fast",
+      "status": "pass",
+      "notes": "204 passed, 4 skipped"
+    }
+  ],
+  "next": "Ready queue after 019 closure; 020 semantic IR family is unblocked"
+}

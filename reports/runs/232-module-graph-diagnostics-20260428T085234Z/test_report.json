@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "run_id": "232-module-graph-diagnostics-20260428T085234Z",
+  "issue": "232",
+  "status": "progress",
+  "commands": [
+    {
+      "command": "cargo fmt --all --check",
+      "status": "pass"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-compiler",
+      "status": "pass",
+      "summary": "34 tests passed"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-cli module",
+      "status": "pass",
+      "summary": "12 tests passed, 218 skipped"
+    },
+    {
+      "command": "cargo run -q -p ts2wasm-cli -- dump fixtures/module-system/static-entry.ts --ast --resolved",
+      "status": "fail",
+      "summary": "Existing CLI restriction: dump accepts only one phase flag"
+    },
+    {
+      "command": "scripts/manager check-issue-health",
+      "status": "pass"
+    },
+    {
+      "command": "scripts/manager check-agent-state",
+      "status": "pass"
+    }
+  ],
+  "fixtures": {
+    "newly_failed": []
+  }
+}

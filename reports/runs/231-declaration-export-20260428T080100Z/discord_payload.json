@@ -1,0 +1,20 @@
+{
+  "status": "DEFERRED",
+  "run_id": "231-declaration-export-20260428T080100Z",
+  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
+  "report_path": "reports/runs/231-declaration-export-20260428T080100Z/cycle_report.md",
+  "summary": {
+    "issue": "231",
+    "branch": "agent/231-declaration-export-20260428T080100Z",
+    "outcome": "PROGRESS",
+    "validation": [
+      "cargo fmt --all --check: PASS",
+      "cargo nextest run -p ts2wasm-frontend: PASS",
+      "cargo nextest run -p ts2wasm-cli static_declaration_export_reports_issue_055: PASS",
+      "cargo check --workspace: PASS",
+      "scripts/manager check-issue-health: PASS",
+      "scripts/manager check-agent-state: PASS",
+      "cargo nextest run: PASS"
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "run_id": "20260428-222-gc-high-pressure-oob",
+  "commit": "fa3ddec",
+  "date": "2026-04-28",
+  "target_issue": "222",
+  "status": "pass",
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass"
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "summary": "issues/index.md OK (up to date)"
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "summary": "issues/index.md queue OK; check_issue_health: OK"
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass"
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-backend-wasm concat_allocates_managed_heap_strings gc_sweep_and_free_list_reuse_contract_is_emitted alloc_heap_emits_gc_header_and_trigger_contract",
+      "status": "pass",
+      "summary": "3 passed, 9 skipped"
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-runtime-abi memory_max_pages_cover_initial_pages initial_memory_pages_cover_single_max_stdin_heap_allocation_from_heap_start",
+      "status": "pass",
+      "summary": "2 passed, 7 skipped"
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "summary": "1 passed, 19 skipped"
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli --test m1_iwasm oom_alloc_check_must_fail_iwasm",
+      "status": "pass",
+      "summary": "1 passed, 1 skipped"
+    },
+    {
+      "cmd": "cargo nextest run --no-fail-fast",
+      "status": "pass",
+      "summary": "232 passed, 4 skipped"
+    }
+  ],
+  "next_task": "221-implement-gc-call-frame-roots-for-closure-escape"
+}

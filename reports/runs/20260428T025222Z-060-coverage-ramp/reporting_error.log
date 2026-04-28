@@ -1,0 +1,11 @@
+command: scripts/manager discord-report --run-id 20260428T025222Z-060-coverage-ramp
+attempt: 1
+exit_code: 1
+stderr: エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+
+command: scripts/manager discord-report --run-id 20260428T025222Z-060-coverage-ramp
+attempt: 2
+exit_code: 1
+stderr: エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+
+final_status: DEFERRED

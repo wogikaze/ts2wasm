@@ -1,0 +1,82 @@
+{
+  "run_id": "060-coverage-ramp5000-20260428T043000Z",
+  "task_id": "issue-060",
+  "git": {
+    "sha": "321a429",
+    "exit_code": 0,
+    "changed_files": [
+      "artifacts/coverage/results/test262.json",
+      "artifacts/coverage/reference-coverage-matrix.md",
+      "current-state.md",
+      "issues/open/060-investigate-unknown-unsupported-cases.md",
+      "reports/runs/060-coverage-ramp5000-20260428T043000Z/cycle_report.md",
+      "reports/runs/060-coverage-ramp5000-20260428T043000Z/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 5000 --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 5000 --json > artifacts/coverage/results/test262.json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 060-coverage-ramp5000-20260428T043000Z",
+      "status": "fail",
+      "exit_code": 1
+    }
+  ],
+  "fixtures": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "coverage_suite": "test262",
+    "coverage_limit": 5000,
+    "unknown_unsupported": 0,
+    "json_artifact": "artifacts/coverage/results/test262.json",
+    "detail_blocked": 1,
+    "json_blocked": 0,
+    "status": "progress",
+    "webhook": "deferred",
+    "webhook_reason": "DISCORD_WEBHOOK_URL is not configured"
+  }
+}

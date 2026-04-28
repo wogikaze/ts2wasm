@@ -1,0 +1,44 @@
+{
+  "run_id": "20260428-020b-hir-lowering",
+  "issue": "020b",
+  "status": "pass",
+  "commit": null,
+  "commands": [
+    {
+      "command": "cargo nextest run -p ts2wasm-ir",
+      "status": "pass",
+      "notes": "9 passed"
+    },
+    {
+      "command": "cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/ir-test.ts -o /tmp/ir-test.wasm",
+      "status": "pass",
+      "notes": "required fixture build passed"
+    },
+    {
+      "command": "cargo fmt --all --check",
+      "status": "pass",
+      "notes": "format gate passed"
+    },
+    {
+      "command": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "notes": "issue index up to date"
+    },
+    {
+      "command": "scripts/manager check-issue-health",
+      "status": "pass",
+      "notes": "issue queue healthy"
+    },
+    {
+      "command": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "notes": "smoke gate passed"
+    },
+    {
+      "command": "cargo nextest run --no-fail-fast",
+      "status": "pass",
+      "notes": "207 passed, 4 skipped"
+    }
+  ],
+  "next": "020c: add HIR validation passes and document contracts"
+}

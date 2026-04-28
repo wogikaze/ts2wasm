@@ -1,0 +1,9 @@
+{
+  "run_id": "20260428T021717Z-051-regexp-exec",
+  "status": "PROGRESS",
+  "issue": "051",
+  "branch": "agent/051-regexp-exec-20260428T020949Z",
+  "commit": "c9f194e",
+  "summary": "Constrained RegExp.prototype.exec slice validated for literal and identifier-backed new RegExp plain byte patterns.",
+  "reporting": "DEFERRED"
+}

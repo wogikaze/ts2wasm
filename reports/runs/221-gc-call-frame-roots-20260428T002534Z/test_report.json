@@ -1,0 +1,104 @@
+{
+  "run_id": "221-gc-call-frame-roots-20260428T002534Z",
+  "task_id": "issue-221",
+  "git": {
+    "sha": "f7ad5b0",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/backend-wasm/src/emitter.rs",
+      "crates/backend-wasm/src/lib.rs",
+      "crates/backend-wasm/src/runtime_core.rs",
+      "crates/backend-wasm/src/runtime_fn.rs",
+      "crates/backend-wasm/src/stmt_emit.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "crates/runtime-abi/src/layout.rs",
+      "current-state.md",
+      "docs/14-runtime-abi.md",
+      "fixtures/core-semantics/closure-gc-call-frame-root.ts",
+      "issues/done/221-implement-gc-call-frame-roots-for-closure-escape.md",
+      "issues/index.md"
+    ],
+    "commits": [
+      {
+        "sha": "f7ad5b0",
+        "message": "issue-221: implement gc call-frame roots"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 64
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-backend-wasm function_locals_are_mirrored_into_activation_gc_root_frames",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 1350
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 2860
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli --test m2_node_diff arrow_function_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 560
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-backend-wasm",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 20
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 1
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 1
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 274
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 2701
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0,
+      "elapsed_ms": 37
+    }
+  ],
+  "fixtures": {
+    "passed": 246,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [
+      "fixtures/core-semantics/closure-gc-call-frame-root.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  }
+}

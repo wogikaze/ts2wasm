@@ -1,0 +1,81 @@
+{
+  "run_id": "050-date-valueof-20260428T045453Z",
+  "task_id": "issue-050",
+  "git": {
+    "sha": "ea01ddfbf18dcc5acc9a9f969f046b36b7d9b0af",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/cli/tests/m2_node_diff.rs",
+      "crates/ir/src/lowered.rs",
+      "fixtures/builtins-and-io/date-epoch-value-of.ts",
+      "issues/open/050-implement-date.md"
+    ],
+    "commits": [
+      {
+        "sha": "ea01ddfbf18dcc5acc9a9f969f046b36b7d9b0af",
+        "message": "issue-050: add deterministic Date valueOf"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "node fixtures/builtins-and-io/date-epoch-value-of.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-epoch-value-of.ts -o /tmp/ts2wasm-date-epoch-value-of.wasm && iwasm /tmp/ts2wasm-date-epoch-value-of.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli date_epoch_value_of_fixture_matches_node_output_under_iwasm date_epoch_get_time_fixture_matches_node_output_under_iwasm date_live_time_fixtures_report_capability_policy_diagnostic",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli date",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager fmt",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/date-epoch-value-of.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "issue_status": "open",
+    "full_nextest": "not run; assignment requested targeted Date nextest for this progress slice"
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "run_id": "055-import-export-diagnostics-20260428T044424Z",
+  "task_id": "055",
+  "git": {
+    "sha": "abfc4f7",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/frontend/src/parser.rs",
+      "crates/cli/tests/m9_modules.rs",
+      "fixtures/module-system/static-named-import-unsupported.ts",
+      "fixtures/module-system/static-named-export-unsupported.ts",
+      "issues/open/055-implement-import-export.md"
+    ],
+    "commits": [
+      {
+        "sha": "abfc4f7",
+        "message": "issue-055: add module syntax diagnostics"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-frontend rejects_static_import_with_issue_linked_diagnostic rejects_named_export_with_issue_linked_diagnostic",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_named_export_reports_issue_055",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-named-import-unsupported.ts -o /tmp/ts2wasm-055-import.wasm",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-named-export-unsupported.ts -o /tmp/ts2wasm-055-export.wasm",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "scripts/manager check-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 055-import-export-diagnostics-20260428T044424Z",
+      "status": "fail",
+      "exit_code": 1
+    }
+  ],
+  "fixtures": {
+    "passed": 4,
+    "failed": 0,
+    "skipped": 228,
+    "newly_passed": [
+      "fixtures/module-system/static-named-import-unsupported.ts",
+      "fixtures/module-system/static-named-export-unsupported.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "discord_report": "deferred",
+    "discord_report_reason": "DISCORD_WEBHOOK_URL not configured",
+    "full_nextest": "not run; assignment requested focused nextest unless closing issue or touching broad compiler paths"
+  }
+}

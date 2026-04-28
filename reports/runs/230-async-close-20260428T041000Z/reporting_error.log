@@ -1,0 +1,11 @@
+attempt 1:
+scripts/manager discord-report --run-id 230-async-close-20260428T041000Z
+exit_code: 1
+stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
+
+attempt 2:
+scripts/manager discord-report --run-id 230-async-close-20260428T041000Z < reports/runs/230-async-close-20260428T041000Z/cycle_report.md
+exit_code: 1
+stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
+
+final status: DEFERRED

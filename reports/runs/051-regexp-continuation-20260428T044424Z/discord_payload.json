@@ -1,0 +1,9 @@
+{
+  "run_id": "051-regexp-continuation-20260428T044424Z",
+  "issue": "051",
+  "branch": "agent/051-regexp-continuation-20260428T044424Z",
+  "commit": "914902a",
+  "outcome": "PROGRESS",
+  "summary": "RegExp constructor flags progress: new RegExp(\"plain\", \"g\") one-shot .test/.exec/String.prototype.match coverage plus issue-linked diagnostics for unsupported constructor flags.",
+  "merge_request": false
+}
