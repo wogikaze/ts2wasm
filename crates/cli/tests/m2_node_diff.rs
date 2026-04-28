@@ -198,6 +198,18 @@ fn json_parse_incomplete_object_rejected_under_node_and_iwasm() {
 }
 
 #[test]
+fn json_stringify_replacer_unsupported_forms_report_issue_052() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts",
+        "issue-052: JSON.stringify function replacer callbacks are not supported yet",
+    );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts",
+        "issue-052: JSON.stringify array replacer property lists are not supported yet",
+    );
+}
+
+#[test]
 fn error_message_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-message.ts");
 }
