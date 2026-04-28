@@ -3,7 +3,7 @@
 Run id: `231-re-export-parser-20260428T062802Z`
 Issue: `issues/open/231-parse-static-es-module-declarations.md`
 Branch: `agent/231-re-export-parser-20260428T062802Z`
-Commit: `c298f6a`
+Implementation commit: `7e6132d`
 Status: PROGRESS
 
 ## Scope

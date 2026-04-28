@@ -2,7 +2,7 @@
   "run_id": "231-re-export-parser-20260428T062802Z",
   "task_id": "issues/open/231-parse-static-es-module-declarations.md",
   "git": {
-    "sha": "c298f6a",
+    "sha": "7e6132d",
     "exit_code": 0,
     "changed_files": [
       "crates/cli/tests/m9_modules.rs",
@@ -20,7 +20,7 @@
     ],
     "commits": [
       {
-        "sha": "c298f6a",
+        "sha": "7e6132d",
         "message": "Parse static named re-exports"
       }
     ]
