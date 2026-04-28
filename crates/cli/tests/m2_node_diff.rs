@@ -161,6 +161,7 @@ fn string_method_fixtures_match_node_output_under_iwasm() {
 fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",
+        "fixtures/builtins-and-io/json-parse-array-object.ts",
         "fixtures/builtins-and-io/json-parse-escaped-nested.ts",
         "fixtures/builtins-and-io/json-parse-escaped-string.ts",
         "fixtures/builtins-and-io/json-parse-nested-array.ts",
