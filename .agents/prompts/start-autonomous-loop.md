@@ -18,6 +18,7 @@ Each child must work in its own worktree, close or progress all assigned issues,
 Discord reporting is part of the loop, not an afterthought:
 
 - Keep Discord reports very brief: status, issue IDs, validation, blockers, next action only.
+- Do not leave sections as `未記入`; `discord-report` rejects placeholder-heavy reports.
 - After every child outcome, require a `reports/runs/<run_id>/cycle_report.md` or saved `discord_payload.json`.
 - Send reports with `scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>`.
 - `discord-report` automatically splits oversized messages into two sends; do not manually skip reporting because of Discord limits.
