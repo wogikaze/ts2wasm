@@ -79,8 +79,13 @@ Full `cargo nextest run` was skipped because this is a PROGRESS slice, issue 052
 
 ## Webhook
 
-Pending. Run after report commit:
+Deferred. Attempted:
 
 ```sh
 scripts/manager discord-report --run-id 052-json-space-object-20260428T111107Z
 ```
+
+The command exited 1 because `DISCORD_WEBHOOK_URL` is not configured in the environment or `.env`. Evidence is saved in:
+
+- `reports/runs/052-json-space-object-20260428T111107Z/discord-report.error.txt`
+- `reports/runs/052-json-space-object-20260428T111107Z/discord-report.deferred.json`
