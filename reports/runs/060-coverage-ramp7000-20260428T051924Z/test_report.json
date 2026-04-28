@@ -1,0 +1,85 @@
+{
+  "run_id": "060-coverage-ramp7000-20260428T051924Z",
+  "task_id": "issue-060",
+  "git": {
+    "sha": "post-commit",
+    "exit_code": 0,
+    "changed_files": [
+      "artifacts/coverage/reference-coverage-matrix.md",
+      "artifacts/coverage/results/test262.json",
+      "current-state.md",
+      "issues/open/060-investigate-unknown-unsupported-cases.md",
+      ".agents/state/last_run.json",
+      "reports/agents/060-coverage-ramp7000-20260428T051924Z/assignment.md",
+      "reports/agents/060-coverage-ramp7000-20260428T051924Z/outcome.md",
+      "reports/runs/060-coverage-ramp7000-20260428T051924Z/cycle_report.md",
+      "reports/runs/060-coverage-ramp7000-20260428T051924Z/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 7000 --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 7000 --json > artifacts/coverage/results/test262.json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "completion": "PROGRESS",
+    "coverage_suite": "test262",
+    "coverage_limit": 7000,
+    "unknown_unsupported": 0,
+    "stored_json": {
+      "executed": 7000,
+      "unsupported": 7000,
+      "blocked": 0
+    },
+    "detail_run": {
+      "executed": 7000,
+      "unsupported": 6998,
+      "blocked": 2
+    }
+  }
+}
