@@ -91,6 +91,13 @@ Follow-up issues:
 
 ## Notes
 
+2026-04-28 child progress (`062-function-constructor-diagnostics-20260428T050359Z`):
+
+- Added an issue-linked diagnostic slice for dynamic `Function(...)` and `new Function(...)` constructor usage.
+- The diagnostic intentionally reports unsupported runtime code evaluation and does not implement dynamic evaluation semantics.
+- Added resolver and CLI regression coverage plus direct unsupported fixtures.
+- Issue remains open because the broader function syntax/semantics acceptance criteria are not complete.
+
 ## Affected test files
 
 - `reference/test262/test/annexB/built-ins/Function/createdynfn-no-line-terminator-html-close-comment-params.js`
