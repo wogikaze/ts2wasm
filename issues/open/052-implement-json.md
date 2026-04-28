@@ -179,6 +179,21 @@ null
 - Full `cargo nextest run` was skipped for this PROGRESS slice because no runtime parser code changed; the assignment-specific JSON filters and direct Node/iwasm fixture evidence passed.
 - Remaining gaps before close: escaped strings, decimals/exponents, object elements inside parsed arrays, stricter top-level/trailing-token parse validation, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a top-level `JSON.parse` validation slice that rejects non-whitespace trailing tokens after a parsed object, array, string, literal, or integer number.
+- Added rejection coverage in `fixtures/builtins-and-io/json-parse-trailing-invalid.ts`; Node rejects the fixture with a JSON `SyntaxError`, and iwasm now rejects it with an `unreachable` trap instead of accepting the parsed prefix and printing `unreachable`.
+- Pre-change gap check with `/tmp/ts2wasm-json-trailing-invalid.ts` showed the previous runtime accepted `JSON.parse('{"a":1} trailing')`, printed `unreachable`, and exited with status 0.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-trailing-invalid.ts` (expected rejection: status 1, JSON `SyntaxError`)
+  - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-trailing-invalid.ts -o /tmp/ts2wasm-json-parse-trailing-invalid.wasm && iwasm /tmp/ts2wasm-json-parse-trailing-invalid.wasm` (expected rejection at iwasm: `Exception: unreachable`, status 1)
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Remaining gaps before close: escaped strings, decimals/exponents, stricter incomplete-token validation, object elements inside parsed arrays as explicit regression coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
