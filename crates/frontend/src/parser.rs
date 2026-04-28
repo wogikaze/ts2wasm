@@ -180,19 +180,69 @@ impl Parser {
 
     fn default_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
         let (local, local_span) = self.expect_ident()?;
+        let default = ImportDefaultSpecifier {
+            local,
+            local_span,
+            span: local_span,
+        };
+        if self.consume(TokenKind::Comma) {
+            return match self.peek() {
+                Some(Token::LeftBrace) => self.default_named_import_statement(import_span, default),
+                Some(Token::Star) => self.default_namespace_import_statement(import_span, default),
+                _ => self.unsupported_module_form(
+                    import_span,
+                    "default import with additional bindings",
+                ),
+            };
+        }
         if !self.peek_contextual_keyword("from") {
-            return self
-                .unsupported_module_form(import_span, "default import with additional bindings");
+            return self.unsupported_module_form(import_span, "default import");
         }
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::ImportDefault {
-            specifier: ImportDefaultSpecifier {
-                local,
-                local_span,
-                span: local_span,
+            specifier: default,
+            source,
+            span: Span {
+                start: import_span.start,
+                end: semi.end,
             },
+        })
+    }
+
+    fn default_named_import_statement(
+        &mut self,
+        import_span: Span,
+        default: ImportDefaultSpecifier,
+    ) -> Result<Stmt, Diagnostic> {
+        let specifiers = self.parse_import_named_specifiers()?;
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ImportDefaultNamed {
+            default,
+            specifiers,
+            source,
+            span: Span {
+                start: import_span.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn default_namespace_import_statement(
+        &mut self,
+        import_span: Span,
+        default: ImportDefaultSpecifier,
+    ) -> Result<Stmt, Diagnostic> {
+        let namespace = self.parse_import_namespace_specifier()?;
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ImportDefaultNamespace {
+            default,
+            namespace,
             source,
             span: Span {
                 start: import_span.start,
@@ -202,25 +252,30 @@ impl Parser {
     }
 
     fn namespace_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
-        let star_span = self.expect(TokenKind::Star)?;
-        self.expect_contextual_keyword("as")?;
-        let (local, local_span) = self.expect_ident()?;
+        let specifier = self.parse_import_namespace_specifier()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::ImportNamespace {
-            specifier: ImportNamespaceSpecifier {
-                local,
-                local_span,
-                span: Span {
-                    start: star_span.start,
-                    end: local_span.end,
-                },
-            },
+            specifier,
             source,
             span: Span {
                 start: import_span.start,
                 end: semi.end,
+            },
+        })
+    }
+
+    fn parse_import_namespace_specifier(&mut self) -> Result<ImportNamespaceSpecifier, Diagnostic> {
+        let star_span = self.expect(TokenKind::Star)?;
+        self.expect_contextual_keyword("as")?;
+        let (local, local_span) = self.expect_ident()?;
+        Ok(ImportNamespaceSpecifier {
+            local,
+            local_span,
+            span: Span {
+                start: star_span.start,
+                end: local_span.end,
             },
         })
     }
@@ -2871,19 +2926,60 @@ mod tests {
     }
 
     #[test]
-    fn rejects_default_import_with_additional_bindings_with_issue_linked_diagnostic() {
-        let err = parse_program("import value, { named } from './module-source';").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(
-            err.message
-                .contains("unsupported default import with additional bindings")
-        );
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_default_named_import_with_specifier_spans() {
+        let program =
+            parse_program("import defaultName, { value as renamed } from './module-source';")
+                .unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportDefaultNamed {
+                default,
+                specifiers,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 64 });
+                assert_eq!(default.local, "defaultName");
+                assert_eq!(default.local_span, Span { start: 7, end: 18 });
+                assert_eq!(default.span, Span { start: 7, end: 18 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 46, end: 63 });
+                assert_eq!(specifiers.len(), 1);
+                assert_eq!(specifiers[0].imported, "value");
+                assert_eq!(specifiers[0].imported_span, Span { start: 22, end: 27 });
+                assert_eq!(specifiers[0].local, "renamed");
+                assert_eq!(specifiers[0].local_span, Span { start: 31, end: 38 });
+                assert_eq!(specifiers[0].span, Span { start: 22, end: 38 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_default_namespace_import_with_specifier_spans() {
+        let program = parse_program("import defaultName, * as ns from './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportDefaultNamespace {
+                default,
+                namespace,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 51 });
+                assert_eq!(default.local, "defaultName");
+                assert_eq!(default.local_span, Span { start: 7, end: 18 });
+                assert_eq!(default.span, Span { start: 7, end: 18 });
+                assert_eq!(namespace.local, "ns");
+                assert_eq!(namespace.local_span, Span { start: 25, end: 27 });
+                assert_eq!(namespace.span, Span { start: 20, end: 27 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 33, end: 50 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
     }
 
     #[test]

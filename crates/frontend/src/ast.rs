@@ -112,8 +112,20 @@ pub enum Stmt {
         source: ModuleSpecifier,
         span: Span,
     },
+    ImportDefaultNamed {
+        default: ImportDefaultSpecifier,
+        specifiers: Vec<ImportNamedSpecifier>,
+        source: ModuleSpecifier,
+        span: Span,
+    },
     ImportNamespace {
         specifier: ImportNamespaceSpecifier,
+        source: ModuleSpecifier,
+        span: Span,
+    },
+    ImportDefaultNamespace {
+        default: ImportDefaultSpecifier,
+        namespace: ImportNamespaceSpecifier,
         source: ModuleSpecifier,
         span: Span,
     },
@@ -355,7 +367,9 @@ impl Stmt {
             Self::ImportSideEffect { span, .. }
             | Self::ImportNamed { span, .. }
             | Self::ImportDefault { span, .. }
+            | Self::ImportDefaultNamed { span, .. }
             | Self::ImportNamespace { span, .. }
+            | Self::ImportDefaultNamespace { span, .. }
             | Self::ExportNamed { span, .. }
             | Self::ExportNamedFrom { span, .. }
             | Self::ExportAllFrom { span, .. }

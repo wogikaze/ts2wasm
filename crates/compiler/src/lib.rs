@@ -274,7 +274,9 @@ fn validate_stmt(
         Stmt::ImportSideEffect { .. }
         | Stmt::ImportNamed { .. }
         | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
         | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
         | Stmt::ExportNamed { .. }
         | Stmt::ExportNamedFrom { .. }
         | Stmt::ExportAllFrom { .. } => Ok(()),
