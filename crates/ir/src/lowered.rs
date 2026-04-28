@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
-use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, Span, UnaryOp};
 use ts2wasm_runtime_abi::ValueTag;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -751,12 +751,70 @@ fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     }
 }
 
+fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
+    matches!(object, ResolvedExpr::Ident(name) if name == "JSON") && method == "stringify"
+}
+
+fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(), Diagnostic> {
+    if args.is_empty() || args.len() > 3 {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "JSON.stringify expects 1 to 3 arguments, got {}",
+                args.len()
+            ),
+            span: Some(span),
+        });
+    }
+
+    if let Some(replacer) = args.get(1) {
+        if !matches!(replacer, ResolvedExpr::Null | ResolvedExpr::Undefined) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "JSON.stringify replacer is not supported; pass null or undefined"
+                    .to_owned(),
+                span: Some(span),
+            });
+        }
+    }
+
+    if let Some(space) = args.get(2) {
+        if !matches!(
+            space,
+            ResolvedExpr::Number(_) | ResolvedExpr::Null | ResolvedExpr::Undefined
+        ) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "JSON.stringify space currently supports integer numeric values"
+                    .to_owned(),
+                span: Some(span),
+            });
+        }
+    }
+
+    Ok(())
+}
+
+fn unsupported_live_time_diagnostic(operation: &str, span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-050: {operation} requires live host time; define an auditable time capability policy before enabling it. Use new Date(<epoch-ms integer>) for deterministic Date values"
+        ),
+        span,
+    }
+}
+
+fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
+    matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
+}
+
 fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
-    if args.len() != 1 {
+    if !(1..=2).contains(&args.len()) {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!(
-                "issue-051: RegExp constructor supports exactly 1 string literal pattern in this subset, got {}",
+                "issue-051: RegExp constructor supports 1 string literal pattern and optional string literal flags in this subset, got {}",
                 args.len()
             ),
             span: None,
@@ -771,26 +829,58 @@ fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnosti
             span: None,
         });
     };
-    let raw = format!("/{pattern}/");
+    let flags = match args.get(1) {
+        Some(ResolvedExpr::String(flags)) => flags.as_str(),
+        Some(_) => {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-051: RegExp constructor flags must be a string literal in this subset"
+                        .to_owned(),
+                span: None,
+            });
+        }
+        None => "",
+    };
+    let raw = format!("/{pattern}/{flags}");
     validate_regexp_plain_literal(&raw, "RegExp constructor")?;
     Ok(raw)
 }
 
-fn regexp_literal_test_runtime(
+fn regexp_test_runtime(
     object: &ResolvedExpr,
     method: &str,
-) -> Result<Option<String>, Diagnostic> {
+    args: &[ResolvedExpr],
+    span: ts2wasm_frontend::Span,
+) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
     if method != "test" {
         return Ok(None);
     }
-    let ResolvedExpr::String(raw) = object else {
-        return Ok(None);
-    };
-    if !looks_like_regexp_literal(raw) {
-        return Ok(None);
+    if args.len() != 1 {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "RegExp.prototype.test expects 1 argument, got {}",
+                args.len()
+            ),
+            span: Some(span),
+        });
     }
-    validate_regexp_plain_literal(raw, "RegExp.prototype.test literal")?;
-    Ok(Some("RegExpTest".to_owned()))
+    match object {
+        ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
+            validate_regexp_plain_literal(raw, "RegExp.prototype.test literal")?;
+            Ok(Some(vec![object.clone(), args[0].clone()]))
+        }
+        ResolvedExpr::New {
+            class_name,
+            args: ctor_args,
+            ..
+        } if class_name == "RegExp" => {
+            regexp_constructor_literal(ctor_args)?;
+            Ok(Some(vec![object.clone(), args[0].clone()]))
+        }
+        _ => Ok(None),
+    }
 }
 
 fn regexp_string_match_runtime(
@@ -819,7 +909,9 @@ fn regexp_string_match_runtime(
         ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
             validate_regexp_plain_literal(raw, "String.prototype.match literal")?;
         }
-        ResolvedExpr::New { class_name, args } if class_name == "RegExp" => {
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "RegExp" => {
             regexp_constructor_literal(args)?;
         }
         _ => {
@@ -862,6 +954,7 @@ fn regexp_exec_runtime(
         ResolvedExpr::New {
             class_name,
             args: ctor_args,
+            ..
         } if class_name == "RegExp" => {
             regexp_constructor_literal(ctor_args)?;
             Ok(Some(vec![object.clone(), args[0].clone()]))
@@ -886,7 +979,7 @@ fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<(), Diagnos
         return Err(unsupported_regexp_literal(context, raw, "missing pattern"));
     }
     let flags = &raw[delimiter + 1..];
-    if flags.chars().any(|ch| ch != 'g') {
+    if flags.chars().any(|ch| ch != 'g') || flags.chars().count() > 1 {
         return Err(unsupported_regexp_literal(
             context,
             raw,
@@ -1609,21 +1702,32 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
-                if let Some(runtime_fn) = regexp_literal_test_runtime(object, method)? {
-                    if args.len() != 1 {
-                        return Err(Diagnostic {
-                            code: DiagCode::ArityMismatch,
-                            message: format!(
-                                "RegExp.prototype.test expects 1 argument, got {}",
-                                args.len()
-                            ),
-                            span: Some(*span),
-                        });
-                    }
-                    let mut lowered_args = vec![self.lower_expr(object)?];
-                    lowered_args.extend(self.lower_call_args(args)?);
+                if is_json_static_call(object, method) {
+                    validate_json_stringify_args(args, *span)?;
+                    let mut lowered_args = Vec::with_capacity(3);
+                    lowered_args.push(self.lower_expr(&args[0])?);
+                    lowered_args.push(match args.get(1) {
+                        Some(replacer) => self.lower_expr(replacer)?,
+                        None => LoweredExpr::Undefined,
+                    });
+                    lowered_args.push(match args.get(2) {
+                        Some(space) => self.lower_expr(space)?,
+                        None => LoweredExpr::Undefined,
+                    });
                     Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn,
+                        runtime_fn: "JsonStringify".to_owned(),
+                        args: lowered_args,
+                    })
+                } else if is_date_now_live_time_call(object, method) {
+                    Err(unsupported_live_time_diagnostic("Date.now()", Some(*span)))
+                } else if let Some(regexp_args) = regexp_test_runtime(object, method, args, *span)?
+                {
+                    let lowered_args = regexp_args
+                        .iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "RegExpTest".to_owned(),
                         args: lowered_args,
                     })
                 } else if let Some(regexp_args) = regexp_exec_runtime(object, method, args, *span)?
@@ -1855,11 +1959,21 @@ impl<'a> Resolver<'a> {
                     value: Box::new(self.lower_expr(value)?),
                 })
             }
-            ResolvedExpr::New { class_name, args } => {
+            ResolvedExpr::New {
+                class_name,
+                args,
+                span,
+            } => {
                 if class_name == "RegExp" {
                     return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
                 }
                 if class_name == "Date" {
+                    if args.is_empty() {
+                        return Err(unsupported_live_time_diagnostic(
+                            "new Date()",
+                            Some(*span),
+                        ));
+                    }
                     if args.len() != 1 {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,

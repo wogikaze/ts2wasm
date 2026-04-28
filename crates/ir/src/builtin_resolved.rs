@@ -164,6 +164,7 @@ pub enum ResolvedExpr {
     New {
         class_name: String,
         args: Vec<ResolvedExpr>,
+        span: Span,
     },
     ModuleLoad {
         specifier: String,

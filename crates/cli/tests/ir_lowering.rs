@@ -124,6 +124,49 @@ fn lowering_routes_new_regexp_test_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_new_regexp_with_g_flag_test_to_runtime_call() {
+    let program =
+        parse_and_resolve("let r = new RegExp(\"abc\", \"g\"); let ok = r.test(\"zabcx\");");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::String(value),
+        ) => assert_eq!(value, "/abc/g"),
+        other => panic!("unexpected RegExp constructor lowering: {other:?}"),
+    }
+
+    match &lowered.top_level_statements[1] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+        ) => {
+            assert_eq!(runtime_fn, "RegExpTest");
+            assert_eq!(args.len(), 2);
+        }
+        other => panic!("unexpected lowered RegExp test statement: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_routes_direct_new_regexp_test_to_runtime_call() {
+    let program = parse_and_resolve("let ok = new RegExp(\"abc\").test(\"zabcx\");");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+        ) => {
+            assert_eq!(runtime_fn, "RegExpTest");
+            assert_eq!(args.len(), 2);
+        }
+        other => panic!("unexpected lowered direct new RegExp.prototype.test statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_routes_string_match_regexp_literal_to_runtime_call() {
     let program = parse_and_resolve("let hit = \"zabcx\".match(/abc/);");
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
@@ -227,6 +270,28 @@ fn lowering_rejects_unsupported_new_regexp_pattern() {
     assert!(err.message.contains("issue-051"));
     assert!(err.message.contains("RegExp constructor"));
     assert!(err.message.contains("plain literal byte patterns"));
+}
+
+#[test]
+fn lowering_rejects_unsupported_new_regexp_flags() {
+    let program = parse_and_resolve("let r = new RegExp(\"abc\", \"i\");");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-051"));
+    assert!(err.message.contains("RegExp constructor"));
+    assert!(err.message.contains("empty flag set or `g`"));
+}
+
+#[test]
+fn lowering_rejects_duplicate_new_regexp_flags() {
+    let program = parse_and_resolve("let r = new RegExp(\"abc\", \"gg\");");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-051"));
+    assert!(err.message.contains("RegExp constructor"));
+    assert!(err.message.contains("empty flag set or `g`"));
 }
 
 #[test]

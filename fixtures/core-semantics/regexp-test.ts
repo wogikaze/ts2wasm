@@ -18,3 +18,7 @@ let execPlain = new RegExp("plain");
 console.log("" + execPlain.exec("very plain text"));
 console.log("" + new RegExp("plain").exec("very plain text"));
 console.log(new RegExp("plain").exec("very loud") === null);
+let flagged = new RegExp("flag", "g");
+console.log(flagged.test("one flag here"));
+console.log("" + new RegExp("plain", "g").exec("very plain text"));
+console.log("" + "haystack needle".match(new RegExp("needle", "g")));
