@@ -1,0 +1,12 @@
+scripts/manager discord-report --run-id 228-logical-assignment-index-20260428T044424Z
+exit_code: 1
+stderr/stdout:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+
+retry:
+scripts/manager discord-report --run-id 228-logical-assignment-index-20260428T044424Z
+exit_code: 1
+stderr/stdout:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+
+final_reporting_status: DEFERRED
