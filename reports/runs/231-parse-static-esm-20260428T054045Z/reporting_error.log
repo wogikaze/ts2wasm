@@ -1,0 +1,4 @@
+command: scripts/manager discord-report --run-id 231-parse-static-esm-20260428T054045Z
+exit_code: 1
+stderr:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
