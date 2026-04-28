@@ -1182,10 +1182,10 @@ fn m2_node_api_fixtures_are_not_marked_as_semantic_pass() {
 
 /// Extract diagnostic code from error message
 fn extract_diag_code(stderr: &str) -> String {
-    if let Some(start) = stderr.find('[') {
-        if let Some(end) = stderr[start..].find(']') {
-            return stderr[start + 1..start + end].to_string();
-        }
+    if let Some(start) = stderr.find('[')
+        && let Some(end) = stderr[start..].find(']')
+    {
+        return stderr[start + 1..start + end].to_string();
     }
     "Unknown".to_string()
 }

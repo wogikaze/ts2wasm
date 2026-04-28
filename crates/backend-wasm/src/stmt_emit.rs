@@ -8,7 +8,7 @@ use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
 thread_local! {
-    static LABEL_COUNTER: RefCell<usize> = RefCell::new(0);
+    static LABEL_COUNTER: RefCell<usize> = const { RefCell::new(0) };
 }
 
 fn gen_label(prefix: &str) -> String {

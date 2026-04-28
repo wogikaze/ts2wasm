@@ -2,6 +2,9 @@ use ts2wasm_frontend::{BinaryOp, LogicalAssignOp, Span, UnaryOp};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId};
 
+pub type ResolvedParam = (String, Option<ResolvedExpr>, bool);
+pub type ResolvedConstructor = (Vec<ResolvedParam>, Vec<ResolvedStmt>);
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedStmt {
     Let(String, ResolvedExpr),
@@ -19,7 +22,7 @@ pub enum ResolvedStmt {
     Return(ResolvedExpr),
     Function {
         name: String,
-        params: Vec<(String, Option<ResolvedExpr>, bool)>,
+        params: Vec<ResolvedParam>,
         body: Vec<ResolvedStmt>,
     },
     TryCatch {
@@ -73,7 +76,7 @@ pub enum ResolvedStmt {
     ClassDecl {
         name: String,
         extends: Option<String>,
-        constructor: Option<(Vec<(String, Option<ResolvedExpr>, bool)>, Vec<ResolvedStmt>)>,
+        constructor: Option<ResolvedConstructor>,
         methods: Vec<ClassMethod>,
         statics: Vec<(String, ResolvedExpr)>,
     },
@@ -82,7 +85,7 @@ pub enum ResolvedStmt {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ClassMethod {
     pub name: String,
-    pub params: Vec<(String, Option<ResolvedExpr>, bool)>,
+    pub params: Vec<ResolvedParam>,
     pub body: Vec<ResolvedStmt>,
 }
 

@@ -330,21 +330,20 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
             specifier,
             ..
         } = stmt
+            && let Stmt::Let { expr, .. } = declaration.as_ref()
         {
-            if let Stmt::Let { expr, .. } = declaration.as_ref() {
-                if !is_static_export_literal(expr) {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
-                            specifier.exported,
-                            path.display()
-                        ),
-                        span: Some(specifier.local_span),
-                    });
-                }
-                exports.insert(specifier.exported.clone(), expr.clone());
+            if !is_static_export_literal(expr) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
+                        specifier.exported,
+                        path.display()
+                    ),
+                    span: Some(specifier.local_span),
+                });
             }
+            exports.insert(specifier.exported.clone(), expr.clone());
         }
     }
 

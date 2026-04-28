@@ -518,7 +518,7 @@ impl WatEmitter<'_> {
             }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
                 for arg in args {
-                    self.emit_expr(wat, &arg, indent, frame);
+                    self.emit_expr(wat, arg, indent, frame);
                 }
                 let fn_name = super::runtime_fn::runtime_fn_from_name(runtime_fn)
                     .map(|f| f.symbol())
@@ -665,20 +665,20 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         let func = self.program.functions.get(func_id.0);
 
-        if let Some(func) = func {
-            if let Some(rest_index) = func.rest_param_index {
-                for arg_index in 0..rest_index {
-                    if let Some(arg) = args.get(arg_index) {
-                        self.emit_expr(wat, arg, indent, frame);
-                    } else {
-                        wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
-                    }
+        if let Some(func) = func
+            && let Some(rest_index) = func.rest_param_index
+        {
+            for arg_index in 0..rest_index {
+                if let Some(arg) = args.get(arg_index) {
+                    self.emit_expr(wat, arg, indent, frame);
+                } else {
+                    wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
                 }
-                let rest_start = rest_index.min(args.len());
-                self.emit_array_literal(wat, &args[rest_start..], indent, frame);
-                wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
-                return;
             }
+            let rest_start = rest_index.min(args.len());
+            self.emit_array_literal(wat, &args[rest_start..], indent, frame);
+            wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
+            return;
         }
 
         let param_count = func.map(|f| f.params.len()).unwrap_or(0);
@@ -800,6 +800,7 @@ impl WatEmitter<'_> {
         self.emit_gc_root_mirror_index(wat, &pad, local, frame);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_logical_property_assign(
         &self,
         wat: &mut String,
@@ -891,6 +892,7 @@ impl WatEmitter<'_> {
         self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_logical_member_assign(
         &self,
         wat: &mut String,
@@ -1000,6 +1002,7 @@ impl WatEmitter<'_> {
         ));
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_logical_computed_property_assign(
         &self,
         wat: &mut String,
@@ -1094,6 +1097,7 @@ impl WatEmitter<'_> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_logical_computed_member_assign(
         &self,
         wat: &mut String,
@@ -1210,6 +1214,7 @@ impl WatEmitter<'_> {
         wat.push_str(&format!("{pad}(local.set {key_len})\n"));
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn emit_logical_computed_property_assign_rhs(
         &self,
         wat: &mut String,
