@@ -28,7 +28,10 @@ Commit: recorded in the parent event for this child run.
 - `scripts/manager update-coverage-matrix --check`: pass
 - `scripts/manager check-issue-health`: pass
 - `scripts/manager check-agent-state`: pass
+- `scripts/manager discord-report --run-id 060-coverage-ramp7000-20260428T051924Z`: failed twice, `DISCORD_WEBHOOK_URL` not configured; deferred payload saved.
 
 ## Follow-Up
 
 Continue issue 060 with broader reference windows. The assigned `/home/wogikaze/wgkz/ts2wasm/reference` root still lacks the TypeScript checkout needed for exact tsc validation from that root.
+
+Webhook reporting is DEFERRED. See `discord_payload.json` and `reporting_error.log` in this run directory.
