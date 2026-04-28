@@ -100,6 +100,9 @@ impl NameResolver {
             Stmt::ImportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default import"))
             }
+            Stmt::ImportNamespace { span, .. } => {
+                Err(unsupported_module_decl(*span, "namespace import"))
+            }
             Stmt::ExportNamed { span, .. } => Err(unsupported_module_decl(*span, "named export")),
             Stmt::Let { name, expr, span } => {
                 self.declare_variable(name, Some(*span))?;
