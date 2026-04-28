@@ -91,6 +91,26 @@ Follow-up issues:
 
 ## Notes
 
+2026-04-28 blocker evidence:
+
+- `new Date(0)` currently reaches class-constructor lowering and fails before backend Date runtime code can be used:
+
+  ```text
+  command: cargo run -q -p ts2wasm-cli -- build /tmp/ts2wasm-date-ZvvJxH.ts -o /tmp/ts2wasm-date-test.wasm
+  result: exit 1
+  stderr: error: [UnsupportedSyntax] issue-207: instanceof right-hand side must be a supported class constructor `Date`
+  ```
+
+- `Date.now()` currently fails in name/lowering before backend emission:
+
+  ```text
+  command: cargo run -q -p ts2wasm-cli -- build /tmp/ts2wasm-date-now-jjxJat.ts -o /tmp/ts2wasm-date-now-test.wasm
+  result: exit 1
+  stderr: error: [UnresolvedName] unresolved name: `Date`
+  ```
+
+- The required recognition/lowering changes live in `crates/ir/src/name_resolver.rs` and `crates/ir/src/lowered.rs`, which are outside the child assignment's allowed files. Completing `Date.now()` or zero-argument `new Date()` also requires an auditable time capability policy; the assignment explicitly forbids inventing untracked host time imports.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
