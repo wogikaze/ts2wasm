@@ -1017,12 +1017,49 @@ impl Parser {
                         expr: Box::new(value),
                     });
                 }
+                Expr::Index {
+                    object,
+                    index,
+                    span,
+                } => {
+                    let Expr::Ident {
+                        name: object_name, ..
+                    } = object.as_ref()
+                    else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-228: computed logical assignment currently supports only identifier object targets".to_owned(),
+                            span: Some(target_span),
+                        });
+                    };
+                    let Expr::String {
+                        value: property, ..
+                    } = index.as_ref()
+                    else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-228: computed logical assignment currently supports only string literal keys".to_owned(),
+                            span: Some(target_span),
+                        });
+                    };
+                    let value = self.assignment()?;
+                    return Ok(Expr::LogicalPropertyAssign {
+                        object: object_name.clone(),
+                        property: property.clone(),
+                        op,
+                        span: Span {
+                            start: span.start,
+                            end: value.span().end,
+                        },
+                        expr: Box::new(value),
+                    });
+                }
                 _ => {}
             }
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-228: logical assignment currently supports only identifier and member targets"
+                    "issue-228: logical assignment currently supports only identifier, member, and string-literal computed member targets"
                         .to_owned(),
                 span: Some(target_span),
             });
@@ -2443,6 +2480,29 @@ mod tests {
                 }
                 other => panic!("unexpected constructor statement: {other:?}"),
             }
+        }
+    }
+
+    #[test]
+    fn parses_string_literal_computed_logical_assignment_as_property_assignment() {
+        let program = parse_program("target[\"value\"] ||= rhs();").unwrap();
+
+        match &program[0] {
+            Stmt::Expr {
+                expr:
+                    Expr::LogicalPropertyAssign {
+                        object,
+                        property,
+                        op,
+                        ..
+                    },
+                ..
+            } => {
+                assert_eq!(object, "target");
+                assert_eq!(property, "value");
+                assert_eq!(*op, LogicalAssignOp::Or);
+            }
+            other => panic!("unexpected statement: {other:?}"),
         }
     }
 

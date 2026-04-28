@@ -1,2 +1,3 @@
 let target = { value: 0 };
-target["value"] &&= 1;
+let key = "value";
+target[key] &&= 1;
