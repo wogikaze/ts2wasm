@@ -165,3 +165,30 @@ cargo nextest run -p ts2wasm-cli static_module_named_import_alias_build_smoke: P
 cargo nextest run -p ts2wasm-cli static_module_named_import_missing_export_reports_issue_233_at_imported_name: PASS (1 test, 232 skipped)
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-esm-alias.wasm: PASS
 ```
+
+2026-04-28 child worker `233-static-module-ir-binding-20260428T094954Z` made a narrow explicit binding-lowering progress slice:
+
+- Moved the temporary graph-backed named import build rewrite behind `lower_static_named_import_bindings_for_build`, which records `StaticNamedImportBinding` entries with source specifier, resolved source module ID/path, imported name, local name, and source initializer before generating the current buildable local binding.
+- Added compiler regression coverage for an importer that has a same-named local `value` while importing `value as importedValue`; the binding initializer is asserted to come from the resolved source module export (`1`) and the importer lexical local remains `99`.
+- Added `fixtures/module-system/static-entry-shadow.ts` plus CLI module build-smoke coverage, preserving the existing `static-entry.ts` and `static-entry-alias.ts` build behavior.
+- No dependency-order module initialization, once-only execution semantics, live binding behavior, or runtime semantic parity claims were added; issue 233 remains open.
+
+Validation:
+
+```text
+cargo nextest run -p ts2wasm-cli static_module_named_import_alias_build_smoke: PASS (pre-change reproduction, 1 test)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-esm-233-ir-pre.wasm: PASS (pre-change reproduction)
+cargo nextest run -p ts2wasm-compiler static_named_import_binding_lowering_uses_source_export_when_importer_shadows_name: PASS (1 test)
+cargo nextest run -p ts2wasm-cli static_module_named_import_shadowed_local_build_smoke: PASS (1 test)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-esm-233-shadow-ir.wasm: PASS
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (16 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (16 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 219 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-esm-233-ir.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-esm-233-alias-ir.wasm: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+scripts/manager nextest: PASS (369 tests, 4 skipped)
+scripts/manager check-repo-smoke: PASS
+```
