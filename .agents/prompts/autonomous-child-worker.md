@@ -253,6 +253,7 @@ If there are pre-existing unrelated changes:
 After each commit batch or issue outcome:
 
 Keep the Discord report very brief: status, issue IDs, validation, blockers, and next action only.
+Write Discord report content in Japanese; keep commands, paths, and issue IDs as literals only.
 Do not leave sections as `未記入`; `discord-report` rejects placeholder-heavy reports.
 `discord-report` automatically splits oversized messages into two sends.
 
