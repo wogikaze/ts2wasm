@@ -1,0 +1,8 @@
+scripts/manager discord-report --run-id 20260428T033117Z-052-json-array-object
+exit_code=1
+error=DISCORD_WEBHOOK_URL is not configured in the environment or .env
+
+Retry:
+scripts/manager discord-report --run-id 20260428T033117Z-052-json-array-object
+exit_code=1
+error=DISCORD_WEBHOOK_URL is not configured in the environment or .env

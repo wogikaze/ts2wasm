@@ -268,6 +268,30 @@ x/y
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment explicitly allows focused validated progress.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added explicit Node differential regression coverage for `JSON.parse` arrays containing object elements in `fixtures/builtins-and-io/json-parse-array-object.ts`, covering `JSON.parse('[{"a":1},{"b":[2]}]')`.
+- Direct runtime check before adding the fixture showed the current runtime already handled this narrow continuation slice, so this child records the behavior as regression coverage rather than changing backend runtime code.
+- Node and iwasm both print:
+
+```text
+2
+1
+1
+2
+```
+
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-array-object.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object.ts -o /tmp/ts2wasm-json-parse-array-object.wasm && iwasm /tmp/ts2wasm-json-parse-array-object.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because no runtime parser code changed and the assignment explicitly allows focused validated progress.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, stricter incomplete-token validation, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
