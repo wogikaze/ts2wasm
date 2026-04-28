@@ -167,6 +167,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts",
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
         "fixtures/builtins-and-io/json-parse.ts",
+        "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
         "fixtures/builtins-and-io/json-stringify.ts",
     ] {
         assert_fixture_matches_node(fixture);
