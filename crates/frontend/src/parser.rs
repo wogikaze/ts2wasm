@@ -2096,8 +2096,10 @@ impl Parser {
     fn postfix(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.call_member()?;
 
-        while let Some(as_span) = self.consume_typescript_as_assertion_keyword() {
-            self.skip_typescript_as_assertion_type(as_span)?;
+        while let Some((keyword_span, keyword)) =
+            self.consume_typescript_expression_type_erasure_keyword()
+        {
+            self.skip_typescript_expression_type(keyword_span, keyword)?;
         }
 
         // Handle instanceof
@@ -2248,17 +2250,27 @@ impl Parser {
         matches!(callee, Expr::Ident { name, .. } if self.typescript_generic_functions.contains(name))
     }
 
-    fn consume_typescript_as_assertion_keyword(&mut self) -> Option<Span> {
-        if self.peek_contextual_keyword("as") {
-            let span = self.peek_span().expect("peeked token must have a span");
-            self.cursor += 1;
-            Some(span)
+    fn consume_typescript_expression_type_erasure_keyword(
+        &mut self,
+    ) -> Option<(Span, &'static str)> {
+        let keyword = if self.peek_contextual_keyword("as") {
+            "as"
+        } else if self.peek_contextual_keyword("satisfies") {
+            "satisfies"
         } else {
-            None
-        }
+            return None;
+        };
+
+        let span = self.peek_span().expect("peeked token must have a span");
+        self.cursor += 1;
+        Some((span, keyword))
     }
 
-    fn skip_typescript_as_assertion_type(&mut self, as_span: Span) -> Result<(), Diagnostic> {
+    fn skip_typescript_expression_type(
+        &mut self,
+        keyword_span: Span,
+        keyword: &str,
+    ) -> Result<(), Diagnostic> {
         let mut paren_depth = 0usize;
         let mut bracket_depth = 0usize;
         let mut brace_depth = 0usize;
@@ -2269,18 +2281,15 @@ impl Parser {
             if at_top_level
                 && consumed_type_token
                 && (self.peek_contextual_keyword("as")
-                    || self
-                        .peek()
-                        .is_some_and(is_typescript_as_assertion_type_stop))
+                    || self.peek_contextual_keyword("satisfies")
+                    || self.peek().is_some_and(is_typescript_expression_type_stop))
             {
                 return Ok(());
             }
 
             if at_top_level
                 && !consumed_type_token
-                && self
-                    .peek()
-                    .is_some_and(is_typescript_as_assertion_type_stop)
+                && self.peek().is_some_and(is_typescript_expression_type_stop)
             {
                 break;
             }
@@ -2319,8 +2328,8 @@ impl Parser {
         } else {
             Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "expected TypeScript type after `as` assertion".to_owned(),
-                span: Some(as_span),
+                message: format!("expected TypeScript type after `{keyword}`"),
+                span: Some(keyword_span),
             })
         }
     }
@@ -2787,7 +2796,7 @@ fn is_super_call_statement(stmt: &Stmt) -> bool {
     )
 }
 
-fn is_typescript_as_assertion_type_stop(token: &Token) -> bool {
+fn is_typescript_expression_type_stop(token: &Token) -> bool {
     matches!(
         token,
         Token::Semicolon
@@ -3196,6 +3205,32 @@ mod tests {
             panic!("expected let statement");
         };
         assert!(matches!(chained, Expr::Array { .. }));
+    }
+
+    #[test]
+    fn parses_typescript_satisfies_expressions_as_erased_syntax() {
+        let source = r#"
+            let value = { x: 3 } satisfies { x: number };
+            let nested = ({ x: value.x } satisfies { x: number });
+            let chained = value satisfies { x: number } as unknown;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 3);
+
+        let Stmt::Let { expr: value, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(value, Expr::Object { .. }));
+
+        let Stmt::Let { expr: nested, .. } = &program[1] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(nested, Expr::Object { .. }));
+
+        let Stmt::Let { expr: chained, .. } = &program[2] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(chained, Expr::Ident { name, .. } if name == "value"));
     }
 
     #[test]

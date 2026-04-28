@@ -249,6 +249,33 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `mise run check`
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
+2026-04-28 progress evidence (satisfies-erasure slice):
+
+- Implemented a narrow parser-only TypeScript `satisfies` expression erasure slice for expressions such as `expr satisfies Type`.
+- `satisfies` type operands are consumed before AST/lowering, so dump `--ast --unparse` and build output preserve only the runtime expression.
+- Added fixture `fixtures/basics-types/satisfies-erasure.ts`.
+- Added frontend parser coverage for erased `satisfies` expressions with object type operands and chained existing `as` erasure.
+- Added CLI coverage showing dump unparse erases `satisfies` expressions and build accepts the fixture.
+- Validation passed:
+  - pre-change reproducer before implementation: `cargo run -q -p ts2wasm-cli -- dump --ast --unparse /tmp/ts2wasm-059-satisfies-erasure-probe.ts` failed with `expected Semicolon, got Some(Ident("satisfies"))`
+  - `cargo test -p ts2wasm-frontend parses_typescript_satisfies_expressions_as_erased_syntax -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_typescript_satisfies_expressions -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli build_accepts_erasable_typescript_satisfies_expressions -- --nocapture`
+  - `cargo fmt --all --check`
+  - `cargo nextest run -p ts2wasm-frontend`
+  - `cargo nextest run -p ts2wasm-cli --test dump_cli`
+  - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse fixtures/basics-types/satisfies-erasure.ts`
+  - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse /tmp/ts2wasm-059-satisfies-erasure-probe.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/satisfies-erasure.ts -o /tmp/ts2wasm-059-satisfies-erasure.wasm`
+  - `iwasm /tmp/ts2wasm-059-satisfies-erasure.wasm` (stdout: `3`)
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Validation not clean due unrelated pre-existing local-report references:
+  - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
+  - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+- Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
