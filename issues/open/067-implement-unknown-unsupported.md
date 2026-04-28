@@ -93,6 +93,7 @@ Follow-up issues:
 
 2026-04-28 child progress (`067-string-annexb-diagnostics-20260428T051924Z`):
 
+- Commit: `3071f1cb44e51bbac0e264e8bee4de4d4bd7f1c6`
 - Added a narrow issue-linked diagnostic for string-literal calls to Annex B `String.prototype.anchor`, `fontcolor`, `fontsize`, `link`, and `substr`.
 - Added `fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts` to cover `String.prototype.anchor`.
 - Classified `/built-ins/String/` reference diagnostics and `String.prototype` diagnostic text as `string-builtin` instead of `unknown-unsupported` in CLI reference harnesses.

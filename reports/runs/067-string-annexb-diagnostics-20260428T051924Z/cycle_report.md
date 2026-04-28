@@ -4,6 +4,8 @@
 
 PROGRESS on issue 067. The issue remains open because this completed only the assigned narrow Annex B string builtin diagnostic/classification slice.
 
+Commit: `3071f1cb44e51bbac0e264e8bee4de4d4bd7f1c6`
+
 ## Changes
 
 - Added issue-linked `UnsupportedSyntax` diagnostics for string-literal calls to unsupported Annex B string methods: `anchor`, `fontcolor`, `fontsize`, `link`, and `substr`.

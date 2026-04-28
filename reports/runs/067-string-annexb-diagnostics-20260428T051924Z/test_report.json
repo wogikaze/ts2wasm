@@ -13,7 +13,12 @@
       "reports/runs/067-string-annexb-diagnostics-20260428T051924Z/cycle_report.md",
       "reports/runs/067-string-annexb-diagnostics-20260428T051924Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "3071f1cb44e51bbac0e264e8bee4de4d4bd7f1c6",
+        "message": "issue-067: classify Annex B string diagnostics"
+      }
+    ]
   },
   "commands": [
     {
