@@ -1,0 +1,44 @@
+{
+  "username": "ts2wasm-dev-loop",
+  "embeds": [
+    {
+      "title": "ts2wasm child worker report",
+      "color": 5814783,
+      "fields": [
+        {
+          "name": "status",
+          "value": "PROGRESS issue=237",
+          "inline": false
+        },
+        {
+          "name": "branch",
+          "value": "agent/237-annexb-ishtmldda-classification-20260428T103441Z",
+          "inline": false
+        },
+        {
+          "name": "implementation",
+          "value": "ebe283ea2ce84aa3cec3501877ab10ae3a1ccce8 issue-237: classify IsHTMLDDA host hook",
+          "inline": false
+        },
+        {
+          "name": "validation",
+          "value": "fmt, focused IR/CLI tests, reference logical-assignment path filter, issue health, agent state, and repo smoke passed. Full nextest deferred because issue remains open.",
+          "inline": false
+        },
+        {
+          "name": "report",
+          "value": "reports/runs/237-annexb-ishtmldda-classification-20260428T103441Z/cycle_report.md",
+          "inline": false
+        },
+        {
+          "name": "reporting",
+          "value": "DEFERRED: DISCORD_WEBHOOK_URL is not configured in environment or .env.",
+          "inline": false
+        }
+      ],
+      "footer": {
+        "text": "run: 237-annexb-ishtmldda-classification-20260428T103441Z"
+      }
+    }
+  ]
+}

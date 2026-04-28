@@ -140,6 +140,14 @@ fn logical_assignment_unsupported_targets_report_issue_236() {
 }
 
 #[test]
+fn annexb_ishtmldda_host_hook_reports_issue_237() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/annexb-ishtmldda-unsupported.ts",
+        "issue-237: Annex B [[IsHTMLDDA]] test262 host hook `$262.IsHTMLDDA` is not modeled",
+    );
+}
+
+#[test]
 fn for_await_of_unsupported_reports_issue_230() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/for-await-of-unsupported.ts",
