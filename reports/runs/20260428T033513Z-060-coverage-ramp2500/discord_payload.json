@@ -1,0 +1,19 @@
+{
+  "run_id": "20260428T033513Z-060-coverage-ramp2500",
+  "agent_id": "060-coverage-ramp2500-20260428T033000Z",
+  "issue": "060",
+  "branch": "agent/060-coverage-ramp2500-20260428T033000Z",
+  "status": "PROGRESS",
+  "commit": "see final PARENT_EVENT for branch HEAD",
+  "summary": "Expanded stored test262 coverage from limit 2000 to 2500 with unknown-unsupported=0; no classifier changes required.",
+  "validation": [
+    "reference-coverage test262 --limit 2500 --detail: pass, unknown-unsupported=0",
+    "reference-coverage test262 --limit 2500 --json: pass, stored artifact has blocked=0",
+    "scripts/manager update-coverage-matrix: pass",
+    "scripts/manager update-issue-index: pass",
+    "scripts/manager check-issue-health: pass",
+    "scripts/manager check-agent-state: pass",
+    "scripts/manager update-coverage-matrix --check: pass"
+  ],
+  "reporting": "deferred: DISCORD_WEBHOOK_URL is not configured"
+}

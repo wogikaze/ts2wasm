@@ -324,6 +324,31 @@ result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 
 This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
+2026-04-28 child coverage ramp2500 continuation:
+
+- Expanded the stored test262 coverage window from limit 2000 to limit 2500.
+- The limit-2500 window had zero `unknown-unsupported` entries; no classifier changes or new follow-up issues were required for this slice.
+- The detail run reported the known transient blocked timeout for `annexB/built-ins/Array/from/iterator-method-emulates-undefined.js`; a targeted rerun classified that case as `array-builtin`, and the stored JSON artifact has `blocked=0`.
+- Refreshed `artifacts/coverage/results/test262.json`, `artifacts/coverage/reference-coverage-matrix.md`, and `current-state.md`.
+
+Validated classification commands:
+
+```text
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 2500 --detail
+result: pass; unsupported_features=array-builtin:969,name-resolution:573,eval:461,parser-syntax:188,function:127,string-builtin:63,regexp-literal:53,date:16,legacy-global-builtin:16,builtin-api:14,duplicate-local:7,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
+result: pass; unsupported_features=array-builtin:1; blocked=0; unknown-unsupported=0
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 2500 --json > artifacts/coverage/results/test262.json
+result: pass; stored artifacts/coverage/results/test262.json with executed=2500, unsupported=2500, blocked=0, unknown-unsupported=0
+
+scripts/manager update-coverage-matrix
+result: pass; artifacts/coverage/reference-coverage-matrix.md updated
+```
+
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
