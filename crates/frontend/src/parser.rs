@@ -1363,7 +1363,7 @@ impl Parser {
                     else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-228: member logical assignment currently supports only identifier object targets".to_owned(),
+                            message: "issue-236: member logical assignment currently supports only identifier object targets".to_owned(),
                             span: Some(target_span),
                         });
                     };
@@ -1390,7 +1390,7 @@ impl Parser {
                     else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-228: computed logical assignment currently supports only identifier object targets".to_owned(),
+                            message: "issue-236: computed logical assignment currently supports only identifier object targets".to_owned(),
                             span: Some(target_span),
                         });
                     };
@@ -1400,7 +1400,7 @@ impl Parser {
                     else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-228: computed logical assignment currently supports only string literal keys".to_owned(),
+                            message: "issue-236: computed logical assignment currently supports only string literal keys".to_owned(),
                             span: Some(target_span),
                         });
                     };
@@ -1421,7 +1421,7 @@ impl Parser {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-228: logical assignment currently supports only identifier, member, and string-literal computed member targets"
+                    "issue-236: logical assignment currently supports only identifier, member, and string-literal computed member targets"
                         .to_owned(),
                 span: Some(target_span),
             });
