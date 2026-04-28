@@ -127,6 +127,50 @@ Remaining work before close:
 - default import, namespace import, re-export declarations, export default, and declaration exports still need full parser AST coverage or narrower follow-up split.
 - fixtures under `fixtures/module-system/` were not converted in this subset.
 
+2026-04-28 child worker `231-static-esm-cont-20260428T055606Z` completed a parser-only continuation:
+
+- Added frontend AST representation for standalone default imports with local binding, module specifier, and span preservation.
+- Parsed `import value from "./module-source";` into `Stmt::ImportDefault`.
+- Kept combined default imports with additional bindings, namespace imports, re-exports, dynamic import, and other unsupported module forms issue-linked.
+- Added downstream unsupported guards so parsed default imports still stop before module graph, resolver, lowering, backend, or runtime semantics.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (41 tests)
+cargo nextest run -p ts2wasm-cli static_default_import_reports_issue_055 static_named_import_reports_issue_055 static_named_export_reports_issue_055: PASS (3 tests)
+cargo check --workspace: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
+Remaining work before close:
+
+- namespace import, re-export declarations, export default, combined default+named/default+namespace imports, and declaration exports still need parser AST coverage or narrower follow-up split.
+- fixtures under `fixtures/module-system/` were not converted in this subset.
+
+2026-04-28 child worker `231-namespace-import-20260428T060834Z` completed a parser-only namespace import continuation:
+
+- Added frontend AST representation for standalone namespace imports with local namespace binding, module specifier, and span preservation.
+- Parsed `import * as ns from "./module-source";` into `Stmt::ImportNamespace`.
+- Kept combined default+namespace/default+named imports, re-exports, dynamic import, and other unsupported module forms issue-linked.
+- Added downstream unsupported guards so parsed namespace imports still stop before module graph, resolver, lowering, backend, or runtime semantics.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (41 tests)
+cargo nextest run -p ts2wasm-cli static_namespace_import_reports_issue_055 static_default_import_reports_issue_055 static_named_import_reports_issue_055 static_named_export_reports_issue_055: PASS (4 tests)
+cargo check --workspace: PASS
+```
+
+Remaining work before close:
+
+- re-export declarations, export default, combined default+named/default+namespace imports, and declaration exports still need parser AST coverage or narrower follow-up split.
+- fixtures under `fixtures/module-system/` were not converted in this subset.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

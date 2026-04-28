@@ -79,12 +79,13 @@ pub(crate) fn wat_bytes(bytes: &[u8]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{emit_canonical_manifest_json, emit_wat};
+    use super::{emit_canonical_manifest_json, emit_wat, emitter::LocalFrame};
     use ts2wasm_frontend::DiagCode;
     use ts2wasm_ir::lowered::{
         ClassPrototypeRef, FuncId, FunctionCallKind, LocalId, LoweredBinaryOp, LoweredExpr,
         LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
     };
+    use ts2wasm_runtime_abi::Layout;
 
     #[test]
     fn emit_wat_rejects_residual_method_call_before_emission() {
@@ -215,11 +216,18 @@ mod tests {
         };
 
         let wat = emit_wat(&program).expect("top-level local root should emit WAT");
+        let backend_root_count = LocalFrame::new(0, None).backend_local_count();
+        let root_count = program.top_level_locals.len() + backend_root_count;
+        let root_bytes = root_count * std::mem::size_of::<u32>();
 
         assert!(wat.contains("(global $gc_root_base (mut i32) (i32.const 0))"));
         assert!(wat.contains("(global $gc_root_count (mut i32) (i32.const 0))"));
-        assert!(wat.contains("(global.set $gc_root_count (i32.const 4))"));
-        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 16)))"));
+        assert!(wat.contains(&format!(
+            "(global.set $gc_root_count (i32.const {root_count}))"
+        )));
+        assert!(wat.contains(&format!(
+            "(global.set $gc_root_base (call $alloc_heap (i32.const {root_bytes})))"
+        )));
         assert!(wat.contains(
             "(i32.store (i32.add (global.get $gc_root_base) (i32.const 0)) (local.get 0))"
         ));
@@ -253,23 +261,41 @@ mod tests {
         };
 
         let wat = emit_wat(&program).expect("function local root should emit WAT");
+        let backend_root_count = LocalFrame::new(0, None).backend_local_count();
+        let static_root_bytes = backend_root_count * std::mem::size_of::<u32>();
+        let root_bytes = static_root_bytes + Layout::GC_CALL_FRAME_ROOT_STACK_BYTES as usize;
+        let activation_root_count = program.functions[0].locals.len() + backend_root_count;
+        let activation_frame_bytes = Layout::GC_CALL_FRAME_HEADER_SIZE as usize
+            + activation_root_count * std::mem::size_of::<u32>();
+        let backend_last_local = activation_root_count - 1;
+        let backend_last_offset = Layout::GC_CALL_FRAME_HEADER_SIZE as usize
+            + backend_last_local * std::mem::size_of::<u32>();
 
         assert!(wat.contains("(global $gc_call_frame_current (mut i32) (i32.const 0))"));
-        assert!(wat.contains("(global.set $gc_root_count (i32.const 3))"));
-        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 16396)))"));
-        assert!(wat.contains(
-            "(global.set $gc_call_frame_base (i32.add (global.get $gc_root_base) (i32.const 12)))"
-        ));
+        assert!(wat.contains(&format!(
+            "(global.set $gc_root_count (i32.const {backend_root_count}))"
+        )));
+        assert!(wat.contains(&format!(
+            "(global.set $gc_root_base (call $alloc_heap (i32.const {root_bytes})))"
+        )));
+        assert!(wat.contains(&format!(
+            "(global.set $gc_call_frame_base (i32.add (global.get $gc_root_base) (i32.const {static_root_bytes})))"
+        )));
         assert!(
             wat.contains("(global.set $gc_call_frame_current (global.get $gc_call_frame_top))")
         );
-        assert!(wat.contains("(global.set $gc_call_frame_top (i32.add (global.get $gc_call_frame_top) (i32.const 24)))"));
+        assert!(wat.contains(&format!(
+            "(global.set $gc_call_frame_top (i32.add (global.get $gc_call_frame_top) (i32.const {activation_frame_bytes})))"
+        )));
         assert!(wat.contains(
             "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 8)) (local.get 0))"
         ));
         assert!(wat.contains(
             "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 12)) (local.get 1))"
         ));
+        assert!(wat.contains(&format!(
+            "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const {backend_last_offset})) (local.get {backend_last_local}))"
+        )));
         assert!(wat.contains("(call $gc_mark_call_frame_roots"));
         assert!(
             wat.contains("(global.set $gc_call_frame_top (global.get $gc_call_frame_current))")

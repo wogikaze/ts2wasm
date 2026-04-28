@@ -198,6 +198,13 @@ fn json_parse_incomplete_object_rejected_under_node_and_iwasm() {
 }
 
 #[test]
+fn json_parse_invalid_literal_rejected_under_node_and_iwasm() {
+    assert_fixture_rejected_by_node_and_iwasm(
+        "fixtures/builtins-and-io/json-parse-invalid-literal.ts",
+    );
+}
+
+#[test]
 fn json_stringify_replacer_unsupported_forms_report_issue_052() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts",
