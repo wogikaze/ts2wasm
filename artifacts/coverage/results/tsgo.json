@@ -2,40 +2,43 @@
   "suite": "tsgo",
   "suite_name": "tsgo",
   "denominator": 166,
-  "executed": 82,
-  "build_coverage_percent": "2.41",
+  "executed": 100,
+  "build_coverage_percent": "3.01",
   "semantic_coverage_percent": "1.81",
-  "build_pass": 4,
+  "build_pass": 5,
   "semantic_pass": 3,
   "fail": 0,
-  "unsupported": 78,
+  "unsupported": 95,
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 78
+    "UnsupportedSyntax": 94,
+    "UnresolvedName": 1
   },
   "unsupported_features": {
-    "import-export": 17,
+    "import-export": 20,
     "type-assertion": 3,
     "class": 6,
     "module-resolution": 4,
     "destructuring": 2,
     "scope-analysis": 1,
-    "parser-syntax": 10,
-    "type-system": 6,
-    "enum": 1,
-    "jsx": 3,
+    "parser-syntax": 13,
+    "type-system": 7,
+    "enum": 3,
+    "jsx": 8,
     "declaration-emit": 16,
     "module-system-amd": 1,
     "jsdoc": 2,
-    "decorator": 2,
+    "decorator": 3,
     "object-literal": 2,
-    "type-alias": 2
+    "type-alias": 2,
+    "name-resolution": 1,
+    "class-accessor": 1
   },
   "status": "in-progress",
   "selection": {
     "paths_file": null,
     "path_filters": []
   },
-  "evidence": "python scripts/manager.py reference-coverage tsgo --limit 82"
+  "evidence": "python scripts/manager.py reference-coverage tsgo --limit 100"
 }

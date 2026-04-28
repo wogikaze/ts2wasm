@@ -168,6 +168,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | feature | frontend | design-ready | P1 |  | Implement Compiler |
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
+| 224 | Implement Annex B HTML-like comments | feature | frontend | design-ready | P3 |  | Implement Annex B HTML-like comments |
+| 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 <!-- generated:ready:end -->
 
 ## Blocked queue
