@@ -508,6 +508,9 @@ impl WatEmitter<'_> {
                         for arg in args {
                             self.emit_expr(wat, arg, indent, frame);
                         }
+                        for _ in (args.len() + 1)..func.params.len() {
+                            wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                        }
                     }
                 }
                 wat.push_str(&format!("{pad}(call ${})\n", function_symbol(*constructor)));

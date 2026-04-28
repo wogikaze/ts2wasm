@@ -1,0 +1,8 @@
+{
+  "run_id": "20260428T0226-issue-226-parameter-properties",
+  "issue": 226,
+  "branch": "agent/226-parameter-properties-20260428T014053Z",
+  "status": "DONE",
+  "summary": "Implemented TypeScript constructor parameter properties and validated tsgo parameterPropertyWithDefaultValue references as build_pass.",
+  "webhook": "deferred: no safe webhook configuration was used by this child worker"
+}
