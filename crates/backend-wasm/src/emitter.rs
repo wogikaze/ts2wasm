@@ -480,6 +480,13 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(key);
                 self.collect_expr_strings(expr);
             }
+            LoweredExpr::LogicalComputedMemberAssign {
+                object, key, expr, ..
+            } => {
+                self.collect_expr_strings(object);
+                self.collect_expr_strings(key);
+                self.collect_expr_strings(expr);
+            }
             LoweredExpr::Binary { left, right, .. } => {
                 self.collect_expr_strings(left);
                 self.collect_expr_strings(right);
@@ -958,6 +965,13 @@ impl<'a> WatEmitter<'a> {
                 self.collect_class_prototypes_from_expr(key, prototypes);
                 self.collect_class_prototypes_from_expr(expr, prototypes);
             }
+            LoweredExpr::LogicalComputedMemberAssign {
+                object, key, expr, ..
+            } => {
+                self.collect_class_prototypes_from_expr(object, prototypes);
+                self.collect_class_prototypes_from_expr(key, prototypes);
+                self.collect_class_prototypes_from_expr(expr, prototypes);
+            }
             LoweredExpr::Number(_)
             | LoweredExpr::String(_)
             | LoweredExpr::Bool(_)
@@ -1052,6 +1066,13 @@ impl<'a> WatEmitter<'a> {
                 self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+                self.collect_builtin_error_prototypes_from_expr(key, prototypes);
+                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::LogicalComputedMemberAssign {
+                object, key, expr, ..
+            } => {
+                self.collect_builtin_error_prototypes_from_expr(object, prototypes);
                 self.collect_builtin_error_prototypes_from_expr(key, prototypes);
                 self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
