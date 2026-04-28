@@ -220,6 +220,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-stringify-nested-object.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array.ts",
         "fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts",
+        "fixtures/builtins-and-io/json-stringify-space-boxed-symbol.ts",
         "fixtures/builtins-and-io/json-stringify-space-boolean.ts",
         "fixtures/builtins-and-io/json-stringify-space-object-function.ts",
         "fixtures/builtins-and-io/json-stringify-space.ts",
