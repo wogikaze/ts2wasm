@@ -726,6 +726,17 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
     }
 }
 
+fn unsupported_annex_b_string_method(method: &str, span: Span) -> Option<Diagnostic> {
+    match method {
+        "anchor" | "fontcolor" | "fontsize" | "link" | "substr" => Some(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("issue-067: Annex B String.prototype.{method} is not supported yet"),
+            span: Some(span),
+        }),
+        _ => None,
+    }
+}
+
 fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'static str> {
     match (class_name, method) {
         ("Map", "get") => Some("MapGet"),
@@ -1771,6 +1782,28 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "DateGetTime".to_owned(),
                         args: vec![self.lower_expr(object)?],
                     })
+                } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
+                    if let Some(diagnostic) = unsupported_annex_b_string_method(method, *span) {
+                        Err(diagnostic)
+                    } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                        let mut lowered_args = vec![self.lower_expr(object)?];
+                        lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<
+                            Result<Vec<_>, _>,
+                        >(
+                        )?);
+                        Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn,
+                            args: lowered_args,
+                        })
+                    } else {
+                        Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "String.prototype.{method} is not supported in this milestone"
+                            ),
+                            span: Some(*span),
+                        })
+                    }
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
