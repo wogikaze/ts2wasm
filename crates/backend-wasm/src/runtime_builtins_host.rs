@@ -399,6 +399,86 @@ impl WatEmitter<'_> {
       (then (unreachable)))
     (local.get $value))
 
+  (func $json_hex_value (param $ch i32) (result i32)
+    (if
+      (i32.and
+        (i32.ge_u (local.get $ch) (i32.const {ascii_zero}))
+        (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+      (then
+        (return (i32.sub (local.get $ch) (i32.const {ascii_zero})))))
+    (if
+      (i32.and
+        (i32.ge_u (local.get $ch) (i32.const {ascii_upper_a}))
+        (i32.le_u (local.get $ch) (i32.const {ascii_upper_f})))
+      (then
+        (return
+          (i32.add
+            (i32.sub (local.get $ch) (i32.const {ascii_upper_a}))
+            (i32.const {ten})))))
+    (if
+      (i32.and
+        (i32.ge_u (local.get $ch) (i32.const {ascii_lower_a}))
+        (i32.le_u (local.get $ch) (i32.const {ascii_lower_f})))
+      (then
+        (return
+          (i32.add
+            (i32.sub (local.get $ch) (i32.const {ascii_lower_a}))
+            (i32.const {ten})))))
+    (i32.const -1))
+
+  (func $json_parse_unicode_escape_byte (param $obj i32) (param $len i32) (param $pos i32) (result i32)
+    (local $d0 i32)
+    (local $d1 i32)
+    (local $d2 i32)
+    (local $d3 i32)
+    (local $code i32)
+    (if (i32.gt_u (i32.add (local.get $pos) (i32.const 4)) (local.get $len))
+      (then (return (i32.const -1))))
+    (local.set $d0
+      (call $json_hex_value
+        (i32.load8_u
+          (i32.add
+            (i32.add (local.get $obj) (i32.const {str_header}))
+            (local.get $pos)))))
+    (local.set $d1
+      (call $json_hex_value
+        (i32.load8_u
+          (i32.add
+            (i32.add (local.get $obj) (i32.const {str_header}))
+            (i32.add (local.get $pos) (i32.const {one}))))))
+    (local.set $d2
+      (call $json_hex_value
+        (i32.load8_u
+          (i32.add
+            (i32.add (local.get $obj) (i32.const {str_header}))
+            (i32.add (local.get $pos) (i32.const 2))))))
+    (local.set $d3
+      (call $json_hex_value
+        (i32.load8_u
+          (i32.add
+            (i32.add (local.get $obj) (i32.const {str_header}))
+            (i32.add (local.get $pos) (i32.const 3))))))
+    (if
+      (i32.or
+        (i32.or
+          (i32.lt_s (local.get $d0) (i32.const {zero}))
+          (i32.lt_s (local.get $d1) (i32.const {zero})))
+        (i32.or
+          (i32.lt_s (local.get $d2) (i32.const {zero}))
+          (i32.lt_s (local.get $d3) (i32.const {zero}))))
+      (then (return (i32.const -1))))
+    (local.set $code
+      (i32.add
+        (i32.add
+          (i32.shl (local.get $d0) (i32.const 12))
+          (i32.shl (local.get $d1) (i32.const 8)))
+        (i32.add
+          (i32.shl (local.get $d2) (i32.const 4))
+          (local.get $d3))))
+    (if (i32.gt_u (local.get $code) (i32.const {ascii_max}))
+      (then (return (i32.const -1))))
+    (local.get $code))
+
   (func $json_parse_string (param $obj i32) (param $len i32) (param $pos i32) (result i32)
     (local $start i32)
     (local $out_len i32)
@@ -428,24 +508,36 @@ impl WatEmitter<'_> {
                 (i32.add
                   (i32.add (local.get $obj) (i32.const {str_header}))
                   (local.get $pos))))
-            (if
-              (i32.eqz
-                (i32.or
-                  (i32.or
+            (if (i32.eq (local.get $ch) (i32.const {ascii_u}))
+              (then
+                (if
+                  (i32.lt_s
+                    (call $json_parse_unicode_escape_byte
+                      (local.get $obj)
+                      (local.get $len)
+                      (i32.add (local.get $pos) (i32.const {one})))
+                    (i32.const {zero}))
+                  (then (return (i32.const {undefined}))))
+                (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
+              (else
+                (if
+                  (i32.eqz
                     (i32.or
-                      (i32.eq (local.get $ch) (i32.const {quote}))
-                      (i32.eq (local.get $ch) (i32.const {backslash})))
-                    (i32.or
-                      (i32.eq (local.get $ch) (i32.const {slash}))
-                      (i32.eq (local.get $ch) (i32.const {ascii_b}))))
-                  (i32.or
-                    (i32.or
-                      (i32.eq (local.get $ch) (i32.const {ascii_f}))
-                      (i32.eq (local.get $ch) (i32.const {ascii_n})))
-                    (i32.or
-                      (i32.eq (local.get $ch) (i32.const {ascii_r}))
-                      (i32.eq (local.get $ch) (i32.const {ascii_t}))))))
-              (then (return (i32.const {undefined}))))))
+                      (i32.or
+                        (i32.or
+                          (i32.eq (local.get $ch) (i32.const {quote}))
+                          (i32.eq (local.get $ch) (i32.const {backslash})))
+                        (i32.or
+                          (i32.eq (local.get $ch) (i32.const {slash}))
+                          (i32.eq (local.get $ch) (i32.const {ascii_b}))))
+                      (i32.or
+                        (i32.or
+                          (i32.eq (local.get $ch) (i32.const {ascii_f}))
+                          (i32.eq (local.get $ch) (i32.const {ascii_n})))
+                        (i32.or
+                          (i32.eq (local.get $ch) (i32.const {ascii_r}))
+                          (i32.eq (local.get $ch) (i32.const {ascii_t}))))))
+                  (then (return (i32.const {undefined}))))))))
         (local.set $out_len (i32.add (local.get $out_len) (i32.const {one})))
         (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
         (br $scan)))
@@ -470,16 +562,27 @@ impl WatEmitter<'_> {
                   (i32.add (local.get $obj) (i32.const {str_header}))
                   (local.get $pos))))
             (local.set $store_ch (local.get $ch))
-            (if (i32.eq (local.get $ch) (i32.const {ascii_b}))
-              (then (local.set $store_ch (i32.const {backspace}))))
-            (if (i32.eq (local.get $ch) (i32.const {ascii_f}))
-              (then (local.set $store_ch (i32.const {formfeed}))))
-            (if (i32.eq (local.get $ch) (i32.const {ascii_n}))
-              (then (local.set $store_ch (i32.const {newline}))))
-            (if (i32.eq (local.get $ch) (i32.const {ascii_r}))
-              (then (local.set $store_ch (i32.const {carriage}))))
-            (if (i32.eq (local.get $ch) (i32.const {ascii_t}))
-              (then (local.set $store_ch (i32.const {tab}))))))
+            (if (i32.eq (local.get $ch) (i32.const {ascii_u}))
+              (then
+                (local.set $store_ch
+                  (call $json_parse_unicode_escape_byte
+                    (local.get $obj)
+                    (local.get $len)
+                    (i32.add (local.get $pos) (i32.const {one}))))
+                (if (i32.lt_s (local.get $store_ch) (i32.const {zero}))
+                  (then (return (i32.const {undefined}))))
+                (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
+              (else
+                (if (i32.eq (local.get $ch) (i32.const {ascii_b}))
+                  (then (local.set $store_ch (i32.const {backspace}))))
+                (if (i32.eq (local.get $ch) (i32.const {ascii_f}))
+                  (then (local.set $store_ch (i32.const {formfeed}))))
+                (if (i32.eq (local.get $ch) (i32.const {ascii_n}))
+                  (then (local.set $store_ch (i32.const {newline}))))
+                (if (i32.eq (local.get $ch) (i32.const {ascii_r}))
+                  (then (local.set $store_ch (i32.const {carriage}))))
+                (if (i32.eq (local.get $ch) (i32.const {ascii_t}))
+                  (then (local.set $store_ch (i32.const {tab}))))))))
         (i32.store8
           (i32.add
             (i32.add (local.get $result_ptr) (i32.const {str_header}))
@@ -1082,6 +1185,11 @@ impl WatEmitter<'_> {
             rbracket = 93,
             ascii_zero = RuntimeConst::ASCII_ZERO,
             ascii_nine = 57,
+            ascii_upper_a = 65,
+            ascii_upper_f = 70,
+            ascii_lower_a = 97,
+            ascii_lower_f = 102,
+            ascii_max = 127,
             ascii_b = 98,
             ascii_e = 101,
             ascii_E = 69,
@@ -1089,6 +1197,7 @@ impl WatEmitter<'_> {
             ascii_n = 110,
             ascii_r = 114,
             ascii_t = 116,
+            ascii_u = 117,
             backspace = 8,
             formfeed = 12,
             space = 32,
