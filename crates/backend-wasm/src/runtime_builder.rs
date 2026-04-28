@@ -16,6 +16,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::Write => self.emit_write(wat),
                 RuntimeFn::Copy => self.emit_copy(wat),
                 RuntimeFn::ValueToStringInto => self.emit_value_to_string_into(wat),
+                RuntimeFn::ErrorMessage => self.emit_error_message(wat),
                 RuntimeFn::Log => self.emit_log(wat),
                 RuntimeFn::TruthyBool => self.emit_truthy_bool(wat),
                 RuntimeFn::Not => self.emit_not(wat),
