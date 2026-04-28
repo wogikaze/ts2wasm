@@ -2,7 +2,7 @@
   "run_id": "052-json-stringify-nested-object-20260428T050359Z",
   "task_id": "052",
   "git": {
-    "sha": "c052d5a",
+    "sha": "bc15c89",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/emitter.rs",
@@ -13,7 +13,12 @@
       "reports/runs/052-json-stringify-nested-object-20260428T050359Z/test_report.json",
       "reports/runs/052-json-stringify-nested-object-20260428T050359Z/cycle_report.md"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "bc15c89",
+        "message": "Fix JSON.stringify nested literal values"
+      }
+    ]
   },
   "commands": [
     {
