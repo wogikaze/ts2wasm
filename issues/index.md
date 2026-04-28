@@ -18,7 +18,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 021 | Implement full wasm backend | feature | backend | implementation-ready | P2 | 008, 020 | Full wasm backend is not implemented. Current implementation is WAT-centric. docs/04 specifies initial linear memory ... |
-| 022 | Expand test262 differential coverage | feature | tests/coverage | implementation-ready | P1 | 005 | test262 full differential operation is incomplete. Current coverage uses sample/ramp approach. docs/11 Gate D require... |
 | 045 | Implement class declaration and expression | feature | frontend/semantics | implementation-ready | P1 |  | Implement class declaration and expression |
 | 049 | Implement Map and Set | feature | runtime/builtins | implementation-ready | P1 |  | Implement Map and Set |
 | 050 | Implement Date | feature | runtime/builtins | implementation-ready | P1 |  | Implement Date |
@@ -214,6 +213,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 020a | Design JavaScript semantic IR | feature | ir/semantics | see file |
 | 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | see file |
 | 020c | Add IR validation passes and document contracts | feature | ir/semantics | see file |
+| 022 | Expand test262 differential coverage | feature | tests/coverage | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |

@@ -1,0 +1,76 @@
+suite=test262
+denominator=53445
+executed=60
+coverage_percent=0.11
+semantic_coverage_percent=0.11
+build_pass=60
+semantic_pass=60
+fail=0
+unsupported=0
+blocked=0
+skip_with_reason=0
+unsupported_diagcodes=
+unsupported_features=
+semantic_enabled=1
+
+# Per-file details
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/asi/S7.9_A6.1_T1.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/asi/S7.9_A6.1_T2.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/asi/S7.9_A6.1_T3.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/asi/S7.9_A6.1_T4.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/asi/S7.9_A6.1_T5.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/comments/S7.4_A1_T2.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/comments/S7.4_A4_T2.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/comments/S7.4_A4_T3.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/comments/S7.4_A4_T5.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/comments/S7.4_A4_T6.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/comments/S7.4_A4_T7.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/expressions/dynamic-import/catch/empty_FIXTURE.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/expressions/dynamic-import/empty_FIXTURE.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/expressions/dynamic-import/namespace/empty_FIXTURE.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/expressions/dynamic-import/syntax/valid/empty_FIXTURE.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/abstract.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/boolean.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/byte.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/char.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/double.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/final.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/float.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/goto.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/int.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/long.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/native.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/short.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/synchronized.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/transient.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/future-reserved-words/volatile.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/module-code/ambiguous-export-bindings/namespace-empty-module_FIXTURE.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/module-code/top-level-await/dynamic-import-of-waiting-module-2_FIXTURE.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/statements/const/syntax/with-initializer-case-expression-statement-list.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/statements/const/syntax/with-initializer-default-statement-list.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/statements/let/syntax/with-initialisers-in-statement-positions-case-expression-statement-list.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/statements/let/syntax/with-initialisers-in-statement-positions-default-statement-list.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/types/null/S8.2_A1_T1.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/types/null/S8.2_A1_T2.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/types/undefined/S8.1_A1_T1.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-carriage-return.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-em-quad.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-em-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-en-quad.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-en-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-figure-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-form-feed.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-four-per-em-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-hair-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-ideographic-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-line-feed.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-line-separator.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-medium-mathematical-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-nbsp.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-nnbsp.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-ogham-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-paragraph-separator.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-punctuation-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-six-per-em-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-space.js: build_pass
+/home/wogikaze/wgkz/arukellt-022-coverage-evidence-20260428T100000Z/reference/test262/test/language/white-space/after-regular-expression-literal-tab.js: build_pass

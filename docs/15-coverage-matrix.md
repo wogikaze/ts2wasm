@@ -10,6 +10,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 - coverage 行は reference suite 単位で更新する（test262、TypeScript tests、typescript-go など）。
 - 分母は原則 `reference/<suite>` 配下のファイル数またはテストケース数で固定し、算出コマンドを `evidence` に残す。
 - 分子は `build_pass` と `semantic_pass` を別列で記録する。`unsupported` / `blocked` / `skip-with-reason` は内訳として別管理し、いずれの coverage% の分子にも含めない。
+- 同一 suite に ramp と deterministic selected subset の両方の証拠がある場合は、canonical suite 行を ramp 証拠として残し、選択条件を明示した追加 evidence 行を同じ generated table に追記する。selected subset 行は `evidence` に `--paths-file` / `--path-filter` を含め、canonical ramp 行を置換しない。
 - gate 判定に影響する変更時は、影響する suite 行の `executed` と status 内訳を同時に更新する。
 - `executed` は段階的に増やす。1 回の更新あたり `test262:+50`、`tsc:+30`、`tsgo:+20` を基本ステップとする。
 - `unsupported (DiagCode breakdown)` と `unsupported (feature breakdown)` 列で優先実装対象を可視化する（例: `UnsupportedSyntax:120`, `class:50,import-export:30`）。

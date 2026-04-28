@@ -74,9 +74,18 @@ def render_row(result: dict, suite_key: str) -> str:
     skip = result.get("skip_with_reason", 0)
     diagcodes = format_diagcodes(result.get("unsupported_diagcodes", {}))
     features = format_features(result.get("unsupported_features", {}))
+    status = result.get("status", "in-progress")
     evidence = result.get("evidence", f"scripts/manager reference-coverage {suite_key} --limit {executed}")
 
-    return f"| {suite_name} | {denominator} | {executed} | {build_cov} | {semantic_cov} | {build_pass} | {semantic_pass} | {fail} | {unsupported} | {blocked} | {skip} | {diagcodes} | {features} | in-progress | `{evidence}` |"
+    return f"| {suite_name} | {denominator} | {executed} | {build_cov} | {semantic_cov} | {build_pass} | {semantic_pass} | {fail} | {unsupported} | {blocked} | {skip} | {diagcodes} | {features} | {status} | `{evidence}` |"
+
+
+def render_result_rows(result: dict, suite_key: str) -> list[str]:
+    """Render the canonical suite row plus optional additive evidence rows."""
+    rows = [render_row(result, suite_key)]
+    for evidence_row in result.get("evidence_rows", []):
+        rows.append(render_row(evidence_row, suite_key))
+    return rows
 
 
 def render_empty_row(suite_key: str, config: dict) -> str:
@@ -92,7 +101,7 @@ def generate_matrix() -> str:
     for suite_key, config in SUITE_CONFIG.items():
         result = load_result(suite_key)
         if result:
-            rows.append(render_row(result, suite_key))
+            rows.extend(render_result_rows(result, suite_key))
         else:
             rows.append(render_empty_row(suite_key, config))
 
@@ -155,6 +164,8 @@ def main() -> int:
     current_content = MATRIX_PATH.read_text(encoding="utf-8")
     new_table = generate_matrix()
     new_content = replace_table(current_content, new_table)
+    if not new_content.endswith("\n"):
+        new_content += "\n"
 
     if args.check:
         if new_content != current_content:
