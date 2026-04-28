@@ -6,7 +6,10 @@ pub mod type_reference_directive;
 pub mod typescript_oracle;
 
 // Re-export commonly used types for convenience
-pub use ast::{BinaryOp, Expr, LogicalAssignOp, Stmt, UnaryOp};
+pub use ast::{
+    BinaryOp, ExportNamedSpecifier, Expr, ImportNamedSpecifier, LogicalAssignOp, ModuleSpecifier,
+    Stmt, UnaryOp,
+};
 pub use diagnostic::{DiagCode, Diagnostic, Span};
 pub use lexer::{Lexer, SpannedToken, Token, TokenKind};
 pub use parser::Parser;
