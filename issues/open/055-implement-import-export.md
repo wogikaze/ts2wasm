@@ -112,6 +112,25 @@ This is a major feature requiring module system design.
 
 Remaining scope: parser representation for supported module declarations, module resolution, module loading, and execution fixtures remain open.
 
+2026-04-28 child slice `055-module-diagnostics-next-20260428T045453Z`:
+
+- Added regression coverage for the already-classified static module diagnostic forms:
+  - side-effect import: `import "./module-source";`
+  - namespace import: `import * as mod from "./module-source";`
+  - default import: `import value from "./module-source";`
+  - re-export: `export * from "./module-source";`
+- Added fixtures:
+  - `fixtures/module-system/static-side-effect-import-unsupported.ts`
+  - `fixtures/module-system/static-namespace-import-unsupported.ts`
+  - `fixtures/module-system/static-default-import-unsupported.ts`
+  - `fixtures/module-system/static-re-export-unsupported.ts`
+- Focused validation:
+  - `cargo nextest run -p ts2wasm-frontend rejects_side_effect_import_with_issue_linked_diagnostic rejects_namespace_import_with_issue_linked_diagnostic rejects_default_import_with_issue_linked_diagnostic rejects_re_export_with_issue_linked_diagnostic` passed.
+  - `cargo nextest run -p ts2wasm-cli static_side_effect_import_reports_issue_055 static_namespace_import_reports_issue_055 static_default_import_reports_issue_055 static_re_export_reports_issue_055` passed.
+  - Direct build checks for all four added fixtures failed as expected with `[UnsupportedSyntax]` and the relevant `issue-055` unsupported form message.
+
+Remaining scope: parser representation for supported module declarations, module resolution, module loading, and execution fixtures remain open.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
