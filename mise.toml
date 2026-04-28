@@ -65,6 +65,10 @@ run = "python scripts/manager.py reference-coverage"
 description = "Generate language coverage report from language-reference (args: --format text|markdown)"
 run = "python scripts/manager.py coverage-report"
 
+[tasks."discord-report"]
+description = "Send or validate a Discord cycle report payload"
+run = "python scripts/manager.py discord-report"
+
 [tasks.benchmark-tracker]
 description = "Append build/fixture performance metrics to JSON"
 run = "python scripts/manager.py benchmark-tracker"
