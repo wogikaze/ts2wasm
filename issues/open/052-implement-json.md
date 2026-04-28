@@ -677,6 +677,28 @@ abcdefghij1
   - `cargo nextest run -p ts2wasm-cli json`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, object/function/symbol `space` ignored-value parity, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.stringify` ignored `space` parity slice for object literal and declared function third arguments.
+- Progress commit: `8f279a5`.
+- IR validation now accepts object literal, inline arrow, and declared function identifier `space` values for `JSON.stringify`; these ignored forms lower to `undefined` for the runtime call so they cannot be misread as numeric gap values.
+- Preserved unsupported replacer diagnostics; the new support applies only to the third `space` argument.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-space-object-function.ts` for:
+  - `JSON.stringify({ a: 1, b: 2 }, null, { gap: 2 })`
+  - `JSON.stringify([1, 2], null, gap)` where `gap` is a declared function.
+- Pre-change reproduction with `/tmp/ts2wasm-json-space-object-function.ts` showed Node printed compact JSON while ts2wasm rejected the source with `UnsupportedSyntax: JSON.stringify space currently supports integer numeric or string values`.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-stringify-space-object-function.ts` prints `{"a":1,"b":2}` and `[1,2]`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space-object-function.ts -o /tmp/ts2wasm-json-stringify-space-object-function.wasm && iwasm /tmp/ts2wasm-json-stringify-space-object-function.wasm` prints the same two lines.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because issue 052 remains open and this was a narrow IR validation/lowering change for `JSON.stringify` `space` arguments.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, symbol and boxed Number/String `space` parity, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
