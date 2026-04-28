@@ -314,6 +314,15 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         } => {
             let _ = writeln!(out, "import {} from '{}';", specifier.local, source.value);
         }
+        Stmt::ImportNamespace {
+            specifier, source, ..
+        } => {
+            let _ = writeln!(
+                out,
+                "import * as {} from '{}';",
+                specifier.local, source.value
+            );
+        }
         Stmt::ExportNamed { specifiers, .. } => {
             let specifiers = specifiers
                 .iter()
