@@ -12,7 +12,12 @@
       "reports/runs/060-coverage-ramp10000-20260428T065856Z/cycle_report.md",
       "reports/runs/060-coverage-ramp10000-20260428T065856Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "7ae5e31",
+        "message": "issue-060: ramp test262 coverage to 10000"
+      }
+    ]
   },
   "commands": [
     {
@@ -91,6 +96,7 @@
       "duplicate-local": 31,
       "object-builtin": 807
     },
-    "reporting": "pending"
+    "reporting": "deferred",
+    "reporting_reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env"
   }
 }

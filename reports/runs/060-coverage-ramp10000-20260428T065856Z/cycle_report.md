@@ -50,4 +50,4 @@ result: pass; OK: agent state files validated
 
 ## Reporting
 
-Discord/webhook reporting is pending until after the validated commit is created.
+Discord/webhook reporting is DEFERRED. `scripts/manager discord-report --run-id 060-coverage-ramp10000-20260428T065856Z` was attempted twice after commit `7ae5e31`, but `DISCORD_WEBHOOK_URL` was not configured in the environment or `.env`. The deferred payload and error note are saved in this report directory.
