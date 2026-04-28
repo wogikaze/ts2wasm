@@ -103,6 +103,33 @@ Note: fixtures/builtins-and-io/json-*.ts exist but may not be fully implemented.
   - `fixtures/builtins-and-io/json-parse.ts`: Node and iwasm both print `1`.
 - Remaining gaps before close: escaped strings, decimals/exponents, nested parse values, arrays in `JSON.parse`, replacer/space arguments, and throw-compatible parse diagnostics remain outside this first slice.
 
+2026-04-28:
+
+- Implemented a next runtime slice for `JSON.parse` covering top-level arrays with small-int, ASCII string, boolean, and null elements.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-parse-array.ts`; Node and iwasm both print:
+
+```text
+5
+1
+two
+true
+false
+null
+```
+
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array.ts -o /tmp/ts2wasm-json-parse-array.wasm && iwasm /tmp/ts2wasm-json-parse-array.wasm`
+  - `node fixtures/builtins-and-io/json-parse-array.ts`
+  - `cargo nextest run`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `python -m jsonschema -i reports/runs/052-json-next-20260428T013435Z/test_report.json .agents/state/schemas/test_report.schema.json`
+  - `scripts/manager check-repo-smoke`
+- Remaining gaps before close: escaped strings, decimals/exponents, nested arrays/objects in parsed values, arrays inside parsed object values, object elements inside parsed arrays, replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

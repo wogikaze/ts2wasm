@@ -343,6 +343,8 @@ impl WatEmitter<'_> {
           (local.get $pos))))
     (if (i32.eq (local.get $ch) (i32.const {lbrace}))
       (then (return (call $json_parse_object (local.get $s_obj) (local.get $s_len) (local.get $pos)))))
+    (if (i32.eq (local.get $ch) (i32.const {lbracket}))
+      (then (return (call $json_parse_array (local.get $s_obj) (local.get $s_len) (local.get $pos)))))
     (if (i32.eq (local.get $ch) (i32.const {quote}))
       (then (return (call $json_parse_string (local.get $s_obj) (local.get $s_len) (local.get $pos)))))
     (if
@@ -595,6 +597,125 @@ impl WatEmitter<'_> {
         (return (i32.const {undefined}))))
     (i32.const {undefined}))
 
+  (func $json_parse_array (param $obj i32) (param $len i32) (param $pos i32) (result i32)
+    (local $result_ptr i32)
+    (local $count i32)
+    (local $ch i32)
+    (local $value i32)
+    (local $sign i32)
+    (local $n i32)
+    (local $saw_digit i32)
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (i32.const {zero}))
+    (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+    (block $array_done
+      (loop $array_loop
+        (local.set $pos (call $json_skip_whitespace (local.get $obj) (local.get $len) (local.get $pos)))
+        (br_if $array_done (i32.ge_u (local.get $pos) (local.get $len)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {str_header}))
+              (local.get $pos))))
+        (if (i32.eq (local.get $ch) (i32.const {rbracket}))
+          (then (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+        (local.set $sign (i32.const {one}))
+        (local.set $n (i32.const {zero}))
+        (local.set $saw_digit (i32.const {zero}))
+        (if (i32.eq (local.get $ch) (i32.const {quote}))
+          (then
+            (local.set $value (call $json_parse_string (local.get $obj) (local.get $len) (local.get $pos)))
+            (if (i32.eq (local.get $value) (i32.const {undefined}))
+              (then (return (i32.const {undefined}))))
+            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+            (block $string_value_done
+              (loop $string_value_scan
+                (br_if $string_value_done (i32.ge_u (local.get $pos) (local.get $len)))
+                (local.set $ch
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {str_header}))
+                      (local.get $pos))))
+                (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+                (br_if $string_value_done (i32.eq (local.get $ch) (i32.const {quote})))
+                (br $string_value_scan))))
+          (else
+            (if (i32.eq (local.get $ch) (i32.const {ascii_t}))
+              (then
+                (local.set $value (i32.const {true_tag}))
+                (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
+              (else
+                (if (i32.eq (local.get $ch) (i32.const {ascii_f}))
+                  (then
+                    (local.set $value (i32.const {false_tag}))
+                    (local.set $pos (i32.add (local.get $pos) (i32.const 5))))
+                  (else
+                    (if (i32.eq (local.get $ch) (i32.const {ascii_n}))
+                      (then
+                        (local.set $value (i32.const {null_tag}))
+                        (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
+                      (else
+                        (if (i32.eq (local.get $ch) (i32.const {minus}))
+                          (then
+                            (local.set $sign (i32.const -1))
+                            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))))
+                        (block $number_done
+                          (loop $number_loop
+                            (br_if $number_done (i32.ge_u (local.get $pos) (local.get $len)))
+                            (local.set $ch
+                              (i32.load8_u
+                                (i32.add
+                                  (i32.add (local.get $obj) (i32.const {str_header}))
+                                  (local.get $pos))))
+                            (br_if $number_done
+                              (i32.or
+                                (i32.lt_u (local.get $ch) (i32.const {ascii_zero}))
+                                (i32.gt_u (local.get $ch) (i32.const {ascii_nine}))))
+                            (local.set $saw_digit (i32.const {one}))
+                            (local.set $n
+                              (i32.add
+                                (i32.mul (local.get $n) (i32.const {ten}))
+                                (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+                            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+                            (br $number_loop)))
+                        (if (i32.eqz (local.get $saw_digit))
+                          (then (return (i32.const {undefined}))))
+                        (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+                          (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
+                        (local.set $value
+                          (i32.or
+                            (i32.shl (local.get $n) (i32.const {number_shift}))
+                            (i32.const {number_tag})))))))))))
+        (i32.store
+          (i32.add
+            (local.get $result_ptr)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $count) (i32.const {elem_shift}))))
+          (local.get $value))
+        (local.set $count (i32.add (local.get $count) (i32.const {one})))
+        (i32.store (local.get $result_ptr) (local.get $count))
+        (local.set $pos (call $json_skip_whitespace (local.get $obj) (local.get $len) (local.get $pos)))
+        (if (i32.ge_u (local.get $pos) (local.get $len))
+          (then (return (i32.const {undefined}))))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {str_header}))
+              (local.get $pos))))
+        (if (i32.eq (local.get $ch) (i32.const {comma}))
+          (then
+            (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+            (br $array_loop)))
+        (if (i32.eq (local.get $ch) (i32.const {rbracket}))
+          (then (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
+        (return (i32.const {undefined}))))
+    (i32.const {undefined}))
+
   (func $json_skip_whitespace (param $obj i32) (param $len i32) (param $pos i32) (result i32)
     (local $ch i32)
     (block $done
@@ -615,13 +736,16 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
             number_tag = ValueTag::NUMBER,
             number_shift = ValueTag::NUMBER_SHIFT,
+            array_tag = ValueTag::ARRAY,
             object_tag = ValueTag::OBJECT,
             string_tag = ValueTag::STRING,
             heap_mask = ValueTag::HEAP_MASK,
             str_header = Layout::STRING_HEADER_SIZE,
+            array_header = Layout::ARRAY_HEADER_SIZE,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
@@ -633,6 +757,8 @@ impl WatEmitter<'_> {
             minus = RuntimeConst::ASCII_MINUS,
             lbrace = 123,
             rbrace = 125,
+            lbracket = 91,
+            rbracket = 93,
             ascii_zero = RuntimeConst::ASCII_ZERO,
             ascii_nine = 57,
             ascii_f = 102,
