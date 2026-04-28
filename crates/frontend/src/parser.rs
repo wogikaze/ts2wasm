@@ -2560,6 +2560,45 @@ mod tests {
     }
 
     #[test]
+    fn rejects_side_effect_import_with_issue_linked_diagnostic() {
+        let err = parse_program("import './module-source';").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported side-effect import"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn rejects_namespace_import_with_issue_linked_diagnostic() {
+        let err = parse_program("import * as mod from './module-source';").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported namespace import"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn rejects_default_import_with_issue_linked_diagnostic() {
+        let err = parse_program("import value from './module-source';").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported default import"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
     fn rejects_named_export_with_issue_linked_diagnostic() {
         let err = parse_program("let value = 1; export { value };").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
@@ -2570,5 +2609,18 @@ mod tests {
                 .contains("module resolution and loading are not implemented")
         );
         assert_eq!(err.span, Some(Span { start: 15, end: 21 }));
+    }
+
+    #[test]
+    fn rejects_re_export_with_issue_linked_diagnostic() {
+        let err = parse_program("export * from './module-source';").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported re-export"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
     }
 }

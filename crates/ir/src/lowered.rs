@@ -781,11 +781,14 @@ fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(),
     if let Some(space) = args.get(2) {
         if !matches!(
             space,
-            ResolvedExpr::Number(_) | ResolvedExpr::Null | ResolvedExpr::Undefined
+            ResolvedExpr::Number(_)
+                | ResolvedExpr::String(_)
+                | ResolvedExpr::Null
+                | ResolvedExpr::Undefined
         ) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "JSON.stringify space currently supports integer numeric values"
+                message: "JSON.stringify space currently supports integer numeric or string values"
                     .to_owned(),
                 span: Some(span),
             });
@@ -1751,12 +1754,14 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "RegExpMatch".to_owned(),
                         args: lowered_args,
                     })
-                } else if method == "getTime" && self.is_date_receiver(object) {
+                } else if matches!(method.as_str(), "getTime" | "valueOf")
+                    && self.is_date_receiver(object)
+                {
                     if !args.is_empty() {
                         return Err(Diagnostic {
                             code: DiagCode::ArityMismatch,
                             message: format!(
-                                "Date.prototype.getTime expects 0 arguments, got {}",
+                                "Date.prototype.{method} expects 0 arguments, got {}",
                                 args.len()
                             ),
                             span: Some(*span),
