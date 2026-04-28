@@ -9,7 +9,7 @@ The input language is TypeScript plus ECMAScript runtime semantics. Do not requi
 
 ## Mise: run before you finish (required for semantic changes)
 
-**A compatibility change is not “done” until the relevant test gates are green; run the commands below and record outcomes.** Without `mise`, use `scripts/manager` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+**A compatibility change is not “done” until the relevant test gates are green; run the commands below and record outcomes.** Without `mise`, use `mise` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
 ```bash
 mise run fmt

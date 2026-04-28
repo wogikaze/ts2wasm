@@ -27,7 +27,7 @@ description: docs/以下のドキュメント追加/編集時に使用。最終�
 
 ## Mise: 完了前に実行（検証対象パスに触れた場合必須）
 
-**完了を報告する前に、変更に一致するコマンドを実行し通過させる。** `mise`がない場合、`scripts/manager`を同じサブコマンドで使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
+**完了を報告する前に、変更に一致するコマンドを実行し通過させる。** `mise`がない場合、`mise`を同じサブコマンドで使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
 - 常に: `mise run fmt`（`*.md` / Rustの例に触れるため）
 - デフォルトスモーク: `mise run check-repo-smoke`

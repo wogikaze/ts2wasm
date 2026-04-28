@@ -21,7 +21,7 @@ Use these locations consistently:
 
 ## Mechanical checks
 
-`scripts/manager check-issue-health` (run locally, in pre-commit, and in CI) fails if:
+`mise run check-issue-health` (run locally, in pre-commit, and in CI) fails if:
 
 - the same `NNN-` id appears twice in `issues/open/` or twice in `issues/done/`, or the same `NNN` exists in both trees;
 - a file `NNN-*.md` does not match the `**ID**:` (or yaml `id:`) value in the file;
@@ -29,9 +29,24 @@ Use these locations consistently:
 - a `**Depends on**` id has no `issues/open/NNN-*.md` or `issues/done/NNN-*.md`;
 - a backticked path under `crates/`, `docs/`, `fixtures/`, `scripts/`, `reference/`, `issues/`, `reports/`, `.github/`, `.agents/`, or `artifacts/` points to a path that does not exist (placeholders with `...` and similar are skipped);
 - a JSON file under `.agents/state/` is not valid JSON (when `jq` is installed);
-- `issues/index.md` fails `scripts/manager check-issue-health` (stale generated tables or an open id missing from Ready/Blocked). `scripts/manager check-issue-index` remains a compatibility alias.
+- `issues/index.md` fails `mise run check-issue-health` (stale generated tables or an open id missing from Ready/Blocked). `mise run check-issue-index` remains a compatibility alias.
 
 `pre-commit` runs the generator so `issues/index.md` is refreshed and staged when needed, then runs this script.
+
+`mise run check-issue-readiness` scores open issues from 0 to 100 for actionability. The score is not priority; it measures whether an engineer can pick the issue up without doing scope design first.
+
+Readiness dimensions:
+
+| Dimension | Points | Measures |
+|---|---:|---|
+| Metadata | 10 | id/title/type/area/class/priority are present |
+| Problem | 20 | one-line `Problem:` plus concrete current failure/evidence |
+| Scope | 20 | in-scope, out-of-scope, expected paths, do-not-touch boundary |
+| Acceptance | 20 | small count of observable, non-generic acceptance items |
+| Validation | 20 | exact required and impacted commands |
+| Size | 10 | short enough for one slice; no large progress log or generated placeholder debt |
+
+Operational rule: non-blocked open issues should score at least 80. Broad epics, generated coverage buckets, and duplicate tracking issues should be `blocked` until split into child issues with a measurable scope. For the blocked-to-ready workflow, use `.agents/skills/issues-workflow/SKILL.md`.
 
 ## Directory layout
 
@@ -135,7 +150,7 @@ Before moving:
 - update `updated`
 - fill `Completion evidence`
 - set remaining risks to `none` or a concrete list
-- run `scripts/manager update-issue-index` (do not hand-edit generated queue tables)
+- run `mise run update-issue-index` (do not hand-edit generated queue tables)
 
 ## Issue classes
 
@@ -146,6 +161,8 @@ Before moving:
 | `verification-ready` | Code exists; needs tests, review, or gate verification |
 | `docs-ready` | Documentation cleanup or contract update |
 | `blocked` | Cannot proceed until a blocker is resolved |
+
+Moving an issue out of `blocked` is an issue lifecycle change. Follow `.agents/skills/issues-workflow/SKILL.md`.
 
 ## Issue types
 

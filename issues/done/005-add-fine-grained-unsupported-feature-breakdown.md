@@ -31,8 +31,8 @@ Validation:
 ```sh
 cargo fmt --all --check
 cargo nextest run
-scripts/manager reference-coverage test262 --limit 50
-scripts/manager update-coverage-matrix --check
+mise run reference-coverage -- test262 --limit 50
+mise run update-coverage-matrix -- --check
 ```
 
 ## Completion evidence
@@ -45,12 +45,12 @@ Validation result:
 ```text
 cargo fmt --all --check: pass
 cargo nextest run: pass (185 passed, 4 skipped)
-scripts/manager reference-coverage test262 --limit 50: pass
+mise run reference-coverage -- test262 --limit 50: pass
   unsupported=50, blocked=0, fail=0, skip_with_reason=0
   unsupported_diagcodes=UnsupportedSyntax:37,UnresolvedName:8,UnresolvedFunction:5
   unsupported_features=regexp-literal:18,date:17,name-resolution:8,function-resolution:5,function:1,property-access:1
-scripts/manager update-coverage-matrix --check: pass
-scripts/manager check-fast-gate --skip-nextest: pass
+mise run update-coverage-matrix -- --check: pass
+mise run check-fast-gate -- --skip-nextest: pass
 ```
 
 Remaining risks:

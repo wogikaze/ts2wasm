@@ -30,9 +30,9 @@ Complement general-purpose lint tools (ESLint, oxlint, Biome, clippy, etc.) with
 
 ## Mise: run before you close the task (required for in-repo work)
 
-**Execute** the commands below before claiming rules are integrated; on failure, fix or document blockers. Without `mise`, use `scripts/manager` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+**Execute** the commands below before claiming rules are integrated; on failure, fix or document blockers. Without `mise`, use `mise` with the same name. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
-- `mise run check-scripts` (ensures all `scripts/*.sh` and `scripts/manager` still parse)
+- `mise run check-scripts` (ensures all `scripts/*.sh` and `mise` still parse)
 - `mise run fmt` and `mise run nextest` (you touched the repo, including rule tests under tests or `rule-tests/`)
 - Optional but recommended after adding CI-facing checks: `mise run check-repo-smoke`
 

@@ -3,7 +3,7 @@ id: 063
 title: "Implement function resolution"
 type: feature
 area: frontend
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -14,6 +14,13 @@ updated: 2026-04-26
 ## Summary
 
 Implement function-resolution feature to handle 5 failing test cases in reference tests.
+
+Problem: This issue overlaps with issue 062 and currently lists only Annex B dynamic Function constructor cases, so it is not an independent implementation slice.
+
+Queue design note:
+
+- Do not select this issue directly.
+- Merge or cross-link these cases into the Function constructor diagnostic/policy child under issue 062, then close this issue as superseded.
 
 ## Problem
 
@@ -68,7 +75,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage test262 --limit 10
+mise run reference-coverage -- test262 --limit 10
 ```
 
 Not run:

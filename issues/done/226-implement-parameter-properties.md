@@ -70,7 +70,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --limit 120
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 120
 ```
 
 Not run:
@@ -105,15 +105,15 @@ command: cargo nextest run -E 'test(parameter) or test(class)'
 result: pass (20 passed)
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --limit 120
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 120
 result: pass; parameter-property no longer appears; build_pass 9, unsupported 111
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --path-filter parameterPropertyWithDefaultValue --limit 120 --detail
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --path-filter parameterPropertyWithDefaultValue --limit 120 --detail
 result: pass; parameterPropertyWithDefaultValue.ts and parameterPropertyWithDefaultValueExtended.ts are build_pass
 date: 2026-04-28
 
-command: scripts/manager update-issue-index --check
+command: mise run update-issue-index -- --check
 result: pass
 date: 2026-04-28
 

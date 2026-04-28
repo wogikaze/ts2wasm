@@ -31,8 +31,8 @@ Validation:
 ```sh
 rg 'docs/current-state\.md' issues || true
 find issues -maxdepth 2 -type d | sort
-scripts/manager update-issue-index --check
-scripts/manager check-issue-health
+mise run update-issue-index -- --check
+mise run check-issue-health
 ```
 
 ## Completion evidence
@@ -42,7 +42,7 @@ Commits: (record on merge)
 Validation result:
 
 ```text
-command: rg 'docs/current-state\.md' issues; scripts/manager update-issue-index --check; scripts/manager check-issue-health
+command: rg 'docs/current-state\.md' issues; mise run update-issue-index -- --check; mise run check-issue-health
 result: no matches under issues/; index generator --check pass; check_issue_health pass
 date: 2026-04-26
 ```

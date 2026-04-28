@@ -9,10 +9,10 @@ description: Use when codifying learnings from completed tasks into rules, skill
 
 ## Mise: 完了前に必ず意識する
 
-**学びの反映がコード・`issues`・`scripts` に及ぶなら、報告前に下を実行し通す。** `mise` なしは `scripts/manager` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
+**学びの反映がコード・`issues`・`scripts` に及ぶなら、報告前に下を実行し通す。** `mise` なしは `mise` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
 
 - ルールや `scripts` を直した: `mise run check-scripts` および `mise run check-repo-smoke`
-- `issues` / PR 方針を直した: `mise run check-issue-health` と `mise run update-issue-index`（必要に応じ `scripts/manager update-issue-index --check`）
+- `issues` / PR 方針を直した: `mise run check-issue-health` と `mise run update-issue-index`（必要に応じ `mise run update-issue-index -- --check`）
 - Rust/テスト手直しを含めた: `mise run fmt` と `mise run nextest`
 
 ## いつ使うか
@@ -340,13 +340,13 @@ message: Set/Map のサイズは .size プロパティを使う。
 
 ```bash
 # .env から DISCORD_WEBHOOK_URL を読み込み
-scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
+mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
 または manager 経由:
 
 ```bash
-python scripts/manager.py discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
+mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
 `.md` / `.json` ファイル送信は成功時に送信済み registry へ記録され、同じファイルの再送はエラーになる。

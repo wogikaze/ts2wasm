@@ -25,7 +25,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 
 注記:
 
-- PR では coverage gate (`scripts/manager update-coverage-matrix --check`) を実行し、matrix 未更新を失敗扱いにする。
+- PR では coverage gate (`mise run update-coverage-matrix -- --check`) を実行し、matrix 未更新を失敗扱いにする。
 - PR では base branch 比較 gate も実行し、`executed` 減少と `fail` 増加を失敗扱いにする。
 - 定期実行では ramp ステップで executed を拡大し、`artifacts/coverage/reference-coverage-matrix.md` 更新 PR を自動作成する。
 - この dashboard の `build_coverage%` は `(build_pass / denominator) * 100`、`semantic_coverage%` は `(semantic_pass / denominator) * 100` で計算する。
@@ -35,7 +35,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 
 Executed:
 
-- 実際に `scripts/manager reference-coverage` で走らせた件数。
+- 実際に `mise run reference-coverage` で走らせた件数。
 - full corpus 件数ではなく、現在の ramp limit までの実行数を表す。
 
 Build-pass:
@@ -73,7 +73,7 @@ Gate:
 
 - fail count must not increase
 - executed count must not decrease
-- `artifacts/coverage/reference-coverage-matrix.md` must match `scripts/manager update-coverage-matrix --check` output
+- `artifacts/coverage/reference-coverage-matrix.md` must match `mise run update-coverage-matrix -- --check` output
 - build_pass と semantic_pass が別列として記録されていること
 
 Generated table:

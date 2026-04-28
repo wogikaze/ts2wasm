@@ -69,7 +69,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --limit 120
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 120
 ```
 
 Not run:
@@ -112,11 +112,11 @@ command: target/debug/ts2wasm build /home/wogikaze/wgkz/ts2wasm/reference/typesc
 result: expected unsupported diagnostic; message includes issue-227, package `cookie-session`, and span 66..80
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --path-filter processingDiagnostic --detail
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --path-filter processingDiagnostic --detail
 result: pass; processingDiagnostic.ts classified as typescript-directive, processingDiagnosticSkipLibCheck.ts and processingDiagnosticTsIgnore.ts classified as import-export; no type-directive-resolution bucket
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --limit 120
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 120
 result: pass; unsupported_features includes typescript-directive:1 and no type-directive-resolution
 date: 2026-04-28
 
@@ -157,23 +157,23 @@ cargo nextest run
 result: pass; 279 passed, 4 skipped
 date: 2026-04-28
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 date: 2026-04-28
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 date: 2026-04-28
 
-scripts/manager check-repo-smoke
+mise run check-repo-smoke
 result: pass
 date: 2026-04-28
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --path-filter processingDiagnostic --detail
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --path-filter processingDiagnostic --detail
 result: pass; processingDiagnostic.ts -> typescript-directive, processingDiagnosticSkipLibCheck.ts -> import-export, processingDiagnosticTsIgnore.ts -> import-export; no type-directive-resolution bucket
 date: 2026-04-28
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --limit 120
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 120
 result: pass; unsupported_features includes typescript-directive:1 and no type-directive-resolution
 date: 2026-04-28
 ```

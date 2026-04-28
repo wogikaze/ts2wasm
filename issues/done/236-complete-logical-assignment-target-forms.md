@@ -159,9 +159,9 @@ cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-
 result: pass; iwasm outputs matched Node for receiver/key/RHS side-effect coverage
 date: 2026-04-28
 
-scripts/manager check-agent-state
-scripts/manager check-issue-health
-scripts/manager check-repo-smoke
+mise run check-agent-state
+mise run check-issue-health
+mise run check-repo-smoke
 result: pass
 date: 2026-04-28
 

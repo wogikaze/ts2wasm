@@ -256,11 +256,11 @@ git diff <parent-branch>...HEAD
 1. Run layered validation:
 
 - narrow commands from the issue
-- `scripts/manager fmt`
-- `scripts/manager check-agent-state`
-- `scripts/manager check-issue-health`
-- `scripts/manager check-repo-smoke`
-- full `scripts/manager nextest` only when close/merge risk warrants it
+- `mise run fmt`
+- `mise run check-agent-state`
+- `mise run check-issue-health`
+- `mise run check-repo-smoke`
+- full `mise run nextest` only when close/merge risk warrants it
 
 1. Merge only if safe.
 
@@ -291,22 +291,22 @@ If conflict occurs:
 When READY is low, run:
 
 ```bash
-scripts/manager reference-coverage test262 --limit 500 --detail
+mise run reference-coverage -- test262 --limit 500 --detail
 ```
 
 Then generate issues:
 
 ```bash
-scripts/manager reference-coverage test262 --limit 500 --detail | \
-  scripts/manager gen-issues-from-coverage --suite test262
+mise run reference-coverage -- test262 --limit 500 --detail | \
+  mise run gen-issues-from-coverage -- --suite test262
 ```
 
 Then:
 
 ```bash
-scripts/manager update-issue-index
-scripts/manager update-issue-index --check
-scripts/manager check-issue-health
+mise run update-issue-index
+mise run update-issue-index -- --check
+mise run check-issue-health
 git add issues/ .agents/state/ || true
 git commit -m "issues: add reference-derived work" || true
 ```

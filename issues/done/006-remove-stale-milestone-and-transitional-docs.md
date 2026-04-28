@@ -36,10 +36,10 @@ rg -n "transitional|未完|TODO|deferred|wrong current-state path" docs README.m
 Executed command outputs:
 
 - `cargo fmt --all --check`: pass
-- `python scripts/manager.py check-issue-health`: pass
-- `python scripts/manager.py update-issue-index --check`: pass
-- `python scripts/manager.py check-fast-gate --skip-nextest`: pass
-- `python scripts/manager.py nextest`: failed (7/186 failed, 4 skipped, 98 cancelled) due expected environment constraint: `iwasm` / `node` binary not found in test environment for differential/iwasm fixtures.
+- `mise run check-issue-health`: pass
+- `mise run update-issue-index -- --check`: pass
+- `mise run check-fast-gate -- --skip-nextest`: pass
+- `mise run nextest`: failed (7/186 failed, 4 skipped, 98 cancelled) due expected environment constraint: `iwasm` / `node` binary not found in test environment for differential/iwasm fixtures.
 
 Notes:
 - Updated `current-state.md` top priority list to match `issues/index.md` ready queue.

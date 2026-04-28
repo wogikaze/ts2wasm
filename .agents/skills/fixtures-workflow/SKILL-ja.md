@@ -30,7 +30,7 @@ description: fixtures/以下のフィクスチャ追加/編集/移動/リネー�
 
 ## Mise: 完了前に実行（必須）
 
-**作業完了と報告前に、一致するエントリを実行し通過させる。** `mise`がない場合、`scripts/manager`を同じサブコマンドで使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
+**作業完了と報告前に、一致するエントリを実行し通過させる。** `mise`がない場合、`mise`を同じサブコマンドで使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
 - `mise run fmt`と`mise run nextest`（最小）
 - コンパイラ/ランタイム/フィクスチャ参照が変更された場合: `mise run clippy`も
@@ -355,7 +355,7 @@ cargo nextest run -p ts2wasm-cli --test m10_node_apis
 ドキュメントがカバレッジアーティファクトに言及する場合、関連する場合カバレッジマトリクスチェックを検証:
 
 ```bash
-scripts/manager update-coverage-matrix --check
+mise run update-coverage-matrix -- --check
 ```
 
 通常のプロジェクトフィクスチャ編集で参照コーパススクリプトを実行しない（変更が参照カバレッジ、TestRecordスキーマ、差分分類、またはCIカバレッジスクリプトに影響する場合を除く）。
@@ -456,7 +456,7 @@ TestRecord:
 - cargo nextest run -p ts2wasm-cli <impacted>:
 - cargo nextest run:
 - scripts/check/shell-syntax.sh:
-- scripts/manager update-coverage-matrix --check:
+- mise run update-coverage-matrix -- --check:
 - iwasm依存チェック:
 
 検索ゲート:

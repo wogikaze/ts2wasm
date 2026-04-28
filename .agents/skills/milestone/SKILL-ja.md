@@ -20,7 +20,7 @@ description: 垂直スライス実装と共有定義更新に使用。docs/11を
 
 ## Mise: スライス完了前に実行（必須）
 
-**スライスに一致するコマンドを実行し通過させる。赤のままworkstreamステップをdoneとマークしない。** `mise`がない場合、`scripts/manager`を同じサブコマンドで使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
+**スライスに一致するコマンドを実行し通過させる。赤のままworkstreamステップをdoneとマークしない。** `mise`がない場合、`mise`を同じサブコマンドで使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
 ```bash
 mise run fmt
@@ -29,7 +29,7 @@ mise run clippy
 mise run check-repo-smoke
 ```
 
-スライスが参照カバレッジまたはベンチマークポリシー期待を変更する場合、`mise run reference-coverage` / `scripts/manager update-coverage-matrix --check-gate`も使用（`scripts/*`と`docs/15`を参照）
+スライスが参照カバレッジまたはベンチマークポリシー期待を変更する場合、`mise run reference-coverage` / `mise run update-coverage-matrix -- --check-gate`も使用（`scripts/*`と`docs/15`を参照）
 
 ## ワークフロー
 

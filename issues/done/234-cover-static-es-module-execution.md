@@ -79,7 +79,7 @@ Impacted commands:
 
 ```sh
 cargo nextest run -p ts2wasm-cli m2_node_diff
-scripts/manager check-fixture-catalog
+mise run check-fixture-catalog
 ```
 
 Not run:
@@ -116,10 +116,10 @@ Validation result:
 cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-cli static_named_module_import_fixtures_match_node_output_under_iwasm: PASS (1 test, 236 skipped)
 cargo nextest run -p ts2wasm-cli module: PASS (17 tests, 220 skipped)
-scripts/manager update-issue-index --check: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
-scripts/manager check-repo-smoke: PASS
+mise run update-issue-index -- --check: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
+mise run check-repo-smoke: PASS
 cargo nextest run: PASS (382 tests, 4 skipped)
 date: 2026-04-28
 ```

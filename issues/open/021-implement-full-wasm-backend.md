@@ -8,9 +8,15 @@
 **Area**: backend
 **Priority**: P2
 **Depends on**: 008, 020
-**Orchestration class**: implementation-ready
+**Orchestration class**: blocked
 
 Problem: Full wasm backend is not implemented. Current implementation is WAT-centric. docs/04 specifies initial linear memory backend with future Wasm GC support.
+
+Queue design note:
+
+- This is an epic-level issue and must not be selected directly from the Ready queue.
+- Execute it through child slices such as issue 021a, each with one observable backend behavior and parity validation.
+- Move this issue back to an active class only when all child slices needed for the current backend milestone are closed.
 
 Scope:
 

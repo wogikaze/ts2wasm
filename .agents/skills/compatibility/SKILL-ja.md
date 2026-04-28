@@ -9,7 +9,7 @@ description: TypeScript/ECMAScript互換性の変更に使用。意味論的互�
 
 ## Mise: 完了前に実行（意味論的変更に必須）
 
-**互換性の変更は関連するテストゲートが緑になるまで「完了」ではない。以下のコマンドを実行し、結果を記録する。** `mise`がない場合、`scripts/manager`を同じ名前で使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
+**互換性の変更は関連するテストゲートが緑になるまで「完了」ではない。以下のコマンドを実行し、結果を記録する。** `mise`がない場合、`mise`を同じ名前で使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
 ```bash
 mise run fmt

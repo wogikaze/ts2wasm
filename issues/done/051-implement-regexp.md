@@ -160,10 +160,10 @@ result: pass; 6 tests run, 6 passed
 cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-test.wasm && iwasm /tmp/ts2wasm-issue051-regexp-test.wasm
 result: pass; stdout matched Node: true / false / true
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 
 cargo nextest run
@@ -184,7 +184,7 @@ result: pass; stdout matched Node: true / false / true / true / false
 cargo fmt --all --check
 result: pass
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
 cargo fmt --all --check
@@ -205,16 +205,16 @@ result: pass
 iwasm /tmp/ts2wasm-issue051-regexp-match.wasm
 result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
-scripts/manager fmt
+mise run fmt
 result: pass
 
-scripts/manager check-repo-smoke
+mise run check-repo-smoke
 result: pass
 
 cargo nextest run
@@ -235,10 +235,10 @@ result: pass; stdout true / false / true / true / false / abc / null / needle / 
 cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-exec.wasm && iwasm /tmp/ts2wasm-issue051-regexp-exec.wasm
 result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
 cargo nextest run
@@ -262,13 +262,13 @@ result: pass; stdout true / false / true / true / false / abc / null / needle / 
 cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-direct-new-regexp-exec.wasm && iwasm /tmp/ts2wasm-issue051-direct-new-regexp-exec.wasm
 result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true
 
-scripts/manager fmt
+mise run fmt
 result: pass
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
 cargo nextest run
@@ -289,10 +289,10 @@ result: pass; stdout true / false / true / true / false / abc / null / needle / 
 cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-flags.wasm && iwasm /tmp/ts2wasm-issue051-regexp-flags.wasm
 result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true / true / plain / needle
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
 cargo fmt --all --check
@@ -310,10 +310,10 @@ result: expected fail; stderr contained `issue-051: RegExp.prototype.compile is 
 cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-preserve.wasm && iwasm /tmp/ts2wasm-issue051-regexp-preserve.wasm
 result: pass; stdout preserved existing RegExp subset output
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 ```
 
@@ -354,34 +354,34 @@ iwasm /tmp/ts2wasm-051-regexp-close.wasm
 result: pass; stdout matched Node stdout:
 true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true / true / plain / needle
 
-scripts/manager update-issue-index --check
+mise run update-issue-index -- --check
 result: pass before moving issue; index was up to date
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: fail before close due to unrelated missing local ignored report paths referenced by issues 052 and 228
 
-scripts/manager check-repo-smoke
+mise run check-repo-smoke
 result: fail before close for the same unrelated check-issue-health missing local report paths
 
-scripts/manager update-issue-index
+mise run update-issue-index
 result: pass; moved issue 051 from Ready to Done
 
-scripts/manager update-issue-index --check
+mise run update-issue-index -- --check
 result: pass after moving issue
 
 cargo fmt --all --check
 result: pass after moving issue
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass after moving issue
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass after moving issue, once older gitignored local report paths referenced by unrelated issues existed in this worktree
 
-scripts/manager check-repo-smoke
+mise run check-repo-smoke
 result: pass after moving issue, once older gitignored local report paths referenced by unrelated issues existed in this worktree
 
 cargo nextest run

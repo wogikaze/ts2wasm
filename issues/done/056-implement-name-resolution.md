@@ -72,7 +72,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage test262 --limit 100
+mise run reference-coverage -- test262 --limit 100
 ```
 
 Not run:

@@ -17,7 +17,7 @@ Strict warning handling now reports clippy and check warnings as errors. The rep
 
 ## Problem
 
-`scripts/manager clippy` now runs with `-D warnings` and fails on existing clippy diagnostics. `scripts/manager check-architecture-rules` now reports oversized source files as `ERROR` and fails on `crates/frontend/src/parser.rs` and `crates/ir/src/lowered.rs`.
+`mise run clippy` now runs with `-D warnings` and fails on existing clippy diagnostics. `mise run check-architecture-rules` now reports oversized source files as `ERROR` and fails on `crates/frontend/src/parser.rs` and `crates/ir/src/lowered.rs`.
 
 ## Desired final state
 
@@ -30,7 +30,7 @@ In scope:
 - [ ] Remove or explicitly justify current clippy diagnostics without weakening lint signal.
 - [ ] Split or otherwise resolve oversized `crates/frontend/src/parser.rs`.
 - [ ] Split or otherwise resolve oversized `crates/ir/src/lowered.rs`.
-- [ ] Keep `scripts/manager clippy` strict with `-D warnings`.
+- [ ] Keep `mise run clippy` strict with `-D warnings`.
 - [ ] Keep check/gate scripts reporting blocking diagnostics as `ERROR`.
 
 Out of scope:
@@ -53,7 +53,7 @@ Expected:
 - `crates/cli/tests/parser_keywords.rs`
 - `crates/cli/tests/parser_ast_structures.rs`
 - `crates/runtime-abi/src/layout.rs`
-- `scripts/manager.py`
+- `mise`
 - `scripts/check/architecture-rules.py`
 
 Do not touch:
@@ -63,10 +63,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `scripts/manager clippy` passes.
-- [ ] `scripts/manager check-architecture-rules` passes.
-- [ ] `scripts/manager check-fast-gate --skip-nextest` passes.
-- [ ] `scripts/manager check-harness-installation` passes or records only environment-specific missing tools as separate blockers.
+- [ ] `mise run clippy` passes.
+- [ ] `mise run check-architecture-rules` passes.
+- [ ] `mise run check-fast-gate -- --skip-nextest` passes.
+- [ ] `mise run check-harness-installation` passes or records only environment-specific missing tools as separate blockers.
 - [ ] No check/gate script emits `WARN` or `warning:` for blocking diagnostics.
 
 ## Validation
@@ -74,17 +74,17 @@ Do not touch:
 Required commands:
 
 ```sh
-scripts/manager fmt
-scripts/manager clippy
-scripts/manager check-architecture-rules
-scripts/manager check-fast-gate --skip-nextest
-scripts/manager check-harness-installation
+mise run fmt
+mise run clippy
+mise run check-architecture-rules
+mise run check-fast-gate -- --skip-nextest
+mise run check-harness-installation
 ```
 
 Impacted commands:
 
 ```sh
-scripts/manager check-repo-smoke
+mise run check-repo-smoke
 ```
 
 Not run:

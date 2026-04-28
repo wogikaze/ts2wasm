@@ -3,7 +3,7 @@ id: 061
 title: "Implement Date object support"
 type: feature
 area: frontend
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -14,6 +14,13 @@ updated: 2026-04-26
 ## Summary
 
 Implement date feature to handle 17 failing test cases in reference tests.
+
+Problem: This duplicates the Date epic in issue 050 and mixes frontend classification with runtime/API behavior.
+
+Queue design note:
+
+- Do not select this issue directly.
+- Merge the useful affected-test evidence into issue 050 child slices, then close this issue as superseded when references are preserved.
 
 ## Problem
 
@@ -68,7 +75,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage test262 --limit 34
+mise run reference-coverage -- test262 --limit 34
 ```
 
 Not run:

@@ -75,7 +75,7 @@ Required commands:
 ```sh
 cargo fmt --all --check
 cargo nextest run
-scripts/manager check-architecture-rules
+mise run check-architecture-rules
 ```
 
 Impacted commands:
@@ -137,7 +137,7 @@ command: cargo nextest run --no-fail-fast
 result: PASS (194 passed, 4 skipped)
 date: 2026-04-28
 
-command: scripts/manager check-architecture-rules
+command: mise run check-architecture-rules
 result: PASS
 date: 2026-04-28
 ```

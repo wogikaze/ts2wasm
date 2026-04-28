@@ -3,7 +3,7 @@ id: 050
 title: "Implement Date"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -14,6 +14,14 @@ updated: 2026-04-26
 ## Summary
 
 Implement Date object for date/time operations.
+
+Problem: Date support is currently tracked as a broad epic; direct selection leaves live-time policy, frontend recognition, runtime helpers, and Annex B behavior mixed in one work item.
+
+Queue design note:
+
+- This is an epic-level issue and must not be selected directly from the Ready queue.
+- Use child slices for deterministic Date behavior, host time policy, timezone formatting policy, and Annex B legacy methods.
+- Keep live host time work out of implementation slices until a capability policy child is complete.
 
 ## Problem
 

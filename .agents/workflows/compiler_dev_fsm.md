@@ -117,7 +117,7 @@ All of the following:
 - [ ] `fixtures.newly_failed` in `test_report` is an **empty** array
 - [ ] **Docs drift** check: no unintended edits in final-state docs; `docs/current-state` / issue sync per `issues/README.md`
 - [ ] The corresponding **issue** (if any) records commands run and their outcomes
-- [ ] The issue is moved to `issues/done/`, and `issues/index.md` is updated (regenerate with `scripts/manager update-issue-index` if used)
+- [ ] The issue is moved to `issues/done/`, and `issues/index.md` is updated (regenerate with `mise run update-issue-index` if used)
 
 **Forbidden (stability / anti-cheat)**
 

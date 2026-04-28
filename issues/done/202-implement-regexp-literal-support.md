@@ -32,7 +32,7 @@ Validation:
 ```sh
 cargo fmt --all --check
 cargo nextest run
-python scripts/manager.py reference-coverage test262 --limit 50 --detail
+mise run reference-coverage -- test262 --limit 50 --detail
 ```
 
 ## Progress evidence
@@ -42,11 +42,11 @@ python scripts/manager.py reference-coverage test262 --limit 50 --detail
 - 2026-04-28: `fixtures/core-semantics/regexp-unsupported-flag.ts` verifies unsupported flag diagnostics remain issue-linked.
 - 2026-04-28: `cargo fmt --all --check` passed.
 - 2026-04-28: `cargo nextest run -E 'test(regexp)'` passed: 6 tests run, 6 passed.
-- 2026-04-28: `python scripts/manager.py reference-coverage test262 --limit 50 --detail` passed after initializing ignored `reference/test262`; measured `unsupported_features.regexp-literal:13`, reduced from the checked-in artifact baseline of 18.
+- 2026-04-28: `mise run reference-coverage -- test262 --limit 50 --detail` passed after initializing ignored `reference/test262`; measured `unsupported_features.regexp-literal:13`, reduced from the checked-in artifact baseline of 18.
 - 2026-04-28: `artifacts/coverage/results/test262.json` updated with the measured limit-50 coverage result.
 
 ## Completion evidence
 
 - 2026-04-28: Parent-authorized close updated issue 009's historical reference from the open path to this done path.
-- 2026-04-28: `scripts/manager update-issue-index --check` passed after moving this issue to done.
-- 2026-04-28: `scripts/manager check-issue-health` passed after moving this issue to done.
+- 2026-04-28: `mise run update-issue-index -- --check` passed after moving this issue to done.
+- 2026-04-28: `mise run check-issue-health` passed after moving this issue to done.

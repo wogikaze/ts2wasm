@@ -71,18 +71,18 @@ Do not touch:
 
 - [x] No done issue entry with placeholder/deferred semantics lacks a linked open follow-up or documented scope decision.
 - [x] Docs do not claim full implementation for placeholder behavior.
-- [x] `scripts/manager update-issue-index --check` passes.
-- [x] `scripts/manager check-issue-health` passes.
-- [x] `scripts/manager check-repo-smoke` passes.
+- [x] `mise run update-issue-index -- --check` passes.
+- [x] `mise run check-issue-health` passes.
+- [x] `mise run check-repo-smoke` passes.
 
 ## Validation
 
 Required commands:
 
 ```sh
-scripts/manager update-issue-index --check
-scripts/manager check-issue-health
-scripts/manager check-repo-smoke
+mise run update-issue-index -- --check
+mise run check-issue-health
+mise run check-repo-smoke
 ```
 
 Impacted commands:
@@ -123,27 +123,27 @@ command: rg -n "placeholder|deferred to follow-up|new issue needed" issues/done
 result: all semantic placeholder/deferred matches in the audited done issues link to issues/open/207-216; non-semantic numeric matches are historical test counts
 date: 2026-04-28
 
-command: scripts/manager update-issue-index
+command: mise run update-issue-index
 result: pass
 date: 2026-04-28
 
-command: scripts/manager update-issue-index --check
+command: mise run update-issue-index -- --check
 result: pass
 date: 2026-04-28
 
-command: scripts/manager check-issue-health
+command: mise run check-issue-health
 result: pass
 date: 2026-04-28
 
-command: scripts/manager fmt
+command: mise run fmt
 result: pass
 date: 2026-04-28
 
-command: scripts/manager check-repo-smoke
+command: mise run check-repo-smoke
 result: pass
 date: 2026-04-28
 
-command: scripts/manager check-agent-state
+command: mise run check-agent-state
 result: pass
 date: 2026-04-28
 ```

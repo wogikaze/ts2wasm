@@ -30,27 +30,27 @@ Acceptance Criteria:
 Validation:
 
 ```sh
-python scripts/manager.py check-scripts
-python scripts/manager.py reference-coverage test262 --limit 1
-python scripts/manager.py update-coverage-matrix --check
+mise run check-scripts
+mise run reference-coverage -- test262 --limit 1
+mise run update-coverage-matrix -- --check
 ```
 
 Validation result:
 
 ```text
-python scripts/manager.py check-scripts
+mise run check-scripts
   ❌ failed: Syntax error in scripts/dev/install-git-hooks.sh (pre-existing issue)
 
-python scripts/manager.py reference-coverage test262 --limit 1
+mise run reference-coverage -- test262 --limit 1
   ✅ failed early with clear remediation text and clone/pull command
 
-python scripts/manager.py update-coverage-matrix --check
+mise run update-coverage-matrix -- --check
   ✅ OK (matrix up to date)
 
-python scripts/manager.py reference-coverage tsc --limit 1
+mise run reference-coverage -- tsc --limit 1
   ✅ failed early with clear remediation text and clone/pull command
 
-python scripts/manager.py reference-coverage tsgo --limit 1
+mise run reference-coverage -- tsgo --limit 1
   ✅ failed early with clear remediation text and clone/pull command
 ```
 
@@ -59,5 +59,5 @@ Close evidence:
 - 2026-04-26: Added `scripts/run/reference-coverage.py` repository/suite pre-check with actionable remediation text and shallow-checkout resume hints.
 - 2026-04-26: Updated `AGENTS.md` check/ramp command guidance to manager-based invocation.
 - 2026-04-26: Updated `README.md` FAQ coverage section with manager-based check/ramp workflow.
-- 2026-04-26: `python scripts/manager.py update-coverage-matrix --check` passes after invalid-suite failures no longer produce denominator-zero runs.
-- 2026-04-26: Environment validation (`python scripts/manager.py nextest`) shows pre-existing failures unrelated to this change (iwasm availability + known differential fixture expectations).
+- 2026-04-26: `mise run update-coverage-matrix -- --check` passes after invalid-suite failures no longer produce denominator-zero runs.
+- 2026-04-26: Environment validation (`mise run nextest`) shows pre-existing failures unrelated to this change (iwasm availability + known differential fixture expectations).

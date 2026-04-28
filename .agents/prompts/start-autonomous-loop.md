@@ -28,7 +28,7 @@ Discord reporting is part of the loop, not an afterthought:
 - Write Discord report content in Japanese; keep commands, paths, and issue IDs as literals only.
 - Do not leave sections as `未記入`; `discord-report` rejects placeholder-heavy reports.
 - After every child outcome, require a `reports/runs/<run_id>/cycle_report.md` or saved `discord_payload.json`.
-- Send reports with `scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>`.
+- Send reports with `mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>`.
 - `discord-report` automatically splits oversized messages into two sends; do not manually skip reporting because of Discord limits.
 - If sending fails, save the payload/error under `reports/runs/<run_id>/`, retry once, mark `DEFERRED` if it still fails, and continue.
 - Before merging a child or assigning the next wave, the parent must record whether reporting was `SENT` or `DEFERRED`.
