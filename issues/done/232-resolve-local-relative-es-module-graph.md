@@ -9,6 +9,8 @@ depends_on: [231]
 blocks: [233, 234]
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
+status: done
 ---
 
 ## Summary
@@ -27,17 +29,17 @@ Given an entry file, static local relative imports and re-exports resolve to can
 
 In scope:
 
-- [ ] Resolve `./` and `../` module specifiers relative to the importing file
-- [ ] Support `.ts` and `.js` source files with deterministic extension handling documented in tests
-- [ ] Build a module graph from the entrypoint without executing modules
-- [ ] Detect missing files and non-local/bare specifiers with issue-linked diagnostics
-- [ ] Preserve module IDs and source paths for lowering
+- [x] Resolve `./` and `../` module specifiers relative to the importing file
+- [x] Support `.ts` and `.js` source files with deterministic extension handling documented in tests
+- [x] Build a module graph from the entrypoint without executing modules
+- [x] Detect missing files and non-local/bare specifiers with issue-linked diagnostics
+- [x] Preserve module IDs and source paths for lowering
 
 Out of scope:
 
-- [ ] Package resolution, `node_modules`, import maps, and TypeScript path mapping
-- [ ] Dynamic import and CommonJS `require()`
-- [ ] Export binding lowering or backend execution
+- Package resolution, `node_modules`, import maps, and TypeScript path mapping
+- Dynamic import and CommonJS `require()`
+- Export binding lowering or backend execution
 
 ## Affected paths
 
@@ -57,11 +59,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Entry builds collect all reachable local relative ES modules exactly once
-- [ ] Module graph ordering is deterministic and covered by tests
-- [ ] Missing relative modules produce source diagnostics with the importing file/span
-- [ ] Bare specifiers are rejected with an unsupported diagnostic, not silently treated as paths
-- [ ] Cycles are detected and either represented safely or diagnosed explicitly
+- [x] Entry builds collect all reachable local relative ES modules exactly once
+- [x] Module graph ordering is deterministic and covered by tests
+- [x] Missing relative modules produce source diagnostics with the importing file/span
+- [x] Bare specifiers are rejected with an unsupported diagnostic, not silently treated as paths
+- [x] Cycles are detected and either represented safely or diagnosed explicitly
 
 ## Validation
 
@@ -87,15 +89,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] downstream binding/lowering remains tracked by issues 233 and 234
 
 ## Notes
 
@@ -107,19 +109,45 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `d96750d` issue-232: close module graph contract
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-compiler module_graph: PASS (4 tests)
+cargo nextest run -p ts2wasm-compiler: PASS (35 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (12 tests, 218 skipped)
+cargo nextest run: PASS (363 tests, 4 skipped)
+scripts/manager update-issue-index: PASS
+scripts/manager update-issue-index --check: PASS
+scripts/manager check-issue-index: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+scripts/manager discord-report --run-id 232-module-graph-close-audit-20260428T091725Z: DEFERRED (DISCORD_WEBHOOK_URL missing; payload/error saved)
+date: 2026-04-28
 ```
 
 Remaining risks:
 
 - none
+
+## Close evidence
+
+2026-04-28 child worker `232-module-graph-close-audit-20260428T091725Z` audited the accumulated issue-232 graph diagnostics and cycle coverage, then closed the remaining contract gap:
+
+- Exposed `build_entry_module_graph` from the compiler crate.
+- Exposed read-only `ModuleGraph`, `ModuleNode`, and `ModuleDependency` contracts with stable module IDs, canonical source paths, dependency specifiers, dependency target IDs, and resolved dependency paths.
+- Kept graph construction validation-only in the build and dump pipelines; import/export binding and execution semantics remain out of scope for issues 233 and 234.
+
+Acceptance evidence:
+
+- Reachable local relative modules exactly once: `module_graph::tests::builds_deterministic_entry_graph_and_deduplicates_modules`.
+- Deterministic ordering and `.ts` before `.js`: `module_graph::tests::builds_deterministic_entry_graph_and_deduplicates_modules`.
+- Missing relative diagnostics with source span and importing path: `module_graph::tests::rejects_missing_relative_module_at_specifier_span`.
+- Bare specifier unsupported diagnostic: `module_graph::tests::rejects_bare_module_specifier_at_specifier_span`.
+- Cycle behavior safely represented with existing module IDs: `module_graph::tests::represents_static_local_cycles_with_existing_module_ids`.
+- Module IDs and paths exposed for downstream work: public compiler exports `build_entry_module_graph`, `ModuleGraph::modules`, `ModuleGraph::entry`, `ModuleGraph::module`, `ModuleNode::id`, `ModuleNode::path`, `ModuleNode::dependencies`, `ModuleDependency::specifier`, `ModuleDependency::resolved_module_id`, and `ModuleDependency::resolved_path`.
 
 ## Progress evidence
 
