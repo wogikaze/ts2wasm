@@ -91,6 +91,18 @@ Follow-up issues:
 
 Note: fixtures/builtins-and-io/json-*.ts exist but may not be fully implemented.
 
+## Progress evidence
+
+2026-04-28:
+
+- Implemented a first runtime slice for `JSON.stringify` covering small-int primitives, ASCII strings, arrays, and flat object serialization.
+- Implemented a first runtime slice for `JSON.parse` covering whitespace-trimmed primitives, ASCII strings, and flat objects with string keys and small-int/string/boolean/null values.
+- Added Node differential coverage for the existing JSON fixtures in `crates/cli/tests/m2_node_diff.rs`.
+- Existing fixture evidence:
+  - `fixtures/builtins-and-io/json-stringify.ts`: Node and iwasm both print `{"a":1,"b":2}`.
+  - `fixtures/builtins-and-io/json-parse.ts`: Node and iwasm both print `1`.
+- Remaining gaps before close: escaped strings, decimals/exponents, nested parse values, arrays in `JSON.parse`, replacer/space arguments, and throw-compatible parse diagnostics remain outside this first slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

@@ -110,6 +110,16 @@ fn string_method_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn json_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-parse.ts",
+        "fixtures/builtins-and-io/json-stringify.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
 }
