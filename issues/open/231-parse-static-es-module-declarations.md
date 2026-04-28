@@ -335,6 +335,26 @@ Blocker:
 
 - Acceptance criterion "Unsupported forms still produce issue-linked diagnostics" is not fully met: `export class C {}` currently builds successfully instead of producing an issue-055 unsupported module diagnostic, because the parser consumes `export` and returns a plain `Stmt::ClassDecl`. Control probes confirmed `export function f() {}` and `export var value = 1;` do produce issue-055 diagnostics. Leave 231 open until `export class` is either represented as an export declaration AST node or rejected with an issue-linked unsupported diagnostic.
 
+2026-04-28 child worker `231-export-class-guard-20260428T083349Z` resolved the close-readiness blocker as a targeted unsupported guard:
+
+- Changed `export class C {}` parsing to produce the existing issue-055 unsupported module diagnostic (`unsupported class export`) instead of returning a plain `Stmt::ClassDecl`.
+- Added a frontend parser regression for the issue-linked `export class` diagnostic.
+- Added `fixtures/module-system/static-class-export-unsupported.ts` and CLI regression coverage proving the build no longer succeeds silently.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS
+cargo nextest run -p ts2wasm-cli static_class_export_reports_issue_055: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
+Remaining work before close:
+
+- Full issue close still requires parent/orchestrator review of all acceptance criteria and issue lifecycle movement.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

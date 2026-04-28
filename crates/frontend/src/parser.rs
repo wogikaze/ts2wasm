@@ -112,7 +112,7 @@ impl Parser {
             let default_span = self.expect(TokenKind::Default)?;
             self.default_export_statement(export_span, default_span)
         } else if matches!(self.peek(), Some(Token::Class)) {
-            self.class_statement()
+            self.unsupported_module_form(export_span, "class export")
         } else {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
@@ -3214,6 +3214,15 @@ mod tests {
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-055"));
         assert!(err.message.contains("unsupported variable export"));
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn keeps_class_declaration_export_unsupported_for_narrow_slice() {
+        let err = parse_program("export class C {};").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported class export"));
         assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
     }
 
