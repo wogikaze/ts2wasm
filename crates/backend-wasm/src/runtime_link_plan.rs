@@ -1,7 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use ts2wasm_ir::lowered::{
-    FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, LoweredUnaryOp,
+    FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredProgram,
+    LoweredStmt, LoweredUnaryOp,
 };
 
 use super::runtime_fn::{Capability, HostAbi, HostImport, RuntimeFn, RuntimeGlobal};
@@ -266,6 +267,12 @@ impl RuntimeLinkPlan {
             }
             LoweredExpr::Assign { expr, .. } => {
                 self.collect_required_runtime_expr(expr);
+            }
+            LoweredExpr::LogicalAssign { op, expr, .. } => {
+                self.collect_required_runtime_expr(expr);
+                if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {
+                    self.add_required_runtime(RuntimeFn::TruthyBool);
+                }
             }
             LoweredExpr::Binary { left, op, right } => {
                 self.collect_required_runtime_expr(left);

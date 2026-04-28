@@ -104,6 +104,19 @@ fn template_literal_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn logical_assignment_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/logical-assignment.ts");
+}
+
+#[test]
+fn logical_assignment_unsupported_targets_report_issue_228() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/logical-assignment-member-unsupported.ts",
+        "issue-228:",
+    );
+}
+
+#[test]
 fn string_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/string-trim.ts",

@@ -1,5 +1,6 @@
 use crate::{
-    BinaryOp, DiagCode, Diagnostic, Expr, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
+    BinaryOp, DiagCode, Diagnostic, Expr, LogicalAssignOp, Span, SpannedToken, Stmt, Token,
+    TokenKind, UnaryOp,
 };
 
 pub struct Parser {
@@ -902,8 +903,41 @@ impl Parser {
                 });
             }
         }
+        if let Some(op) = self.logical_assignment_operator() {
+            let target_span = expr.span();
+            if let Expr::Ident { name, span } = expr {
+                let value = self.assignment()?;
+                return Ok(Expr::LogicalAssign {
+                    name,
+                    op,
+                    span: Span {
+                        start: span.start,
+                        end: value.span().end,
+                    },
+                    expr: Box::new(value),
+                });
+            }
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-228: logical assignment currently supports only identifier targets"
+                    .to_owned(),
+                span: Some(target_span),
+            });
+        }
 
         Ok(expr)
+    }
+
+    fn logical_assignment_operator(&mut self) -> Option<LogicalAssignOp> {
+        if self.consume(TokenKind::AndAndEqual) {
+            Some(LogicalAssignOp::And)
+        } else if self.consume(TokenKind::OrOrEqual) {
+            Some(LogicalAssignOp::Or)
+        } else if self.consume(TokenKind::NullishCoalesceEqual) {
+            Some(LogicalAssignOp::Nullish)
+        } else {
+            None
+        }
     }
 
     fn arrow_function(&mut self) -> Result<Expr, Diagnostic> {

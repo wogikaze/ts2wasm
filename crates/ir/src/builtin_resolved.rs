@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{BinaryOp, Span, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, LogicalAssignOp, Span, UnaryOp};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId};
 
@@ -113,6 +113,11 @@ pub enum ResolvedExpr {
     },
     Assign {
         name: String,
+        expr: Box<ResolvedExpr>,
+    },
+    LogicalAssign {
+        name: String,
+        op: LogicalAssignOp,
         expr: Box<ResolvedExpr>,
     },
     Array(Vec<ResolvedExpr>),

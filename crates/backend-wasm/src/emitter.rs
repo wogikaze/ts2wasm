@@ -449,6 +449,7 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Assign { expr, .. } => self.collect_expr_strings(expr),
+            LoweredExpr::LogicalAssign { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Binary { left, right, .. } => {
                 self.collect_expr_strings(left);
                 self.collect_expr_strings(right);
@@ -764,6 +765,9 @@ impl<'a> WatEmitter<'a> {
                 self.collect_class_prototypes_from_expr(value, prototypes);
             }
             LoweredExpr::Assign { expr, .. } => {
+                self.collect_class_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::LogicalAssign { expr, .. } => {
                 self.collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::Number(_)
