@@ -16,14 +16,18 @@
     "UnresolvedName": 33
   },
   "unsupported_features": {
-    "function": 2,
+    "array-builtin": 1,
     "name-resolution": 33,
     "date": 16,
     "regexp-literal": 47,
-    "arrow-function": 1,
-    "unknown-unsupported": 1
+    "string-builtin": 3
   },
   "status": "in-progress",
+  "selection": {
+    "paths_file": null,
+    "path_filters": []
+  },
+  "evidence": "python scripts/manager.py reference-coverage test262 --limit 100",
   "evidence_rows": [
     {
       "suite": "test262",
@@ -47,6 +51,5 @@
       },
       "evidence": "python scripts/manager.py reference-coverage test262 --paths-file scripts/data/test262-semantic-core-seeds.txt"
     }
-  ],
-  "evidence": "python scripts/manager.py reference-coverage test262 --limit 100"
+  ]
 }

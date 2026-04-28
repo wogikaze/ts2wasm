@@ -1,0 +1,41 @@
+{
+  "suite": "tsgo",
+  "suite_name": "tsgo",
+  "denominator": 166,
+  "executed": 82,
+  "build_coverage_percent": "2.41",
+  "semantic_coverage_percent": "1.81",
+  "build_pass": 4,
+  "semantic_pass": 3,
+  "fail": 0,
+  "unsupported": 78,
+  "blocked": 0,
+  "skip_with_reason": 0,
+  "unsupported_diagcodes": {
+    "UnsupportedSyntax": 78
+  },
+  "unsupported_features": {
+    "import-export": 17,
+    "type-assertion": 3,
+    "class": 6,
+    "module-resolution": 4,
+    "destructuring": 2,
+    "scope-analysis": 1,
+    "parser-syntax": 10,
+    "type-system": 6,
+    "enum": 1,
+    "jsx": 3,
+    "declaration-emit": 16,
+    "module-system-amd": 1,
+    "jsdoc": 2,
+    "decorator": 2,
+    "object-literal": 2,
+    "type-alias": 2
+  },
+  "status": "in-progress",
+  "selection": {
+    "paths_file": null,
+    "path_filters": []
+  },
+  "evidence": "python scripts/manager.py reference-coverage tsgo --limit 82"
+}

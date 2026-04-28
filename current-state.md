@@ -79,6 +79,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
 - ポリシーと列定義: `docs/15-coverage-matrix.md`
 - 列 `build_pass` / `semantic_pass` は `scripts/manager reference-coverage` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
+- issue 060 progress classified current `unknown-unsupported` coverage windows into concrete feature labels; stored matrix rows now include test262 limit 100, tsc limit 100, and tsgo limit 82 with zero `unknown-unsupported` in those windows.
 
 ## Implemented (high-level)
 

@@ -21,6 +21,8 @@ Notes:
   - --detail: output per-file details (file-path: diag-code: feature-label)
   - --paths-file: run a deterministic subset listed as repo-relative or suite-relative paths
   - --path-filter: run only files whose repo-relative path contains TEXT (repeatable)
+  - TS2WASM_REFERENCE_ROOT may point at an external reference/ directory for
+    validation from isolated git worktrees.
 """
 
 import sys
@@ -29,31 +31,33 @@ import json
 import tempfile
 import re
 import shutil
+import os
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
 
 SUITE_METADATA = {
     "test262": {
         "name": "test262",
-        "repo_path": REPO_ROOT / "reference" / "test262",
-        "path": REPO_ROOT / "reference" / "test262" / "test",
+        "repo_path": REFERENCE_ROOT / "test262",
+        "path": REFERENCE_ROOT / "test262" / "test",
         "pattern": "reference/test262/test/**/*.js",
         "clone_cmd": "git clone https://github.com/tc39/test262.git reference/test262",
         "clone_hint": "git clone https://github.com/tc39/test262.git reference/test262",
     },
     "tsc": {
         "name": "TypeScript compiler cases",
-        "repo_path": REPO_ROOT / "reference" / "TypeScript",
-        "path": REPO_ROOT / "reference" / "TypeScript" / "tests" / "cases" / "compiler",
+        "repo_path": REFERENCE_ROOT / "TypeScript",
+        "path": REFERENCE_ROOT / "TypeScript" / "tests" / "cases" / "compiler",
         "pattern": "reference/TypeScript/tests/cases/compiler/**/*.ts",
         "clone_cmd": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/TypeScript",
         "clone_hint": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/TypeScript",
     },
     "tsgo": {
         "name": "typescript-go testdata",
-        "repo_path": REPO_ROOT / "reference" / "typescript-go",
-        "path": REPO_ROOT / "reference" / "typescript-go" / "testdata" / "tests",
+        "repo_path": REFERENCE_ROOT / "typescript-go",
+        "path": REFERENCE_ROOT / "typescript-go" / "testdata" / "tests",
         "pattern": "reference/typescript-go/testdata/tests/**/*",
         "clone_cmd": "git clone --depth 1 https://github.com/microsoft/typescript-go.git reference/typescript-go",
         "clone_hint": "git clone --depth 1 https://github.com/microsoft/typescript-go.git reference/typescript-go",
@@ -84,11 +88,11 @@ def resolve_suite_paths(suite):
         return None, None
 
     if suite == "test262":
-        files = sorted(REPO_ROOT.glob(config["pattern"]))
+        files = sorted(config["path"].glob("**/*.js"))
     elif suite == "tsc":
-        files = sorted((REPO_ROOT / "reference/TypeScript/tests/cases/compiler").glob("**/*.ts"))
+        files = sorted(config["path"].glob("**/*.ts"))
     else:
-        files = sorted((REPO_ROOT / "reference/typescript-go/testdata/tests").rglob("*"))
+        files = sorted(config["path"].rglob("*"))
         files = [f for f in files if f.is_file()]
 
     if len(files) == 0:
@@ -111,6 +115,12 @@ def repo_relative(path):
     """Return a stable repo-relative path string for evidence and filtering."""
     try:
         return path.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        pass
+
+    try:
+        reference_relative = path.resolve().relative_to(REFERENCE_ROOT).as_posix()
+        return f"reference/{reference_relative}"
     except ValueError:
         return path.as_posix()
 
@@ -221,14 +231,24 @@ def feature_label(diag_code, err_file, file_path):
     
     if "/built-ins/date/" in path_lc or "/built-ins/date." in path_lc:
         return "date"
+    elif "/built-ins/array/" in path_lc:
+        return "array-builtin"
     elif "/built-ins/function/" in path_lc or "/built-ins/function." in path_lc:
         return "function"
+    elif "/built-ins/object/" in path_lc:
+        return "object-builtin"
+    elif "/regexp/" in path_lc or "/regular-expressions/" in path_lc or "/built-ins/regexp/" in path_lc:
+        return "regexp-literal"
+    elif "/built-ins/string/" in path_lc:
+        return "string-builtin"
+    elif "/built-ins/escape/" in path_lc or "/built-ins/unescape/" in path_lc:
+        return "legacy-global-builtin"
+    elif "/built-ins/" in path_lc:
+        return "builtin-api"
     elif "/class/" in path_lc or "/class-" in path_lc or "/classes/" in path_lc:
         return "class"
     elif "/module/" in path_lc or "/import/" in path_lc or "/export/" in path_lc:
         return "import-export"
-    elif "/regexp/" in path_lc or "/regular-expressions/" in path_lc:
-        return "regexp-literal"
     elif "/async-" in path_lc or "/async/" in path_lc or "/generators/" in path_lc:
         return "async"
     elif "/destructuring/" in path_lc:
@@ -239,6 +259,42 @@ def feature_label(diag_code, err_file, file_path):
         return "arrow-function"
     elif "/spread/" in path_lc:
         return "spread"
+    elif ".tsx" in path_lc or "jsx" in path_lc:
+        return "jsx"
+    elif "declarationemit" in path_lc or "declarationmap" in path_lc or "declare" in path_lc:
+        return "declaration-emit"
+    elif "accessor" in path_lc:
+        return "class-accessor"
+    elif "anonymousclass" in path_lc or "anonclass" in path_lc or "unnamedclass" in path_lc or "classfields" in path_lc or "classfield" in path_lc:
+        return "class"
+    elif "alias" in path_lc:
+        return "type-alias"
+    elif "ambient" in path_lc:
+        return "ambient-declaration"
+    elif "amd" in path_lc or "systemmodule" in path_lc:
+        return "module-system-amd"
+    elif "package" in path_lc or "nodemodules" in path_lc or "paths" in path_lc or "resolution" in path_lc:
+        return "module-resolution"
+    elif "exportassignment" in path_lc or "import" in path_lc or "export" in path_lc or "module" in path_lc:
+        return "import-export"
+    elif "enum" in path_lc:
+        return "enum"
+    elif "decorator" in path_lc:
+        return "decorator"
+    elif "assertion" in path_lc or "satisfies" in path_lc or "asconst" in path_lc:
+        return "type-assertion"
+    elif "bindingpattern" in path_lc or "destructur" in path_lc:
+        return "destructuring"
+    elif "conditional" in path_lc or "keyof" in path_lc or "infer" in path_lc or "generic" in path_lc or "typepredicate" in path_lc:
+        return "type-system"
+    elif "scope" in path_lc:
+        return "scope-analysis"
+    elif "arguments" in path_lc or "args" in path_lc:
+        return "arguments-object"
+    elif "objectliteral" in path_lc or "object" in path_lc:
+        return "object-literal"
+    elif "jsdoc" in path_lc:
+        return "jsdoc"
     
     # Check error text for feature detection
     text = err_file.lower() if err_file else ""
