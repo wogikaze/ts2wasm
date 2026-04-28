@@ -177,6 +177,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
         "fixtures/builtins-and-io/json-stringify-nested-array-object.ts",
         "fixtures/builtins-and-io/json-stringify-nested-object.ts",
+        "fixtures/builtins-and-io/json-stringify-replacer-array.ts",
         "fixtures/builtins-and-io/json-stringify-space.ts",
         "fixtures/builtins-and-io/json-stringify-space-string.ts",
         "fixtures/builtins-and-io/json-stringify.ts",
@@ -252,7 +253,7 @@ fn json_stringify_replacer_unsupported_forms_report_issue_052() {
     );
     assert_build_fails_with_unsupported_syntax(
         "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts",
-        "issue-052: JSON.stringify array replacer property lists are not supported yet",
+        "issue-052: JSON.stringify array replacer property lists outside the single string-literal object subset are not supported yet",
     );
 }
 
