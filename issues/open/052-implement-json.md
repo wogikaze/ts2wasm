@@ -514,6 +514,27 @@ abcdefghij1
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts -o /tmp/ts2wasm-json-noninteger-number-object.wasm && iwasm /tmp/ts2wasm-json-noninteger-number-object.wasm` rejects with `Exception: unreachable` and status 1.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added focused Node differential regression coverage for nested `JSON.stringify` object/array literal value preservation in `fixtures/builtins-and-io/json-stringify-nested-array-object.ts`, covering `JSON.stringify({ a: [{ b: 1 }], c: { d: [2] } })`.
+- Progress commit: `5a992b1`.
+- Direct probe of the pre-existing assigned minimal fixture showed the current runtime already matches Node:
+  - `node fixtures/builtins-and-io/json-stringify-nested-object.ts` prints `{"a":{"b":2},"c":[3]}`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-nested-object.ts -o /tmp/ts2wasm-json-stringify-nested-object.current.wasm` and `iwasm /tmp/ts2wasm-json-stringify-nested-object.current.wasm` print `{"a":{"b":2},"c":[3]}`.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-stringify-nested-array-object.ts` prints `{"a":[{"b":1}],"c":{"d":[2]}}`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-nested-array-object.ts -o /tmp/ts2wasm-json-stringify-nested-array-object.wasm` and `iwasm /tmp/ts2wasm-json-stringify-nested-array-object.wasm` print `{"a":[{"b":1}],"c":{"d":[2]}}`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Full validation report for run `052-json-stringify-nested-20260428T080100Z` is recorded under `reports/runs/052-json-stringify-nested-20260428T080100Z/`.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
