@@ -276,6 +276,17 @@ fn json_parse_invalid_leading_zero_numbers_rejected_under_node_and_iwasm() {
 }
 
 #[test]
+fn json_parse_invalid_incomplete_numbers_rejected_under_node_and_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-parse-invalid-number-incomplete-minus.ts",
+        "fixtures/builtins-and-io/json-parse-invalid-number-incomplete-fraction.ts",
+        "fixtures/builtins-and-io/json-parse-invalid-number-incomplete-exponent.ts",
+    ] {
+        assert_fixture_rejected_by_node_and_iwasm(fixture);
+    }
+}
+
+#[test]
 fn json_parse_unicode_escape_diagnostics_reject_invalid_or_unsupported_forms() {
     assert_fixture_rejected_by_node_and_iwasm(
         "fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts",

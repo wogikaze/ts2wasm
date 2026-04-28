@@ -783,6 +783,30 @@ abcdefghij1
 - Gate note: initial `scripts/manager check-issue-health` failed because this fresh worktree lacked gitignored `reports/` paths referenced by prior issue evidence; recreating those local report placeholders made the tracked issue state pass without committing reports.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string/numeric-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added explicit `JSON.parse` incomplete-number diagnostic regression coverage for:
+  - `fixtures/builtins-and-io/json-parse-invalid-number-incomplete-minus.ts` (`JSON.parse('-')`)
+  - `fixtures/builtins-and-io/json-parse-invalid-number-incomplete-fraction.ts` (`JSON.parse('1.')`)
+  - `fixtures/builtins-and-io/json-parse-invalid-number-incomplete-exponent.ts` (`JSON.parse('1e')`)
+- Direct pre-change reproduction showed Node rejects all three with JSON `SyntaxError`, and current iwasm already rejects all three with `Exception: unreachable`, so this slice pins existing runtime behavior without changing `crates/backend-wasm/src/runtime_builtins_host.rs`.
+- Direct evidence for the new fixtures:
+  - `node fixtures/builtins-and-io/json-parse-invalid-number-incomplete-minus.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `node fixtures/builtins-and-io/json-parse-invalid-number-incomplete-fraction.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `node fixtures/builtins-and-io/json-parse-invalid-number-incomplete-exponent.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-number-incomplete-minus.ts -o /tmp/json-parse-invalid-number-incomplete-minus.wasm && iwasm /tmp/json-parse-invalid-number-incomplete-minus.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-number-incomplete-fraction.ts -o /tmp/json-parse-invalid-number-incomplete-fraction.wasm && iwasm /tmp/json-parse-invalid-number-incomplete-fraction.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-number-incomplete-exponent.ts -o /tmp/json-parse-invalid-number-incomplete-exponent.wasm && iwasm /tmp/json-parse-invalid-number-incomplete-exponent.wasm` rejects with `Exception: unreachable` and status 1.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json_parse_invalid_incomplete_numbers_rejected_under_node_and_iwasm)'`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
+- Gate note: `scripts/manager check-issue-health` failed only because this fresh child worktree lacks gitignored `reports/runs/...` evidence paths referenced by existing issue history, matching the assignment's documented acceptable failure mode.
+- Full `cargo nextest run` was skipped for this regression-only PROGRESS slice because no runtime code changed and the assignment allows focused validation for regression-only progress.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
