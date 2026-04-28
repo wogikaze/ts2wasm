@@ -2,38 +2,44 @@
   "suite": "test262",
   "suite_name": "test262",
   "denominator": 53445,
-  "executed": 1000,
+  "executed": 1250,
   "build_coverage_percent": "0.00",
   "semantic_coverage_percent": "0.00",
   "build_pass": 0,
   "semantic_pass": 0,
   "fail": 0,
-  "unsupported": 1000,
+  "unsupported": 1250,
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 862,
-    "UnresolvedName": 138
+    "UnsupportedSyntax": 1039,
+    "UnresolvedName": 207,
+    "DuplicateLocal": 4
   },
   "unsupported_features": {
-    "array-builtin": 1,
-    "name-resolution": 138,
+    "array-builtin": 89,
+    "name-resolution": 207,
     "date": 16,
-    "regexp-literal": 46,
+    "regexp-literal": 53,
     "string-builtin": 63,
-    "builtin-api": 1,
+    "builtin-api": 14,
     "legacy-global-builtin": 16,
     "eval": 461,
-    "function": 87,
-    "object-literal": 1,
-    "parser-syntax": 168,
+    "function": 127,
+    "object-literal": 2,
+    "parser-syntax": 188,
     "arguments-object": 1,
-    "switch": 1
+    "switch": 1,
+    "class": 1,
+    "async-iteration": 1,
+    "destructuring": 2,
+    "declaration-emit": 4,
+    "duplicate-local": 4
   },
   "status": "in-progress",
   "selection": {
     "paths_file": null,
     "path_filters": []
   },
-  "evidence": "python scripts/manager.py reference-coverage test262 --limit 1000"
+  "evidence": "python scripts/manager.py reference-coverage test262 --limit 1250"
 }

@@ -168,6 +168,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 | 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
+| 230 | Implement async iteration and for-await-of | feature | frontend/semantics | design-ready | P2 |  | Implement async iteration and for-await-of |
 <!-- generated:ready:end -->
 
 ## Blocked queue
