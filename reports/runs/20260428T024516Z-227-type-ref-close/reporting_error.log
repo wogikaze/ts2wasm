@@ -1,0 +1,10 @@
+scripts/manager discord-report --run-id 20260428T024516Z-227-type-ref-close
+exit_code: 1
+stderr:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+
+retry:
+scripts/manager discord-report --run-id 20260428T024516Z-227-type-ref-close
+exit_code: 1
+stderr:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
