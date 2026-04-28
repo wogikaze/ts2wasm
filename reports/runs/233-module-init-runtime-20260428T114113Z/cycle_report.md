@@ -46,4 +46,11 @@ scripts/manager check-agent-state: PASS
 
 ## Reporting
 
-Discord reporting was attempted after local validation and commit preparation. If unavailable, payload/error artifacts are stored in this run directory.
+Discord reporting was attempted twice after local validation and commit `6b2d9f1`. Both attempts failed because `DISCORD_WEBHOOK_URL` was not configured in the environment or `.env`.
+
+Reporting status: DEFERRED
+
+Deferred artifacts:
+
+- `discord_payload.json`
+- `reporting_error.log`
