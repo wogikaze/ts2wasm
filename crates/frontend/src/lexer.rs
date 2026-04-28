@@ -296,6 +296,7 @@ pub struct Lexer<'a> {
     source: &'a str,
     cursor: usize,
     prev_token: Option<Token>,
+    at_line_start: bool,
 }
 
 impl<'a> Lexer<'a> {
@@ -304,6 +305,7 @@ impl<'a> Lexer<'a> {
             source,
             cursor: 0,
             prev_token: None,
+            at_line_start: true,
         }
     }
 
@@ -507,6 +509,7 @@ impl<'a> Lexer<'a> {
 
     fn add_token(&mut self, tokens: &mut Vec<SpannedToken>, token: SpannedToken) {
         self.prev_token = Some(token.kind.clone());
+        self.at_line_start = false;
         tokens.push(token);
     }
 
@@ -514,12 +517,30 @@ impl<'a> Lexer<'a> {
         let mut tokens = Vec::new();
         self.skip_bom();
         while let Some(ch) = self.peek_char() {
+            if self.starts_with("<!--") || (self.at_line_start && self.starts_with("-->")) {
+                let start = self.cursor;
+                self.skip_html_like_comment();
+                self.add_token(
+                    &mut tokens,
+                    SpannedToken {
+                        kind: Token::Semicolon,
+                        span: Span {
+                            start,
+                            end: self.cursor,
+                        },
+                    },
+                );
+                continue;
+            }
             if self.skip_ignored()? {
                 continue;
             }
             let start = self.cursor;
             match ch {
                 ch if ch.is_whitespace() => {
+                    if is_line_terminator(ch) {
+                        self.at_line_start = true;
+                    }
                     self.advance_char();
                 }
                 '0'..='9' => {
@@ -1258,7 +1279,7 @@ impl<'a> Lexer<'a> {
                 self.advance_char();
                 self.advance_char();
                 while let Some(ch) = self.peek_char() {
-                    if ch == '\n' || ch == '\r' {
+                    if is_line_terminator(ch) {
                         break;
                     }
                     self.advance_char();
@@ -1267,6 +1288,7 @@ impl<'a> Lexer<'a> {
             }
             (Some('/'), Some('*')) => {
                 let start = self.cursor;
+                let mut saw_line_terminator = false;
                 self.advance_char();
                 self.advance_char();
                 loop {
@@ -1274,9 +1296,15 @@ impl<'a> Lexer<'a> {
                         (Some('*'), Some('/')) => {
                             self.advance_char();
                             self.advance_char();
+                            if saw_line_terminator {
+                                self.at_line_start = true;
+                            }
                             return Ok(true);
                         }
-                        (Some(_), _) => {
+                        (Some(ch), _) => {
+                            if is_line_terminator(ch) {
+                                saw_line_terminator = true;
+                            }
                             self.advance_char();
                         }
                         (None, _) => {
@@ -1293,6 +1321,15 @@ impl<'a> Lexer<'a> {
                 }
             }
             _ => Ok(false),
+        }
+    }
+
+    fn skip_html_like_comment(&mut self) {
+        while let Some(ch) = self.peek_char() {
+            if is_line_terminator(ch) {
+                break;
+            }
+            self.advance_char();
         }
     }
 
@@ -1444,6 +1481,10 @@ impl<'a> Lexer<'a> {
         self.source[self.cursor..].chars().next()
     }
 
+    fn starts_with(&self, pattern: &str) -> bool {
+        self.source[self.cursor..].starts_with(pattern)
+    }
+
     fn peek_next_char(&self) -> Option<char> {
         let mut chars = self.source[self.cursor..].chars();
         chars.next()?;
@@ -1454,5 +1495,110 @@ impl<'a> Lexer<'a> {
         let ch = self.peek_char()?;
         self.cursor += ch.len_utf8();
         Some(ch)
+    }
+}
+
+fn is_line_terminator(ch: char) -> bool {
+    matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{Parser, Stmt};
+
+    fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
+        let tokens = Lexer::new(source).tokenize()?;
+        Parser::new(tokens).parse_program()
+    }
+
+    #[test]
+    fn html_open_comment_skips_to_line_end() {
+        let program =
+            parse_program("let before = 1; <!-- ignored < ! - tokens\nlet after = before + 1;")
+                .unwrap();
+
+        assert_eq!(program.len(), 2);
+    }
+
+    #[test]
+    fn html_close_comment_is_allowed_at_line_start_after_trivia() {
+        let program = parse_program(
+            "let before = 1;\n/* optional same-line block */--> ignored < ! - tokens\nlet after = before + 1;",
+        )
+        .unwrap();
+
+        assert_eq!(program.len(), 2);
+    }
+
+    #[test]
+    fn html_close_comment_is_allowed_after_multiline_block_comment() {
+        let program =
+            parse_program("let before = 1;/* first\nsecond */--> ignored\nlet after = before + 1;")
+                .unwrap();
+
+        assert_eq!(program.len(), 2);
+    }
+
+    #[test]
+    fn html_close_comment_supports_unicode_line_separators() {
+        let program = parse_program(
+            "let before = 1;\u{2028}--> ignored after line separator\nlet after = before + 1;",
+        )
+        .unwrap();
+
+        assert_eq!(program.len(), 2);
+    }
+
+    #[test]
+    fn html_comments_terminate_preceding_statement() {
+        let program = parse_program(
+            "let open = -1 <!-- ignored\nlet close = 1\n--> ignored\nlet after = open + close;",
+        )
+        .unwrap();
+
+        assert_eq!(program.len(), 3);
+    }
+
+    #[test]
+    fn html_comment_statement_terminator_is_allowed_inside_blocks() {
+        let program =
+            parse_program("if (true) { let value = 1 <!-- ignored\nvalue += 1; }").unwrap();
+
+        assert_eq!(program.len(), 1);
+    }
+
+    #[test]
+    fn html_comment_window_compound_assignment_parses() {
+        let program = parse_program("let counter = 0; counter += 1; counter -= 1;").unwrap();
+
+        assert_eq!(program.len(), 3);
+    }
+
+    #[test]
+    fn html_close_sequence_after_token_stays_operator_tokens() {
+        let tokens = Lexer::new("let x = a-->b;").tokenize().unwrap();
+        let kinds: Vec<Token> = tokens.into_iter().map(|token| token.kind).collect();
+
+        assert!(matches!(
+            kinds.as_slice(),
+            [
+                Token::Let,
+                Token::Ident(_),
+                Token::Equal,
+                Token::Ident(_),
+                Token::Decrement,
+                Token::Greater,
+                Token::Ident(_),
+                Token::Semicolon
+            ]
+        ));
+    }
+
+    #[test]
+    fn less_bang_and_minus_still_parse_as_operators() {
+        let program = parse_program("let value = a < !b; let difference = c - -d;").unwrap();
+
+        assert_eq!(program.len(), 2);
     }
 }

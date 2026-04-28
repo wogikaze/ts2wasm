@@ -15,6 +15,9 @@ impl Parser {
     pub fn parse_program(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
+            if self.consume(TokenKind::Semicolon) {
+                continue;
+            }
             statements.push(self.statement()?);
         }
         Ok(statements)
@@ -40,7 +43,12 @@ impl Parser {
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Colon)) => {
                 self.labeled_statement()
             }
-            Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Equal)) => {
+            Some(Token::Ident(_))
+                if matches!(
+                    self.peek_n(1),
+                    Some(Token::Equal | Token::PlusEqual | Token::MinusEqual)
+                ) =>
+            {
                 self.assign_statement()
             }
             _ => self.expression_statement(),
@@ -160,8 +168,35 @@ impl Parser {
 
     fn assign_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let (name, start) = self.expect_ident()?;
-        self.expect(TokenKind::Equal)?;
-        let expr = self.expression()?;
+        let expr = if self.consume(TokenKind::Equal) {
+            self.expression()?
+        } else {
+            let op = if self.consume(TokenKind::PlusEqual) {
+                BinaryOp::Add
+            } else if self.consume(TokenKind::MinusEqual) {
+                BinaryOp::Subtract
+            } else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "expected assignment operator".to_owned(),
+                    span: self.peek_span(),
+                });
+            };
+            let right = self.expression()?;
+            let end = right.span().end;
+            Expr::Binary {
+                left: Box::new(Expr::Ident {
+                    name: name.clone(),
+                    span: start,
+                }),
+                op,
+                right: Box::new(right),
+                span: Span {
+                    start: start.start,
+                    end,
+                },
+            }
+        };
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::Assign {
             name,
@@ -721,6 +756,9 @@ impl Parser {
                     message: "unterminated block".to_owned(),
                     span: self.prev_span().or_else(|| self.peek_span()),
                 });
+            }
+            if self.consume(TokenKind::Semicolon) {
+                continue;
             }
             statements.push(self.statement()?);
         }
