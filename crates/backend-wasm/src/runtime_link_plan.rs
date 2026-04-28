@@ -207,11 +207,11 @@ impl RuntimeLinkPlan {
                         self.collect_required_runtime_stmts(&[stmt.as_ref().clone()]);
                     }
                     if let Some(expr) = condition {
-                        self.collect_required_runtime_expr(&expr);
+                        self.collect_required_runtime_expr(expr);
                         self.add_required_runtime(RuntimeFn::TruthyBool);
                     }
                     if let Some(expr) = update {
-                        self.collect_required_runtime_expr(&expr);
+                        self.collect_required_runtime_expr(expr);
                     }
                     self.collect_required_runtime_stmts(body);
                 }

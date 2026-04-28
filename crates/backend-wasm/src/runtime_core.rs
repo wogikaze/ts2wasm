@@ -603,7 +603,7 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_and(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $and (param $a i32) (param $b i32) (result i32)
     (if (result i32)
@@ -611,11 +611,11 @@ impl WatEmitter<'_> {
       (then (local.get $b))
       (else (local.get $a))))
 "#,
-        ));
+        );
     }
 
     pub(super) fn emit_or(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $or (param $a i32) (param $b i32) (result i32)
     (if (result i32)
@@ -623,7 +623,7 @@ impl WatEmitter<'_> {
       (then (local.get $a))
       (else (local.get $b))))
 "#,
-        ));
+        );
     }
 
     pub(super) fn emit_concat(&self, wat: &mut String) {

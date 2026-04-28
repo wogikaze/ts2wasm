@@ -1455,11 +1455,7 @@ impl Parser {
             }
         } else if matches!(self.peek(), Some(Token::Ident(_))) {
             self.advance();
-            if self.consume(TokenKind::Arrow) {
-                true
-            } else {
-                false
-            }
+            self.consume(TokenKind::Arrow)
         } else {
             false
         };
@@ -1471,19 +1467,19 @@ impl Parser {
         }
 
         let expr = self.ternary()?;
-        if matches!(self.peek(), Some(Token::Equal)) {
-            if let Expr::Ident { name, span } = expr {
-                self.advance();
-                let value = self.assignment()?;
-                return Ok(Expr::Assign {
-                    name,
-                    span: Span {
-                        start: span.start,
-                        end: value.span().end,
-                    },
-                    expr: Box::new(value),
-                });
-            }
+        if matches!(self.peek(), Some(Token::Equal))
+            && let Expr::Ident { name, span } = expr
+        {
+            self.advance();
+            let value = self.assignment()?;
+            return Ok(Expr::Assign {
+                name,
+                span: Span {
+                    start: span.start,
+                    end: value.span().end,
+                },
+                expr: Box::new(value),
+            });
         }
         if let Some(op) = self.logical_assignment_operator() {
             let target_span = expr.span();
@@ -2073,15 +2069,13 @@ impl Parser {
         } else if let Some(new_span) = self.consume_span(TokenKind::New) {
             let expr = self.call_member_no_call()?;
             let mut args = Vec::new();
-            if self.consume(TokenKind::LeftParen) {
-                if !self.consume(TokenKind::RightParen) {
-                    loop {
-                        args.push(self.expression()?);
-                        if self.consume(TokenKind::RightParen) {
-                            break;
-                        }
-                        self.expect(TokenKind::Comma)?;
+            if self.consume(TokenKind::LeftParen) && !self.consume(TokenKind::RightParen) {
+                loop {
+                    args.push(self.expression()?);
+                    if self.consume(TokenKind::RightParen) {
+                        break;
                     }
+                    self.expect(TokenKind::Comma)?;
                 }
             }
             let end = self.prev_span().map(|s| s.end).unwrap_or(expr.span().end);

@@ -57,11 +57,7 @@ fn wat_runtime_functions(path: &std::path::Path) -> Vec<String> {
             let line = line.trim();
             if line.starts_with("(func $") {
                 let rest = line.strip_prefix("(func $").unwrap();
-                if let Some(end) = rest.find(' ') {
-                    Some(rest[..end].to_string())
-                } else {
-                    None
-                }
+                rest.find(' ').map(|end| rest[..end].to_string())
             } else {
                 None
             }

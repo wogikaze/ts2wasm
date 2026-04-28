@@ -120,12 +120,20 @@ impl Layout {
 mod tests {
     use super::Layout;
 
+    fn assert_le(left: u32, right: u32) {
+        assert!(left <= right);
+    }
+
+    fn assert_lt(left: u32, right: u32) {
+        assert!(left < right);
+    }
+
     #[test]
     fn memory_regions_are_non_overlapping_for_m6_stdin_slice() {
         let scratch_end = Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE;
         let stdin_end = Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE;
 
-        assert!(Layout::DATA_START <= Layout::SCRATCH_OFFSET);
+        assert_le(Layout::DATA_START, Layout::SCRATCH_OFFSET);
         assert!(scratch_end <= Layout::STDIN_BUFFER_OFFSET);
         assert!(stdin_end <= Layout::HEAP_START);
     }
@@ -199,13 +207,13 @@ mod tests {
 
     #[test]
     fn memory_max_pages_cover_initial_pages() {
-        assert!(Layout::MEMORY_MAX_PAGES >= Layout::MEMORY_MIN_PAGES);
+        assert_le(Layout::MEMORY_MIN_PAGES, Layout::MEMORY_MAX_PAGES);
     }
 
     #[test]
     fn scratch_stdin_heap_are_ordered() {
-        assert!(Layout::SCRATCH_OFFSET < Layout::STDIN_BUFFER_OFFSET);
-        assert!(Layout::STDIN_BUFFER_OFFSET < Layout::HEAP_START);
+        assert_lt(Layout::SCRATCH_OFFSET, Layout::STDIN_BUFFER_OFFSET);
+        assert_lt(Layout::STDIN_BUFFER_OFFSET, Layout::HEAP_START);
         let scratch_end = Layout::SCRATCH_OFFSET + Layout::SCRATCH_SIZE;
         let stdin_end = Layout::STDIN_BUFFER_OFFSET + Layout::STDIN_BUFFER_SIZE;
         assert!(scratch_end <= Layout::STDIN_BUFFER_OFFSET);

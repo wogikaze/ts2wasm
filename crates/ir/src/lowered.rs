@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
-use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use super::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
 use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, Span, UnaryOp};
 use ts2wasm_runtime_abi::ValueTag;
 
@@ -10,6 +10,9 @@ pub struct LocalId(pub usize);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FuncId(pub usize);
+
+type ClassConstructorMap = HashMap<String, FuncId>;
+type ClassMethodMap = HashMap<(String, String), FuncId>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ClassPrototypeRef {
@@ -397,9 +400,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     body,
                     &function_ids,
                     class_parents.clone(),
-                    None,
-                    false,
-                    next_func_id,
+                    LowerFunctionOptions {
+                        current_class: None,
+                        in_constructor: false,
+                        next_func_id,
+                    },
                 )?;
                 next_func_id = lowered.next_func_id;
                 functions_by_id[func_id.0] = Some(lowered.function);
@@ -420,7 +425,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     (Vec::new(), Vec::new())
                 };
 
-                let mut ctor_params_with_this: Vec<(String, Option<ResolvedExpr>, bool)> =
+                let mut ctor_params_with_this: Vec<ResolvedParam> =
                     vec![("this".to_owned(), None, false)];
                 ctor_params_with_this.extend(ctor_params.clone());
 
@@ -430,9 +435,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &ctor_body,
                     &function_ids,
                     class_parents.clone(),
-                    Some(name),
-                    true,
-                    next_func_id,
+                    LowerFunctionOptions {
+                        current_class: Some(name),
+                        in_constructor: true,
+                        next_func_id,
+                    },
                 )?;
                 next_func_id = lowered.next_func_id;
                 functions_by_id[ctor_id.0] = Some(lowered.function);
@@ -455,9 +462,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         &method.body,
                         &function_ids,
                         class_parents.clone(),
-                        Some(name),
-                        false,
-                        next_func_id,
+                        LowerFunctionOptions {
+                            current_class: Some(name),
+                            in_constructor: false,
+                            next_func_id,
+                        },
                     )?;
                     next_func_id = lowered.next_func_id;
                     functions_by_id[method_id.0] = Some(lowered.function);
@@ -582,15 +591,19 @@ fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<Str
     parents
 }
 
+struct LowerFunctionOptions<'a> {
+    current_class: Option<&'a str>,
+    in_constructor: bool,
+    next_func_id: usize,
+}
+
 fn lower_function(
     id: FuncId,
-    params: &[(String, Option<ResolvedExpr>, bool)],
+    params: &[ResolvedParam],
     body: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
     class_parents: HashMap<String, Option<String>>,
-    current_class: Option<&str>,
-    in_constructor: bool,
-    next_func_id: usize,
+    options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
     let (mut resolver, param_ids) = Resolver::with_params(
         function_ids,
@@ -600,9 +613,9 @@ fn lower_function(
             .collect::<Vec<_>>()
             .as_slice(),
         class_parents,
-        current_class,
-        in_constructor,
-        next_func_id,
+        options.current_class,
+        options.in_constructor,
+        options.next_func_id,
     )?;
 
     let rest_param_index = params.iter().position(|(_, _, is_rest)| *is_rest);
@@ -832,16 +845,16 @@ fn validate_json_stringify_args(
         }
     }
 
-    if let Some(space) = args.get(2) {
-        if !is_supported_json_stringify_space(space, function_ids) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "JSON.stringify space currently supports numeric/string values and ignored object/function values"
-                        .to_owned(),
-                span: Some(span),
-            });
-        }
+    if let Some(space) = args.get(2)
+        && !is_supported_json_stringify_space(space, function_ids)
+    {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "JSON.stringify space currently supports numeric/string values and ignored object/function values"
+                    .to_owned(),
+            span: Some(span),
+        });
     }
 
     Ok(())
@@ -1474,12 +1487,12 @@ impl<'a> Resolver<'a> {
                 .last_mut()
                 .expect("function scope must exist")
                 .insert(param.clone(), local_id);
-            if let Some(current_class) = current_class {
-                if param == "this" {
-                    resolver
-                        .local_classes
-                        .insert(local_id, current_class.to_owned());
-                }
+            if let Some(current_class) = current_class
+                && param == "this"
+            {
+                resolver
+                    .local_classes
+                    .insert(local_id, current_class.to_owned());
             }
             param_ids.push(local_id);
         }
@@ -1850,16 +1863,15 @@ impl<'a> Resolver<'a> {
                     }
                 };
 
-                if let Ok(local_id) = self.resolve_local(func_name) {
-                    if let Some(closure) = self.arrow_locals.get(&local_id).cloned() {
-                        let mut lowered_args = self.lower_call_args(args)?;
-                        lowered_args
-                            .extend(closure.captures.iter().copied().map(LoweredExpr::Local));
-                        return Ok(LoweredExpr::Call {
-                            kind: FunctionCallKind::User(closure.func_id),
-                            args: lowered_args,
-                        });
-                    }
+                if let Ok(local_id) = self.resolve_local(func_name)
+                    && let Some(closure) = self.arrow_locals.get(&local_id).cloned()
+                {
+                    let mut lowered_args = self.lower_call_args(args)?;
+                    lowered_args.extend(closure.captures.iter().copied().map(LoweredExpr::Local));
+                    return Ok(LoweredExpr::Call {
+                        kind: FunctionCallKind::User(closure.func_id),
+                        args: lowered_args,
+                    });
                 }
 
                 if func_name == "super" {
@@ -2194,32 +2206,30 @@ impl<'a> Resolver<'a> {
                         }
                     };
 
-                    if let Ok(obj_local) = self.resolve_local(receiver_name) {
-                        if let Some(class_name) = self.local_classes.get(&obj_local) {
-                            if let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
-                            {
-                                if class_name == "RegExp" && args.len() != 1 {
-                                    return Err(Diagnostic {
-                                        code: DiagCode::ArityMismatch,
-                                        message: format!(
-                                            "RegExp.prototype.{method} expects 1 argument, got {}",
-                                            args.len()
-                                        ),
-                                        span: Some(*span),
-                                    });
-                                }
-                                let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
-                                lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
-                                    Vec<_>,
-                                    _,
-                                >>(
-                                )?);
-                                return Ok(LoweredExpr::RuntimeCall {
-                                    runtime_fn: runtime_fn.to_owned(),
-                                    args: lowered_args,
-                                });
-                            }
+                    if let Ok(obj_local) = self.resolve_local(receiver_name)
+                        && let Some(class_name) = self.local_classes.get(&obj_local)
+                        && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
+                    {
+                        if class_name == "RegExp" && args.len() != 1 {
+                            return Err(Diagnostic {
+                                code: DiagCode::ArityMismatch,
+                                message: format!(
+                                    "RegExp.prototype.{method} expects 1 argument, got {}",
+                                    args.len()
+                                ),
+                                span: Some(*span),
+                            });
                         }
+                        let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
+                        lowered_args.extend(
+                            args.iter()
+                                .map(|e| self.lower_expr(e))
+                                .collect::<Result<Vec<_>, _>>()?,
+                        );
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: runtime_fn.to_owned(),
+                            args: lowered_args,
+                        });
                     }
 
                     if receiver_name == "super" {
@@ -2460,9 +2470,11 @@ impl<'a> Resolver<'a> {
             &body_stmts,
             self.function_ids,
             self.class_parents.clone(),
-            self.current_class.as_deref(),
-            false,
-            self.next_func_id,
+            LowerFunctionOptions {
+                current_class: self.current_class.as_deref(),
+                in_constructor: false,
+                next_func_id: self.next_func_id,
+            },
         )?;
         self.next_func_id = lowered.next_func_id;
         self.generated_functions.push(lowered.function);
@@ -2648,11 +2660,7 @@ impl<'a> Resolver<'a> {
 
 fn class_maps(
     function_ids: &HashMap<String, FuncId>,
-) -> (
-    HashMap<String, FuncId>,
-    HashMap<(String, String), FuncId>,
-    HashMap<(String, String), FuncId>,
-) {
+) -> (ClassConstructorMap, ClassMethodMap, ClassMethodMap) {
     let mut ctor_ids = HashMap::new();
     let mut method_ids = HashMap::new();
     let mut static_method_ids = HashMap::new();

@@ -288,7 +288,7 @@ impl<'a> WatEmitter<'a> {
                 span: None,
             });
         }
-        if Layout::HEAP_START % Layout::ALIGN != 0 {
+        if !Layout::HEAP_START.is_multiple_of(Layout::ALIGN) {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,
                 message: format!(
@@ -679,30 +679,29 @@ impl<'a> WatEmitter<'a> {
 
     pub(super) fn class_prototypes(&self) -> BTreeMap<FuncId, Option<FuncId>> {
         let mut prototypes = BTreeMap::new();
-        self.collect_class_prototypes_from_stmts(
+        Self::collect_class_prototypes_from_stmts(
             &self.program.top_level_statements,
             &mut prototypes,
         );
         for function in &self.program.functions {
-            self.collect_class_prototypes_from_stmts(&function.body, &mut prototypes);
+            Self::collect_class_prototypes_from_stmts(&function.body, &mut prototypes);
         }
         prototypes
     }
 
     pub(super) fn builtin_error_prototypes(&self) -> BTreeSet<BuiltinErrorConstructor> {
         let mut prototypes = BTreeSet::new();
-        self.collect_builtin_error_prototypes_from_stmts(
+        Self::collect_builtin_error_prototypes_from_stmts(
             &self.program.top_level_statements,
             &mut prototypes,
         );
         for function in &self.program.functions {
-            self.collect_builtin_error_prototypes_from_stmts(&function.body, &mut prototypes);
+            Self::collect_builtin_error_prototypes_from_stmts(&function.body, &mut prototypes);
         }
         prototypes
     }
 
     fn collect_class_prototypes_from_stmts(
-        &self,
         stmts: &[LoweredStmt],
         prototypes: &mut BTreeMap<FuncId, Option<FuncId>>,
     ) {
@@ -715,21 +714,21 @@ impl<'a> WatEmitter<'a> {
                 | LoweredStmt::Throw(expr)
                 | LoweredStmt::Export { expr, .. }
                 | LoweredStmt::ModuleExportsAssign { expr } => {
-                    self.collect_class_prototypes_from_expr(expr, prototypes);
+                    Self::collect_class_prototypes_from_expr(expr, prototypes);
                 }
                 LoweredStmt::If {
                     condition,
                     then_body,
                     else_body,
                 } => {
-                    self.collect_class_prototypes_from_expr(condition, prototypes);
-                    self.collect_class_prototypes_from_stmts(then_body, prototypes);
-                    self.collect_class_prototypes_from_stmts(else_body, prototypes);
+                    Self::collect_class_prototypes_from_expr(condition, prototypes);
+                    Self::collect_class_prototypes_from_stmts(then_body, prototypes);
+                    Self::collect_class_prototypes_from_stmts(else_body, prototypes);
                 }
                 LoweredStmt::While { condition, body }
                 | LoweredStmt::DoWhile { body, condition } => {
-                    self.collect_class_prototypes_from_expr(condition, prototypes);
-                    self.collect_class_prototypes_from_stmts(body, prototypes);
+                    Self::collect_class_prototypes_from_expr(condition, prototypes);
+                    Self::collect_class_prototypes_from_stmts(body, prototypes);
                 }
                 LoweredStmt::TryCatch {
                     try_body,
@@ -737,21 +736,21 @@ impl<'a> WatEmitter<'a> {
                     finally_body,
                     ..
                 } => {
-                    self.collect_class_prototypes_from_stmts(try_body, prototypes);
+                    Self::collect_class_prototypes_from_stmts(try_body, prototypes);
                     if let Some(body) = catch_body {
-                        self.collect_class_prototypes_from_stmts(body, prototypes);
+                        Self::collect_class_prototypes_from_stmts(body, prototypes);
                     }
                     if let Some(body) = finally_body {
-                        self.collect_class_prototypes_from_stmts(body, prototypes);
+                        Self::collect_class_prototypes_from_stmts(body, prototypes);
                     }
                 }
                 LoweredStmt::Switch { expr, cases } => {
-                    self.collect_class_prototypes_from_expr(expr, prototypes);
+                    Self::collect_class_prototypes_from_expr(expr, prototypes);
                     for (case_expr, body) in cases {
                         if let Some(case_expr) = case_expr {
-                            self.collect_class_prototypes_from_expr(case_expr, prototypes);
+                            Self::collect_class_prototypes_from_expr(case_expr, prototypes);
                         }
-                        self.collect_class_prototypes_from_stmts(body, prototypes);
+                        Self::collect_class_prototypes_from_stmts(body, prototypes);
                     }
                 }
                 LoweredStmt::For {
@@ -761,24 +760,24 @@ impl<'a> WatEmitter<'a> {
                     body,
                 } => {
                     if let Some(init) = init {
-                        self.collect_class_prototypes_from_stmts(
+                        Self::collect_class_prototypes_from_stmts(
                             std::slice::from_ref(init.as_ref()),
                             prototypes,
                         );
                     }
                     if let Some(condition) = condition {
-                        self.collect_class_prototypes_from_expr(condition, prototypes);
+                        Self::collect_class_prototypes_from_expr(condition, prototypes);
                     }
                     if let Some(update) = update {
-                        self.collect_class_prototypes_from_expr(update, prototypes);
+                        Self::collect_class_prototypes_from_expr(update, prototypes);
                     }
-                    self.collect_class_prototypes_from_stmts(body, prototypes);
+                    Self::collect_class_prototypes_from_stmts(body, prototypes);
                 }
                 LoweredStmt::ForIn { iter, body, .. } | LoweredStmt::ForOf { iter, body, .. } => {
-                    self.collect_class_prototypes_from_expr(iter, prototypes);
-                    self.collect_class_prototypes_from_stmts(body, prototypes);
+                    Self::collect_class_prototypes_from_expr(iter, prototypes);
+                    Self::collect_class_prototypes_from_stmts(body, prototypes);
                 }
-                LoweredStmt::Labeled { body, .. } => self.collect_class_prototypes_from_stmts(
+                LoweredStmt::Labeled { body, .. } => Self::collect_class_prototypes_from_stmts(
                     std::slice::from_ref(body.as_ref()),
                     prototypes,
                 ),
@@ -790,7 +789,6 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn collect_builtin_error_prototypes_from_stmts(
-        &self,
         stmts: &[LoweredStmt],
         prototypes: &mut BTreeSet<BuiltinErrorConstructor>,
     ) {
@@ -803,21 +801,21 @@ impl<'a> WatEmitter<'a> {
                 | LoweredStmt::Throw(expr)
                 | LoweredStmt::Export { expr, .. }
                 | LoweredStmt::ModuleExportsAssign { expr } => {
-                    self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
                 }
                 LoweredStmt::If {
                     condition,
                     then_body,
                     else_body,
                 } => {
-                    self.collect_builtin_error_prototypes_from_expr(condition, prototypes);
-                    self.collect_builtin_error_prototypes_from_stmts(then_body, prototypes);
-                    self.collect_builtin_error_prototypes_from_stmts(else_body, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(condition, prototypes);
+                    Self::collect_builtin_error_prototypes_from_stmts(then_body, prototypes);
+                    Self::collect_builtin_error_prototypes_from_stmts(else_body, prototypes);
                 }
                 LoweredStmt::While { condition, body }
                 | LoweredStmt::DoWhile { body, condition } => {
-                    self.collect_builtin_error_prototypes_from_expr(condition, prototypes);
-                    self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(condition, prototypes);
+                    Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                 }
                 LoweredStmt::TryCatch {
                     try_body,
@@ -825,21 +823,21 @@ impl<'a> WatEmitter<'a> {
                     finally_body,
                     ..
                 } => {
-                    self.collect_builtin_error_prototypes_from_stmts(try_body, prototypes);
+                    Self::collect_builtin_error_prototypes_from_stmts(try_body, prototypes);
                     if let Some(body) = catch_body {
-                        self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                        Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                     }
                     if let Some(body) = finally_body {
-                        self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                        Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                     }
                 }
                 LoweredStmt::Switch { expr, cases } => {
-                    self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
                     for (case_expr, body) in cases {
                         if let Some(case_expr) = case_expr {
-                            self.collect_builtin_error_prototypes_from_expr(case_expr, prototypes);
+                            Self::collect_builtin_error_prototypes_from_expr(case_expr, prototypes);
                         }
-                        self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                        Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                     }
                 }
                 LoweredStmt::For {
@@ -849,28 +847,29 @@ impl<'a> WatEmitter<'a> {
                     body,
                 } => {
                     if let Some(stmt) = init {
-                        self.collect_builtin_error_prototypes_from_stmts(
+                        Self::collect_builtin_error_prototypes_from_stmts(
                             std::slice::from_ref(stmt.as_ref()),
                             prototypes,
                         );
                     }
                     if let Some(condition) = condition {
-                        self.collect_builtin_error_prototypes_from_expr(condition, prototypes);
+                        Self::collect_builtin_error_prototypes_from_expr(condition, prototypes);
                     }
                     if let Some(update) = update {
-                        self.collect_builtin_error_prototypes_from_expr(update, prototypes);
+                        Self::collect_builtin_error_prototypes_from_expr(update, prototypes);
                     }
-                    self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                    Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                 }
                 LoweredStmt::ForIn { iter, body, .. } | LoweredStmt::ForOf { iter, body, .. } => {
-                    self.collect_builtin_error_prototypes_from_expr(iter, prototypes);
-                    self.collect_builtin_error_prototypes_from_stmts(body, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(iter, prototypes);
+                    Self::collect_builtin_error_prototypes_from_stmts(body, prototypes);
                 }
-                LoweredStmt::Labeled { body, .. } => self
-                    .collect_builtin_error_prototypes_from_stmts(
+                LoweredStmt::Labeled { body, .. } => {
+                    Self::collect_builtin_error_prototypes_from_stmts(
                         std::slice::from_ref(body.as_ref()),
                         prototypes,
-                    ),
+                    )
+                }
                 LoweredStmt::Break { .. }
                 | LoweredStmt::Continue { .. }
                 | LoweredStmt::ClassDecl { .. } => {}
@@ -879,7 +878,6 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn collect_class_prototypes_from_expr(
-        &self,
         expr: &LoweredExpr,
         prototypes: &mut BTreeMap<FuncId, Option<FuncId>>,
     ) {
@@ -893,7 +891,7 @@ impl<'a> WatEmitter<'a> {
             } => {
                 add_class_prototype_ref(prototype, prototypes);
                 for arg in args {
-                    self.collect_class_prototypes_from_expr(arg, prototypes);
+                    Self::collect_class_prototypes_from_expr(arg, prototypes);
                 }
             }
             LoweredExpr::Unary { expr, .. }
@@ -901,14 +899,14 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::PropertyGet { obj: expr, .. }
             | LoweredExpr::MethodCall { object: expr, .. }
             | LoweredExpr::PropertyDelete { object: expr, .. } => {
-                self.collect_class_prototypes_from_expr(expr, prototypes);
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::Binary { left, right, .. } => {
-                self.collect_class_prototypes_from_expr(left, prototypes);
-                self.collect_class_prototypes_from_expr(right, prototypes);
+                Self::collect_class_prototypes_from_expr(left, prototypes);
+                Self::collect_class_prototypes_from_expr(right, prototypes);
             }
             LoweredExpr::PropertyIn { obj, .. } => {
-                self.collect_class_prototypes_from_expr(obj, prototypes);
+                Self::collect_class_prototypes_from_expr(obj, prototypes);
             }
             LoweredExpr::PropertyInDynamic { obj, key }
             | LoweredExpr::ArrayGet {
@@ -921,60 +919,60 @@ impl<'a> WatEmitter<'a> {
             }
             | LoweredExpr::PropertyGetDynamic { obj, key }
             | LoweredExpr::PropertyDeleteDynamic { object: obj, key } => {
-                self.collect_class_prototypes_from_expr(obj, prototypes);
-                self.collect_class_prototypes_from_expr(key, prototypes);
+                Self::collect_class_prototypes_from_expr(obj, prototypes);
+                Self::collect_class_prototypes_from_expr(key, prototypes);
             }
             LoweredExpr::Call { args, .. } | LoweredExpr::RuntimeCall { args, .. } => {
                 for arg in args {
-                    self.collect_class_prototypes_from_expr(arg, prototypes);
+                    Self::collect_class_prototypes_from_expr(arg, prototypes);
                 }
             }
             LoweredExpr::ArrayNew { elements } => {
                 for elem in elements {
-                    self.collect_class_prototypes_from_expr(elem, prototypes);
+                    Self::collect_class_prototypes_from_expr(elem, prototypes);
                 }
             }
             LoweredExpr::ObjectNew { props } => {
                 for (_, value) in props {
-                    self.collect_class_prototypes_from_expr(value, prototypes);
+                    Self::collect_class_prototypes_from_expr(value, prototypes);
                 }
             }
             LoweredExpr::PropertySet { object, value, .. } => {
-                self.collect_class_prototypes_from_expr(object, prototypes);
-                self.collect_class_prototypes_from_expr(value, prototypes);
+                Self::collect_class_prototypes_from_expr(object, prototypes);
+                Self::collect_class_prototypes_from_expr(value, prototypes);
             }
             LoweredExpr::PropertySetDynamic {
                 object,
                 index,
                 value,
             } => {
-                self.collect_class_prototypes_from_expr(object, prototypes);
-                self.collect_class_prototypes_from_expr(index, prototypes);
-                self.collect_class_prototypes_from_expr(value, prototypes);
+                Self::collect_class_prototypes_from_expr(object, prototypes);
+                Self::collect_class_prototypes_from_expr(index, prototypes);
+                Self::collect_class_prototypes_from_expr(value, prototypes);
             }
             LoweredExpr::Assign { expr, .. } => {
-                self.collect_class_prototypes_from_expr(expr, prototypes);
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalAssign { expr, .. } => {
-                self.collect_class_prototypes_from_expr(expr, prototypes);
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalPropertyAssign { expr, .. } => {
-                self.collect_class_prototypes_from_expr(expr, prototypes);
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
-                self.collect_class_prototypes_from_expr(object, prototypes);
-                self.collect_class_prototypes_from_expr(expr, prototypes);
+                Self::collect_class_prototypes_from_expr(object, prototypes);
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
-                self.collect_class_prototypes_from_expr(key, prototypes);
-                self.collect_class_prototypes_from_expr(expr, prototypes);
+                Self::collect_class_prototypes_from_expr(key, prototypes);
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalComputedMemberAssign {
                 object, key, expr, ..
             } => {
-                self.collect_class_prototypes_from_expr(object, prototypes);
-                self.collect_class_prototypes_from_expr(key, prototypes);
-                self.collect_class_prototypes_from_expr(expr, prototypes);
+                Self::collect_class_prototypes_from_expr(object, prototypes);
+                Self::collect_class_prototypes_from_expr(key, prototypes);
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::Number(_)
             | LoweredExpr::String(_)
@@ -989,7 +987,6 @@ impl<'a> WatEmitter<'a> {
     }
 
     fn collect_builtin_error_prototypes_from_expr(
-        &self,
         expr: &LoweredExpr,
         prototypes: &mut BTreeSet<BuiltinErrorConstructor>,
     ) {
@@ -1002,14 +999,14 @@ impl<'a> WatEmitter<'a> {
                 message,
             } => {
                 add_builtin_error_prototype_ref(*constructor, prototypes);
-                self.collect_builtin_error_prototypes_from_expr(message, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(message, prototypes);
             }
             LoweredExpr::Unary { expr, .. }
             | LoweredExpr::GetLength(expr)
             | LoweredExpr::PropertyGet { obj: expr, .. }
             | LoweredExpr::MethodCall { object: expr, .. }
             | LoweredExpr::PropertyDelete { object: expr, .. } => {
-                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::Binary { left, right, .. }
             | LoweredExpr::PropertyGetDynamic {
@@ -1032,56 +1029,56 @@ impl<'a> WatEmitter<'a> {
                 obj: left,
                 key: right,
             } => {
-                self.collect_builtin_error_prototypes_from_expr(left, prototypes);
-                self.collect_builtin_error_prototypes_from_expr(right, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(left, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(right, prototypes);
             }
             LoweredExpr::PropertySet { object, value, .. }
             | LoweredExpr::PropertySetDynamic { object, value, .. } => {
-                self.collect_builtin_error_prototypes_from_expr(object, prototypes);
-                self.collect_builtin_error_prototypes_from_expr(value, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(object, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(value, prototypes);
             }
             LoweredExpr::Call { args, .. } | LoweredExpr::RuntimeCall { args, .. } => {
                 for arg in args {
-                    self.collect_builtin_error_prototypes_from_expr(arg, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(arg, prototypes);
                 }
             }
             LoweredExpr::ArrayNew { elements } => {
                 for elem in elements {
-                    self.collect_builtin_error_prototypes_from_expr(elem, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(elem, prototypes);
                 }
             }
             LoweredExpr::ObjectNew { props } => {
                 for (_, value) in props {
-                    self.collect_builtin_error_prototypes_from_expr(value, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(value, prototypes);
                 }
             }
             LoweredExpr::New { args, .. } => {
                 for arg in args {
-                    self.collect_builtin_error_prototypes_from_expr(arg, prototypes);
+                    Self::collect_builtin_error_prototypes_from_expr(arg, prototypes);
                 }
             }
             LoweredExpr::Assign { expr, .. }
             | LoweredExpr::LogicalAssign { expr, .. }
             | LoweredExpr::LogicalPropertyAssign { expr, .. } => {
-                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
-                self.collect_builtin_error_prototypes_from_expr(object, prototypes);
-                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(object, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
-                self.collect_builtin_error_prototypes_from_expr(key, prototypes);
-                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(key, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::LogicalComputedMemberAssign {
                 object, key, expr, ..
             } => {
-                self.collect_builtin_error_prototypes_from_expr(object, prototypes);
-                self.collect_builtin_error_prototypes_from_expr(key, prototypes);
-                self.collect_builtin_error_prototypes_from_expr(expr, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(object, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(key, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
             LoweredExpr::PropertyIn { obj, .. } => {
-                self.collect_builtin_error_prototypes_from_expr(obj, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(obj, prototypes);
             }
             LoweredExpr::Number(_)
             | LoweredExpr::String(_)
@@ -1159,7 +1156,7 @@ impl<'a> WatEmitter<'a> {
         }
         self.emit_gc_root_table_initializer(wat, 4);
         if self.module_runtime_enabled() {
-            let cache_size = Layout::MODULE_CACHE_MAX as u32 * Layout::MODULE_CACHE_ENTRY_SIZE;
+            let cache_size = Layout::MODULE_CACHE_MAX * Layout::MODULE_CACHE_ENTRY_SIZE;
             wat.push_str(&format!(
                 "    (global.set $module_cache (call $alloc_heap (i32.const {cache_size})))\n",
             ));

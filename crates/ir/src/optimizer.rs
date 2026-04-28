@@ -118,11 +118,10 @@ fn fold_literal_numeric_add_expr(expr: &mut HirExpr) -> bool {
             changed |= fold_literal_numeric_add_expr(right);
             if let (HirExpr::ConstNumber(left), HirExpr::ConstNumber(right)) =
                 (left.as_ref(), right.as_ref())
+                && let Some(value) = left.checked_add(*right)
             {
-                if let Some(value) = left.checked_add(*right) {
-                    *expr = HirExpr::ConstNumber(value);
-                    return true;
-                }
+                *expr = HirExpr::ConstNumber(value);
+                return true;
             }
             changed
         }

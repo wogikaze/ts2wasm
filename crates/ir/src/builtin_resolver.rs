@@ -38,19 +38,18 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 value,
                 ..
             } = expr
+                && let Expr::Ident { name, .. } = object.as_ref()
             {
-                if let Expr::Ident { name, .. } = object.as_ref() {
-                    if name == "exports" {
-                        return Ok(ResolvedStmt::Export {
-                            name: property.clone(),
-                            expr: Box::new(resolve_expr(value)?),
-                        });
-                    }
-                    if name == "module" && property == "exports" {
-                        return Ok(ResolvedStmt::ModuleExportsAssign {
-                            expr: Box::new(resolve_expr(value)?),
-                        });
-                    }
+                if name == "exports" {
+                    return Ok(ResolvedStmt::Export {
+                        name: property.clone(),
+                        expr: Box::new(resolve_expr(value)?),
+                    });
+                }
+                if name == "module" && property == "exports" {
+                    return Ok(ResolvedStmt::ModuleExportsAssign {
+                        expr: Box::new(resolve_expr(value)?),
+                    });
                 }
             }
             Ok(ResolvedStmt::Expr(resolve_expr(expr)?))
@@ -89,7 +88,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 .map(|(param_name, default, is_rest)| {
                     Ok((
                         param_name.clone(),
-                        default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                        default.as_ref().map(resolve_expr).transpose()?,
                         *is_rest,
                     ))
                 })
@@ -151,7 +150,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                             .map(|(param_name, default, is_rest)| {
                                 Ok((
                                     param_name.clone(),
-                                    default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                                    default.as_ref().map(resolve_expr).transpose()?,
                                     *is_rest,
                                 ))
                             })
@@ -175,7 +174,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                             .map(|(param_name, default, is_rest)| {
                                 Ok((
                                     param_name.clone(),
-                                    default.as_ref().map(|d| resolve_expr(d)).transpose()?,
+                                    default.as_ref().map(resolve_expr).transpose()?,
                                     *is_rest,
                                 ))
                             })
@@ -462,27 +461,24 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Member {
             object, property, ..
         } => {
-            if let Expr::Ident { name, .. } = object.as_ref() {
-                if name == "process" {
-                    return match property.as_str() {
-                        "argv" => Ok(ResolvedExpr::BuiltinCall {
-                            builtin: BuiltinId::ProcessArgv,
-                            args: Vec::new(),
-                        }),
-                        "env" => Ok(ResolvedExpr::BuiltinCall {
-                            builtin: BuiltinId::ProcessEnv,
-                            args: Vec::new(),
-                        }),
-                        _ => Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "process.{} is not supported in this milestone",
-                                property
-                            ),
-                            span: span_of_expr(expr),
-                        }),
-                    };
-                }
+            if let Expr::Ident { name, .. } = object.as_ref()
+                && name == "process"
+            {
+                return match property.as_str() {
+                    "argv" => Ok(ResolvedExpr::BuiltinCall {
+                        builtin: BuiltinId::ProcessArgv,
+                        args: Vec::new(),
+                    }),
+                    "env" => Ok(ResolvedExpr::BuiltinCall {
+                        builtin: BuiltinId::ProcessEnv,
+                        args: Vec::new(),
+                    }),
+                    _ => Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("process.{} is not supported in this milestone", property),
+                        span: span_of_expr(expr),
+                    }),
+                };
             }
 
             let resolved_object = Box::new(resolve_expr(object)?);

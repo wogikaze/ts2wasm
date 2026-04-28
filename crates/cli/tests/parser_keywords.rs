@@ -14,7 +14,6 @@ fn lexer_recognizes_new_keywords() {
     // - Token::Do, Token::For, Token::In, Token::Of, Token::While
     // - Token::Switch, Token::Case, Token::Default, Token::Break, Token::Continue
     // - Token::Async, Token::Await, Token::Import, Token::Export
-    assert!(true);
 }
 
 #[test]
@@ -31,61 +30,52 @@ fn lexer_recognizes_new_operators() {
     // - Token::LeftShift (<<), Token::RightShift (>>), Token::UnsignedRightShift (>>>)
     // - Token::Spread (...), Token::Arrow (=>)
     // - Token::OptionalChain (?.),Token::NullishCoalesce (??)
-    assert!(true);
 }
 
 #[test]
 fn class_keyword_recognized_in_parsing() {
     // Placeholder: tests would verify 'class' keyword is recognized
     // Real test via parse_program("class Foo {}")
-    assert!(true);
 }
 
 #[test]
 fn try_catch_keywords_recognized() {
     // Placeholder: tests try, catch, finally keywords
     // Real test via parse_program("try {} catch (e) {}")
-    assert!(true);
 }
 
 #[test]
 fn control_flow_keywords_recognized() {
     // Placeholder: tests do, for, switch, break, continue
     // Real tests via parse_program("do {} while(x)") etc.
-    assert!(true);
 }
 
 #[test]
 fn typeof_operator_recognized() {
     // Placeholder: tests typeof operator
     // Real test via parse_program("typeof x")
-    assert!(true);
 }
 
 #[test]
 fn arrow_function_operator_recognized() {
     // Placeholder: tests => arrow function operator
     // Real test via parse_program("(x) => x + 1")
-    assert!(true);
 }
 
 #[test]
 fn spread_operator_recognized() {
     // Placeholder: tests ... spread operator
     // Real test via parse_program("[...arr]")
-    assert!(true);
 }
 
 #[test]
 fn bitwise_operators_recognized() {
     // Placeholder: tests &, |, ^, ~
     // Real test via parse_program("x & y | z ^ ~w")
-    assert!(true);
 }
 
 #[test]
 fn shift_operators_recognized() {
     // Placeholder: tests <<, >>, >>>
     // Real test via parse_program("x << 1 | y >> 2 | z >>> 3")
-    assert!(true);
 }

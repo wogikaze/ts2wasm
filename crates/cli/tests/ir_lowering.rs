@@ -1,5 +1,4 @@
 use ts2wasm_frontend::DiagCode;
-use ts2wasm_ir;
 
 fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::ResolvedStmt> {
     let program = ts2wasm_cli::parse_program(source).unwrap();
