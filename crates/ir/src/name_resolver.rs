@@ -571,6 +571,9 @@ impl NameResolver {
                 property,
                 span,
             } => {
+                if self.is_unshadowed_test262_ishtmldda_member(object, property) {
+                    return Err(unsupported_annex_b_ishtmldda(*span));
+                }
                 let resolved_object = self.resolve_expr(object)?;
                 Ok(Expr::Member {
                     object: Box::new(resolved_object),
@@ -734,6 +737,12 @@ impl NameResolver {
             && !self.is_user_declared("Function")
     }
 
+    fn is_unshadowed_test262_ishtmldda_member(&self, object: &Expr, property: &str) -> bool {
+        matches!(object, Expr::Ident { name, .. } if name == "$262")
+            && property == "IsHTMLDDA"
+            && !self.is_user_declared("$262")
+    }
+
     fn is_user_declared(&self, name: &str) -> bool {
         self.functions.contains_key(name)
             || self.classes.contains_key(name)
@@ -761,6 +770,14 @@ fn unsupported_function_constructor(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-062: dynamic Function constructor is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn unsupported_annex_b_ishtmldda(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-237: Annex B [[IsHTMLDDA]] test262 host hook `$262.IsHTMLDDA` is not modeled; document.all compatibility semantics are unsupported".to_owned(),
         span: Some(span),
     }
 }
