@@ -2,7 +2,7 @@
   "run_id": "237-ishtmldda-host-hook-20260428T120149Z",
   "task_id": "issue-237",
   "git": {
-    "sha": "4a60707",
+    "sha": "163861bc3197ea1865160635fdf1ba60e414a706",
     "exit_code": 0,
     "changed_files": [
       "crates/cli/tests/m2_node_diff.rs",
@@ -20,8 +20,12 @@
     ],
     "commits": [
       {
-        "sha": "4a60707",
+        "sha": "4a60707c9fb1a382de79319843664ff3d358e95a",
         "message": "issue-237: classify ishtmldda host hook cases"
+      },
+      {
+        "sha": "163861bc3197ea1865160635fdf1ba60e414a706",
+        "message": "issue-237: close ishtmldda unsupported policy"
       }
     ]
   },
