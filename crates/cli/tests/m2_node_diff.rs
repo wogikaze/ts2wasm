@@ -135,6 +135,18 @@ fn logical_assignment_unsupported_targets_report_issue_228() {
 }
 
 #[test]
+fn for_await_of_unsupported_reports_issue_230() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/for-await-of-unsupported.ts",
+        "issue-230: `for await...of` async iteration requires Promise and async iterator runtime semantics",
+    );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/async-function-for-await-of-unsupported.ts",
+        "issue-230: async function declarations require Promise and async iterator runtime semantics for `for await...of`",
+    );
+}
+
+#[test]
 fn string_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/string-trim.ts",

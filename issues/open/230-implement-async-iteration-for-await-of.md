@@ -98,6 +98,12 @@ Reference-backed affected file in the limit-1250 window:
 
 - `reference/test262/test/annexB/language/statements/for-await-of/iterator-close-return-emulates-undefined-throws-when-called.js`
 
+Progress on 2026-04-28:
+
+- Added parser/frontend unsupported diagnostics for direct `for await...of` and the `async function` wrapper that currently gates the reference-backed for-await-of case.
+- Added regression coverage in frontend parser tests and CLI fixture diagnostics.
+- Reference shard remains `UnsupportedSyntax: async-iteration`; raw compiler stderr for the reference file now reports `issue-230` instead of the previous generic `unsupported expression: Async`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
