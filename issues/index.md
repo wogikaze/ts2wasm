@@ -18,7 +18,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 021a | Implement wasm-encoder hello binary MVP | feature | backend | implementation-ready | P2 |  | The wasm backend needs a first direct binary emission slice for a WASI stdout fixture; WAT and wasm binary are equiva... |
-| 050a | Document Date deterministic subset and live-time policy gap | docs | runtime/builtins | docs-ready | P1 |  | Date has validated deterministic slices, but the open epic still presents live time, timezone formatting, frontend re... |
 | 052a | Close JSON supported subset contract | docs | runtime/builtins | docs-ready | P1 |  | JSON has many validated progress slices, but the parent issue still reads as a full-spec implementation target and is... |
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | verification-ready | P1 |  | Unknown-unsupported classification has reached zero in large test262 windows, but the parent spike has no fixed compl... |
 | 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | verification-ready | P1 |  | Dynamic `Function(...)` and `new Function(...)` behave like runtime |
@@ -28,6 +27,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 062f | Implement function object metadata | feature | frontend/semantics | implementation-ready | P2 |  | Function object metadata such as `name`, `length`, and prototype |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 238 | Make strict warning gates pass | infra | tests | implementation-ready | P0 |  | Make strict warning gates pass |
+| 239 | Design Date live-time capability policy | docs | runtime/builtins | design-ready | P1 |  | `new Date()` and `Date.now()` currently have issue-linked unsupported diagnostics, but there is no policy work item t... |
+| 241 | Implement Annex B Date legacy methods | feature | runtime/builtins | implementation-ready | P2 |  | issue 061 was closed as a duplicate of the Date epic, but its Annex B Date reference evidence needs a closeable child... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -179,6 +180,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | feature | frontend | class: blocked | Implement Compiler |
 | 200 | Implement parser syntax extensions | feature | frontend | class: blocked | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | class: blocked | Investigate and classify unknown-unsupported cases |
+| 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -240,6 +242,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 047 | Implement super keyword | feature | runtime/semantics | see `issues/done/047-implement-super-keyword.md` |
 | 048 | Implement prototype chain | feature | runtime/semantics | see `issues/done/048-implement-prototype-chain.md` |
 | 049 | Implement Map and Set | feature | runtime/builtins | see `issues/done/049-implement-map-set.md` |
+| 050a | Document Date deterministic subset and live-time policy gap | docs | runtime/builtins | see `issues/done/050a-document-date-deterministic-subset-and-live-time-policy-gap.md` |
 | 051 | Implement RegExp | feature | runtime/builtins | see `issues/done/051-implement-regexp.md` |
 | 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 | 054 | Implement Error types | feature | runtime/builtins | see `issues/done/054-implement-error-types.md` |
