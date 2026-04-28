@@ -583,6 +583,32 @@ abcdefghij1
 - Full validation report for run `052-json-replacer-array-20260428T083349Z` is recorded under `reports/runs/052-json-replacer-array-20260428T083349Z/`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the single string-literal object-literal subset, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.stringify` array replacer continuation slice for object-literal property filtering with multiple string-literal property-list entries.
+- Progress commit: `3e3c4ae`.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts` for `JSON.stringify({ a: 1, b: 2, c: 3 }, ["c", "a"])`; Node and iwasm both print:
+
+```text
+{"c":3,"a":1}
+```
+
+- Preserved unsupported diagnostics for function replacers and unsupported array replacer contents/forms; `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts` still rejects a non-string property-list entry with an issue-052 `UnsupportedSyntax` diagnostic.
+- Pre-change reproduction with `/tmp/ts2wasm-json-replacer-array-multikey.ts` showed Node printed `{"c":3,"a":1}`, while ts2wasm rejected the same source with `issue-052: JSON.stringify array replacer property lists outside the single string-literal object subset are not supported yet`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts -o /tmp/ts2wasm-json-replacer-array-multikey.wasm`
+  - `iwasm /tmp/ts2wasm-json-replacer-array-multikey.wasm`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm` (expected `UnsupportedSyntax`, status 1)
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
