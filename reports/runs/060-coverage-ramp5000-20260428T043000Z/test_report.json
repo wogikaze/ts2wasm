@@ -49,6 +49,11 @@
       "cmd": "scripts/manager check-agent-state",
       "status": "pass",
       "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 060-coverage-ramp5000-20260428T043000Z",
+      "status": "fail",
+      "exit_code": 1
     }
   ],
   "fixtures": {
@@ -70,6 +75,8 @@
     "json_artifact": "artifacts/coverage/results/test262.json",
     "detail_blocked": 1,
     "json_blocked": 0,
-    "status": "progress"
+    "status": "progress",
+    "webhook": "deferred",
+    "webhook_reason": "DISCORD_WEBHOOK_URL is not configured"
   }
 }

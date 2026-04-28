@@ -25,6 +25,7 @@ PROGRESS. The stored test262 coverage artifact now records limit 5000 with zero 
 - `scripts/manager update-coverage-matrix --check`: pass
 - `scripts/manager check-issue-health`: pass
 - `scripts/manager check-agent-state`: pass
+- `scripts/manager discord-report --run-id 060-coverage-ramp5000-20260428T043000Z`: deferred; `DISCORD_WEBHOOK_URL` is not configured after two attempts
 
 ## Follow-Up
 
