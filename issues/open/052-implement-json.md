@@ -416,6 +416,34 @@ abcdefghij1
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.parse` invalid-number diagnostics slice that rejects leading-zero number tokens instead of accepting them as small integers.
+- Covered top-level, array-value, and object-value parse paths with rejection fixtures:
+  - `fixtures/builtins-and-io/json-parse-invalid-number-leading-zero.ts` for `JSON.parse('01')`
+  - `fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-array.ts` for `JSON.parse('[01]')`
+  - `fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-object.ts` for `JSON.parse('{"a":01}')`
+- Pre-change gap checks showed Node rejected all three leading-zero forms with JSON `SyntaxError`, while iwasm accepted each fixture and printed `accepted` with status 0.
+- Incomplete number probes were already rejected by both Node and iwasm:
+  - `JSON.parse('1.')`
+  - `JSON.parse('1e')`
+  - `JSON.parse('-')`
+- Direct evidence for the new fixtures:
+  - `node fixtures/builtins-and-io/json-parse-invalid-number-leading-zero.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `node fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-array.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `node fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-object.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-number-leading-zero.ts -o /tmp/ts2wasm-json-invalid-number-leading-zero.wasm && iwasm /tmp/ts2wasm-json-invalid-number-leading-zero.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-array.ts -o /tmp/ts2wasm-json-invalid-number-leading-zero-array.wasm && iwasm /tmp/ts2wasm-json-invalid-number-leading-zero-array.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-object.ts -o /tmp/ts2wasm-json-invalid-number-leading-zero-object.wasm && iwasm /tmp/ts2wasm-json-invalid-number-leading-zero-object.wasm` rejects with `Exception: unreachable` and status 1.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
