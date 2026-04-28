@@ -198,6 +198,18 @@ fn json_parse_incomplete_object_rejected_under_node_and_iwasm() {
 }
 
 #[test]
+fn json_stringify_replacer_unsupported_forms_report_issue_052() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts",
+        "issue-052: JSON.stringify function replacer callbacks are not supported yet",
+    );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts",
+        "issue-052: JSON.stringify array replacer property lists are not supported yet",
+    );
+}
+
+#[test]
 fn error_message_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-message.ts");
 }
@@ -234,6 +246,29 @@ fn date_live_time_fixtures_report_capability_policy_diagnostic() {
         "fixtures/builtins-and-io/date-noarg-live-time-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "auditable time capability policy");
+    }
+}
+
+#[test]
+fn date_annex_b_fixtures_report_issue_061() {
+    for (fixture, method) in [
+        (
+            "fixtures/builtins-and-io/date-annexb-get-year-unsupported.ts",
+            "getYear",
+        ),
+        (
+            "fixtures/builtins-and-io/date-annexb-set-year-unsupported.ts",
+            "setYear",
+        ),
+        (
+            "fixtures/builtins-and-io/date-annexb-to-gmt-string-unsupported.ts",
+            "toGMTString",
+        ),
+    ] {
+        assert_build_fails_with_unsupported_syntax(
+            fixture,
+            &format!("issue-061: Date.prototype.{method} is Annex B legacy Date behavior"),
+        );
     }
 }
 
@@ -942,6 +977,8 @@ fn feature_label_from_diag(diag_code: &str, stderr: &str, case: &str) -> &'stati
         "import-export"
     } else if path.contains("/regexp/") || text.contains("regexp") {
         "regexp-literal"
+    } else if path.contains("/built-ins/string/") || text.contains("string.prototype") {
+        "string-builtin"
     } else if path.contains("/async") || text.contains(" async ") || text.contains("await ") {
         "async"
     } else if path.contains("/destructuring/") || text.contains("destructur") {
@@ -1035,6 +1072,46 @@ fn regexp_unsupported_flag_fixture_reports_issue_202() {
     assert!(
         stderr.contains("issue-202: unsupported RegExp flag `d`"),
         "expected issue-linked RegExp flag diagnostic, got:\n{stderr}"
+    );
+}
+
+#[test]
+fn regexp_compile_fixture_reports_issue_051() {
+    let fixture = "fixtures/core-semantics/regexp-compile-unsupported.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "unsupported RegExp.prototype.compile fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]"),
+        "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-051: RegExp.prototype.compile is not supported"),
+        "expected issue-linked RegExp.prototype.compile diagnostic, got:\n{stderr}"
+    );
+}
+
+#[test]
+fn annex_b_string_anchor_fixture_reports_issue_067() {
+    let fixture = "fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts";
+    assert_build_fails_with_unsupported_syntax(
+        fixture,
+        "issue-067: Annex B String.prototype.anchor is not supported yet",
     );
 }
 

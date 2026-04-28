@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
@@ -726,6 +726,17 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
     }
 }
 
+fn unsupported_annex_b_string_method(method: &str, span: Span) -> Option<Diagnostic> {
+    match method {
+        "anchor" | "fontcolor" | "fontsize" | "link" | "substr" => Some(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("issue-067: Annex B String.prototype.{method} is not supported yet"),
+            span: Some(span),
+        }),
+        _ => None,
+    }
+}
+
 fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'static str> {
     match (class_name, method) {
         ("Map", "get") => Some("MapGet"),
@@ -755,7 +766,11 @@ fn is_json_static_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "JSON") && method == "stringify"
 }
 
-fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(), Diagnostic> {
+fn validate_json_stringify_args(
+    args: &[ResolvedExpr],
+    span: Span,
+    function_ids: &HashMap<String, FuncId>,
+) -> Result<(), Diagnostic> {
     if args.is_empty() || args.len() > 3 {
         return Err(Diagnostic {
             code: DiagCode::ArityMismatch,
@@ -768,13 +783,29 @@ fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(),
     }
 
     if let Some(replacer) = args.get(1) {
-        if !matches!(replacer, ResolvedExpr::Null | ResolvedExpr::Undefined) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "JSON.stringify replacer is not supported; pass null or undefined"
-                    .to_owned(),
-                span: Some(span),
-            });
+        match replacer {
+            ResolvedExpr::Null | ResolvedExpr::Undefined => {}
+            ResolvedExpr::ArrowFn { .. } => {
+                return Err(json_stringify_replacer_diagnostic(
+                    "function replacer callbacks",
+                    span,
+                ));
+            }
+            ResolvedExpr::Ident(name) if function_ids.contains_key(name) => {
+                return Err(json_stringify_replacer_diagnostic(
+                    "function replacer callbacks",
+                    span,
+                ));
+            }
+            ResolvedExpr::Array(_) => {
+                return Err(json_stringify_replacer_diagnostic(
+                    "array replacer property lists",
+                    span,
+                ));
+            }
+            _ => {
+                return Err(json_stringify_replacer_diagnostic("replacer values", span));
+            }
         }
     }
 
@@ -798,6 +829,16 @@ fn validate_json_stringify_args(args: &[ResolvedExpr], span: Span) -> Result<(),
     Ok(())
 }
 
+fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-052: JSON.stringify {kind} are not supported yet; pass null or undefined until replacer semantics are implemented"
+        ),
+        span: Some(span),
+    }
+}
+
 fn unsupported_live_time_diagnostic(operation: &str, span: Option<Span>) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
@@ -810,6 +851,20 @@ fn unsupported_live_time_diagnostic(operation: &str, span: Option<Span>) -> Diag
 
 fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
+}
+
+fn is_annex_b_date_method(method: &str) -> bool {
+    matches!(method, "getYear" | "setYear" | "toGMTString")
+}
+
+fn unsupported_annex_b_date_method_diagnostic(method: &str, span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-061: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
+        ),
+        span,
+    }
 }
 
 fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
@@ -1013,6 +1068,15 @@ fn unsupported_regexp_literal(context: &str, raw: &str, reason: &str) -> Diagnos
     }
 }
 
+fn unsupported_regexp_compile_diagnostic(span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-051: RegExp.prototype.compile is not supported in this subset; create a new RegExp(\"plain\") value instead"
+            .to_owned(),
+        span,
+    }
+}
+
 fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut Vec<String>) {
     match expr {
         ResolvedExpr::This { .. } => push_capture("this", params, captures),
@@ -1136,6 +1200,7 @@ struct Resolver<'a> {
     class_static_method_ids: HashMap<(String, String), FuncId>,
     class_parents: HashMap<String, Option<String>>,
     local_classes: HashMap<LocalId, String>,
+    regexp_literal_locals: HashSet<LocalId>,
     current_class: Option<String>,
     in_constructor: bool,
 }
@@ -1169,6 +1234,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             local_classes: HashMap::new(),
+            regexp_literal_locals: HashSet::new(),
             current_class: None,
             in_constructor: false,
         }
@@ -1199,6 +1265,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             local_classes: HashMap::new(),
+            regexp_literal_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
         };
@@ -1274,6 +1341,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.local_classes.remove(&local_id);
                 }
+                self.update_regexp_literal_local(local_id, expr);
                 Ok(LoweredStmt::Let(local_id, lowered))
             }
             ResolvedStmt::Assign(name, expr) => {
@@ -1296,6 +1364,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.local_classes.remove(&local_id);
                 }
+                self.update_regexp_literal_local(local_id, expr);
                 Ok(LoweredStmt::Assign(local_id, lowered))
             }
             ResolvedStmt::Expr(expr) => Ok(LoweredStmt::Expr(self.lower_expr(expr)?)),
@@ -1706,7 +1775,7 @@ impl<'a> Resolver<'a> {
                 span,
             } => {
                 if is_json_static_call(object, method) {
-                    validate_json_stringify_args(args, *span)?;
+                    validate_json_stringify_args(args, *span, self.function_ids)?;
                     let mut lowered_args = Vec::with_capacity(3);
                     lowered_args.push(self.lower_expr(&args[0])?);
                     lowered_args.push(match args.get(1) {
@@ -1723,6 +1792,8 @@ impl<'a> Resolver<'a> {
                     })
                 } else if is_date_now_live_time_call(object, method) {
                     Err(unsupported_live_time_diagnostic("Date.now()", Some(*span)))
+                } else if self.is_unsupported_regexp_compile_receiver(object, method) {
+                    Err(unsupported_regexp_compile_diagnostic(Some(*span)))
                 } else if let Some(regexp_args) = regexp_test_runtime(object, method, args, *span)?
                 {
                     let lowered_args = regexp_args
@@ -1771,6 +1842,33 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "DateGetTime".to_owned(),
                         args: vec![self.lower_expr(object)?],
                     })
+                } else if is_annex_b_date_method(method) && self.is_date_receiver(object) {
+                    Err(unsupported_annex_b_date_method_diagnostic(
+                        method,
+                        Some(*span),
+                    ))
+                } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
+                    if let Some(diagnostic) = unsupported_annex_b_string_method(method, *span) {
+                        Err(diagnostic)
+                    } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                        let mut lowered_args = vec![self.lower_expr(object)?];
+                        lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<
+                            Result<Vec<_>, _>,
+                        >(
+                        )?);
+                        Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn,
+                            args: lowered_args,
+                        })
+                    } else {
+                        Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "String.prototype.{method} is not supported in this milestone"
+                            ),
+                            span: Some(*span),
+                        })
+                    }
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
@@ -2206,6 +2304,32 @@ impl<'a> Resolver<'a> {
                 .and_then(|local_id| self.local_classes.get(&local_id))
                 .is_some_and(|class_name| class_name == "Date"),
             _ => false,
+        }
+    }
+
+    fn is_unsupported_regexp_compile_receiver(&self, expr: &ResolvedExpr, method: &str) -> bool {
+        if method != "compile" {
+            return false;
+        }
+        match expr {
+            ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => true,
+            ResolvedExpr::New { class_name, .. } => class_name == "RegExp",
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.regexp_literal_locals.contains(&local_id)
+                    || self
+                        .local_classes
+                        .get(&local_id)
+                        .is_some_and(|class_name| class_name == "RegExp")
+            }),
+            _ => false,
+        }
+    }
+
+    fn update_regexp_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if matches!(expr, ResolvedExpr::String(raw) if looks_like_regexp_literal(raw)) {
+            self.regexp_literal_locals.insert(local_id);
+        } else {
+            self.regexp_literal_locals.remove(&local_id);
         }
     }
 
