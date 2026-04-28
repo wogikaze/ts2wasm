@@ -54,3 +54,9 @@ result: pass
 - Issue 060 remains open: broader reference windows still need exhaustion before DONE.
 - The assigned `/home/wogikaze/wgkz/ts2wasm/reference` root still lacks `TypeScript`, so tsc validation from that exact root remains blocked as documented in the issue.
 - Pre-existing untracked assignment file remains at `reports/agents/060-coverage-ramp2000-20260428T031700Z/assignment.md`; it was not modified.
+
+## Reporting
+
+- `scripts/manager discord-report --run-id 20260428T032402Z-060-coverage-ramp2000` failed because `DISCORD_WEBHOOK_URL` is not configured.
+- Retry failed with the same missing webhook configuration.
+- Deferred payload saved to `discord_payload.json`; error saved to `reporting_error.log`.
