@@ -8,9 +8,9 @@ use std::process::Command;
 
 use ts2wasm_backend_wasm as backend;
 #[cfg(test)]
-use ts2wasm_frontend::{BinaryOp, Expr};
+use ts2wasm_frontend::BinaryOp;
 use ts2wasm_frontend::{
-    DiagCode, Diagnostic, Lexer, Parser, Stmt, validate_type_reference_directives,
+    DiagCode, Diagnostic, Expr, Lexer, Parser, Stmt, validate_type_reference_directives,
 };
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
@@ -53,8 +53,9 @@ pub fn build_file_with_host_deny(
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
-    module_graph::validate_entry_module_graph(input, &program)?;
-    let name_resolved = name_resolver::resolve_names(&program)?;
+    let module_graph = module_graph::build_entry_module_graph(input, &program)?;
+    let build_program = rewrite_static_named_imports_for_build(&program, &module_graph)?;
+    let name_resolved = name_resolver::resolve_names(&build_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
@@ -120,6 +121,103 @@ fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnosti
     }
 
     Ok(())
+}
+
+fn rewrite_static_named_imports_for_build(
+    program: &[Stmt],
+    module_graph: &ModuleGraph,
+) -> Result<Vec<Stmt>, Diagnostic> {
+    let mut rewritten = Vec::new();
+
+    for stmt in program {
+        match stmt {
+            Stmt::ImportNamed {
+                specifiers, source, ..
+            } => {
+                let dependency = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == source.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for static import `{}`",
+                            source.value
+                        ),
+                        span: Some(source.span),
+                    })?;
+                let exports = collect_literal_named_exports(dependency.resolved_path())?;
+                for specifier in specifiers {
+                    let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: module `{}` does not export named binding `{}`",
+                            source.value, specifier.imported
+                        ),
+                        span: Some(specifier.imported_span),
+                    })?;
+                    rewritten.push(Stmt::Let {
+                        name: specifier.local.clone(),
+                        expr: expr.clone(),
+                        span: specifier.local_span,
+                    });
+                }
+            }
+            other => rewritten.push(other.clone()),
+        }
+    }
+
+    Ok(rewritten)
+}
+
+fn collect_literal_named_exports(path: &Path) -> Result<HashMap<String, Expr>, Diagnostic> {
+    let source = fs::read_to_string(path).map_err(|error| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("failed to read {}: {error}", path.display()),
+        span: None,
+    })?;
+    validate_type_reference_directives(&source)?;
+    let program = parse_program(&source)?;
+    validate_ast(&program)?;
+
+    let mut exports = HashMap::new();
+    for stmt in &program {
+        if let Stmt::ExportDecl {
+            declaration,
+            specifier,
+            ..
+        } = stmt
+        {
+            if let Stmt::Let { expr, .. } = declaration.as_ref() {
+                if !is_static_export_literal(expr) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
+                            specifier.exported,
+                            path.display()
+                        ),
+                        span: Some(specifier.local_span),
+                    });
+                }
+                exports.insert(specifier.exported.clone(), expr.clone());
+            }
+        }
+    }
+
+    Ok(exports)
+}
+
+fn is_static_export_literal(expr: &Expr) -> bool {
+    matches!(
+        expr,
+        Expr::Number { .. }
+            | Expr::String { .. }
+            | Expr::Bool { .. }
+            | Expr::Null { .. }
+            | Expr::Undefined { .. }
+    )
 }
 
 pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
