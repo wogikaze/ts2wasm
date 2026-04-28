@@ -6,6 +6,8 @@ Branch: `agent/045-class-close-20260428T005343Z`
 
 Implementation commit: `3f32481`
 
+Close commit: `9c5e478`
+
 ## Summary
 
 - Existing class declaration and constructor lowering were already present.

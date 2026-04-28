@@ -106,6 +106,7 @@ Fill only when moving to `done/`.
 Commits:
 
 - `3f32481` issue-045: support class expression bindings
+- `9c5e478` issue-045: close class syntax issue
 
 Validation result:
 

@@ -2,7 +2,7 @@
   "run_id": "20260428T045-class-close",
   "task_id": "045",
   "git": {
-    "sha": "3f32481",
+    "sha": "9c5e478",
     "exit_code": 0,
     "changed_files": [
       "crates/frontend/src/parser.rs",
@@ -10,12 +10,20 @@
       "crates/cli/tests/m8_oop_classes.rs",
       "fixtures/classes-and-inheritance/class-expression.ts",
       "issues/done/045-implement-class-syntax.md",
-      "issues/index.md"
+      "issues/index.md",
+      "reports/agents/agent-045-class-close-20260428T005343Z/report.md",
+      "reports/agents/agent-045-class-close-20260428T005343Z/webhook-deferred.json",
+      "reports/runs/20260428T045-class-close/cycle_report.md",
+      "reports/runs/20260428T045-class-close/test_report.json"
     ],
     "commits": [
       {
         "sha": "3f32481",
         "message": "issue-045: support class expression bindings"
+      },
+      {
+        "sha": "9c5e478",
+        "message": "issue-045: close class syntax issue"
       }
     ]
   },
