@@ -44,6 +44,7 @@ impl Parser {
 
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
+            Some(Token::Import) => self.import_statement(),
             Some(Token::Export) => self.export_statement(),
             Some(Token::Let) => self.let_statement(),
             Some(Token::Const) => self.let_statement(), // const is treated like let for now
@@ -81,15 +82,44 @@ impl Parser {
         }
     }
 
+    fn import_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let import_span = self.expect(TokenKind::Import)?;
+        let form = match self.peek() {
+            Some(Token::String(_)) => "side-effect import",
+            Some(Token::LeftBrace) => "named import",
+            Some(Token::Star) => "namespace import",
+            Some(Token::Ident(_)) => "default import",
+            _ => "static import",
+        };
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-055: unsupported {form}; module resolution and loading are not implemented"
+            ),
+            span: Some(import_span),
+        })
+    }
+
     fn export_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let export_span = self.expect(TokenKind::Export)?;
-        self.consume(TokenKind::Default);
+        let has_default = self.consume(TokenKind::Default);
         if matches!(self.peek(), Some(Token::Class)) {
             self.class_statement()
         } else {
+            let form = match self.peek() {
+                Some(Token::LeftBrace) => "named export",
+                Some(Token::Star) => "re-export",
+                Some(Token::Const | Token::Let | Token::Var) => "variable export",
+                Some(Token::Function) => "function export",
+                Some(Token::Default) if !has_default => "default export",
+                _ if has_default => "default export",
+                _ => "static export",
+            };
             Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "issue-055: only `export class` is supported in this milestone".to_owned(),
+                message: format!(
+                    "issue-055: unsupported {form}; module resolution and loading are not implemented"
+                ),
                 span: Some(export_span),
             })
         }
@@ -2454,5 +2484,31 @@ mod tests {
         assert!(err.message.contains("async function declarations"));
         assert!(err.message.contains("for await...of"));
         assert_eq!(err.span, Some(Span { start: 0, end: 14 }));
+    }
+
+    #[test]
+    fn rejects_static_import_with_issue_linked_diagnostic() {
+        let err = parse_program("import { value } from './module-source';").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported named import"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn rejects_named_export_with_issue_linked_diagnostic() {
+        let err = parse_program("let value = 1; export { value };").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported named export"));
+        assert!(
+            err.message
+                .contains("module resolution and loading are not implemented")
+        );
+        assert_eq!(err.span, Some(Span { start: 15, end: 21 }));
     }
 }
