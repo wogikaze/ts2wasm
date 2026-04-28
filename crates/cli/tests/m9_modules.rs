@@ -165,6 +165,11 @@ fn static_module_named_import_shadowed_local_build_smoke() {
 }
 
 #[test]
+fn static_module_named_import_repeated_source_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-entry-repeated.ts");
+}
+
+#[test]
 fn static_module_named_import_missing_export_reports_issue_233_at_imported_name() {
     assert_build_fails_with_diagnostic_span_at(
         "module-system/static-missing-named-export.ts",

@@ -562,9 +562,12 @@ impl WatEmitter<'_> {
             LoweredStmt::Export { name, expr } => {
                 let name_ptr = self.string_offset(name) + Layout::STRING_HEADER_SIZE;
                 let name_len = name.len() as u32;
+                wat.push_str(&format!(
+                    "{pad}(i32.const {name_ptr})\n{pad}(i32.const {name_len})\n"
+                ));
                 self.emit_expr(wat, expr, indent, frame);
                 wat.push_str(&format!(
-                    "{pad}(i32.const {name_ptr})\n{pad}(i32.const {name_len})\n{pad}(call {})\n",
+                    "{pad}(call {})\n",
                     RuntimeFn::ModuleExportsSet.symbol(),
                 ));
             }
