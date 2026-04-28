@@ -2,7 +2,7 @@
   "run_id": "233-module-import-exports-20260428T105318Z",
   "task_id": "issue-233",
   "git": {
-    "sha": "pre-commit",
+    "sha": "dc3e7bd2df235509b773de56f872cbef770637c1",
     "exit_code": 0,
     "changed_files": [
       "crates/compiler/src/lib.rs",
@@ -11,7 +11,12 @@
       "reports/runs/233-module-import-exports-20260428T105318Z/discord-report-deferred.md",
       "reports/runs/233-module-import-exports-20260428T105318Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "dc3e7bd2df235509b773de56f872cbef770637c1",
+        "message": "issue-233: lower static import reads through module exports"
+      }
+    ]
   },
   "commands": [
     {
