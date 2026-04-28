@@ -205,6 +205,17 @@ fn json_parse_invalid_literal_rejected_under_node_and_iwasm() {
 }
 
 #[test]
+fn json_parse_invalid_leading_zero_numbers_rejected_under_node_and_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/json-parse-invalid-number-leading-zero.ts",
+        "fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-array.ts",
+        "fixtures/builtins-and-io/json-parse-invalid-number-leading-zero-object.ts",
+    ] {
+        assert_fixture_rejected_by_node_and_iwasm(fixture);
+    }
+}
+
+#[test]
 fn json_stringify_replacer_unsupported_forms_report_issue_052() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts",
