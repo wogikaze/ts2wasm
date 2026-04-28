@@ -425,5 +425,135 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_map_new(&self, wat: &mut String) {
+        self.emit_collection_new(wat, "$map_new");
+    }
+
+    pub(super) fn emit_set_new(&self, wat: &mut String) {
+        self.emit_collection_new(wat, "$set_new");
+    }
+
+    fn emit_collection_new(&self, wat: &mut String, symbol: &str) {
+        wat.push_str(&format!(
+            r#"
+  (func {symbol} (result i32)
+    (local $base i32)
+    (local.set $base (call $alloc_heap (i32.const {collection_size})))
+    (i32.store (local.get $base) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_proto})) (i32.const {zero}))
+    (i32.or (local.get $base) (i32.const {object_tag})))
+"#,
+            symbol = symbol,
+            collection_size = Layout::OBJECT_HEADER_SIZE + (32 * Layout::OBJECT_ENTRY_SIZE),
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            object_tag = ValueTag::OBJECT,
+        ));
+    }
+
+    pub(super) fn emit_map_get(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_get (param $map i32) (param $key i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (call $property_get (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_map_set(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_set (param $map i32) (param $key i32) (param $value i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (drop
+      (call $property_set
+        (local.get $map)
+        (i32.const {scratch_offset})
+        (local.get $key_len)
+        (local.get $value)))
+    (local.get $map))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_map_has(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_has (param $map i32) (param $key i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (call $property_has (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_map_delete(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $map_delete (param $map i32) (param $key i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (call $property_delete (local.get $map) (i32.const {scratch_offset}) (local.get $key_len)))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_set_add(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_add (param $set i32) (param $value i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $value) (i32.const {scratch_offset})))
+    (drop
+      (call $property_set
+        (local.get $set)
+        (i32.const {scratch_offset})
+        (local.get $key_len)
+        (i32.const {true_value})))
+    (local.get $set))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+            true_value = ValueTag::TRUE,
+        ));
+    }
+
+    pub(super) fn emit_set_has(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_has (param $set i32) (param $value i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $value) (i32.const {scratch_offset})))
+    (call $property_has (local.get $set) (i32.const {scratch_offset}) (local.get $key_len)))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_set_delete(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_delete (param $set i32) (param $value i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $value) (i32.const {scratch_offset})))
+    (call $property_delete (local.get $set) (i32.const {scratch_offset}) (local.get $key_len)))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
     // String methods (M10)
 }

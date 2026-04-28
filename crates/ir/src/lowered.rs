@@ -672,6 +672,19 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
     }
 }
 
+fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'static str> {
+    match (class_name, method) {
+        ("Map", "get") => Some("MapGet"),
+        ("Map", "set") => Some("MapSet"),
+        ("Map", "has") => Some("MapHas"),
+        ("Map", "delete") => Some("MapDelete"),
+        ("Set", "add") => Some("SetAdd"),
+        ("Set", "has") => Some("SetHas"),
+        ("Set", "delete") => Some("SetDelete"),
+        _ => None,
+    }
+}
+
 fn regexp_literal_test_runtime(
     object: &ResolvedExpr,
     method: &str,
@@ -1469,6 +1482,24 @@ impl<'a> Resolver<'a> {
                         }
                     };
 
+                    if let Ok(obj_local) = self.resolve_local(receiver_name) {
+                        if let Some(class_name) = self.local_classes.get(&obj_local) {
+                            if let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
+                            {
+                                let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
+                                lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
+                                    Vec<_>,
+                                    _,
+                                >>(
+                                )?);
+                                return Ok(LoweredExpr::RuntimeCall {
+                                    runtime_fn: runtime_fn.to_owned(),
+                                    args: lowered_args,
+                                });
+                            }
+                        }
+                    }
+
                     if receiver_name == "super" {
                         let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1572,6 +1603,21 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::New { class_name, args } => {
+                if class_name == "Map" || class_name == "Set" {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-049: new {class_name}(iterable) is not supported yet"
+                            ),
+                            span: None,
+                        });
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: format!("{class_name}New"),
+                        args: Vec::new(),
+                    });
+                }
                 if is_builtin_error_constructor(class_name) {
                     let message = match args.first() {
                         Some(message) => self.lower_expr(message)?,
