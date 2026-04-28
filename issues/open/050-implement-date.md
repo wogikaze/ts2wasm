@@ -200,6 +200,35 @@ Follow-up issues:
   capability policy, `toString`, non-integer/non-literal Date inputs, and full Date API
   behavior are not complete. No live host time import was added.
 
+2026-04-28 toString diagnostic progress evidence:
+
+- Added a precise issue-050 diagnostic for `Date.prototype.toString()` on deterministic
+  Date receivers instead of falling through to generic method/class receiver errors.
+  The diagnostic records the timezone/host formatting-policy blocker and points users
+  at `getTime()` / `valueOf()` for deterministic epoch milliseconds.
+- Added fixture `fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts`.
+- Direct build evidence:
+
+  ```text
+  command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts -o /tmp/ts2wasm-date-to-string-timezone.wasm
+  result: exit 1
+  stderr: error: [UnsupportedSyntax] issue-050: Date.prototype.toString() requires timezone/host formatting policy; use getTime() or valueOf() for deterministic epoch milliseconds at 12..34
+  ```
+
+- Targeted regression:
+
+  ```text
+  command: cargo nextest run -p ts2wasm-cli date
+  result: pass, 7 tests run
+
+  command: cargo nextest run -E 'test(date)'
+  result: pass, 10 tests run
+  ```
+
+- Remaining issue 050 scope stays open: full live time support, an auditable time
+  capability policy, actual timezone-aware `toString` formatting, non-integer/non-literal
+  Date inputs, and full Date API behavior are not complete. No live host time import was added.
+
 2026-04-28 blocker evidence:
 
 - `new Date(0)` currently reaches class-constructor lowering and fails before backend Date runtime code can be used:
