@@ -699,6 +699,43 @@ abcdefghij1
 - Full `cargo nextest run` was skipped for this PROGRESS slice because issue 052 remains open and this was a narrow IR validation/lowering change for `JSON.stringify` `space` arguments.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, symbol and boxed Number/String `space` parity, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.stringify` boxed/ignored `space` parity slice.
+- Progress commit: `424de49`.
+- IR validation/lowering now handles:
+  - `new Number(2)` as a numeric gap value;
+  - `new String(">>")` as a string gap value;
+  - `Symbol`, `Symbol("gap")`, and `new Boolean(true)` as ignored `space` values.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-space-boxed-symbol.ts`.
+- Pre-change reproduction with `/tmp/ts2wasm-json-space-boxed-symbol.ts` showed Node printed the boxed/ignored-space output, while ts2wasm rejected the source with `UnsupportedSyntax: JSON.stringify space currently supports numeric/string values and ignored object/function values`.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-stringify-space-boxed-symbol.ts` prints:
+
+```text
+{
+  "a": 1
+}
+{
+>>"a": 1
+}
+{"a":1}
+{"a":1}
+{"a":1}
+```
+
+- `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space-boxed-symbol.ts -o /tmp/ts2wasm-json-space-boxed-symbol.wasm && iwasm /tmp/ts2wasm-json-space-boxed-symbol.wasm` prints the same output.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Full validation report for run `052-json-close-slice-20260428T133852Z` is recorded under `reports/runs/052-json-close-slice-20260428T133852Z/`.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
