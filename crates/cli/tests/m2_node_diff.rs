@@ -154,6 +154,13 @@ fn json_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn json_parse_trailing_tokens_rejected_under_node_and_iwasm() {
+    assert_fixture_rejected_by_node_and_iwasm(
+        "fixtures/builtins-and-io/json-parse-trailing-invalid.ts",
+    );
+}
+
+#[test]
 fn error_message_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-message.ts");
 }
@@ -393,6 +400,65 @@ fn assert_fixture_matches_node(fixture: &str) {
         String::from_utf8_lossy(&iwasm.output.stdout),
         String::from_utf8_lossy(&node.stdout),
         "stdout mismatch for {fixture}"
+    );
+}
+
+fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    assert!(
+        !node.status.success(),
+        "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+    let node_stderr = String::from_utf8_lossy(&node.stderr);
+    assert!(
+        node_stderr.contains("SyntaxError") && node_stderr.contains("JSON"),
+        "expected Node JSON SyntaxError for {fixture}, got:\n{node_stderr}"
+    );
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        !iwasm.output.status.success(),
+        "iwasm unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    let iwasm_output = format!(
+        "{}{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    )
+    .to_ascii_lowercase();
+    assert!(
+        iwasm_output.contains("unreachable"),
+        "expected iwasm trap for {fixture}, got:\n{iwasm_output}"
     );
 }
 
