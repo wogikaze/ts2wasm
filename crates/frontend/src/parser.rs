@@ -108,13 +108,16 @@ impl Parser {
 
     fn export_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let export_span = self.expect(TokenKind::Export)?;
-        let has_default = self.consume(TokenKind::Default);
-        if matches!(self.peek(), Some(Token::Class)) {
+        if matches!(self.peek(), Some(Token::Default)) {
+            let default_span = self.expect(TokenKind::Default)?;
+            self.default_export_statement(export_span, default_span)
+        } else if matches!(self.peek(), Some(Token::Class)) {
             self.class_statement()
-        } else if !has_default {
+        } else {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
                 Some(Token::Star) => self.star_re_export_statement(export_span),
+                Some(Token::Const) => self.const_export_statement(export_span),
                 _ => {
                     let form = match self.peek() {
                         Some(Token::Const | Token::Let | Token::Var) => "variable export",
@@ -131,19 +134,56 @@ impl Parser {
                     })
                 }
             }
-        } else {
-            let form = match self.peek() {
-                _ if has_default => "default export",
-                _ => "static export",
-            };
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-055: unsupported {form}; module resolution and loading are not implemented"
-                ),
-                span: Some(export_span),
-            })
         }
+    }
+
+    fn default_export_statement(
+        &mut self,
+        export_span: Span,
+        default_span: Span,
+    ) -> Result<Stmt, Diagnostic> {
+        match self.peek() {
+            Some(Token::Function) => {
+                return self.unsupported_module_form(export_span, "default function export");
+            }
+            Some(Token::Class) => {
+                return self.unsupported_module_form(export_span, "default class export");
+            }
+            _ => {}
+        }
+        let expr = self.expression()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ExportDefault {
+            expr,
+            default_span,
+            span: Span {
+                start: export_span.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn const_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
+        let (declaration, local, local_span) = self.let_statement_with_name_span()?;
+        if !matches!(declaration, Stmt::Let { .. }) {
+            return self.unsupported_module_form(export_span, "class export");
+        }
+        let specifier = ExportNamedSpecifier {
+            local: local.clone(),
+            local_span,
+            exported: local,
+            exported_span: local_span,
+            span: local_span,
+        };
+        let end = declaration.span().end;
+        Ok(Stmt::ExportDecl {
+            declaration: Box::new(declaration),
+            specifier,
+            span: Span {
+                start: export_span.start,
+                end,
+            },
+        })
     }
 
     fn star_re_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
@@ -514,6 +554,10 @@ impl Parser {
     }
 
     fn let_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        self.let_statement_with_name_span().map(|(stmt, _, _)| stmt)
+    }
+
+    fn let_statement_with_name_span(&mut self) -> Result<(Stmt, String, Span), Diagnostic> {
         let start = match self.advance() {
             Some(SpannedToken {
                 kind: Token::Let | Token::Const | Token::Var,
@@ -527,7 +571,7 @@ impl Parser {
                 });
             }
         };
-        let (name, _) = self.expect_ident()?;
+        let (name, name_span) = self.expect_ident()?;
         if self.consume(TokenKind::Colon) {
             self.skip_type_annotation_until(&[
                 TokenKind::Equal,
@@ -538,18 +582,20 @@ impl Parser {
         }
         self.expect(TokenKind::Equal)?;
         if matches!(self.peek(), Some(Token::Class)) {
-            return self.class_expression_statement(name, start);
+            let stmt = self.class_expression_statement(name.clone(), start)?;
+            return Ok((stmt, name, name_span));
         }
         let expr = self.expression()?;
         let semi = self.expect(TokenKind::Semicolon)?;
-        Ok(Stmt::Let {
-            name,
+        let stmt = Stmt::Let {
+            name: name.clone(),
             expr,
             span: Span {
                 start: start.start,
                 end: semi.end,
             },
-        })
+        };
+        Ok((stmt, name, name_span))
     }
 
     fn assign_statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -3058,6 +3104,117 @@ mod tests {
             }
             other => panic!("unexpected export statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn parses_const_declaration_export_with_exported_local_span() {
+        let program = parse_program("export const value = 1;").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 23 });
+                assert_eq!(specifier.local, "value");
+                assert_eq!(specifier.local_span, Span { start: 13, end: 18 });
+                assert_eq!(specifier.exported, "value");
+                assert_eq!(specifier.exported_span, Span { start: 13, end: 18 });
+                assert_eq!(specifier.span, Span { start: 13, end: 18 });
+                match declaration.as_ref() {
+                    Stmt::Let {
+                        name,
+                        expr: Expr::Number { value, span },
+                        span: decl_span,
+                    } => {
+                        assert_eq!(name, "value");
+                        assert_eq!(*value, 1);
+                        assert_eq!(*span, Span { start: 21, end: 22 });
+                        assert_eq!(*decl_span, Span { start: 7, end: 23 });
+                    }
+                    other => panic!("unexpected exported declaration: {other:?}"),
+                }
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_default_expression_export_with_default_marker_span() {
+        let program = parse_program("export default value + 1;").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportDefault {
+                expr,
+                default_span,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 25 });
+                assert_eq!(*default_span, Span { start: 7, end: 14 });
+                match expr {
+                    Expr::Binary {
+                        left,
+                        op,
+                        right,
+                        span,
+                    } => {
+                        assert_eq!(*op, BinaryOp::Add);
+                        assert_eq!(*span, Span { start: 15, end: 24 });
+                        assert_eq!(
+                            left.as_ref(),
+                            &Expr::Ident {
+                                name: "value".to_owned(),
+                                span: Span { start: 15, end: 20 }
+                            }
+                        );
+                        assert_eq!(
+                            right.as_ref(),
+                            &Expr::Number {
+                                value: 1,
+                                span: Span { start: 23, end: 24 }
+                            }
+                        );
+                    }
+                    other => panic!("unexpected exported default expression: {other:?}"),
+                }
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn keeps_default_function_and_class_exports_unsupported_for_narrow_slice() {
+        let function_err = parse_program("export default function value() {};").unwrap_err();
+        assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
+        assert!(function_err.message.contains("issue-055"));
+        assert!(
+            function_err
+                .message
+                .contains("unsupported default function export")
+        );
+        assert_eq!(function_err.span, Some(Span { start: 0, end: 6 }));
+
+        let class_err = parse_program("export default class Value {};").unwrap_err();
+        assert_eq!(class_err.code, DiagCode::UnsupportedSyntax);
+        assert!(class_err.message.contains("issue-055"));
+        assert!(
+            class_err
+                .message
+                .contains("unsupported default class export")
+        );
+        assert_eq!(class_err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn keeps_let_declaration_export_unsupported_for_narrow_slice() {
+        let err = parse_program("export let value = 1;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-055"));
+        assert!(err.message.contains("unsupported variable export"));
+        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
     }
 
     #[test]

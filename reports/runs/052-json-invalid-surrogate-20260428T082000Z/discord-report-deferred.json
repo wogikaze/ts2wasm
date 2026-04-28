@@ -1,0 +1,8 @@
+{
+  "run_id": "052-json-invalid-surrogate-20260428T082000Z",
+  "status": "deferred",
+  "reason": "DISCORD_WEBHOOK_URL was not configured in the environment or .env.",
+  "intended_command": "scripts/manager discord-report --run-id 052-json-invalid-surrogate-20260428T082000Z",
+  "summary": "PROGRESS: added JSON.parse surrogate diagnostic regression fixtures; Node accepts the surrogate forms and iwasm rejects them safely with Exception: unreachable.",
+  "report_path": "reports/runs/052-json-invalid-surrogate-20260428T082000Z/cycle_report.md"
+}

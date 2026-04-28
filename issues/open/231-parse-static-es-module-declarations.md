@@ -273,6 +273,54 @@ Remaining work before close:
 - export default and declaration exports still need parser AST coverage or narrower follow-up split.
 - broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
 
+2026-04-28 child worker `231-declaration-export-20260428T080100Z` completed a parser-only declaration export continuation:
+
+- Added frontend AST representation for `export const value = 1;` as `Stmt::ExportDecl`, wrapping the existing declaration and preserving the exported local name span.
+- Parsed the narrow `export const <ident> = <expr>;` form while keeping `export let`, `export var`, `export default`, and class declaration exports issue-linked or out of scope.
+- Added downstream unsupported guards so parsed declaration exports still stop with issue-055 before module graph, resolver, lowering, backend, or runtime semantics.
+- Added a CLI module guard fixture/test to prove parsed declaration exports still report issue-055 before module graph support.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (45 tests)
+cargo nextest run -p ts2wasm-cli static_declaration_export_reports_issue_055: PASS (1 test)
+cargo check --workspace: PASS
+```
+
+Remaining work before close:
+
+- export default still needs parser AST coverage or narrower follow-up split.
+- broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
+
+2026-04-28 child worker `231-export-default-20260428T082000Z` completed a parser-only export default continuation:
+
+- Added frontend AST representation for `export default <expression>;` as `Stmt::ExportDefault`, preserving the default marker span, exported expression AST, and declaration span.
+- Parsed the narrow expression default export form while keeping default function and default class exports issue-linked and out of scope.
+- Added downstream unsupported guards so parsed default exports still stop with issue-055 before module graph, resolver, lowering, backend, or runtime semantics.
+- Added a CLI module guard fixture/test to prove parsed default exports still report issue-055 before module loading support.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (47 tests)
+cargo nextest run -p ts2wasm-cli static_default_export_reports_issue_055: PASS (1 test)
+cargo check --workspace: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+cargo nextest run: PASS (356 tests, 4 skipped)
+```
+
+Commit:
+
+- `bb6e2b3` (`issue-231: parse export default expression`)
+
+Remaining work before close:
+
+- broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
