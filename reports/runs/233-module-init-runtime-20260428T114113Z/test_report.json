@@ -2,7 +2,7 @@
   "run_id": "233-module-init-runtime-20260428T114113Z",
   "task_id": "issue-233",
   "git": {
-    "sha": "6b2d9f1",
+    "sha": "22a12bbe11f8327d90bf90054436f2081cdadc04",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/emitter.rs",
@@ -14,8 +14,12 @@
     ],
     "commits": [
       {
-        "sha": "6b2d9f1",
+        "sha": "6b2d9f19a378a4efc633e9845321c2bebc95f494",
         "message": "issue-233: emit module init helpers"
+      },
+      {
+        "sha": "22a12bbe11f8327d90bf90054436f2081cdadc04",
+        "message": "issue-233: defer child report webhook"
       }
     ]
   },
