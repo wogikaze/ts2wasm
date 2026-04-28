@@ -1,0 +1,97 @@
+{
+  "run_id": "052-json-replacer-array-20260428T083349Z",
+  "task_id": "issue-052-json-stringify-replacer-array",
+  "git": {
+    "sha": "2fa4ae2",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/ir/src/lowered.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/builtins-and-io/json-stringify-replacer-array.ts",
+      "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts",
+      "issues/open/052-implement-json.md",
+      "reports/runs/052-json-replacer-array-20260428T083349Z/cycle_report.md",
+      "reports/runs/052-json-replacer-array-20260428T083349Z/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "2fa4ae2",
+        "message": "issue-052: support json stringify one-key replacer array"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(json)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node fixtures/builtins-and-io/json-stringify-replacer-array.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array.ts -o /tmp/ts2wasm-json-replacer-array.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "iwasm /tmp/ts2wasm-json-replacer-array.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm",
+      "status": "pass",
+      "exit_code": 1
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-stringify-replacer-array.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "unsupported_preserved": [
+      "fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts",
+      "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts"
+    ],
+    "full_nextest": "356 passed, 4 skipped"
+  }
+}
