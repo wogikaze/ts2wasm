@@ -120,8 +120,8 @@ cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-frontend: PASS (40 tests)
 cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_named_export_reports_issue_055: PASS (2 tests)
 cargo check --workspace: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 Remaining work before close:
@@ -143,8 +143,8 @@ cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-frontend: PASS (41 tests)
 cargo nextest run -p ts2wasm-cli static_default_import_reports_issue_055 static_named_import_reports_issue_055 static_named_export_reports_issue_055: PASS (3 tests)
 cargo check --workspace: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 Remaining work before close:
@@ -187,8 +187,8 @@ cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-frontend: PASS (41 tests)
 cargo nextest run -p ts2wasm-cli static_re_export_reports_issue_055 static_default_import_reports_issue_055 static_namespace_import_reports_issue_055 static_named_import_reports_issue_055 static_named_export_reports_issue_055 static_named_re_export_reports_issue_055: PASS (6 tests)
 cargo check --workspace: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 cargo nextest run: PASS (342 tests, 4 skipped)
 ```
 
@@ -213,8 +213,8 @@ cargo nextest run -p ts2wasm-frontend: PASS (42 tests)
 cargo nextest run -p ts2wasm-cli static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_default_import_reports_issue_055 static_namespace_import_reports_issue_055 static_named_import_reports_issue_055 static_named_export_reports_issue_055: PASS (6 tests)
 cargo check --workspace: PASS
 cargo nextest run: PASS (344 tests, 4 skipped)
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 Remaining work before close:
@@ -238,8 +238,8 @@ cargo nextest run -p ts2wasm-frontend: PASS (43 tests)
 cargo nextest run -p ts2wasm-cli static_default_import_reports_issue_055 static_combined_named_import_reports_issue_055 static_named_import_reports_issue_055 static_namespace_import_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_combined_namespace_import_reports_issue_055: PASS (7 tests after parent merge review fix)
 cargo check --workspace: PASS
 cargo nextest run: PASS (347 tests, 4 skipped)
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 Commit:
@@ -265,8 +265,8 @@ cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-frontend: PASS (43 tests)
 cargo nextest run -p ts2wasm-cli static_namespace_re_export_reports_issue_055: PASS (1 test)
 cargo check --workspace: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 cargo nextest run: PASS (350 tests, 4 skipped)
 ```
 
@@ -310,8 +310,8 @@ cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-frontend: PASS (47 tests)
 cargo nextest run -p ts2wasm-cli static_default_export_reports_issue_055: PASS (1 test)
 cargo check --workspace: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 cargo nextest run: PASS (356 tests, 4 skipped)
 ```
 
@@ -349,8 +349,8 @@ Validation:
 cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-frontend: PASS
 cargo nextest run -p ts2wasm-cli static_class_export_reports_issue_055: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 Remaining work before close:
@@ -380,23 +380,23 @@ command: cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 
 result: PASS (13 tests)
 date: 2026-04-28
 
-command: scripts/manager check-issue-health
+command: mise run check-issue-health
 result: PASS
 date: 2026-04-28
 
-command: scripts/manager check-agent-state
+command: mise run check-agent-state
 result: PASS
 date: 2026-04-28
 
-command: scripts/manager update-issue-index
+command: mise run update-issue-index
 result: PASS
 date: 2026-04-28
 
-command: scripts/manager update-issue-index --check
+command: mise run update-issue-index -- --check
 result: PASS
 date: 2026-04-28
 
-command: scripts/manager check-issue-index
+command: mise run check-issue-index
 result: PASS
 date: 2026-04-28
 

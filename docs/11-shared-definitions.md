@@ -154,7 +154,7 @@ gate は workstream の完了条件ではなく、「次の判断を下すため
 | A | W0, W1 | 単一ファイル TS/JS が WASI wasm に変換でき、`iwasm` 実行が成功する。`cargo nextest run` がすべて通る |
 | B | W0, W1, W2 | curated fixture セット全件で Node.js との stdout 差分がゼロ。differential test が CI で運用されている |
 | C | W1, W6 | `--emit-manifest` が capability manifest JSON を出力する。manifest と実際の wasm import が一致することを検証するテストがある |
-| D | W5 | test262 の executed count が 100 件以上。`artifacts/coverage/reference-coverage-matrix.md` が最新。`scripts/manager update-coverage-matrix --check` が通る |
+| D | W5 | test262 の executed count が 100 件以上。`artifacts/coverage/reference-coverage-matrix.md` が最新。`mise run update-coverage-matrix -- --check` が通る |
 | E | W2, W3, W5 | test262 の build-pass count が 50 件以上、かつ semantic-pass (Node differential 一致) count が 20 件以上。build-pass と semantic-pass が分離して集計されている |
 | F | W1, W3, W6 | standalone 対象プログラムが Node host import なしで動く。`--emit-manifest` で `standalone: true` が出力される。host-deny test が通る |
-| G | W7 | benchmark suite が固定されている。`scripts/manager benchmark-tracker` が median / p95 / wasm_size を記録する。前回比で regression が出た場合に gate が落ちる |
+| G | W7 | benchmark suite が固定されている。`mise run benchmark-tracker` が median / p95 / wasm_size を記録する。前回比で regression が出た場合に gate が落ちる |

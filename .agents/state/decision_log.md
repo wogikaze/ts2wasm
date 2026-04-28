@@ -140,6 +140,6 @@ Implementation steps:
 - **State**: VERIFY_FAST
 - **Decision**: Record PROGRESS for the constrained `RegExp.prototype.exec` slice.
 - **Rationale**: Literal-backed `/plain/.exec(input)` and identifier-backed `new RegExp("plain")` receivers now lower to the existing RegExp-only match helper. Hit/miss behavior is covered by IR tests and the Node/iwasm fixture. Direct `new RegExp("plain").exec(...)` was not added because the current parser rejects member access immediately after a `new` expression.
-- **Validation**: `cargo fmt --all --check`; `cargo nextest run -E 'test(regexp)'`; `cargo nextest run -p ts2wasm-cli regexp`; `node fixtures/core-semantics/regexp-test.ts`; `cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-exec.wasm && iwasm /tmp/ts2wasm-issue051-regexp-exec.wasm`; `scripts/manager check-issue-health`; `scripts/manager check-agent-state`.
+- **Validation**: `cargo fmt --all --check`; `cargo nextest run -E 'test(regexp)'`; `cargo nextest run -p ts2wasm-cli regexp`; `node fixtures/core-semantics/regexp-test.ts`; `cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-exec.wasm && iwasm /tmp/ts2wasm-issue051-regexp-exec.wasm`; `mise run check-issue-health`; `mise run check-agent-state`.
 - **Reversible?**: yes
 - **Follow-up**: Full match-array semantics and parser support for direct member access after `new RegExp(...)` remain future issue-051 work.

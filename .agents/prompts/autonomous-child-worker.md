@@ -128,7 +128,7 @@ Use validation layers. Do not jump directly to broad tests.
 Layer 1:
 
 ```bash
-scripts/manager fmt
+mise run fmt
 ```
 
 Layer 2:
@@ -143,15 +143,15 @@ Layer 2:
 Layer 3:
 
 ```bash
-scripts/manager check-agent-state
-scripts/manager check-issue-health
-scripts/manager check-repo-smoke
+mise run check-agent-state
+mise run check-issue-health
+mise run check-repo-smoke
 ```
 
 Layer 4:
 
 ```bash
-scripts/manager nextest
+mise run nextest
 ```
 
 Layer 4 is required for DONE close if the issue policy requires it.
@@ -260,7 +260,7 @@ Do not leave sections as `未記入`; `discord-report` rejects placeholder-heavy
 1. Attempt:
 
 ```bash
-scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
+mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
 1. If it fails:
@@ -273,7 +273,7 @@ scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <r
 `reports/` is local and git-ignored. Do not commit report artifacts. When retrying a saved payload, use:
 
 ```bash
-scripts/manager discord-report reports/runs/<run_id>/discord_payload.json --run-id <run_id>
+mise run discord-report -- reports/runs/<run_id>/discord_payload.json --run-id <run_id>
 ```
 
 Webhook failure must not erase commits or stop the issue list.

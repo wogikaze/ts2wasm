@@ -19,7 +19,7 @@ description: 自律コンパイラ開発実行に使用。FSM、current_task.jso
 
 ## Mise: VERIFY*終了時 / RETRO報告前に実行（必須）
 
-**自律ループはゲートが実際に実行された場合のみ誠実。以下を実行し、失敗時にステップを失敗させる。** `mise`がない場合、`scripts/manager`を同じ名前で使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
+**自律ループはゲートが実際に実行された場合のみ誠実。以下を実行し、失敗時にステップを失敗させる。** `mise`がない場合、`mise`を同じ名前で使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
 - `current_task.json`またはissueが示す`commands.fast` / `commands.full`相当（通常は少なくとも`mise run fmt`と`mise run nextest`）
 - Issue / indexと整合: `mise run check-issue-health`（`issues`を扱う場合は`mise run update-issue-index`も）

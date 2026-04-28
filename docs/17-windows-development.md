@@ -74,30 +74,30 @@ git clone <repository-url>
 cd ts2wasm
 ```
 
-### 4. Python スクリプトマネージャーの使用
+### 4. mise task の使用
 
-bash 依存を避けるため、[scripts/manager.py](cci:7://file:///home/wogikaze/ts2wasm/scripts/manager.py:0:0-0:0) を直接使用します。
+開発コマンドは `mise` に統一します。
 
 #### 基本コマンド
 
 ```powershell
 # コードフォーマット
-python scripts/manager.py fmt
+mise run fmt
 
 # Clippy 実行
-python scripts/manager.py clippy
+mise run clippy
 
 # テスト実行
-python scripts/manager.py nextest
+mise run nextest
 
 # ファストゲート（fmt + issue health + architecture + coverage matrix + tests）
-python scripts/manager.py check-fast-gate
+mise run check-fast-gate
 
 # テストをスキップしてファストゲート
-python scripts/manager.py check-fast-gate --skip-nextest
+mise run check-fast-gate -- --skip-nextest
 
 # ヘルプ表示
-python scripts/manager.py help
+mise tasks
 ```
 
 #### 利用可能なコマンド
@@ -110,7 +110,7 @@ python scripts/manager.py help
 - `update-issue-index` - issues/index.md の再生成
 - `check-agent-state` - エージェント状態の検証
 - `check-repo-smoke` - fmt + check-scripts + check-issue-health
-- その他多数（`python scripts/manager.py help` で確認）
+- その他多数（`mise tasks` で確認）
 
 ### 5. 開発ワークフロー
 
@@ -118,55 +118,55 @@ python scripts/manager.py help
 
 ```powershell
 # 1. コードフォーマット
-python scripts/manager.py fmt
+mise run fmt
 
 # 2. リンター実行
-python scripts/manager.py clippy
+mise run clippy
 
 # 3. テスト実行
-python scripts/manager.py nextest
+mise run nextest
 
 # 4. フルゲート実行（コミット前）
-python scripts/manager.py check-fast-gate
+mise run check-fast-gate
 ```
 
 #### Issue 管理
 
 ```powershell
 # Issue 検証
-python scripts/manager.py check-issue-health
+mise run check-issue-health
 
 # Issue index 更新
-python scripts/manager.py update-issue-index
+mise run update-issue-index
 
 # カバレッジから Issue 生成
-python scripts/manager.py gen-issues-from-coverage --suite test262
+mise run gen-issues-from-coverage -- --suite test262
 ```
 
 ### 6. 開始前の最終確認
 
 ```powershell
 # Issue index 検証
-python scripts/manager.py update-issue-index --check
+mise run update-issue-index -- --check
 
 # Issue health 検証
-python scripts/manager.py check-issue-health
+mise run check-issue-health
 
 # Agent state 検証
-python scripts/manager.py check-agent-state
+mise run check-agent-state
 
 # Repo smoke 検証
-python scripts/manager.py check-repo-smoke
+mise run check-repo-smoke
 
 # ファストゲート（テストスキップ）
-python scripts/manager.py check-fast-gate --skip-nextest
+mise run check-fast-gate -- --skip-nextest
 ```
 
 これら5つがすべて通れば開発を開始できます。
 
 #### "bash not found" でスクリプト失敗
 
-実行しようとしているスクリプトが bash 依存。Python マネージャー（`python scripts/manager.py`）を使用するか、完全機能のために WSL2 を使用。
+実行しようとしている下位スクリプトが bash 依存。Windows では `mise` 経由の task を使用し、完全機能が必要な場合は WSL2 を使用。
 
 ### 8. 制限事項
 

@@ -11,7 +11,7 @@
 **Depends on**: none
 **Orchestration class**: implementation-ready
 
-**Problem:** `scripts/manager check-harness-installation` supports `TS2WASM_NEXTEST_DENY_WARNINGS=1`, but the repository still emitted many Rust warnings, so that mode failed. Until fixed, the default nextest in harness remained warning-tolerant. This issue tracks making the tree pass under `-D warnings`.
+**Problem:** `mise run check-harness-installation` supports `TS2WASM_NEXTEST_DENY_WARNINGS=1`, but the repository still emitted many Rust warnings, so that mode failed. Until fixed, the default nextest in harness remained warning-tolerant. This issue tracks making the tree pass under `-D warnings`.
 
 **Scope**
 - [x] Triage and fix, or add narrow `#[allow(...)]` with rationale for intentional stubs.

@@ -136,23 +136,23 @@ command: cargo fmt --all --check
 result: pass
 date: 2026-04-28
 
-command: scripts/manager check-agent-state
+command: mise run check-agent-state
 result: pass
 date: 2026-04-28
 
-command: scripts/manager update-issue-index --check
+command: mise run update-issue-index -- --check
 result: pass; issues/index.md up to date after moving 047 to done
 date: 2026-04-28
 
-command: scripts/manager check-issue-index
+command: mise run check-issue-index
 result: pass
 date: 2026-04-28
 
-command: scripts/manager check-issue-health
+command: mise run check-issue-health
 result: pass
 date: 2026-04-28
 
-command: scripts/manager check-repo-smoke
+command: mise run check-repo-smoke
 result: pass
 date: 2026-04-28
 

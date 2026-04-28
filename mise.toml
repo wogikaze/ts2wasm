@@ -126,6 +126,10 @@ run = "python scripts/manager.py check-agent-state"
 description = "Mechanical invariants: ids, paths, index+tables"
 run = "python scripts/manager.py check-issue-health"
 
+[tasks."check-issue-readiness"]
+description = "Score open issues for actionability and measurement quality"
+run = "python scripts/manager.py check-issue-readiness"
+
 [tasks."check-test-records-schema"]
 description = "Validate TestRecord JSONL lines (stdin or file)"
 run = "python scripts/manager.py check-test-records-schema"

@@ -71,7 +71,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/statements/for-await-of --detail
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/statements/for-await-of --detail
 ```
 
 Not run:
@@ -127,7 +127,7 @@ command: cargo run -q -p ts2wasm-cli -- build /home/wogikaze/wgkz/ts2wasm/refere
 result: failed as expected with `[UnsupportedSyntax] issue-230: async function declarations require Promise and async iterator runtime semantics for `for await...of`, which are not supported in this milestone at 432..446`
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/statements/for-await-of --detail
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/statements/for-await-of --detail
 result: passed; executed=1, unsupported=1, unsupported_features=async-iteration:1; raw compiler diagnostic is the precise issue-linked `issue-230` unsupported diagnostic above
 date: 2026-04-28
 

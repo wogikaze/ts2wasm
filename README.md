@@ -80,7 +80,7 @@ EOF
 scripts/dev/install-git-hooks.sh
 
 # optional: one entry for all scripts/ without opening each .sh
-# scripts/manager help
+# mise tasks
 # Install mise (https://mise.jdx.dev) and: mise trust; mise tasks; mise run nextest
 ```
 
@@ -99,7 +99,7 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 
 `pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `mise run check-issue-health`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
 
-**Note**: `scripts/manager check-agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
+**Note**: `mise run check-agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
 
 ## FAQ
 
@@ -114,8 +114,8 @@ A: 初期段階では型を「実行に必要な情報」と「診断に必要�
 ### Q: Node.js との semantic equivalence はどう確認するのか？
 
 A: differential testing を使用する。同じ TS/JS コードを Node.js と生成された WASM で実行し、stdout を比較する。詳細は `docs/06-testing-and-coverage.md` を参照。  
-  Reference coverage の運用は `python scripts/manager.py reference-coverage <suite> [--limit N]`（ramp）を再実行し、  
-  `python scripts/manager.py update-coverage-matrix --check`（check）で matrix の整合を確認する。
+  Reference coverage の運用は `mise run reference-coverage -- <suite> [--limit N]`（ramp）を再実行し、  
+  `mise run update-coverage-matrix -- --check`（check）で matrix の整合を確認する。
 
 ### Q: standalone 対象プログラムとは何か？
 
@@ -127,7 +127,7 @@ A: `current-state.md` の「Next Priority Slice」セクションに優先度順
 
 ### Q: テストはどう実行するのか？
 
-A: `cargo nextest run` で実行。differential testing が必要な場合は `python scripts/manager.py reference-coverage` を使用。詳細は `docs/06-testing-and-coverage.md` を参照。
+A: `cargo nextest run` で実行。differential testing が必要な場合は `mise run reference-coverage` を使用。詳細は `docs/06-testing-and-coverage.md` を参照。
 
 ### Q: Nix がなくても開発できるか？
 
@@ -135,4 +135,4 @@ A: 可能。手動でツールを入れる場合の例が README にある。た
 
 ### Q: Windows で開発できるか？
 
-A: 可能。`scripts/manager.py` と `docs/17-windows-development.md` を参照。主要なコマンド（fmt, clippy, nextest, check-fast-gate）は Python で動作する。ただし一部のスクリプトはまだ bash 依存で、Windows では動作しない。完全な機能には WSL2 の使用を推奨。
+A: 可能。`mise` と `docs/17-windows-development.md` を参照。主要なコマンド（fmt, clippy, nextest, check-fast-gate）は Python で動作する。ただし一部のスクリプトはまだ bash 依存で、Windows では動作しない。完全な機能には WSL2 の使用を推奨。

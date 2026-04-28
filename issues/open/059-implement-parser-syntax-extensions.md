@@ -3,7 +3,7 @@ id: 059
 title: "Implement parser syntax extensions for TypeScript and advanced JS"
 type: feature
 area: frontend
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -14,6 +14,14 @@ updated: 2026-04-28
 ## Summary
 
 Implement parser syntax extensions to handle parser-syntax feature gaps in reference tests.
+
+Problem: Parser syntax work is an epic spanning independent TypeScript erasure and advanced JavaScript syntax families; direct selection hides the next smallest syntax slice.
+
+Queue design note:
+
+- This is an epic-level issue and must not be selected directly from the Ready queue.
+- Use child syntax-family slices with a concrete source snippet, parser/unparse expectation, and focused reference coverage.
+- Duplicate issue 065 should be merged into this epic rather than selected independently.
 
 ## Problem
 
@@ -70,9 +78,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage test262 --limit 200
-scripts/manager reference-coverage tsc --limit 100
-scripts/manager reference-coverage tsgo --limit 50
+mise run reference-coverage -- test262 --limit 200
+mise run reference-coverage -- tsc --limit 100
+mise run reference-coverage -- tsgo --limit 50
 ```
 
 Not run:
@@ -108,10 +116,10 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo nextest run -p ts2wasm-frontend`
   - `cargo nextest run -p ts2wasm-cli --test dump_cli`
   - `cargo nextest run`
-  - `scripts/manager update-issue-index --check`
-  - `scripts/manager check-issue-health`
-  - `scripts/manager check-agent-state`
-  - `scripts/manager check-repo-smoke`
+  - `mise run update-issue-index -- --check`
+  - `mise run check-issue-health`
+  - `mise run check-agent-state`
+  - `mise run check-repo-smoke`
 - Issue 059 remains open. Interfaces, generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 2026-04-28 progress evidence (interface-erasure slice):
@@ -126,15 +134,15 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo test -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_typescript_interface_declarations -- --nocapture`
   - `cargo test -p ts2wasm-cli --test dump_cli build_accepts_erasable_typescript_interface_declarations -- --nocapture`
   - `cargo fmt --all --check`
-  - `scripts/manager fmt`
+  - `mise run fmt`
   - `cargo nextest run -p ts2wasm-frontend`
   - `cargo nextest run -p ts2wasm-cli --test dump_cli`
-  - `scripts/manager update-issue-index --check`
-  - `scripts/manager check-agent-state`
+  - `mise run update-issue-index -- --check`
+  - `mise run check-agent-state`
 - Validation not clean due unrelated pre-existing local-report references:
-  - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
-  - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
-- Parent validation note: after syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `scripts/manager check-issue-health` and `scripts/manager check-repo-smoke` passed.
+  - `mise run check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
+  - `mise run check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+- Parent validation note: after syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `mise run check-issue-health` and `mise run check-repo-smoke` passed.
 - Issue 059 remains open. Type aliases, generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 2026-04-28 progress evidence (type-alias-erasure slice):
@@ -150,15 +158,15 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo test -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_typescript_type_alias_declarations -- --nocapture`
   - `cargo test -p ts2wasm-cli --test dump_cli build_accepts_erasable_typescript_type_alias_declarations -- --nocapture`
   - `cargo fmt --all --check`
-  - `scripts/manager fmt`
+  - `mise run fmt`
   - `cargo nextest run -p ts2wasm-frontend`
   - `cargo nextest run -p ts2wasm-cli --test dump_cli`
-  - `scripts/manager update-issue-index --check`
-  - `scripts/manager check-agent-state`
+  - `mise run update-issue-index -- --check`
+  - `mise run check-agent-state`
 - Validation not clean due unrelated pre-existing local-report references:
-  - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
-  - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
-- Parent validation note: after syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `scripts/manager check-issue-health` and `scripts/manager check-repo-smoke` passed.
+  - `mise run check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
+  - `mise run check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+- Parent validation note: after syncing the referenced local `reports/runs/...` artifacts into the merge-review worktree, `mise run check-issue-health` and `mise run check-repo-smoke` passed.
 - Issue 059 remains open. Generics, decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 2026-04-28 progress evidence (generic-erasure slice):
@@ -173,18 +181,18 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo test -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_typescript_generics -- --nocapture`
   - `cargo test -p ts2wasm-cli --test dump_cli build_accepts_erasable_typescript_generics -- --nocapture`
   - `cargo fmt --all --check`
-  - `scripts/manager fmt`
+  - `mise run fmt`
   - `cargo nextest run -p ts2wasm-frontend`
   - `cargo nextest run -p ts2wasm-cli --test dump_cli`
   - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse fixtures/basics-types/generic-erasure.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/generic-erasure.ts -o /tmp/ts2wasm-059-generic-erasure.wasm`
   - `iwasm /tmp/ts2wasm-059-generic-erasure.wasm` (stdout: `3`, `7`)
-  - `scripts/manager update-issue-index --check`
-  - `scripts/manager check-agent-state`
+  - `mise run update-issue-index -- --check`
+  - `mise run check-agent-state`
   - `cargo nextest run`
 - Validation not clean due unrelated pre-existing local-report references:
-  - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
-  - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+  - `mise run check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
+  - `mise run check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
 - Parent review tightened the generic call erasure guard so call type arguments are only erased for function names declared with TypeScript generic parameters in the current parser run, avoiding a regression where `a<b>(c)` could be misread as a generic call instead of adjacent relational comparisons.
 - Parent added regression coverage `preserves_adjacent_relational_expression_that_resembles_generic_call` and validated:
   - `cargo fmt --all --check`
@@ -192,8 +200,8 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo nextest run -p ts2wasm-cli --test dump_cli`
   - direct dump for `let a = 1; let b = 2; let c = 3; console.log(a<b>(c));`, which unparses as `console.log(((a < b) > c));`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/generic-erasure.ts -o /tmp/ts2wasm-059-generic-erasure.parent2.wasm && iwasm /tmp/ts2wasm-059-generic-erasure.parent2.wasm`
-  - `scripts/manager check-issue-health`
-  - `scripts/manager check-repo-smoke`
+  - `mise run check-issue-health`
+  - `mise run check-repo-smoke`
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 2026-04-28 progress evidence (as-assertion-erasure slice):
@@ -222,10 +230,10 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse fixtures/basics-types/as-assertion-erasure.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/as-assertion-erasure.ts -o /tmp/ts2wasm-059-as-erasure.parent.wasm`
   - `iwasm /tmp/ts2wasm-059-as-erasure.parent.wasm`
-  - `scripts/manager update-issue-index --check`
-  - `scripts/manager check-agent-state`
-  - `scripts/manager check-issue-health`
-  - `scripts/manager check-repo-smoke`
+  - `mise run update-issue-index -- --check`
+  - `mise run check-agent-state`
+  - `mise run check-issue-health`
+  - `mise run check-repo-smoke`
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 ## Completion evidence

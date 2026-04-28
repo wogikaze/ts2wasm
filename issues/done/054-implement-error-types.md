@@ -106,7 +106,7 @@ Progress 2026-04-28 continuation:
 
 - Implemented Error constructor message coercion for non-string messages through `$error_message`, which returns `""` for `undefined` and otherwise materializes the existing `ToString` result as a heap string.
 - Extended `fixtures/builtins-and-io/error-message.ts` with Node differential coverage for number, boolean, null, and explicit undefined message arguments across Error subclasses.
-- Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/error-message.ts -o /tmp/ts2wasm-054-error-message.wasm && iwasm /tmp/ts2wasm-054-error-message.wasm`; `cargo nextest run`; `scripts/manager check-issue-health`; `scripts/manager check-agent-state`.
+- Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/error-message.ts -o /tmp/ts2wasm-054-error-message.wasm && iwasm /tmp/ts2wasm-054-error-message.wasm`; `cargo nextest run`; `mise run check-issue-health`; `mise run check-agent-state`.
 - Remaining criteria before close: `.stack` is still not implemented; Error prototype identity / `instanceof Error` remains uncovered.
 
 Progress 2026-04-28 continuation 2:
@@ -116,7 +116,7 @@ Progress 2026-04-28 continuation 2:
 - Added `fixtures/builtins-and-io/error-instanceof.ts` and `error_instanceof_fixture_matches_node_output_under_iwasm`, covering self `instanceof`, subclass-to-Error `instanceof`, cross-subclass negatives, plain object negative, and primitive left-hand negative.
 - Direct Node vs iwasm evidence for `fixtures/builtins-and-io/error-instanceof.ts` matched:
   `true true true true true true true false false false false` on separate stdout lines.
-- Validation passed: `cargo check -p ts2wasm-backend-wasm -p ts2wasm-ir -p ts2wasm-cli`; `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `node fixtures/builtins-and-io/error-instanceof.ts`; `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/error-instanceof.ts -o /tmp/ts2wasm-054-error-instanceof.wasm && iwasm /tmp/ts2wasm-054-error-instanceof.wasm`; `scripts/manager check-issue-health`; `scripts/manager check-agent-state`.
+- Validation passed: `cargo check -p ts2wasm-backend-wasm -p ts2wasm-ir -p ts2wasm-cli`; `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `node fixtures/builtins-and-io/error-instanceof.ts`; `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/error-instanceof.ts -o /tmp/ts2wasm-054-error-instanceof.wasm && iwasm /tmp/ts2wasm-054-error-instanceof.wasm`; `mise run check-issue-health`; `mise run check-agent-state`.
 - Remaining criteria before close: `.stack` is still not implemented; full Error spec compliance and full `cargo nextest run` close validation remain outstanding.
 
 Progress 2026-04-28 continuation 3:
@@ -127,7 +127,7 @@ Progress 2026-04-28 continuation 3:
 - Added `fixtures/builtins-and-io/error-stack.ts` and `error_stack_fixture_matches_node_output_under_iwasm`, covering first-line stack prefixes for all supported Error constructors.
 - Direct Node vs iwasm evidence for `fixtures/builtins-and-io/error-stack.ts` matched:
   `true true true true` on separate stdout lines.
-- Validation passed: `cargo check -p ts2wasm-backend-wasm -p ts2wasm-cli`; `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `node fixtures/builtins-and-io/error-stack.ts`; `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/error-stack.ts -o /tmp/ts2wasm-054-error-stack.wasm && iwasm /tmp/ts2wasm-054-error-stack.wasm`; `scripts/manager check-issue-health`; `scripts/manager check-agent-state`; `scripts/manager check-repo-smoke`.
+- Validation passed: `cargo check -p ts2wasm-backend-wasm -p ts2wasm-cli`; `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `node fixtures/builtins-and-io/error-stack.ts`; `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/error-stack.ts -o /tmp/ts2wasm-054-error-stack.wasm && iwasm /tmp/ts2wasm-054-error-stack.wasm`; `mise run check-issue-health`; `mise run check-agent-state`; `mise run check-repo-smoke`.
 - Out-of-scope validation note: `cargo clippy -p ts2wasm-backend-wasm -p ts2wasm-cli --all-targets -- -D warnings` failed in pre-existing frontend parser warnings (`clippy::needless_bool`, `clippy::collapsible_if`) outside this assignment's allowed files.
 - Remaining criteria before close: full stack trace frames and full `cargo nextest run` close validation remain outstanding.
 

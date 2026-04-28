@@ -3,12 +3,12 @@ id: 067
 title: "Investigate and classify unknown-unsupported cases"
 type: feature
 area: frontend
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-29
 ---
 
 ## Summary
@@ -68,7 +68,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage test262 --limit 446
+mise run reference-coverage -- test262 --limit 446
 ```
 
 Not run:
@@ -114,10 +114,10 @@ result: pass; stdout includes <a name="name">x</a>
 cargo run -q -- build fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts -o /tmp/ts2wasm-string-anchor-annexb-unsupported.wasm
 result: expected fail; [UnsupportedSyntax] issue-067: Annex B String.prototype.anchor is not supported yet at 92..110
 
-scripts/manager check-issue-health
+mise run check-issue-health
 result: pass
 
-scripts/manager check-agent-state
+mise run check-agent-state
 result: pass
 
 cargo nextest run

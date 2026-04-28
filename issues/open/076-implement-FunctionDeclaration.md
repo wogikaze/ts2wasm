@@ -3,12 +3,12 @@ id: 076
 title: "Implement Functiondeclaration"
 type: feature
 area: frontend
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-29
 ---
 
 ## Summary
@@ -68,7 +68,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage tsc --limit 8
+mise run reference-coverage -- tsc --limit 8
 ```
 
 Not run:

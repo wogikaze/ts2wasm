@@ -9,9 +9,9 @@ description: ast-grep をプロジェクト lint ツールとして運用する�
 
 ## Mise: タスク完了前に必ず
 
-**リポジトリ内の作業を完了にする前に、当てはまるコマンドを実行し通すこと。** `mise` なし → `scripts/manager` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
+**リポジトリ内の作業を完了にする前に、当てはまるコマンドを実行し通すこと。** `mise` なし → `mise` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
 
-- `mise run check-scripts`（`scripts/*.sh` と `scripts/manager` のシンタックス）
+- `mise run check-scripts`（`scripts/*.sh` と `mise` のシンタックス）
 - ルールや `tests` / `rule-tests` を触った: `mise run fmt` と `mise run nextest`
 - 推奨: `mise run check-repo-smoke`
 

@@ -30,10 +30,10 @@ Acceptance criteria:
 Validation result:
 
 ```text
-python scripts/manager.py reference-coverage tsc --limit 300 --detail
+mise run reference-coverage -- tsc --limit 300 --detail
   ⚠️ completed with wrapper-capture run due Windows temp-cleanup/path constraints.
 
-python scripts/manager.py reference-coverage tsgo --limit 165 --detail
+mise run reference-coverage -- tsgo --limit 165 --detail
   ⚠️ completed with wrapper-capture run due Windows temp-cleanup/path constraints.
 ```
 

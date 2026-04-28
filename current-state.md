@@ -9,7 +9,7 @@ Last updated: 2026-04-28
 正本は `docs/11-shared-definitions.md` の Workstreams / Gates。実装・レビューでまず満たすのは次の組み合わせとする。
 
 - **Gate A（テスト）**: `cargo fmt --all --check` と `cargo nextest run`（フル suite。重いテストを分離する場合は `docs/11` の filterset 方針に従う）。
-- **Gate D（coverage artifact）**: `scripts/manager update-coverage-matrix --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
+- **Gate D（coverage artifact）**: `mise run update-coverage-matrix -- --check` が `artifacts/coverage/reference-coverage-matrix.md` を検証。
 - **その他（B–C, E–G）**: ポリシーと checklist は `docs/11` / `docs/12-coding-standard.md`（§19）に記載。証拠コマンドは下記「Last verified commands」。
 
 ## Last verified commands（代表）
@@ -19,22 +19,22 @@ Last updated: 2026-04-28
 ```bash
 cargo fmt --all --check
 cargo nextest run
-scripts/manager update-coverage-matrix --check
-scripts/manager check-scripts
-scripts/manager check-fast-gate --skip-nextest
-scripts/manager check-manifest-imports
-scripts/manager check-fixture-catalog
-scripts/manager check-architecture-rules
-scripts/manager check-compiler-diagnostics
-scripts/manager update-issue-index --check
-scripts/manager check-issue-health
+mise run update-coverage-matrix -- --check
+mise run check-scripts
+mise run check-fast-gate -- --skip-nextest
+mise run check-manifest-imports
+mise run check-fixture-catalog
+mise run check-architecture-rules
+mise run check-compiler-diagnostics
+mise run update-issue-index -- --check
+mise run check-issue-health
 ```
 
 reference coverage を更新する場合（実測値を変えるとき）:
 
 ```bash
-scripts/manager update-coverage-matrix
-# または単 suite: scripts/manager reference-coverage test262 --limit 50
+mise run update-coverage-matrix
+# または単 suite: mise run reference-coverage -- test262 --limit 50
 ```
 
 ## Snapshot
@@ -78,7 +78,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
 - ポリシーと列定義: `docs/15-coverage-matrix.md`
-- 列 `build_pass` / `semantic_pass` は `scripts/manager reference-coverage` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
+- 列 `build_pass` / `semantic_pass` は `mise run reference-coverage` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
 - issue 060 progress classified current `unknown-unsupported` coverage windows into concrete feature labels; stored matrix rows now include test262 limit 17000, tsc limit 200, and tsgo limit 120. The test262 limit-17000 row has zero `unknown-unsupported`; newly surfaced Annex B emulates-undefined expression/if cases are classified as `annexb-ishtmldda` and tracked by existing issue 237. The exact assigned tsc root `/home/wogikaze/wgkz/ts2wasm/reference` lacks `TypeScript`, so the stored tsc row was refreshed with the existing `/tmp/ts2wasm-issue060-reference` checkout.
 
 ## Implemented (high-level)
@@ -95,9 +95,9 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - Static named ES module import/export execution is implemented for the narrow local `import { value } from "./static-entry-source";` plus source-side literal `export const value = 1;` slice. The build path lowers named imports to `PropertyGet(ModuleLoad { module_id }, export_name)`, attaches reachable local literal `export const` declarations to `LoweredProgram.modules` as explicit `LoweredStmt::Export` statements using the module graph IDs, emits dependency-first module initializers before top-level import reads, and has Node/iwasm differential coverage for direct import, alias import, importer lexical shadowing, and repeated imports from the same source module. Missing named exports from existing local modules have issue-233 diagnostic coverage at the imported name span. Live binding updates, default/namespace/dynamic imports, package resolution, and broader module body semantics remain out of scope.
 - Backend runtime-link planning now scans explicit lowered `ModuleInfo.statements`, so future ES module export statements select module export helpers through the runtime catalog, while empty module metadata does not select ES module export helpers. This is a link-plan contract only; runtime module execution parity remains tracked by issues 233 and 234.
 - runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
-- reference coverage パイプライン（`scripts/manager reference-coverage`, `scripts/manager update-coverage-matrix`, `scripts/manager update-coverage-matrix --check`）
+- reference coverage パイプライン（`mise run reference-coverage`, `mise run update-coverage-matrix`, `mise run update-coverage-matrix -- --check`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
-- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `scripts/manager update-issue-index` が生成、`scripts/manager check-issue-health` で整合検証。`scripts/manager check-issue-index` は互換 alias）
+- issue queue index（`issues/index.md` の Ready/Blocked/Done 表は `mise run update-issue-index` が生成、`mise run check-issue-health` で整合検証。`mise run check-issue-index` は互換 alias）
 - harness scripts（`mise run check-fast-gate`、`mise run check-manifest-imports`、`mise run check-test-records-schema`、`mise run check-fixture-catalog`、`mise run check-architecture-rules`、`mise run check-compiler-diagnostics`；pre-push は `.githooks/pre-push`）
 
 ## Known blockers / gaps
@@ -140,7 +140,7 @@ Semantic gap tracking:
 ## Next Priority Steps
 
 See `issues/index.md` for the auto-generated Ready queue and Blocked queue.
-Run `scripts/manager update-issue-index` to refresh after adding, closing, or moving issues. The generated Ready queue in `issues/index.md` is the source of truth for current ordering.
+Run `mise run update-issue-index` to refresh after adding, closing, or moving issues. The generated Ready queue in `issues/index.md` is the source of truth for current ordering.
 
 ## Current Policy
 

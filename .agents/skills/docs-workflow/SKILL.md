@@ -27,7 +27,7 @@ Use this skill only for documentation changes under docs/ and README-level docum
 
 ## Mise: auto-execute after making changes (required if you touched paths under verification)
 
-**Automatically run and pass the commands that match your change after making changes.** Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+**Automatically run and pass the commands that match your change after making changes.** Without `mise`, use `mise` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
 - Always: `mise run fmt` (touches `*.md` / Rust in examples)
 - Default smoke: `mise run check-repo-smoke`

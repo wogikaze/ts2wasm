@@ -20,12 +20,12 @@ The autonomous loop is considered complete when:
 
 ## Manager: run before you exit VERIFY* / report RETRO (required)
 
-**The autonomy loop is only honest if the gates were actually executed; run these and fail the step on red.** Use `scripts/manager` as the primary repo entry. `mise run <task>` is optional sugar for the same tasks.
+**The autonomy loop is only honest if the gates were actually executed; run these and fail the step on red.** Use `mise` as the primary repo entry. `mise run <task>` is optional sugar for the same tasks.
 
-- `current_task.json` または issue が示す `commands.fast` / `commands.full` 相当（通常は少なくとも `scripts/manager fmt` と `scripts/manager nextest`）
+- `current_task.json` または issue が示す `commands.fast` / `commands.full` 相当（通常は少なくとも `mise run fmt` と `mise run nextest`）
 - **CRITICAL: Full test suite must pass, not just filtered tests. If `cargo nextest run` fails, you MUST investigate before marking done.**
-- Issue / index と整合: `scripts/manager check-issue-health`（`issues` を扱う場合は `scripts/manager update-issue-index` も）
-- 軽い一括: `scripts/manager check-repo-smoke`
+- Issue / index と整合: `mise run check-issue-health`（`issues` を扱う場合は `mise run update-issue-index` も）
+- 軽い一括: `mise run check-repo-smoke`
 
 ## Acceptance Criteria Verification (CRITICAL)
 
@@ -54,8 +54,8 @@ The autonomous loop is considered complete when:
 2. **Update issue file**: Move issue from `issues/open/` to `issues/done/` and update frontmatter:
    - Change `Status: open` → `Status: done`
    - Add `Completed: <date>` field
-3. **Regenerate issues index**: Run `scripts/manager update-issue-index`
-4. **Verify index consistency**: Run `scripts/manager check-issue-index` to ensure the index reflects the change
+3. **Regenerate issues index**: Run `mise run update-issue-index`
+4. **Verify index consistency**: Run `mise run check-issue-index` to ensure the index reflects the change
 5. **Document completion evidence**: In the issue file or cycle report, explicitly state how each acceptance criterion was verified with specific commands/outputs.
 
 **Failure to complete these steps means the issue is NOT done.**
@@ -64,12 +64,12 @@ The autonomous loop is considered complete when:
 
 - Update issue file status to "done" and add completion evidence
 - Move issue file from `issues/open/` to `issues/done/`
-- Run `scripts/manager update-issue-index` to regenerate `issues/index.md`
+- Run `mise run update-issue-index` to regenerate `issues/index.md`
 - Clear `current_task.json` to idle state
 - Write cycle report to `reports/runs/<timestamp>/cycle_report.md`
 - **REQUIRED**: If new failure pattern discovered, add to `failure_patterns.md` with mechanical guards
 - **REQUIRED**: If new guard needed, add to `review_checklist.md`
-- **REQUIRED**: Run `scripts/manager check-agent-state` to validate state files
+- **REQUIRED**: Run `mise run check-agent-state` to validate state files
 
 ## Read order
 
@@ -109,9 +109,9 @@ cargo fmt --all --check
 ```bash
 # Read current_task.json for FSM state
 # Run required gates
-scripts/manager fmt
-scripts/manager nextest
-scripts/manager check-issue-health
+mise run fmt
+mise run nextest
+mise run check-issue-health
 # Generate test report to reports/runs/<run_id>/test_report.json
 # Write cycle report with evidence
 # Update current_task.json with verification results
@@ -120,14 +120,14 @@ scripts/manager check-issue-health
 ### Commands run
 
 ```bash
-scripts/manager fmt
-scripts/manager nextest
-scripts/manager check-issue-health
-scripts/manager check-repo-smoke
+mise run fmt
+mise run nextest
+mise run check-issue-health
+mise run check-repo-smoke
 ```
 
 ## Post-change auto-execution
 
 After completing issue work (code changes, issue file updates, cycle report), automatically:
-1. Run `scripts/manager fmt`, `scripts/manager nextest`, and `scripts/manager check-issue-health`
+1. Run `mise run fmt`, `mise run nextest`, and `mise run check-issue-health`
 2. Commit changes with auto-generated commit message based on issue completion evidence

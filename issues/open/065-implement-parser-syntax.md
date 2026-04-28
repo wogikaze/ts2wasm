@@ -3,7 +3,7 @@ id: 065
 title: "Implement parser syntax extensions"
 type: feature
 area: frontend
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -14,6 +14,13 @@ updated: 2026-04-26
 ## Summary
 
 Implement parser-syntax feature to handle 52 failing test cases in reference tests.
+
+Problem: This duplicates the parser syntax epic in issue 059 and should not compete as a separate Ready item.
+
+Queue design note:
+
+- Do not select this issue directly.
+- Merge useful affected-test evidence into issue 059 child slices, then close this issue as superseded when references are preserved.
 
 ## Problem
 
@@ -68,7 +75,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage test262 --limit 104
+mise run reference-coverage -- test262 --limit 104
 ```
 
 Not run:

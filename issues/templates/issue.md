@@ -23,6 +23,12 @@ Describe the concrete problem.
 
 Avoid historical explanation unless it affects the implementation decision.
 
+Problem: Add a one-line concrete failure or gap summary for `issues/index.md` and readiness scoring.
+
+## Current failure
+
+Record the reproduction command, current stdout/stderr, failing fixture, diagnostic, or reference case that proves this issue exists.
+
 ## Desired final state
 
 Describe the state after this issue is complete.
@@ -58,6 +64,8 @@ Do not touch:
 - [ ] Observable result 2
 - [ ] Regression test or fixture is added/updated when behavior changes
 - [ ] Docs/current-state/issues are synchronized when status or design changes
+
+Avoid generic criteria such as "works correctly" or "diagnostics reduced"; name the exact fixture, diagnostic, stdout/stderr, generated artifact, or reference window that will change.
 
 ## Validation
 

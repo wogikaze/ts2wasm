@@ -16,7 +16,7 @@ Primary source of truth:
 
 ## Mise: run these before a merge / finish decision (required)
 
-**基準はコマンドの成否。未実施のまま合格判定を出さない。** `mise` なし → `scripts/manager` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
+**基準はコマンドの成否。未実施のまま合格判定を出さない。** `mise` なし → `mise` 同一名。初回: `mise trust`（[mise trust](https://mise.jdx.dev/cli/trust.html)）
 
 ```bash
 mise run fmt
@@ -29,7 +29,7 @@ mise run check-repo-smoke
 ```bash
 mise run clippy
 mise run reference-coverage
-scripts/manager update-coverage-matrix --check-gate   # マトリクス比較時（引数は script --help 参照）
+mise run update-coverage-matrix -- --check-gate   # マトリクス比較時（引数は script --help 参照）
 ```
 
 ## Goal
@@ -196,7 +196,7 @@ Validation:
 
 - cargo fmt --all --check: pass/fail
 - cargo nextest run: pass/fail
-- scripts/manager update-coverage-matrix --check: pass/fail/not applicable
+- mise run update-coverage-matrix -- --check: pass/fail/not applicable
 - iwasm differential: pass/fail/not applicable
 - grep gate:
   - as_console_log_call: 0/non-zero

@@ -128,7 +128,7 @@ push 前の必須条件:
 
 ```bash
 git status --short
-scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
+mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
 確認事項:
@@ -142,7 +142,7 @@ scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <r
 
 webhook 送信ルール:
 
-- push 前に必ず `scripts/manager discord-report` で webhook に送信する。
+- push 前に必ず `mise run discord-report` で webhook に送信する。
 - Discord 送信用レポートは非常に簡潔にする（状態、issue ID、検証、blocker、次アクションのみ）。
 - Discord 送信用レポート本文は日本語で書く（コマンド、パス、issue ID の英字は可）。
 - `未記入` だらけのレポートは `discord-report` が reject する。
@@ -158,7 +158,7 @@ push 前に可能なら実行:
 ```bash
 cargo fmt --all --check
 cargo nextest run
-scripts/manager check-issue-health
+mise run check-issue-health
 ```
 
 ただし、重い gate は毎回必須にしない。

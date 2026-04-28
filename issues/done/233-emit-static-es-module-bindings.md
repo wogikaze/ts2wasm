@@ -125,10 +125,10 @@ cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.t
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-semantic-shadow.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-repeated.ts -o /tmp/ts2wasm-233-semantic-repeated.wasm: PASS
 iwasm /tmp/ts2wasm-233-semantic-entry.wasm && iwasm /tmp/ts2wasm-233-semantic-alias.wasm && iwasm /tmp/ts2wasm-233-semantic-shadow.wasm && iwasm /tmp/ts2wasm-233-semantic-repeated.wasm: PASS (stdout 1, 1, 1, 2)
-scripts/manager check-issue-index: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
-scripts/manager check-repo-smoke: PASS
+mise run check-issue-index: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
+mise run check-repo-smoke: PASS
 cargo nextest run: PASS (382 tests, 4 skipped)
 date: 2026-04-28
 ```
@@ -203,10 +203,10 @@ cargo nextest run -p ts2wasm-backend-wasm: PASS (16 tests)
 cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 219 skipped)
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-esm-233-ir.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-esm-233-alias-ir.wasm: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
-scripts/manager nextest: PASS (369 tests, 4 skipped)
-scripts/manager check-repo-smoke: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
+mise run nextest: PASS (369 tests, 4 skipped)
+mise run check-repo-smoke: PASS
 ```
 
 2026-04-28 child worker `233-module-init-once-20260428T100229Z` added a narrow source-backed module initialization contract slice:
@@ -246,8 +246,8 @@ cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 219 skipped)
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-runtime-entry.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-runtime-alias.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-runtime-shadow.wasm: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 2026-04-28 child worker `233-module-import-exports-20260428T105318Z` added a narrow named-import lowered read slice:
@@ -269,8 +269,8 @@ cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 220 skipped)
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-import-exports-entry.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-import-exports-alias.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-import-exports-shadow.wasm: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 2026-04-28 child worker `233-module-init-runtime-20260428T114113Z` added a narrow dependency-order module initialization/runtime wiring slice:
@@ -294,8 +294,8 @@ cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 220 skipped)
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-init-runtime-entry.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-init-runtime-alias.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-init-runtime-shadow.wasm: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```
 
 2026-04-28 child worker `233-module-lowered-ir-20260428T103829Z` added a narrow explicit lowered-module population slice:
@@ -317,6 +317,6 @@ cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 219 skipped)
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-lowered-entry.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-lowered-alias.wasm: PASS
 cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-lowered-shadow.wasm: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
 ```

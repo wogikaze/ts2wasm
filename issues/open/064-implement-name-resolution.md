@@ -3,7 +3,7 @@ id: 064
 title: "Implement name resolution"
 type: feature
 area: frontend
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
@@ -14,6 +14,14 @@ updated: 2026-04-26
 ## Summary
 
 Implement name-resolution feature to handle 72 failing test cases in reference tests.
+
+Problem: Name resolution is an epic across global builtins, lexical scope, duplicate locals, and builtin namespace recognition; direct selection does not identify one resolver change.
+
+Queue design note:
+
+- This is an epic-level issue and must not be selected directly from the Ready queue.
+- Use child slices that name one binding family, one resolver module boundary, and one fixture/reference reduction.
+- Date/global builtin recognition should start with issue 064a.
 
 ## Problem
 
@@ -68,7 +76,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-scripts/manager reference-coverage test262 --limit 144
+mise run reference-coverage -- test262 --limit 144
 ```
 
 Not run:

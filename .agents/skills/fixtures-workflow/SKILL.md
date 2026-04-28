@@ -30,7 +30,7 @@ Use this skill when a change touches `fixtures/**` or fixture path references ca
 
 ## Mise: auto-execute after making changes (required)
 
-**Automatically run the matching entries below after making changes and ensure they pass.** Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+**Automatically run the matching entries below after making changes and ensure they pass.** Without `mise`, use `mise` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
 - `mise run fmt` and `mise run nextest` (minimum)
 - If compiler/runtime/Fixture references change: `mise run clippy` as well
@@ -356,7 +356,7 @@ If the fixture requires `iwasm`, state whether `iwasm` was available. Do not rep
 If docs mention coverage artifacts, validate the coverage matrix check when relevant:
 
 ```bash
-scripts/manager update-coverage-matrix --check
+mise run update-coverage-matrix -- --check
 ```
 
 Do not run reference corpus scripts for ordinary project fixture edits unless the change affects reference coverage, TestRecord schema, differential classification, or CI coverage scripts.
@@ -457,7 +457,7 @@ Validation:
 - cargo nextest run -p ts2wasm-cli <impacted>:
 - cargo nextest run:
 - scripts/check/shell-syntax.sh:
-- scripts/manager update-coverage-matrix --check:
+- mise run update-coverage-matrix -- --check:
 - iwasm-dependent checks:
 
 Search gates:

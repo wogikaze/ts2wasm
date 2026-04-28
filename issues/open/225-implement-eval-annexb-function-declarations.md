@@ -69,7 +69,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 300
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 300
 ```
 
 Not run:

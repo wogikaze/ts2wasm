@@ -20,7 +20,7 @@ A vertical slice is considered complete when:
 
 ## Mise: run before you finish a slice (required)
 
-**Run and pass the commands that match the slice; do not mark the workstream step done on red.** Without `mise`, use `scripts/manager` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
+**Run and pass the commands that match the slice; do not mark the workstream step done on red.** Without `mise`, use `mise` with the same subcommand. First time: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
 ```bash
 mise run fmt
@@ -29,7 +29,7 @@ mise run clippy
 mise run check-repo-smoke
 ```
 
-If the slice changes reference coverage or benchmark policy expectations, also use `mise run reference-coverage` / `scripts/manager update-coverage-matrix --check-gate` (see `scripts/*` and `docs/15`).
+If the slice changes reference coverage or benchmark policy expectations, also use `mise run reference-coverage` / `mise run update-coverage-matrix -- --check-gate` (see `scripts/*` and `docs/15`).
 
 ## Workflow
 

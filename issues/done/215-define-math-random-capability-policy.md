@@ -68,7 +68,7 @@ Required commands:
 ```sh
 cargo fmt --all --check
 cargo nextest run
-scripts/manager check-manifest-imports
+mise run check-manifest-imports
 ```
 
 Impacted commands:
@@ -119,7 +119,7 @@ command: cargo nextest run -E 'test(math) | test(manifest) | test(host)'
 result: pass, 15 passed / 232 skipped
 date: 2026-04-28
 
-command: scripts/manager check-manifest-imports
+command: mise run check-manifest-imports
 result: pass for fixtures/basics-hello/hello.ts
 date: 2026-04-28
 

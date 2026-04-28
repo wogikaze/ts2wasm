@@ -64,16 +64,16 @@ Do not touch:
 Required commands:
 
 ```sh
-scripts/manager update-issue-index
-scripts/manager update-issue-index --check
-scripts/manager check-issue-health
-scripts/manager check-agent-state
+mise run update-issue-index
+mise run update-issue-index -- --check
+mise run check-issue-health
+mise run check-agent-state
 ```
 
 Impacted commands:
 
 ```sh
-scripts/manager check-issue-index
+mise run check-issue-index
 ```
 
 Not run:
@@ -166,11 +166,11 @@ Commits:
 Validation result:
 
 ```text
-scripts/manager update-issue-index: PASS
-scripts/manager update-issue-index --check: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
-scripts/manager check-repo-smoke: PASS
+mise run update-issue-index: PASS
+mise run update-issue-index -- --check: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
+mise run check-repo-smoke: PASS
 cargo nextest run -p ts2wasm-cli module: PASS
 date: 2026-04-28
 ```

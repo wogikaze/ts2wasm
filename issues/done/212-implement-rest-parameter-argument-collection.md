@@ -123,7 +123,7 @@ command: cargo nextest run
 result: PASS (240 passed, 4 skipped)
 date: 2026-04-28
 
-command: scripts/manager check-issue-health
+command: mise run check-issue-health
 result: PASS
 date: 2026-04-28
 ```

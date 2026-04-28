@@ -68,7 +68,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 300
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 300
 ```
 
 Not run:
@@ -111,23 +111,23 @@ command: cargo nextest run -p ts2wasm-cli html --no-tests warn
 result: passed; 2 tests passed
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --path-filter annexB/language/comments --detail
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/comments --detail
 result: passed; executed=8, unsupported_features=name-resolution:8, html-comment:0
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 300
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 300
 result: passed; unsupported_features=name-resolution:101,string-builtin:63,eval:51,regexp-literal:47,legacy-global-builtin:20,date:16,array-builtin:1,builtin-api:1; html-comment:0
 date: 2026-04-28
 
-command: scripts/manager update-coverage-matrix --check
+command: mise run update-coverage-matrix -- --check
 result: passed; coverage matrix OK (up to date)
 date: 2026-04-28
 
-command: scripts/manager update-issue-index --check
+command: mise run update-issue-index -- --check
 result: passed; issues/index.md OK (up to date)
 date: 2026-04-28
 
-command: scripts/manager check-issue-health
+command: mise run check-issue-health
 result: passed; issues/index.md queue OK, check_issue_health: OK
 date: 2026-04-28
 

@@ -50,7 +50,7 @@ Completion evidence:
   - `this-non-identifier-receiver-unsupported.ts`: `at 12..30`
   - `this-unknown-receiver-class-unsupported.ts`: `at 42..57`
 - `cargo nextest run`: pass (239 passed, 4 skipped)
-- `scripts/manager check-issue-health`: pass
-- `scripts/manager update-issue-index --check`: pass
-- `scripts/manager check-agent-state`: pass
-- `scripts/manager check-repo-smoke`: pass
+- `mise run check-issue-health`: pass
+- `mise run update-issue-index -- --check`: pass
+- `mise run check-agent-state`: pass
+- `mise run check-repo-smoke`: pass

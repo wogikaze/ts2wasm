@@ -56,7 +56,7 @@ command: cargo nextest run -p ts2wasm-cli --test m2_node_diff instanceof_fixture
 result: PASS (2 passed, 16 skipped)
 date: 2026-04-28
 
-command: scripts/manager check-repo-smoke
+command: mise run check-repo-smoke
 result: PASS
 date: 2026-04-28
 

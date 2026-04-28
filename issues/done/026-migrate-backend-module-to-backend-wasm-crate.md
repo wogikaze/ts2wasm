@@ -155,7 +155,7 @@ command: cargo nextest run --no-fail-fast
 result: PASS (194 passed, 4 skipped)
 date: 2026-04-28
 
-command: scripts/manager check-architecture-rules
+command: mise run check-architecture-rules
 result: PASS
 date: 2026-04-28
 ```

@@ -119,12 +119,12 @@ cargo nextest run -p ts2wasm-compiler module_graph: PASS (4 tests)
 cargo nextest run -p ts2wasm-compiler: PASS (35 tests)
 cargo nextest run -p ts2wasm-cli module: PASS (12 tests, 218 skipped)
 cargo nextest run: PASS (363 tests, 4 skipped)
-scripts/manager update-issue-index: PASS
-scripts/manager update-issue-index --check: PASS
-scripts/manager check-issue-index: PASS
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
-scripts/manager discord-report --run-id 232-module-graph-close-audit-20260428T091725Z: DEFERRED (DISCORD_WEBHOOK_URL missing; payload/error saved)
+mise run update-issue-index: PASS
+mise run update-issue-index -- --check: PASS
+mise run check-issue-index: PASS
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
+mise run discord-report -- --run-id 232-module-graph-close-audit-20260428T091725Z: DEFERRED (DISCORD_WEBHOOK_URL missing; payload/error saved)
 date: 2026-04-28
 ```
 
@@ -189,9 +189,9 @@ Validation:
 cargo nextest run -p ts2wasm-compiler module_graph: PASS (4 tests)
 cargo fmt --all --check: PASS
 cargo nextest run -p ts2wasm-compiler: PASS (35 tests)
-scripts/manager check-issue-health: PASS
-scripts/manager check-agent-state: PASS
-scripts/manager discord-report --run-id 232-module-cycle-diagnostics-20260428T090325Z: DEFERRED (DISCORD_WEBHOOK_URL missing; payload/error saved)
+mise run check-issue-health: PASS
+mise run check-agent-state: PASS
+mise run discord-report -- --run-id 232-module-cycle-diagnostics-20260428T090325Z: DEFERRED (DISCORD_WEBHOOK_URL missing; payload/error saved)
 ```
 
 Remaining work before close:

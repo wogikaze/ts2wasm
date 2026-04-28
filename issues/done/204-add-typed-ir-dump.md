@@ -116,15 +116,15 @@ command: cargo fmt --all --check
 result: PASS
 date: 2026-04-28
 
-command: scripts/manager check-agent-state
+command: mise run check-agent-state
 result: PASS
 date: 2026-04-28
 
-command: scripts/manager check-issue-health
+command: mise run check-issue-health
 result: PASS
 date: 2026-04-28
 
-command: scripts/manager check-repo-smoke
+command: mise run check-repo-smoke
 result: PASS
 date: 2026-04-28
 
