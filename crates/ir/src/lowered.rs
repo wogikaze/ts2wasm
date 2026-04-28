@@ -826,24 +826,35 @@ fn validate_json_stringify_args(
     }
 
     if let Some(space) = args.get(2) {
-        if !matches!(
-            space,
-            ResolvedExpr::Number(_)
-                | ResolvedExpr::String(_)
-                | ResolvedExpr::Bool(_)
-                | ResolvedExpr::Null
-                | ResolvedExpr::Undefined
-        ) {
+        if !is_supported_json_stringify_space(space, function_ids) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "JSON.stringify space currently supports integer numeric or string values"
-                    .to_owned(),
+                message:
+                    "JSON.stringify space currently supports numeric/string values and ignored object/function values"
+                        .to_owned(),
                 span: Some(span),
             });
         }
     }
 
     Ok(())
+}
+
+fn is_supported_json_stringify_space(
+    space: &ResolvedExpr,
+    function_ids: &HashMap<String, FuncId>,
+) -> bool {
+    match space {
+        ResolvedExpr::Number(_)
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::Object(_)
+        | ResolvedExpr::ArrowFn { .. } => true,
+        ResolvedExpr::Ident(name) => function_ids.contains_key(name),
+        _ => false,
+    }
 }
 
 fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool {
@@ -863,6 +874,16 @@ fn json_stringify_replacer_keys(args: &[ResolvedExpr]) -> Option<Vec<&str>> {
             .collect(),
         _ => None,
     }
+}
+
+fn should_ignore_json_stringify_space(
+    space: &ResolvedExpr,
+    function_ids: &HashMap<String, FuncId>,
+) -> bool {
+    matches!(
+        space,
+        ResolvedExpr::Object(_) | ResolvedExpr::ArrowFn { .. }
+    ) || matches!(space, ResolvedExpr::Ident(name) if function_ids.contains_key(name))
 }
 
 fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
@@ -1882,6 +1903,11 @@ impl<'a> Resolver<'a> {
                         None => LoweredExpr::Undefined,
                     });
                     lowered_args.push(match args.get(2) {
+                        Some(space)
+                            if should_ignore_json_stringify_space(space, self.function_ids) =>
+                        {
+                            LoweredExpr::Undefined
+                        }
                         Some(space) => self.lower_expr(space)?,
                         None => LoweredExpr::Undefined,
                     });
