@@ -91,6 +91,44 @@ Follow-up issues:
 
 ## Notes
 
+2026-04-28 progress evidence:
+
+- Implemented deterministic `new Date(<epoch-ms integer>)` lowering for integer epoch
+  literals, including unary-negative integer literals, without adding host time imports.
+- Implemented `Date.prototype.getTime()` lowering for Date receivers.
+- Added fixture `fixtures/builtins-and-io/date-epoch-get-time.ts` covering `0`, `1`, and `-1`.
+- Node/iwasm differential evidence for the fixture:
+
+  ```text
+  command: node fixtures/builtins-and-io/date-epoch-get-time.ts
+  result: exit 0
+  stdout:
+  0
+  1
+  -1
+
+  command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-epoch-get-time.ts -o /tmp/ts2wasm-date-epoch-get-time.wasm
+  result: exit 0
+
+  command: iwasm /tmp/ts2wasm-date-epoch-get-time.wasm
+  result: exit 0
+  stdout:
+  0
+  1
+  -1
+  ```
+
+- Targeted regression:
+
+  ```text
+  command: cargo nextest run -p ts2wasm-cli date_epoch_get_time_fixture_matches_node_output_under_iwasm
+  result: pass
+  ```
+
+- Remaining issue 050 scope stays open: `Date.now()`, no-argument `new Date()`,
+  `toString`, non-integer/non-literal Date inputs, and full Date API behavior are not
+  complete. No live host time import was added.
+
 2026-04-28 blocker evidence:
 
 - `new Date(0)` currently reaches class-constructor lowering and fails before backend Date runtime code can be used:

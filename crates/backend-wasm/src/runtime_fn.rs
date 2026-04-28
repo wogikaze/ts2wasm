@@ -93,6 +93,9 @@ pub(crate) enum RuntimeFn {
     SetAdd,
     SetHas,
     SetDelete,
+    /// Issue 050: deterministic Date epoch slice.
+    DateNew,
+    DateGetTime,
     /// M10: String methods
     StringCharAt,
     StringSubstring,
@@ -368,6 +371,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetAdd" => Some(RuntimeFn::SetAdd),
         "SetHas" => Some(RuntimeFn::SetHas),
         "SetDelete" => Some(RuntimeFn::SetDelete),
+        "DateNew" => Some(RuntimeFn::DateNew),
+        "DateGetTime" => Some(RuntimeFn::DateGetTime),
         _ => None,
     }
 }
@@ -615,6 +620,7 @@ const SET_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];
 const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
 const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
+const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
 // Math function dependencies (no deps)
 const MATH_DEPS: &[RuntimeFn] = &[];
@@ -1090,6 +1096,22 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::DateNew => RuntimeSpec {
+                symbol: "$date_new",
+                deps: DATE_NEW_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DateGetTime => RuntimeSpec {
+                symbol: "$date_get_time",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringCharAt => RuntimeSpec {
                 symbol: "$string_char_at",
                 deps: STRING_CHAR_AT_DEPS,
@@ -1550,6 +1572,8 @@ impl RuntimeFn {
             Self::SetAdd => "set_add",
             Self::SetHas => "set_has",
             Self::SetDelete => "set_delete",
+            Self::DateNew => "date_new",
+            Self::DateGetTime => "date_get_time",
             Self::StringCharAt => "string_char_at",
             Self::StringSubstring => "string_substring",
             Self::StringSlice => "string_slice",
@@ -1657,6 +1681,8 @@ impl RuntimeFn {
             Self::SetAdd,
             Self::SetHas,
             Self::SetDelete,
+            Self::DateNew,
+            Self::DateGetTime,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,
@@ -1773,6 +1799,8 @@ impl RuntimeFn {
             Self::SetAdd,
             Self::SetHas,
             Self::SetDelete,
+            Self::DateNew,
+            Self::DateGetTime,
             // String methods
             Self::StringCharAt,
             Self::StringSubstring,
