@@ -51,10 +51,13 @@ impl WatEmitter<'_> {
                 // validate_lowered rejects residual `this`; supported receivers lower to Local.
                 wat.push_str(&format!("{pad}(unreachable)\n"))
             }
-            LoweredExpr::ArrowFn { .. } => {
-                // TODO: Arrow function emission not yet implemented (issue #36)
-                // For now, emit undefined as a placeholder
-                wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
+            LoweredExpr::ArrowFn { func_id, .. } => {
+                // Local-arrow calls are devirtualized during lowering; this opaque
+                // token prevents local initialization from becoming `undefined`.
+                wat.push_str(&format!(
+                    "{pad}(i32.const {})\n",
+                    ValueTag::encode_number(func_id.0 as i32)
+                ))
             }
             LoweredExpr::Local(local_id) => {
                 wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))

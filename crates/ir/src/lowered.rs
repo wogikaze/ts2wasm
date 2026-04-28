@@ -221,6 +221,7 @@ pub enum LoweredExpr {
     This,
     ArrowFn {
         func_id: FuncId,
+        captures: Vec<LocalId>,
     },
 }
 
@@ -309,15 +310,15 @@ impl LoweredExpr {
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let class_parents = collect_class_parents(program);
-    let mut resolver = Resolver::new(&function_ids, class_parents.clone());
-    let mut top_level_statements = Vec::new();
-    let mut functions = Vec::new();
+    let mut next_func_id = function_ids.len();
+    let mut functions_by_id = vec![None; function_ids.len()];
+    let mut generated_functions = Vec::new();
 
     for stmt in program {
         match stmt {
             ResolvedStmt::Function { name, params, body } => {
                 let func_id = function_ids[name];
-                functions.push(lower_function(
+                let lowered = lower_function(
                     func_id,
                     params,
                     body,
@@ -325,7 +326,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     class_parents.clone(),
                     None,
                     false,
-                )?);
+                    next_func_id,
+                )?;
+                next_func_id = lowered.next_func_id;
+                functions_by_id[func_id.0] = Some(lowered.function);
+                generated_functions.extend(lowered.generated_functions);
             }
             ResolvedStmt::ClassDecl {
                 name,
@@ -346,7 +351,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     vec![("this".to_owned(), None, false)];
                 ctor_params_with_this.extend(ctor_params.clone());
 
-                functions.push(lower_function(
+                let lowered = lower_function(
                     ctor_id,
                     &ctor_params_with_this,
                     &ctor_body,
@@ -354,7 +359,11 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     class_parents.clone(),
                     Some(name),
                     true,
-                )?);
+                    next_func_id,
+                )?;
+                next_func_id = lowered.next_func_id;
+                functions_by_id[ctor_id.0] = Some(lowered.function);
+                generated_functions.extend(lowered.generated_functions);
 
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
@@ -367,7 +376,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             params.extend(method.params.clone());
                             params
                         };
-                    functions.push(lower_function(
+                    let lowered = lower_function(
                         method_id,
                         &method_params_with_this,
                         &method.body,
@@ -375,12 +384,37 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         class_parents.clone(),
                         Some(name),
                         false,
-                    )?);
+                        next_func_id,
+                    )?;
+                    next_func_id = lowered.next_func_id;
+                    functions_by_id[method_id.0] = Some(lowered.function);
+                    generated_functions.extend(lowered.generated_functions);
                 }
             }
+            _ => {}
+        }
+    }
+
+    let mut resolver = Resolver::new(&function_ids, class_parents.clone(), next_func_id);
+    let mut top_level_statements = Vec::new();
+    for stmt in program {
+        match stmt {
+            ResolvedStmt::Function { .. } | ResolvedStmt::ClassDecl { .. } => {}
             _ => top_level_statements.push(resolver.lower_stmt(stmt)?),
         }
     }
+    generated_functions.extend(resolver.generated_functions);
+
+    let mut functions = functions_by_id
+        .into_iter()
+        .collect::<Option<Vec<_>>>()
+        .ok_or_else(|| Diagnostic {
+            code: DiagCode::InvariantViolation,
+            message: "function id allocation left an unfilled function slot".to_owned(),
+            span: None,
+        })?;
+    generated_functions.sort_by_key(|function| function.id.0);
+    functions.extend(generated_functions);
 
     Ok(LoweredProgram {
         top_level_statements,
@@ -388,6 +422,12 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         functions,
         modules: resolver.modules,
     })
+}
+
+struct FunctionLowering {
+    function: LoweredFunction,
+    generated_functions: Vec<LoweredFunction>,
+    next_func_id: usize,
 }
 
 fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
@@ -477,7 +517,8 @@ fn lower_function(
     class_parents: HashMap<String, Option<String>>,
     current_class: Option<&str>,
     in_constructor: bool,
-) -> Result<LoweredFunction, Diagnostic> {
+    next_func_id: usize,
+) -> Result<FunctionLowering, Diagnostic> {
     let (mut resolver, param_ids) = Resolver::with_params(
         function_ids,
         params
@@ -488,6 +529,7 @@ fn lower_function(
         class_parents,
         current_class,
         in_constructor,
+        next_func_id,
     )?;
 
     let rest_param_index = params.iter().position(|(_, _, is_rest)| *is_rest);
@@ -519,13 +561,17 @@ fn lower_function(
         .iter()
         .filter(|(_, default, is_rest)| default.is_none() && !*is_rest)
         .count();
-    Ok(LoweredFunction {
-        id,
-        params: param_ids,
-        min_required_params: min_required,
-        rest_param_index,
-        locals: resolver.locals,
-        body: body_with_defaults,
+    Ok(FunctionLowering {
+        function: LoweredFunction {
+            id,
+            params: param_ids,
+            min_required_params: min_required,
+            rest_param_index,
+            locals: resolver.locals,
+            body: body_with_defaults,
+        },
+        generated_functions: resolver.generated_functions,
+        next_func_id: resolver.next_func_id,
     })
 }
 
@@ -619,6 +665,87 @@ fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<S
     }
 }
 
+fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut Vec<String>) {
+    match expr {
+        ResolvedExpr::This { .. } => push_capture("this", params, captures),
+        ResolvedExpr::Ident(name) => push_capture(name, params, captures),
+        ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
+            collect_arrow_captures(expr, params, captures);
+        }
+        ResolvedExpr::Binary { left, right, .. } => {
+            collect_arrow_captures(left, params, captures);
+            collect_arrow_captures(right, params, captures);
+        }
+        ResolvedExpr::Call { callee, args, .. } => {
+            collect_arrow_captures(callee, params, captures);
+            for arg in args {
+                collect_arrow_captures(arg, params, captures);
+            }
+        }
+        ResolvedExpr::Assign { name, expr } => {
+            push_capture(name, params, captures);
+            collect_arrow_captures(expr, params, captures);
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                collect_arrow_captures(element, params, captures);
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for (_, value) in props {
+                collect_arrow_captures(value, params, captures);
+            }
+        }
+        ResolvedExpr::ComputedIndex { object, index } => {
+            collect_arrow_captures(object, params, captures);
+            collect_arrow_captures(index, params, captures);
+        }
+        ResolvedExpr::BuiltinCall { args, .. } => {
+            for arg in args {
+                collect_arrow_captures(arg, params, captures);
+            }
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. } => {
+            collect_arrow_captures(object, params, captures);
+        }
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            collect_arrow_captures(object, params, captures);
+            for arg in args {
+                collect_arrow_captures(arg, params, captures);
+            }
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            collect_arrow_captures(object, params, captures);
+            collect_arrow_captures(value, params, captures);
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            collect_arrow_captures(object, params, captures);
+            collect_arrow_captures(key, params, captures);
+            collect_arrow_captures(value, params, captures);
+        }
+        ResolvedExpr::New { args, .. } => {
+            for arg in args {
+                collect_arrow_captures(arg, params, captures);
+            }
+        }
+        ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined => {}
+    }
+}
+
+fn push_capture(name: &str, params: &[String], captures: &mut Vec<String>) {
+    if params.iter().any(|param| param == name) || captures.iter().any(|capture| capture == name) {
+        return;
+    }
+    captures.push(name.to_owned());
+}
+
 fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
     match op {
         UnaryOp::Not => Ok(LoweredUnaryOp::Not),
@@ -643,6 +770,9 @@ struct Resolver<'a> {
     scopes: Vec<HashMap<String, LocalId>>,
     next_local_id: usize,
     locals: Vec<LocalId>,
+    next_func_id: usize,
+    generated_functions: Vec<LoweredFunction>,
+    arrow_locals: HashMap<LocalId, ArrowClosure>,
     module_ids: HashMap<String, usize>,
     modules: Vec<ModuleInfo>,
     class_constructor_ids: HashMap<String, FuncId>,
@@ -654,10 +784,17 @@ struct Resolver<'a> {
     in_constructor: bool,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ArrowClosure {
+    func_id: FuncId,
+    captures: Vec<LocalId>,
+}
+
 impl<'a> Resolver<'a> {
     fn new(
         function_ids: &'a HashMap<String, FuncId>,
         class_parents: HashMap<String, Option<String>>,
+        next_func_id: usize,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
@@ -666,6 +803,9 @@ impl<'a> Resolver<'a> {
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
+            next_func_id,
+            generated_functions: Vec::new(),
+            arrow_locals: HashMap::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -684,6 +824,7 @@ impl<'a> Resolver<'a> {
         class_parents: HashMap<String, Option<String>>,
         current_class: Option<&str>,
         in_constructor: bool,
+        next_func_id: usize,
     ) -> Result<(Self, Vec<LocalId>), Diagnostic> {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
             class_maps(function_ids);
@@ -692,6 +833,9 @@ impl<'a> Resolver<'a> {
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
+            next_func_id,
+            generated_functions: Vec::new(),
+            arrow_locals: HashMap::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -757,6 +901,17 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 let lowered = self.lower_expr(expr)?;
+                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                    self.arrow_locals.insert(
+                        local_id,
+                        ArrowClosure {
+                            func_id: *func_id,
+                            captures: captures.clone(),
+                        },
+                    );
+                } else {
+                    self.arrow_locals.remove(&local_id);
+                }
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = expr_class {
                     self.local_classes.insert(local_id, class_name);
@@ -768,6 +923,17 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
                 let lowered = self.lower_expr(expr)?;
+                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                    self.arrow_locals.insert(
+                        local_id,
+                        ArrowClosure {
+                            func_id: *func_id,
+                            captures: captures.clone(),
+                        },
+                    );
+                } else {
+                    self.arrow_locals.remove(&local_id);
+                }
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = expr_class {
                     self.local_classes.insert(local_id, class_name);
@@ -1010,6 +1176,18 @@ impl<'a> Resolver<'a> {
                     }
                 };
 
+                if let Ok(local_id) = self.resolve_local(func_name) {
+                    if let Some(closure) = self.arrow_locals.get(&local_id).cloned() {
+                        let mut lowered_args = self.lower_call_args(args)?;
+                        lowered_args
+                            .extend(closure.captures.iter().copied().map(LoweredExpr::Local));
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(closure.func_id),
+                            args: lowered_args,
+                        });
+                    }
+                }
+
                 if func_name == "super" {
                     if !self.in_constructor {
                         return Err(Diagnostic {
@@ -1058,29 +1236,7 @@ impl<'a> Resolver<'a> {
                     });
                 }
 
-                // Lower arguments, expanding spread arrays
-                let mut lowered_args = Vec::new();
-                for arg in args {
-                    match arg {
-                        ResolvedExpr::Spread(spread_expr) => {
-                            // For now, only support spreading literal arrays
-                            if let ResolvedExpr::Array(elements) = spread_expr.as_ref() {
-                                for elem in elements {
-                                    lowered_args.push(self.lower_expr(elem)?);
-                                }
-                            } else {
-                                return Err(Diagnostic {
-                                    code: DiagCode::UnsupportedSyntax,
-                                    message: "spread arguments are only supported for literal arrays in this milestone".to_owned(),
-                                    span: None,
-                                });
-                            }
-                        }
-                        _ => {
-                            lowered_args.push(self.lower_expr(arg)?);
-                        }
-                    }
-                }
+                let lowered_args = self.lower_call_args(args)?;
                 let func_id = match self.resolve_func(func_name) {
                     Ok(func_id) => func_id,
                     Err(_) if self.resolve_local(func_name).is_ok() => {
@@ -1349,12 +1505,78 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
                 module_id: self.module_id_for_specifier(specifier),
             }),
-            ResolvedExpr::ArrowFn { params: _, body: _ } => {
-                // For now, lower arrow function to undefined as placeholder
-                // Full implementation requires closure creation with lexical this capture
-                Ok(LoweredExpr::Undefined)
+            ResolvedExpr::ArrowFn { params, body } => self.lower_arrow_fn(params, body),
+        }
+    }
+
+    fn lower_call_args(&mut self, args: &[ResolvedExpr]) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let mut lowered_args = Vec::new();
+        for arg in args {
+            match arg {
+                ResolvedExpr::Spread(spread_expr) => {
+                    if let ResolvedExpr::Array(elements) = spread_expr.as_ref() {
+                        for elem in elements {
+                            lowered_args.push(self.lower_expr(elem)?);
+                        }
+                    } else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message:
+                                "spread arguments are only supported for literal arrays in this milestone"
+                                    .to_owned(),
+                            span: None,
+                        });
+                    }
+                }
+                _ => lowered_args.push(self.lower_expr(arg)?),
             }
         }
+        Ok(lowered_args)
+    }
+
+    fn lower_arrow_fn(
+        &mut self,
+        params: &[String],
+        body: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let capture_names = self.arrow_capture_names(params, body);
+        let captures = capture_names
+            .iter()
+            .map(|name| self.resolve_local(name))
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut lowered_params = params
+            .iter()
+            .map(|name| (name.clone(), None, false))
+            .collect::<Vec<_>>();
+        lowered_params.extend(capture_names.iter().map(|name| (name.clone(), None, false)));
+
+        let func_id = FuncId(self.next_func_id);
+        self.next_func_id += 1;
+        let body_stmts = vec![ResolvedStmt::Return((*body).clone())];
+        let lowered = lower_function(
+            func_id,
+            &lowered_params,
+            &body_stmts,
+            self.function_ids,
+            self.class_parents.clone(),
+            self.current_class.as_deref(),
+            false,
+            self.next_func_id,
+        )?;
+        self.next_func_id = lowered.next_func_id;
+        self.generated_functions.push(lowered.function);
+        self.generated_functions.extend(lowered.generated_functions);
+
+        Ok(LoweredExpr::ArrowFn { func_id, captures })
+    }
+
+    fn arrow_capture_names(&self, params: &[String], body: &ResolvedExpr) -> Vec<String> {
+        let mut captures = Vec::new();
+        collect_arrow_captures(body, params, &mut captures);
+        captures
+            .into_iter()
+            .filter(|name| self.resolve_local(name).is_ok())
+            .collect()
     }
 
     fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
@@ -1931,6 +2153,12 @@ fn validate_expr(
                         .to_owned(),
                 span: None,
             });
+        }
+        LoweredExpr::ArrowFn { func_id, captures } => {
+            check_func_id(*func_id, num_funcs, errors);
+            for capture in captures {
+                check_local_id(*capture, local_count, errors);
+            }
         }
         _ => {}
     }

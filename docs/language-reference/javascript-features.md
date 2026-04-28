@@ -178,7 +178,7 @@
 |---|---|---|---|---|---|
 | function declaration | ES1 | hoisted function | 実装済み (basic) | - | - |
 | function expression | ES1 | anonymous function | 実装済み (basic) | - | - |
-| arrow function | ES6 | lexical `this` | 部分実装（syntax/placeholder; closure semantics は追跡中） | P1 | 210 |
+| arrow function | ES6 | lexical `this` | 実装済み (local binding calls; expression body / single-return block body / captured local / lexical `this` differential coverage) | - | 210 |
 | `this` | ES1 | call site receiver | 実装済み (class constructor / instance method receiver; top-level・static・extracted method は issue-linked diagnostic) | - | 211 |
 | `arguments` | ES1 | function arguments object | 未実装 | P2 | - |
 | rest parameters | ES6 | variadic parameters | 実装済み (argument collection) | - | 212 |
