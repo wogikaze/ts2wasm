@@ -21,9 +21,9 @@ Define the current JSON.parse/stringify supported subset, move remaining spec ga
 
 In scope:
 
-- [ ] Summarize currently validated JSON behavior from issue 052 progress evidence.
-- [ ] Create or update follow-up issues for non-integer numbers, UTF-16/surrogates, broad replacer semantics, boxed edge cases, and throw-compatible diagnostics.
-- [ ] Update issue 052 with a clear close/keep-open decision.
+- [x] Summarize currently validated JSON behavior from issue 052 progress evidence.
+- [x] Create or update follow-up issues for non-integer numbers, UTF-16/surrogates, broad replacer semantics, boxed edge cases, and throw-compatible diagnostics.
+- [x] Update issue 052 with a clear close/keep-open decision.
 
 Out of scope:
 
@@ -45,9 +45,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Supported JSON subset is explicit and reviewable.
-- [ ] Each remaining gap has a separate follow-up issue or an existing issue reference.
-- [ ] Ready queue no longer exposes issue 052 as a broad implementation task.
+- [x] Supported JSON subset is explicit and reviewable.
+- [x] Each remaining gap has a separate follow-up issue or an existing issue reference.
+- [x] Ready queue no longer exposes issue 052 as a broad implementation task.
 
 ## Validation
 
@@ -75,14 +75,30 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- close commit pending in current branch
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -E 'test(json)'
+result: pass; 19 tests run, 19 passed, 399 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass; issues/index.md regenerated
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-04-29
+
+command: mise run check issues
+result: pass after recreating gitignored local report placeholders referenced by pre-existing issue evidence
+date: 2026-04-29
+
+command: mise run check-agent-state
+result: pass; agent state files validated
+date: 2026-04-29
 ```
 
 Remaining risks:

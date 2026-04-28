@@ -18,7 +18,11 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 021a | Implement wasm-encoder hello binary MVP | feature | backend | implementation-ready | P2 |  | The wasm backend needs a first direct binary emission slice for a WASI stdout fixture; WAT and wasm binary are equiva... |
-| 052a | Close JSON supported subset contract | docs | runtime/builtins | docs-ready | P1 |  | JSON has many validated progress slices, but the parent issue still reads as a full-spec implementation target and is... |
+| 052b | Implement JSON non-integer number representation | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.parse` currently rejects JSON numbers that cannot be reduced exactly to the tagged small-int representation, ev... |
+| 052c | Implement JSON UTF-16 and surrogate string handling | feature | runtime/builtins | implementation-ready | P1 |  | JSON string parsing currently supports ASCII and ASCII-valued `\uXXXX` escapes, but rejects non-ASCII code points and... |
+| 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
+| 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | implementation-ready | P2 |  | `JSON.stringify` has validated narrow boxed `space` handling, but broader boxed and object-coercion edge cases are no... |
+| 052f | Implement JSON.parse throw-compatible diagnostics | feature | runtime/builtins | implementation-ready | P1 |  | Invalid `JSON.parse` cases are now rejected in many paths, but iwasm usually traps with `Exception: unreachable` inst... |
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | verification-ready | P1 |  | Unknown-unsupported classification has reached zero in large test262 windows, but the parent spike has no fixed compl... |
 | 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | verification-ready | P1 |  | Dynamic `Function(...)` and `new Function(...)` behave like runtime |
 | 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | implementation-ready | P1 |  | Ordinary function declarations and direct calls are a separate callable |
@@ -244,6 +248,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 049 | Implement Map and Set | feature | runtime/builtins | see `issues/done/049-implement-map-set.md` |
 | 050a | Document Date deterministic subset and live-time policy gap | docs | runtime/builtins | see `issues/done/050a-document-date-deterministic-subset-and-live-time-policy-gap.md` |
 | 051 | Implement RegExp | feature | runtime/builtins | see `issues/done/051-implement-regexp.md` |
+| 052a | Close JSON supported subset contract | docs | runtime/builtins | see `issues/done/052a-close-json-supported-subset-contract.md` |
 | 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 | 054 | Implement Error types | feature | runtime/builtins | see `issues/done/054-implement-error-types.md` |
 | 055 | Umbrella: implement import and export | feature | frontend/semantics | see `issues/done/055-implement-import-export.md` |
