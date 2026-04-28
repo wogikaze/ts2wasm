@@ -22,6 +22,10 @@ import requests
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_SENT_REGISTRY = REPO_ROOT / ".discord-report-sent.json"
+CONTENT_LIMIT = 1900
+EMBED_TOTAL_LIMIT = 5600
+FIELD_VALUE_LIMIT = 900
+SECTION_LINE_LIMIT = 2
 
 
 def load_env() -> dict[str, str]:
@@ -70,10 +74,9 @@ def parse_cycle_report(content: str) -> dict[str, str]:
             value = match.group(1).strip()
             # Remove leading/trailing whitespace and empty lines
             lines = [line.strip() for line in value.split("\n") if line.strip()]
-            # Limit to 5 lines for Discord field limit
-            if len(lines) > 5:
-                lines = lines[:5]
-            fields[key] = "\n".join(lines)
+            if len(lines) > SECTION_LINE_LIMIT:
+                lines = lines[:SECTION_LINE_LIMIT]
+            fields[key] = "\n".join(lines)[:FIELD_VALUE_LIMIT]
 
     return fields
 
@@ -89,42 +92,42 @@ def create_discord_embed(fields: dict[str, str], run_id: Optional[str]) -> dict[
                 "fields": [
                     {
                         "name": "📊 状態",
-                        "value": fields["status"][:1024],
+                        "value": fields["status"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                     {
                         "name": "🎯 目的",
-                        "value": fields["purpose"][:1024],
+                        "value": fields["purpose"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                     {
                         "name": "🔄 実施内容",
-                        "value": fields["actions"][:1024],
+                        "value": fields["actions"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                     {
                         "name": "🧠 判断と根拠",
-                        "value": fields["reasoning"][:1024],
+                        "value": fields["reasoning"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                     {
                         "name": "⚠️ 詰まり・ロス",
-                        "value": fields["blockers"][:1024],
+                        "value": fields["blockers"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                     {
                         "name": "📉 リスク",
-                        "value": fields["risks"][:1024],
+                        "value": fields["risks"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                     {
                         "name": "➡️ 次にやるべきこと",
-                        "value": fields["next"][:1024],
+                        "value": fields["next"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                     {
                         "name": "📌 完了 / 追加",
-                        "value": fields["issues"][:1024],
+                        "value": fields["issues"][:FIELD_VALUE_LIMIT],
                         "inline": False,
                     },
                 ],
@@ -153,7 +156,7 @@ def create_json_payload(content: str, source_path: Path) -> dict[str, Any]:
     rel = display_path(source_path)
     return {
         "username": "ts2wasm-dev-loop",
-        "content": f"Discord JSON report: {rel}\n```json\n{text[:1800]}\n```",
+        "content": f"Discord JSON report: {rel}\n```json\n{text}\n```",
     }
 
 
@@ -171,6 +174,64 @@ def send_discord_webhook(webhook_url: str, payload: dict[str, Any]) -> bool:
     except requests.RequestException as e:
         print(f"Error sending to Discord: {e}", file=sys.stderr)
         return False
+
+
+def text_chunks(text: str, limit: int) -> list[str]:
+    if len(text) <= limit:
+        return [text]
+    first = text[:limit].rstrip()
+    second = text[limit : limit * 2].rstrip()
+    if len(text) > limit * 2:
+        suffix = "\n[truncated]"
+        second = second[: limit - len(suffix)].rstrip() + suffix
+    return [first, second or "[continued]"]
+
+
+def embed_text_size(embed: dict[str, Any]) -> int:
+    total = len(str(embed.get("title", ""))) + len(str(embed.get("description", "")))
+    footer = embed.get("footer")
+    if isinstance(footer, dict):
+        total += len(str(footer.get("text", "")))
+    for field in embed.get("fields", []):
+        if isinstance(field, dict):
+            total += len(str(field.get("name", ""))) + len(str(field.get("value", "")))
+    return total
+
+
+def split_payload_for_discord(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    """Keep messages concise and split oversized payloads into at most two sends."""
+    content = payload.get("content")
+    if isinstance(content, str) and len(content) > CONTENT_LIMIT:
+        chunks = text_chunks(content, CONTENT_LIMIT - 14)
+        return [
+            {**payload, "content": f"({i}/{len(chunks)}) {chunk}"}
+            for i, chunk in enumerate(chunks, 1)
+        ]
+
+    embeds = payload.get("embeds")
+    if not isinstance(embeds, list) or not embeds:
+        return [payload]
+
+    if len(embeds) > 1:
+        return [{**payload, "embeds": embeds[:5]}, {**payload, "embeds": embeds[5:10]}] if len(embeds) > 5 else [payload]
+
+    embed = embeds[0]
+    if not isinstance(embed, dict):
+        return [payload]
+
+    fields = embed.get("fields")
+    if not isinstance(fields, list) or embed_text_size(embed) <= EMBED_TOTAL_LIMIT:
+        return [payload]
+
+    midpoint = max(1, (len(fields) + 1) // 2)
+    parts = [fields[:midpoint], fields[midpoint:]]
+    split_payloads = []
+    for i, part_fields in enumerate(parts, 1):
+        split_embed = dict(embed)
+        split_embed["fields"] = part_fields
+        split_embed["title"] = f"{embed.get('title', 'Discord report')} ({i}/2)"
+        split_payloads.append({**payload, "embeds": [split_embed]})
+    return split_payloads
 
 
 def display_path(path: Path) -> str:
@@ -288,6 +349,7 @@ def main():
     args = parser.parse_args()
 
     payload, source_path, payload_kind = load_input_payload(args)
+    payloads = split_payload_for_discord(payload)
 
     registry_path = Path(args.sent_registry)
     if not registry_path.is_absolute():
@@ -298,7 +360,7 @@ def main():
 
     if args.dry_run:
         print("Discord embed (dry run):")
-        print(json.dumps(payload, indent=2, ensure_ascii=False))
+        print(json.dumps(payloads, indent=2, ensure_ascii=False))
         sys.exit(0)
 
     env = load_env()
@@ -307,12 +369,15 @@ def main():
         print("エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません", file=sys.stderr)
         sys.exit(1)
 
-    if send_discord_webhook(webhook_url, payload):
-        if source_path is not None:
-            mark_sent(registry_path, registry, source_path, args.run_id, payload_kind)
-        print("Discord にレポートを送信しました")
-        sys.exit(0)
-    sys.exit(1)
+    for index, payload_part in enumerate(payloads, 1):
+        if not send_discord_webhook(webhook_url, payload_part):
+            print(f"エラー: Discord 送信に失敗しました ({index}/{len(payloads)})", file=sys.stderr)
+            sys.exit(1)
+
+    if source_path is not None:
+        mark_sent(registry_path, registry, source_path, args.run_id, payload_kind)
+    print(f"Discord にレポートを送信しました ({len(payloads)} message(s))")
+    sys.exit(0)
 
 
 if __name__ == "__main__":
