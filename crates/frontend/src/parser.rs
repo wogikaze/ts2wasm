@@ -2,6 +2,7 @@ use crate::{
     BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportDefaultSpecifier,
     ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp, ModuleSpecifier,
     ReExportNamedSpecifier, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
+    ast::ReExportNamespaceSpecifier,
 };
 
 pub struct Parser {
@@ -147,6 +148,9 @@ impl Parser {
 
     fn star_re_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
         let star_span = self.expect(TokenKind::Star)?;
+        if self.peek_contextual_keyword("as") {
+            return self.namespace_re_export_statement(export_span, star_span);
+        }
         if !self.peek_contextual_keyword("from") {
             return self.unsupported_module_form(export_span, "namespace re-export");
         }
@@ -155,6 +159,34 @@ impl Parser {
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::ExportAllFrom {
             star_span,
+            source,
+            span: Span {
+                start: export_span.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn namespace_re_export_statement(
+        &mut self,
+        export_span: Span,
+        star_span: Span,
+    ) -> Result<Stmt, Diagnostic> {
+        self.expect_contextual_keyword("as")?;
+        let (exported, exported_span) = self.expect_ident()?;
+        let namespace = ReExportNamespaceSpecifier {
+            exported,
+            exported_span,
+            span: Span {
+                start: star_span.start,
+                end: exported_span.end,
+            },
+        };
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ExportNamespaceFrom {
+            namespace,
             source,
             span: Span {
                 start: export_span.start,
@@ -3049,16 +3081,25 @@ mod tests {
     }
 
     #[test]
-    fn rejects_namespace_re_export_with_issue_linked_diagnostic() {
-        let err = parse_program("export * as ns from './module-source';").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported namespace re-export"));
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_namespace_re_export_with_source_and_declaration_spans() {
+        let program = parse_program("export * as ns from './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportNamespaceFrom {
+                namespace,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 38 });
+                assert_eq!(namespace.exported, "ns");
+                assert_eq!(namespace.exported_span, Span { start: 12, end: 14 });
+                assert_eq!(namespace.span, Span { start: 7, end: 14 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 20, end: 37 });
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
     }
 
     #[test]
