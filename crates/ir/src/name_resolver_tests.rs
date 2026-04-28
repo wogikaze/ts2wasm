@@ -218,4 +218,59 @@ mod tests {
 
         assert!(name_resolver::resolve_names(&program).is_ok());
     }
+
+    #[test]
+    fn rejects_unshadowed_test262_ishtmldda_marker_with_issue_237_diagnostic() {
+        let program = vec![Stmt::Let {
+            name: "value".to_string(),
+            expr: Expr::Member {
+                object: Box::new(Expr::Ident {
+                    name: "$262".to_string(),
+                    span: Span { start: 12, end: 16 },
+                }),
+                property: "IsHTMLDDA".to_string(),
+                span: Span { start: 12, end: 26 },
+            },
+            span: Span { start: 0, end: 27 },
+        }];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-237"));
+        assert!(err.message.contains("[[IsHTMLDDA]]"));
+        assert_eq!(err.span.map(|span| (span.start, span.end)), Some((12, 26)));
+    }
+
+    #[test]
+    fn allows_shadowed_test262_like_member_name_resolution() {
+        let program = vec![
+            Stmt::Let {
+                name: "$262".to_string(),
+                expr: Expr::Object {
+                    props: vec![(
+                        "IsHTMLDDA".to_string(),
+                        Expr::Number {
+                            value: 1,
+                            span: Span { start: 23, end: 24 },
+                        },
+                    )],
+                    span: Span { start: 11, end: 26 },
+                },
+                span: Span { start: 0, end: 27 },
+            },
+            Stmt::Expr {
+                expr: Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "$262".to_string(),
+                        span: Span { start: 28, end: 32 },
+                    }),
+                    property: "IsHTMLDDA".to_string(),
+                    span: Span { start: 28, end: 42 },
+                },
+                span: Span { start: 28, end: 43 },
+            },
+        ];
+
+        assert!(name_resolver::resolve_names(&program).is_ok());
+    }
 }
