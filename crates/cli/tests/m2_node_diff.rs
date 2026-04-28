@@ -132,11 +132,8 @@ fn logical_assignment_index_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn logical_assignment_unsupported_targets_report_issue_236() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/logical-assignment-member-unsupported.ts",
-        "issue-236:",
-    );
+fn logical_assignment_computed_member_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/logical-assignment-computed-member.ts");
 }
 
 #[test]

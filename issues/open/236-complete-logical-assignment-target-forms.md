@@ -53,7 +53,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `fixtures/core-semantics/logical-assignment-member-unsupported.ts` is replaced or narrowed by positive regression fixtures.
+- [ ] `fixtures/core-semantics/logical-assignment-computed-member.ts` replaces the previous unsupported receiver/key fixture with positive regression coverage.
 - [ ] Dynamic computed logical assignment keys are evaluated exactly once.
 - [ ] Non-identifier receiver logical assignment targets are evaluated exactly once.
 - [ ] RHS evaluation still follows `&&=`, `||=`, and `??=` short-circuit semantics.
@@ -103,9 +103,8 @@ Split from issue 228 close audit. Existing diagnostics point to this issue for t
 property assignment path that evaluates the key expression before the
 short-circuit branch and reuses the stored key value for any write. Regression
 coverage in `fixtures/core-semantics/logical-assignment-index.ts` records key
-and RHS side effects for the supported dynamic-key slice. Non-identifier
-receivers remain issue-linked unsupported coverage in
-`fixtures/core-semantics/logical-assignment-member-unsupported.ts`.
+and RHS side effects for the supported dynamic-key slice. At that point,
+non-identifier receivers still remained issue-linked unsupported coverage.
 
 2026-04-28 progress: static member logical-assignment targets with
 non-identifier receivers now lower through an explicit receiver-temporary path
@@ -113,9 +112,18 @@ non-identifier receivers now lower through an explicit receiver-temporary path
 once into a rooted temporary before the property read and reuses that temporary
 for any short-circuited write. Regression coverage in
 `fixtures/core-semantics/logical-assignment-member.ts` records receiver and RHS
-side-effect markers for skip/run branches. Dynamic computed keys on
-non-identifier receivers remain issue-linked unsupported coverage in
-`fixtures/core-semantics/logical-assignment-member-unsupported.ts`.
+side-effect markers for skip/run branches. At that point, dynamic computed keys
+on non-identifier receivers still remained issue-linked unsupported coverage.
+
+2026-04-28 progress: dynamic computed logical-assignment keys on
+non-identifier receivers now lower through a combined receiver/key temporary
+path (`getObj()[key()] ||= rhs()`, `&&=`, `??=`). The backend evaluates the
+receiver once into a rooted temporary, evaluates the key once into a separate
+rooted temporary, uses the stored key for both the read and any short-circuited
+write, and keeps RHS evaluation gated by the logical assignment operator.
+Regression coverage in
+`fixtures/core-semantics/logical-assignment-computed-member.ts` records
+receiver, key, and RHS side-effect markers for skip/run branches.
 
 ## Completion evidence
 
