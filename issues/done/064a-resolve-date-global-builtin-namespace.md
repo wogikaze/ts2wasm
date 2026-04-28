@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 Problem: Date support is blocked by resolver failures for the global `Date` binding before deterministic Date lowering can be reached consistently.
@@ -21,9 +22,9 @@ Teach name resolution to recognize the `Date` global builtin namespace for deter
 
 In scope:
 
-- [ ] Resolve `Date` as a builtin namespace for supported deterministic Date constructor/method patterns.
-- [ ] Preserve issue-linked diagnostics for `Date.now()`, `new Date()`, and unsupported methods.
-- [ ] Add focused resolver/lowering tests and one CLI fixture if needed.
+- [x] Resolve `Date` as a builtin namespace for supported deterministic Date constructor/method patterns.
+- [x] Preserve issue-linked diagnostics for `Date.now()`, `new Date()`, and unsupported methods.
+- [x] Add focused resolver/lowering tests and one CLI fixture if needed.
 
 Out of scope:
 
@@ -47,9 +48,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Deterministic Date fixtures reach the intended Date lowering path instead of unresolved-name/class-constructor fallback errors.
-- [ ] Unsupported live-time Date fixtures still report issue-linked diagnostics.
-- [ ] The resolver change does not treat arbitrary unknown globals as builtins.
+- [x] Deterministic Date fixtures reach the intended Date lowering path instead of unresolved-name/class-constructor fallback errors.
+- [x] Unsupported live-time Date fixtures still report issue-linked diagnostics.
+- [x] The resolver change does not treat arbitrary unknown globals as builtins.
 
 ## Validation
 
@@ -78,14 +79,30 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `bd87c9c` issue-064a: cover Date namespace resolution
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(date)'
+result: passed; 16 tests passed, 396 skipped
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-ir
+result: passed; 21 tests passed
+date: 2026-04-29
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-epoch-get-time.ts -o /tmp/ts2wasm-064a-date.wasm
+result: passed
+date: 2026-04-29
+
+command: iwasm /tmp/ts2wasm-064a-date.wasm
+result: passed; stdout was 0, 1, -1
+date: 2026-04-29
 ```
 
 Remaining risks:

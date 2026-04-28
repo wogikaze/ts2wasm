@@ -24,7 +24,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | verification-ready | P1 |  | Unknown-unsupported classification has reached zero in large test262 windows, but the parent spike has no fixed compl... |
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | docs-ready | P1 |  | Issue 061 duplicates issue 050 and keeps Date reference cases as a separate Ready candidate. |
 | 062a | Split function epic into callable child issues | cleanup | issues | docs-ready | P1 |  | Issue 062 mixes unrelated function surfaces, so implementation starts with scope design instead of code. |
-| 064a | Resolve Date global builtin namespace | feature | frontend | implementation-ready | P1 |  | Date support is blocked by resolver failures for the global `Date` binding before deterministic Date lowering can be ... |
 | 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | docs-ready | P1 |  | Issue 065 duplicates the parser syntax epic in issue 059 and makes the Ready queue present the same work twice. |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 238 | Make strict warning gates pass | infra | tests | implementation-ready | P0 |  | Make strict warning gates pass |
@@ -250,6 +249,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 056 | Implement name resolution for variables and identifiers | feature | frontend | see `issues/done/056-implement-name-resolution.md` |
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
+| 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | see `issues/done/202-implement-regexp-literal-support.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 | 204 | Add typed IR dump command | feature | cli | see `issues/done/204-add-typed-ir-dump.md` |
