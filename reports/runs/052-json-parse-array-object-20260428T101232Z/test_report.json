@@ -9,6 +9,7 @@
       "fixtures/builtins-and-io/json-parse-array-object-nested.ts",
       "issues/open/052-implement-json.md",
       "reports/runs/052-json-parse-array-object-20260428T101232Z/cycle_report.md",
+      "reports/runs/052-json-parse-array-object-20260428T101232Z/discord_report_deferred.json",
       "reports/runs/052-json-parse-array-object-20260428T101232Z/test_report.json"
     ],
     "commits": []
@@ -58,6 +59,11 @@
       "cmd": "scripts/manager check-agent-state",
       "status": "pass",
       "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 052-json-parse-array-object-20260428T101232Z",
+      "status": "fail",
+      "exit_code": 1
     },
     {
       "cmd": "cargo nextest run",
