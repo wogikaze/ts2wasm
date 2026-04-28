@@ -54,6 +54,11 @@ Passed:
 - `scripts/manager check-agent-state`
 - `python -m jsonschema -i reports/runs/052-json-number-space-20260428T094954Z/test_report.json .agents/state/schemas/test_report.schema.json`
 
+Reporting:
+
+- `scripts/manager discord-report --run-id 052-json-number-space-20260428T094954Z` failed twice because `DISCORD_WEBHOOK_URL` is not configured in the environment or `.env`.
+- Deferred payload/error artifacts were saved to `discord_payload.json` and `reporting_error.log`.
+
 Not run:
 
 - Full `cargo nextest run`; this is a PROGRESS slice scoped to one JSON.stringify runtime helper and the assignment requires full nextest for broad runtime/helper changes or issue close.
