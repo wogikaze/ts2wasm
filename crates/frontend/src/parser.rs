@@ -1463,14 +1463,15 @@ impl Parser {
                 }
             }
             let end = self.prev_span().map(|s| s.end).unwrap_or(expr.span().end);
-            Ok(Expr::New {
+            let new_expr = Expr::New {
                 expr: Box::new(expr),
                 args,
                 span: Span {
                     start: new_span.start,
                     end,
                 },
-            })
+            };
+            self.finish_call_member(new_expr, true)
         } else {
             self.postfix()
         }
@@ -1497,42 +1498,16 @@ impl Parser {
     }
 
     fn call_member_no_call(&mut self) -> Result<Expr, Diagnostic> {
-        let mut expr = self.primary()?;
-        loop {
-            if self.consume(TokenKind::Dot) {
-                let (property, prop_span) = self.expect_member_property_name()?;
-                let start = expr.span().start;
-                expr = Expr::Member {
-                    object: Box::new(expr),
-                    property,
-                    span: Span {
-                        start,
-                        end: prop_span.end,
-                    },
-                };
-                continue;
-            }
-            if self.consume(TokenKind::LeftBracket) {
-                let index = self.expression()?;
-                let right_span = self.expect(TokenKind::RightBracket)?;
-                let start = expr.span().start;
-                expr = Expr::Index {
-                    object: Box::new(expr),
-                    index: Box::new(index),
-                    span: Span {
-                        start,
-                        end: right_span.end,
-                    },
-                };
-                continue;
-            }
-            break;
-        }
-        Ok(expr)
+        let expr = self.primary()?;
+        self.finish_call_member(expr, false)
     }
 
     fn call_member(&mut self) -> Result<Expr, Diagnostic> {
-        let mut expr = self.primary()?;
+        let expr = self.primary()?;
+        self.finish_call_member(expr, true)
+    }
+
+    fn finish_call_member(&mut self, mut expr: Expr, allow_call: bool) -> Result<Expr, Diagnostic> {
         loop {
             if self.consume(TokenKind::Dot) {
                 let (property, prop_span) = self.expect_member_property_name()?;
@@ -1561,7 +1536,7 @@ impl Parser {
                 };
                 continue;
             }
-            if self.consume(TokenKind::LeftParen) {
+            if allow_call && self.consume(TokenKind::LeftParen) {
                 let mut args = Vec::new();
                 if !self.consume(TokenKind::RightParen) {
                     loop {
