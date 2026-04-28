@@ -1,0 +1,11 @@
+attempt 1:
+scripts/manager discord-report --run-id 051-regexp-compile-diagnostics-20260428T051924Z
+exit_code: 1
+stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
+
+attempt 2:
+scripts/manager discord-report --run-id 051-regexp-compile-diagnostics-20260428T051924Z
+exit_code: 1
+stderr: DISCORD_WEBHOOK_URL is not configured in the environment or .env.
+
+final status: DEFERRED

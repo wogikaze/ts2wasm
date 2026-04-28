@@ -1,0 +1,18 @@
+{
+  "run_id": "051-regexp-compile-diagnostics-20260428T051924Z",
+  "status": "PROGRESS",
+  "issue": "051",
+  "branch": "agent/051-regexp-compile-diagnostics-20260428T051924Z",
+  "commit": "5d53091",
+  "summary": "Added issue-051 diagnostics and regression coverage for unsupported RegExp.prototype.compile usage.",
+  "validation": [
+    "cargo fmt --all --check: pass",
+    "cargo nextest run -E 'test(regexp)': pass; 27 tests run",
+    "cargo nextest run -p ts2wasm-cli regexp: pass; 24 tests run",
+    "regexp-compile-unsupported fixture build: expected fail with issue-051 diagnostic",
+    "regexp-test fixture build+iwasm: pass",
+    "scripts/manager check-issue-health: pass",
+    "scripts/manager check-agent-state: pass"
+  ],
+  "reporting": "DEFERRED: DISCORD_WEBHOOK_URL is not configured"
+}
