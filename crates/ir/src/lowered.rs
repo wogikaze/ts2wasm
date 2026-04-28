@@ -812,6 +812,20 @@ fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
 }
 
+fn is_annex_b_date_method(method: &str) -> bool {
+    matches!(method, "getYear" | "setYear" | "toGMTString")
+}
+
+fn unsupported_annex_b_date_method_diagnostic(method: &str, span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-061: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
+        ),
+        span,
+    }
+}
+
 fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
     if !(1..=2).contains(&args.len()) {
         return Err(Diagnostic {
@@ -1771,6 +1785,11 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "DateGetTime".to_owned(),
                         args: vec![self.lower_expr(object)?],
                     })
+                } else if is_annex_b_date_method(method) && self.is_date_receiver(object) {
+                    Err(unsupported_annex_b_date_method_diagnostic(
+                        method,
+                        Some(*span),
+                    ))
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
