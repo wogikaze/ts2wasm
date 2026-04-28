@@ -2,7 +2,7 @@
   "run_id": "20260428T031121Z-052-json-number",
   "task_id": "052",
   "git": {
-    "sha": "7889dc5f629f0604f6072b3798cdb5a3697ed012",
+    "sha": "f50a16acaff6f2a62a8d717adf7ded8945abd629",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/runtime_builtins_host.rs",
@@ -15,7 +15,7 @@
     ],
     "commits": [
       {
-        "sha": "7889dc5f629f0604f6072b3798cdb5a3697ed012",
+        "sha": "f50a16acaff6f2a62a8d717adf7ded8945abd629",
         "message": "issue-052: parse json decimal exponent integers"
       }
     ]
