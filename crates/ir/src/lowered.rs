@@ -822,7 +822,7 @@ fn validate_json_stringify_args(
                     && is_supported_json_stringify_replacer_array(elements) => {}
             ResolvedExpr::Array(_) => {
                 return Err(json_stringify_replacer_diagnostic(
-                    "array replacer property lists outside the string-literal object subset",
+                    "array replacer property lists outside the string/numeric-literal object subset",
                     span,
                 ));
             }
@@ -907,18 +907,31 @@ fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool {
 fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool {
     elements
         .iter()
-        .all(|element| matches!(element, ResolvedExpr::String(_)))
+        .all(|element| json_stringify_replacer_key(element).is_some())
 }
 
-fn json_stringify_replacer_keys(args: &[ResolvedExpr]) -> Option<Vec<&str>> {
-    match args.get(1) {
-        Some(ResolvedExpr::Array(elements)) => elements
-            .iter()
-            .map(|element| match element {
-                ResolvedExpr::String(key) => Some(key.as_str()),
+fn json_stringify_replacer_key(element: &ResolvedExpr) -> Option<String> {
+    match element {
+        ResolvedExpr::String(key) => Some(key.clone()),
+        ResolvedExpr::Number(value) => Some(value.to_string()),
+        ResolvedExpr::Unary { op, expr }
+            if *op == UnaryOp::Negate && matches!(expr.as_ref(), ResolvedExpr::Number(_)) =>
+        {
+            match expr.as_ref() {
+                ResolvedExpr::Number(0) => Some("0".to_owned()),
+                ResolvedExpr::Number(value) => Some(format!("-{value}")),
                 _ => None,
-            })
-            .collect(),
+            }
+        }
+        _ => None,
+    }
+}
+
+fn json_stringify_replacer_keys(args: &[ResolvedExpr]) -> Option<Vec<String>> {
+    match args.get(1) {
+        Some(ResolvedExpr::Array(elements)) => {
+            elements.iter().map(json_stringify_replacer_key).collect()
+        }
         _ => None,
     }
 }
@@ -1995,13 +2008,13 @@ impl<'a> Resolver<'a> {
                         for allowed_key in replacer_keys {
                             if lowered_props
                                 .iter()
-                                .any(|(key, _): &(String, LoweredExpr)| key == allowed_key)
+                                .any(|(key, _): &(String, LoweredExpr)| key == &allowed_key)
                             {
                                 continue;
                             }
 
                             if let Some((key, value)) =
-                                props.iter().rev().find(|(key, _)| key == allowed_key)
+                                props.iter().rev().find(|(key, _)| key == &allowed_key)
                             {
                                 lowered_props.push((key.clone(), self.lower_expr(value)?));
                             }
