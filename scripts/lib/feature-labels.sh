@@ -62,7 +62,6 @@ ts2wasm_feature_label() {
     *"ambient"*) echo "ambient-declaration"; return ;;
     *"amd"*|*"systemmodule"*) echo "module-system-amd"; return ;;
     *"package"*|*"nodemodules"*|*"paths"*|*"resolution"*) echo "module-resolution"; return ;;
-    *"processingdiagnostic"*) echo "type-directive-resolution"; return ;;
     *"exportassignment"*|*"import"*|*"export"*|*"module"*) echo "import-export"; return ;;
     *"enum"*) echo "enum"; return ;;
     *"decorator"*) echo "decorator"; return ;;
@@ -76,6 +75,9 @@ ts2wasm_feature_label() {
   esac
 
   case "$text" in
+    *"issue-227"*) echo "typescript-directive"; return ;;
+    *"only \`export class\`"*) echo "import-export"; return ;;
+    *"unsupported expression"*"kind: import"*) echo "import-export"; return ;;
     *"class "*) echo "class"; return ;;
     *" import "*|*" export "*|*"require("*|*"require(\""*) echo "import-export"; return ;;
     *"regexp"*|*"regular expression"*) echo "regexp-literal"; return ;;

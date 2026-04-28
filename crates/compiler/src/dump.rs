@@ -4,6 +4,7 @@ use std::path::Path;
 
 use ts2wasm_frontend::{
     BinaryOp, DiagCode, Diagnostic, Expr, Lexer, Parser, SpannedToken, Stmt, UnaryOp,
+    validate_type_reference_directives,
 };
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
@@ -85,6 +86,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         message: format!("failed to read {}: {error}", input.display()),
         span: None,
     })?;
+    validate_type_reference_directives(&source)?;
 
     if matches!(options.phase, DumpPhase::Tokens) {
         let tokens = Lexer::new(&source).tokenize()?;

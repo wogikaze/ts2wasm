@@ -281,8 +281,6 @@ def feature_label(diag_code, err_file, file_path):
         return "module-system-amd"
     elif "package" in path_lc or "nodemodules" in path_lc or "paths" in path_lc or "resolution" in path_lc:
         return "module-resolution"
-    elif "processingdiagnostic" in path_lc:
-        return "type-directive-resolution"
     elif "exportassignment" in path_lc or "import" in path_lc or "export" in path_lc or "module" in path_lc:
         return "import-export"
     elif "enum" in path_lc:
@@ -307,7 +305,13 @@ def feature_label(diag_code, err_file, file_path):
     # Check error text for feature detection
     text = err_file.lower() if err_file else ""
     
-    if "class " in text:
+    if "issue-227" in text:
+        return "typescript-directive"
+    elif "only `export class`" in text:
+        return "import-export"
+    elif "unsupported expression" in text and "kind: import" in text:
+        return "import-export"
+    elif "class " in text:
         return "class"
     elif " import " in text or " export " in text or "require(" in text or 'require("' in text:
         return "import-export"
