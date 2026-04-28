@@ -164,6 +164,12 @@ pub enum LoweredExpr {
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
     },
+    LogicalPropertyAssign {
+        object: LocalId,
+        key: String,
+        op: LoweredLogicalAssignOp,
+        expr: Box<LoweredExpr>,
+    },
     ArrayNew {
         elements: Vec<LoweredExpr>,
     },
@@ -314,7 +320,9 @@ impl LoweredExpr {
                 LoweredBinaryOp::And | LoweredBinaryOp::Or => InferredType::Unknown,
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
-            Self::LogicalAssign { .. } => InferredType::Unknown,
+            Self::LogicalAssign { .. } | Self::LogicalPropertyAssign { .. } => {
+                InferredType::Unknown
+            }
             _ => InferredType::Unknown,
         }
     }
@@ -899,6 +907,10 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
             push_capture(name, params, captures);
             collect_arrow_captures(expr, params, captures);
         }
+        ResolvedExpr::LogicalPropertyAssign { object, expr, .. } => {
+            push_capture(object, params, captures);
+            collect_arrow_captures(expr, params, captures);
+        }
         ResolvedExpr::Array(elements) => {
             for element in elements {
                 collect_arrow_captures(element, params, captures);
@@ -1380,6 +1392,20 @@ impl<'a> Resolver<'a> {
                 let local = self.resolve_local(name)?;
                 Ok(LoweredExpr::LogicalAssign {
                     local,
+                    op: lower_logical_assign_op(*op),
+                    expr: Box::new(self.lower_expr(expr)?),
+                })
+            }
+            ResolvedExpr::LogicalPropertyAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => {
+                let object = self.resolve_local(object)?;
+                Ok(LoweredExpr::LogicalPropertyAssign {
+                    object,
+                    key: key.clone(),
                     op: lower_logical_assign_op(*op),
                     expr: Box::new(self.lower_expr(expr)?),
                 })
@@ -2330,6 +2356,10 @@ fn validate_expr(
         }
         LoweredExpr::LogicalAssign { local, expr, .. } => {
             check_local_id(*local, local_count, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::LogicalPropertyAssign { object, expr, .. } => {
+            check_local_id(*object, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::Binary { left, right, .. } => {

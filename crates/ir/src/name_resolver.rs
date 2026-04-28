@@ -507,6 +507,22 @@ impl NameResolver {
                     span: *span,
                 })
             }
+            Expr::LogicalPropertyAssign {
+                object,
+                property,
+                op,
+                expr,
+                span,
+            } => {
+                self.resolve_identifier(object, *span)?;
+                Ok(Expr::LogicalPropertyAssign {
+                    object: object.clone(),
+                    property: property.clone(),
+                    op: *op,
+                    expr: Box::new(self.resolve_expr(expr)?),
+                    span: *span,
+                })
+            }
             Expr::Member {
                 object,
                 property,

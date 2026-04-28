@@ -161,3 +161,46 @@ date:
 Remaining risks:
 
 - none
+
+2026-04-28 child-worker member continuation:
+
+- Added static member logical assignment lowering/emission for identifier object targets, covering `obj.prop ||= rhs`.
+- The member path reads the property once, short-circuits on truthy values, evaluates RHS only on the assignment branch, and writes back through the existing property runtime helper.
+- Added Node/iwasm differential fixture coverage for skipped RHS and evaluated RHS behavior on `target.value ||= rhs(...)`.
+- Kept issue-linked unsupported diagnostics for computed/index logical assignment targets.
+
+Validation:
+
+```text
+cargo nextest run -E 'test(logical_assignment)'
+result: pass; 3 tests passed
+
+node fixtures/core-semantics/logical-assignment-member.ts
+result: pass; stdout:
+kept
+kept
+rhs
+filled
+filled
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-member.ts -o /tmp/ts2wasm-228-logical-assignment-member.wasm
+result: pass
+
+iwasm /tmp/ts2wasm-228-logical-assignment-member.wasm
+result: pass; stdout matched Node output
+
+cargo fmt --all --check
+result: pass
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+```
+
+Remaining risks:
+
+- Computed/index logical assignment targets remain unsupported.
+- Non-identifier member object targets such as `getObj().value ||= rhs()` remain unsupported to avoid claiming full single-evaluation semantics before dedicated temporary-target design.
+- The Annex B `[[IsHTMLDDA]]` test262 cases still require broader `$262`/HTMLDDA compatibility and are not closed by this progress slice.

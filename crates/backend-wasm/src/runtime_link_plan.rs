@@ -274,6 +274,14 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::TruthyBool);
                 }
             }
+            LoweredExpr::LogicalPropertyAssign { op, expr, .. } => {
+                self.add_required_runtime(RuntimeFn::PropertyGet);
+                self.add_required_runtime(RuntimeFn::PropertySet);
+                self.collect_required_runtime_expr(expr);
+                if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {
+                    self.add_required_runtime(RuntimeFn::TruthyBool);
+                }
+            }
             LoweredExpr::Binary { left, op, right } => {
                 self.collect_required_runtime_expr(left);
                 self.collect_required_runtime_expr(right);

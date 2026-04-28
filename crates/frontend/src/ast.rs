@@ -203,6 +203,13 @@ pub enum Expr {
         expr: Box<Expr>,
         span: Span,
     },
+    LogicalPropertyAssign {
+        object: String,
+        property: String,
+        op: LogicalAssignOp,
+        expr: Box<Expr>,
+        span: Span,
+    },
     Array {
         elements: Vec<Expr>,
         span: Span,
@@ -302,6 +309,7 @@ impl Expr {
             | Self::Call { span, .. }
             | Self::Assign { span, .. }
             | Self::LogicalAssign { span, .. }
+            | Self::LogicalPropertyAssign { span, .. }
             | Self::Array { span, .. }
             | Self::Object { span, .. }
             | Self::Index { span, .. }
