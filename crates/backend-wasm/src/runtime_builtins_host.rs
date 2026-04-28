@@ -155,6 +155,8 @@ impl WatEmitter<'_> {
     (local $result_ptr i32)
     (local $len i32)
     (local $gap i32)
+    (local $gap_ptr i32)
+    (local $space_base i32)
     (if
       (i32.and
         (i32.ne (local.get $replacer) (i32.const {undefined}))
@@ -167,12 +169,20 @@ impl WatEmitter<'_> {
           (then (local.set $gap (i32.const {zero}))))
         (if (i32.gt_s (local.get $gap) (i32.const {max_gap}))
           (then (local.set $gap (i32.const {max_gap}))))))
+    (if (i32.eq (i32.and (local.get $space) (i32.const {tag_mask})) (i32.const {string_tag}))
+      (then
+        (local.set $space_base (i32.and (local.get $space) (i32.const {heap_mask})))
+        (local.set $gap (i32.load (local.get $space_base)))
+        (if (i32.gt_u (local.get $gap) (i32.const {max_gap}))
+          (then (local.set $gap (i32.const {max_gap}))))
+        (local.set $gap_ptr (i32.add (local.get $space_base) (i32.const {header})))))
     (local.set $result_ptr (call $alloc_heap (i32.const {stringify_alloc_size})))
     (local.set $len
       (call $json_stringify_into
         (local.get $v)
         (i32.add (local.get $result_ptr) (i32.const {header}))
         (local.get $gap)
+        (local.get $gap_ptr)
         (i32.const {zero})))
     (if (i32.lt_s (local.get $len) (i32.const {zero}))
       (then (return (i32.const {undefined}))))
@@ -191,21 +201,34 @@ impl WatEmitter<'_> {
         (br $spaces_loop)))
     (local.get $count))
 
-  (func $json_write_newline_indent (param $ptr i32) (param $gap i32) (param $depth i32) (result i32)
+  (func $json_write_gap_once (param $ptr i32) (param $gap i32) (param $gap_ptr i32) (result i32)
+    (if (i32.eqz (local.get $gap_ptr))
+      (then (return (call $json_write_spaces (local.get $ptr) (local.get $gap)))))
+    (call $copy (local.get $gap_ptr) (local.get $ptr) (local.get $gap))
+    (local.get $gap))
+
+  (func $json_write_newline_indent (param $ptr i32) (param $gap i32) (param $gap_ptr i32) (param $depth i32) (result i32)
     (local $len i32)
+    (local $i i32)
     (if (i32.eqz (local.get $gap))
       (then (return (i32.const {zero}))))
     (i32.store8 (local.get $ptr) (i32.const {newline}))
     (local.set $len (i32.const {one}))
-    (local.set $len
-      (i32.add
-        (local.get $len)
-        (call $json_write_spaces
-          (i32.add (local.get $ptr) (local.get $len))
-          (i32.mul (local.get $gap) (local.get $depth)))))
+    (block $indent_done
+      (loop $indent_loop
+        (br_if $indent_done (i32.ge_u (local.get $i) (local.get $depth)))
+        (local.set $len
+          (i32.add
+            (local.get $len)
+            (call $json_write_gap_once
+              (i32.add (local.get $ptr) (local.get $len))
+              (local.get $gap)
+              (local.get $gap_ptr))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $indent_loop)))
     (local.get $len))
 
-  (func $json_stringify_into (param $v i32) (param $ptr i32) (param $gap i32) (param $depth i32) (result i32)
+  (func $json_stringify_into (param $v i32) (param $ptr i32) (param $gap i32) (param $gap_ptr i32) (param $depth i32) (result i32)
     (local $tag i32)
     (local $base i32)
     (local $len i32)
@@ -258,6 +281,7 @@ impl WatEmitter<'_> {
                 (call $json_write_newline_indent
                   (i32.add (local.get $ptr) (local.get $out))
                   (local.get $gap)
+                  (local.get $gap_ptr)
                   (i32.add (local.get $depth) (i32.const {one})))))))
         (block $array_done
           (loop $array_loop
@@ -276,6 +300,7 @@ impl WatEmitter<'_> {
                         (call $json_write_newline_indent
                           (i32.add (local.get $ptr) (local.get $out))
                           (local.get $gap)
+                          (local.get $gap_ptr)
                           (i32.add (local.get $depth) (i32.const {one})))))))))
             (local.set $child_len
               (call $json_stringify_into
@@ -287,6 +312,7 @@ impl WatEmitter<'_> {
                       (i32.shl (local.get $i) (i32.const {elem_shift})))))
                 (i32.add (local.get $ptr) (local.get $out))
                 (local.get $gap)
+                (local.get $gap_ptr)
                 (i32.add (local.get $depth) (i32.const {one}))))
             (if (i32.lt_s (local.get $child_len) (i32.const {zero}))
               (then
@@ -308,6 +334,7 @@ impl WatEmitter<'_> {
                 (call $json_write_newline_indent
                   (i32.add (local.get $ptr) (local.get $out))
                   (local.get $gap)
+                  (local.get $gap_ptr)
                   (local.get $depth))))))
         (i32.store8
           (i32.add (local.get $ptr) (local.get $out))
@@ -331,6 +358,7 @@ impl WatEmitter<'_> {
                 (call $json_write_newline_indent
                   (i32.add (local.get $ptr) (local.get $out))
                   (local.get $gap)
+                  (local.get $gap_ptr)
                   (i32.add (local.get $depth) (i32.const {one})))))))
         (block $object_done
           (loop $object_loop
@@ -358,6 +386,7 @@ impl WatEmitter<'_> {
                         (call $json_write_newline_indent
                           (i32.add (local.get $ptr) (local.get $out))
                           (local.get $gap)
+                          (local.get $gap_ptr)
                           (i32.add (local.get $depth) (i32.const {one})))))))))
             (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {quote}))
             (local.set $out (i32.add (local.get $out) (i32.const {one})))
@@ -379,6 +408,7 @@ impl WatEmitter<'_> {
                 (i32.load (i32.add (local.get $entry_base) (i32.const {value_off})))
                 (i32.add (local.get $ptr) (local.get $out))
                 (local.get $gap)
+                (local.get $gap_ptr)
                 (i32.add (local.get $depth) (i32.const {one}))))
             (if (i32.lt_s (local.get $child_len) (i32.const {zero}))
               (then (return (i32.const {unsupported}))))
@@ -396,6 +426,7 @@ impl WatEmitter<'_> {
                 (call $json_write_newline_indent
                   (i32.add (local.get $ptr) (local.get $out))
                   (local.get $gap)
+                  (local.get $gap_ptr)
                   (local.get $depth))))))
         (i32.store8
           (i32.add (local.get $ptr) (local.get $out))

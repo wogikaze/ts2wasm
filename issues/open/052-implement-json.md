@@ -338,6 +338,34 @@ x/y
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment requires the JSON-filtered nextest commands plus direct Node/iwasm evidence.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, nested object literal value preservation for `JSON.stringify`, full replacer semantics, string `space` semantics, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.stringify` string `space` continuation slice for null/undefined replacer values, carrying a clamped gap string through runtime indentation emission.
+- Progress commit: `49f07b5`.
+- String `space` now supports simple ASCII prefix strings and clamps the gap to ECMAScript's 10-character limit.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-space-string.ts`; Node and iwasm both print:
+
+```text
+{
+>>"a": 1,
+>>"b": 2
+}
+[
+abcdefghij1
+]
+```
+
+- Pre-change gap check with `/tmp/ts2wasm-json-string-space.ts` showed Node printed a prefix-indented JSON object, while ts2wasm rejected the third argument with `UnsupportedSyntax: JSON.stringify space currently supports integer numeric values`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-stringify-space-string.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space-string.ts -o /tmp/ts2wasm-json-stringify-space-string.wasm && iwasm /tmp/ts2wasm-json-stringify-space-string.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, nested object literal value preservation for `JSON.stringify`, full replacer semantics, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
