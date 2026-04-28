@@ -182,6 +182,14 @@ fn static_declaration_export_reports_issue_055() {
 }
 
 #[test]
+fn static_class_export_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-class-export-unsupported.ts",
+        "issue-055: unsupported class export",
+    );
+}
+
+#[test]
 fn static_default_export_reports_issue_055() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-default-export-unsupported.ts",
