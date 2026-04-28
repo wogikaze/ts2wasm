@@ -1,6 +1,7 @@
 use crate::{
-    BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportNamedSpecifier,
-    LogicalAssignOp, ModuleSpecifier, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
+    BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportDefaultSpecifier,
+    ImportNamedSpecifier, LogicalAssignOp, ModuleSpecifier, Span, SpannedToken, Stmt, Token,
+    TokenKind, UnaryOp,
 };
 
 pub struct Parser {
@@ -98,7 +99,7 @@ impl Parser {
             }
             Some(Token::LeftBrace) => self.named_import_statement(import_span),
             Some(Token::Star) => self.unsupported_module_form(import_span, "namespace import"),
-            Some(Token::Ident(_)) => self.unsupported_module_form(import_span, "default import"),
+            Some(Token::Ident(_)) => self.default_import_statement(import_span),
             Some(Token::LeftParen) => self.unsupported_module_form(import_span, "dynamic import"),
             _ => self.unsupported_module_form(import_span, "static import"),
         }
@@ -138,6 +139,29 @@ impl Parser {
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::ImportNamed {
             specifiers,
+            source,
+            span: Span {
+                start: import_span.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn default_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
+        let (local, local_span) = self.expect_ident()?;
+        if !self.peek_contextual_keyword("from") {
+            return self
+                .unsupported_module_form(import_span, "default import with additional bindings");
+        }
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ImportDefault {
+            specifier: ImportDefaultSpecifier {
+                local,
+                local_span,
+                span: local_span,
+            },
             source,
             span: Span {
                 start: import_span.start,
@@ -2761,16 +2785,41 @@ mod tests {
     }
 
     #[test]
-    fn rejects_default_import_with_issue_linked_diagnostic() {
-        let err = parse_program("import value from './module-source';").unwrap_err();
+    fn rejects_default_import_with_additional_bindings_with_issue_linked_diagnostic() {
+        let err = parse_program("import value, { named } from './module-source';").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported default import"));
+        assert!(
+            err.message
+                .contains("unsupported default import with additional bindings")
+        );
         assert!(
             err.message
                 .contains("module resolution and loading are not implemented")
         );
         assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    }
+
+    #[test]
+    fn parses_default_import_with_specifier_span() {
+        let program = parse_program("import value from './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportDefault {
+                specifier,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 36 });
+                assert_eq!(specifier.local, "value");
+                assert_eq!(specifier.local_span, Span { start: 7, end: 12 });
+                assert_eq!(specifier.span, Span { start: 7, end: 12 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 18, end: 35 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
     }
 
     #[test]
