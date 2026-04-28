@@ -196,6 +196,27 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `scripts/manager check-repo-smoke`
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
+2026-04-28 progress evidence (as-assertion-erasure slice):
+
+- Implemented a narrow parser-only TypeScript `as` assertion erasure slice for expressions such as `3 as number`, `({ x: value } as { x: number })`, and chained assertions such as `[value] as number[] as unknown`.
+- `as` assertions are consumed before AST/lowering, so dump `--ast --unparse` and build output preserve only the runtime expression.
+- Added fixture `fixtures/basics-types/as-assertion-erasure.ts`.
+- Added frontend parser coverage for erased `as` assertions with primitive, object-literal, array, and chained type forms.
+- Added CLI coverage showing dump unparse erases `as` assertions and build accepts the fixture.
+- Validation passed:
+  - pre-change reproducer before implementation: `cargo run -q -p ts2wasm-cli -- dump --ast --unparse /tmp/ts2wasm-059-as-erasure-probe.ts` failed with `expected Semicolon, got Some(Ident("as"))`
+  - `cargo test -p ts2wasm-frontend parses_typescript_as_assertions_as_erased_syntax -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli dump_ast_unparse_erases_typescript_as_assertions -- --nocapture`
+  - `cargo test -p ts2wasm-cli --test dump_cli build_accepts_erasable_typescript_as_assertions -- --nocapture`
+  - `cargo fmt --all --check`
+  - `cargo nextest run -p ts2wasm-frontend`
+  - `cargo nextest run -p ts2wasm-cli --test dump_cli`
+  - post-change reproducer: `cargo run -q -p ts2wasm-cli -- dump --ast --unparse /tmp/ts2wasm-059-as-erasure-probe.ts`
+  - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse fixtures/basics-types/as-assertion-erasure.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/as-assertion-erasure.ts -o /tmp/ts2wasm-059-as-erasure.wasm`
+  - `iwasm /tmp/ts2wasm-059-as-erasure.wasm` (stdout: `3`, `3`, `3`)
+- Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

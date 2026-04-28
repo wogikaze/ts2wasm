@@ -122,6 +122,19 @@ fn dump_ast_unparse_erases_typescript_generics() {
 }
 
 #[test]
+fn dump_ast_unparse_erases_typescript_as_assertions() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let value = 3 as number;\nlet nested = ({ x: value } as { x: number });\nlet chained = [value] as number[] as unknown;\n",
+    );
+
+    assert_eq!(
+        output,
+        "let value = 3;\nlet nested = {x: value};\nlet chained = [value];\n"
+    );
+}
+
+#[test]
 fn build_accepts_erasable_typescript_type_annotations() {
     build_fixture("basics-types/type-annotation-erasure.ts");
 }
@@ -139,6 +152,11 @@ fn build_accepts_erasable_typescript_type_alias_declarations() {
 #[test]
 fn build_accepts_erasable_typescript_generics() {
     build_fixture("basics-types/generic-erasure.ts");
+}
+
+#[test]
+fn build_accepts_erasable_typescript_as_assertions() {
+    build_fixture("basics-types/as-assertion-erasure.ts");
 }
 
 #[test]

@@ -2102,6 +2102,10 @@ impl Parser {
     fn postfix(&mut self) -> Result<Expr, Diagnostic> {
         let mut expr = self.call_member()?;
 
+        while let Some(as_span) = self.consume_typescript_as_assertion_keyword() {
+            self.skip_typescript_as_assertion_type(as_span)?;
+        }
+
         // Handle instanceof
         if self.consume(TokenKind::InstanceOf) {
             let type_expr = self.call_member()?;
@@ -2248,6 +2252,83 @@ impl Parser {
 
     fn is_typescript_generic_call_callee(&self, callee: &Expr) -> bool {
         matches!(callee, Expr::Ident { name, .. } if self.typescript_generic_functions.contains(name))
+    }
+
+    fn consume_typescript_as_assertion_keyword(&mut self) -> Option<Span> {
+        if self.peek_contextual_keyword("as") {
+            let span = self.peek_span().expect("peeked token must have a span");
+            self.cursor += 1;
+            Some(span)
+        } else {
+            None
+        }
+    }
+
+    fn skip_typescript_as_assertion_type(&mut self, as_span: Span) -> Result<(), Diagnostic> {
+        let mut paren_depth = 0usize;
+        let mut bracket_depth = 0usize;
+        let mut brace_depth = 0usize;
+        let mut consumed_type_token = false;
+
+        while !self.is_at_end() {
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            if at_top_level
+                && consumed_type_token
+                && (self.peek_contextual_keyword("as")
+                    || self
+                        .peek()
+                        .is_some_and(is_typescript_as_assertion_type_stop))
+            {
+                return Ok(());
+            }
+
+            if at_top_level
+                && !consumed_type_token
+                && self
+                    .peek()
+                    .is_some_and(is_typescript_as_assertion_type_stop)
+            {
+                break;
+            }
+
+            match self.peek() {
+                Some(Token::LeftParen) => paren_depth += 1,
+                Some(Token::LeftBracket) => bracket_depth += 1,
+                Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::RightParen) => {
+                    if paren_depth == 0 {
+                        break;
+                    }
+                    paren_depth -= 1;
+                }
+                Some(Token::RightBracket) => {
+                    if bracket_depth == 0 {
+                        break;
+                    }
+                    bracket_depth -= 1;
+                }
+                Some(Token::RightBrace) => {
+                    if brace_depth == 0 {
+                        break;
+                    }
+                    brace_depth -= 1;
+                }
+                None => break,
+                _ => {}
+            }
+            self.advance();
+            consumed_type_token = true;
+        }
+
+        if consumed_type_token {
+            Ok(())
+        } else {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "expected TypeScript type after `as` assertion".to_owned(),
+                span: Some(as_span),
+            })
+        }
     }
 
     fn skip_typescript_angle_list_after_less(
@@ -2712,6 +2793,54 @@ fn is_super_call_statement(stmt: &Stmt) -> bool {
     )
 }
 
+fn is_typescript_as_assertion_type_stop(token: &Token) -> bool {
+    matches!(
+        token,
+        Token::Semicolon
+            | Token::Comma
+            | Token::RightParen
+            | Token::RightBracket
+            | Token::RightBrace
+            | Token::In
+            | Token::InstanceOf
+            | Token::Plus
+            | Token::Minus
+            | Token::Star
+            | Token::Slash
+            | Token::Percent
+            | Token::Power
+            | Token::Less
+            | Token::LessEqual
+            | Token::Greater
+            | Token::GreaterEqual
+            | Token::StrictEqual
+            | Token::EqualEqual
+            | Token::BangEqual
+            | Token::StrictNotEqual
+            | Token::AndAnd
+            | Token::OrOr
+            | Token::NullishCoalesce
+            | Token::Ampersand
+            | Token::Pipe
+            | Token::Caret
+            | Token::LeftShift
+            | Token::RightShift
+            | Token::UnsignedRightShift
+            | Token::Question
+            | Token::Colon
+            | Token::Equal
+            | Token::PlusEqual
+            | Token::MinusEqual
+            | Token::StarEqual
+            | Token::SlashEqual
+            | Token::PercentEqual
+            | Token::PowerEqual
+            | Token::AndAndEqual
+            | Token::OrOrEqual
+            | Token::NullishCoalesceEqual
+    )
+}
+
 enum TemplatePart {
     String(String),
     Expr(Expr),
@@ -3047,6 +3176,32 @@ mod tests {
         assert!(matches!(program[1], Stmt::Function { .. }));
         assert!(matches!(program[2], Stmt::Let { .. }));
         assert!(matches!(program[3], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn parses_typescript_as_assertions_as_erased_syntax() {
+        let source = r#"
+            let value = 3 as number;
+            let nested = ({ x: value } as { x: number });
+            let chained = [value] as number[] as unknown;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 3);
+
+        let Stmt::Let { expr: value, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(value, Expr::Number { value: 3, .. }));
+
+        let Stmt::Let { expr: nested, .. } = &program[1] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(nested, Expr::Object { .. }));
+
+        let Stmt::Let { expr: chained, .. } = &program[2] else {
+            panic!("expected let statement");
+        };
+        assert!(matches!(chained, Expr::Array { .. }));
     }
 
     #[test]
