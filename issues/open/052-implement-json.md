@@ -609,6 +609,29 @@ abcdefghij1
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.stringify` escaped-string continuation slice for the current byte-oriented runtime string representation.
+- Progress commit: `9e6fc1a`.
+- Added shared runtime string emission for `JSON.stringify` string values and object keys that escapes `"`, `\`, `\b`, `\f`, `\n`, `\r`, and `\t`.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-escaped-string.ts`; Node and iwasm both print:
+
+```text
+{"a":"x\"y","b":"c\\d","c":"line\nend","d":["tab\tend"]}
+"quote\"slash\\"
+```
+
+- Pre-change reproduction with `/tmp/ts2wasm-json-stringify-escaped-probe.ts` showed Node printed `{"a":"x\"y","b":"c\\d"}`, while iwasm printed invalid JSON escaping as `{"a":"x"y","b":"c\d"}`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-stringify-escaped-string.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-escaped-string.ts -o /tmp/ts2wasm-052-json-continuation.wasm`
+  - `iwasm /tmp/ts2wasm-052-json-continuation.wasm`
+- Remaining final checks for this child run are recorded in `reports/runs/052-json-number-space-20260428T094954Z/`.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, non-stringify `space` ignored-value parity requiring IR validation work, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

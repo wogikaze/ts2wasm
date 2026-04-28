@@ -3,14 +3,14 @@ mod module_graph;
 
 use std::collections::HashMap;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use ts2wasm_backend_wasm as backend;
 #[cfg(test)]
-use ts2wasm_frontend::{BinaryOp, Expr};
+use ts2wasm_frontend::BinaryOp;
 use ts2wasm_frontend::{
-    DiagCode, Diagnostic, Lexer, Parser, Stmt, validate_type_reference_directives,
+    DiagCode, Diagnostic, Expr, Lexer, Parser, Stmt, validate_type_reference_directives,
 };
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
@@ -19,6 +19,7 @@ use ts2wasm_ir::name_resolver;
 const ENABLE_READ_STDIN_BYTES_RUNTIME: bool = true;
 
 pub use dump::{DumpOptions, DumpPhase, dump_file_with_options};
+pub use module_graph::{ModuleDependency, ModuleGraph, ModuleNode, build_entry_module_graph};
 pub use ts2wasm_frontend::{
     TypeScriptCheckReport, TypeScriptDiagnostic, check_typescript_file,
     collect_typescript_diagnostics,
@@ -52,8 +53,9 @@ pub fn build_file_with_host_deny(
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
-    module_graph::validate_entry_module_graph(input, &program)?;
-    let name_resolved = name_resolver::resolve_names(&program)?;
+    let module_graph = module_graph::build_entry_module_graph(input, &program)?;
+    let build_program = rewrite_static_named_imports_for_build(&program, &module_graph)?;
+    let name_resolved = name_resolver::resolve_names(&build_program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
@@ -119,6 +121,139 @@ fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnosti
     }
 
     Ok(())
+}
+
+fn rewrite_static_named_imports_for_build(
+    program: &[Stmt],
+    module_graph: &ModuleGraph,
+) -> Result<Vec<Stmt>, Diagnostic> {
+    Ok(lower_static_named_import_bindings_for_build(program, module_graph)?.rewritten_program)
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StaticModuleBindingLowering {
+    rewritten_program: Vec<Stmt>,
+    named_imports: Vec<StaticNamedImportBinding>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct StaticNamedImportBinding {
+    source_specifier: String,
+    source_module_id: usize,
+    source_path: PathBuf,
+    imported_name: String,
+    local_name: String,
+    initializer: Expr,
+}
+
+fn lower_static_named_import_bindings_for_build(
+    program: &[Stmt],
+    module_graph: &ModuleGraph,
+) -> Result<StaticModuleBindingLowering, Diagnostic> {
+    let mut rewritten = Vec::new();
+    let mut named_imports = Vec::new();
+
+    for stmt in program {
+        match stmt {
+            Stmt::ImportNamed {
+                specifiers, source, ..
+            } => {
+                let dependency = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == source.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for static import `{}`",
+                            source.value
+                        ),
+                        span: Some(source.span),
+                    })?;
+                let exports = collect_literal_named_exports(dependency.resolved_path())?;
+                for specifier in specifiers {
+                    let expr = exports.get(&specifier.imported).ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: module `{}` does not export named binding `{}`",
+                            source.value, specifier.imported
+                        ),
+                        span: Some(specifier.imported_span),
+                    })?;
+                    let binding = StaticNamedImportBinding {
+                        source_specifier: source.value.clone(),
+                        source_module_id: dependency.resolved_module_id(),
+                        source_path: dependency.resolved_path().to_path_buf(),
+                        imported_name: specifier.imported.clone(),
+                        local_name: specifier.local.clone(),
+                        initializer: expr.clone(),
+                    };
+                    rewritten.push(Stmt::Let {
+                        name: binding.local_name.clone(),
+                        expr: binding.initializer.clone(),
+                        span: specifier.local_span,
+                    });
+                    named_imports.push(binding);
+                }
+            }
+            other => rewritten.push(other.clone()),
+        }
+    }
+
+    Ok(StaticModuleBindingLowering {
+        rewritten_program: rewritten,
+        named_imports,
+    })
+}
+
+fn collect_literal_named_exports(path: &Path) -> Result<HashMap<String, Expr>, Diagnostic> {
+    let source = fs::read_to_string(path).map_err(|error| Diagnostic {
+        code: DiagCode::BackendIo,
+        message: format!("failed to read {}: {error}", path.display()),
+        span: None,
+    })?;
+    validate_type_reference_directives(&source)?;
+    let program = parse_program(&source)?;
+    validate_ast(&program)?;
+
+    let mut exports = HashMap::new();
+    for stmt in &program {
+        if let Stmt::ExportDecl {
+            declaration,
+            specifier,
+            ..
+        } = stmt
+        {
+            if let Stmt::Let { expr, .. } = declaration.as_ref() {
+                if !is_static_export_literal(expr) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
+                            specifier.exported,
+                            path.display()
+                        ),
+                        span: Some(specifier.local_span),
+                    });
+                }
+                exports.insert(specifier.exported.clone(), expr.clone());
+            }
+        }
+    }
+
+    Ok(exports)
+}
+
+fn is_static_export_literal(expr: &Expr) -> bool {
+    matches!(
+        expr,
+        Expr::Number { .. }
+            | Expr::String { .. }
+            | Expr::Bool { .. }
+            | Expr::Null { .. }
+            | Expr::Undefined { .. }
+    )
 }
 
 pub fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
@@ -707,5 +842,61 @@ mod tests {
             Stmt::Switch { .. } => {}
             other => panic!("unexpected: {other:?}"),
         }
+    }
+
+    #[test]
+    fn static_named_import_binding_lowering_uses_source_export_when_importer_shadows_name() {
+        let dir = unique_temp_dir("static-binding-shadow");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source_module = dir.join("source.ts");
+        let entry_source = r#"
+import { value as importedValue } from "./source";
+const value = 99;
+console.log(importedValue);
+"#;
+        std::fs::write(&entry, entry_source).expect("entry should be written");
+        std::fs::write(&source_module, "export const value = 1;\n")
+            .expect("source module should be written");
+
+        let program = parse_program(entry_source).expect("entry should parse");
+        validate_ast(&program).expect("entry should validate");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let lowering = lower_static_named_import_bindings_for_build(&program, &graph)
+            .expect("binding lowering should succeed");
+
+        assert_eq!(lowering.named_imports.len(), 1);
+        let binding = &lowering.named_imports[0];
+        assert_eq!(binding.source_specifier, "./source");
+        assert_eq!(binding.source_module_id, 1);
+        assert_eq!(binding.source_path, source_module.canonicalize().unwrap());
+        assert_eq!(binding.imported_name, "value");
+        assert_eq!(binding.local_name, "importedValue");
+        assert!(matches!(binding.initializer, Expr::Number { value: 1, .. }));
+
+        match &lowering.rewritten_program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "importedValue");
+                assert!(matches!(expr, Expr::Number { value: 1, .. }));
+            }
+            other => panic!("unexpected rewritten import stmt: {other:?}"),
+        }
+        match &lowering.rewritten_program[1] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "value");
+                assert!(matches!(expr, Expr::Number { value: 99, .. }));
+            }
+            other => panic!("unexpected importer shadow stmt: {other:?}"),
+        }
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    fn unique_temp_dir(label: &str) -> std::path::PathBuf {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("system time should be after epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("ts2wasm-compiler-{label}-{unique}"))
     }
 }
