@@ -2,7 +2,7 @@
 """Run in-tree RuntimeLinkPlan / runtime helper unit tests (no integration / iwasm).
 Reuses crates/cli src/backend runtime_link_plan.rs and runtime_fn.rs #[test] items.
 
-Usage: python scripts/manager.py check-runtimefn-invariants
+Usage: mise run check runtimefn
 Uses: cargo test (not nextest) for simple filter on internal module path.
 """
 

@@ -11,8 +11,8 @@ Use when adding, closing, moving, splitting, or reclassifying issues under `issu
 
 **Do not** claim the issue work is done until the relevant commands below have been run and pass. If `mise` is not available, use the same subcommands via `mise` (see root `mise.toml`). On first use: `mise trust` ([docs](https://mise.jdx.dev/cli/trust.html)).
 
-- After **any** change under `issues/open/`, `issues/done/`, or the index generator: `mise run update-issue-index` then `mise run check-issue-index` and `mise run check-issue-health`
-- If you only need a quick mechanical gate: `mise run check-repo-smoke` (fmt + `check-scripts` + `check-issue-health`)
+- After **any** change under `issues/open/`, `issues/done/`, or the index generator: `mise run update-issue-index` then `mise run check issue-index` and `mise run check issues`
+- If you only need a quick mechanical gate: `mise run check` (fmt + `check scripts` + `check issues`)
 
 ## Rules
 
@@ -22,7 +22,7 @@ Use when adding, closing, moving, splitting, or reclassifying issues under `issu
 - Prefer the template at `issues/templates/issue.md`. Use `**ID**`, `**Depends on**`, `**Orchestration class**`, and a one-line `Problem:` so the index generator can summarize issues.
 - **Depends on** lists open-issue IDs that block this issue, or `none`. Use comma-separated IDs (e.g. `003,004`). The generator treats an issue as blocked if any listed dependency is still open, or if **Orchestration class** is exactly `blocked` (case-insensitive).
 - Closing an issue: fill completion evidence, set **Status** to `done`, move the file to `issues/done/`, then regenerate the index.
-- Validation for the queue: `mise run update-issue-index -- --check` and `mise run check-issue-index` (human status on stderr; exit code is the contract).
+- Validation for the queue: `mise run update-issue-index -- --check` and `mise run check issue-index` (human status on stderr; exit code is the contract).
 
 ## Blocked to ready flow
 
@@ -30,9 +30,9 @@ Use when adding, closing, moving, splitting, or reclassifying issues under `issu
 
 Before changing `class: blocked` to another class:
 
-1. Run `mise run check-issue-readiness -- --format markdown --limit 20` and inspect the issue's missing dimensions.
+1. Run `mise run check issue-readiness -- --format markdown --limit 20` and inspect the issue's missing dimensions.
 2. Decide whether the blocked issue itself can become one executable slice. If not, create child issues and leave the parent blocked.
-3. Make the candidate issue score at least 80 with `mise run check-issue-readiness -- --fail-ready-below 80`.
+3. Make the candidate issue score at least 80 with `mise run check issue-readiness -- --fail-ready-below 80`.
 4. Choose the narrowest correct non-blocked class:
    - `implementation-ready`: code changes can start immediately.
    - `verification-ready`: implementation exists; validation/review is the remaining work.
@@ -43,9 +43,9 @@ Before changing `class: blocked` to another class:
 ```bash
 mise run update-issue-index
 mise run update-issue-index -- --check
-mise run check-issue-index
-mise run check-issue-health
-mise run check-issue-readiness -- --fail-ready-below 80
+mise run check issue-index
+mise run check issues
+mise run check issue-readiness -- --fail-ready-below 80
 ```
 
 Do not unblock generated reference bucket issues directly. Split them first into one feature family, one observable behavior, or one fixed reference window. Do not unblock duplicate parent issues; merge or supersede them through a cleanup child.
@@ -81,13 +81,13 @@ cp issues/templates/issue.md issues/open/025-fix-memory-leak.md
 # Fill in required fields
 # Run sync commands
 mise run update-issue-index
-mise run check-issue-health
+mise run check issues
 ```
 
 ### Commands run
 
 ```bash
 mise run update-issue-index
-mise run check-issue-index
-mise run check-issue-health
+mise run check issue-index
+mise run check issues
 ```

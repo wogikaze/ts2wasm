@@ -21,8 +21,8 @@ issue ファイルや index に触ったら、必ず:
 ```bash
 mise run update-issue-index
 mise run update-issue-index -- --check
-mise run check-issue-index
-mise run check-issue-health
+mise run check issue-index
+mise run check issues
 ```
 
 `mise` を使う場合は `mise run update-issue-index` 等（`mise.toml` / `mise` 参照）。
@@ -63,8 +63,8 @@ git mv issues/done/012-fix-bug.md issues/open/012-fix-bug.md
 ```bash
 mise run update-issue-index
 mise run update-issue-index -- --check
-mise run check-issue-index
-mise run check-issue-health
+mise run check issue-index
+mise run check issues
 # index再生成、キュー検証済み
 ```
 
@@ -72,5 +72,5 @@ mise run check-issue-health
 
 ```bash
 mise run update-issue-index
-mise run check-issue-health
+mise run check issues
 ```

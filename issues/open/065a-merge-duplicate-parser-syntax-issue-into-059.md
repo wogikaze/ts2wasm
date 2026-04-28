@@ -56,13 +56,13 @@ Required commands:
 ```sh
 mise run update-issue-index
 mise run update-issue-index -- --check
-mise run check-issue-health
+mise run check issues
 ```
 
 Impacted commands:
 
 ```sh
-mise run check-issue-index
+mise run check issue-index
 ```
 
 Not run:

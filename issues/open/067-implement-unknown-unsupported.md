@@ -114,10 +114,10 @@ result: pass; stdout includes <a name="name">x</a>
 cargo run -q -- build fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts -o /tmp/ts2wasm-string-anchor-annexb-unsupported.wasm
 result: expected fail; [UnsupportedSyntax] issue-067: Annex B String.prototype.anchor is not supported yet at 92..110
 
-mise run check-issue-health
+mise run check issues
 result: pass
 
-mise run check-agent-state
+mise run check agent-state
 result: pass
 
 cargo nextest run

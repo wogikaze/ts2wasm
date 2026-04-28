@@ -12,7 +12,7 @@ description: 自律コンパイラ開発実行に使用。FSM、current_task.jso
 自律ループは以下のとき完了とみなされる:
 - FSM状態遷移がworkflowルールに対して検証済み
 - current_task.jsonが検証結果で更新済み
-- すべての必須ゲート（fmt、nextest、check-issue-health）通過
+- すべての必須ゲート（fmt、nextest、check issues）通過
 - テストレポートが生成されreports/runs/に保存済み
 - 該当する場合、失敗パターンが失敗パターンDBに記録済み
 - 証拠と次のステップを含むサイクルレポートが書かれた
@@ -22,8 +22,8 @@ description: 自律コンパイラ開発実行に使用。FSM、current_task.jso
 **自律ループはゲートが実際に実行された場合のみ誠実。以下を実行し、失敗時にステップを失敗させる。** `mise`がない場合、`mise`を同じ名前で使用。初回: `mise trust`（[ドキュメント](https://mise.jdx.dev/cli/trust.html)）
 
 - `current_task.json`またはissueが示す`commands.fast` / `commands.full`相当（通常は少なくとも`mise run fmt`と`mise run nextest`）
-- Issue / indexと整合: `mise run check-issue-health`（`issues`を扱う場合は`mise run update-issue-index`も）
-- 軽い一括: `mise run check-repo-smoke`
+- Issue / indexと整合: `mise run check issues`（`issues`を扱う場合は`mise run update-issue-index`も）
+- 軽い一括: `mise run check`
 
 ## 読み取り順序
 
@@ -65,7 +65,7 @@ cargo fmt --all --check
 # 必須ゲートを実行
 mise run fmt
 mise run nextest
-mise run check-issue-health
+mise run check issues
 # reports/runs/<run_id>/test_report.jsonにテストレポートを生成
 # 証拠を含むサイクルレポートを書く
 # 検証結果でcurrent_task.jsonを更新
@@ -76,6 +76,6 @@ mise run check-issue-health
 ```bash
 mise run fmt
 mise run nextest
-mise run check-issue-health
-mise run check-repo-smoke
+mise run check issues
+mise run check
 ```

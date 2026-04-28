@@ -8,7 +8,7 @@ This project is considered successful when:
 - Differential testing against Node.js shows semantic equivalence for supported features
 - Capability manifest provides auditable security model
 - Reference coverage meets gate thresholds defined in docs/15-coverage-matrix.md
-- All gates (fmt, nextest, check-repo-smoke) pass consistently
+- All gates (`mise run check`, `mise run gate`) pass consistently
 
 See docs/08-roadmap-and-success.md for detailed success criteria.
 
@@ -97,9 +97,9 @@ curl -LsSf https://get.nexte.st/latest/linux | tar zxf - -C ${CARGO_HOME:-~/.car
 
 **ビルド高速化**: プロジェクトは `mold` linker を使用してビルド時間を短縮しています。Nix devshell には含まれていますが、手動環境では別途インストールが必要です。
 
-`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `mise run check-issue-health`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
+`pre-commit` では `cargo fmt --all --check`、ステージした Markdown 向け `markdownlint`、必要に応じた `issues/index.md` の再生成、および `mise run check issues`（`issues/` の番号・パス等の不変条件）を実行する。hook を有効にするには init 時に `scripts/dev/install-git-hooks.sh` を実行する。
 
-**Note**: `mise run check-agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
+**Note**: `mise run check agent-state` requires `jsonschema` for validating `.agents/state/` JSON files. This is included in the Nix devshell (`python3Packages.jsonschema`). Without Nix, install with: `python -m pip install jsonschema`.
 
 ## FAQ
 
@@ -135,4 +135,4 @@ A: 可能。手動でツールを入れる場合の例が README にある。た
 
 ### Q: Windows で開発できるか？
 
-A: 可能。`mise` と `docs/17-windows-development.md` を参照。主要なコマンド（fmt, clippy, nextest, check-fast-gate）は Python で動作する。ただし一部のスクリプトはまだ bash 依存で、Windows では動作しない。完全な機能には WSL2 の使用を推奨。
+A: 可能。`mise` と `docs/17-windows-development.md` を参照。主要なコマンド（fmt, clippy, nextest, check, gate）は Python で動作する。ただし一部のスクリプトはまだ bash 依存で、Windows では動作しない。完全な機能には WSL2 の使用を推奨。

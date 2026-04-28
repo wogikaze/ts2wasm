@@ -257,9 +257,9 @@ git diff <parent-branch>...HEAD
 
 - narrow commands from the issue
 - `mise run fmt`
-- `mise run check-agent-state`
-- `mise run check-issue-health`
-- `mise run check-repo-smoke`
+- `mise run check agent-state`
+- `mise run check issues`
+- `mise run check`
 - full `mise run nextest` only when close/merge risk warrants it
 
 1. Merge only if safe.
@@ -306,7 +306,7 @@ Then:
 ```bash
 mise run update-issue-index
 mise run update-issue-index -- --check
-mise run check-issue-health
+mise run check issues
 git add issues/ .agents/state/ || true
 git commit -m "issues: add reference-derived work" || true
 ```

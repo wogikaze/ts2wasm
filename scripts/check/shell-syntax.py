@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validate shell scripts before running coverage/test workflows.
 
-Usage: python scripts/manager.py check-scripts
+Usage: mise run check scripts
 
 Note: `bash -n` is syntax-only. It does not prove runtime behavior.
 After editing a script, also run a representative command.

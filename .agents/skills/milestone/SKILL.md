@@ -12,7 +12,7 @@ Use `docs/11-shared-definitions.md` as the canonical source for project goal、w
 A vertical slice is considered complete when:
 - The smallest implementation change turns the gate condition into executable code, schema, or tests
 - Docs and implementation are aligned in the same change
-- All required gates (fmt, nextest, clippy, check-repo-smoke) pass
+- All required gates (fmt, nextest, clippy, check) pass
 - If reference coverage or benchmark policy changed, reference-coverage check passes
 - Shared definitions in crates/shared are updated with tests
 - The slice is vertical (not broad abstraction)
@@ -26,7 +26,7 @@ A vertical slice is considered complete when:
 mise run fmt
 mise run nextest
 mise run clippy
-mise run check-repo-smoke
+mise run check
 ```
 
 If the slice changes reference coverage or benchmark policy expectations, also use `mise run reference-coverage` / `mise run update-coverage-matrix -- --check-gate` (see `scripts/*` and `docs/15`).
@@ -79,7 +79,7 @@ fn new_feature() { ... }
 mise run fmt
 mise run nextest
 mise run clippy
-mise run check-repo-smoke
+mise run check
 ```
 
 ### Commands run
@@ -88,5 +88,5 @@ mise run check-repo-smoke
 mise run fmt
 mise run nextest
 mise run clippy
-mise run check-repo-smoke
+mise run check
 ```

@@ -5,7 +5,7 @@ Rules:
   - Top-level entries under fixtures/ must be directories (no loose .ts at fixtures root).
   - Directory names: lowercase ASCII, digits, hyphen only (kebab-case prefix style).
 
-Usage: python scripts/manager.py check-fixture-catalog
+Usage: mise run check fixtures
 """
 
 import sys
@@ -16,7 +16,7 @@ REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
 def usage():
     print("Usage:")
-    print("  python scripts/manager.py check-fixture-catalog")
+    print("  mise run check fixtures")
     print()
     print("Validates fixtures/ directory layout conventions.")
 

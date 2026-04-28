@@ -2,7 +2,7 @@
 """Re-run the Node vs iwasm fixture differential (integration) suite as a standalone gate.
 Wraps: crates/cli/tests/m2_node_diff.rs
 
-Usage: python scripts/manager.py check-fixture-differential
+Usage: mise run check differential
 Dependencies: cargo, nextest, node, ts2wasm binary (via nextest build)
 """
 
@@ -14,7 +14,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
 def usage():
-    print("Usage: python scripts/manager.py check-fixture-differential [--sample N]", file=sys.stderr)
+    print("Usage: mise run check differential -- [--sample N]", file=sys.stderr)
 
 def main():
     args = sys.argv[1:]

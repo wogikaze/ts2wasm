@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Build representative fixtures to wasm, then `wasm-tools validate` each binary.
 
-Usage: python scripts/manager.py check-wasm-validation
+Usage: mise run check wasm
 Optional: TS2WASM_VALIDATE_FIXTURES="f1 f2" (space-separated, repo-root paths)
 Dependencies: cargo, wasm-tools
 """

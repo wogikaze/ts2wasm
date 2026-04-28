@@ -21,7 +21,7 @@ description: PRまたはagent出力のゲートキーパー/レビューアー�
 ```bash
 mise run fmt
 mise run nextest
-mise run check-repo-smoke
+mise run check
 ```
 
 下記はスコープに応じて**追加**（WASI/互換/参考カバレッジ/大規模差分など）:

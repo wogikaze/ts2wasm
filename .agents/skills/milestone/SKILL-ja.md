@@ -12,7 +12,7 @@ description: 垂直スライス実装と共有定義更新に使用。docs/11を
 垂直スライスは以下のとき完了とみなされる:
 - 最小の実装変更がゲート条件を実行可能なコード、スキーマ、またはテストに変換
 - ドキュメントと実装が同じ変更で整列
-- すべての必須ゲート（fmt、nextest、clippy、check-repo-smoke）通過
+- すべての必須ゲート（fmt、nextest、clippy、check）通過
 - 参照カバレッジまたはベンチマークポリシーが変更された場合、reference-coverageチェック通過
 - `crates/shared`の共有定義がテストで更新
 - スライスが垂直（広範な抽象化ではない）
@@ -26,7 +26,7 @@ description: 垂直スライス実装と共有定義更新に使用。docs/11を
 mise run fmt
 mise run nextest
 mise run clippy
-mise run check-repo-smoke
+mise run check
 ```
 
 スライスが参照カバレッジまたはベンチマークポリシー期待を変更する場合、`mise run reference-coverage` / `mise run update-coverage-matrix -- --check-gate`も使用（`scripts/*`と`docs/15`を参照）
@@ -79,7 +79,7 @@ fn new_feature() { ... }
 mise run fmt
 mise run nextest
 mise run clippy
-mise run check-repo-smoke
+mise run check
 ```
 
 ### 実行コマンド
@@ -88,5 +88,5 @@ mise run check-repo-smoke
 mise run fmt
 mise run nextest
 mise run clippy
-mise run check-repo-smoke
+mise run check
 ```
