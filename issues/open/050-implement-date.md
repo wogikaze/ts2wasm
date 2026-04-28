@@ -129,6 +129,38 @@ Follow-up issues:
   `toString`, non-integer/non-literal Date inputs, and full Date API behavior are not
   complete. No live host time import was added.
 
+2026-04-28 diagnostic progress evidence:
+
+- Replaced generic `Date.now()` lowering failure with an issue-linked diagnostic:
+
+  ```text
+  command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-now-live-time-unsupported.ts -o /tmp/ts2wasm-date-now-live-time-unsupported.wasm
+  result: exit 1
+  stderr: error: [UnsupportedSyntax] issue-050: Date.now() requires live host time; define an auditable time capability policy before enabling it. Use new Date(<epoch-ms integer>) for deterministic Date values at 12..22
+  ```
+
+- Refined no-argument `new Date()` to explain the same live host time capability-policy blocker:
+
+  ```text
+  command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-noarg-live-time-unsupported.ts -o /tmp/ts2wasm-date-noarg-live-time-unsupported.wasm
+  result: exit 1
+  stderr: error: [UnsupportedSyntax] issue-050: new Date() requires live host time; define an auditable time capability policy before enabling it. Use new Date(<epoch-ms integer>) for deterministic Date values at 12..22
+  ```
+
+- Added focused unsupported fixtures for those live-time entry points:
+  `fixtures/builtins-and-io/date-now-live-time-unsupported.ts` and
+  `fixtures/builtins-and-io/date-noarg-live-time-unsupported.ts`.
+- Targeted regression:
+
+  ```text
+  command: cargo nextest run -p ts2wasm-cli date_live_time_fixtures_report_capability_policy_diagnostic date_epoch_get_time_fixture_matches_node_output_under_iwasm
+  result: pass
+  ```
+
+- Remaining issue 050 scope stays open: full live time support, an auditable time
+  capability policy, `toString`, non-integer/non-literal Date inputs, and full Date API
+  behavior are not complete. No live host time import was added.
+
 2026-04-28 blocker evidence:
 
 - `new Date(0)` currently reaches class-constructor lowering and fails before backend Date runtime code can be used:
