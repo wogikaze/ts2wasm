@@ -1,0 +1,59 @@
+{
+  "run_id": "231-export-class-guard-20260428T083349Z",
+  "task_id": "issue-231-export-class-guard",
+  "git": {
+    "sha": "pending",
+    "exit_code": 0,
+    "changed_files": [],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-frontend",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli static_class_export_reports_issue_055",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 231-export-class-guard-20260428T083349Z",
+      "status": "error",
+      "exit_code": 1
+    }
+  ],
+  "fixtures": {
+    "passed": 0,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "status": "progress",
+    "validation_summary": "fmt, frontend nextest, CLI export-class regression, issue health, and agent state passed",
+    "reporting": "DEFERRED: DISCORD_WEBHOOK_URL is not configured; retried once and saved discord_payload.json/reporting_error.log"
+  }
+}
