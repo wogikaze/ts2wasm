@@ -1,23 +1,23 @@
 ---
 id: 055
-title: "Implement import and export"
+title: "Umbrella: implement import and export"
 type: feature
 area: frontend/semantics
-class: implementation-ready
+class: design-ready
 priority: P1
-depends_on: []
-blocks: []
+depends_on: [231, 232, 233, 234]
+blocks: [231, 232, 233, 234]
 created: 2026-04-26
 updated: 2026-04-28
 ---
 
 ## Summary
 
-Implement ES6 import/export static module system.
+Track the ES module import/export rollout. The implementation work is split into smaller issues so parser, module graph, binding/emission, and execution verification can move independently.
 
 ## Problem
 
-Import/export are not implemented. They are essential for modular code organization.
+Static import/export currently produce issue-linked unsupported diagnostics. The original issue mixed parser representation, resolver/module graph behavior, relative module loading, export binding emission, and execution fixtures in one broad work item.
 
 ## Desired final state
 
@@ -27,11 +27,11 @@ Import/export are not implemented. They are essential for modular code organizat
 
 In scope:
 
-- [ ] Add import syntax to lexer/parser
-- [ ] Add export syntax to lexer/parser
-- [ ] Implement module resolution
-- [ ] Implement module loading
-- [ ] Add fixtures for import/export behavior
+- [ ] Coordinate split issues:
+  - [ ] 231 parser AST representation for static module declarations
+  - [ ] 232 resolver/compiler module graph for local relative specifiers
+  - [ ] 233 export binding lowering and backend module initialization
+  - [ ] 234 execution fixtures and differential coverage
 
 Out of scope:
 
@@ -42,9 +42,10 @@ Out of scope:
 
 Expected:
 
-- `crates/cli/src/lib.rs` (lexer/parser)
-- `crates/backend-wasm/src/` (module loading)
-- `fixtures/`
+- `issues/open/231-parse-static-es-module-declarations.md`
+- `issues/open/232-resolve-local-relative-es-module-graph.md`
+- `issues/open/233-emit-static-es-module-bindings.md`
+- `issues/open/234-cover-static-es-module-execution.md`
 
 Do not touch:
 
@@ -52,26 +53,25 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] import parses correctly
-- [ ] export parses correctly
-- [ ] Module resolution works correctly
-- [ ] Fixtures cover import/export behavior
-- [ ] No regression in existing fixtures
+- [ ] Split issues exist with clear dependencies, scope, affected paths, acceptance criteria, and validation commands
+- [ ] `issues/index.md` is regenerated and shows this umbrella as blocked by the split issues
+- [ ] Remaining implementation work is tracked by the split issues instead of broad TODOs in this umbrella
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+scripts/manager update-issue-index
+scripts/manager update-issue-index --check
+scripts/manager check-issue-health
+scripts/manager check-agent-state
 ```
 
 Impacted commands:
 
 ```sh
-cargo run -p ts2wasm-cli -- build fixtures/module-test.ts -o /tmp/test.wasm
-iwasm /tmp/test.wasm
+scripts/manager check-issue-index
 ```
 
 Not run:
@@ -90,11 +90,14 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] created/updated: `issues/open/231-parse-static-es-module-declarations.md`
+- [x] created/updated: `issues/open/232-resolve-local-relative-es-module-graph.md`
+- [x] created/updated: `issues/open/233-emit-static-es-module-bindings.md`
+- [x] created/updated: `issues/open/234-cover-static-es-module-execution.md`
 
 ## Notes
 
-This is a major feature requiring module system design.
+Keep this issue open as the umbrella until the split issues are complete. Do not use this umbrella for direct Rust implementation work.
 
 ## Progress evidence
 
@@ -130,6 +133,11 @@ Remaining scope: parser representation for supported module declarations, module
   - Direct build checks for all four added fixtures failed as expected with `[UnsupportedSyntax]` and the relevant `issue-055` unsupported form message.
 
 Remaining scope: parser representation for supported module declarations, module resolution, module loading, and execution fixtures remain open.
+
+2026-04-28 child split `055-import-export-split-20260428T053058Z`:
+
+- Split remaining scope into issues 231, 232, 233, and 234.
+- This umbrella now depends on the split issues and remains open for progress tracking.
 
 ## Completion evidence
 
