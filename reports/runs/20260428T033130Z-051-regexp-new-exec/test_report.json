@@ -1,0 +1,87 @@
+{
+  "run_id": "20260428T033130Z-051-regexp-new-exec",
+  "task_id": "issue-051",
+  "git": {
+    "sha": "88ec4d6",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/frontend/src/parser.rs",
+      "crates/cli/tests/ir_lowering.rs",
+      "fixtures/core-semantics/regexp-test.ts",
+      "issues/open/051-implement-regexp.md",
+      "reports/runs/20260428T033130Z-051-regexp-new-exec/cycle_report.md",
+      "reports/runs/20260428T033130Z-051-regexp-new-exec/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "88ec4d6",
+        "message": "issue-051: support direct new RegExp exec"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo run -p ts2wasm-cli -- build /tmp/ts2wasm-051-direct-new-regexp-exec.ts -o /tmp/ts2wasm-051-direct-new-regexp-exec.wasm",
+      "status": "fail",
+      "exit_code": 1
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(regexp)'",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli regexp",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "node fixtures/core-semantics/regexp-test.ts",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-direct-new-regexp-exec.wasm && iwasm /tmp/ts2wasm-issue051-direct-new-regexp-exec.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager fmt",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/core-semantics/regexp-test.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "outcome": "PROGRESS",
+    "full_nextest": "not run; assignment requires full cargo nextest run only for DONE"
+  }
+}

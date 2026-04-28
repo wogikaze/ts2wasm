@@ -1,0 +1,44 @@
+{
+  "run_id": "20260428-019a-typescript-oracle",
+  "issue": "019a",
+  "status": "pass",
+  "commit": null,
+  "commands": [
+    {
+      "command": "node scripts/check/typescript-oracle.js fixtures/basics-types/types.ts",
+      "status": "pass",
+      "notes": "ok=true with TypeScript 6.0.3"
+    },
+    {
+      "command": "node scripts/check/typescript-oracle.js fixtures/basics-types/type-error.ts",
+      "status": "pass",
+      "notes": "TS2322 diagnostic produced"
+    },
+    {
+      "command": "cargo nextest run -p ts2wasm-frontend",
+      "status": "pass",
+      "notes": "5 passed"
+    },
+    {
+      "command": "cargo run -q -p ts2wasm-cli -- check fixtures/basics-types/types.ts",
+      "status": "pass",
+      "notes": "no diagnostics"
+    },
+    {
+      "command": "cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/types.ts -o /tmp/types.wasm",
+      "status": "pass",
+      "notes": "build validation passed"
+    },
+    {
+      "command": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "notes": "shell syntax and issue health passed"
+    },
+    {
+      "command": "cargo nextest run --no-fail-fast",
+      "status": "pass",
+      "notes": "196 passed, 4 skipped"
+    }
+  ],
+  "next": "019b: extract type information for optimization hints"
+}

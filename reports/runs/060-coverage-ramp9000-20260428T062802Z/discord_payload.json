@@ -1,0 +1,18 @@
+{
+  "run_id": "060-coverage-ramp9000-20260428T062802Z",
+  "issue": "060",
+  "status": "PROGRESS",
+  "branch": "agent/060-coverage-ramp9000-20260428T062802Z",
+  "commit": "cf9ca33",
+  "summary": "Ramped stored test262 reference coverage from limit 8000 to limit 9000; unknown-unsupported remained 0; no classifier changes or follow-up issues required.",
+  "validation": [
+    "reference-coverage test262 --limit 9000 --detail: pass",
+    "reference-coverage test262 --limit 9000 --json: pass",
+    "scripts/manager update-coverage-matrix --check: pass",
+    "scripts/manager check-issue-health: pass",
+    "scripts/manager check-agent-state: pass",
+    "test_report schema validation: pass"
+  ],
+  "report_path": "reports/runs/060-coverage-ramp9000-20260428T062802Z/cycle_report.md",
+  "deferred_reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env."
+}

@@ -1,0 +1,9 @@
+{
+  "run_id": "221-gc-call-frame-roots-20260428T002534Z",
+  "issue": 221,
+  "branch": "agent/221-gc-call-frame-roots-20260428T095000Z",
+  "commit": "853ed2e",
+  "status": "DONE",
+  "merge_request": true,
+  "reporting": "DEFERRED"
+}

@@ -1,0 +1,85 @@
+{
+  "run_id": "20260428T004726Z-052-json-runtime",
+  "task_id": "052",
+  "git": {
+    "sha": "pre-commit",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/backend-wasm/src/runtime_builtins_host.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "issues/open/052-implement-json.md",
+      "reports/agents/agent-052-json-runtime-20260428T104000Z/progress-052-json-runtime.md",
+      "reports/runs/20260428T004726Z-052-json-runtime/cycle_report.md",
+      "reports/runs/20260428T004726Z-052-json-runtime/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify.ts -o /tmp/ts2wasm-json-stringify.wasm && node fixtures/builtins-and-io/json-stringify.ts && iwasm /tmp/ts2wasm-json-stringify.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse.ts -o /tmp/ts2wasm-json-parse.wasm && node fixtures/builtins-and-io/json-parse.ts && iwasm /tmp/ts2wasm-json-parse.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-parse.ts",
+      "fixtures/builtins-and-io/json-stringify.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "completion_level": "PROGRESS",
+    "remaining_gaps": [
+      "escaped strings",
+      "decimal/exponent numbers",
+      "nested parsed values",
+      "JSON.parse arrays",
+      "replacer/space arguments",
+      "throw-compatible invalid JSON diagnostics"
+    ]
+  }
+}

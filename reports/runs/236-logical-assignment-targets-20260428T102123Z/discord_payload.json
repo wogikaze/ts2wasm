@@ -1,0 +1,9 @@
+{
+  "run_id": "236-logical-assignment-targets-20260428T102123Z",
+  "status": "DEFERRED",
+  "issue": 236,
+  "branch": "agent/236-logical-assignment-targets-20260428T102123Z",
+  "commit": "da476774f258c6214240bd31700614a0a129407b",
+  "summary": "PROGRESS: dynamic computed logical-assignment keys on identifier receivers now pass Node/iwasm differential coverage; non-identifier receivers remain open.",
+  "report": "reports/runs/236-logical-assignment-targets-20260428T102123Z/cycle_report.md"
+}

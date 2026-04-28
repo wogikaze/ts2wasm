@@ -1,0 +1,26 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling ts2wasm-runtime-abi v0.1.0 (/home/wogikaze/wgkz/ts2wasm-231-final-close-audit-20260428T084159Z/crates/runtime-abi)
+   Compiling ts2wasm-ir v0.1.0 (/home/wogikaze/wgkz/ts2wasm-231-final-close-audit-20260428T084159Z/crates/ir)
+   Compiling ts2wasm-backend-wasm v0.1.0 (/home/wogikaze/wgkz/ts2wasm-231-final-close-audit-20260428T084159Z/crates/backend-wasm)
+   Compiling ts2wasm-compiler v0.1.0 (/home/wogikaze/wgkz/ts2wasm-231-final-close-audit-20260428T084159Z/crates/compiler)
+   Compiling ts2wasm-cli v0.1.0 (/home/wogikaze/wgkz/ts2wasm-231-final-close-audit-20260428T084159Z/crates/cli)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.36s
+────────────
+ Nextest run ID 4076c652-c02a-4c2d-b391-d65588727507 with nextest profile: default
+    Starting 13 tests across 19 binaries (216 tests skipped)
+        PASS [   0.012s] ( 1/13) ts2wasm-cli::m9_modules static_default_export_reports_issue_055
+        PASS [   0.014s] ( 2/13) ts2wasm-cli::m9_modules static_named_import_reports_issue_055
+        PASS [   0.014s] ( 3/13) ts2wasm-cli::m9_modules static_namespace_import_reports_issue_055
+        PASS [   0.016s] ( 4/13) ts2wasm-cli::m9_modules static_named_re_export_reports_issue_055
+        PASS [   0.016s] ( 5/13) ts2wasm-cli::m9_modules static_combined_namespace_import_reports_issue_055
+        PASS [   0.015s] ( 6/13) ts2wasm-cli::m9_modules static_named_export_reports_issue_055
+        PASS [   0.016s] ( 7/13) ts2wasm-cli::m9_modules static_default_import_reports_issue_055
+        PASS [   0.017s] ( 8/13) ts2wasm-cli::m9_modules static_combined_named_import_reports_issue_055
+        PASS [   0.017s] ( 9/13) ts2wasm-cli::m9_modules static_declaration_export_reports_issue_055
+        PASS [   0.018s] (10/13) ts2wasm-cli::m9_modules static_class_export_reports_issue_055
+        PASS [   0.019s] (11/13) ts2wasm-cli::m9_modules static_re_export_reports_issue_055
+        PASS [   0.021s] (12/13) ts2wasm-cli::m9_modules static_namespace_re_export_reports_issue_055
+        PASS [   0.012s] (13/13) ts2wasm-cli::m9_modules static_side_effect_import_reports_issue_055
+────────────
+     Summary [   0.025s] 13 tests run: 13 passed, 216 skipped

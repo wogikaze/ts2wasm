@@ -1,0 +1,98 @@
+{
+  "run_id": "20260428T020322Z-227-type-ref-directive",
+  "task_id": "issue-227",
+  "git": {
+    "sha": "pending",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/frontend/src/type_reference_directive.rs",
+      "crates/frontend/src/lib.rs",
+      "crates/compiler/src/lib.rs",
+      "crates/compiler/src/dump.rs",
+      "crates/cli/tests/type_reference_directives.rs",
+      "fixtures/typescript-directives/reference-types-missing.ts",
+      "fixtures/typescript-directives/reference-types-ts-ignore.ts",
+      "fixtures/typescript-directives/reference-types-skip-lib-check.ts",
+      "scripts/run/reference-coverage.py",
+      "scripts/lib/feature-labels.sh",
+      "issues/open/227-implement-type-reference-directive-resolution.md",
+      "reports/agents/agent-227-type-ref-directive-20260428T015517Z/progress.md",
+      "reports/runs/20260428T020322Z-227-type-ref-directive/cycle_report.md",
+      "reports/runs/20260428T020322Z-227-type-ref-directive/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run type_reference",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli --test type_reference_directives",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --path-filter processingDiagnostic --detail",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage tsgo --limit 120",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 7,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/typescript-directives/reference-types-ts-ignore.ts",
+      "fixtures/typescript-directives/reference-types-skip-lib-check.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "status": "PROGRESS",
+    "reference_coverage_tsgo_limit_120": {
+      "build_pass": 9,
+      "semantic_pass": 5,
+      "unsupported": 111,
+      "unsupported_features": {
+        "typescript-directive": 1
+      }
+    }
+  }
+}

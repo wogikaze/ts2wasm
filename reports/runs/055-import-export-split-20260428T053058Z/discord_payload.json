@@ -1,0 +1,10 @@
+{
+  "run_id": "055-import-export-split-20260428T053058Z",
+  "branch": "agent/055-import-export-split-20260428T053058Z",
+  "issue": "055",
+  "status": "PROGRESS",
+  "summary": "Split issue 055 into parser, module graph, emission, and execution-fixture follow-up issues.",
+  "commit": "0a366a0",
+  "reporting_status": "DEFERRED",
+  "deferred_reason": "DISCORD_WEBHOOK_URL is not configured"
+}

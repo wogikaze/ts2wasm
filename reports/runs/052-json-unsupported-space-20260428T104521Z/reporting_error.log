@@ -1,0 +1,10 @@
+scripts/manager discord-report --run-id 052-json-unsupported-space-20260428T104521Z
+exit_code: 1
+stderr:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+
+retry:
+scripts/manager discord-report --run-id 052-json-unsupported-space-20260428T104521Z
+exit_code: 1
+stderr:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません

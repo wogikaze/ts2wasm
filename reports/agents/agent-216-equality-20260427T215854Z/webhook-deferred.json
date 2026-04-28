@@ -1,0 +1,9 @@
+{
+  "status": "DEFERRED",
+  "run_id": "agent-216-equality-20260427T215854Z",
+  "reason": "DISCORD_WEBHOOK_URL is not configured",
+  "attempts": 2,
+  "cycle_report": "reports/runs/agent-216-equality-20260427T215854Z/cycle_report.md",
+  "reporting_error": "reports/runs/agent-216-equality-20260427T215854Z/reporting_error.log",
+  "payload": "reports/runs/agent-216-equality-20260427T215854Z/discord_payload.json"
+}

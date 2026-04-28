@@ -1,0 +1,71 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling proc-macro2 v1.0.106
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.45
+   Compiling serde_core v1.0.228
+   Compiling zmij v1.0.21
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.149
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.0
+   Compiling syn v2.0.117
+   Compiling serde_derive v1.0.228
+   Compiling ts2wasm-shared v0.1.0 (/home/wogikaze/wgkz/ts2wasm-231-final-close-audit-20260428T084159Z/crates/shared)
+   Compiling ts2wasm-frontend v0.1.0 (/home/wogikaze/wgkz/ts2wasm-231-final-close-audit-20260428T084159Z/crates/frontend)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.18s
+────────────
+ Nextest run ID e017753c-5983-497f-b9d3-a8aaf6d6467d with nextest profile: default
+    Starting 48 tests across 1 binary
+        PASS [   0.008s] ( 1/48) ts2wasm-frontend lexer::tests::html_comments_terminate_preceding_statement
+        PASS [   0.008s] ( 2/48) ts2wasm-frontend lexer::tests::html_open_comment_skips_to_line_end
+        PASS [   0.008s] ( 3/48) ts2wasm-frontend lexer::tests::html_comment_statement_terminator_is_allowed_inside_blocks
+        PASS [   0.009s] ( 4/48) ts2wasm-frontend lexer::tests::html_close_comment_is_allowed_after_multiline_block_comment
+        PASS [   0.009s] ( 5/48) ts2wasm-frontend lexer::tests::html_close_comment_supports_unicode_line_separators
+        PASS [   0.010s] ( 6/48) ts2wasm-frontend lexer::tests::cooks_unicode_string_escape
+        PASS [   0.010s] ( 7/48) ts2wasm-frontend lexer::tests::cooks_legacy_octal_string_escape_in_non_strict_code
+        PASS [   0.010s] ( 8/48) ts2wasm-frontend lexer::tests::html_comment_window_compound_assignment_parses
+        PASS [   0.011s] ( 9/48) ts2wasm-frontend lexer::tests::html_close_sequence_after_token_stays_operator_tokens
+        PASS [   0.011s] (10/48) ts2wasm-frontend lexer::tests::rejects_legacy_octal_string_escape_in_strict_code
+        PASS [   0.011s] (11/48) ts2wasm-frontend lexer::tests::less_bang_and_minus_still_parse_as_operators
+        PASS [   0.012s] (12/48) ts2wasm-frontend lexer::tests::html_close_comment_is_allowed_at_line_start_after_trivia
+        PASS [   0.008s] (13/48) ts2wasm-frontend parser::tests::keeps_let_declaration_export_unsupported_for_narrow_slice
+        PASS [   0.010s] (14/48) ts2wasm-frontend parser::tests::keeps_class_declaration_export_unsupported_for_narrow_slice
+        PASS [   0.009s] (15/48) ts2wasm-frontend parser::tests::parses_const_declaration_export_with_exported_local_span
+        PASS [   0.009s] (16/48) ts2wasm-frontend parser::tests::parses_constructor_parameter_properties_as_this_assignments
+        PASS [   0.011s] (17/48) ts2wasm-frontend parser::tests::keeps_default_function_and_class_exports_unsupported_for_narrow_slice
+        PASS [   0.008s] (18/48) ts2wasm-frontend parser::tests::parses_named_export_with_specifier_spans
+        PASS [   0.008s] (19/48) ts2wasm-frontend parser::tests::parses_default_named_import_with_specifier_spans
+        PASS [   0.009s] (20/48) ts2wasm-frontend parser::tests::parses_default_namespace_import_with_specifier_spans
+        PASS [   0.010s] (21/48) ts2wasm-frontend parser::tests::parses_delete_keyword_after_dot_as_member_property_name
+        PASS [   0.013s] (22/48) ts2wasm-frontend parser::tests::cooks_escaped_template_literal_segments
+        PASS [   0.011s] (23/48) ts2wasm-frontend parser::tests::parses_default_import_with_specifier_span
+        PASS [   0.014s] (24/48) ts2wasm-frontend parser::tests::parses_default_expression_export_with_default_marker_span
+        PASS [   0.008s] (25/48) ts2wasm-frontend parser::tests::parses_named_import_with_specifier_spans
+        PASS [   0.008s] (26/48) ts2wasm-frontend parser::tests::parses_named_re_export_with_specifier_and_source_spans
+        PASS [   0.009s] (27/48) ts2wasm-frontend parser::tests::parses_namespace_re_export_with_source_and_declaration_spans
+        PASS [   0.008s] (28/48) ts2wasm-frontend parser::tests::parses_star_re_export_with_source_and_declaration_spans
+        PASS [   0.008s] (29/48) ts2wasm-frontend parser::tests::parses_side_effect_import_with_specifier_span
+        PASS [   0.008s] (30/48) ts2wasm-frontend parser::tests::parses_template_literal_interpolation_as_add_chain
+        PASS [   0.009s] (31/48) ts2wasm-frontend parser::tests::parses_string_literal_computed_logical_assignment_as_property_assignment
+        PASS [   0.010s] (32/48) ts2wasm-frontend parser::tests::parses_template_literal_empty_leading_segment
+        PASS [   0.015s] (33/48) ts2wasm-frontend parser::tests::parses_namespace_import_with_specifier_span
+        PASS [   0.012s] (34/48) ts2wasm-frontend parser::tests::parses_supported_regexp_literals_as_string_subset
+        PASS [   0.009s] (35/48) ts2wasm-frontend parser::tests::rejects_duplicate_regexp_flag_with_issue_linked_diagnostic
+        PASS [   0.009s] (36/48) ts2wasm-frontend parser::tests::rejects_dynamic_import_with_issue_linked_diagnostic
+        PASS [   0.013s] (37/48) ts2wasm-frontend parser::tests::rejects_async_function_with_issue_linked_diagnostic
+        PASS [   0.008s] (38/48) ts2wasm-frontend parser::tests::rejects_legacy_octal_escape_in_template_text
+        PASS [   0.012s] (39/48) ts2wasm-frontend parser::tests::rejects_for_await_of_with_issue_linked_diagnostic
+        PASS [   0.009s] (40/48) ts2wasm-frontend type_reference_directive::tests::ignores_non_types_reference_directives
+        PASS [   0.010s] (41/48) ts2wasm-frontend type_reference_directive::tests::reports_missing_type_reference_directive_with_issue_link
+        PASS [   0.010s] (42/48) ts2wasm-frontend parser::tests::rejects_unsupported_regexp_flag_with_issue_linked_diagnostic
+        PASS [   0.011s] (43/48) ts2wasm-frontend parser::tests::template_interpolation_inherits_strict_legacy_octal_rejection
+        PASS [   0.008s] (44/48) ts2wasm-frontend type_reference_directive::tests::skip_lib_check_suppresses_type_reference_directive_diagnostics
+        PASS [   0.009s] (45/48) ts2wasm-frontend type_reference_directive::tests::ts_ignore_suppresses_immediately_following_type_reference_directive
+        PASS [   0.045s] (46/48) ts2wasm-frontend typescript_oracle::tests::propagates_typescript_diagnostic
+        PASS [   0.044s] (47/48) ts2wasm-frontend typescript_oracle::tests::extracts_type_hints_for_optimization_candidates
+        PASS [   0.044s] (48/48) ts2wasm-frontend typescript_oracle::tests::accepts_valid_typescript_fixture
+────────────
+     Summary [   0.083s] 48 tests run: 48 passed, 0 skipped

@@ -1,0 +1,11 @@
+{
+  "run_id": "230-async-close-20260428T041000Z",
+  "status": "DEFERRED",
+  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
+  "event": "DONE",
+  "issue": "230",
+  "branch": "agent/230-async-close-20260428T041000Z",
+  "commit": "f75e204",
+  "merge_request": true,
+  "summary": "Issue 230 closed through precise issue-linked async iteration unsupported diagnostics. Required validation passed."
+}
