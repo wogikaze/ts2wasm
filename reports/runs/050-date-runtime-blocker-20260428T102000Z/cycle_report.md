@@ -55,3 +55,16 @@ result: pass (shell syntax, issue index, and issue health checks passed)
 ```
 
 `cargo nextest run` was not run because the issue was not closed as DONE and no implementation code changed.
+
+## Reporting
+
+```text
+command: scripts/manager discord-report --run-id 050-date-runtime-blocker-20260428T102000Z
+result: failed, retried once, DEFERRED
+reason: DISCORD_WEBHOOK_URL is not configured in the environment or .env
+```
+
+Deferred payload and error log:
+
+- `reports/runs/050-date-runtime-blocker-20260428T102000Z/discord_payload.json`
+- `reports/runs/050-date-runtime-blocker-20260428T102000Z/reporting_error.log`
