@@ -8,7 +8,8 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -20,7 +21,8 @@ Problem: This issue overlaps with issue 062 and currently lists only Annex B dyn
 Queue design note:
 
 - Do not select this issue directly.
-- Merge or cross-link these cases into the Function constructor diagnostic/policy child under issue 062, then close this issue as superseded.
+- Superseded by issue 062b. The affected Annex B dynamic Function constructor
+  cases are owned by the Function constructor diagnostic/policy child.
 
 ## Problem
 
@@ -32,16 +34,16 @@ function-resolution feature is correctly implemented according to JavaScript/Typ
 
 ## Scope
 
-In scope:
+Original in-scope implementation work, now superseded by issue 062b:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for function-resolution feature
-- [ ] Add fixtures for function-resolution feature behavior
-- [ ] Update diagnostics appropriately
+- Add required syntax to lexer/parser
+- Implement semantics for function-resolution feature
+- Add fixtures for function-resolution feature behavior
+- Update diagnostics appropriately
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- Related features (separate issues)
 
 ## Affected paths
 
@@ -56,12 +58,16 @@ Do not touch:
 - `crates/runtime-abi/`
 - `crates/backend-wasm/`
 
-## Acceptance criteria
+## Original acceptance criteria
 
-- [ ] function-resolution feature passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for function-resolution feature
-- [ ] Docs updated if semantics change
+- function-resolution feature passes for basic cases
+- Related diagnostics reduced in reference tests
+- Regression test added for function-resolution feature
+- Docs updated if semantics change
+
+These implementation criteria were not completed in issue 063 because the issue
+was closed as a duplicate of the dynamic Function constructor diagnostic/policy
+slice. The affected reference cases are now tracked by issue 062b.
 
 ## Validation
 
@@ -86,15 +92,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- not updated by this superseded close
 
 Follow-up issues:
 
-- [ ] none
+- issue 062b owns the affected Annex B dynamic Function constructor cases
 
 ## Notes
 
@@ -108,20 +114,21 @@ Follow-up issues:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as superseded by issue 062b. No function-resolution implementation was
+performed in this cleanup.
 
 Commits:
 
-- `...`
+- closing commit on branch `agent/062a-function-split-20260428T235026Z` (hash recorded in cycle report)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run update-issue-index; mise run update-issue-index -- --check; mise run check issues; mise run check issue-index; mise run check-agent-state
+result: index update/check and agent-state passed; issue health commands failed only on pre-existing missing report paths in issue 052 and done issue 228, with no remaining 062a/063 errors
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Function constructor diagnostic/policy behavior remains tracked by issue 062b.
