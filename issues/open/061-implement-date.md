@@ -91,6 +91,8 @@ Follow-up issues:
 
 ## Notes
 
+- 2026-04-28 child `061-date-annexb-diagnostics-20260428T051924Z`: added precise `issue-061` unsupported diagnostics and regression fixtures for Annex B `Date.prototype.getYear`, `setYear`, and `toGMTString` when used on deterministic Date receivers. This is progress only; broad Date API support remains open.
+
 ## Affected test files
 
 - `reference/test262/test/annexB/built-ins/Date/prototype/getYear/nan.js`
