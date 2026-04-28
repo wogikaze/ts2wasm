@@ -103,7 +103,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         return Ok(format_section("ast", &format!("{ast:#?}")));
     }
 
-    let pipeline = build_dump_pipeline(&source, options.optimization_level)?;
+    let pipeline = build_dump_pipeline(input, &source, options.optimization_level)?;
     let mut out = String::new();
 
     match options.phase {
@@ -145,12 +145,14 @@ fn parse_ast(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
 }
 
 fn build_dump_pipeline(
+    input: &Path,
     source: &str,
     optimization_level: OptimizationLevel,
 ) -> Result<DumpPipeline, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
     let ast = Parser::new(tokens.clone()).parse_program()?;
     super::validate_ast(&ast)?;
+    super::module_graph::validate_entry_module_graph(input, &ast)?;
     let name_resolved = name_resolver::resolve_names(&ast)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     let typed_ir = build_typed_ir(&resolved);

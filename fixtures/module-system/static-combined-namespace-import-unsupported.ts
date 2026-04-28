@@ -1,3 +1,3 @@
-// Diagnostic fixture for parsed-but-unsupported combined default/namespace imports tracked by issue 055.
+// Diagnostic fixture for missing local combined default/namespace imports tracked by issue 232.
 import value, * as mod from "./module-source";
 console.log(value, mod.value);

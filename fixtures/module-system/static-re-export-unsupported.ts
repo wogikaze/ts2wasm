@@ -1,2 +1,2 @@
-// Diagnostic fixture for parsed-but-unsupported static star re-exports tracked by issue 055.
+// Diagnostic fixture for missing local static star re-exports tracked by issue 232.
 export * from "./module-source";

@@ -1,4 +1,5 @@
 mod dump;
+mod module_graph;
 
 use std::collections::HashMap;
 use std::fs;
@@ -51,6 +52,7 @@ pub fn build_file_with_host_deny(
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
+    module_graph::validate_entry_module_graph(input, &program)?;
     let name_resolved = name_resolver::resolve_names(&program)?;
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
