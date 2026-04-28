@@ -140,3 +140,11 @@ fn static_re_export_reports_issue_055() {
         "issue-055: unsupported re-export",
     );
 }
+
+#[test]
+fn static_named_re_export_reports_issue_055() {
+    assert_build_fails_with_unsupported_syntax(
+        "module-system/static-named-re-export-unsupported.ts",
+        "issue-055: unsupported named re-export",
+    );
+}
