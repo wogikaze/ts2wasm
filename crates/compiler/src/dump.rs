@@ -353,6 +353,9 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
                 .join(", ");
             let _ = writeln!(out, "export {{ {specifiers} }} from '{}';", source.value);
         }
+        Stmt::ExportAllFrom { source, .. } => {
+            let _ = writeln!(out, "export * from '{}';", source.value);
+        }
         Stmt::Let { name, expr, .. } => {
             let _ = writeln!(out, "let {name} = {};", unparse_expr(expr));
         }

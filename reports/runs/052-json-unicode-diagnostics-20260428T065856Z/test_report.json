@@ -1,0 +1,142 @@
+{
+  "run_id": "052-json-unicode-diagnostics-20260428T065856Z",
+  "task_id": "issue-052-json-unicode-diagnostics",
+  "git": {
+    "sha": "b034261",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
+      "issues/open/052-implement-json.md",
+      "reports/runs/052-json-unicode-diagnostics-20260428T065856Z/cycle_report.md",
+      "reports/runs/052-json-unicode-diagnostics-20260428T065856Z/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "b034261",
+        "message": "issue-052: cover json unicode escape diagnostics"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -E 'test(json)'",
+      "status": "pass",
+      "exit_code": 0,
+      "evidence": "16 tests passed"
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli json",
+      "status": "pass",
+      "exit_code": 0,
+      "evidence": "13 tests passed"
+    },
+    {
+      "cmd": "node fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts",
+      "status": "pass",
+      "exit_code": 1,
+      "expected_failure": true,
+      "evidence": "Node rejected invalid unicode escape hex with JSON SyntaxError."
+    },
+    {
+      "cmd": "node fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts",
+      "status": "pass",
+      "exit_code": 0,
+      "evidence": "Node accepted non-ASCII unicode escape in array string value."
+    },
+    {
+      "cmd": "node fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
+      "status": "pass",
+      "exit_code": 0,
+      "evidence": "Node accepted lone surrogate unicode escape in object string value."
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts -o /tmp/ts2wasm-json-parse-invalid-unicode-escape.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts -o /tmp/ts2wasm-json-parse-unsupported-unicode-array.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts -o /tmp/ts2wasm-json-parse-unsupported-unicode-object.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "iwasm /tmp/ts2wasm-json-parse-invalid-unicode-escape.wasm",
+      "status": "pass",
+      "exit_code": 1,
+      "expected_failure": true,
+      "evidence": "iwasm rejected invalid unicode escape hex with Exception: unreachable."
+    },
+    {
+      "cmd": "iwasm /tmp/ts2wasm-json-parse-unsupported-unicode-array.wasm",
+      "status": "pass",
+      "exit_code": 1,
+      "expected_failure": true,
+      "evidence": "iwasm rejected unsupported non-ASCII unicode escape with Exception: unreachable."
+    },
+    {
+      "cmd": "iwasm /tmp/ts2wasm-json-parse-unsupported-unicode-object.wasm",
+      "status": "pass",
+      "exit_code": 1,
+      "expected_failure": true,
+      "evidence": "iwasm rejected unsupported surrogate unicode escape with Exception: unreachable."
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0,
+      "evidence": "344 tests passed, 4 skipped"
+    },
+    {
+      "cmd": "cargo clippy --all-targets --all-features -- -D warnings",
+      "status": "fail",
+      "exit_code": 101,
+      "evidence": "Pre-existing clippy::assertions_on_constants diagnostics in crates/runtime-abi/src/layout.rs, outside allowed files."
+    }
+  ],
+  "fixtures": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "completion_level": "PROGRESS",
+    "issue": "052",
+    "scope": "Pin JSON.parse unicode escape diagnostics for invalid hex and currently unsupported non-ASCII/surrogate escapes.",
+    "node_iwasm_semantics": "Invalid hex is rejected by both Node and iwasm. Non-ASCII and surrogate escapes are accepted by Node but intentionally rejected by iwasm until the runtime has full UTF-16 string support.",
+    "clippy_failure_unrelated": true
+  }
+}
