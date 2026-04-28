@@ -33,11 +33,25 @@ result: pass; check_issue_health: OK
 
 scripts/manager check-agent-state
 result: pass; agent state files validated
+
+post-merge validation:
+scripts/manager update-coverage-matrix --check
+result: pass; coverage matrix OK
+
+scripts/manager check-issue-health
+result: pass; check_issue_health: OK
+
+scripts/manager check-agent-state
+result: pass; agent state files validated
 ```
 
 ## Recovery Note
 
 An initial JSON refresh command was malformed because `mktemp` and the manager invocation were not separated. That left a zero-byte `artifacts/coverage/results/test262.json.tmp.Vdbujq` and passed `mv ...` as extra manager arguments. The process was stopped, only that zero-byte temp file was removed, and the tracked artifact was verified unchanged before rerunning the JSON refresh with explicit semicolons.
+
+## Reporting
+
+Discord reporting was attempted twice with `scripts/manager discord-report --run-id 060-coverage-ramp14000-20260428T091725Z`. Both attempts failed because `DISCORD_WEBHOOK_URL` is not configured in the environment or `.env`. Deferred reporting artifacts are saved in this run directory.
 
 ## Remaining
 
