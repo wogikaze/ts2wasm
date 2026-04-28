@@ -309,6 +309,35 @@ x/y
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.stringify` argument continuation slice for integer numeric `space` values with null/undefined replacer values, including the JSON clamp to 10 spaces.
+- Added lowering-time validation so unsupported `JSON.stringify` replacer forms and unsupported `space` forms report diagnostics instead of emitting a malformed runtime call.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-space.ts`; Node and iwasm both print:
+
+```text
+{
+  "a": 1,
+  "b": 2
+}
+[
+  1,
+  2
+]
+```
+
+- Pre-change gap check with `/tmp/ts2wasm-json-stringify-space.ts` showed `JSON.stringify(obj, null, 2)` failed during WAT assembly because lowering passed all three arguments to a one-argument `$json_stringify` helper.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-stringify-space.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-space.ts -o /tmp/ts2wasm-json-stringify-space.wasm && iwasm /tmp/ts2wasm-json-stringify-space.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment requires the JSON-filtered nextest commands plus direct Node/iwasm evidence.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, nested object literal value preservation for `JSON.stringify`, full replacer semantics, string `space` semantics, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

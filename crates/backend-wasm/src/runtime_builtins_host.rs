@@ -151,20 +151,61 @@ impl WatEmitter<'_> {
     pub(super) fn emit_json_stringify(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $json_stringify (param $v i32) (result i32)
+  (func $json_stringify (param $v i32) (param $replacer i32) (param $space i32) (result i32)
     (local $result_ptr i32)
     (local $len i32)
+    (local $gap i32)
+    (if
+      (i32.and
+        (i32.ne (local.get $replacer) (i32.const {undefined}))
+        (i32.ne (local.get $replacer) (i32.const {null_tag})))
+      (then (return (i32.const {undefined}))))
+    (if (i32.eq (i32.and (local.get $space) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then
+        (local.set $gap (i32.shr_s (local.get $space) (i32.const {number_shift})))
+        (if (i32.lt_s (local.get $gap) (i32.const {zero}))
+          (then (local.set $gap (i32.const {zero}))))
+        (if (i32.gt_s (local.get $gap) (i32.const {max_gap}))
+          (then (local.set $gap (i32.const {max_gap}))))))
     (local.set $result_ptr (call $alloc_heap (i32.const {stringify_alloc_size})))
     (local.set $len
       (call $json_stringify_into
         (local.get $v)
-        (i32.add (local.get $result_ptr) (i32.const {header}))))
+        (i32.add (local.get $result_ptr) (i32.const {header}))
+        (local.get $gap)
+        (i32.const {zero})))
     (if (i32.lt_s (local.get $len) (i32.const {zero}))
       (then (return (i32.const {undefined}))))
     (i32.store (local.get $result_ptr) (local.get $len))
     (i32.or (local.get $result_ptr) (i32.const {string_tag})))
 
-  (func $json_stringify_into (param $v i32) (param $ptr i32) (result i32)
+  (func $json_write_spaces (param $ptr i32) (param $count i32) (result i32)
+    (local $i i32)
+    (block $spaces_done
+      (loop $spaces_loop
+        (br_if $spaces_done (i32.ge_u (local.get $i) (local.get $count)))
+        (i32.store8
+          (i32.add (local.get $ptr) (local.get $i))
+          (i32.const {space_char}))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $spaces_loop)))
+    (local.get $count))
+
+  (func $json_write_newline_indent (param $ptr i32) (param $gap i32) (param $depth i32) (result i32)
+    (local $len i32)
+    (if (i32.eqz (local.get $gap))
+      (then (return (i32.const {zero}))))
+    (i32.store8 (local.get $ptr) (i32.const {newline}))
+    (local.set $len (i32.const {one}))
+    (local.set $len
+      (i32.add
+        (local.get $len)
+        (call $json_write_spaces
+          (i32.add (local.get $ptr) (local.get $len))
+          (i32.mul (local.get $gap) (local.get $depth)))))
+    (local.get $len))
+
+  (func $json_stringify_into (param $v i32) (param $ptr i32) (param $gap i32) (param $depth i32) (result i32)
     (local $tag i32)
     (local $base i32)
     (local $len i32)
@@ -206,6 +247,18 @@ impl WatEmitter<'_> {
         (local.set $len (i32.load (local.get $base)))
         (i32.store8 (local.get $ptr) (i32.const {lbracket}))
         (local.set $out (i32.const {one}))
+        (if
+          (i32.and
+            (i32.gt_u (local.get $len) (i32.const {zero}))
+            (i32.gt_u (local.get $gap) (i32.const {zero})))
+          (then
+            (local.set $out
+              (i32.add
+                (local.get $out)
+                (call $json_write_newline_indent
+                  (i32.add (local.get $ptr) (local.get $out))
+                  (local.get $gap)
+                  (i32.add (local.get $depth) (i32.const {one})))))))
         (block $array_done
           (loop $array_loop
             (br_if $array_done (i32.ge_u (local.get $i) (local.get $len)))
@@ -214,7 +267,16 @@ impl WatEmitter<'_> {
                 (i32.store8
                   (i32.add (local.get $ptr) (local.get $out))
                   (i32.const {comma}))
-                (local.set $out (i32.add (local.get $out) (i32.const {one})))))
+                (local.set $out (i32.add (local.get $out) (i32.const {one})))
+                (if (i32.gt_u (local.get $gap) (i32.const {zero}))
+                  (then
+                    (local.set $out
+                      (i32.add
+                        (local.get $out)
+                        (call $json_write_newline_indent
+                          (i32.add (local.get $ptr) (local.get $out))
+                          (local.get $gap)
+                          (i32.add (local.get $depth) (i32.const {one})))))))))
             (local.set $child_len
               (call $json_stringify_into
                 (i32.load
@@ -223,7 +285,9 @@ impl WatEmitter<'_> {
                     (i32.add
                       (i32.const {array_header})
                       (i32.shl (local.get $i) (i32.const {elem_shift})))))
-                (i32.add (local.get $ptr) (local.get $out))))
+                (i32.add (local.get $ptr) (local.get $out))
+                (local.get $gap)
+                (i32.add (local.get $depth) (i32.const {one}))))
             (if (i32.lt_s (local.get $child_len) (i32.const {zero}))
               (then
                 (local.set $child_len
@@ -233,6 +297,18 @@ impl WatEmitter<'_> {
             (local.set $out (i32.add (local.get $out) (local.get $child_len)))
             (local.set $i (i32.add (local.get $i) (i32.const {one})))
             (br $array_loop)))
+        (if
+          (i32.and
+            (i32.gt_u (local.get $len) (i32.const {zero}))
+            (i32.gt_u (local.get $gap) (i32.const {zero})))
+          (then
+            (local.set $out
+              (i32.add
+                (local.get $out)
+                (call $json_write_newline_indent
+                  (i32.add (local.get $ptr) (local.get $out))
+                  (local.get $gap)
+                  (local.get $depth))))))
         (i32.store8
           (i32.add (local.get $ptr) (local.get $out))
           (i32.const {rbracket}))
@@ -244,6 +320,18 @@ impl WatEmitter<'_> {
         (i32.store8 (local.get $ptr) (i32.const {lbrace}))
         (local.set $out (i32.const {one}))
         (local.set $i (i32.const {zero}))
+        (if
+          (i32.and
+            (i32.gt_u (local.get $len) (i32.const {zero}))
+            (i32.gt_u (local.get $gap) (i32.const {zero})))
+          (then
+            (local.set $out
+              (i32.add
+                (local.get $out)
+                (call $json_write_newline_indent
+                  (i32.add (local.get $ptr) (local.get $out))
+                  (local.get $gap)
+                  (i32.add (local.get $depth) (i32.const {one})))))))
         (block $object_done
           (loop $object_loop
             (br_if $object_done (i32.ge_u (local.get $i) (local.get $len)))
@@ -261,7 +349,16 @@ impl WatEmitter<'_> {
                 (i32.store8
                   (i32.add (local.get $ptr) (local.get $out))
                   (i32.const {comma}))
-                (local.set $out (i32.add (local.get $out) (i32.const {one})))))
+                (local.set $out (i32.add (local.get $out) (i32.const {one})))
+                (if (i32.gt_u (local.get $gap) (i32.const {zero}))
+                  (then
+                    (local.set $out
+                      (i32.add
+                        (local.get $out)
+                        (call $json_write_newline_indent
+                          (i32.add (local.get $ptr) (local.get $out))
+                          (local.get $gap)
+                          (i32.add (local.get $depth) (i32.const {one})))))))))
             (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {quote}))
             (local.set $out (i32.add (local.get $out) (i32.const {one})))
             (call $copy
@@ -273,15 +370,33 @@ impl WatEmitter<'_> {
             (local.set $out (i32.add (local.get $out) (i32.const {one})))
             (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {colon}))
             (local.set $out (i32.add (local.get $out) (i32.const {one})))
+            (if (i32.gt_u (local.get $gap) (i32.const {zero}))
+              (then
+                (i32.store8 (i32.add (local.get $ptr) (local.get $out)) (i32.const {space_char}))
+                (local.set $out (i32.add (local.get $out) (i32.const {one})))))
             (local.set $child_len
               (call $json_stringify_into
                 (i32.load (i32.add (local.get $entry_base) (i32.const {value_off})))
-                (i32.add (local.get $ptr) (local.get $out))))
+                (i32.add (local.get $ptr) (local.get $out))
+                (local.get $gap)
+                (i32.add (local.get $depth) (i32.const {one}))))
             (if (i32.lt_s (local.get $child_len) (i32.const {zero}))
               (then (return (i32.const {unsupported}))))
             (local.set $out (i32.add (local.get $out) (local.get $child_len)))
             (local.set $i (i32.add (local.get $i) (i32.const {one})))
             (br $object_loop)))
+        (if
+          (i32.and
+            (i32.gt_u (local.get $len) (i32.const {zero}))
+            (i32.gt_u (local.get $gap) (i32.const {zero})))
+          (then
+            (local.set $out
+              (i32.add
+                (local.get $out)
+                (call $json_write_newline_indent
+                  (i32.add (local.get $ptr) (local.get $out))
+                  (local.get $gap)
+                  (local.get $depth))))))
         (i32.store8
           (i32.add (local.get $ptr) (local.get $out))
           (i32.const {rbrace}))
@@ -297,6 +412,7 @@ impl WatEmitter<'_> {
             value_off = Layout::OBJECT_VALUE_OFFSET,
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
             undefined = ValueTag::UNDEFINED,
             null_tag = ValueTag::NULL,
             false_tag = ValueTag::FALSE,
@@ -309,6 +425,9 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             two = 2,
+            max_gap = 10,
+            newline = 10,
+            space_char = 32,
             quote = 34,
             colon = 58,
             comma = 44,
