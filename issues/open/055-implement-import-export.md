@@ -44,7 +44,7 @@ Expected:
 
 - `issues/done/231-parse-static-es-module-declarations.md`
 - `issues/done/232-resolve-local-relative-es-module-graph.md`
-- `issues/open/233-emit-static-es-module-bindings.md`
+- `issues/done/233-emit-static-es-module-bindings.md`
 - `issues/open/234-cover-static-es-module-execution.md`
 
 Do not touch:
@@ -92,7 +92,7 @@ Follow-up issues:
 
 - [x] created/updated: `issues/done/231-parse-static-es-module-declarations.md`
 - [x] created/updated: `issues/done/232-resolve-local-relative-es-module-graph.md`
-- [x] created/updated: `issues/open/233-emit-static-es-module-bindings.md`
+- [x] created/updated: `issues/done/233-emit-static-es-module-bindings.md`
 - [x] created/updated: `issues/open/234-cover-static-es-module-execution.md`
 
 ## Notes

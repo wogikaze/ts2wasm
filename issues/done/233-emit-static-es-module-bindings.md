@@ -9,6 +9,8 @@ depends_on: [231, 232]
 blocks: [234]
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
+status: done
 ---
 
 ## Summary
@@ -27,17 +29,17 @@ Named static exports are emitted into a module export object and named imports r
 
 In scope:
 
-- [ ] Lower named exports from declarations and export lists into resolved IR
-- [ ] Lower named imports to reads from resolved module exports
-- [ ] Emit module initialization in dependency order using the module graph IDs
-- [ ] Reuse or extend existing module cache/export runtime helpers without unconditional host imports
-- [ ] Add backend/link-plan tests showing ES module helpers are included only when needed
+- [x] Lower named exports from declarations and export lists into resolved IR
+- [x] Lower named imports to reads from resolved module exports
+- [x] Emit module initialization in dependency order using the module graph IDs
+- [x] Reuse or extend existing module cache/export runtime helpers without unconditional host imports
+- [x] Add backend/link-plan tests showing ES module helpers are included only when needed
 
 Out of scope:
 
-- [ ] Live binding updates beyond simple top-level values
-- [ ] `export default`, namespace objects, package resolution, and dynamic import
-- [ ] Broad module semantic parity claims without execution fixtures
+- [x] Live binding updates beyond simple top-level values
+- [x] `export default`, namespace objects, package resolution, and dynamic import
+- [x] Broad module semantic parity claims without execution fixtures
 
 ## Affected paths
 
@@ -56,11 +58,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Simple named export/import programs build to WASM
-- [ ] Imported values are read from the resolved source module, not from lexical globals in the importer
-- [ ] Module initialization runs once per module for repeated imports
-- [ ] Runtime link plan includes module helpers only for programs that use modules
-- [ ] Existing CommonJS module-cache fixtures still build
+- [x] Simple named export/import programs build to WASM
+- [x] Imported values are read from the resolved source module, not from lexical globals in the importer
+- [x] Module initialization runs once per module for repeated imports
+- [x] Runtime link plan includes module helpers only for programs that use modules
+- [x] Existing CommonJS module-cache fixtures still build
 
 ## Validation
 
@@ -87,15 +89,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -107,19 +109,33 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `8ef5f5584941f7c5c3069b388c449da3eea1db71` issue-233: add static module runtime semantic coverage
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (18 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (19 tests)
+cargo nextest run -p ts2wasm-compiler: PASS (39 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (17 tests, 220 skipped)
+cargo nextest run -p ts2wasm-cli static_named_module_import_fixtures_match_node_output_under_iwasm: PASS (1 test, 236 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-semantic-entry.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-semantic-alias.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-semantic-shadow.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-repeated.ts -o /tmp/ts2wasm-233-semantic-repeated.wasm: PASS
+iwasm /tmp/ts2wasm-233-semantic-entry.wasm && iwasm /tmp/ts2wasm-233-semantic-alias.wasm && iwasm /tmp/ts2wasm-233-semantic-shadow.wasm && iwasm /tmp/ts2wasm-233-semantic-repeated.wasm: PASS (stdout 1, 1, 1, 2)
+scripts/manager check-issue-index: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+scripts/manager check-repo-smoke: PASS
+cargo nextest run: PASS (382 tests, 4 skipped)
+date: 2026-04-28
 ```
 
 Remaining risks:
 
-- none
+- Static named import/export coverage is intentionally limited to local relative modules with source-side literal `export const` bindings. Live binding updates, default/namespace/dynamic imports, package resolution, and broader module body semantics remain out of scope.
 
 ## Progress evidence
 
