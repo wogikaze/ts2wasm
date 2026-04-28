@@ -1636,6 +1636,17 @@ impl<'a> Resolver<'a> {
                 if class_name == "RegExp" {
                     return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
                 }
+                if class_name == "Date" {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-050: Date constructor arguments are not supported yet"
+                                .to_owned(),
+                            span: None,
+                        });
+                    }
+                    return Ok(LoweredExpr::ObjectNew { props: Vec::new() });
+                }
                 if class_name == "Map" || class_name == "Set" {
                     if !args.is_empty() {
                         return Err(Diagnostic {

@@ -242,6 +242,49 @@ fn rest_parameter_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn parameter_property_fixtures_match_node_output_under_iwasm() {
+    assert_fixture_matches_js_baseline(
+        "fixtures/core-semantics/parameter-properties-defaults.ts",
+        r#"
+class ParameterPropertyDefaults {
+  constructor(x = 2, y = 3, z = 4, label = "p") {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+    this.label = label;
+  }
+
+  sum() {
+    return this.x + this.y + this.z;
+  }
+
+  name() {
+    return this.label;
+  }
+}
+
+class OptionalParameterProperty {
+  constructor(value) {
+    this.value = value;
+  }
+}
+
+let first = new ParameterPropertyDefaults();
+let second = new ParameterPropertyDefaults(5);
+let third = new ParameterPropertyDefaults(5, 6, 7, "q");
+let optional = new OptionalParameterProperty();
+
+console.log(first.sum());
+console.log(first.name());
+console.log(second.sum());
+console.log(third.sum());
+console.log(third.name());
+console.log(optional.value);
+"#,
+    );
+}
+
+#[test]
 fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
     let fixture = "fixtures/core-semantics/instanceof-unsupported-rhs.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -284,6 +327,61 @@ fn assert_fixture_matches_node(fixture: &str) {
     assert!(
         node.status.success(),
         "node failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+    assert_no_precomputed_stdout(fixture, &output, &node.stdout);
+
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        iwasm.output.status.success(),
+        "iwasm failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+
+    assert_eq!(
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&node.stdout),
+        "stdout mismatch for {fixture}"
+    );
+}
+
+fn assert_fixture_matches_js_baseline(fixture: &str, js_baseline: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let node = Command::new("node")
+        .arg("-e")
+        .arg(js_baseline)
+        .output()
+        .unwrap();
+    assert!(
+        node.status.success(),
+        "node baseline failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
         String::from_utf8_lossy(&node.stdout),
         String::from_utf8_lossy(&node.stderr)
     );

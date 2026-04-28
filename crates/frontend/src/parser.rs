@@ -7,6 +7,14 @@ pub struct Parser {
     cursor: usize,
 }
 
+struct ParsedParam {
+    name: String,
+    default: Option<Expr>,
+    is_rest: bool,
+    is_parameter_property: bool,
+    span: Span,
+}
+
 impl Parser {
     pub fn new(tokens: Vec<SpannedToken>) -> Self {
         Self { tokens, cursor: 0 }
@@ -25,6 +33,7 @@ impl Parser {
 
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
         match self.peek() {
+            Some(Token::Export) => self.export_statement(),
             Some(Token::Let) => self.let_statement(),
             Some(Token::Const) => self.let_statement(), // const is treated like let for now
             Some(Token::Var) => self.let_statement(),   // var is treated like let for now
@@ -52,6 +61,20 @@ impl Parser {
                 self.assign_statement()
             }
             _ => self.expression_statement(),
+        }
+    }
+
+    fn export_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let export_span = self.expect(TokenKind::Export)?;
+        self.consume(TokenKind::Default);
+        if matches!(self.peek(), Some(Token::Class)) {
+            self.class_statement()
+        } else {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-055: only `export class` is supported in this milestone".to_owned(),
+                span: Some(export_span),
+            })
         }
     }
 
@@ -266,21 +289,8 @@ impl Parser {
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                let is_rest = self.consume(TokenKind::DotDotDot);
-                let (param_name, _) = self.expect_ident()?;
-                if self.consume(TokenKind::Colon) {
-                    self.skip_type_annotation_until(&[
-                        TokenKind::Equal,
-                        TokenKind::Comma,
-                        TokenKind::RightParen,
-                    ])?;
-                }
-                let default = if self.consume(TokenKind::Equal) {
-                    Some(self.assignment()?)
-                } else {
-                    None
-                };
-                params.push((param_name, default, is_rest));
+                let param = self.parse_param(false)?;
+                params.push((param.name, param.default, param.is_rest));
                 if self.consume(TokenKind::RightParen) {
                     break;
                 }
@@ -684,23 +694,15 @@ impl Parser {
 
             self.expect(TokenKind::LeftParen)?;
             let mut params = Vec::new();
+            let mut parameter_property_assignments = Vec::new();
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let is_rest = self.consume(TokenKind::DotDotDot);
-                    let (param_name, _) = self.expect_ident()?;
-                    if self.consume(TokenKind::Colon) {
-                        self.skip_type_annotation_until(&[
-                            TokenKind::Equal,
-                            TokenKind::Comma,
-                            TokenKind::RightParen,
-                        ])?;
+                    let param = self.parse_param(method_name == "constructor")?;
+                    if param.is_parameter_property {
+                        parameter_property_assignments
+                            .push(parameter_property_assignment(&param.name, param.span));
                     }
-                    let default = if self.consume(TokenKind::Equal) {
-                        Some(self.assignment()?)
-                    } else {
-                        None
-                    };
-                    params.push((param_name, default, is_rest));
+                    params.push((param.name, param.default, param.is_rest));
                     if self.consume(TokenKind::RightParen) {
                         break;
                     }
@@ -711,7 +713,14 @@ impl Parser {
                 self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
             }
 
-            let method_body = self.block()?;
+            let mut method_body = self.block()?;
+            if method_name == "constructor" && !parameter_property_assignments.is_empty() {
+                method_body = merge_constructor_parameter_property_assignments(
+                    parameter_property_assignments,
+                    method_body,
+                    extends.is_some(),
+                )?;
+            }
             let method_end = method_body
                 .last()
                 .map(|s| s.span().end)
@@ -744,6 +753,65 @@ impl Parser {
                 end,
             },
         })
+    }
+
+    fn parse_param(&mut self, allow_parameter_property: bool) -> Result<ParsedParam, Diagnostic> {
+        let is_rest = self.consume(TokenKind::DotDotDot);
+        let mut is_parameter_property = false;
+
+        if allow_parameter_property {
+            while self.peek_parameter_property_modifier()
+                && matches!(self.peek_n(1), Some(Token::Ident(_)))
+            {
+                is_parameter_property = true;
+                self.advance();
+            }
+        }
+
+        let (name, span) = self.expect_ident()?;
+        let is_optional = self.consume(TokenKind::Question);
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[
+                TokenKind::Equal,
+                TokenKind::Comma,
+                TokenKind::RightParen,
+            ])?;
+        }
+        let mut default = if self.consume(TokenKind::Equal) {
+            Some(self.assignment()?)
+        } else {
+            None
+        };
+        if is_optional && default.is_none() {
+            default = Some(Expr::Undefined { span });
+        }
+
+        if is_rest && is_parameter_property {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-226: rest parameter properties are not supported".to_owned(),
+                span: Some(span),
+            });
+        }
+
+        Ok(ParsedParam {
+            name,
+            default,
+            is_rest,
+            is_parameter_property,
+            span,
+        })
+    }
+
+    fn peek_parameter_property_modifier(&self) -> bool {
+        matches!(
+            self.peek(),
+            Some(Token::Ident(name))
+                if matches!(
+                    name.as_str(),
+                    "public" | "private" | "protected" | "readonly"
+                )
+        )
     }
 
     fn block(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
@@ -1756,6 +1824,62 @@ impl Parser {
     }
 }
 
+fn parameter_property_assignment(name: &str, span: Span) -> Stmt {
+    let expr = Expr::PropertyAssign {
+        object: Box::new(Expr::This { span }),
+        property: name.to_owned(),
+        value: Box::new(Expr::Ident {
+            name: name.to_owned(),
+            span,
+        }),
+        span,
+    };
+    Stmt::Expr { expr, span }
+}
+
+fn merge_constructor_parameter_property_assignments(
+    assignments: Vec<Stmt>,
+    body: Vec<Stmt>,
+    has_extends: bool,
+) -> Result<Vec<Stmt>, Diagnostic> {
+    if !has_extends {
+        let mut merged = assignments;
+        merged.extend(body);
+        return Ok(merged);
+    }
+
+    if let Some((first, rest)) = body.split_first()
+        && is_super_call_statement(first)
+    {
+        let mut merged = Vec::with_capacity(body.len() + assignments.len());
+        merged.push(first.clone());
+        merged.extend(assignments);
+        merged.extend(rest.iter().cloned());
+        return Ok(merged);
+    }
+
+    Err(Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-226: parameter properties in derived constructors require a leading super(...) call"
+            .to_owned(),
+        span: body.first().map(Stmt::span),
+    })
+}
+
+fn is_super_call_statement(stmt: &Stmt) -> bool {
+    matches!(
+        stmt,
+        Stmt::Expr {
+            expr:
+                Expr::Call {
+                    callee,
+                    ..
+                },
+            ..
+        } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "super")
+    )
+}
+
 enum TemplatePart {
     String(String),
     Expr(Expr),
@@ -2033,6 +2157,55 @@ mod tests {
                 other => panic!("unexpected callee expression: {other:?}"),
             },
             other => panic!("unexpected delete member call statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_constructor_parameter_properties_as_this_assignments() {
+        let program = parse_program(
+            "class Box { constructor(public x = 1, private readonly y?: number) {} }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+        let Stmt::Function {
+            params,
+            body: constructor_body,
+            ..
+        } = &body[0]
+        else {
+            panic!("expected constructor function");
+        };
+
+        assert_eq!(params.len(), 2);
+        assert_eq!(params[0].0, "x");
+        assert!(params[0].1.is_some());
+        assert_eq!(params[1].0, "y");
+        assert!(matches!(params[1].1, Some(Expr::Undefined { .. })));
+        assert_eq!(constructor_body.len(), 2);
+
+        for (stmt, expected_name) in constructor_body.iter().zip(["x", "y"]) {
+            match stmt {
+                Stmt::Expr {
+                    expr:
+                        Expr::PropertyAssign {
+                            object,
+                            property,
+                            value,
+                            ..
+                        },
+                    ..
+                } => {
+                    assert!(matches!(object.as_ref(), Expr::This { .. }));
+                    assert_eq!(property, expected_name);
+                    assert!(
+                        matches!(value.as_ref(), Expr::Ident { name, .. } if name == expected_name)
+                    );
+                }
+                other => panic!("unexpected constructor statement: {other:?}"),
+            }
         }
     }
 
