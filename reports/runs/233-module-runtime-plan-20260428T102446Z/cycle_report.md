@@ -37,6 +37,10 @@ scripts/manager check-agent-state: PASS
 
 Full `scripts/manager nextest` was not run because this is a narrow progress slice and not an issue close; runtime helper execution behavior was not wired broadly.
 
+## Reporting
+
+`scripts/manager discord-report --run-id 233-module-runtime-plan-20260428T102446Z` failed twice because `DISCORD_WEBHOOK_URL` is not configured in the environment or `.env`. Deferred payload and error artifacts were written under this run directory.
+
 ## Remaining Work
 
 - Lower named exports/imports into explicit resolved/lowered module binding IR beyond the current literal import build rewrite.

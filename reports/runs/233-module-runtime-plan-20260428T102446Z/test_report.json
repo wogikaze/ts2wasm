@@ -88,6 +88,9 @@
   "meta": {
     "completion_level": "PROGRESS",
     "issue_open": true,
-    "full_nextest": "not run; progress slice only and no broad runtime execution wiring"
+    "full_nextest": "not run; progress slice only and no broad runtime execution wiring",
+    "discord_report": "deferred; DISCORD_WEBHOOK_URL is not configured",
+    "deferred_payload": "reports/runs/233-module-runtime-plan-20260428T102446Z/discord_payload.json",
+    "reporting_error": "reports/runs/233-module-runtime-plan-20260428T102446Z/reporting_error.log"
   }
 }
