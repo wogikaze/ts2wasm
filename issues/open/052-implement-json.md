@@ -535,6 +535,28 @@ abcdefghij1
 - Full validation report for run `052-json-stringify-nested-20260428T080100Z` is recorded under `reports/runs/052-json-stringify-nested-20260428T080100Z/`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added explicit `JSON.parse` surrogate diagnostic regression coverage for the current narrow runtime behavior.
+- Covered:
+  - lone low surrogate with `fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts` (`JSON.parse('"\\udc00"')`);
+  - surrogate pair with `fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts` (`JSON.parse('"\\ud83d\\ude00"')`).
+- Pre-change probes showed Node accepts both forms while iwasm already rejects both with `Exception: unreachable`; this slice records PROGRESS as regression coverage only and made no backend/runtime changes.
+- Direct evidence for the new fixtures:
+  - `node fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts` accepts with status 0 and prints `accepted`.
+  - `node fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts` accepts with status 0 and prints `accepted`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts -o /tmp/ts2wasm-json-parse-unsupported-surrogate-low.wasm && iwasm /tmp/ts2wasm-json-parse-unsupported-surrogate-low.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts -o /tmp/ts2wasm-json-parse-unsupported-surrogate-pair.wasm && iwasm /tmp/ts2wasm-json-parse-unsupported-surrogate-pair.wasm` rejects with `Exception: unreachable` and status 1.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
