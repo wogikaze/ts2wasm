@@ -5,8 +5,8 @@ type: feature
 area: frontend/semantics
 class: design-ready
 priority: P1
-depends_on: [231, 232, 233, 234]
-blocks: [231, 232, 233, 234]
+depends_on: [232, 233, 234]
+blocks: [232, 233, 234]
 created: 2026-04-26
 updated: 2026-04-28
 ---
@@ -28,7 +28,7 @@ Static import/export currently produce issue-linked unsupported diagnostics. The
 In scope:
 
 - [ ] Coordinate split issues:
-  - [ ] 231 parser AST representation for static module declarations
+  - [x] 231 parser AST representation for static module declarations
   - [ ] 232 resolver/compiler module graph for local relative specifiers
   - [ ] 233 export binding lowering and backend module initialization
   - [ ] 234 execution fixtures and differential coverage
@@ -42,7 +42,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/231-parse-static-es-module-declarations.md`
+- `issues/done/231-parse-static-es-module-declarations.md`
 - `issues/open/232-resolve-local-relative-es-module-graph.md`
 - `issues/open/233-emit-static-es-module-bindings.md`
 - `issues/open/234-cover-static-es-module-execution.md`
@@ -90,7 +90,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/231-parse-static-es-module-declarations.md`
+- [x] created/updated: `issues/done/231-parse-static-es-module-declarations.md`
 - [x] created/updated: `issues/open/232-resolve-local-relative-es-module-graph.md`
 - [x] created/updated: `issues/open/233-emit-static-es-module-bindings.md`
 - [x] created/updated: `issues/open/234-cover-static-es-module-execution.md`

@@ -166,7 +166,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 | 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
-| 231 | Parse static ES module declarations | feature | frontend | implementation-ready | P1 |  | Parse static ES module declarations |
+| 232 | Resolve local relative ES module graph | feature | compiler/frontend | implementation-ready | P1 | 231 | Resolve local relative ES module graph |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -175,8 +175,7 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
 | 017b | Implement GC strategy | feature | runtime/memory | class: blocked | Implement GC strategy |
-| 055 | Umbrella: implement import and export | feature | frontend/semantics | 231, 232, 233, 234 | Umbrella: implement import and export |
-| 232 | Resolve local relative ES module graph | feature | compiler/frontend | 231 | Resolve local relative ES module graph |
+| 055 | Umbrella: implement import and export | feature | frontend/semantics | 232, 233, 234 | Umbrella: implement import and export |
 | 233 | Emit static ES module bindings | feature | ir/backend | 231, 232 | Emit static ES module bindings |
 | 234 | Cover static ES module execution | test | tests/fixtures | 231, 232, 233 | Cover static ES module execution |
 <!-- generated:blocked:end -->
@@ -272,6 +271,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 227 | Implement type reference directive resolution | feature | frontend/semantics | see `issues/done/227-implement-type-reference-directive-resolution.md` |
 | 229 | Implement legacy octal escape handling | feature | frontend | see `issues/done/229-implement-legacy-octal-escape-handling.md` |
 | 230 | Implement async iteration and for-await-of | feature | frontend/semantics | see `issues/done/230-implement-async-iteration-for-await-of.md` |
+| 231 | Parse static ES module declarations | feature | frontend | see `issues/done/231-parse-static-es-module-declarations.md` |
 | 235 | Fix GC root count backend tests | bug | backend/memory | see `issues/done/235-fix-gc-root-count-tests.md` |
 <!-- generated:done:end -->
 
