@@ -1,7 +1,7 @@
 use crate::{
     BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportDefaultSpecifier,
-    ImportNamedSpecifier, LogicalAssignOp, ModuleSpecifier, Span, SpannedToken, Stmt, Token,
-    TokenKind, UnaryOp,
+    ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp, ModuleSpecifier, Span,
+    SpannedToken, Stmt, Token, TokenKind, UnaryOp,
 };
 
 pub struct Parser {
@@ -98,7 +98,7 @@ impl Parser {
                 })
             }
             Some(Token::LeftBrace) => self.named_import_statement(import_span),
-            Some(Token::Star) => self.unsupported_module_form(import_span, "namespace import"),
+            Some(Token::Star) => self.namespace_import_statement(import_span),
             Some(Token::Ident(_)) => self.default_import_statement(import_span),
             Some(Token::LeftParen) => self.unsupported_module_form(import_span, "dynamic import"),
             _ => self.unsupported_module_form(import_span, "static import"),
@@ -161,6 +161,30 @@ impl Parser {
                 local,
                 local_span,
                 span: local_span,
+            },
+            source,
+            span: Span {
+                start: import_span.start,
+                end: semi.end,
+            },
+        })
+    }
+
+    fn namespace_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
+        let star_span = self.expect(TokenKind::Star)?;
+        self.expect_contextual_keyword("as")?;
+        let (local, local_span) = self.expect_ident()?;
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ImportNamespace {
+            specifier: ImportNamespaceSpecifier {
+                local,
+                local_span,
+                span: Span {
+                    start: star_span.start,
+                    end: local_span.end,
+                },
             },
             source,
             span: Span {
@@ -2772,16 +2796,25 @@ mod tests {
     }
 
     #[test]
-    fn rejects_namespace_import_with_issue_linked_diagnostic() {
-        let err = parse_program("import * as mod from './module-source';").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported namespace import"));
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_namespace_import_with_specifier_span() {
+        let program = parse_program("import * as ns from './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ImportNamespace {
+                specifier,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 38 });
+                assert_eq!(specifier.local, "ns");
+                assert_eq!(specifier.local_span, Span { start: 12, end: 14 });
+                assert_eq!(specifier.span, Span { start: 7, end: 14 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 20, end: 37 });
+            }
+            other => panic!("unexpected import statement: {other:?}"),
+        }
     }
 
     #[test]
