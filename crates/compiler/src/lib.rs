@@ -8,7 +8,9 @@ use std::process::Command;
 use ts2wasm_backend_wasm as backend;
 #[cfg(test)]
 use ts2wasm_frontend::{BinaryOp, Expr};
-use ts2wasm_frontend::{DiagCode, Diagnostic, Lexer, Parser, Stmt};
+use ts2wasm_frontend::{
+    DiagCode, Diagnostic, Lexer, Parser, Stmt, validate_type_reference_directives,
+};
 use ts2wasm_ir::builtin_resolver;
 use ts2wasm_ir::lowered;
 use ts2wasm_ir::name_resolver;
@@ -45,6 +47,7 @@ pub fn build_file_with_host_deny(
         message: format!("failed to read {}: {error}", input.display()),
         span: None,
     })?;
+    validate_type_reference_directives(&source)?;
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;
     validate_ast(&program)?;
