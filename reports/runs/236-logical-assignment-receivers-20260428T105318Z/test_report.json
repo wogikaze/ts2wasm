@@ -2,7 +2,7 @@
   "run_id": "236-logical-assignment-receivers-20260428T105318Z",
   "task_id": "issue-236",
   "git": {
-    "sha": "1192f10",
+    "sha": "3271983e278d91bf463e5c687760029f67cf340e",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/emitter.rs",
@@ -23,8 +23,12 @@
     ],
     "commits": [
       {
-        "sha": "43d9b04",
+        "sha": "43d9b04dffcbbe636e461c4b75ab741576d5a2a7",
         "message": "issue-236: support logical assignment member receivers"
+      },
+      {
+        "sha": "3271983e278d91bf463e5c687760029f67cf340e",
+        "message": "issue-236: record deferred child report"
       }
     ]
   },
