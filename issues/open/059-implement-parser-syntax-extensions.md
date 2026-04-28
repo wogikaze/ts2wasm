@@ -185,6 +185,15 @@ Start with basic TypeScript type annotations before adding advanced features.
 - Validation not clean due unrelated pre-existing local-report references:
   - `scripts/manager check-issue-health` failed because issue 052 and done issue 228 reference missing `reports/runs/...` paths. `reports/` is local/gitignored and those issue files are outside this assignment.
   - `scripts/manager check-repo-smoke` failed at the same `check-issue-health` step after shell syntax checks passed.
+- Parent review tightened the generic call erasure guard so call type arguments are only erased for function names declared with TypeScript generic parameters in the current parser run, avoiding a regression where `a<b>(c)` could be misread as a generic call instead of adjacent relational comparisons.
+- Parent added regression coverage `preserves_adjacent_relational_expression_that_resembles_generic_call` and validated:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -p ts2wasm-frontend`
+  - `cargo nextest run -p ts2wasm-cli --test dump_cli`
+  - direct dump for `let a = 1; let b = 2; let c = 3; console.log(a<b>(c));`, which unparses as `console.log(((a < b) > c));`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/generic-erasure.ts -o /tmp/ts2wasm-059-generic-erasure.parent2.wasm && iwasm /tmp/ts2wasm-059-generic-erasure.parent2.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-repo-smoke`
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 ## Completion evidence
