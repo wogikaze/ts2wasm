@@ -203,6 +203,18 @@ pub enum LoweredExpr {
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
     },
+    LogicalComputedMemberAssign {
+        object: Box<LoweredExpr>,
+        key: Box<LoweredExpr>,
+        op: LoweredLogicalAssignOp,
+        expr: Box<LoweredExpr>,
+    },
+    LogicalMemberAssign {
+        object: Box<LoweredExpr>,
+        key: String,
+        op: LoweredLogicalAssignOp,
+        expr: Box<LoweredExpr>,
+    },
     ArrayNew {
         elements: Vec<LoweredExpr>,
     },
@@ -360,6 +372,8 @@ impl LoweredExpr {
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
             | Self::LogicalPropertyAssign { .. }
+            | Self::LogicalMemberAssign { .. }
+            | Self::LogicalComputedMemberAssign { .. }
             | Self::LogicalComputedPropertyAssign { .. } => InferredType::Unknown,
             _ => InferredType::Unknown,
         }
@@ -819,24 +833,35 @@ fn validate_json_stringify_args(
     }
 
     if let Some(space) = args.get(2) {
-        if !matches!(
-            space,
-            ResolvedExpr::Number(_)
-                | ResolvedExpr::String(_)
-                | ResolvedExpr::Bool(_)
-                | ResolvedExpr::Null
-                | ResolvedExpr::Undefined
-        ) {
+        if !is_supported_json_stringify_space(space, function_ids) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "JSON.stringify space currently supports integer numeric or string values"
-                    .to_owned(),
+                message:
+                    "JSON.stringify space currently supports numeric/string values and ignored object/function values"
+                        .to_owned(),
                 span: Some(span),
             });
         }
     }
 
     Ok(())
+}
+
+fn is_supported_json_stringify_space(
+    space: &ResolvedExpr,
+    function_ids: &HashMap<String, FuncId>,
+) -> bool {
+    match space {
+        ResolvedExpr::Number(_)
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::Object(_)
+        | ResolvedExpr::ArrowFn { .. } => true,
+        ResolvedExpr::Ident(name) => function_ids.contains_key(name),
+        _ => false,
+    }
 }
 
 fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool {
@@ -856,6 +881,16 @@ fn json_stringify_replacer_keys(args: &[ResolvedExpr]) -> Option<Vec<&str>> {
             .collect(),
         _ => None,
     }
+}
+
+fn should_ignore_json_stringify_space(
+    space: &ResolvedExpr,
+    function_ids: &HashMap<String, FuncId>,
+) -> bool {
+    matches!(
+        space,
+        ResolvedExpr::Object(_) | ResolvedExpr::ArrowFn { .. }
+    ) || matches!(space, ResolvedExpr::Ident(name) if function_ids.contains_key(name))
 }
 
 fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
@@ -1135,10 +1170,21 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
             push_capture(object, params, captures);
             collect_arrow_captures(expr, params, captures);
         }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_arrow_captures(object, params, captures);
+            collect_arrow_captures(expr, params, captures);
+        }
         ResolvedExpr::LogicalComputedPropertyAssign {
             object, key, expr, ..
         } => {
             push_capture(object, params, captures);
+            collect_arrow_captures(key, params, captures);
+            collect_arrow_captures(expr, params, captures);
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            collect_arrow_captures(object, params, captures);
             collect_arrow_captures(key, params, captures);
             collect_arrow_captures(expr, params, captures);
         }
@@ -1665,6 +1711,28 @@ impl<'a> Resolver<'a> {
                     expr: Box::new(self.lower_expr(expr)?),
                 })
             }
+            ResolvedExpr::LogicalComputedMemberAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => Ok(LoweredExpr::LogicalComputedMemberAssign {
+                object: Box::new(self.lower_expr(object)?),
+                key: Box::new(self.lower_expr(key)?),
+                op: lower_logical_assign_op(*op),
+                expr: Box::new(self.lower_expr(expr)?),
+            }),
+            ResolvedExpr::LogicalMemberAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => Ok(LoweredExpr::LogicalMemberAssign {
+                object: Box::new(self.lower_expr(object)?),
+                key: key.clone(),
+                op: lower_logical_assign_op(*op),
+                expr: Box::new(self.lower_expr(expr)?),
+            }),
             ResolvedExpr::Call { callee, args, span } => {
                 let func_name = match callee.as_ref() {
                     ResolvedExpr::Ident(name) => name,
@@ -1860,6 +1928,11 @@ impl<'a> Resolver<'a> {
                         None => LoweredExpr::Undefined,
                     });
                     lowered_args.push(match args.get(2) {
+                        Some(space)
+                            if should_ignore_json_stringify_space(space, self.function_ids) =>
+                        {
+                            LoweredExpr::Undefined
+                        }
                         Some(space) => self.lower_expr(space)?,
                         None => LoweredExpr::Undefined,
                     });
@@ -2769,6 +2842,17 @@ fn validate_expr(
         }
         LoweredExpr::LogicalPropertyAssign { object, expr, .. } => {
             check_local_id(*object, local_count, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(key, local_count, num_funcs, program, errors, true);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::LogicalComputedPropertyAssign {

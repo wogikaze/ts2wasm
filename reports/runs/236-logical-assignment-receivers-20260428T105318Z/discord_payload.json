@@ -1,0 +1,20 @@
+{
+  "run_id": "236-logical-assignment-receivers-20260428T105318Z",
+  "issue": 236,
+  "branch": "agent/236-logical-assignment-receivers-20260428T105318Z",
+  "commit": "43d9b04",
+  "outcome": "PROGRESS",
+  "merge_request": true,
+  "summary": "Implemented static member logical assignment for non-identifier receivers and left dynamic computed non-identifier receivers issue-linked unsupported.",
+  "validation": [
+    "cargo fmt --all --check",
+    "cargo nextest run -E 'test(logical_assignment)'",
+    "node fixtures/core-semantics/logical-assignment-member.ts",
+    "node fixtures/core-semantics/logical-assignment-index.ts",
+    "build+iwasm logical-assignment-member.ts",
+    "build+iwasm logical-assignment-index.ts",
+    "scripts/manager check-issue-health",
+    "scripts/manager check-agent-state"
+  ],
+  "reporting": "DEFERRED"
+}

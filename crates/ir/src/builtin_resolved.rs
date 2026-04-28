@@ -132,6 +132,18 @@ pub enum ResolvedExpr {
         op: LogicalAssignOp,
         expr: Box<ResolvedExpr>,
     },
+    LogicalComputedMemberAssign {
+        object: Box<ResolvedExpr>,
+        key: Box<ResolvedExpr>,
+        op: LogicalAssignOp,
+        expr: Box<ResolvedExpr>,
+    },
+    LogicalMemberAssign {
+        object: Box<ResolvedExpr>,
+        key: String,
+        op: LogicalAssignOp,
+        expr: Box<ResolvedExpr>,
+    },
     Array(Vec<ResolvedExpr>),
     Object(Vec<(String, ResolvedExpr)>),
     ComputedIndex {
