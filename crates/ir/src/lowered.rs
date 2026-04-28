@@ -797,9 +797,12 @@ fn validate_json_stringify_args(
                     span,
                 ));
             }
+            ResolvedExpr::Array(elements)
+                if matches!(args.first(), Some(ResolvedExpr::Object(_)))
+                    && is_supported_json_stringify_replacer_array(elements) => {}
             ResolvedExpr::Array(_) => {
                 return Err(json_stringify_replacer_diagnostic(
-                    "array replacer property lists",
+                    "array replacer property lists outside the single string-literal object subset",
                     span,
                 ));
             }
@@ -827,6 +830,24 @@ fn validate_json_stringify_args(
     }
 
     Ok(())
+}
+
+fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool {
+    elements.len() <= 1
+        && elements
+            .iter()
+            .all(|element| matches!(element, ResolvedExpr::String(_)))
+}
+
+fn json_stringify_replacer_key(args: &[ResolvedExpr]) -> Option<Option<&str>> {
+    match args.get(1) {
+        Some(ResolvedExpr::Array(elements)) => match elements.as_slice() {
+            [] => Some(None),
+            [ResolvedExpr::String(key)] => Some(Some(key.as_str())),
+            _ => None,
+        },
+        _ => None,
+    }
 }
 
 fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
@@ -1777,8 +1798,25 @@ impl<'a> Resolver<'a> {
                 if is_json_static_call(object, method) {
                     validate_json_stringify_args(args, *span, self.function_ids)?;
                     let mut lowered_args = Vec::with_capacity(3);
-                    lowered_args.push(self.lower_expr(&args[0])?);
+                    let value = if let (
+                        ResolvedExpr::Object(props),
+                        Some(replacer_key),
+                    ) = (&args[0], json_stringify_replacer_key(args))
+                    {
+                        let lowered_props = props
+                            .iter()
+                            .filter(|(key, _)| replacer_key.is_some_and(|allowed| key == allowed))
+                            .map(|(key, value)| Ok((key.clone(), self.lower_expr(value)?)))
+                            .collect::<Result<Vec<_>, _>>()?;
+                        LoweredExpr::ObjectNew {
+                            props: lowered_props,
+                        }
+                    } else {
+                        self.lower_expr(&args[0])?
+                    };
+                    lowered_args.push(value);
                     lowered_args.push(match args.get(1) {
+                        Some(ResolvedExpr::Array(_)) => LoweredExpr::Null,
                         Some(replacer) => self.lower_expr(replacer)?,
                         None => LoweredExpr::Undefined,
                     });
