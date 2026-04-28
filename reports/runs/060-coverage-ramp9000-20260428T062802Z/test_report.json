@@ -1,0 +1,103 @@
+{
+  "run_id": "060-coverage-ramp9000-20260428T062802Z",
+  "task_id": "issue-060",
+  "git": {
+    "sha": "ae0863346bc2871ff6a7e685f4d1be2a045eec4f",
+    "exit_code": 0,
+    "changed_files": [
+      "artifacts/coverage/results/test262.json",
+      "artifacts/coverage/reference-coverage-matrix.md",
+      "current-state.md",
+      "issues/open/060-investigate-unknown-unsupported-cases.md",
+      "reports/runs/060-coverage-ramp9000-20260428T062802Z/cycle_report.md",
+      "reports/runs/060-coverage-ramp9000-20260428T062802Z/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 9000 --detail",
+      "status": "pass",
+      "exit_code": 0,
+      "log": "reports/runs/060-coverage-ramp9000-20260428T062802Z/reference-coverage-test262-limit9000-detail.log"
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 9000 --json > artifacts/coverage/results/test262.json",
+      "status": "pass",
+      "exit_code": 0,
+      "log": "reports/runs/060-coverage-ramp9000-20260428T062802Z/reference-coverage-test262-limit9000-json.stderr.log"
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix",
+      "status": "pass",
+      "exit_code": 0,
+      "log": "reports/runs/060-coverage-ramp9000-20260428T062802Z/update-coverage-matrix.log"
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix --check",
+      "status": "pass",
+      "exit_code": 0,
+      "log": "reports/runs/060-coverage-ramp9000-20260428T062802Z/update-coverage-matrix-check.log"
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0,
+      "log": "reports/runs/060-coverage-ramp9000-20260428T062802Z/check-issue-health.log"
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0,
+      "log": "reports/runs/060-coverage-ramp9000-20260428T062802Z/check-agent-state.log"
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "coverage": {
+      "suite": "test262",
+      "denominator": 53445,
+      "executed": 9000,
+      "build_pass": 1,
+      "semantic_pass": 0,
+      "fail": 0,
+      "unsupported": 8999,
+      "blocked": 0,
+      "unknown_unsupported": 0,
+      "unsupported_features": {
+        "array-builtin": 2167,
+        "name-resolution": 2546,
+        "date": 421,
+        "function": 542,
+        "regexp-literal": 51,
+        "string-builtin": 63,
+        "builtin-api": 2399,
+        "legacy-global-builtin": 16,
+        "eval": 461,
+        "object-literal": 2,
+        "parser-syntax": 188,
+        "arguments-object": 1,
+        "switch": 1,
+        "class": 1,
+        "async-iteration": 1,
+        "destructuring": 2,
+        "declaration-emit": 4,
+        "duplicate-local": 31,
+        "object-builtin": 102
+      }
+    },
+    "outcome": "PROGRESS",
+    "follow_up_issues_created": []
+  }
+}
