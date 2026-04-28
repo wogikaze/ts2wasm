@@ -233,3 +233,26 @@ cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.
 scripts/manager check-issue-health: PASS
 scripts/manager check-agent-state: PASS
 ```
+
+2026-04-28 child worker `233-module-lowered-ir-20260428T103829Z` added a narrow explicit lowered-module population slice:
+
+- The compiler build path now attaches source-backed literal `export const` declarations from reachable local static modules into `LoweredProgram.modules` as `LoweredStmt::Export` statements, keyed by the issue-232 module graph IDs.
+- Added compiler regression coverage proving `import { value } from "./source"` plus `export const value = 1` produces explicit lowered module metadata for module ID 1, validates as lowered IR, and selects `$module_exports_set` without selecting `$module_require`.
+- Hardened `validate_lowered` to validate each module's explicit lowered statements using the module's `locals_count`, so future module metadata is checked before backend emission.
+- Preserved the temporary static named import build rewrite and existing `static-entry.ts`, alias, and shadow build smokes. No dependency-order runtime execution, import reads from emitted module exports, live bindings, or runtime semantic parity claims were added; issue 233 remains open.
+
+Validation:
+
+```text
+cargo nextest run -p ts2wasm-compiler static_module_export_lowering_populates_explicit_lowered_module_statements: PASS (1 test)
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (16 tests)
+cargo nextest run -p ts2wasm-compiler: PASS (38 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (18 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 219 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-lowered-entry.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-lowered-alias.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-lowered-shadow.wasm: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
