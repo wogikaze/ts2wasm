@@ -74,4 +74,4 @@ Issue 052 remains open. Remaining JSON gaps include escaped strings, decimals/ex
 
 ## Webhook
 
-Not attempted before this report commit. If `scripts/manager discord-report --run-id 20260428T015517Z-052-json-nested` fails after commit, delivery will be recorded as deferred.
+Webhook delivery was deferred. `scripts/manager discord-report --run-id 20260428T015517Z-052-json-nested` failed because `DISCORD_WEBHOOK_URL` was not configured. Payload and error evidence were saved under `reports/runs/20260428T015517Z-052-json-nested/`.

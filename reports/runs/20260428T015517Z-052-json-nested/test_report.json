@@ -11,6 +11,8 @@
       "issues/open/052-implement-json.md",
       "reports/agents/agent-052-json-nested-20260428T015517Z/assignment.md",
       "reports/agents/agent-052-json-nested-20260428T015517Z/cycle_report.md",
+      "reports/runs/20260428T015517Z-052-json-nested/discord_payload.json",
+      "reports/runs/20260428T015517Z-052-json-nested/reporting_error.log",
       "reports/runs/20260428T015517Z-052-json-nested/test_report.json"
     ],
     "commits": []
@@ -69,6 +71,23 @@
       "cmd": "scripts/manager check-agent-state",
       "status": "pass",
       "exit_code": 0
+    },
+    {
+      "cmd": "python -m jsonschema -i reports/runs/20260428T015517Z-052-json-nested/test_report.json .agents/state/schemas/test_report.schema.json",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 20260428T015517Z-052-json-nested",
+      "status": "fail",
+      "exit_code": 1,
+      "stderr": "DISCORD_WEBHOOK_URL is not configured"
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 20260428T015517Z-052-json-nested (retry)",
+      "status": "fail",
+      "exit_code": 1,
+      "stderr": "DISCORD_WEBHOOK_URL is not configured"
     }
   ],
   "fixtures": {
@@ -88,6 +107,6 @@
   "meta": {
     "status": "PROGRESS",
     "full_nextest": "skipped: narrow PROGRESS slice; JSON-targeted nextest and direct Node/iwasm fixture evidence passed",
-    "webhook": "pending"
+    "webhook": "deferred: DISCORD_WEBHOOK_URL is not configured"
   }
 }
