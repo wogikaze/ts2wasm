@@ -251,6 +251,50 @@ fn lowering_routes_direct_new_regexp_exec_to_runtime_call() {
 }
 
 #[test]
+fn lowering_routes_new_date_epoch_to_runtime_call() {
+    let program = parse_and_resolve("let epoch = new Date(0);");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+        ) => {
+            assert_eq!(runtime_fn, "DateNew");
+            assert_eq!(args.len(), 1);
+        }
+        other => panic!("unexpected lowered Date constructor statement: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_routes_date_get_time_to_runtime_call() {
+    let program = parse_and_resolve("let epoch = new Date(0); let ms = epoch.getTime();");
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[1] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+        ) => {
+            assert_eq!(runtime_fn, "DateGetTime");
+            assert_eq!(args.len(), 1);
+        }
+        other => panic!("unexpected lowered Date.prototype.getTime statement: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_rejects_date_now_with_issue_050_diagnostic() {
+    let program = parse_and_resolve("let ms = Date.now();");
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-050"));
+    assert!(err.message.contains("auditable time capability policy"));
+}
+
+#[test]
 fn lowering_rejects_unsupported_regexp_test_pattern() {
     let program = parse_and_resolve("let ok = /a*/.test(\"aaa\");");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
