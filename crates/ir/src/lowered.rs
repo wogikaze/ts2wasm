@@ -203,6 +203,12 @@ pub enum LoweredExpr {
         op: LoweredLogicalAssignOp,
         expr: Box<LoweredExpr>,
     },
+    LogicalMemberAssign {
+        object: Box<LoweredExpr>,
+        key: String,
+        op: LoweredLogicalAssignOp,
+        expr: Box<LoweredExpr>,
+    },
     ArrayNew {
         elements: Vec<LoweredExpr>,
     },
@@ -360,6 +366,7 @@ impl LoweredExpr {
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
             | Self::LogicalPropertyAssign { .. }
+            | Self::LogicalMemberAssign { .. }
             | Self::LogicalComputedPropertyAssign { .. } => InferredType::Unknown,
             _ => InferredType::Unknown,
         }
@@ -1135,6 +1142,10 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
             push_capture(object, params, captures);
             collect_arrow_captures(expr, params, captures);
         }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_arrow_captures(object, params, captures);
+            collect_arrow_captures(expr, params, captures);
+        }
         ResolvedExpr::LogicalComputedPropertyAssign {
             object, key, expr, ..
         } => {
@@ -1665,6 +1676,17 @@ impl<'a> Resolver<'a> {
                     expr: Box::new(self.lower_expr(expr)?),
                 })
             }
+            ResolvedExpr::LogicalMemberAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => Ok(LoweredExpr::LogicalMemberAssign {
+                object: Box::new(self.lower_expr(object)?),
+                key: key.clone(),
+                op: lower_logical_assign_op(*op),
+                expr: Box::new(self.lower_expr(expr)?),
+            }),
             ResolvedExpr::Call { callee, args, span } => {
                 let func_name = match callee.as_ref() {
                     ResolvedExpr::Ident(name) => name,
@@ -2769,6 +2791,10 @@ fn validate_expr(
         }
         LoweredExpr::LogicalPropertyAssign { object, expr, .. } => {
             check_local_id(*object, local_count, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::LogicalComputedPropertyAssign {
