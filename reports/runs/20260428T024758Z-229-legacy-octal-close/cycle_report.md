@@ -3,7 +3,8 @@
 Run id: 20260428T024758Z-229-legacy-octal-close
 Agent id: codex-229-legacy-octal-close-20260428T024058Z
 Branch: agent/229-legacy-octal-close-20260428T024058Z
-Outcome: DONE pending commit
+Outcome: DONE
+Closure commit: e6ea1eb
 
 ## Assignment
 

@@ -123,6 +123,7 @@ Fill only when moving to `done/`.
 Commits:
 
 - `6512527` issue-229: handle legacy octal template slice
+- `e6ea1eb` issue-229: close legacy octal handling
 
 Validation result:
 
