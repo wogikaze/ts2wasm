@@ -2,7 +2,7 @@
   "run_id": "221-gc-call-frame-roots-20260428T002534Z",
   "task_id": "issue-221",
   "git": {
-    "sha": "pending",
+    "sha": "f7ad5b0",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/emitter.rs",
@@ -18,7 +18,12 @@
       "issues/done/221-implement-gc-call-frame-roots-for-closure-escape.md",
       "issues/index.md"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "f7ad5b0",
+        "message": "issue-221: implement gc call-frame roots"
+      }
+    ]
   },
   "commands": [
     {

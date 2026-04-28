@@ -3,6 +3,7 @@
 Status: DONE
 Run ID: `221-gc-call-frame-roots-20260428T002534Z`
 Branch: `agent/221-gc-call-frame-roots-20260428T095000Z`
+Commit: `f7ad5b0`
 
 ## Summary
 

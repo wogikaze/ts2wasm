@@ -69,5 +69,6 @@ date: 2026-04-28
 
 Close note:
 
+- Commit: `f7ad5b0`
 - Backend now allocates a fixed GC call-frame root stack during `_start`, pushes activation frames on function entry, mirrors function locals/temporaries into the active frame, marks the active frame chain during collection, and pops frames on all emitted function returns.
 - `fixtures/core-semantics/closure-gc-call-frame-root.ts` adds closure capture coverage under allocation pressure; existing `gc-call-frame-root.ts` continues to cover function local preservation.
