@@ -2,28 +2,28 @@
   "suite": "test262",
   "suite_name": "test262",
   "denominator": 53445,
-  "executed": 7000,
+  "executed": 8000,
   "build_coverage_percent": "0.00",
   "semantic_coverage_percent": "0.00",
-  "build_pass": 0,
+  "build_pass": 1,
   "semantic_pass": 0,
   "fail": 0,
-  "unsupported": 7000,
+  "unsupported": 7999,
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 5202,
-    "UnresolvedName": 1770,
+    "UnsupportedSyntax": 6038,
+    "UnresolvedName": 1933,
     "DuplicateLocal": 28
   },
   "unsupported_features": {
     "array-builtin": 2167,
-    "name-resolution": 1770,
+    "name-resolution": 1933,
     "date": 421,
-    "function": 508,
+    "function": 542,
     "regexp-literal": 51,
     "string-builtin": 63,
-    "builtin-api": 1315,
+    "builtin-api": 2117,
     "legacy-global-builtin": 16,
     "eval": 461,
     "object-literal": 2,
@@ -41,5 +41,5 @@
     "paths_file": null,
     "path_filters": []
   },
-  "evidence": "python scripts/manager.py reference-coverage test262 --limit 7000"
+  "evidence": "python scripts/manager.py reference-coverage test262 --limit 8000"
 }

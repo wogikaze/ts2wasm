@@ -1,0 +1,75 @@
+{
+  "run_id": "060-coverage-ramp8000-20260428T055606Z",
+  "task_id": "issue-060",
+  "git": {
+    "sha": "18fb2afc0dc59752de056543f3bdd559e0dca436",
+    "exit_code": 0,
+    "changed_files": [
+      "artifacts/coverage/reference-coverage-matrix.md",
+      "artifacts/coverage/results/test262.json",
+      "current-state.md",
+      "issues/open/060-investigate-unknown-unsupported-cases.md",
+      "reports/runs/060-coverage-ramp8000-20260428T055606Z/"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 8000 --detail",
+      "status": "pass",
+      "exit_code": 0,
+      "executed": 8000,
+      "build_pass": 1,
+      "unsupported": 7998,
+      "blocked": 1,
+      "unknown_unsupported": 0
+    },
+    {
+      "cmd": "TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference scripts/manager reference-coverage test262 --limit 8000 --json > artifacts/coverage/results/test262.json",
+      "status": "pass",
+      "exit_code": 0,
+      "executed": 8000,
+      "build_pass": 1,
+      "unsupported": 7999,
+      "blocked": 0,
+      "unknown_unsupported": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-coverage-matrix --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 1,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "status": "PROGRESS",
+    "unknown_unsupported": 0,
+    "notes": "Coverage-only issue 060 ramp from test262 limit 7000 to 8000; no compiler implementation changes."
+  }
+}
