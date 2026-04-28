@@ -1,0 +1,9 @@
+{
+  "run_id": "055-import-export-diagnostics-20260428T044424Z",
+  "issue": "055",
+  "branch": "agent/055-import-export-diagnostics-20260428T044424Z",
+  "commit": "abfc4f7",
+  "outcome": "PROGRESS",
+  "summary": "Added issue-055 diagnostics and regression fixtures for unsupported static import/export forms.",
+  "report_path": "reports/runs/055-import-export-diagnostics-20260428T044424Z/cycle_report.md"
+}
