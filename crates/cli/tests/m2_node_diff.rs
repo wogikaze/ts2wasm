@@ -238,6 +238,29 @@ fn date_live_time_fixtures_report_capability_policy_diagnostic() {
 }
 
 #[test]
+fn date_annex_b_fixtures_report_issue_061() {
+    for (fixture, method) in [
+        (
+            "fixtures/builtins-and-io/date-annexb-get-year-unsupported.ts",
+            "getYear",
+        ),
+        (
+            "fixtures/builtins-and-io/date-annexb-set-year-unsupported.ts",
+            "setYear",
+        ),
+        (
+            "fixtures/builtins-and-io/date-annexb-to-gmt-string-unsupported.ts",
+            "toGMTString",
+        ),
+    ] {
+        assert_build_fails_with_unsupported_syntax(
+            fixture,
+            &format!("issue-061: Date.prototype.{method} is Annex B legacy Date behavior"),
+        );
+    }
+}
+
+#[test]
 fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
 }
@@ -942,6 +965,8 @@ fn feature_label_from_diag(diag_code: &str, stderr: &str, case: &str) -> &'stati
         "import-export"
     } else if path.contains("/regexp/") || text.contains("regexp") {
         "regexp-literal"
+    } else if path.contains("/built-ins/string/") || text.contains("string.prototype") {
+        "string-builtin"
     } else if path.contains("/async") || text.contains(" async ") || text.contains("await ") {
         "async"
     } else if path.contains("/destructuring/") || text.contains("destructur") {
@@ -1066,6 +1091,15 @@ fn regexp_compile_fixture_reports_issue_051() {
     assert!(
         stderr.contains("issue-051: RegExp.prototype.compile is not supported"),
         "expected issue-linked RegExp.prototype.compile diagnostic, got:\n{stderr}"
+    );
+}
+
+#[test]
+fn annex_b_string_anchor_fixture_reports_issue_067() {
+    let fixture = "fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts";
+    assert_build_fails_with_unsupported_syntax(
+        fixture,
+        "issue-067: Annex B String.prototype.anchor is not supported yet",
     );
 }
 
