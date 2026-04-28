@@ -215,6 +215,17 @@ Start with basic TypeScript type annotations before adding advanced features.
   - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse fixtures/basics-types/as-assertion-erasure.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/as-assertion-erasure.ts -o /tmp/ts2wasm-059-as-erasure.wasm`
   - `iwasm /tmp/ts2wasm-059-as-erasure.wasm` (stdout: `3`, `3`, `3`)
+- Parent validation note: after rebasing onto master `2c7d09d` and syncing local report artifacts, validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -p ts2wasm-frontend`
+  - `cargo nextest run -p ts2wasm-cli --test dump_cli`
+  - `cargo run -q -p ts2wasm-cli -- dump --ast --unparse fixtures/basics-types/as-assertion-erasure.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/basics-types/as-assertion-erasure.ts -o /tmp/ts2wasm-059-as-erasure.parent.wasm`
+  - `iwasm /tmp/ts2wasm-059-as-erasure.parent.wasm`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-repo-smoke`
 - Issue 059 remains open. Decorators, private fields, broader parser-syntax diagnostic reduction, and reference-ramp evidence remain outside this slice.
 
 ## Completion evidence
