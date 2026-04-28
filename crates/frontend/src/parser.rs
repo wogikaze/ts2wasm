@@ -110,15 +110,28 @@ impl Parser {
         let has_default = self.consume(TokenKind::Default);
         if matches!(self.peek(), Some(Token::Class)) {
             self.class_statement()
-        } else if !has_default && matches!(self.peek(), Some(Token::LeftBrace)) {
-            self.named_export_statement(export_span)
+        } else if !has_default {
+            match self.peek() {
+                Some(Token::LeftBrace) => self.named_export_statement(export_span),
+                Some(Token::Star) => self.star_re_export_statement(export_span),
+                _ => {
+                    let form = match self.peek() {
+                        Some(Token::Const | Token::Let | Token::Var) => "variable export",
+                        Some(Token::Function) => "function export",
+                        Some(Token::Default) => "default export",
+                        _ => "static export",
+                    };
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-055: unsupported {form}; module resolution and loading are not implemented"
+                        ),
+                        span: Some(export_span),
+                    })
+                }
+            }
         } else {
             let form = match self.peek() {
-                Some(Token::LeftBrace) => "named export",
-                Some(Token::Star) => "re-export",
-                Some(Token::Const | Token::Let | Token::Var) => "variable export",
-                Some(Token::Function) => "function export",
-                Some(Token::Default) if !has_default => "default export",
                 _ if has_default => "default export",
                 _ => "static export",
             };
@@ -130,6 +143,24 @@ impl Parser {
                 span: Some(export_span),
             })
         }
+    }
+
+    fn star_re_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
+        let star_span = self.expect(TokenKind::Star)?;
+        if !self.peek_contextual_keyword("from") {
+            return self.unsupported_module_form(export_span, "namespace re-export");
+        }
+        self.expect_contextual_keyword("from")?;
+        let source = self.expect_module_specifier()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ExportAllFrom {
+            star_span,
+            source,
+            span: Span {
+                start: export_span.start,
+                end: semi.end,
+            },
+        })
     }
 
     fn named_import_statement(&mut self, import_span: Span) -> Result<Stmt, Diagnostic> {
@@ -2902,11 +2933,31 @@ mod tests {
     }
 
     #[test]
-    fn rejects_re_export_with_issue_linked_diagnostic() {
-        let err = parse_program("export * from './module-source';").unwrap_err();
+    fn parses_star_re_export_with_source_and_declaration_spans() {
+        let program = parse_program("export * from './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportAllFrom {
+                star_span,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 32 });
+                assert_eq!(*star_span, Span { start: 7, end: 8 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 14, end: 31 });
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_namespace_re_export_with_issue_linked_diagnostic() {
+        let err = parse_program("export * as ns from './module-source';").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
         assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported re-export"));
+        assert!(err.message.contains("unsupported namespace re-export"));
         assert!(
             err.message
                 .contains("module resolution and loading are not implemented")

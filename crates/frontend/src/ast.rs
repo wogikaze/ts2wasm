@@ -126,6 +126,11 @@ pub enum Stmt {
         source: ModuleSpecifier,
         span: Span,
     },
+    ExportAllFrom {
+        star_span: Span,
+        source: ModuleSpecifier,
+        span: Span,
+    },
     Let {
         name: String,
         expr: Expr,
@@ -353,6 +358,7 @@ impl Stmt {
             | Self::ImportNamespace { span, .. }
             | Self::ExportNamed { span, .. }
             | Self::ExportNamedFrom { span, .. }
+            | Self::ExportAllFrom { span, .. }
             | Self::Let { span, .. }
             | Self::Assign { span, .. }
             | Self::Expr { span, .. }
