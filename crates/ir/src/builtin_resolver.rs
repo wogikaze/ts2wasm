@@ -20,7 +20,8 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         | Stmt::ExportNamedFrom { span, .. }
         | Stmt::ExportAllFrom { span, .. }
         | Stmt::ExportNamespaceFrom { span, .. }
-        | Stmt::ExportDecl { span, .. } => Err(Diagnostic {
+        | Stmt::ExportDecl { span, .. }
+        | Stmt::ExportDefault { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: "issue-055: static module declarations parse in the frontend but module resolution and loading are not implemented".to_owned(),
             span: Some(*span),

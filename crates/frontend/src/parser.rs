@@ -108,10 +108,12 @@ impl Parser {
 
     fn export_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let export_span = self.expect(TokenKind::Export)?;
-        let has_default = self.consume(TokenKind::Default);
-        if matches!(self.peek(), Some(Token::Class)) {
+        if matches!(self.peek(), Some(Token::Default)) {
+            let default_span = self.expect(TokenKind::Default)?;
+            self.default_export_statement(export_span, default_span)
+        } else if matches!(self.peek(), Some(Token::Class)) {
             self.class_statement()
-        } else if !has_default {
+        } else {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
                 Some(Token::Star) => self.star_re_export_statement(export_span),
@@ -132,19 +134,33 @@ impl Parser {
                     })
                 }
             }
-        } else {
-            let form = match self.peek() {
-                _ if has_default => "default export",
-                _ => "static export",
-            };
-            Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-055: unsupported {form}; module resolution and loading are not implemented"
-                ),
-                span: Some(export_span),
-            })
         }
+    }
+
+    fn default_export_statement(
+        &mut self,
+        export_span: Span,
+        default_span: Span,
+    ) -> Result<Stmt, Diagnostic> {
+        match self.peek() {
+            Some(Token::Function) => {
+                return self.unsupported_module_form(export_span, "default function export");
+            }
+            Some(Token::Class) => {
+                return self.unsupported_module_form(export_span, "default class export");
+            }
+            _ => {}
+        }
+        let expr = self.expression()?;
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(Stmt::ExportDefault {
+            expr,
+            default_span,
+            span: Span {
+                start: export_span.start,
+                end: semi.end,
+            },
+        })
     }
 
     fn const_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
@@ -3123,6 +3139,73 @@ mod tests {
             }
             other => panic!("unexpected export statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn parses_default_expression_export_with_default_marker_span() {
+        let program = parse_program("export default value + 1;").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportDefault {
+                expr,
+                default_span,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 25 });
+                assert_eq!(*default_span, Span { start: 7, end: 14 });
+                match expr {
+                    Expr::Binary {
+                        left,
+                        op,
+                        right,
+                        span,
+                    } => {
+                        assert_eq!(*op, BinaryOp::Add);
+                        assert_eq!(*span, Span { start: 15, end: 24 });
+                        assert_eq!(
+                            left.as_ref(),
+                            &Expr::Ident {
+                                name: "value".to_owned(),
+                                span: Span { start: 15, end: 20 }
+                            }
+                        );
+                        assert_eq!(
+                            right.as_ref(),
+                            &Expr::Number {
+                                value: 1,
+                                span: Span { start: 23, end: 24 }
+                            }
+                        );
+                    }
+                    other => panic!("unexpected exported default expression: {other:?}"),
+                }
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn keeps_default_function_and_class_exports_unsupported_for_narrow_slice() {
+        let function_err = parse_program("export default function value() {};").unwrap_err();
+        assert_eq!(function_err.code, DiagCode::UnsupportedSyntax);
+        assert!(function_err.message.contains("issue-055"));
+        assert!(
+            function_err
+                .message
+                .contains("unsupported default function export")
+        );
+        assert_eq!(function_err.span, Some(Span { start: 0, end: 6 }));
+
+        let class_err = parse_program("export default class Value {};").unwrap_err();
+        assert_eq!(class_err.code, DiagCode::UnsupportedSyntax);
+        assert!(class_err.message.contains("issue-055"));
+        assert!(
+            class_err
+                .message
+                .contains("unsupported default class export")
+        );
+        assert_eq!(class_err.span, Some(Span { start: 0, end: 6 }));
     }
 
     #[test]
