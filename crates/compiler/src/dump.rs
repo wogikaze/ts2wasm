@@ -3,8 +3,8 @@ use std::fs;
 use std::path::Path;
 
 use ts2wasm_frontend::{
-    BinaryOp, DiagCode, Diagnostic, Expr, Lexer, Parser, SpannedToken, Stmt, UnaryOp,
-    validate_type_reference_directives,
+    BinaryOp, DiagCode, Diagnostic, Expr, Lexer, LogicalAssignOp, Parser, SpannedToken, Stmt,
+    UnaryOp, validate_type_reference_directives,
 };
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
@@ -522,6 +522,13 @@ fn unparse_expr(expr: &Expr) -> String {
             format!("{}({})", unparse_expr(callee), unparse_expr_list(args))
         }
         Expr::Assign { name, expr, .. } => format!("{name} = {}", unparse_expr(expr)),
+        Expr::LogicalAssign { name, op, expr, .. } => {
+            format!(
+                "{name} {} {}",
+                logical_assign_op_text(*op),
+                unparse_expr(expr)
+            )
+        }
         Expr::Array { elements, .. } => format!("[{}]", unparse_expr_list(elements)),
         Expr::Object { props, .. } => {
             let props = props
@@ -620,6 +627,14 @@ fn binary_op_text(op: BinaryOp) -> &'static str {
         BinaryOp::UnsignedRightShift => ">>>",
         BinaryOp::In => "in",
         BinaryOp::InstanceOf => "instanceof",
+    }
+}
+
+fn logical_assign_op_text(op: LogicalAssignOp) -> &'static str {
+    match op {
+        LogicalAssignOp::And => "&&=",
+        LogicalAssignOp::Or => "||=",
+        LogicalAssignOp::Nullish => "??=",
     }
 }
 

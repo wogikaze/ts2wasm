@@ -2,7 +2,8 @@ use super::RuntimeFn;
 use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
 use ts2wasm_ir::lowered::{
-    FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr, LoweredUnaryOp,
+    FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
+    LoweredUnaryOp,
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
@@ -159,6 +160,9 @@ impl WatEmitter<'_> {
                 self.emit_expr(wat, expr, indent, frame);
                 wat.push_str(&format!("{pad}(local.tee {})\n", local_index(*local)));
                 self.emit_gc_root_mirror(wat, &pad, *local, frame);
+            }
+            LoweredExpr::LogicalAssign { local, op, expr } => {
+                self.emit_logical_assign(wat, *local, *op, expr, indent, frame);
             }
             LoweredExpr::Binary { left, op, right } => {
                 let left_ty = left.inferred_type();
@@ -608,6 +612,71 @@ impl WatEmitter<'_> {
             ValueTag::ARRAY_TAG,
         ));
     }
+
+    fn emit_logical_assign(
+        &self,
+        wat: &mut String,
+        local: LocalId,
+        op: LoweredLogicalAssignOp,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let local = local_index(local);
+        match op {
+            LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or => {
+                wat.push_str(&format!("{pad}(local.get {local})\n"));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::TruthyBool.symbol()));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                if op == LoweredLogicalAssignOp::And {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    self.emit_logical_assign_rhs(wat, local, expr, indent + 4, frame);
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    wat.push_str(&format!("{pad}    (local.get {local})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                } else {
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    wat.push_str(&format!("{pad}    (local.get {local})\n"));
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    self.emit_logical_assign_rhs(wat, local, expr, indent + 4, frame);
+                    wat.push_str(&format!("{pad}  )\n"));
+                }
+                wat.push_str(&format!("{pad})\n"));
+            }
+            LoweredLogicalAssignOp::Nullish => {
+                wat.push_str(&format!(
+                    "{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n",
+                    ValueTag::NULL,
+                    ValueTag::UNDEFINED
+                ));
+                wat.push_str(&format!("{pad}(if (result i32)\n"));
+                wat.push_str(&format!("{pad}  (then\n"));
+                self.emit_logical_assign_rhs(wat, local, expr, indent + 4, frame);
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad}  (else\n"));
+                wat.push_str(&format!("{pad}    (local.get {local})\n"));
+                wat.push_str(&format!("{pad}  )\n"));
+                wat.push_str(&format!("{pad})\n"));
+            }
+        }
+    }
+
+    fn emit_logical_assign_rhs(
+        &self,
+        wat: &mut String,
+        local: usize,
+        expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        self.emit_expr(wat, expr, indent, frame);
+        wat.push_str(&format!("{pad}(local.tee {local})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, local, frame);
+    }
 }
 
 fn local_index(id: LocalId) -> usize {
@@ -626,7 +695,8 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         }
         LoweredExpr::Unary { expr, .. }
         | LoweredExpr::GetLength(expr)
-        | LoweredExpr::Assign { expr, .. } => expr_may_collect(expr),
+        | LoweredExpr::Assign { expr, .. }
+        | LoweredExpr::LogicalAssign { expr, .. } => expr_may_collect(expr),
         LoweredExpr::PropertyGet { obj, .. }
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. } => expr_may_collect(obj),
@@ -679,7 +749,8 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         }
         LoweredExpr::Unary { expr, .. }
         | LoweredExpr::GetLength(expr)
-        | LoweredExpr::Assign { expr, .. } => expr_uses_caller_backend_tmp(expr),
+        | LoweredExpr::Assign { expr, .. }
+        | LoweredExpr::LogicalAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
         LoweredExpr::PropertyGet { obj, .. }
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. }

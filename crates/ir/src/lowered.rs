@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedStmt};
-use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
+use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, UnaryOp};
 use ts2wasm_runtime_abi::ValueTag;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -159,6 +159,11 @@ pub enum LoweredExpr {
         local: LocalId,
         expr: Box<LoweredExpr>,
     },
+    LogicalAssign {
+        local: LocalId,
+        op: LoweredLogicalAssignOp,
+        expr: Box<LoweredExpr>,
+    },
     ArrayNew {
         elements: Vec<LoweredExpr>,
     },
@@ -253,6 +258,13 @@ pub enum LoweredUnaryOp {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LoweredLogicalAssignOp {
+    And,
+    Or,
+    Nullish,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum InferredType {
     Number,
     String,
@@ -302,6 +314,7 @@ impl LoweredExpr {
                 LoweredBinaryOp::And | LoweredBinaryOp::Or => InferredType::Unknown,
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
+            Self::LogicalAssign { .. } => InferredType::Unknown,
             _ => InferredType::Unknown,
         }
     }
@@ -615,6 +628,14 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
     }
 }
 
+fn lower_logical_assign_op(op: LogicalAssignOp) -> LoweredLogicalAssignOp {
+    match op {
+        LogicalAssignOp::And => LoweredLogicalAssignOp::And,
+        LogicalAssignOp::Or => LoweredLogicalAssignOp::Or,
+        LogicalAssignOp::Nullish => LoweredLogicalAssignOp::Nullish,
+    }
+}
+
 fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<String> {
     if let ResolvedExpr::Ident(name) = object {
         if name == "Math" {
@@ -871,6 +892,10 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
             }
         }
         ResolvedExpr::Assign { name, expr } => {
+            push_capture(name, params, captures);
+            collect_arrow_captures(expr, params, captures);
+        }
+        ResolvedExpr::LogicalAssign { name, expr, .. } => {
             push_capture(name, params, captures);
             collect_arrow_captures(expr, params, captures);
         }
@@ -1348,6 +1373,14 @@ impl<'a> Resolver<'a> {
                 let local = self.resolve_local(name)?;
                 Ok(LoweredExpr::Assign {
                     local,
+                    expr: Box::new(self.lower_expr(expr)?),
+                })
+            }
+            ResolvedExpr::LogicalAssign { name, op, expr } => {
+                let local = self.resolve_local(name)?;
+                Ok(LoweredExpr::LogicalAssign {
+                    local,
+                    op: lower_logical_assign_op(*op),
                     expr: Box::new(self.lower_expr(expr)?),
                 })
             }
@@ -2292,6 +2325,10 @@ fn validate_expr(
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
         LoweredExpr::Assign { local, expr } => {
+            check_local_id(*local, local_count, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::LogicalAssign { local, expr, .. } => {
             check_local_id(*local, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }

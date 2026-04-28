@@ -42,6 +42,13 @@ pub enum UnaryOp {
     Void,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LogicalAssignOp {
+    And,
+    Or,
+    Nullish,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stmt {
     Let {
@@ -190,6 +197,12 @@ pub enum Expr {
         expr: Box<Expr>,
         span: Span,
     },
+    LogicalAssign {
+        name: String,
+        op: LogicalAssignOp,
+        expr: Box<Expr>,
+        span: Span,
+    },
     Array {
         elements: Vec<Expr>,
         span: Span,
@@ -288,6 +301,7 @@ impl Expr {
             | Self::Member { span, .. }
             | Self::Call { span, .. }
             | Self::Assign { span, .. }
+            | Self::LogicalAssign { span, .. }
             | Self::Array { span, .. }
             | Self::Object { span, .. }
             | Self::Index { span, .. }

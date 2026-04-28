@@ -104,6 +104,48 @@ Reference-backed affected files in the limit-750 window:
 
 Fill only when moving to `done/`.
 
+## Progress evidence
+
+2026-04-28 child-worker slice:
+
+- Implemented identifier-target `&&=`, `||=`, and `??=` parsing, lowering, and backend emission.
+- Backend emission uses control-flow short-circuiting so skipped RHS calls are not evaluated.
+- Added Node/iwasm differential fixture coverage for RHS skipped/evaluated behavior and final assigned values.
+- Added an issue-linked diagnostic fixture for non-identifier logical assignment targets, which remain outside this slice.
+
+Validation:
+
+```text
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(logical_assignment)'
+result: pass; 2 tests passed
+
+cargo nextest run -E 'test(parser)'
+result: pass; 8 tests passed
+
+cargo nextest run -E 'test(assignment)'
+result: pass; 4 tests passed
+
+node fixtures/core-semantics/logical-assignment.ts
+result: pass; stdout matched iwasm output
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment.ts -o /tmp/ts2wasm-228-logical-assignment.wasm && iwasm /tmp/ts2wasm-228-logical-assignment.wasm
+result: pass; stdout matched Node output
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+```
+
+Remaining risks:
+
+- Member/index logical assignment targets are not implemented in this slice.
+- The Annex B `[[IsHTMLDDA]]` test262 cases still require broader `$262`/HTMLDDA compatibility and are not closed by this progress slice.
+
 Commits:
 
 - `...`

@@ -63,7 +63,9 @@ pub enum Token {
     BangEqual,
     StrictNotEqual,
     AndAnd,
+    AndAndEqual,
     OrOr,
+    OrOrEqual,
     Greater,
     GreaterEqual,
     Power,
@@ -91,6 +93,7 @@ pub enum Token {
     Arrow,
     OptionalChain,
     NullishCoalesce,
+    NullishCoalesceEqual,
     // Delimiters
     LeftParen,
     RightParen,
@@ -157,7 +160,9 @@ pub enum TokenKind {
     BangEqual,
     StrictNotEqual,
     AndAnd,
+    AndAndEqual,
     OrOr,
+    OrOrEqual,
     Greater,
     GreaterEqual,
     Power,
@@ -185,6 +190,7 @@ pub enum TokenKind {
     Arrow,
     OptionalChain,
     NullishCoalesce,
+    NullishCoalesceEqual,
     LeftParen,
     RightParen,
     LeftBrace,
@@ -248,7 +254,9 @@ impl TokenKind {
                 | (Self::BangEqual, Token::BangEqual)
                 | (Self::StrictNotEqual, Token::StrictNotEqual)
                 | (Self::AndAnd, Token::AndAnd)
+                | (Self::AndAndEqual, Token::AndAndEqual)
                 | (Self::OrOr, Token::OrOr)
+                | (Self::OrOrEqual, Token::OrOrEqual)
                 | (Self::Greater, Token::Greater)
                 | (Self::GreaterEqual, Token::GreaterEqual)
                 | (Self::Power, Token::Power)
@@ -276,6 +284,7 @@ impl TokenKind {
                 | (Self::Arrow, Token::Arrow)
                 | (Self::OptionalChain, Token::OptionalChain)
                 | (Self::NullishCoalesce, Token::NullishCoalesce)
+                | (Self::NullishCoalesceEqual, Token::NullishCoalesceEqual)
                 | (Self::LeftParen, Token::LeftParen)
                 | (Self::RightParen, Token::RightParen)
                 | (Self::LeftBrace, Token::LeftBrace)
@@ -906,16 +915,30 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('&') {
                         self.advance_char();
-                        self.add_token(
-                            &mut tokens,
-                            SpannedToken {
-                                kind: Token::AndAnd,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                        if self.peek_char() == Some('=') {
+                            self.advance_char();
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::AndAndEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            },
-                        );
+                            );
+                        } else {
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::AndAnd,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
+                                },
+                            );
+                        }
                     } else {
                         self.add_token(
                             &mut tokens,
@@ -933,16 +956,30 @@ impl<'a> Lexer<'a> {
                     self.advance_char();
                     if self.peek_char() == Some('|') {
                         self.advance_char();
-                        self.add_token(
-                            &mut tokens,
-                            SpannedToken {
-                                kind: Token::OrOr,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                        if self.peek_char() == Some('=') {
+                            self.advance_char();
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::OrOrEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            },
-                        );
+                            );
+                        } else {
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::OrOr,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
+                                },
+                            );
+                        }
                     } else {
                         self.add_token(
                             &mut tokens,
@@ -1058,16 +1095,30 @@ impl<'a> Lexer<'a> {
                         );
                     } else if self.peek_char() == Some('?') {
                         self.advance_char();
-                        self.add_token(
-                            &mut tokens,
-                            SpannedToken {
-                                kind: Token::NullishCoalesce,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
+                        if self.peek_char() == Some('=') {
+                            self.advance_char();
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::NullishCoalesceEqual,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
                                 },
-                            },
-                        );
+                            );
+                        } else {
+                            self.add_token(
+                                &mut tokens,
+                                SpannedToken {
+                                    kind: Token::NullishCoalesce,
+                                    span: Span {
+                                        start,
+                                        end: self.cursor,
+                                    },
+                                },
+                            );
+                        }
                     } else {
                         self.add_token(
                             &mut tokens,
