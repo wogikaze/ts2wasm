@@ -226,6 +226,8 @@ fn json_parse_unicode_escape_diagnostics_reject_invalid_or_unsupported_forms() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts",
     ] {
         assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture);
     }
