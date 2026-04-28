@@ -67,7 +67,7 @@ description = "cargo fmt --all --check"
 run = "python scripts/manager.py fmt"
 
 [tasks.clippy]
-description = "cargo clippy --all-targets (extra args: mise run clippy -- -- -D warnings)"
+description = "cargo clippy --all-targets -- -D warnings"
 run = "python scripts/manager.py clippy"
 
 [tasks.nextest]
@@ -91,7 +91,7 @@ description = "fixtures/ top-level layout rules"
 run = "python scripts/manager.py check-fixture-catalog"
 
 [tasks."check-architecture-rules"]
-description = "Crate boundary smoke and file-size warnings"
+description = "Crate boundary smoke and file-size errors"
 run = "python scripts/manager.py check-architecture-rules"
 
 [tasks."check-compiler-diagnostics"]

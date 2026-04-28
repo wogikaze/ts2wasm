@@ -56,7 +56,7 @@ def main():
         sys.exit(0)
     
     status = 0
-    suites = ["test262", "TypeScript compiler cases", "typescript-go testdata"]
+    suites = ["test262", "tsc", "tsgo"]
     
     for suite in suites:
         base_executed = extract_col(base_path, suite, 3)  # col 4 (0-indexed 3)
@@ -69,9 +69,10 @@ def main():
         current_semantic_pass = extract_col(current_path, suite, 7)
         current_fail = extract_col(current_path, suite, 8)
         
-        if not all([base_executed, base_build_pass, base_semantic_pass, base_fail, 
+        if not all([base_executed, base_build_pass, base_semantic_pass, base_fail,
                    current_executed, current_build_pass, current_semantic_pass, current_fail]):
-            print(f"warning: incomplete coverage row for suite: {suite}", file=sys.stderr)
+            print(f"ERROR: incomplete coverage row for suite: {suite}", file=sys.stderr)
+            status = 1
             continue
         
         try:
@@ -84,7 +85,8 @@ def main():
             current_semantic_pass = int(current_semantic_pass)
             current_fail = int(current_fail)
         except ValueError:
-            print(f"warning: non-integer values for suite: {suite}", file=sys.stderr)
+            print(f"ERROR: non-integer values for suite: {suite}", file=sys.stderr)
+            status = 1
             continue
         
         if current_executed < base_executed:

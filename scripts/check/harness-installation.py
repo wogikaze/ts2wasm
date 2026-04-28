@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """Inventory and baseline: toolchain, P0 harness scripts, existing gates, optional P1+ stubs.
 
-Default: planned (P1+) scripts may be missing — warn only. P0 must exist and pass.
-  REQUIRE_ALL_HARNESSES=1  — treat P1+ scripts as required (exist + executable) too.
-Nextest: default is plain `cargo nextest run` (warnings allowed). Strict:
-  TS2WASM_NEXTEST_DENY_WARNINGS=1  —  RUSTFLAGS='-D warnings' (project may fail until #011 is done).
+Default: P0 harnesses and required gates must exist and pass.
+Nextest runs with RUSTFLAGS='-D warnings' so Rust warnings are reported as errors.
 
 Usage: python scripts/manager.py check-harness-installation
 """
@@ -123,14 +121,9 @@ def main():
     print("== run aggregate gates (fast gate without nextest first) ==", file=sys.stderr)
     run_check("scripts/manager check-fast-gate --skip-nextest", [sys.executable, str(REPO_ROOT / "scripts/gate/fast-gate.py"), "--skip-nextest"])
     
-    if os.environ.get("TS2WASM_NEXTEST_DENY_WARNINGS", "0") == "1":
-        print("harness: TS2WASM_NEXTEST_DENY_WARNINGS=1 (RUSTFLAGS=-D warnings)", file=sys.stderr)
-        env = os.environ.copy()
-        env["RUSTFLAGS"] = "-D warnings"
-        run_check("cargo nextest (RUSTFLAGS=-D warnings)", ["cargo", "nextest", "run"], env=env)
-    else:
-        print("harness: (hint) set TS2WASM_NEXTEST_DENY_WARNINGS=1 to fail on Rust warnings (see issues/open/011-*.md)", file=sys.stderr)
-        run_check("cargo nextest", ["cargo", "nextest", "run"])
+    env = os.environ.copy()
+    env["RUSTFLAGS"] = "-D warnings"
+    run_check("cargo nextest (RUSTFLAGS=-D warnings)", ["cargo", "nextest", "run"], env=env)
     
     print("", file=sys.stderr)
     print("== additional custom harnesses ==", file=sys.stderr)

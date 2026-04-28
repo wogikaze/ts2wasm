@@ -103,7 +103,7 @@ python scripts/manager.py help
 #### 利用可能なコマンド
 
 - `fmt` - cargo fmt --all --check
-- `clippy` - cargo clippy --all-targets
+- `clippy` - cargo clippy --all-targets -- -D warnings
 - `nextest` - cargo nextest run
 - `check-fast-gate` - fmt + issue health + architecture + coverage matrix + nextest
 - `check-issue-health` - issues/ ディレクトリの検証

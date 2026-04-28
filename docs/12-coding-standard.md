@@ -1203,7 +1203,7 @@ P1:
 P2:
   object / array / module
   frontend module extraction
-  warning-clean tree (RUSTFLAGS=-D warnings)
+  strict warning gate debt cleanup (`issues/open/238-*.md`)
 ```
 
 object / array / module は、少なくとも BuiltinResolver と AST span が入るまで着手しない。

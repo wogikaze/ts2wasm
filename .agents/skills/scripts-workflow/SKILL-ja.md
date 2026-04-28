@@ -5,7 +5,7 @@ description: scripts/以下のスクリプト追加/編集時に使用。レイ�
 
 # スクリプトワークフロー
 
-**発見:** repoエントリは`scripts/manager`とroot `mise.toml`（一覧: `mise tasks`）。使用法を見つけるためにすべての`scripts/*.sh`を読むことを避ける。スクリプトを追加するとき、`manager`と`mise.toml`の`[tasks.*]`に登録。**レイアウト（第1層）:** `scripts/check/`（静的、非破壊）、`scripts/gate/`（pass/fail）、`scripts/gen/`（追跡生成アーティファクトの更新）、`scripts/run/`（実行/測定）、`scripts/report/`（人間向けフォーマット）、`scripts/perf/`（ベンチマーク）、`scripts/dev/`（ローカルセットアップ）、`scripts/lib/`（ソースヘルパーのみ、実行しない）。非推奨のトップレベル名は移行中に薄い`exec`ラッパーとして残る可能性。**ハーネスベースライン:** `scripts/manager check-harness-installation`はツールチェーン + P0 checksをインベントリし、プロジェクトゲートの残りを実行。オプションの厳格Rust警告: `TS2WASM_NEXTEST_DENY_WARNINGS=1`（ツリーがクリーンになるまで`issues/open/011-*.md`を参照）。
+**発見:** repoエントリは`scripts/manager`とroot `mise.toml`（一覧: `mise tasks`）。使用法を見つけるためにすべての`scripts/*.sh`を読むことを避ける。スクリプトを追加するとき、`manager`と`mise.toml`の`[tasks.*]`に登録。**レイアウト（第1層）:** `scripts/check/`（静的、非破壊）、`scripts/gate/`（pass/fail）、`scripts/gen/`（追跡生成アーティファクトの更新）、`scripts/run/`（実行/測定）、`scripts/report/`（人間向けフォーマット）、`scripts/perf/`（ベンチマーク）、`scripts/dev/`（ローカルセットアップ）、`scripts/lib/`（ソースヘルパーのみ、実行しない）。非推奨のトップレベル名は移行中に薄い`exec`ラッパーとして残る可能性。**ハーネスベースライン:** `scripts/manager check-harness-installation`はツールチェーン + P0 checksをインベントリし、プロジェクトゲートの残りを実行。Rust警告は`RUSTFLAGS=-D warnings`でエラー扱い。clippyは`cargo clippy --all-targets -- -D warnings`で実行。
 
 ## 目次
 
