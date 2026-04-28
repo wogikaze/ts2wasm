@@ -9,6 +9,8 @@ depends_on: []
 blocks: [232]
 created: 2026-04-28
 updated: 2026-04-28
+completed: 2026-04-28
+status: done
 ---
 
 ## Summary
@@ -27,17 +29,17 @@ Basic static module declarations parse into AST nodes without lowering or execut
 
 In scope:
 
-- [ ] Add AST representation for side-effect import, default import, namespace import, named import, named export, and re-export declarations
-- [ ] Preserve local names, imported names, exported names, module specifiers, and spans
-- [ ] Keep unsupported diagnostics for dynamic `import()`, `export default`, and forms not implemented by this slice
-- [ ] Add parser/frontend regression tests and fixtures for the supported declaration forms
+- [x] Add AST representation for side-effect import, default import, namespace import, named import, named export, and re-export declarations
+- [x] Preserve local names, imported names, exported names, module specifiers, and spans
+- [x] Keep unsupported diagnostics for dynamic `import()`, default function/class exports, variable exports, class exports, and forms not implemented by this slice
+- [x] Add parser/frontend regression tests and fixtures for the supported declaration forms
 
 Out of scope:
 
-- [ ] Module graph construction
-- [ ] Name resolution across files
-- [ ] Lowering, backend emission, and runtime execution
-- [ ] Dynamic import and CommonJS `require()`
+- Module graph construction
+- Name resolution across files
+- Lowering, backend emission, and runtime execution
+- Dynamic import and CommonJS `require()`
 
 ## Affected paths
 
@@ -58,11 +60,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Static import/export declarations listed in scope parse into explicit AST nodes
-- [ ] Parser tests assert specifier/name/span preservation for each supported form
-- [ ] Existing issue-055 unsupported diagnostic fixtures are either updated to parser-success fixtures or replaced by narrower unsupported cases
-- [ ] Unsupported forms still produce issue-linked diagnostics
-- [ ] No regression in existing frontend parser tests
+- [x] Static import/export declarations listed in scope parse into explicit AST nodes
+- [x] Parser tests assert specifier/name/span preservation for each supported form
+- [x] Existing issue-055 unsupported diagnostic fixtures are either updated to parser-success fixtures or replaced by narrower unsupported cases
+- [x] Unsupported forms still produce issue-linked diagnostics
+- [x] No regression in existing frontend parser tests
 
 ## Validation
 
@@ -87,15 +89,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] dependent issues 232, 233, and 234 remain open for out-of-scope module graph, emission, and execution work
 
 ## Notes
 
@@ -357,20 +359,52 @@ Remaining work before close:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed by final close audit `231-final-close-audit-20260428T084159Z` after the export-class unsupported guard merge.
 
 Commits:
 
-- `...`
+- `a42f5a0` (`Merge issue 231 export class guard`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-frontend
+result: PASS (48 tests)
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_side_effect_import_reports_issue_055 static_namespace_import_reports_issue_055 static_default_import_reports_issue_055 static_combined_named_import_reports_issue_055 static_combined_namespace_import_reports_issue_055 static_named_export_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_namespace_re_export_reports_issue_055 static_declaration_export_reports_issue_055 static_default_export_reports_issue_055 static_class_export_reports_issue_055
+result: PASS (13 tests)
+date: 2026-04-28
+
+command: scripts/manager check-issue-health
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-agent-state
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager update-issue-index
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager update-issue-index --check
+result: PASS
+date: 2026-04-28
+
+command: scripts/manager check-issue-index
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run
+result: PASS (358 tests, 4 skipped)
+date: 2026-04-28
 ```
 
 Remaining risks:
 
-- none
+- Module graph construction, name resolution across files, lowering, backend emission, and runtime execution remain intentionally out of scope and tracked by dependent issues 232, 233, and 234.

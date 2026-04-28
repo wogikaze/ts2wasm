@@ -1,0 +1,77 @@
+{
+  "run_id": "231-final-close-audit-20260428T084159Z",
+  "task_id": "231",
+  "git": {
+    "sha": "HEAD",
+    "exit_code": 0,
+    "changed_files": [
+      "issues/done/231-parse-static-es-module-declarations.md",
+      "issues/index.md",
+      "issues/open/055-implement-import-export.md",
+      "reports/runs/231-final-close-audit-20260428T084159Z/cycle_report.md",
+      "reports/runs/231-final-close-audit-20260428T084159Z/test_report.json"
+    ],
+    "commits": [
+      {
+        "sha": "HEAD",
+        "message": "issue-231: close static es module parser issue"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-frontend",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_side_effect_import_reports_issue_055 static_namespace_import_reports_issue_055 static_default_import_reports_issue_055 static_combined_named_import_reports_issue_055 static_combined_namespace_import_reports_issue_055 static_named_export_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_namespace_re_export_reports_issue_055 static_declaration_export_reports_issue_055 static_default_export_reports_issue_055 static_class_export_reports_issue_055",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager update-issue-index --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 358,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {}
+}
