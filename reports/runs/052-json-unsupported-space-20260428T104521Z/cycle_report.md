@@ -62,6 +62,13 @@ Passed:
 
 Full `cargo nextest run` was skipped for this PROGRESS slice because the assignment only requires it for broad backend runtime behavior changes or issue close. This change is IR validation-only and issue 052 remains open.
 
+## Reporting
+
+`scripts/manager discord-report --run-id 052-json-unsupported-space-20260428T104521Z` failed twice because `DISCORD_WEBHOOK_URL` is not configured in the environment or `.env`. Reporting is DEFERRED with payload and error artifacts:
+
+- `reports/runs/052-json-unsupported-space-20260428T104521Z/discord_payload.json`
+- `reports/runs/052-json-unsupported-space-20260428T104521Z/reporting_error.log`
+
 ## Outcome
 
 PROGRESS. Issue 052 remains open as assigned. Remaining JSON gaps include arbitrary non-integer number representation, full UTF-16/non-ASCII string representation, surrogate-pair support, broader replacer semantics, object/function/symbol `space` ignored-value parity, and broader throw-compatible parse diagnostics.
