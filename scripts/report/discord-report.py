@@ -27,6 +27,8 @@ EMBED_TOTAL_LIMIT = 5600
 FIELD_VALUE_LIMIT = 900
 SECTION_LINE_LIMIT = 2
 PLACEHOLDER_VALUES = {"未記入", "なし", "-", "n/a", "N/A"}
+JAPANESE_RE = re.compile(r"[\u3040-\u30ff\u3400-\u9fff]")
+ASCII_WORD_RE = re.compile(r"\b[A-Za-z]{4,}\b")
 
 
 def load_env() -> dict[str, str]:
@@ -98,6 +100,44 @@ def reject_placeholder_report(fields: dict[str, str]) -> None:
         sys.exit(1)
 
 
+def reject_non_japanese_text(text: str) -> None:
+    japanese_chars = len(JAPANESE_RE.findall(text))
+    ascii_words = len(ASCII_WORD_RE.findall(text))
+    if ascii_words >= 4 and japanese_chars < 4:
+        print(
+            "エラー: Discord レポート本文が英語中心です。"
+            " レポートは日本語で簡潔に書き、コマンド/パス/issue ID のみ英字を使ってください。",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+
+def reject_non_japanese_report(fields: dict[str, str]) -> None:
+    text = "\n".join(value for value in fields.values() if value.strip())
+    reject_non_japanese_text(text)
+
+
+def collect_payload_text(data: Any) -> list[str]:
+    if isinstance(data, str):
+        return [data]
+    if isinstance(data, dict):
+        parts: list[str] = []
+        for key in ("content", "title", "description", "name", "value", "text"):
+            value = data.get(key)
+            if isinstance(value, str):
+                parts.append(value)
+        for value in data.values():
+            if isinstance(value, (dict, list)):
+                parts.extend(collect_payload_text(value))
+        return parts
+    if isinstance(data, list):
+        parts = []
+        for value in data:
+            parts.extend(collect_payload_text(value))
+        return parts
+    return []
+
+
 def create_discord_embed(fields: dict[str, str], run_id: Optional[str]) -> dict[str, Any]:
     """Create Japanese Discord embed from report fields."""
     embed = {
@@ -167,19 +207,22 @@ def create_json_payload(content: str, source_path: Path) -> dict[str, Any]:
     if isinstance(data, dict) and ("content" in data or "embeds" in data):
         payload = dict(data)
         payload.setdefault("username", "ts2wasm-dev-loop")
+        reject_non_japanese_text("\n".join(collect_payload_text(payload)))
         return payload
 
     text = json.dumps(data, indent=2, ensure_ascii=False)
+    reject_non_japanese_text(text)
     rel = display_path(source_path)
     return {
         "username": "ts2wasm-dev-loop",
-        "content": f"Discord JSON report: {rel}\n```json\n{text}\n```",
+        "content": f"Discord JSON レポート: {rel}\n```json\n{text}\n```",
     }
 
 
 def create_markdown_payload(content: str, run_id: Optional[str]) -> dict[str, Any]:
     fields = parse_cycle_report(content)
     reject_placeholder_report(fields)
+    reject_non_japanese_report(fields)
     return create_discord_embed(fields, run_id)
 
 
