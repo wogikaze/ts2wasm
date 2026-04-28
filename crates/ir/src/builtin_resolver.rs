@@ -13,7 +13,9 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         Stmt::ImportSideEffect { span, .. }
         | Stmt::ImportNamed { span, .. }
         | Stmt::ImportDefault { span, .. }
+        | Stmt::ImportDefaultNamed { span, .. }
         | Stmt::ImportNamespace { span, .. }
+        | Stmt::ImportDefaultNamespace { span, .. }
         | Stmt::ExportNamed { span, .. }
         | Stmt::ExportNamedFrom { span, .. }
         | Stmt::ExportAllFrom { span, .. } => Err(Diagnostic {
