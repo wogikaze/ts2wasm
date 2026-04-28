@@ -238,6 +238,29 @@ fn date_live_time_fixtures_report_capability_policy_diagnostic() {
 }
 
 #[test]
+fn date_annex_b_fixtures_report_issue_061() {
+    for (fixture, method) in [
+        (
+            "fixtures/builtins-and-io/date-annexb-get-year-unsupported.ts",
+            "getYear",
+        ),
+        (
+            "fixtures/builtins-and-io/date-annexb-set-year-unsupported.ts",
+            "setYear",
+        ),
+        (
+            "fixtures/builtins-and-io/date-annexb-to-gmt-string-unsupported.ts",
+            "toGMTString",
+        ),
+    ] {
+        assert_build_fails_with_unsupported_syntax(
+            fixture,
+            &format!("issue-061: Date.prototype.{method} is Annex B legacy Date behavior"),
+        );
+    }
+}
+
+#[test]
 fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
 }
