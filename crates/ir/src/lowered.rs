@@ -859,9 +859,49 @@ fn is_supported_json_stringify_space(
         | ResolvedExpr::Undefined
         | ResolvedExpr::Object(_)
         | ResolvedExpr::ArrowFn { .. } => true,
-        ResolvedExpr::Ident(name) => function_ids.contains_key(name),
+        ResolvedExpr::Ident(name) => {
+            function_ids.contains_key(name) || is_ignored_json_stringify_space_ident(name)
+        }
+        ResolvedExpr::Call { callee, args, .. } => {
+            is_ignored_json_stringify_space_call(callee, args)
+        }
+        ResolvedExpr::New {
+            class_name, args, ..
+        } => is_supported_json_stringify_boxed_space(class_name, args),
         _ => false,
     }
+}
+
+fn is_supported_json_stringify_boxed_space(class_name: &str, args: &[ResolvedExpr]) -> bool {
+    match (class_name, args) {
+        ("Number", [arg]) => is_json_stringify_number_space_arg(arg),
+        ("Number", []) => true,
+        ("String", [ResolvedExpr::String(_)]) | ("String", []) => true,
+        ("Boolean", []) => true,
+        ("Boolean", [arg]) => is_json_stringify_primitive_space_arg(arg),
+        ("Object", []) => true,
+        _ => false,
+    }
+}
+
+fn is_json_stringify_number_space_arg(arg: &ResolvedExpr) -> bool {
+    matches!(arg, ResolvedExpr::Number(_))
+        || matches!(
+            arg,
+            ResolvedExpr::Unary { op, expr }
+                if *op == UnaryOp::Negate && matches!(expr.as_ref(), ResolvedExpr::Number(_))
+        )
+}
+
+fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool {
+    matches!(
+        arg,
+        ResolvedExpr::Number(_)
+            | ResolvedExpr::String(_)
+            | ResolvedExpr::Bool(_)
+            | ResolvedExpr::Null
+            | ResolvedExpr::Undefined
+    )
 }
 
 fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool {
@@ -890,7 +930,48 @@ fn should_ignore_json_stringify_space(
     matches!(
         space,
         ResolvedExpr::Object(_) | ResolvedExpr::ArrowFn { .. }
-    ) || matches!(space, ResolvedExpr::Ident(name) if function_ids.contains_key(name))
+    ) || matches!(
+        space,
+        ResolvedExpr::Ident(name)
+            if function_ids.contains_key(name) || is_ignored_json_stringify_space_ident(name)
+    ) || matches!(
+        space,
+        ResolvedExpr::Call { callee, args, .. }
+            if is_ignored_json_stringify_space_call(callee, args)
+    ) || is_ignored_json_stringify_boxed_space(space)
+}
+
+fn is_ignored_json_stringify_space_ident(name: &str) -> bool {
+    matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
+}
+
+fn is_ignored_json_stringify_space_call(callee: &ResolvedExpr, args: &[ResolvedExpr]) -> bool {
+    matches!(callee, ResolvedExpr::Ident(name) if name == "Symbol")
+        && args.iter().all(is_json_stringify_primitive_space_arg)
+}
+
+fn is_ignored_json_stringify_boxed_space(space: &ResolvedExpr) -> bool {
+    matches!(
+        space,
+        ResolvedExpr::New {
+            class_name,
+            args,
+            ..
+        } if matches!(class_name.as_str(), "Boolean" | "Object")
+            || (matches!(class_name.as_str(), "Number" | "String") && args.is_empty())
+    )
+}
+
+fn json_stringify_boxed_space_value(space: &ResolvedExpr) -> Option<&ResolvedExpr> {
+    match space {
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "Number" && args.len() == 1 => args.first(),
+        ResolvedExpr::New {
+            class_name, args, ..
+        } if class_name == "String" && args.len() == 1 => args.first(),
+        _ => None,
+    }
 }
 
 fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
@@ -1943,7 +2024,13 @@ impl<'a> Resolver<'a> {
                         {
                             LoweredExpr::Undefined
                         }
-                        Some(space) => self.lower_expr(space)?,
+                        Some(space) => {
+                            if let Some(boxed_space) = json_stringify_boxed_space_value(space) {
+                                self.lower_expr(boxed_space)?
+                            } else {
+                                self.lower_expr(space)?
+                            }
+                        }
                         None => LoweredExpr::Undefined,
                     });
                     Ok(LoweredExpr::RuntimeCall {
