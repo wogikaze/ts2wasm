@@ -137,7 +137,7 @@ fn static_named_export_reports_issue_055() {
 fn static_re_export_reports_issue_055() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-re-export-unsupported.ts",
-        "issue-055: unsupported re-export",
+        "issue-055: unsupported star re-export",
     );
 }
 
