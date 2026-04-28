@@ -499,6 +499,13 @@ fn class_method_key(class_name: &str, method_name: &str) -> String {
     format!("class::{class_name}::{method_name}")
 }
 
+fn is_builtin_error_constructor(class_name: &str) -> bool {
+    matches!(
+        class_name,
+        "Error" | "TypeError" | "ReferenceError" | "SyntaxError"
+    )
+}
+
 fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<String>> {
     let mut parents = HashMap::new();
     for stmt in program {
@@ -1565,6 +1572,16 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::New { class_name, args } => {
+                if is_builtin_error_constructor(class_name) {
+                    let message = match args.first() {
+                        Some(message) => self.lower_expr(message)?,
+                        None => LoweredExpr::String(String::new()),
+                    };
+                    return Ok(LoweredExpr::ObjectNew {
+                        props: vec![("message".to_owned(), message)],
+                    });
+                }
+
                 let prototype = self.class_prototype_ref(class_name)?;
 
                 let lowered_args = args
