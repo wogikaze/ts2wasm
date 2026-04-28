@@ -220,6 +220,35 @@ Remaining work before close:
 - export default, combined default+named/default+namespace imports, namespace re-export, and declaration exports still need parser AST coverage or narrower follow-up split.
 - broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
 
+2026-04-28 child worker `231-combined-import-parser-20260428T072707Z` completed a parser-only combined import continuation:
+
+- Added frontend AST representation for combined default+named imports and combined default+namespace imports with default local, imported/local or namespace names, source specifier, and declaration spans preserved.
+- Parsed `import defaultName, { value as renamed } from "./module-source";` into `Stmt::ImportDefaultNamed`.
+- Parsed `import defaultName, * as ns from "./module-source";` into `Stmt::ImportDefaultNamespace`.
+- Added downstream unsupported guards so parsed combined imports still stop with issue-055 before module graph, resolver, lowering, backend, or runtime semantics.
+- Updated CLI module guard fixtures/tests to prove parsed combined imports still report issue-055 before module graph support.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (43 tests)
+cargo nextest run -p ts2wasm-cli static_default_import_reports_issue_055 static_named_import_reports_issue_055 static_namespace_import_reports_issue_055 static_re_export_reports_issue_055 static_named_re_export_reports_issue_055 static_combined_namespace_import_reports_issue_055: PASS (6 tests)
+cargo check --workspace: PASS
+cargo nextest run: PASS (347 tests, 4 skipped)
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
+Commit:
+
+- `cc77a7a` (`issue-231: parse combined static imports`)
+
+Remaining work before close:
+
+- export default, namespace re-export, and declaration exports still need parser AST coverage or narrower follow-up split.
+- broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
