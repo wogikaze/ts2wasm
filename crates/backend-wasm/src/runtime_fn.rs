@@ -32,6 +32,7 @@ pub(crate) enum RuntimeFn {
     Write,
     Copy,
     ValueToStringInto,
+    ErrorMessage,
     Log,
     TruthyBool,
     Not,
@@ -330,6 +331,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathMax" => Some(RuntimeFn::MathMax),
         "MathMin" => Some(RuntimeFn::MathMin),
         "MathRandom" => Some(RuntimeFn::MathRandom),
+        "ErrorMessage" => Some(RuntimeFn::ErrorMessage),
         "JsonStringify" => Some(RuntimeFn::JsonStringify),
         "JsonParse" => Some(RuntimeFn::JsonParse),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
@@ -490,6 +492,11 @@ const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
 const COPY_DEPS: &[RuntimeFn] = &[];
 const VTS_DEPS: &[RuntimeFn] = &[RuntimeFn::Copy];
+const ERROR_MESSAGE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::ValueToStringInto,
+];
 const LOG_DEPS: &[RuntimeFn] = &[RuntimeFn::Write, RuntimeFn::ValueToStringInto];
 const STRING_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const CONCAT_DEPS: &[RuntimeFn] = &[
@@ -661,6 +668,14 @@ impl RuntimeFn {
             Self::ValueToStringInto => RuntimeSpec {
                 symbol: "$value_to_string_into",
                 deps: VTS_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: VTS_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ErrorMessage => RuntimeSpec {
+                symbol: "$error_message",
+                deps: ERROR_MESSAGE_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: VTS_RUNTIME_STRINGS,
@@ -1467,6 +1482,7 @@ impl RuntimeFn {
             Self::Write => "write",
             Self::Copy => "copy",
             Self::ValueToStringInto => "value_to_string_into",
+            Self::ErrorMessage => "error_message",
             Self::Log => "log",
             Self::TruthyBool => "truthy_bool",
             Self::Not => "not",
@@ -1572,6 +1588,7 @@ impl RuntimeFn {
             Self::Write,
             Self::Copy,
             Self::ValueToStringInto,
+            Self::ErrorMessage,
             Self::Log,
             Self::TruthyBool,
             Self::Not,
@@ -1686,6 +1703,7 @@ impl RuntimeFn {
             Self::Write,
             Self::Copy,
             Self::ValueToStringInto,
+            Self::ErrorMessage,
             Self::Log,
             Self::TruthyBool,
             Self::Not,

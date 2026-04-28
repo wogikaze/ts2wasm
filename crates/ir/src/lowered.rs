@@ -1653,7 +1653,10 @@ impl<'a> Resolver<'a> {
                 }
                 if is_builtin_error_constructor(class_name) {
                     let message = match args.first() {
-                        Some(message) => self.lower_expr(message)?,
+                        Some(message) => LoweredExpr::RuntimeCall {
+                            runtime_fn: "ErrorMessage".to_owned(),
+                            args: vec![self.lower_expr(message)?],
+                        },
                         None => LoweredExpr::String(String::new()),
                     };
                     return Ok(LoweredExpr::ObjectNew {

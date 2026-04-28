@@ -100,6 +100,13 @@ Progress 2026-04-28:
 - Added `fixtures/builtins-and-io/error-message.ts` and `error_message_fixture_matches_node_output_under_iwasm`.
 - Remaining criteria before close: `.stack` is still not implemented; non-string message coercion and Error prototype identity are not yet covered.
 
+Progress 2026-04-28 continuation:
+
+- Implemented Error constructor message coercion for non-string messages through `$error_message`, which returns `""` for `undefined` and otherwise materializes the existing `ToString` result as a heap string.
+- Extended `fixtures/builtins-and-io/error-message.ts` with Node differential coverage for number, boolean, null, and explicit undefined message arguments across Error subclasses.
+- Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(error)'`; `cargo nextest run -p ts2wasm-cli error`; `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/error-message.ts -o /tmp/ts2wasm-054-error-message.wasm && iwasm /tmp/ts2wasm-054-error-message.wasm`; `cargo nextest run`; `scripts/manager check-issue-health`; `scripts/manager check-agent-state`.
+- Remaining criteria before close: `.stack` is still not implemented; Error prototype identity / `instanceof Error` remains uncovered.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
