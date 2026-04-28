@@ -167,6 +167,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
 | 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
 | 231 | Parse static ES module declarations | feature | frontend | implementation-ready | P1 |  | Parse static ES module declarations |
+| 235 | Fix GC root count backend tests | bug | backend/memory | implementation-ready | P0 |  | Fix GC root count backend tests |
 <!-- generated:ready:end -->
 
 ## Blocked queue
