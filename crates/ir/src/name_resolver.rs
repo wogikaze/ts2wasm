@@ -97,6 +97,9 @@ impl NameResolver {
                 Err(unsupported_module_decl(*span, "side-effect import"))
             }
             Stmt::ImportNamed { span, .. } => Err(unsupported_module_decl(*span, "named import")),
+            Stmt::ImportDefault { span, .. } => {
+                Err(unsupported_module_decl(*span, "default import"))
+            }
             Stmt::ExportNamed { span, .. } => Err(unsupported_module_decl(*span, "named export")),
             Stmt::Let { name, expr, span } => {
                 self.declare_variable(name, Some(*span))?;
