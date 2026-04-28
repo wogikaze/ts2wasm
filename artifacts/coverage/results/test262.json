@@ -2,29 +2,29 @@
   "suite": "test262",
   "suite_name": "test262",
   "denominator": 53445,
-  "executed": 13000,
+  "executed": 14000,
   "build_coverage_percent": "0.01",
   "semantic_coverage_percent": "0.01",
   "build_pass": 4,
   "semantic_pass": 3,
   "fail": 0,
-  "unsupported": 12996,
+  "unsupported": 13996,
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 9122,
-    "UnresolvedName": 3842,
-    "DuplicateLocal": 31,
+    "UnsupportedSyntax": 9814,
+    "UnresolvedName": 4140,
+    "DuplicateLocal": 41,
     "UnresolvedFunction": 1
   },
   "unsupported_features": {
     "array-builtin": 2167,
-    "name-resolution": 3842,
+    "name-resolution": 4140,
     "date": 421,
     "function": 542,
-    "regexp-literal": 51,
+    "regexp-literal": 506,
     "string-builtin": 63,
-    "builtin-api": 3138,
+    "builtin-api": 3375,
     "legacy-global-builtin": 16,
     "eval": 461,
     "object-literal": 2,
@@ -35,7 +35,7 @@
     "async-iteration": 1,
     "destructuring": 2,
     "declaration-emit": 4,
-    "duplicate-local": 31,
+    "duplicate-local": 41,
     "object-builtin": 2063,
     "function-resolution": 1
   },
@@ -44,5 +44,5 @@
     "paths_file": null,
     "path_filters": []
   },
-  "evidence": "python scripts/manager.py reference-coverage test262 --limit 13000"
+  "evidence": "python scripts/manager.py reference-coverage test262 --limit 14000"
 }
