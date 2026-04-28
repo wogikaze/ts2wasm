@@ -41,6 +41,10 @@ Expanded the stored test262 reference coverage ramp from limit 3500 to limit 400
 
 No new `unknown-unsupported` cases appeared in the limit-4000 test262 window. No classifier labels or follow-up issues were added.
 
+## Reporting
+
+`scripts/manager discord-report --run-id 060-coverage-ramp4000-20260428T041000Z` failed because `DISCORD_WEBHOOK_URL` is not configured in the environment or `.env`. The retry failed with the same error, so reporting is deferred with local evidence in `discord_payload.json` and `reporting_error.log`.
+
 ## Remaining Work
 
 Issue 060 remains open because full acceptance still requires broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root still lacks the `TypeScript` checkout needed for exact tsc validation from that root.
