@@ -423,6 +423,7 @@ impl RuntimeLinkPlan {
             }
             LoweredExpr::ErrorNew { message, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
+                self.add_required_runtime(RuntimeFn::Concat);
                 self.collect_required_runtime_expr(message);
             }
             LoweredExpr::PropertyGet { obj, .. } => {

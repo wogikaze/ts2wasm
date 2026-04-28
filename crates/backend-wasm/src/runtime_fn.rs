@@ -505,6 +505,7 @@ const STRING_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const CONCAT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
+    RuntimeFn::IsString,
     RuntimeFn::ValueToStringInto,
 ];
 const ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];

@@ -8,7 +8,10 @@ use ts2wasm_ir::lowered::{
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::emitter::{builtin_error_prototype_global, class_prototype_global, function_symbol};
+use super::emitter::{
+    builtin_error_prototype_global, builtin_error_stack_prefix, class_prototype_global,
+    function_symbol,
+};
 
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
@@ -369,7 +372,7 @@ impl WatEmitter<'_> {
                 constructor,
                 message,
             } => {
-                let prop_count = 1;
+                let prop_count = 2;
                 let prop_capacity = prop_count + 8;
                 let size =
                     Layout::OBJECT_HEADER_SIZE + (prop_capacity as u32) * Layout::OBJECT_ENTRY_SIZE;
@@ -400,10 +403,31 @@ impl WatEmitter<'_> {
                 ));
                 self.emit_expr(wat, message, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
                 wat.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
                     frame.heap_base_tmp(),
                     Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+                    frame.heap_value_tmp(),
+                ));
+                let stack_entry_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_ENTRY_SIZE;
+                let stack_key_raw = self.string_value("stack");
+                let stack_prefix_raw = self.string_value(builtin_error_stack_prefix(*constructor));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    stack_entry_offset,
+                    stack_key_raw,
+                ));
+                wat.push_str(&format!("{pad}(i32.const {})\n", stack_prefix_raw));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
+                wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Concat.symbol()));
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                    frame.heap_base_tmp(),
+                    stack_entry_offset + Layout::OBJECT_VALUE_OFFSET,
                     frame.heap_value_tmp(),
                 ));
                 wat.push_str(&format!(
