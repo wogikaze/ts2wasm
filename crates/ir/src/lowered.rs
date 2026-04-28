@@ -682,6 +682,7 @@ fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'stat
         ("Set", "has") => Some("SetHas"),
         ("Set", "delete") => Some("SetDelete"),
         ("RegExp", "test") => Some("RegExpTest"),
+        ("RegExp", "exec") => Some("RegExpMatch"),
         _ => None,
     }
 }
@@ -768,6 +769,41 @@ fn regexp_string_match_runtime(
         }
     }
     Ok(Some(vec![args[0].clone(), object.clone()]))
+}
+
+fn regexp_exec_runtime(
+    object: &ResolvedExpr,
+    method: &str,
+    args: &[ResolvedExpr],
+    span: ts2wasm_frontend::Span,
+) -> Result<Option<Vec<ResolvedExpr>>, Diagnostic> {
+    if method != "exec" {
+        return Ok(None);
+    }
+    if args.len() != 1 {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "RegExp.prototype.exec expects 1 argument, got {}",
+                args.len()
+            ),
+            span: Some(span),
+        });
+    }
+    match object {
+        ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => {
+            validate_regexp_plain_literal(raw, "RegExp.prototype.exec literal")?;
+            Ok(Some(vec![object.clone(), args[0].clone()]))
+        }
+        ResolvedExpr::New {
+            class_name,
+            args: ctor_args,
+        } if class_name == "RegExp" => {
+            regexp_constructor_literal(ctor_args)?;
+            Ok(Some(vec![object.clone(), args[0].clone()]))
+        }
+        _ => Ok(None),
+    }
 }
 
 fn looks_like_regexp_literal(raw: &str) -> bool {
@@ -1491,6 +1527,16 @@ impl<'a> Resolver<'a> {
                         runtime_fn,
                         args: lowered_args,
                     })
+                } else if let Some(regexp_args) = regexp_exec_runtime(object, method, args, *span)?
+                {
+                    let lowered_args = regexp_args
+                        .iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "RegExpMatch".to_owned(),
+                        args: lowered_args,
+                    })
                 } else if let Some(regexp_args) =
                     regexp_string_match_runtime(object, method, args, *span)?
                 {
@@ -1569,6 +1615,16 @@ impl<'a> Resolver<'a> {
                         if let Some(class_name) = self.local_classes.get(&obj_local) {
                             if let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
                             {
+                                if class_name == "RegExp" && args.len() != 1 {
+                                    return Err(Diagnostic {
+                                        code: DiagCode::ArityMismatch,
+                                        message: format!(
+                                            "RegExp.prototype.{method} expects 1 argument, got {}",
+                                            args.len()
+                                        ),
+                                        span: Some(*span),
+                                    });
+                                }
                                 let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
                                 lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
                                     Vec<_>,

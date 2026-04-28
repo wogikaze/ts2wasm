@@ -117,6 +117,13 @@ Follow-up issues:
   observable matched string for stringification and misses return `null`, allowing Node/iwasm
   differential coverage without claiming full match-array semantics. Unsupported metacharacter
   patterns such as `"aaa".match(/a*/)` remain rejected with an `issue-051` diagnostic.
+- 2026-04-28: Added a constrained `RegExp.prototype.exec(...)` continuation slice for direct
+  RegExp literals and identifier-backed `new RegExp("plain")` receivers. The currently observable
+  subset returns the matched string for stringification and `null` for misses, reusing the
+  existing plain byte matcher without claiming full match-array semantics. Unsupported
+  metacharacter patterns such as `/a*/.exec("aaa")` remain rejected with an `issue-051`
+  diagnostic. Direct `new RegExp("plain").exec(...)` remains outside this slice because the
+  current parser rejects member access immediately after `new RegExp(...)`.
 
 Validation:
 
@@ -192,6 +199,30 @@ result: pass
 
 cargo nextest run
 result: not run; skipped because this slice adds a new RegExp-only runtime helper linked only by `RegExpMatch` and does not alter shared non-RegExp runtime behavior
+
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 17 tests run, 17 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 14 tests run, 14 passed
+
+node fixtures/core-semantics/regexp-test.ts
+result: pass; stdout true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-exec.wasm && iwasm /tmp/ts2wasm-issue051-regexp-exec.wasm
+result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+
+cargo nextest run
+result: not run; skipped because this slice only routes RegExp.prototype.exec to the existing RegExp-only `RegExpMatch` helper and does not alter shared non-RegExp runtime behavior
 ```
 
 ## Completion evidence
