@@ -835,6 +835,7 @@ impl Parser {
     fn function_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Function)?;
         let (name, _) = self.expect_ident()?;
+        self.consume_typescript_generic_parameter_list()?;
         self.expect(TokenKind::LeftParen)?;
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
@@ -2151,6 +2152,9 @@ impl Parser {
                 };
                 continue;
             }
+            if allow_call {
+                self.try_consume_typescript_call_type_arguments(expr.span().end)?;
+            }
             if allow_call && self.consume(TokenKind::LeftParen) {
                 let mut args = Vec::new();
                 if !self.consume(TokenKind::RightParen) {
@@ -2189,6 +2193,95 @@ impl Parser {
             break;
         }
         Ok(expr)
+    }
+
+    fn consume_typescript_generic_parameter_list(&mut self) -> Result<(), Diagnostic> {
+        let Some(less_span) = self.consume_span(TokenKind::Less) else {
+            return Ok(());
+        };
+        self.skip_typescript_angle_list_after_less(less_span, "generic parameter list")?;
+        Ok(())
+    }
+
+    fn try_consume_typescript_call_type_arguments(
+        &mut self,
+        callee_end: usize,
+    ) -> Result<bool, Diagnostic> {
+        let start = self.cursor;
+        let Some(less_span) = self.consume_span(TokenKind::Less) else {
+            return Ok(false);
+        };
+        if less_span.start != callee_end {
+            self.cursor = start;
+            return Ok(false);
+        }
+
+        let Ok(greater_span) =
+            self.skip_typescript_angle_list_after_less(less_span, "call type argument list")
+        else {
+            self.cursor = start;
+            return Ok(false);
+        };
+
+        if matches!(self.peek(), Some(Token::LeftParen))
+            && self
+                .peek_span()
+                .is_some_and(|left_paren| left_paren.start == greater_span.end)
+        {
+            Ok(true)
+        } else {
+            self.cursor = start;
+            Ok(false)
+        }
+    }
+
+    fn skip_typescript_angle_list_after_less(
+        &mut self,
+        less_span: Span,
+        description: &str,
+    ) -> Result<Span, Diagnostic> {
+        let mut angle_depth = 1usize;
+        let mut paren_depth = 0usize;
+        let mut bracket_depth = 0usize;
+        let mut brace_depth = 0usize;
+
+        while let Some(token) = self.advance() {
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            match token.kind {
+                Token::LeftParen => paren_depth += 1,
+                Token::LeftBracket => bracket_depth += 1,
+                Token::LeftBrace => brace_depth += 1,
+                Token::RightParen => paren_depth = paren_depth.saturating_sub(1),
+                Token::RightBracket => bracket_depth = bracket_depth.saturating_sub(1),
+                Token::RightBrace => brace_depth = brace_depth.saturating_sub(1),
+                Token::Less if at_top_level => angle_depth += 1,
+                Token::Greater if at_top_level => {
+                    angle_depth -= 1;
+                    if angle_depth == 0 {
+                        return Ok(token.span);
+                    }
+                }
+                Token::RightShift if at_top_level => {
+                    if angle_depth <= 2 {
+                        return Ok(token.span);
+                    }
+                    angle_depth -= 2;
+                }
+                Token::UnsignedRightShift if at_top_level => {
+                    if angle_depth <= 3 {
+                        return Ok(token.span);
+                    }
+                    angle_depth -= 3;
+                }
+                _ => {}
+            }
+        }
+
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("unterminated TypeScript {description}"),
+            span: Some(less_span),
+        })
     }
 
     fn primary(&mut self) -> Result<Expr, Diagnostic> {
@@ -2923,6 +3016,22 @@ mod tests {
         assert_eq!(program.len(), 2);
         assert!(matches!(program[0], Stmt::Function { .. }));
         assert!(matches!(program[1], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn parses_typescript_generic_functions_and_calls_as_erased_syntax() {
+        let source = r#"
+            function id<T>(value: T): T { return value; }
+            function pair<T, U>(left: T, right: U): U { return right; }
+            let result: number = id<number>(3);
+            let selected: number = pair<string, number>("x", result);
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 4);
+        assert!(matches!(program[0], Stmt::Function { .. }));
+        assert!(matches!(program[1], Stmt::Function { .. }));
+        assert!(matches!(program[2], Stmt::Let { .. }));
+        assert!(matches!(program[3], Stmt::Let { .. }));
     }
 
     #[test]

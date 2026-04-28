@@ -109,6 +109,19 @@ fn dump_ast_unparse_erases_typescript_type_alias_declarations() {
 }
 
 #[test]
+fn dump_ast_unparse_erases_typescript_generics() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "function id<T>(value: T): T { return value; }\nlet result: number = id<number>(3);\n",
+    );
+
+    assert_eq!(
+        output,
+        "function id(value) {\n  return value;\n}\nlet result = id(3);\n"
+    );
+}
+
+#[test]
 fn build_accepts_erasable_typescript_type_annotations() {
     build_fixture("basics-types/type-annotation-erasure.ts");
 }
@@ -121,6 +134,11 @@ fn build_accepts_erasable_typescript_interface_declarations() {
 #[test]
 fn build_accepts_erasable_typescript_type_alias_declarations() {
     build_fixture("basics-types/type-alias-erasure.ts");
+}
+
+#[test]
+fn build_accepts_erasable_typescript_generics() {
+    build_fixture("basics-types/generic-erasure.ts");
 }
 
 #[test]
