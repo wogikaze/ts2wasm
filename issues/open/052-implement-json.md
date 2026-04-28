@@ -221,6 +221,29 @@ c\d
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment allows focused validation for narrow runtime progress.
 - Remaining gaps before close: decimal/exponent number parsing, `\uXXXX` string escapes, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.parse` number continuation slice for integer-valued decimal/exponent forms representable by the current tagged small-int runtime: `1.0`, `1e2`, `-2.5e1`, and `120e-1`.
+- Added shared runtime helpers for parsing/skipping JSON numbers across top-level, object-value, and array-value parse paths.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts`; Node and iwasm both print:
+
+```text
+1
+100
+-25
+12
+```
+
+- Pre-change gap check with `/tmp/ts2wasm-json-number-dec-exp.ts` showed Node printed `1`, `100`, `-25`, `12`, while iwasm printed four `undefined` lines.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts`
+  - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts -o /tmp/ts2wasm-json-parse-number-decimal-exponent.wasm && iwasm /tmp/ts2wasm-json-parse-number-decimal-exponent.wasm`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment allows focused validation for narrow runtime progress.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, `\uXXXX` string escapes, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
