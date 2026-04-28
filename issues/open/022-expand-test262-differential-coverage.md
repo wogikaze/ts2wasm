@@ -35,6 +35,13 @@ Progress evidence (2026-04-28):
 - Gate D executed-count evidence is satisfied. Gate E remains open because the first 100 sorted test262 files are all unsupported, dominated by `regexp-literal:47`, `name-resolution:37`, and `date:13`.
 - Next safe ramp recommendation: keep issue 022 open and either add a harness selection mode for known runnable semantic-core test262 seeds or implement the dominant unsupported feature slices before expecting the sorted `--limit` ramp to produce build-pass and semantic-pass counts.
 
+Selection-mode progress evidence (2026-04-28):
+
+- Added deterministic reference-coverage selectors: `--paths-file` for curated suite file lists and repeatable `--path-filter` for repo-relative path substring filters.
+- Added `scripts/data/test262-semantic-core-seeds.txt`, a source-backed 60-file test262 seed list from currently runnable language-core candidates.
+- Ran `python scripts/manager.py reference-coverage test262 --paths-file scripts/data/test262-semantic-core-seeds.txt --detail`; result: `executed=60`, `build_pass=60`, `semantic_pass=60`, `unsupported=0`, `fail=0`, `blocked=0`, `semantic_enabled=1`.
+- Left `artifacts/coverage/results/test262.json` and `artifacts/coverage/reference-coverage-matrix.md` unchanged because they currently record the sorted `--limit 100` ramp. Replacing that row with a selected subset would reduce the canonical executed count from 100 to 60; this selection-mode evidence should be used as Gate E progress, not as the canonical Gate D ramp row.
+
 Validation:
 
 ```sh

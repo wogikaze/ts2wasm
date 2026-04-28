@@ -3,6 +3,7 @@
 
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
+      [--paths-file PATH] [--path-filter TEXT]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -18,6 +19,8 @@ Notes:
   - fail: internal compiler failures such as [InvariantViolation]
   - --json: output results as JSON instead of key=value pairs
   - --detail: output per-file details (file-path: diag-code: feature-label)
+  - --paths-file: run a deterministic subset listed as repo-relative or suite-relative paths
+  - --path-filter: run only files whose repo-relative path contains TEXT (repeatable)
 """
 
 import sys
@@ -97,11 +100,95 @@ def resolve_suite_paths(suite):
 def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
+    print("      [--paths-file PATH] [--path-filter TEXT]")
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
     print("  tsc       -> reference/TypeScript/tests/cases/compiler/**/*.ts")
     print("  tsgo      -> reference/typescript-go/testdata/tests/**")
+
+def repo_relative(path):
+    """Return a stable repo-relative path string for evidence and filtering."""
+    try:
+        return path.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+def parse_paths_file(paths_file, suite_config, all_files):
+    """Resolve a deterministic subset file list against the current suite."""
+    list_path = Path(paths_file)
+    if not list_path.is_absolute():
+        list_path = REPO_ROOT / list_path
+
+    if not list_path.is_file():
+        print(f"--paths-file not found: {list_path}", file=sys.stderr)
+        sys.exit(1)
+
+    all_files_by_repo_path = {repo_relative(path): path for path in all_files}
+    all_files_by_suite_path = {}
+    for path in all_files:
+        try:
+            suite_relative = path.resolve().relative_to(suite_config["path"]).as_posix()
+        except ValueError:
+            continue
+        all_files_by_suite_path[suite_relative] = path
+
+    selected = []
+    seen = set()
+    with open(list_path, "r", encoding="utf-8") as handle:
+        for line_number, raw_line in enumerate(handle, start=1):
+            entry = raw_line.strip()
+            if not entry or entry.startswith("#"):
+                continue
+
+            path = all_files_by_repo_path.get(entry)
+            if path is None:
+                path = all_files_by_suite_path.get(entry)
+            if path is None:
+                print(
+                    f"{list_path}:{line_number}: path is not in selected suite: {entry}",
+                    file=sys.stderr,
+                )
+                sys.exit(1)
+
+            key = path.resolve()
+            if key in seen:
+                continue
+            seen.add(key)
+            selected.append(path)
+
+    if not selected:
+        print(f"--paths-file selected no files: {list_path}", file=sys.stderr)
+        sys.exit(1)
+
+    return selected
+
+def apply_path_filters(files, path_filters):
+    """Apply deterministic repo-relative substring filters."""
+    if not path_filters:
+        return files
+
+    selected = [
+        path for path in files
+        if any(path_filter in repo_relative(path) for path_filter in path_filters)
+    ]
+    if not selected:
+        filters = ", ".join(path_filters)
+        print(f"--path-filter selected no files: {filters}", file=sys.stderr)
+        sys.exit(1)
+
+    return selected
+
+def evidence_command(suite, limit, paths_file, path_filters):
+    """Build a reproducible command string for reports and coverage artifacts."""
+    parts = ["python", "scripts/manager.py", "reference-coverage", suite]
+    if limit is not None:
+        parts.extend(["--limit", str(limit)])
+    if paths_file:
+        parts.extend(["--paths-file", str(paths_file)])
+    for path_filter in path_filters:
+        parts.extend(["--path-filter", path_filter])
+    return " ".join(parts)
 
 def feature_label(diag_code, err_file, file_path):
     """Generate feature label from diagnostic code and error output."""
@@ -228,6 +315,8 @@ def main():
     limit = None
     json_output = False
     detail_output = False
+    paths_file = None
+    path_filters = []
     
     i = 0
     while i < len(args):
@@ -247,6 +336,21 @@ def main():
         elif args[i] == "--detail":
             detail_output = True
             i += 1
+        elif args[i] == "--paths-file":
+            if i + 1 >= len(args):
+                print("--paths-file requires a path", file=sys.stderr)
+                sys.exit(1)
+            paths_file = args[i + 1]
+            i += 2
+        elif args[i] == "--path-filter":
+            if i + 1 >= len(args):
+                print("--path-filter requires a non-empty string", file=sys.stderr)
+                sys.exit(1)
+            if args[i + 1] == "":
+                print("--path-filter requires a non-empty string", file=sys.stderr)
+                sys.exit(1)
+            path_filters.append(args[i + 1])
+            i += 2
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -257,11 +361,12 @@ def main():
         usage()
         sys.exit(1)
 
-    _, files = resolve_suite_paths(suite)
+    suite_config, files = resolve_suite_paths(suite)
     if files is None:
         sys.exit(1)
     
     denominator = len(files)
+    evidence = evidence_command(suite, limit, paths_file, path_filters)
     
     if limit == 0:
         if json_output:
@@ -281,7 +386,11 @@ def main():
                 "unsupported_diagcodes": {},
                 "unsupported_features": {},
                 "status": "in-progress",
-                "evidence": f"python scripts/manager.py reference-coverage {suite} --limit 0"
+                "selection": {
+                    "paths_file": paths_file,
+                    "path_filters": path_filters,
+                },
+                "evidence": evidence
             }, indent=2))
         else:
             print(f"suite={suite}")
@@ -299,6 +408,11 @@ def main():
             print("unsupported_features=")
             print("semantic_enabled=0")
         sys.exit(0)
+
+    if paths_file:
+        files = parse_paths_file(paths_file, suite_config, files)
+
+    files = apply_path_filters(files, path_filters)
     
     if limit:
         files = files[:limit]
@@ -428,7 +542,11 @@ def main():
             "unsupported_diagcodes": unsupported_diag_counts,
             "unsupported_features": unsupported_feature_counts,
             "status": "in-progress",
-            "evidence": f"python scripts/manager.py reference-coverage {suite} --limit {limit if limit else ''}".strip()
+            "selection": {
+                "paths_file": paths_file,
+                "path_filters": path_filters,
+            },
+            "evidence": evidence
         }, indent=2))
     else:
         print(f"suite={suite}")
