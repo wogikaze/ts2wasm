@@ -174,7 +174,9 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
         "fixtures/builtins-and-io/json-parse.ts",
         "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
+        "fixtures/builtins-and-io/json-stringify-nested-object.ts",
         "fixtures/builtins-and-io/json-stringify-space.ts",
+        "fixtures/builtins-and-io/json-stringify-space-string.ts",
         "fixtures/builtins-and-io/json-stringify.ts",
     ] {
         assert_fixture_matches_node(fixture);
@@ -218,6 +220,11 @@ fn map_set_collection_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn date_epoch_get_time_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-epoch-get-time.ts");
+}
+
+#[test]
+fn date_epoch_value_of_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-epoch-value-of.ts");
 }
 
 #[test]
@@ -1028,6 +1035,49 @@ fn regexp_unsupported_flag_fixture_reports_issue_202() {
     assert!(
         stderr.contains("issue-202: unsupported RegExp flag `d`"),
         "expected issue-linked RegExp flag diagnostic, got:\n{stderr}"
+    );
+}
+
+#[test]
+fn function_constructor_call_fixture_reports_issue_062() {
+    assert_build_fails_with_issue_062_function_constructor(
+        "fixtures/core-semantics/function-constructor-call-unsupported.ts",
+    );
+}
+
+#[test]
+fn new_function_constructor_fixture_reports_issue_062() {
+    assert_build_fails_with_issue_062_function_constructor(
+        "fixtures/core-semantics/new-function-constructor-unsupported.ts",
+    );
+}
+
+fn assert_build_fails_with_issue_062_function_constructor(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "Function constructor fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]"),
+        "expected UnsupportedSyntax diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-062: dynamic Function constructor is not supported"),
+        "expected issue-linked Function constructor diagnostic for {fixture}, got:\n{stderr}"
     );
 }
 

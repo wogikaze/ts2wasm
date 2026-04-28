@@ -161,6 +161,45 @@ Follow-up issues:
   capability policy, `toString`, non-integer/non-literal Date inputs, and full Date API
   behavior are not complete. No live host time import was added.
 
+2026-04-28 valueOf progress evidence:
+
+- Implemented deterministic `Date.prototype.valueOf()` for `new Date(<epoch-ms integer>)`
+  receivers by reusing the existing Date epoch representation and `DateGetTime`
+  runtime helper. No live host time import was added.
+- Added fixture `fixtures/builtins-and-io/date-epoch-value-of.ts` covering `0`,
+  positive, and negative integer epochs.
+- Node/iwasm differential evidence for the fixture:
+
+  ```text
+  command: node fixtures/builtins-and-io/date-epoch-value-of.ts
+  result: exit 0
+  stdout:
+  0
+  123456
+  -123456
+
+  command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/date-epoch-value-of.ts -o /tmp/ts2wasm-date-epoch-value-of.wasm
+  result: exit 0
+
+  command: iwasm /tmp/ts2wasm-date-epoch-value-of.wasm
+  result: exit 0
+  stdout:
+  0
+  123456
+  -123456
+  ```
+
+- Targeted regression:
+
+  ```text
+  command: cargo nextest run -p ts2wasm-cli date
+  result: pass, 5 tests run
+  ```
+
+- Remaining issue 050 scope stays open: full live time support, an auditable time
+  capability policy, `toString`, non-integer/non-literal Date inputs, and full Date API
+  behavior are not complete. No live host time import was added.
+
 2026-04-28 blocker evidence:
 
 - `new Date(0)` currently reaches class-constructor lowering and fails before backend Date runtime code can be used:

@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::name_resolver;
-    use ts2wasm_frontend::{Expr, Span, Stmt};
+    use ts2wasm_frontend::{DiagCode, Expr, Span, Stmt};
 
     #[test]
     fn test_resolve_variable_declaration() {
@@ -142,5 +142,80 @@ mod tests {
         ];
         let result = name_resolver::resolve_names(&program);
         assert!(result.is_ok());
+    }
+
+    #[test]
+    fn rejects_global_function_constructor_call_with_issue_062_diagnostic() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Ident {
+                    name: "Function".to_string(),
+                    span: Span { start: 0, end: 8 },
+                }),
+                args: vec![Expr::String {
+                    value: "return 1".to_string(),
+                    span: Span { start: 9, end: 19 },
+                }],
+                span: Span { start: 0, end: 20 },
+            },
+            span: Span { start: 0, end: 20 },
+        }];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-062"));
+        assert!(err.message.contains("dynamic Function constructor"));
+        assert_eq!(err.span.map(|span| (span.start, span.end)), Some((0, 20)));
+    }
+
+    #[test]
+    fn rejects_global_new_function_constructor_with_issue_062_diagnostic() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::New {
+                expr: Box::new(Expr::Ident {
+                    name: "Function".to_string(),
+                    span: Span { start: 4, end: 12 },
+                }),
+                args: vec![Expr::String {
+                    value: "return 1".to_string(),
+                    span: Span { start: 13, end: 23 },
+                }],
+                span: Span { start: 0, end: 24 },
+            },
+            span: Span { start: 0, end: 24 },
+        }];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-062"));
+        assert!(err.message.contains("dynamic Function constructor"));
+        assert_eq!(err.span.map(|span| (span.start, span.end)), Some((0, 24)));
+    }
+
+    #[test]
+    fn allows_shadowed_function_identifier_call() {
+        let program = vec![
+            Stmt::Let {
+                name: "Function".to_string(),
+                expr: Expr::Number {
+                    value: 1,
+                    span: Span { start: 15, end: 16 },
+                },
+                span: Span { start: 0, end: 17 },
+            },
+            Stmt::Expr {
+                expr: Expr::Call {
+                    callee: Box::new(Expr::Ident {
+                        name: "Function".to_string(),
+                        span: Span { start: 24, end: 32 },
+                    }),
+                    args: vec![],
+                    span: Span { start: 24, end: 34 },
+                },
+                span: Span { start: 24, end: 34 },
+            },
+        ];
+
+        assert!(name_resolver::resolve_names(&program).is_ok());
     }
 }

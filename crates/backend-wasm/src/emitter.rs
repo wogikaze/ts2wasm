@@ -39,6 +39,9 @@ enum GcRootStorage {
 }
 
 impl LocalFrame {
+    const BACKEND_TEMP_GROUP_SIZE: usize = 3;
+    const BACKEND_TEMP_GROUP_COUNT: usize = 4;
+
     pub(super) fn new(user_local_count: usize, gc_root_base_slot: Option<usize>) -> Self {
         Self {
             user_local_count,
@@ -66,7 +69,7 @@ impl LocalFrame {
     }
 
     pub(super) const fn backend_local_count(self) -> usize {
-        3
+        Self::BACKEND_TEMP_GROUP_SIZE * Self::BACKEND_TEMP_GROUP_COUNT
     }
 
     pub(super) const fn heap_base_tmp(self) -> usize {
@@ -79,6 +82,16 @@ impl LocalFrame {
 
     pub(super) const fn switch_value_tmp(self) -> usize {
         self.backend_base + 2
+    }
+
+    pub(super) fn child_temp_frame(self) -> Self {
+        let next_base = self.backend_base + Self::BACKEND_TEMP_GROUP_SIZE;
+        let max_base =
+            self.user_local_count + self.backend_local_count() - Self::BACKEND_TEMP_GROUP_SIZE;
+        Self {
+            backend_base: next_base.min(max_base),
+            ..self
+        }
     }
 
     pub(super) fn gc_root_slot(self, local_id: LocalId) -> Option<usize> {

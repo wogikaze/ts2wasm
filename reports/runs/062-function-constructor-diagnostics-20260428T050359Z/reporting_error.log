@@ -1,0 +1,11 @@
+attempt 1:
+scripts/manager discord-report --run-id 062-function-constructor-diagnostics-20260428T050359Z < reports/runs/062-function-constructor-diagnostics-20260428T050359Z/cycle_report.md
+exit_code: 1
+stderr:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+
+attempt 2:
+scripts/manager discord-report --run-id 062-function-constructor-diagnostics-20260428T050359Z < reports/runs/062-function-constructor-diagnostics-20260428T050359Z/cycle_report.md
+exit_code: 1
+stderr:
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
