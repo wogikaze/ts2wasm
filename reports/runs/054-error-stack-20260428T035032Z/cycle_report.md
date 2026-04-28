@@ -68,6 +68,10 @@ Out-of-scope check:
 
 - `cargo clippy -p ts2wasm-backend-wasm -p ts2wasm-cli --all-targets -- -D warnings` failed in existing `crates/frontend/src/parser.rs` warnings (`clippy::needless_bool`, `clippy::collapsible_if`). The assignment forbids frontend edits, so no fix was attempted.
 
+Reporting:
+
+- `scripts/manager discord-report --run-id 054-error-stack-20260428T035032Z` failed twice because `DISCORD_WEBHOOK_URL` is not configured. Deferred payload and error log are saved in this run directory.
+
 ## Remaining
 
 - Full stack trace frames are not implemented.
