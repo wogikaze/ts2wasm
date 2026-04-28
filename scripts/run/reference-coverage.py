@@ -245,6 +245,10 @@ def feature_label(diag_code, err_file, file_path):
         return "legacy-global-builtin"
     elif "/built-ins/" in path_lc:
         return "builtin-api"
+    elif "/annexb/language/comments/" in path_lc:
+        return "html-comment"
+    elif "/annexb/language/eval-code/" in path_lc:
+        return "eval"
     elif "/class/" in path_lc or "/class-" in path_lc or "/classes/" in path_lc:
         return "class"
     elif "/module/" in path_lc or "/import/" in path_lc or "/export/" in path_lc:

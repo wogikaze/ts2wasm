@@ -44,6 +44,8 @@ ts2wasm_feature_label() {
     *"/built-ins/string/"*) echo "string-builtin"; return ;;
     *"/built-ins/escape/"*|*"/built-ins/unescape/"*) echo "legacy-global-builtin"; return ;;
     *"/built-ins/"*) echo "builtin-api"; return ;;
+    *"/annexb/language/comments/"*) echo "html-comment"; return ;;
+    *"/annexb/language/eval-code/"*) echo "eval"; return ;;
     *"/class/"*|*"/class-"*|*"/classes/"*) echo "class"; return ;;
     *"/module/"*|*"/import/"*|*"/export/"*) echo "import-export"; return ;;
     *"/async-"*|*"/async/"*|*"/generators/"*) echo "async"; return ;;
