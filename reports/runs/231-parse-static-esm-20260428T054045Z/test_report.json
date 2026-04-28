@@ -2,7 +2,7 @@
   "run_id": "231-parse-static-esm-20260428T054045Z",
   "task_id": "issue-231",
   "git": {
-    "sha": "d9df977",
+    "sha": "2baf739",
     "exit_code": 0,
     "changed_files": [
       "crates/compiler/src/dump.rs",
@@ -18,7 +18,7 @@
     ],
     "commits": [
       {
-        "sha": "d9df977",
+        "sha": "2baf739",
         "message": "issue-231: parse static module declaration subset"
       }
     ]
