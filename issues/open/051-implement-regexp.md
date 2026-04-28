@@ -129,6 +129,13 @@ Follow-up issues:
   lowers to `RegExpMatch`, and the fixture covers both hit and miss cases. Unsupported
   metacharacter constructor patterns such as `new RegExp("a*").exec("aaa")` remain rejected with
   an `issue-051` diagnostic through the existing plain-pattern guard.
+- 2026-04-28: Added a constrained constructor-flags continuation slice for `new RegExp("plain",
+  "g")` and direct constructor-backed `.test(...)`. The constructor now accepts only string
+  literal flags from the empty/`g` subset, lowers them into the existing plain byte pattern
+  representation, and rejects unsupported or duplicate constructor flags with issue-linked
+  diagnostics. The observable fixture covers one-shot `.test`, `.exec`, and
+  `String.prototype.match` uses with constructor `g` flags without claiming full global
+  `lastIndex` state semantics.
 
 Validation:
 
@@ -258,6 +265,27 @@ result: pass
 
 cargo nextest run
 result: not run; full suite is required only for DONE by this assignment; this remains PROGRESS because RegExp literals, full exec match arrays, String.prototype.match completeness, flags/state, and full RegExp syntax remain incomplete
+
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 23 tests run, 23 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 20 tests run, 20 passed
+
+node fixtures/core-semantics/regexp-test.ts
+result: pass; stdout true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true / true / plain / needle
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-flags.wasm && iwasm /tmp/ts2wasm-issue051-regexp-flags.wasm
+result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true / abc / true / needle / true / plain / plain / true / true / plain / needle
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
 ```
 
 ## Completion evidence

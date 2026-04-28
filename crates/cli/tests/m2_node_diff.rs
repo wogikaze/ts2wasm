@@ -127,6 +127,11 @@ fn logical_assignment_member_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn logical_assignment_index_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/logical-assignment-index.ts");
+}
+
+#[test]
 fn logical_assignment_unsupported_targets_report_issue_228() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/logical-assignment-member-unsupported.ts",
@@ -169,6 +174,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
         "fixtures/builtins-and-io/json-parse.ts",
         "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
+        "fixtures/builtins-and-io/json-stringify-space.ts",
         "fixtures/builtins-and-io/json-stringify.ts",
     ] {
         assert_fixture_matches_node(fixture);
@@ -212,6 +218,16 @@ fn map_set_collection_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn date_epoch_get_time_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-epoch-get-time.ts");
+}
+
+#[test]
+fn date_live_time_fixtures_report_capability_policy_diagnostic() {
+    for fixture in [
+        "fixtures/builtins-and-io/date-now-live-time-unsupported.ts",
+        "fixtures/builtins-and-io/date-noarg-live-time-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, "auditable time capability policy");
+    }
 }
 
 #[test]

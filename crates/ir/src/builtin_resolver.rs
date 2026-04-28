@@ -490,7 +490,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::New {
             expr: new_expr,
             args,
-            ..
+            span,
         } => {
             // Extract class name from identifier
             if let Expr::Ident {
@@ -504,6 +504,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 Ok(ResolvedExpr::New {
                     class_name: class_name.clone(),
                     args: resolved_args,
+                    span: *span,
                 })
             } else {
                 Err(Diagnostic {

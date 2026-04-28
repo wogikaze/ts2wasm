@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-28
 ---
 
 ## Summary
@@ -95,6 +95,22 @@ Follow-up issues:
 ## Notes
 
 This is a major feature requiring module system design.
+
+## Progress evidence
+
+2026-04-28 child slice:
+
+- Added parser diagnostics for unsupported static import/export entry forms with `issue-055` messages instead of generic expression failures.
+- Added regression fixtures:
+  - `fixtures/module-system/static-named-import-unsupported.ts`
+  - `fixtures/module-system/static-named-export-unsupported.ts`
+- Focused validation:
+  - `cargo nextest run -p ts2wasm-frontend rejects_static_import_with_issue_linked_diagnostic rejects_named_export_with_issue_linked_diagnostic` passed.
+  - `cargo nextest run -p ts2wasm-cli static_named_import_reports_issue_055 static_named_export_reports_issue_055` passed.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-named-import-unsupported.ts -o /tmp/ts2wasm-055-import.wasm` failed as expected with `[UnsupportedSyntax] issue-055: unsupported named import; module resolution and loading are not implemented`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-named-export-unsupported.ts -o /tmp/ts2wasm-055-export.wasm` failed as expected with `[UnsupportedSyntax] issue-055: unsupported named export; module resolution and loading are not implemented`.
+
+Remaining scope: parser representation for supported module declarations, module resolution, module loading, and execution fixtures remain open.
 
 ## Completion evidence
 

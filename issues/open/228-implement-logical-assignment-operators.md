@@ -204,3 +204,49 @@ Remaining risks:
 - Computed/index logical assignment targets remain unsupported.
 - Non-identifier member object targets such as `getObj().value ||= rhs()` remain unsupported to avoid claiming full single-evaluation semantics before dedicated temporary-target design.
 - The Annex B `[[IsHTMLDDA]]` test262 cases still require broader `$262`/HTMLDDA compatibility and are not closed by this progress slice.
+
+2026-04-28 child-worker computed string-literal continuation:
+
+- Added computed string-literal logical assignment support for identifier receivers, covering forms such as `target["value"] ||= rhs(...)`.
+- Reused the existing static property logical assignment lowering/emission path so object lookup still short-circuits and skipped branches do not evaluate RHS.
+- Added Node/iwasm differential fixture coverage for `||=`, `??=`, and `&&=` through string-literal computed keys.
+- Kept dynamic computed keys such as `target[key] &&= 1` unsupported with precise `issue-228` diagnostics because full dynamic-key single-evaluation needs a dedicated temporary-key design.
+
+Validation:
+
+```text
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(logical_assignment)'
+result: pass; 5 tests passed
+
+node fixtures/core-semantics/logical-assignment-index.ts
+result: pass; stdout:
+kept
+kept
+rhs
+filled
+filled
+rhs
+fallback
+fallback
+rhs
+again
+again
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/logical-assignment-index.ts -o /tmp/ts2wasm-228-logical-assignment-index.wasm && iwasm /tmp/ts2wasm-228-logical-assignment-index.wasm
+result: pass; stdout matched Node output
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+```
+
+Remaining risks:
+
+- Dynamic computed logical assignment targets remain unsupported.
+- Non-identifier receiver targets such as `getObj()["value"] ||= rhs()` remain unsupported to avoid claiming full single-evaluation semantics before dedicated temporary-target design.
+- The Annex B `[[IsHTMLDDA]]` test262 cases still require broader `$262`/HTMLDDA compatibility and are not closed by this progress slice.
