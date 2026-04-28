@@ -472,6 +472,48 @@ abcdefghij1
 - Additional gate note: `cargo clippy --all-targets --all-features -- -D warnings` was run and failed on pre-existing `clippy::assertions_on_constants` diagnostics in `crates/runtime-abi/src/layout.rs`, outside this child assignment's allowed files.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added focused Node differential regression coverage for reading properties from object elements inside a parsed JSON array in `fixtures/builtins-and-io/json-parse-array-object-properties.ts`, covering `JSON.parse('[{"n":1},{"n":2}]')`.
+- Direct probe before adding the fixture showed the current runtime already handled this narrow continuation slice, so this child records PROGRESS as regression coverage only and made no backend/runtime changes.
+- Node and iwasm both print:
+
+```text
+2
+1
+2
+```
+
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-array-object-properties.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object-properties.ts -o /tmp/ts2wasm-json-parse-array-object-properties.wasm && iwasm /tmp/ts2wasm-json-parse-array-object-properties.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Full validation report for run `052-json-array-object-20260428T074900Z` is recorded under `reports/runs/052-json-array-object-20260428T074900Z/`.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
+2026-04-28:
+
+- Added explicit `JSON.parse` non-integer number diagnostic regression coverage for the current tagged small-int runtime behavior.
+- Covered:
+  - top-level unsupported non-integer number with `fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts` (`JSON.parse("1.5")`);
+  - array value unsupported non-integer number with `fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts` (`JSON.parse("[1.5]")`);
+  - object value unsupported non-integer number with `fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts` (`JSON.parse("{\"n\":1.5}")`).
+- Pre-change probe using `/tmp/ts2wasm-json-noninteger-probe.ts` showed Node accepted all three forms with status 0, while iwasm rejected the first parsed non-integer value with `Exception: unreachable` and status 1.
+- The existing `$json_parse_number_value` helper already traps when a decimal/exponent number cannot be reduced to an integer-valued tagged small-int, so this slice pins the behavior in `crates/cli/tests/m2_node_diff.rs` rather than changing backend runtime code.
+- Direct evidence for the new fixtures:
+  - `node fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts` accepts with status 0 and prints `accepted`.
+  - `node fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts` accepts with status 0 and prints `accepted`.
+  - `node fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts` accepts with status 0 and prints `accepted`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts -o /tmp/ts2wasm-json-noninteger-number.wasm && iwasm /tmp/ts2wasm-json-noninteger-number.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts -o /tmp/ts2wasm-json-noninteger-number-array.wasm && iwasm /tmp/ts2wasm-json-noninteger-number-array.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts -o /tmp/ts2wasm-json-noninteger-number-object.wasm && iwasm /tmp/ts2wasm-json-noninteger-number-object.wasm` rejects with `Exception: unreachable` and status 1.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
