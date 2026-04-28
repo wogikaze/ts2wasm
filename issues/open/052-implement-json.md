@@ -557,6 +557,32 @@ abcdefghij1
   - `cargo nextest run`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.stringify` array replacer slice for object-literal property filtering with a single string-literal property-list entry.
+- Progress commit: `2fa4ae2`.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-replacer-array.ts` for `JSON.stringify({ a: 1, b: 2 }, ["a"])`; Node and iwasm both print:
+
+```text
+{"a":1}
+```
+
+- Preserved unsupported diagnostics for function replacers and array replacer contents/forms outside this slice by keeping `fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts` and changing `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts` to cover a non-string property-list entry.
+- Pre-change reproduction of the former guarded array fixture showed ts2wasm rejected `JSON.stringify({ a: 1, b: 2 }, ["a"])` with `issue-052: JSON.stringify array replacer property lists are not supported yet`, while Node printed `{"a":1}`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-stringify-replacer-array.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array.ts -o /tmp/ts2wasm-json-replacer-array.wasm`
+  - `iwasm /tmp/ts2wasm-json-replacer-array.wasm`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm` (expected `UnsupportedSyntax`, status 1)
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Full validation report for run `052-json-replacer-array-20260428T083349Z` is recorded under `reports/runs/052-json-replacer-array-20260428T083349Z/`.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the single string-literal object-literal subset, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
