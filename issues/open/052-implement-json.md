@@ -369,6 +369,7 @@ abcdefghij1
 2026-04-28:
 
 - Implemented a `JSON.stringify` nested object/array literal preservation slice so aggregate literal children use separate backend temporaries from their containing literal.
+- Progress commit: `bc15c89`.
 - Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-nested-object.ts` for `JSON.stringify({ a: { b: 2 }, c: [3] })`.
 - Pre-change gap check with `/tmp/ts2wasm-json-stringify-nested-object.ts` showed Node printed `{"a":{"b":2},"c":[3]}`, while iwasm printed `undefined`.
 - Direct evidence for the new fixture:
