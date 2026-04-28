@@ -5,7 +5,7 @@ Agent: 231-star-re-export-parser-20260428T065856Z
 Branch: agent/231-star-re-export-parser-20260428T065856Z
 Issue: 231
 Status: PROGRESS
-Commit: see final PARENT_EVENT line
+Commit: `efdc1a4`
 
 ## Scope
 

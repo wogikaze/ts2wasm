@@ -2,7 +2,7 @@
   "run_id": "231-star-re-export-parser-20260428T065856Z",
   "task_id": "issue-231-star-re-export-parser",
   "git": {
-    "sha": "see-final-parent-event",
+    "sha": "efdc1a4",
     "exit_code": 0,
     "changed_files": [
       "crates/frontend/src/ast.rs",
@@ -20,7 +20,7 @@
     ],
     "commits": [
       {
-        "sha": "see-final-parent-event",
+        "sha": "efdc1a4",
         "message": "issue-231: parse star re-export declarations"
       }
     ]
