@@ -474,6 +474,30 @@ abcdefghij1
 
 2026-04-28:
 
+- Added focused Node differential regression coverage for reading properties from object elements inside a parsed JSON array in `fixtures/builtins-and-io/json-parse-array-object-properties.ts`, covering `JSON.parse('[{"n":1},{"n":2}]')`.
+- Direct probe before adding the fixture showed the current runtime already handled this narrow continuation slice, so this child records PROGRESS as regression coverage only and made no backend/runtime changes.
+- Node and iwasm both print:
+
+```text
+2
+1
+2
+```
+
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-array-object-properties.ts`
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-array-object-properties.ts -o /tmp/ts2wasm-json-parse-array-object-properties.wasm && iwasm /tmp/ts2wasm-json-parse-array-object-properties.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Full validation report for run `052-json-array-object-20260428T074900Z` is recorded under `reports/runs/052-json-array-object-20260428T074900Z/`.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
+
+2026-04-28:
+
 - Added explicit `JSON.parse` non-integer number diagnostic regression coverage for the current tagged small-int runtime behavior.
 - Covered:
   - top-level unsupported non-integer number with `fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts` (`JSON.parse("1.5")`);
