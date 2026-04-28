@@ -1,0 +1,59 @@
+{
+  "run_id": "052-json-noninteger-number-20260428T072707Z",
+  "task_id": "issue-052-json-noninteger-number",
+  "git": {
+    "sha": "bf28b76ea3cb58a95561d7748dca2becfc7287f6",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/cli/tests/m2_node_diff.rs",
+      "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts",
+      "issues/open/052-implement-json.md",
+      "reports/runs/052-json-noninteger-number-20260428T072707Z/cycle_report.md",
+      "reports/runs/052-json-noninteger-number-20260428T072707Z/test_report.json"
+    ],
+    "commits": []
+  },
+  "commands": [
+    {"cmd": "cargo fmt --all --check", "status": "pass", "exit_code": 0},
+    {"cmd": "cargo nextest run -E 'test(json)'", "status": "pass", "exit_code": 0},
+    {"cmd": "cargo nextest run -p ts2wasm-cli json", "status": "pass", "exit_code": 0},
+    {"cmd": "node fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts", "status": "pass", "exit_code": 0},
+    {"cmd": "node fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts", "status": "pass", "exit_code": 0},
+    {"cmd": "node fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts", "status": "pass", "exit_code": 0},
+    {"cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts -o /tmp/ts2wasm-json-noninteger-number.wasm", "status": "pass", "exit_code": 0},
+    {"cmd": "iwasm /tmp/ts2wasm-json-noninteger-number.wasm", "status": "pass", "exit_code": 1, "expected": "Exception: unreachable"},
+    {"cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts -o /tmp/ts2wasm-json-noninteger-number-array.wasm", "status": "pass", "exit_code": 0},
+    {"cmd": "iwasm /tmp/ts2wasm-json-noninteger-number-array.wasm", "status": "pass", "exit_code": 1, "expected": "Exception: unreachable"},
+    {"cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts -o /tmp/ts2wasm-json-noninteger-number-object.wasm", "status": "pass", "exit_code": 0},
+    {"cmd": "iwasm /tmp/ts2wasm-json-noninteger-number-object.wasm", "status": "pass", "exit_code": 1, "expected": "Exception: unreachable"},
+    {"cmd": "scripts/manager check-issue-health", "status": "pass", "exit_code": 0},
+    {"cmd": "scripts/manager check-agent-state", "status": "pass", "exit_code": 0},
+    {"cmd": "scripts/manager check-repo-smoke", "status": "pass", "exit_code": 0},
+    {"cmd": "cargo nextest run", "status": "pass", "exit_code": 0}
+  ],
+  "fixtures": {
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "newly_passed": [
+      "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
+      "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "status": "PROGRESS",
+    "classification": "unsupported",
+    "reason": "non-integer JSON numbers are accepted by Node but unsupported by the current tagged small-int runtime, which traps instead of silently producing a wrong value",
+    "tracking": "issue-052",
+    "full_nextest": "passed"
+  }
+}
