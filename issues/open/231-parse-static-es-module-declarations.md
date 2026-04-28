@@ -171,6 +171,30 @@ Remaining work before close:
 - re-export declarations, export default, combined default+named/default+namespace imports, and declaration exports still need parser AST coverage or narrower follow-up split.
 - fixtures under `fixtures/module-system/` were not converted in this subset.
 
+2026-04-28 child worker `231-re-export-parser-20260428T062802Z` completed a parser-only named re-export continuation:
+
+- Added frontend AST representation for named re-exports with imported name, exported name, module specifier, and span preservation.
+- Parsed `export { value as renamed } from "./module-source";` into `Stmt::ExportNamedFrom`.
+- Kept star re-export, combined default imports, export default, declaration exports, dynamic import, and module execution semantics issue-linked or out of scope.
+- Added downstream unsupported guards so parsed named re-exports still stop before module graph, resolver, lowering, backend, or runtime semantics.
+
+Validation:
+
+```text
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-frontend: PASS (41 tests)
+cargo nextest run -p ts2wasm-cli static_re_export_reports_issue_055 static_default_import_reports_issue_055 static_namespace_import_reports_issue_055 static_named_import_reports_issue_055 static_named_export_reports_issue_055 static_named_re_export_reports_issue_055: PASS (6 tests)
+cargo check --workspace: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+cargo nextest run: PASS (342 tests, 4 skipped)
+```
+
+Remaining work before close:
+
+- star re-export, export default, combined default+named/default+namespace imports, and declaration exports still need parser AST coverage or narrower follow-up split.
+- broader fixtures under `fixtures/module-system/` still need conversion as forms become parsed.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

@@ -8,7 +8,8 @@ pub mod typescript_oracle;
 // Re-export commonly used types for convenience
 pub use ast::{
     BinaryOp, ExportNamedSpecifier, Expr, ImportDefaultSpecifier, ImportNamedSpecifier,
-    ImportNamespaceSpecifier, LogicalAssignOp, ModuleSpecifier, Stmt, UnaryOp,
+    ImportNamespaceSpecifier, LogicalAssignOp, ModuleSpecifier, ReExportNamedSpecifier, Stmt,
+    UnaryOp,
 };
 pub use diagnostic::{DiagCode, Diagnostic, Span};
 pub use lexer::{Lexer, SpannedToken, Token, TokenKind};
