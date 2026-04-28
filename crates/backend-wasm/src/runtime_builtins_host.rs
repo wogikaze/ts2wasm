@@ -767,6 +767,8 @@ impl WatEmitter<'_> {
               (i32.add (local.get $obj) (i32.const {str_header}))
               (local.get $pos))))
         (br_if $found (i32.eq (local.get $ch) (i32.const {quote})))
+        (if (i32.lt_u (local.get $ch) (i32.const {space}))
+          (then (return (i32.const {undefined}))))
         (if (i32.eq (local.get $ch) (i32.const {backslash}))
           (then
             (local.set $pos (i32.add (local.get $pos) (i32.const {one})))

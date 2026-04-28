@@ -756,6 +756,33 @@ abcdefghij1
 - Remaining final checks for this child run are recorded in `reports/runs/052-json-replacer-next-20260428T135136Z/`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string/numeric-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a narrow `JSON.parse` invalid-control-character diagnostic slice so unescaped control bytes below ASCII space inside parsed JSON strings reject instead of being accepted as string content.
+- Added rejection coverage for top-level, array-value, and object-value string parse paths:
+  - `fixtures/builtins-and-io/json-parse-invalid-control-string.ts`
+  - `fixtures/builtins-and-io/json-parse-invalid-control-string-array.ts`
+  - `fixtures/builtins-and-io/json-parse-invalid-control-string-object.ts`
+- Pre-change reproduction with `/tmp/ts2wasm-json-control-probe.ts` showed Node rejected `JSON.parse('"line\nend"')` with a JSON `SyntaxError`, while iwasm accepted the same JSON payload and printed `accepted` with status 0.
+- Direct evidence for the new fixtures:
+  - `node fixtures/builtins-and-io/json-parse-invalid-control-string.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `node fixtures/builtins-and-io/json-parse-invalid-control-string-array.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `node fixtures/builtins-and-io/json-parse-invalid-control-string-object.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-control-string.ts -o /tmp/json-parse-invalid-control-string.wasm && iwasm /tmp/json-parse-invalid-control-string.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-control-string-array.ts -o /tmp/json-parse-invalid-control-string-array.wasm && iwasm /tmp/json-parse-invalid-control-string-array.wasm` rejects with `Exception: unreachable` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-control-string-object.ts -o /tmp/json-parse-invalid-control-string-object.wasm && iwasm /tmp/json-parse-invalid-control-string-object.wasm` rejects with `Exception: unreachable` and status 1.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json_parse_invalid_control_chars_rejected_under_node_and_iwasm)'`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `cargo nextest run`
+  - `scripts/manager update-issue-index --check`
+  - `scripts/manager check-agent-state`
+  - `scripts/manager check-issue-health`
+- Gate note: initial `scripts/manager check-issue-health` failed because this fresh worktree lacked gitignored `reports/` paths referenced by prior issue evidence; recreating those local report placeholders made the tracked issue state pass without committing reports.
+- Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string/numeric-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
