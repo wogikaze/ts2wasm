@@ -41,4 +41,4 @@ PASS
 
 ## Commit
 
-`d9df977` issue-231: parse static module declaration subset
+`2baf739` issue-231: parse static module declaration subset
