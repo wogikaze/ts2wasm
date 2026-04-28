@@ -93,6 +93,13 @@ Follow-up issues:
 
 ## Notes
 
+Progress 2026-04-28:
+
+- Reproduced current behavior for `new Error("msg")`, `new TypeError("msg")`, `new ReferenceError("msg")`, and `new SyntaxError("msg")`: each failed at build time with `issue-207: instanceof right-hand side must be a supported class constructor`.
+- Implemented a first runtime slice that lowers `new Error(...)`, `new TypeError(...)`, `new ReferenceError(...)`, and `new SyntaxError(...)` to heap objects with a Node-differential `.message` property.
+- Added `fixtures/builtins-and-io/error-message.ts` and `error_message_fixture_matches_node_output_under_iwasm`.
+- Remaining criteria before close: `.stack` is still not implemented; non-string message coercion and Error prototype identity are not yet covered.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

@@ -125,6 +125,11 @@ fn json_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn error_message_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/error-message.ts");
+}
+
+#[test]
 fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
 }
