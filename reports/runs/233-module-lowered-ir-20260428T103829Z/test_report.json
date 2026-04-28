@@ -91,6 +91,16 @@
   "meta": {
     "outcome": "PROGRESS",
     "issue_closed": false,
-    "full_nextest_run": "not run; assignment only requires full scripts/manager nextest when attempting to close issue 233 or changing broad runtime behavior"
+    "full_nextest_run": "not run; assignment only requires full scripts/manager nextest when attempting to close issue 233 or changing broad runtime behavior",
+    "post_merge_validation": [
+      "cargo fmt --all --check: PASS",
+      "cargo nextest run -p ts2wasm-ir: PASS (18 tests)",
+      "cargo nextest run -p ts2wasm-compiler: PASS (38 tests)",
+      "cargo nextest run -p ts2wasm-backend-wasm: PASS (18 tests)",
+      "cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 220 skipped)",
+      "static entry/alias/shadow build commands: PASS",
+      "scripts/manager check-issue-health: PASS",
+      "scripts/manager check-agent-state: PASS"
+    ]
   }
 }
