@@ -823,6 +823,7 @@ fn validate_json_stringify_args(
             space,
             ResolvedExpr::Number(_)
                 | ResolvedExpr::String(_)
+                | ResolvedExpr::Bool(_)
                 | ResolvedExpr::Null
                 | ResolvedExpr::Undefined
         ) {
