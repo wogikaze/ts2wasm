@@ -155,6 +155,11 @@ pub enum Stmt {
         source: ModuleSpecifier,
         span: Span,
     },
+    ExportDecl {
+        declaration: Box<Stmt>,
+        specifier: ExportNamedSpecifier,
+        span: Span,
+    },
     Let {
         name: String,
         expr: Expr,
@@ -386,6 +391,7 @@ impl Stmt {
             | Self::ExportNamedFrom { span, .. }
             | Self::ExportAllFrom { span, .. }
             | Self::ExportNamespaceFrom { span, .. }
+            | Self::ExportDecl { span, .. }
             | Self::Let { span, .. }
             | Self::Assign { span, .. }
             | Self::Expr { span, .. }
