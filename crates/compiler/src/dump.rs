@@ -391,6 +391,15 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         Stmt::ExportAllFrom { source, .. } => {
             let _ = writeln!(out, "export * from '{}';", source.value);
         }
+        Stmt::ExportNamespaceFrom {
+            namespace, source, ..
+        } => {
+            let _ = writeln!(
+                out,
+                "export * as {} from '{}';",
+                namespace.exported, source.value
+            );
+        }
         Stmt::Let { name, expr, .. } => {
             let _ = writeln!(out, "let {name} = {};", unparse_expr(expr));
         }

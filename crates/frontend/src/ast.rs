@@ -97,6 +97,13 @@ pub struct ReExportNamedSpecifier {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReExportNamespaceSpecifier {
+    pub exported: String,
+    pub exported_span: Span,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stmt {
     ImportSideEffect {
         specifier: ModuleSpecifier,
@@ -140,6 +147,11 @@ pub enum Stmt {
     },
     ExportAllFrom {
         star_span: Span,
+        source: ModuleSpecifier,
+        span: Span,
+    },
+    ExportNamespaceFrom {
+        namespace: ReExportNamespaceSpecifier,
         source: ModuleSpecifier,
         span: Span,
     },
@@ -373,6 +385,7 @@ impl Stmt {
             | Self::ExportNamed { span, .. }
             | Self::ExportNamedFrom { span, .. }
             | Self::ExportAllFrom { span, .. }
+            | Self::ExportNamespaceFrom { span, .. }
             | Self::Let { span, .. }
             | Self::Assign { span, .. }
             | Self::Expr { span, .. }
