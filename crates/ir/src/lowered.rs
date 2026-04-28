@@ -2509,6 +2509,16 @@ pub fn validate_lowered(program: &LoweredProgram) -> Result<(), Vec<Diagnostic>>
         validate_stmts(&func.body, local_count, num_funcs, program, &mut errors);
     }
 
+    for module in &program.modules {
+        validate_stmts(
+            &module.statements,
+            module.locals_count,
+            num_funcs,
+            program,
+            &mut errors,
+        );
+    }
+
     if errors.is_empty() {
         Ok(())
     } else {
