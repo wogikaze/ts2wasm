@@ -1,0 +1,129 @@
+{
+  "run_id": "233-module-semantic-runtime-20260428T120149Z",
+  "task_id": "issue-233",
+  "git": {
+    "sha": "8ef5f5584941f7c5c3069b388c449da3eea1db71",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/backend-wasm/src/stmt_emit.rs",
+      "crates/cli/tests/m2_node_diff.rs",
+      "crates/cli/tests/m9_modules.rs",
+      "current-state.md",
+      "fixtures/module-system/static-entry-repeated.ts",
+      "issues/done/233-emit-static-es-module-bindings.md",
+      "issues/index.md",
+      "issues/open/055-implement-import-export.md",
+      "issues/open/233-emit-static-es-module-bindings.md"
+    ],
+    "commits": [
+      {
+        "sha": "8ef5f5584941f7c5c3069b388c449da3eea1db71",
+        "message": "issue-233: add static module runtime semantic coverage"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-ir",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-backend-wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-compiler",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli module",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli static_named_module_import_fixtures_match_node_output_under_iwasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-semantic-entry.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-semantic-alias.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-semantic-shadow.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-repeated.ts -o /tmp/ts2wasm-233-semantic-repeated.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "iwasm /tmp/ts2wasm-233-semantic-entry.wasm && iwasm /tmp/ts2wasm-233-semantic-alias.wasm && iwasm /tmp/ts2wasm-233-semantic-shadow.wasm && iwasm /tmp/ts2wasm-233-semantic-repeated.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-index",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run",
+      "status": "pass",
+      "exit_code": 0
+    }
+  ],
+  "fixtures": {
+    "passed": 382,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [
+      "fixtures/module-system/static-entry-repeated.ts",
+      "fixtures/module-system/static-entry.ts",
+      "fixtures/module-system/static-entry-alias.ts",
+      "fixtures/module-system/static-entry-shadow.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "issue": 233,
+    "outcome": "DONE",
+    "semantic_iwasm_stdout": ["1", "1", "1", "2"]
+  }
+}
