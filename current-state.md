@@ -91,6 +91,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - IR crate（`crates/ir`）: resolved/lowered IR
 - Semantic HIR initial slice（`crates/ir::semantic`）: `ResolvedStmt` lowers to JS semantic operations such as `JsAdd`, `ToBoolean` branch conditions, property/index access, builtin calls, and method calls; backend still consumes `LoweredProgram`.
 - CLI dump command: `ts2wasm dump` can emit tokens, AST, resolved AST, lowered IR, WAT, and AST pseudo-source via `--ast --unparse`
+- Static ES module graph diagnostics have an initial compiler-side slice: parsed source-bearing static imports/re-exports are scanned from the entry file and reachable local relative modules, local `./` / `../` specifiers are resolved deterministically with `.ts` before `.js`, local cycles are represented by stable existing module IDs without recursive graph growth, and bare or missing local specifiers produce issue-232 source diagnostics before lowering/emission.
 - runtime-abi crate（`crates/runtime-abi`）: RawValue/layout/ABI
 - reference coverage パイプライン（`scripts/manager reference-coverage`, `scripts/manager update-coverage-matrix`, `scripts/manager update-coverage-matrix --check`）
 - generated coverage table（`artifacts/coverage/reference-coverage-matrix.md`）
