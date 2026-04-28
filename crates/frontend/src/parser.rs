@@ -52,6 +52,9 @@ impl Parser {
             Some(Token::If) => self.if_statement(),
             Some(Token::While) => self.while_statement(),
             Some(Token::Do) => self.do_while_statement(),
+            Some(Token::For) if matches!(self.peek_n(1), Some(Token::Await)) => {
+                self.for_await_statement()
+            }
             Some(Token::For) => self.for_statement(),
             Some(Token::Switch) => self.switch_statement(),
             Some(Token::Try) => self.try_statement(),
@@ -60,6 +63,9 @@ impl Parser {
             Some(Token::Continue) => self.continue_statement(),
             Some(Token::Class) => self.class_statement(),
             Some(Token::Return) => self.return_statement(),
+            Some(Token::Async) if matches!(self.peek_n(1), Some(Token::Function)) => {
+                self.async_function_statement()
+            }
             Some(Token::Ident(_)) if matches!(self.peek_n(1), Some(Token::Colon)) => {
                 self.labeled_statement()
             }
@@ -324,6 +330,19 @@ impl Parser {
         })
     }
 
+    fn async_function_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let async_span = self.expect(TokenKind::Async)?;
+        let function_span = self.expect(TokenKind::Function)?;
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-230: async function declarations require Promise and async iterator runtime semantics for `for await...of`, which are not supported in this milestone".to_owned(),
+            span: Some(Span {
+                start: async_span.start,
+                end: function_span.end,
+            }),
+        })
+    }
+
     fn return_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Return)?;
         let expr = self.expression()?;
@@ -389,6 +408,19 @@ impl Parser {
                 start: start.start,
                 end: semi.end,
             },
+        })
+    }
+
+    fn for_await_statement(&mut self) -> Result<Stmt, Diagnostic> {
+        let for_span = self.expect(TokenKind::For)?;
+        let await_span = self.expect(TokenKind::Await)?;
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-230: `for await...of` async iteration requires Promise and async iterator runtime semantics, which are not supported in this milestone".to_owned(),
+            span: Some(Span {
+                start: for_span.start,
+                end: await_span.end,
+            }),
         })
     }
 
@@ -2425,5 +2457,27 @@ mod tests {
         assert!(err.message.contains("issue-202"));
         assert!(err.message.contains("duplicate RegExp flag `g`"));
         assert!(err.span.is_some());
+    }
+
+    #[test]
+    fn rejects_for_await_of_with_issue_linked_diagnostic() {
+        let err =
+            parse_program("for await (var value of values) { console.log(value); }").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-230"));
+        assert!(err.message.contains("for await...of"));
+        assert!(err.message.contains("async iteration"));
+        assert_eq!(err.span, Some(Span { start: 0, end: 9 }));
+    }
+
+    #[test]
+    fn rejects_async_function_with_issue_linked_diagnostic() {
+        let err =
+            parse_program("async function f() { for await (var value of values) {} }").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-230"));
+        assert!(err.message.contains("async function declarations"));
+        assert!(err.message.contains("for await...of"));
+        assert_eq!(err.span, Some(Span { start: 0, end: 14 }));
     }
 }
