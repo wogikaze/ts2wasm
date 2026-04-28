@@ -366,6 +366,20 @@ abcdefghij1
   - `scripts/manager check-agent-state`
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, nested object literal value preservation for `JSON.stringify`, full replacer semantics, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.stringify` nested object/array literal preservation slice so aggregate literal children use separate backend temporaries from their containing literal.
+- Added Node differential coverage in `fixtures/builtins-and-io/json-stringify-nested-object.ts` for `JSON.stringify({ a: { b: 2 }, c: [3] })`.
+- Pre-change gap check with `/tmp/ts2wasm-json-stringify-nested-object.ts` showed Node printed `{"a":{"b":2},"c":[3]}`, while iwasm printed `undefined`.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-stringify-nested-object.ts` prints `{"a":{"b":2},"c":[3]}`.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-nested-object.ts -o /tmp/ts2wasm-json-stringify-nested-object.wasm && iwasm /tmp/ts2wasm-json-stringify-nested-object.wasm` prints `{"a":{"b":2},"c":[3]}`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, full replacer semantics, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
