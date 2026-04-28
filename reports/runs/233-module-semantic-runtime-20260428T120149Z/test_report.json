@@ -2,7 +2,7 @@
   "run_id": "233-module-semantic-runtime-20260428T120149Z",
   "task_id": "issue-233",
   "git": {
-    "sha": "8ef5f5584941f7c5c3069b388c449da3eea1db71",
+    "sha": "823c9a1d1e893ceccc3d040623265a835e973c84",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/stmt_emit.rs",
@@ -19,6 +19,18 @@
       {
         "sha": "8ef5f5584941f7c5c3069b388c449da3eea1db71",
         "message": "issue-233: add static module runtime semantic coverage"
+      },
+      {
+        "sha": "8f38a88c84299d0f7bec40fa3f2328e4632d00ad",
+        "message": "issue-233: close static module binding runtime slice"
+      },
+      {
+        "sha": "45c0f85a70a556e16e797ca1d84838d032fdf925",
+        "message": "issue-233: record deferred discord reporting"
+      },
+      {
+        "sha": "823c9a1d1e893ceccc3d040623265a835e973c84",
+        "message": "Merge branch 'master' into agent/233-module-semantic-runtime-20260428T120149Z"
       }
     ]
   },
