@@ -1,7 +1,7 @@
 {
-  "run_id": "060-coverage-ramp5000-20260428T043000Z",
-  "ended_at": "2026-04-28T04:48:26Z",
+  "run_id": "060-coverage-ramp6000-20260428T045453Z",
+  "ended_at": "2026-04-28T05:15:11Z",
   "task_id": "issue-060",
-  "summary": "progress: test262 limit 5000 coverage artifact refreshed with unknown-unsupported=0",
-  "test_report_path": "reports/runs/060-coverage-ramp5000-20260428T043000Z/test_report.json"
+  "summary": "progress: test262 limit 6000 coverage artifact refreshed with unknown-unsupported=0",
+  "test_report_path": "reports/runs/060-coverage-ramp6000-20260428T045453Z/test_report.json"
 }

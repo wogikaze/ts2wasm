@@ -1,0 +1,2 @@
+エラー: DISCORD_WEBHOOK_URL が環境変数または .env に設定されていません
+exit_code=1
