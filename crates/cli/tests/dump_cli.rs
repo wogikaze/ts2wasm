@@ -89,8 +89,23 @@ fn dump_ast_unparse_erases_typescript_type_annotations() {
 }
 
 #[test]
+fn dump_ast_unparse_erases_typescript_interface_declarations() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "interface Point { x: number; y: number; }\nexport interface NamedPoint extends Point { name: string; }\nlet x: Point = { x: 1, y: 2 };\n",
+    );
+
+    assert_eq!(output, "let x = {x: 1, y: 2};\n");
+}
+
+#[test]
 fn build_accepts_erasable_typescript_type_annotations() {
     build_fixture("basics-types/type-annotation-erasure.ts");
+}
+
+#[test]
+fn build_accepts_erasable_typescript_interface_declarations() {
+    build_fixture("basics-types/interface-erasure.ts");
 }
 
 #[test]

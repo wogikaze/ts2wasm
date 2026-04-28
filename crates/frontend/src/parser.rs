@@ -39,9 +39,84 @@ impl Parser {
             if self.consume(TokenKind::Semicolon) {
                 continue;
             }
+            if self.consume_erasable_typescript_declaration()? {
+                continue;
+            }
             statements.push(self.statement()?);
         }
         Ok(statements)
+    }
+
+    fn consume_erasable_typescript_declaration(&mut self) -> Result<bool, Diagnostic> {
+        let start = self.cursor;
+        let Some((interface_span, exported)) = self.try_consume_interface_keyword() else {
+            return Ok(false);
+        };
+
+        if exported && !matches!(self.peek(), Some(Token::Ident(_))) {
+            self.cursor = start;
+            return Ok(false);
+        }
+
+        self.expect_ident()?;
+        while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
+            self.advance();
+        }
+        if self.is_at_end() {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "unterminated TypeScript interface declaration".to_owned(),
+                span: Some(interface_span),
+            });
+        }
+
+        self.skip_balanced_brace_block(interface_span)?;
+        self.consume(TokenKind::Semicolon);
+        Ok(true)
+    }
+
+    fn try_consume_interface_keyword(&mut self) -> Option<(Span, bool)> {
+        let start = self.cursor;
+        let mut exported = false;
+        if matches!(self.peek(), Some(Token::Export))
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "interface")
+        {
+            self.advance();
+            exported = true;
+        }
+
+        let span = match self.peek() {
+            Some(Token::Ident(name)) if name == "interface" => self.peek_span()?,
+            _ => {
+                self.cursor = start;
+                return None;
+            }
+        };
+        self.advance();
+        Some((span, exported))
+    }
+
+    fn skip_balanced_brace_block(&mut self, start_span: Span) -> Result<(), Diagnostic> {
+        self.expect(TokenKind::LeftBrace)?;
+        let mut depth = 1usize;
+        while let Some(token) = self.advance() {
+            match token.kind {
+                Token::LeftBrace => depth += 1,
+                Token::RightBrace => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Ok(());
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "unterminated TypeScript interface declaration".to_owned(),
+            span: Some(start_span),
+        })
     }
 
     fn statement(&mut self) -> Result<Stmt, Diagnostic> {
@@ -2755,6 +2830,27 @@ mod tests {
     fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
         let tokens = Lexer::new(source).tokenize()?;
         Parser::new(tokens).parse_program()
+    }
+
+    #[test]
+    fn parses_typescript_interface_declarations_as_erased_syntax() {
+        let source = r#"
+            interface Point {
+                x: number;
+                y?: number;
+                translate(dx: number, dy: number): Point;
+            }
+            export interface NamedPoint extends Point {
+                name: string;
+                meta: { created: number };
+            }
+            function read(point: Point): number { return point.x; }
+            let origin: Point = { x: 1 };
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(matches!(program[0], Stmt::Function { .. }));
+        assert!(matches!(program[1], Stmt::Let { .. }));
     }
 
     #[test]
