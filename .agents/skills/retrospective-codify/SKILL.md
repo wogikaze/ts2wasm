@@ -340,16 +340,16 @@ message: Set/Map のサイズは .size プロパティを使う。
 
 ```bash
 # .env から DISCORD_WEBHOOK_URL を読み込み
-cat reports/runs/<run_id>/cycle_report.md | scripts/manager discord-report --run-id <run_id>
+scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
 または manager 経由:
 
 ```bash
-cat reports/runs/<run_id>/cycle_report.md | python scripts/manager.py discord-report --run-id <run_id>
+python scripts/manager.py discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
-レポート内容は stdin から読み込む。
+`.md` / `.json` ファイル送信は成功時に送信済み registry へ記録され、同じファイルの再送はエラーになる。
 
 ## Related Skills
 

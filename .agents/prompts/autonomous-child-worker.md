@@ -255,7 +255,7 @@ After each commit batch or issue outcome:
 1. Attempt:
 
 ```bash
-scripts/manager discord-report --run-id <run_id>
+scripts/manager discord-report reports/runs/<run_id>/cycle_report.md --run-id <run_id>
 ```
 
 1. If it fails:
@@ -264,6 +264,12 @@ scripts/manager discord-report --run-id <run_id>
    - retry once
    - if retry fails, mark reporting as `DEFERRED`
    - continue local progress
+
+`reports/` is local and git-ignored. Do not commit report artifacts. When retrying a saved payload, use:
+
+```bash
+scripts/manager discord-report reports/runs/<run_id>/discord_payload.json --run-id <run_id>
+```
 
 Webhook failure must not erase commits or stop the issue list.
 

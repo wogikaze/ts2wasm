@@ -1,9 +1,0 @@
-{
-  "run_id": "agent-223-this-diagnostic-spans-20260428T010000Z",
-  "status": "deferred",
-  "issue": 223,
-  "branch": "agent/223-this-diagnostic-spans-20260428T010000Z",
-  "commit": "5fb96ca",
-  "reason": "DISCORD_WEBHOOK_URL is not configured",
-  "summary": "Closed issue 223 after adding source spans to issue-211 unsupported receiver/this diagnostics. Validation passed."
-}

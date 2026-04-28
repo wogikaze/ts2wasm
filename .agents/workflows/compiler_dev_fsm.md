@@ -32,6 +32,8 @@ reports/
   runs/
 ```
 
+`reports/` is generated local output and is intentionally git-ignored.
+
 ## State artifacts (I/O contract)
 
 | Artifact | Role |
@@ -42,7 +44,7 @@ reports/
 | `.agents/state/baseline.json` | Optional perf numbers for `test_report.perf` deltas |
 | `.agents/state/decision_log.md` | **Append-only** non-chat decisions (gates, scope cuts) |
 | `.agents/state/schemas/*.json` | JSON Schemas for `current_task` and `test_report` |
-| `reports/runs/<run_id>/test_report.json` | Machine-readable verification result for a run |
+| `reports/runs/<run_id>/test_report.json` | Local machine-readable verification result for a run |
 
 `current_task` must validate against `.agents/state/schemas/current_task.schema.json`.  
 `test_report` must validate against `.agents/state/schemas/test_report.schema.json` (see `.agents/state/examples/test_report.json`).

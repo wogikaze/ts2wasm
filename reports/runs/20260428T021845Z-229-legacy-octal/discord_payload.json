@@ -1,8 +1,0 @@
-{
-  "run_id": "20260428T021845Z-229-legacy-octal",
-  "issue": 229,
-  "branch": "agent/229-legacy-octal-20260428T020949Z",
-  "status": "PROGRESS",
-  "reporting": "DEFERRED",
-  "reason": "DISCORD_WEBHOOK_URL is not configured"
-}

@@ -1,9 +1,0 @@
-{
-  "run_id": "20260428T012931Z-060-classification-ramp",
-  "status": "DEFERRED",
-  "reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
-  "report": "reports/agents/agent-060-classification-ramp-20260428T012931Z/cycle_report.md",
-  "issue": "060",
-  "branch": "agent/060-classification-ramp-20260428T012931Z",
-  "summary": "Issue 060 classification ramp progressed to test262 limit 500, tsc limit 200, and tsgo limit 120 with zero unknown-unsupported; new labels parameter-property and type-directive-resolution were added with issues 226 and 227."
-}

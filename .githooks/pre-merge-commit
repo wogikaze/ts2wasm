@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "${TS2WASM_ALLOW_MERGE_COMMIT:-}" = "1" ]; then
+  echo "pre-merge-commit: allowed by TS2WASM_ALLOW_MERGE_COMMIT=1"
+  exit 0
+fi
+
+branch="$(git symbolic-ref --quiet --short HEAD || true)"
+
+cat >&2 <<EOF
+pre-merge-commit: merge commit blocked on ${branch:-detached HEAD}
+
+This repository has accumulated too many merge commits. Use one of:
+  git merge --ff-only <branch>
+  git rebase <base>
+  git cherry-pick <commit>
+  git merge --squash <branch>
+
+If a real merge commit is intentional, rerun with:
+  TS2WASM_ALLOW_MERGE_COMMIT=1 git merge <branch>
+EOF
+
+exit 1
