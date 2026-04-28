@@ -1,0 +1,123 @@
+{
+  "run_id": "233-static-module-ir-binding-20260428T094954Z",
+  "task_id": "issue-233",
+  "git": {
+    "sha": "43c0de6bfa4b309399f39b43f1b7daefa19512ed",
+    "exit_code": 0,
+    "changed_files": [
+      "crates/compiler/src/lib.rs",
+      "crates/cli/tests/m9_modules.rs",
+      "fixtures/module-system/static-entry-shadow.ts",
+      "issues/open/233-emit-static-es-module-bindings.md"
+    ],
+    "commits": [
+      {
+        "sha": "43c0de6bfa4b309399f39b43f1b7daefa19512ed",
+        "message": "issue-233: record static named import bindings"
+      }
+    ]
+  },
+  "commands": [
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli static_module_named_import_alias_build_smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-esm-233-ir-pre.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-compiler static_named_import_binding_lowering_uses_source_export_when_importer_shadows_name",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli static_module_named_import_shadowed_local_build_smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-esm-233-shadow-ir.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo fmt --all --check",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-ir",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-backend-wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo nextest run -p ts2wasm-cli module",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-esm-233-ir.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-esm-233-alias-ir.wasm",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-issue-health",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-agent-state",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager nextest",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager check-repo-smoke",
+      "status": "pass",
+      "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 233-static-module-ir-binding-20260428T094954Z",
+      "status": "error",
+      "exit_code": 1
+    }
+  ],
+  "fixtures": {
+    "passed": 369,
+    "failed": 0,
+    "skipped": 4,
+    "newly_passed": [
+      "fixtures/module-system/static-entry-shadow.ts"
+    ],
+    "newly_failed": []
+  },
+  "regressions": [],
+  "perf": {
+    "compile_time_delta_percent": 0.0,
+    "runtime_delta_percent": 0.0
+  },
+  "meta": {
+    "completion_level": "PROGRESS",
+    "issue_status": "open",
+    "semantic_runtime_changed": false,
+    "discord_report": "deferred: DISCORD_WEBHOOK_URL not configured",
+    "merge_request": true
+  }
+}

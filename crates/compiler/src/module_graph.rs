@@ -7,22 +7,64 @@ use ts2wasm_frontend::{
 };
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ModuleGraph {
-    pub(crate) modules: Vec<ModuleNode>,
+pub struct ModuleGraph {
+    modules: Vec<ModuleNode>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ModuleNode {
-    pub(crate) id: usize,
-    pub(crate) path: PathBuf,
-    pub(crate) dependencies: Vec<ModuleDependency>,
+pub struct ModuleNode {
+    id: usize,
+    path: PathBuf,
+    dependencies: Vec<ModuleDependency>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct ModuleDependency {
-    pub(crate) specifier: String,
-    pub(crate) resolved_module_id: usize,
-    pub(crate) resolved_path: PathBuf,
+pub struct ModuleDependency {
+    specifier: String,
+    resolved_module_id: usize,
+    resolved_path: PathBuf,
+}
+
+impl ModuleGraph {
+    pub fn modules(&self) -> &[ModuleNode] {
+        &self.modules
+    }
+
+    pub fn entry(&self) -> &ModuleNode {
+        &self.modules[0]
+    }
+
+    pub fn module(&self, id: usize) -> Option<&ModuleNode> {
+        self.modules.get(id)
+    }
+}
+
+impl ModuleNode {
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
+    pub fn path(&self) -> &Path {
+        &self.path
+    }
+
+    pub fn dependencies(&self) -> &[ModuleDependency] {
+        &self.dependencies
+    }
+}
+
+impl ModuleDependency {
+    pub fn specifier(&self) -> &str {
+        &self.specifier
+    }
+
+    pub fn resolved_module_id(&self) -> usize {
+        self.resolved_module_id
+    }
+
+    pub fn resolved_path(&self) -> &Path {
+        &self.resolved_path
+    }
 }
 
 pub(crate) fn validate_entry_module_graph(
@@ -32,7 +74,7 @@ pub(crate) fn validate_entry_module_graph(
     build_entry_module_graph(entry_path, entry_program).map(|_| ())
 }
 
-pub(crate) fn build_entry_module_graph(
+pub fn build_entry_module_graph(
     entry_path: &Path,
     entry_program: &[Stmt],
 ) -> Result<ModuleGraph, Diagnostic> {
