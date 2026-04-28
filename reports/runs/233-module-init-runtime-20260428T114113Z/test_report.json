@@ -2,7 +2,7 @@
   "run_id": "233-module-init-runtime-20260428T114113Z",
   "task_id": "issue-233",
   "git": {
-    "sha": "b549bb7",
+    "sha": "6b2d9f1",
     "exit_code": 0,
     "changed_files": [
       "crates/backend-wasm/src/emitter.rs",
@@ -12,7 +12,12 @@
       "reports/runs/233-module-init-runtime-20260428T114113Z/cycle_report.md",
       "reports/runs/233-module-init-runtime-20260428T114113Z/test_report.json"
     ],
-    "commits": []
+    "commits": [
+      {
+        "sha": "6b2d9f1",
+        "message": "issue-233: emit module init helpers"
+      }
+    ]
   },
   "commands": [
     {
@@ -79,6 +84,11 @@
       "cmd": "scripts/manager check-agent-state",
       "status": "pass",
       "exit_code": 0
+    },
+    {
+      "cmd": "scripts/manager discord-report --run-id 233-module-init-runtime-20260428T114113Z",
+      "status": "fail",
+      "exit_code": 1
     }
   ],
   "fixtures": {
@@ -97,6 +107,8 @@
     "outcome": "PROGRESS",
     "issue": "233",
     "branch": "agent/233-module-init-runtime-20260428T114113Z",
+    "reporting": "DEFERRED",
+    "reporting_reason": "DISCORD_WEBHOOK_URL is not configured in the environment or .env",
     "semantic_parity_claim": false
   }
 }
