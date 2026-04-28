@@ -257,6 +257,31 @@ scripts/manager check-issue-health: PASS
 scripts/manager check-agent-state: PASS
 ```
 
+2026-04-28 child worker `233-module-init-runtime-20260428T114113Z` added a narrow dependency-order module initialization/runtime wiring slice:
+
+- `populate_static_module_exports_for_build` now emits lowered module metadata in the existing `ModuleGraph::dependency_first_initialization_steps()` order, excluding the entry module, so downstream backend initialization receives dependency-first module bodies.
+- The WAT backend now collects strings from lowered module statements, emits `$module_init_<id>` helpers for modules with explicit lowered statements, sets `$current_module_id` while running each helper, and calls those helpers before top-level import reads.
+- Added compiler coverage proving a nested static graph populates `LoweredProgram.modules` as nested module then source module, and backend coverage proving module init helper calls preserve metadata order and run before the top-level `ModuleLoad` import read.
+- Preserved existing static module build smokes for `static-entry.ts`, alias, and shadow. No live binding behavior, cycle semantics, broader module body lowering, or Node/iwasm semantic parity claim was added; issue 233 remains open.
+
+Validation:
+
+```text
+cargo nextest run -p ts2wasm-backend-wasm explicit_module_export_statement_selects_es_module_export_helpers: PASS (pre-change reproduction, 1 test)
+cargo nextest run -p ts2wasm-compiler static_module_export_lowering_orders_module_metadata_dependency_first: PASS (1 test)
+cargo nextest run -p ts2wasm-backend-wasm module_initializers_are_emitted_and_called_in_metadata_order: PASS (1 test)
+cargo fmt --all --check: PASS
+cargo nextest run -p ts2wasm-ir: PASS (18 tests)
+cargo nextest run -p ts2wasm-backend-wasm: PASS (19 tests)
+cargo nextest run -p ts2wasm-compiler: PASS (39 tests)
+cargo nextest run -p ts2wasm-cli module: PASS (15 tests, 220 skipped)
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry.ts -o /tmp/ts2wasm-233-init-runtime-entry.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-alias.ts -o /tmp/ts2wasm-233-init-runtime-alias.wasm: PASS
+cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-entry-shadow.ts -o /tmp/ts2wasm-233-init-runtime-shadow.wasm: PASS
+scripts/manager check-issue-health: PASS
+scripts/manager check-agent-state: PASS
+```
+
 2026-04-28 child worker `233-module-lowered-ir-20260428T103829Z` added a narrow explicit lowered-module population slice:
 
 - The compiler build path now attaches source-backed literal `export const` declarations from reachable local static modules into `LoweredProgram.modules` as `LoweredStmt::Export` statements, keyed by the issue-232 module graph IDs.
