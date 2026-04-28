@@ -2,7 +2,7 @@
   "run_id": "20260428T125921Z",
   "task_id": "054",
   "git": {
-    "sha": "806bf2c",
+    "sha": "893369a",
     "exit_code": 0,
     "changed_files": [
       "issues/done/054-implement-error-types.md",
@@ -26,6 +26,10 @@
       {
         "sha": "37482ef",
         "message": "issue-054: add minimal error stack property"
+      },
+      {
+        "sha": "893369a",
+        "message": "issue-054: close error types"
       }
     ]
   },

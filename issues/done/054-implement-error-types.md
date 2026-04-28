@@ -146,7 +146,7 @@ Commits:
 - `3c843a5` (`issue-054: coerce error message arguments`)
 - `8ab8f62` (`issue-054: implement error instanceof prototypes`)
 - `37482ef` (`issue-054: add minimal error stack property`)
-- closure metadata commit: recorded after commit
+- `893369a` (`issue-054: close error types`)
 
 Validation result:
 
