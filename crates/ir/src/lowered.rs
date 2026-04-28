@@ -741,6 +741,16 @@ fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'stat
     }
 }
 
+fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
+    match arg {
+        ResolvedExpr::Number(_) => true,
+        ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
+            matches!(expr.as_ref(), ResolvedExpr::Number(_))
+        }
+        _ => false,
+    }
+}
+
 fn regexp_constructor_literal(args: &[ResolvedExpr]) -> Result<String, Diagnostic> {
     if args.len() != 1 {
         return Err(Diagnostic {
@@ -1637,6 +1647,21 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "RegExpMatch".to_owned(),
                         args: lowered_args,
                     })
+                } else if method == "getTime" && self.is_date_receiver(object) {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.getTime expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateGetTime".to_owned(),
+                        args: vec![self.lower_expr(object)?],
+                    })
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
@@ -1835,15 +1860,26 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
                 }
                 if class_name == "Date" {
-                    if !args.is_empty() {
+                    if args.len() != 1 {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-050: Date constructor arguments are not supported yet"
+                            message: "issue-050: only deterministic new Date(<epoch-ms integer>) is supported in this slice"
                                 .to_owned(),
                             span: None,
                         });
                     }
-                    return Ok(LoweredExpr::ObjectNew { props: Vec::new() });
+                    let epoch_ms = &args[0];
+                    if !is_date_constructor_epoch_arg(epoch_ms) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-050: Date constructor currently requires an integer epoch millisecond literal".to_owned(),
+                            span: None,
+                        });
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateNew".to_owned(),
+                        args: vec![self.lower_expr(epoch_ms)?],
+                    });
                 }
                 if class_name == "Map" || class_name == "Set" {
                     if !args.is_empty() {
@@ -2040,6 +2076,18 @@ impl<'a> Resolver<'a> {
             current = self.class_parents.get(&class).and_then(|p| p.clone());
         }
         None
+    }
+
+    fn is_date_receiver(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::New { class_name, .. } => class_name == "Date",
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .and_then(|local_id| self.local_classes.get(&local_id))
+                .is_some_and(|class_name| class_name == "Date"),
+            _ => false,
+        }
     }
 
     fn class_prototype_ref(&self, class_name: &str) -> Result<ClassPrototypeRef, Diagnostic> {
