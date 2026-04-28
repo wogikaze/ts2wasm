@@ -112,6 +112,11 @@ Follow-up issues:
 - 2026-04-28: Remaining acceptance criteria are still not complete. `RegExp.prototype.exec`,
   `String.prototype.match`, broader constructor flags/state, and full RegExp syntax still need
   implementation before this issue can move to done.
+- 2026-04-28: Added a constrained `String.prototype.match(...)` continuation slice for direct
+  RegExp literals and direct `new RegExp("plain")` arguments. Plain byte matches return an
+  observable matched string for stringification and misses return `null`, allowing Node/iwasm
+  differential coverage without claiming full match-array semantics. Unsupported metacharacter
+  patterns such as `"aaa".match(/a*/)` remain rejected with an `issue-051` diagnostic.
 
 Validation:
 
@@ -154,6 +159,39 @@ result: pass
 
 scripts/manager check-agent-state
 result: pass
+
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(regexp)'
+result: pass; 14 tests run, 14 passed
+
+cargo nextest run -p ts2wasm-cli regexp
+result: pass; 11 tests run, 11 passed
+
+node fixtures/core-semantics/regexp-test.ts
+result: pass; stdout true / false / true / true / false / abc / null / needle / true
+
+cargo run -p ts2wasm-cli -- build fixtures/core-semantics/regexp-test.ts -o /tmp/ts2wasm-issue051-regexp-match.wasm
+result: pass
+
+iwasm /tmp/ts2wasm-issue051-regexp-match.wasm
+result: pass; stdout matched Node stdout: true / false / true / true / false / abc / null / needle / true
+
+scripts/manager check-issue-health
+result: pass
+
+scripts/manager check-agent-state
+result: pass
+
+scripts/manager fmt
+result: pass
+
+scripts/manager check-repo-smoke
+result: pass
+
+cargo nextest run
+result: not run; skipped because this slice adds a new RegExp-only runtime helper linked only by `RegExpMatch` and does not alter shared non-RegExp runtime behavior
 ```
 
 ## Completion evidence

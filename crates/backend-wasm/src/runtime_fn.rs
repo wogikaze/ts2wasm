@@ -106,6 +106,8 @@ pub(crate) enum RuntimeFn {
     StringFromCharCode,
     /// Issue 051: RegExp.prototype.test for literal-backed plain byte patterns.
     RegExpTest,
+    /// Issue 051: String.prototype.match for literal-backed plain byte patterns.
+    RegExpMatch,
     /// M10: Array methods
     ArrayPush,
     ArrayPop,
@@ -351,6 +353,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringCharCodeAt" => Some(RuntimeFn::StringCharCodeAt),
         "StringFromCharCode" => Some(RuntimeFn::StringFromCharCode),
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
+        "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
@@ -578,6 +581,11 @@ const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeF
 const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
+    RuntimeFn::StringSubstring,
+];
 
 // Array method dependencies
 const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
@@ -1169,6 +1177,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::RegExpMatch => RuntimeSpec {
+                symbol: "$regexp_match",
+                deps: REGEXP_MATCH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPush => RuntimeSpec {
                 symbol: "$array_push",
                 deps: ARRAY_PUSH_DEPS,
@@ -1544,6 +1560,7 @@ impl RuntimeFn {
             Self::StringCharCodeAt => "string_char_code_at",
             Self::StringFromCharCode => "string_from_char_code",
             Self::RegExpTest => "regexp_test",
+            Self::RegExpMatch => "regexp_match",
             Self::ArrayPush => "array_push",
             Self::ArrayPop => "array_pop",
             Self::ArraySlice => "array_slice",
@@ -1651,6 +1668,7 @@ impl RuntimeFn {
             Self::StringCharCodeAt,
             Self::StringFromCharCode,
             Self::RegExpTest,
+            Self::RegExpMatch,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,
@@ -1766,6 +1784,7 @@ impl RuntimeFn {
             Self::StringCharCodeAt,
             Self::StringFromCharCode,
             Self::RegExpTest,
+            Self::RegExpMatch,
             // Array methods
             Self::ArrayPush,
             Self::ArrayPop,
