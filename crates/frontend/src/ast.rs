@@ -88,6 +88,15 @@ pub struct ExportNamedSpecifier {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ReExportNamedSpecifier {
+    pub imported: String,
+    pub imported_span: Span,
+    pub exported: String,
+    pub exported_span: Span,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stmt {
     ImportSideEffect {
         specifier: ModuleSpecifier,
@@ -110,6 +119,11 @@ pub enum Stmt {
     },
     ExportNamed {
         specifiers: Vec<ExportNamedSpecifier>,
+        span: Span,
+    },
+    ExportNamedFrom {
+        specifiers: Vec<ReExportNamedSpecifier>,
+        source: ModuleSpecifier,
         span: Span,
     },
     Let {
@@ -338,6 +352,7 @@ impl Stmt {
             | Self::ImportDefault { span, .. }
             | Self::ImportNamespace { span, .. }
             | Self::ExportNamed { span, .. }
+            | Self::ExportNamedFrom { span, .. }
             | Self::Let { span, .. }
             | Self::Assign { span, .. }
             | Self::Expr { span, .. }

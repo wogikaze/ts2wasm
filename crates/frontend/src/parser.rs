@@ -1,7 +1,7 @@
 use crate::{
     BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportDefaultSpecifier,
-    ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp, ModuleSpecifier, Span,
-    SpannedToken, Stmt, Token, TokenKind, UnaryOp,
+    ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp, ModuleSpecifier,
+    ReExportNamedSpecifier, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
 };
 
 pub struct Parser {
@@ -195,10 +195,30 @@ impl Parser {
     }
 
     fn named_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
-        let specifiers = self.parse_export_named_specifiers()?;
+        let specifiers = self.parse_re_export_named_specifiers()?;
         if self.peek_contextual_keyword("from") {
-            return self.unsupported_module_form(export_span, "re-export");
+            self.expect_contextual_keyword("from")?;
+            let source = self.expect_module_specifier()?;
+            let semi = self.expect(TokenKind::Semicolon)?;
+            return Ok(Stmt::ExportNamedFrom {
+                specifiers,
+                source,
+                span: Span {
+                    start: export_span.start,
+                    end: semi.end,
+                },
+            });
         }
+        let specifiers = specifiers
+            .into_iter()
+            .map(|specifier| ExportNamedSpecifier {
+                local: specifier.imported,
+                local_span: specifier.imported_span,
+                exported: specifier.exported,
+                exported_span: specifier.exported_span,
+                span: specifier.span,
+            })
+            .collect();
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::ExportNamed {
             specifiers,
@@ -243,26 +263,28 @@ impl Parser {
         Ok(specifiers)
     }
 
-    fn parse_export_named_specifiers(&mut self) -> Result<Vec<ExportNamedSpecifier>, Diagnostic> {
+    fn parse_re_export_named_specifiers(
+        &mut self,
+    ) -> Result<Vec<ReExportNamedSpecifier>, Diagnostic> {
         self.expect(TokenKind::LeftBrace)?;
         let mut specifiers = Vec::new();
         if self.consume(TokenKind::RightBrace) {
             return Ok(specifiers);
         }
         loop {
-            let (local, local_span) = self.expect_ident()?;
+            let (imported, imported_span) = self.expect_ident()?;
             let (exported, exported_span) = if self.consume_contextual_keyword("as") {
                 self.expect_ident()?
             } else {
-                (local.clone(), local_span)
+                (imported.clone(), imported_span)
             };
-            specifiers.push(ExportNamedSpecifier {
-                local,
-                local_span,
+            specifiers.push(ReExportNamedSpecifier {
+                imported,
+                imported_span,
                 exported,
                 exported_span,
                 span: Span {
-                    start: local_span.start,
+                    start: imported_span.start,
                     end: exported_span.end,
                 },
             });
@@ -2893,16 +2915,34 @@ mod tests {
     }
 
     #[test]
-    fn rejects_named_re_export_with_issue_linked_diagnostic() {
-        let err = parse_program("export { value } from './module-source';").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported re-export"));
-        assert!(
-            err.message
-                .contains("module resolution and loading are not implemented")
-        );
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_named_re_export_with_specifier_and_source_spans() {
+        let program =
+            parse_program("export { value, original as renamed } from './module-source';").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportNamedFrom {
+                specifiers,
+                source,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 61 });
+                assert_eq!(source.value, "./module-source");
+                assert_eq!(source.span, Span { start: 43, end: 60 });
+                assert_eq!(specifiers.len(), 2);
+                assert_eq!(specifiers[0].imported, "value");
+                assert_eq!(specifiers[0].imported_span, Span { start: 9, end: 14 });
+                assert_eq!(specifiers[0].exported, "value");
+                assert_eq!(specifiers[0].exported_span, Span { start: 9, end: 14 });
+                assert_eq!(specifiers[0].span, Span { start: 9, end: 14 });
+                assert_eq!(specifiers[1].imported, "original");
+                assert_eq!(specifiers[1].imported_span, Span { start: 16, end: 24 });
+                assert_eq!(specifiers[1].exported, "renamed");
+                assert_eq!(specifiers[1].exported_span, Span { start: 28, end: 35 });
+                assert_eq!(specifiers[1].span, Span { start: 16, end: 35 });
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
     }
 
     #[test]

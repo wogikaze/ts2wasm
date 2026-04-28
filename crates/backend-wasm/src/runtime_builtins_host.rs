@@ -818,6 +818,27 @@ impl WatEmitter<'_> {
       (then
         (local.set $sign (i32.const -1))
         (local.set $pos (i32.add (local.get $pos) (i32.const {one})))))
+    (if (i32.lt_u (local.get $pos) (local.get $len))
+      (then
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {str_header}))
+              (local.get $pos))))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_zero}))
+          (then
+            (if (i32.lt_u (i32.add (local.get $pos) (i32.const {one})) (local.get $len))
+              (then
+                (local.set $ch
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {str_header}))
+                      (i32.add (local.get $pos) (i32.const {one})))))
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $ch) (i32.const {ascii_zero}))
+                    (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+                  (then (return (i32.const {undefined}))))))))))
     (block $int_done
       (loop $int_loop
         (br_if $int_done (i32.ge_u (local.get $pos) (local.get $len)))
@@ -958,6 +979,27 @@ impl WatEmitter<'_> {
           (local.get $pos))))
     (if (i32.eq (local.get $ch) (i32.const {minus}))
       (then (local.set $pos (i32.add (local.get $pos) (i32.const {one})))))
+    (if (i32.lt_u (local.get $pos) (local.get $len))
+      (then
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {str_header}))
+              (local.get $pos))))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_zero}))
+          (then
+            (if (i32.lt_u (i32.add (local.get $pos) (i32.const {one})) (local.get $len))
+              (then
+                (local.set $ch
+                  (i32.load8_u
+                    (i32.add
+                      (i32.add (local.get $obj) (i32.const {str_header}))
+                      (i32.add (local.get $pos) (i32.const {one})))))
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $ch) (i32.const {ascii_zero}))
+                    (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+                  (then (return (i32.add (local.get $len) (i32.const {one})))))))))))
     (block $int_done
       (loop $int_loop
         (br_if $int_done (i32.ge_u (local.get $pos) (local.get $len)))
