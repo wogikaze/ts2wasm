@@ -194,6 +194,33 @@ null
   - `scripts/manager check-agent-state`
 - Remaining gaps before close: escaped strings, decimals/exponents, stricter incomplete-token validation, object elements inside parsed arrays as explicit regression coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.parse` escaped-string continuation slice for standard single-byte escapes in parsed strings: `\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, and `\t`.
+- Added an escape-aware string skipper so top-level strings, object keys, object string values, array string values, and nested container scanning do not terminate early on escaped quotes.
+- Added Node differential coverage:
+  - `fixtures/builtins-and-io/json-parse-escaped-string.ts`: Node and iwasm both print `a"b`.
+  - `fixtures/builtins-and-io/json-parse-escaped-nested.ts`: Node and iwasm both print:
+
+```text
+x"y
+c\d
+```
+
+- Pre-change gap check with `/tmp/ts2wasm-json-escaped-string.ts` showed Node printed `a"b`, while iwasm rejected the same case with `Exception: unreachable`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-escaped-string.ts`
+  - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-escaped-string.ts -o /tmp/ts2wasm-json-parse-escaped-string.wasm && iwasm /tmp/ts2wasm-json-parse-escaped-string.wasm`
+  - `node fixtures/builtins-and-io/json-parse-escaped-nested.ts`
+  - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-escaped-nested.ts -o /tmp/ts2wasm-json-parse-escaped-nested.wasm && iwasm /tmp/ts2wasm-json-parse-escaped-nested.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because the issue remains open and the assignment allows focused validation for narrow runtime progress.
+- Remaining gaps before close: decimal/exponent number parsing, `\uXXXX` string escapes, stricter incomplete-token validation, explicit object-elements-inside-arrays coverage, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
