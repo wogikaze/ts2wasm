@@ -1,7 +1,7 @@
 mod dump;
 mod module_graph;
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -61,6 +61,7 @@ pub fn build_file_with_host_deny(
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
     validate_optimized_hir_slice(&resolved, OptimizationLevel::O0)?;
     let lowered = lowered::lower_program(&resolved)?;
+    let lowered = populate_static_module_exports_for_build(lowered, &module_graph)?;
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
             code: DiagCode::InvariantViolation,
@@ -130,6 +131,49 @@ fn rewrite_static_named_imports_for_build(
     module_graph: &ModuleGraph,
 ) -> Result<Vec<Stmt>, Diagnostic> {
     Ok(lower_static_named_import_bindings_for_build(program, module_graph)?.rewritten_program)
+}
+
+fn populate_static_module_exports_for_build(
+    mut lowered: lowered::LoweredProgram,
+    module_graph: &ModuleGraph,
+) -> Result<lowered::LoweredProgram, Diagnostic> {
+    for module in module_graph
+        .modules()
+        .iter()
+        .filter(|module| module.id() != 0)
+    {
+        if lowered
+            .modules
+            .iter()
+            .any(|existing| existing.id == module.id())
+        {
+            continue;
+        }
+
+        let exports = collect_literal_named_exports(module.path())?;
+        if exports.is_empty() {
+            continue;
+        }
+
+        let statements = exports
+            .into_iter()
+            .map(|(name, initializer)| {
+                Ok(lowered::LoweredStmt::Export {
+                    name,
+                    expr: lower_static_export_literal_expr(&initializer)?,
+                })
+            })
+            .collect::<Result<Vec<_>, Diagnostic>>()?;
+
+        lowered.modules.push(lowered::ModuleInfo {
+            id: module.id(),
+            specifier: module_specifier(module_graph, module.id()),
+            statements,
+            locals_count: 0,
+        });
+    }
+
+    Ok(lowered)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -209,7 +253,7 @@ fn lower_static_named_import_bindings_for_build(
     })
 }
 
-fn collect_literal_named_exports(path: &Path) -> Result<HashMap<String, Expr>, Diagnostic> {
+fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, Diagnostic> {
     let source = fs::read_to_string(path).map_err(|error| Diagnostic {
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", path.display()),
@@ -219,7 +263,7 @@ fn collect_literal_named_exports(path: &Path) -> Result<HashMap<String, Expr>, D
     let program = parse_program(&source)?;
     validate_ast(&program)?;
 
-    let mut exports = HashMap::new();
+    let mut exports = BTreeMap::new();
     for stmt in &program {
         if let Stmt::ExportDecl {
             declaration,
@@ -245,6 +289,38 @@ fn collect_literal_named_exports(path: &Path) -> Result<HashMap<String, Expr>, D
     }
 
     Ok(exports)
+}
+
+fn lower_static_export_literal_expr(expr: &Expr) -> Result<lowered::LoweredExpr, Diagnostic> {
+    match expr {
+        Expr::Number { value, .. } => Ok(lowered::LoweredExpr::Number(*value)),
+        Expr::String { value, .. } => Ok(lowered::LoweredExpr::String(value.clone())),
+        Expr::Bool { value, .. } => Ok(lowered::LoweredExpr::Bool(*value)),
+        Expr::Null { .. } => Ok(lowered::LoweredExpr::Null),
+        Expr::Undefined { .. } => Ok(lowered::LoweredExpr::Undefined),
+        other => Err(Diagnostic {
+            code: DiagCode::InvariantViolation,
+            message: format!(
+                "non-literal static export initializer reached lowered module population: {other:?}"
+            ),
+            span: None,
+        }),
+    }
+}
+
+fn module_specifier(module_graph: &ModuleGraph, module_id: usize) -> String {
+    for module in module_graph.modules() {
+        for dependency in module.dependencies() {
+            if dependency.resolved_module_id() == module_id {
+                return dependency.specifier().to_owned();
+            }
+        }
+    }
+
+    module_graph
+        .module(module_id)
+        .map(|module| module.path().display().to_string())
+        .unwrap_or_else(|| format!("<module:{module_id}>"))
 }
 
 fn is_static_export_literal(expr: &Expr) -> bool {
@@ -890,6 +966,56 @@ console.log(importedValue);
             }
             other => panic!("unexpected importer shadow stmt: {other:?}"),
         }
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn static_module_export_lowering_populates_explicit_lowered_module_statements() {
+        let dir = unique_temp_dir("static-module-export-ir");
+        std::fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let source_module = dir.join("source.ts");
+        let entry_source = r#"
+import { value } from "./source";
+console.log(value);
+"#;
+        std::fs::write(&entry, entry_source).expect("entry should be written");
+        std::fs::write(&source_module, "export const value = 1;\n")
+            .expect("source module should be written");
+
+        let program = parse_program(entry_source).expect("entry should parse");
+        validate_ast(&program).expect("entry should validate");
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let build_program = rewrite_static_named_imports_for_build(&program, &graph)
+            .expect("static named import rewrite should succeed");
+        let name_resolved =
+            name_resolver::resolve_names(&build_program).expect("names should resolve");
+        let resolved =
+            builtin_resolver::resolve_builtins(&name_resolved).expect("builtins should resolve");
+        let lowered_program = lowered::lower_program(&resolved).expect("program should lower");
+        let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph)
+            .expect("static module exports should populate lowered metadata");
+
+        assert_eq!(lowered_program.modules.len(), 1);
+        let module = &lowered_program.modules[0];
+        assert_eq!(module.id, 1);
+        assert_eq!(module.specifier, "./source");
+        assert_eq!(module.locals_count, 0);
+        assert_eq!(
+            module.statements,
+            vec![lowered::LoweredStmt::Export {
+                name: "value".to_owned(),
+                expr: lowered::LoweredExpr::Number(1),
+            }]
+        );
+        lowered::validate_lowered(&lowered_program)
+            .expect("module statements should validate as lowered IR");
+
+        let wat = backend::emit_wat(&lowered_program)
+            .expect("lowered module metadata should remain buildable");
+        assert!(wat.contains("$module_exports_set"));
+        assert!(!wat.contains("$module_require"));
 
         let _ = std::fs::remove_dir_all(&dir);
     }
