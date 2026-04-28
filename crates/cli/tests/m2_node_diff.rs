@@ -119,6 +119,7 @@ fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",
         "fixtures/builtins-and-io/json-parse-nested-array.ts",
+        "fixtures/builtins-and-io/json-parse-object-nested.ts",
         "fixtures/builtins-and-io/json-parse.ts",
         "fixtures/builtins-and-io/json-stringify.ts",
     ] {

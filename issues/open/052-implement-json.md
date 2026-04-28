@@ -155,6 +155,30 @@ null
 - Full `cargo nextest run` was skipped for this PROGRESS slice because the change is scoped to the JSON runtime helper and the assignment only requires full nextest before merge when the runtime parsing change is broad enough to justify it. The JSON-targeted nextest filters and direct Node/iwasm fixture evidence passed.
 - Remaining gaps before close: escaped strings, decimals/exponents, nested objects, arrays inside parsed object values, object elements inside parsed arrays, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Added Node differential coverage for `JSON.parse` object values containing an array and a nested object with its own array in `fixtures/builtins-and-io/json-parse-object-nested.ts`.
+- Direct Node/iwasm evidence for the new fixture both print:
+
+```text
+2
+2
+3
+4
+```
+
+- Pre-change gap check with `/tmp/ts2wasm-json-object-nested.ts` showed the current runtime already handled this narrow object-value continuation, so this child slice records the behavior as regression coverage rather than changing backend runtime code.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `node fixtures/builtins-and-io/json-parse-object-nested.ts`
+  - `cargo run -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-object-nested.ts -o /tmp/ts2wasm-json-parse-object-nested.wasm && iwasm /tmp/ts2wasm-json-parse-object-nested.wasm`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+- Full `cargo nextest run` was skipped for this PROGRESS slice because no runtime parser code changed; the assignment-specific JSON filters and direct Node/iwasm fixture evidence passed.
+- Remaining gaps before close: escaped strings, decimals/exponents, object elements inside parsed arrays, stricter top-level/trailing-token parse validation, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
