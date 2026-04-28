@@ -314,6 +314,29 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
         } => {
             let _ = writeln!(out, "import {} from '{}';", specifier.local, source.value);
         }
+        Stmt::ImportDefaultNamed {
+            default,
+            specifiers,
+            source,
+            ..
+        } => {
+            let specifiers = specifiers
+                .iter()
+                .map(|specifier| {
+                    if specifier.imported == specifier.local {
+                        specifier.imported.clone()
+                    } else {
+                        format!("{} as {}", specifier.imported, specifier.local)
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            let _ = writeln!(
+                out,
+                "import {}, {{ {specifiers} }} from '{}';",
+                default.local, source.value
+            );
+        }
         Stmt::ImportNamespace {
             specifier, source, ..
         } => {
@@ -321,6 +344,18 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
                 out,
                 "import * as {} from '{}';",
                 specifier.local, source.value
+            );
+        }
+        Stmt::ImportDefaultNamespace {
+            default,
+            namespace,
+            source,
+            ..
+        } => {
+            let _ = writeln!(
+                out,
+                "import {}, * as {} from '{}';",
+                default.local, namespace.local, source.value
             );
         }
         Stmt::ExportNamed { specifiers, .. } => {
