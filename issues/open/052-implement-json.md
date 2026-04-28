@@ -292,6 +292,23 @@ x/y
 - Full `cargo nextest run` was skipped for this PROGRESS slice because no runtime parser code changed and the assignment explicitly allows focused validated progress.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, stricter incomplete-token validation, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
 
+2026-04-28:
+
+- Implemented a `JSON.parse` incomplete-token validation slice that rejects invalid top-level parse failures instead of silently returning `undefined`, covering empty input and incomplete object/array/string/number parse paths through the existing parse helpers.
+- Added Node/iwasm rejection coverage in `fixtures/builtins-and-io/json-parse-incomplete-object.ts` for `JSON.parse('{"a":1')`.
+- Pre-change gap check with `/tmp/ts2wasm-json-incomplete-object.ts` showed Node rejected the case with a JSON `SyntaxError` and status 1, while iwasm accepted the program with status 0.
+- Direct evidence for the new fixture:
+  - `node fixtures/builtins-and-io/json-parse-incomplete-object.ts` rejects with a JSON `SyntaxError` and status 1.
+  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-incomplete-object.ts -o /tmp/ts2wasm-json-parse-incomplete-object.wasm && iwasm /tmp/ts2wasm-json-parse-incomplete-object.wasm` rejects with `Exception: unreachable` and status 1.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo nextest run -E 'test(json)'`
+  - `cargo nextest run -p ts2wasm-cli json`
+  - `scripts/manager check-issue-health`
+  - `scripts/manager check-agent-state`
+  - `cargo nextest run`
+- Remaining gaps before close: arbitrary non-integer JSON number representation, non-ASCII `\uXXXX`/surrogate handling, `JSON.stringify` replacer/space arguments, and throw-compatible parse diagnostics remain outside this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
