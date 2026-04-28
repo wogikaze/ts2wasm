@@ -1751,12 +1751,14 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "RegExpMatch".to_owned(),
                         args: lowered_args,
                     })
-                } else if method == "getTime" && self.is_date_receiver(object) {
+                } else if matches!(method.as_str(), "getTime" | "valueOf")
+                    && self.is_date_receiver(object)
+                {
                     if !args.is_empty() {
                         return Err(Diagnostic {
                             code: DiagCode::ArityMismatch,
                             message: format!(
-                                "Date.prototype.getTime expects 0 arguments, got {}",
+                                "Date.prototype.{method} expects 0 arguments, got {}",
                                 args.len()
                             ),
                             span: Some(*span),
