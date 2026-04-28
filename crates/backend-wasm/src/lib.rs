@@ -229,7 +229,7 @@ mod tests {
     }
 
     #[test]
-    fn function_locals_are_mirrored_into_gc_root_table() {
+    fn function_locals_are_mirrored_into_activation_gc_root_frames() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Call {
                 kind: FunctionCallKind::User(FuncId(0)),
@@ -252,15 +252,26 @@ mod tests {
 
         let wat = emit_wat(&program).expect("function local root should emit WAT");
 
-        assert!(wat.contains("(global.set $gc_root_count (i32.const 7))"));
-        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 28)))"));
+        assert!(wat.contains("(global $gc_call_frame_current (mut i32) (i32.const 0))"));
+        assert!(wat.contains("(global.set $gc_root_count (i32.const 3))"));
+        assert!(wat.contains("(global.set $gc_root_base (call $alloc_heap (i32.const 16396)))"));
         assert!(wat.contains(
-            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 12)) (local.get 0))"
+            "(global.set $gc_call_frame_base (i32.add (global.get $gc_root_base) (i32.const 12)))"
+        ));
+        assert!(
+            wat.contains("(global.set $gc_call_frame_current (global.get $gc_call_frame_top))")
+        );
+        assert!(wat.contains("(global.set $gc_call_frame_top (i32.add (global.get $gc_call_frame_top) (i32.const 24)))"));
+        assert!(wat.contains(
+            "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 8)) (local.get 0))"
         ));
         assert!(wat.contains(
-            "(i32.store (i32.add (global.get $gc_root_base) (i32.const 16)) (local.get 1))"
+            "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 12)) (local.get 1))"
         ));
-        assert!(wat.contains("(call $gc_mark_registered_roots"));
+        assert!(wat.contains("(call $gc_mark_call_frame_roots"));
+        assert!(
+            wat.contains("(global.set $gc_call_frame_top (global.get $gc_call_frame_current))")
+        );
     }
 
     #[test]

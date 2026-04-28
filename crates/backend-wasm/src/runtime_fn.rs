@@ -397,6 +397,10 @@ pub(crate) enum RuntimeGlobal {
     GcFreeList,
     GcRootBase,
     GcRootCount,
+    GcCallFrameBase,
+    GcCallFrameTop,
+    GcCallFrameLimit,
+    GcCallFrameCurrent,
     ModuleCache,
     CurrentModuleId,
 }
@@ -408,6 +412,10 @@ impl RuntimeGlobal {
             Self::GcFreeList => "$gc_free_list",
             Self::GcRootBase => "$gc_root_base",
             Self::GcRootCount => "$gc_root_count",
+            Self::GcCallFrameBase => "$gc_call_frame_base",
+            Self::GcCallFrameTop => "$gc_call_frame_top",
+            Self::GcCallFrameLimit => "$gc_call_frame_limit",
+            Self::GcCallFrameCurrent => "$gc_call_frame_current",
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
         }
@@ -419,6 +427,10 @@ impl RuntimeGlobal {
             Self::GcFreeList => 0,
             Self::GcRootBase => 0,
             Self::GcRootCount => 0,
+            Self::GcCallFrameBase
+            | Self::GcCallFrameTop
+            | Self::GcCallFrameLimit
+            | Self::GcCallFrameCurrent => 0,
             Self::ModuleCache | Self::CurrentModuleId => 0,
         }
     }
@@ -444,6 +456,10 @@ const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
     RuntimeGlobal::GcFreeList,
     RuntimeGlobal::GcRootBase,
     RuntimeGlobal::GcRootCount,
+    RuntimeGlobal::GcCallFrameBase,
+    RuntimeGlobal::GcCallFrameTop,
+    RuntimeGlobal::GcCallFrameLimit,
+    RuntimeGlobal::GcCallFrameCurrent,
 ];
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];

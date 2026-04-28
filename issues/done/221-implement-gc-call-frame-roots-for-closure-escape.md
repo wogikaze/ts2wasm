@@ -1,8 +1,9 @@
 # Implement GC call-frame roots for closure escape
 
-**Status**: open
+**Status**: done
 **Created**: 2026-04-28
 **Updated**: 2026-04-28
+**Completed**: 2026-04-28
 **ID**: 221
 **Type**: feature
 **Area**: runtime/memory
@@ -25,9 +26,9 @@ Out of scope:
 
 Acceptance Criteria:
 
-- [ ] Function/call-frame heap locals are marked across collection.
-- [ ] Closure/call-frame escape fixtures trigger collection and preserve semantics.
-- [ ] Node differential tests pass for closure/call-frame GC fixtures.
+- [x] Function/call-frame heap locals are marked across collection.
+- [x] Closure/call-frame escape fixtures trigger collection and preserve semantics.
+- [x] Node differential tests pass for closure/call-frame GC fixtures.
 
 Validation:
 
@@ -45,3 +46,28 @@ Progress notes:
 - 2026-04-28: issue 222 added backend temporary root mirroring for the caller-side temporary value
   that crosses a collecting function call. Precise activation-frame push/pop and closure capture
   semantics remain open here.
+
+Completion evidence:
+
+```text
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-backend-wasm
+result: PASS (15 passed)
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli --test m2_node_diff m3_semantic_fixtures_match_node_output_under_iwasm
+result: PASS (1 passed, includes gc-call-frame-root.ts and closure-gc-call-frame-root.ts)
+date: 2026-04-28
+
+command: cargo nextest run -p ts2wasm-cli --test m2_node_diff arrow_function_fixtures_match_node_output_under_iwasm
+result: PASS (1 passed)
+date: 2026-04-28
+```
+
+Close note:
+
+- Backend now allocates a fixed GC call-frame root stack during `_start`, pushes activation frames on function entry, mirrors function locals/temporaries into the active frame, marks the active frame chain during collection, and pops frames on all emitted function returns.
+- `fixtures/core-semantics/closure-gc-call-frame-root.ts` adds closure capture coverage under allocation pressure; existing `gc-call-frame-root.ts` continues to cover function local preservation.

@@ -1029,7 +1029,7 @@ impl WatEmitter<'_> {
             })
             .collect::<String>();
         let gc_roots = format!(
-            "\n    (call $gc_mark_registered_roots){gc_collect_roots}{class_prototype_roots}"
+            "\n    (call $gc_mark_registered_roots)\n    (call $gc_mark_call_frame_roots){gc_collect_roots}{class_prototype_roots}"
         );
 
         wat.push_str(&format!(
@@ -1167,6 +1167,37 @@ impl WatEmitter<'_> {
         (call $gc_mark_value (i32.load (local.get $slot)))
         (local.set $i (i32.add (local.get $i) (i32.const 1)))
         (br $scan))))
+
+  (func $gc_mark_call_frame_roots
+    (local $frame i32)
+    (local $i i32)
+    (local $slot_count i32)
+    (local $slot i32)
+    (local.set $frame (global.get $gc_call_frame_current))
+    (block $done
+      (loop $frames
+        (br_if $done (i32.eqz (local.get $frame)))
+        (drop (call $gc_mark_payload_header (global.get $gc_root_base)))
+        (local.set $slot_count
+          (i32.load
+            (i32.add
+              (local.get $frame)
+              (i32.const 4))))
+        (local.set $i (i32.const 0))
+        (block $slots_done
+          (loop $slots
+            (br_if $slots_done (i32.ge_u (local.get $i) (local.get $slot_count)))
+            (local.set $slot
+              (i32.add
+                (local.get $frame)
+                (i32.add
+                  (i32.const {gc_call_frame_header_size})
+                  (i32.shl (local.get $i) (i32.const 2)))))
+            (call $gc_mark_value (i32.load (local.get $slot)))
+            (local.set $i (i32.add (local.get $i) (i32.const 1)))
+            (br $slots)))
+        (local.set $frame (i32.load (local.get $frame)))
+        (br $frames))))
 
   (func $gc_mark_payload_header (param $payload i32) (result i32)
     (local $header i32)
@@ -1322,6 +1353,7 @@ impl WatEmitter<'_> {
             gc_body_size_offset = Layout::GC_BODY_SIZE_OFFSET,
             gc_sweep_next_offset = Layout::GC_SWEEP_NEXT_OFFSET,
             gc_reserved_offset = Layout::GC_RESERVED_OFFSET,
+            gc_call_frame_header_size = Layout::GC_CALL_FRAME_HEADER_SIZE,
             gc_kind_unknown = Layout::GC_KIND_UNKNOWN,
             gc_mark_flag = Layout::GC_MARK_FLAG,
             gc_mark_clear_mask = !(Layout::GC_MARK_FLAG as i32),
