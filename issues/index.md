@@ -21,6 +21,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 050 | Implement Date | feature | runtime/builtins | implementation-ready | P1 |  | Implement Date |
 | 051 | Implement RegExp | feature | runtime/builtins | implementation-ready | P1 |  | Implement RegExp |
 | 052 | Implement JSON | feature | runtime/builtins | implementation-ready | P1 |  | Implement JSON |
+| 055 | Umbrella: implement import and export | feature | frontend/semantics | design-ready | P1 | 232, 233, 234 | Umbrella: implement import and export |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions for TypeScript and advanced JS |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported diagnostic cases |
 | 061 | Implement Date object support | feature | frontend | design-ready | P1 |  | Implement Date object support |
@@ -165,7 +166,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | feature | frontend | design-ready | P1 |  | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | feature | frontend | design-ready | P1 |  | Investigate and classify unknown-unsupported cases |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | design-ready | P3 |  | Implement eval and Annex B function declaration semantics |
-| 234 | Cover static ES module execution | test | tests/fixtures | implementation-ready | P1 | 231, 232, 233 | Cover static ES module execution |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -174,7 +174,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
 | 017b | Implement GC strategy | feature | runtime/memory | class: blocked | Implement GC strategy |
-| 055 | Umbrella: implement import and export | feature | frontend/semantics | 232, 233, 234 | Umbrella: implement import and export |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -272,6 +271,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 231 | Parse static ES module declarations | feature | frontend | see `issues/done/231-parse-static-es-module-declarations.md` |
 | 232 | Resolve local relative ES module graph | feature | compiler/frontend | see `issues/done/232-resolve-local-relative-es-module-graph.md` |
 | 233 | Emit static ES module bindings | feature | ir/backend | see `issues/done/233-emit-static-es-module-bindings.md` |
+| 234 | Cover static ES module execution | test | tests/fixtures | see `issues/done/234-cover-static-es-module-execution.md` |
 | 235 | Fix GC root count backend tests | bug | backend/memory | see `issues/done/235-fix-gc-root-count-tests.md` |
 | 236 | Complete logical assignment target forms | feature | frontend/semantics | see `issues/done/236-complete-logical-assignment-target-forms.md` |
 | 237 | Implement Annex B IsHTMLDDA compatibility | feature | runtime/semantics | see `issues/done/237-implement-annexb-ishtmldda-compatibility.md` |

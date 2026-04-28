@@ -29,9 +29,9 @@ In scope:
 
 - [ ] Coordinate split issues:
   - [x] 231 parser AST representation for static module declarations
-  - [ ] 232 resolver/compiler module graph for local relative specifiers
-  - [ ] 233 export binding lowering and backend module initialization
-  - [ ] 234 execution fixtures and differential coverage
+  - [x] 232 resolver/compiler module graph for local relative specifiers
+  - [x] 233 export binding lowering and backend module initialization
+  - [x] 234 execution fixtures and differential coverage
 
 Out of scope:
 
@@ -45,7 +45,7 @@ Expected:
 - `issues/done/231-parse-static-es-module-declarations.md`
 - `issues/done/232-resolve-local-relative-es-module-graph.md`
 - `issues/done/233-emit-static-es-module-bindings.md`
-- `issues/open/234-cover-static-es-module-execution.md`
+- `issues/done/234-cover-static-es-module-execution.md`
 
 Do not touch:
 
@@ -93,7 +93,7 @@ Follow-up issues:
 - [x] created/updated: `issues/done/231-parse-static-es-module-declarations.md`
 - [x] created/updated: `issues/done/232-resolve-local-relative-es-module-graph.md`
 - [x] created/updated: `issues/done/233-emit-static-es-module-bindings.md`
-- [x] created/updated: `issues/open/234-cover-static-es-module-execution.md`
+- [x] created/updated: `issues/done/234-cover-static-es-module-execution.md`
 
 ## Notes
 
@@ -114,6 +114,13 @@ Keep this issue open as the umbrella until the split issues are complete. Do not
   - `cargo run -q -p ts2wasm-cli -- build fixtures/module-system/static-named-export-unsupported.ts -o /tmp/ts2wasm-055-export.wasm` failed as expected with `[UnsupportedSyntax] issue-055: unsupported named export; module resolution and loading are not implemented`.
 
 Remaining scope: parser representation for supported module declarations, module resolution, module loading, and execution fixtures remain open.
+
+2026-04-28 child slice `234-static-esm-exec-close-20260428T130000Z`:
+
+- Closed split issue 234 after auditing existing static named ES module execution coverage.
+- The split issue path now lives at `issues/done/234-cover-static-es-module-execution.md`.
+- Static named ES module fixtures have Node/iwasm differential evidence for direct import, alias import, importer lexical shadowing, and repeated import from the same source module.
+- This umbrella remains open for import/export coordination beyond the narrow split-issue subset.
 
 2026-04-28 child slice `055-module-diagnostics-next-20260428T045453Z`:
 
