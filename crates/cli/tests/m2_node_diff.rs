@@ -183,6 +183,13 @@ fn json_parse_trailing_tokens_rejected_under_node_and_iwasm() {
 }
 
 #[test]
+fn json_parse_incomplete_object_rejected_under_node_and_iwasm() {
+    assert_fixture_rejected_by_node_and_iwasm(
+        "fixtures/builtins-and-io/json-parse-incomplete-object.ts",
+    );
+}
+
+#[test]
 fn error_message_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/error-message.ts");
 }
