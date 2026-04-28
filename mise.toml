@@ -3,6 +3,12 @@
 # No mise? Use: `python scripts/manager.py` or `python scripts/manager.py help`
 # Note: On Windows, use python scripts/manager.py instead of scripts/manager (bash)
 
+# Default must stay lightweight and argument-free. Without this, `mise run`
+# attempts every task, including long reference/test262 and arg-required gates.
+[tasks.default]
+description = "Default smoke check: no reference corpus or argument-required gates"
+run = "python scripts/manager.py check-repo-smoke"
+
 # Use Python manager for cross-platform support
 [tasks."check-scripts"]
 description = "Bash -n on scripts/**/*.sh (syntax only)"
