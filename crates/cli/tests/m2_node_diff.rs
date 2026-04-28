@@ -215,6 +215,16 @@ fn date_epoch_get_time_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn date_live_time_fixtures_report_capability_policy_diagnostic() {
+    for fixture in [
+        "fixtures/builtins-and-io/date-now-live-time-unsupported.ts",
+        "fixtures/builtins-and-io/date-noarg-live-time-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, "auditable time capability policy");
+    }
+}
+
+#[test]
 fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
 }
