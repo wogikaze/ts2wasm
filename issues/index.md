@@ -170,6 +170,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 227 | Implement type reference directive resolution | feature | frontend/semantics | design-ready | P2 |  | Implement type reference directive resolution |
 | 228 | Implement logical assignment operators | feature | frontend/semantics | design-ready | P2 |  | Implement logical assignment operators |
 | 229 | Implement legacy octal escape handling | feature | frontend | design-ready | P3 |  | Implement legacy octal escape handling |
+| 230 | Implement async iteration and for-await-of | feature | frontend/semantics | design-ready | P2 |  | Implement async iteration and for-await-of |
 <!-- generated:ready:end -->
 
 ## Blocked queue

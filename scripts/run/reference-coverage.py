@@ -253,6 +253,8 @@ def feature_label(diag_code, err_file, file_path):
         return "logical-assignment"
     elif "/annexb/language/expressions/template-literal/legacy-octal-escape-sequence-" in path_lc:
         return "legacy-octal-escape"
+    elif "/for-await-of/" in path_lc:
+        return "async-iteration"
     elif "/class/" in path_lc or "/class-" in path_lc or "/classes/" in path_lc:
         return "class"
     elif "/module/" in path_lc or "/import/" in path_lc or "/export/" in path_lc:
