@@ -43,6 +43,8 @@ Lowering では、TypeScript / JavaScript の意味論を WASM に落としや�
 
 WASM backend は、IR から `.wasm` を生成する。初期は linear memory ベースで実装し、iwasm で動くことを優先する。値表現は論理的な `jsval` を基本とし、初期 core wasm では `i64` tagged value、heap ref では 32-bit offset payload を使う。runtime heap に object / string / array / closure を置く。
 
+WAT と wasm binary は同じ backend 契約を満たす等価な wire 表現として扱う。どちらを実装上の中間正本にしてもよいが、observable behavior、runtime ABI、manifest/import、WASI capability は一致しなければならない。WASI は標準入出力や filesystem などを wasm 側で処理するための前提 target であり、`fd_write` など WASI で表現できる API は原則 wasm/WASI 側で処理する。
+
 wasm-tools は既に Wasm GC、reference-types、function-references、multi-memory、multi-value、SIMD、tail-call、threads などの提案を実装しており（多くは Stage 4+）、WAMR も multi-thread、AOT/JIT をサポートしている。将来的に Wasm GC backend を追加する場合も、IR は共有する。
 
 ## 値表現
@@ -165,6 +167,12 @@ runtime helper は、通常の JS 例外を直接 wasm trap にしない。例�
 | `utf8_encode` | `(jsval string, ptr out) -> len` | WASI output 用 |
 
 `split(/\s+/)` のような RegExp を含む標準 idiom は、RegExp subset が入るまでは `unsupported-regexp-split` として診断する。standalone WASI の可否と、JS runtime の意味論実装状況は別に管理する。
+
+## JS API and shim boundary
+
+TypeScript は実行時には JavaScript であるため、JavaScript / TypeScript の言語機能は原則すべてサポート対象である。compiler はまず wasm/WASI/runtime helper で意味論を実装する。標準入出力のように WASI で表現できる API は wasm 側で処理し、不要な JavaScript glue は生成しない。
+
+理論的に wasm/WASI/runtime helper だけでは実装できない JavaScript API や host 統合が必要な API は、監査可能な shim JavaScript を emit する。shim は fallback ではなく backend の正式な出力形態であり、capability manifest と一致しなければならない。動的コード評価が必要な `eval` / `Function` もサポート対象であり、wasm 内実装、WASI/runtime helper、または shim emit のいずれかで observable JavaScript semantics を満たす。
 
 ## 追加設計: numeric fast path boundary
 
