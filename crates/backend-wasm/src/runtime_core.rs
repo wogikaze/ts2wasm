@@ -2524,6 +2524,7 @@ impl WatEmitter<'_> {
     (local $memory_pages i32)
     (local $memory_bytes i32)
     (local $needed_pages i32)
+    (local $remaining_pages i32)
     (local $free_prev i32)
     (local $free_header i32)
     (local $free_next i32)
@@ -2697,6 +2698,10 @@ impl WatEmitter<'_> {
               (i32.const {memory_max_pages})))
           (then
             (local.set $needed_pages (i32.const {heap_grow_min_pages}))))
+        (local.set $remaining_pages
+          (i32.sub (i32.const {memory_max_pages}) (local.get $memory_pages)))
+        (if (i32.gt_u (local.get $needed_pages) (local.get $remaining_pages))
+          (then (unreachable)))
         (if
           (i32.eq
             (memory.grow (local.get $needed_pages))

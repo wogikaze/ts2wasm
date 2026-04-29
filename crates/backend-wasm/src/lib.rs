@@ -253,6 +253,12 @@ mod tests {
         assert!(wat.contains("(i32.gt_u (local.get $new_heap) (local.get $memory_bytes))"));
         assert!(wat.contains(&format!("(i32.const {})", Layout::HEAP_GROW_MIN_PAGES)));
         assert!(wat.contains("(local $needed_pages i32)"));
+        assert!(wat.contains("(local $remaining_pages i32)"));
+        assert!(wat.contains(&format!(
+            "(i32.sub (i32.const {}) (local.get $memory_pages))",
+            Layout::MEMORY_MAX_PAGES
+        )));
+        assert!(wat.contains("(i32.gt_u (local.get $needed_pages) (local.get $remaining_pages))"));
         assert!(wat.contains("(memory.grow (local.get $needed_pages))"));
         assert!(wat.contains("(i32.const -1)"));
         assert!(wat.contains("(global.get $alloc_bytes_since_last_gc)"));
