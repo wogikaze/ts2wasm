@@ -1870,6 +1870,32 @@ fn bigint_from_resolved(expr: &ResolvedExpr) -> Option<BigIntConst> {
     }
 }
 
+fn static_number_bigint_const(expr: &Expr) -> Option<BigIntConst> {
+    match expr {
+        Expr::Number { value, .. } => Some(bigint_from_i32(*value)),
+        Expr::Unary { op, expr, .. } if *op == UnaryOp::Negate => {
+            let Expr::Number { value, .. } = expr.as_ref() else {
+                return None;
+            };
+            Some(bigint_from_i64(-i64::from(*value)))
+        }
+        _ => None,
+    }
+}
+
+fn resolved_number_bigint_const(expr: &ResolvedExpr) -> Option<BigIntConst> {
+    match expr {
+        ResolvedExpr::Number(value) => Some(bigint_from_i32(*value)),
+        ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
+            let ResolvedExpr::Number(value) = expr.as_ref() else {
+                return None;
+            };
+            Some(bigint_from_i64(-i64::from(*value)))
+        }
+        _ => None,
+    }
+}
+
 fn bigint_to_resolved(value: BigIntConst) -> ResolvedExpr {
     let magnitude = decimal_digits_to_u64(&value.digits);
     let (limb_low, limb_high) = magnitude
@@ -1977,6 +2003,41 @@ fn fold_bigint_static_abstract_equality(
     right: &ResolvedExpr,
     span: Span,
 ) -> Result<Option<ResolvedExpr>, Diagnostic> {
+    if !matches!(
+        op,
+        BinaryOp::EqualEqual
+            | BinaryOp::BangEqual
+            | BinaryOp::Less
+            | BinaryOp::LessEqual
+            | BinaryOp::Greater
+            | BinaryOp::GreaterEqual
+    ) {
+        return Ok(None);
+    }
+
+    if let Some(ordering) = fold_static_bigint_number_ordering(left, right) {
+        let result = match op {
+            BinaryOp::EqualEqual => ordering == std::cmp::Ordering::Equal,
+            BinaryOp::BangEqual => ordering != std::cmp::Ordering::Equal,
+            BinaryOp::Less => ordering == std::cmp::Ordering::Less,
+            BinaryOp::LessEqual => {
+                matches!(
+                    ordering,
+                    std::cmp::Ordering::Less | std::cmp::Ordering::Equal
+                )
+            }
+            BinaryOp::Greater => ordering == std::cmp::Ordering::Greater,
+            BinaryOp::GreaterEqual => {
+                matches!(
+                    ordering,
+                    std::cmp::Ordering::Greater | std::cmp::Ordering::Equal
+                )
+            }
+            _ => unreachable!("guarded BigInt/Number comparison op"),
+        };
+        return Ok(Some(ResolvedExpr::Bool(result)));
+    }
+
     if !matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual) {
         return Ok(None);
     }
@@ -1992,12 +2053,6 @@ fn fold_bigint_static_abstract_equality(
         Some((bigint, Some(bigint_from_bool(*value))))
     } else if let (ResolvedExpr::Bool(value), Some(bigint)) = (left, bigint_from_resolved(right)) {
         Some((bigint, Some(bigint_from_bool(*value))))
-    } else if let (Some(bigint), ResolvedExpr::Number(value)) = (bigint_from_resolved(left), right)
-    {
-        Some((bigint, Some(bigint_from_i32(*value))))
-    } else if let (ResolvedExpr::Number(value), Some(bigint)) = (left, bigint_from_resolved(right))
-    {
-        Some((bigint, Some(bigint_from_i32(*value))))
     } else if bigint_from_resolved(left).is_some()
         && matches!(right, ResolvedExpr::Null | ResolvedExpr::Undefined)
     {
@@ -2019,6 +2074,35 @@ fn fold_bigint_static_abstract_equality(
     } else {
         equal
     })))
+}
+
+fn fold_static_bigint_number_ordering(
+    left: &ResolvedExpr,
+    right: &ResolvedExpr,
+) -> Option<std::cmp::Ordering> {
+    if let (Some(bigint), Some(number)) = (
+        bigint_from_resolved(left),
+        resolved_number_bigint_const(right),
+    ) {
+        Some(bigint_cmp(&bigint, &number))
+    } else if let (Some(number), Some(bigint)) = (
+        resolved_number_bigint_const(left),
+        bigint_from_resolved(right),
+    ) {
+        Some(bigint_cmp(&number, &bigint))
+    } else {
+        None
+    }
+}
+
+fn bigint_cmp(left: &BigIntConst, right: &BigIntConst) -> std::cmp::Ordering {
+    left.sign
+        .cmp(&right.sign)
+        .then_with(|| match left.sign.cmp(&0) {
+            std::cmp::Ordering::Less => cmp_abs(&right.digits, &left.digits),
+            std::cmp::Ordering::Equal => std::cmp::Ordering::Equal,
+            std::cmp::Ordering::Greater => cmp_abs(&left.digits, &right.digits),
+        })
 }
 
 fn bigint_from_bool(value: bool) -> BigIntConst {
@@ -2409,14 +2493,13 @@ impl BigIntRuntimeGuard {
                                 right,
                                 right_info.as_ref(),
                             );
-                        let static_bigint_number_equality =
-                            is_static_bigint_number_abstract_equality(
-                                left,
-                                left_info.as_ref(),
-                                *op,
-                                right,
-                                right_info.as_ref(),
-                            );
+                        let static_bigint_number_comparison = is_static_bigint_number_comparison(
+                            left,
+                            left_info.as_ref(),
+                            *op,
+                            right,
+                            right_info.as_ref(),
+                        );
                         let static_bigint_nullish_equality =
                             is_static_bigint_nullish_abstract_equality(
                                 left,
@@ -2430,7 +2513,7 @@ impl BigIntRuntimeGuard {
                         }
                         if static_bigint_string_equality
                             || static_bigint_boolean_equality
-                            || static_bigint_number_equality
+                            || static_bigint_number_comparison
                             || static_bigint_nullish_equality
                         {
                             return Ok(None);
@@ -2685,21 +2768,29 @@ fn is_static_bigint_boolean_abstract_equality(
     left_static_bigint || right_static_bigint
 }
 
-fn is_static_bigint_number_abstract_equality(
+fn is_static_bigint_number_comparison(
     left: &Expr,
     left_info: Option<&BigIntStaticInfo>,
     op: BinaryOp,
     right: &Expr,
     right_info: Option<&BigIntStaticInfo>,
 ) -> bool {
-    if !matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual) {
+    if !matches!(
+        op,
+        BinaryOp::EqualEqual
+            | BinaryOp::BangEqual
+            | BinaryOp::Less
+            | BinaryOp::LessEqual
+            | BinaryOp::Greater
+            | BinaryOp::GreaterEqual
+    ) {
         return false;
     }
     let left_static_bigint = left_info.is_some_and(|info| {
-        !info.runtime_needed && info.value.is_some() && matches!(right, Expr::Number { .. })
+        !info.runtime_needed && info.value.is_some() && static_number_bigint_const(right).is_some()
     });
     let right_static_bigint = right_info.is_some_and(|info| {
-        !info.runtime_needed && info.value.is_some() && matches!(left, Expr::Number { .. })
+        !info.runtime_needed && info.value.is_some() && static_number_bigint_const(left).is_some()
     });
     left_static_bigint || right_static_bigint
 }

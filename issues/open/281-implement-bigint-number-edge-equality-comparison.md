@@ -90,6 +90,16 @@ cargo test -p ts2wasm-cli bigint
 
 Split from issue 261 on 2026-04-29 because issue 261 already implemented BigInt/BigInt equality/comparison plus literal BigInt/String, Boolean, tagged-int Number, and nullish abstract equality. Broader Number edge cases need number-model evidence before they can be claimed.
 
+## Progress evidence
+
+2026-04-29:
+
+- Added static folding for representable integer Number / BigInt relational comparisons (`<`, `<=`, `>`, `>=`) in the same compile-time subset as the existing abstract equality slice.
+- Extended literal mixed Number/BigInt abstract equality coverage to unary-negative integer literals including the current `-0` token representation.
+- Added Node/iwasm differential fixture coverage in `fixtures/core-semantics/bigint-mixed-number-relational.ts`.
+- Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(bigint) or test(node_diff)'` (37 passed, 495 skipped).
+- Remaining scope: fractional, `NaN`, `Infinity`, and broader number-model-sensitive cases are not closed by this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

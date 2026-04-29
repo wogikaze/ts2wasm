@@ -1,0 +1,12 @@
+console.log(1n < 2);
+console.log(1n <= 1);
+console.log(2n > 1);
+console.log(2n >= 2);
+console.log(1n < 1);
+console.log(2n <= 1);
+console.log(1n > 2);
+console.log(1n >= 2);
+console.log(0n >= -0);
+console.log(0n <= -0);
+console.log(-1n < 0);
+console.log(0 > -1n);

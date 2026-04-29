@@ -232,6 +232,11 @@ fn bigint_mixed_number_abstract_equality_fixture_matches_node_output_under_iwasm
 }
 
 #[test]
+fn bigint_mixed_number_relational_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-mixed-number-relational.ts");
+}
+
+#[test]
 fn bigint_mixed_nullish_abstract_equality_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-semantics/bigint-mixed-nullish-abstract-equality.ts",
