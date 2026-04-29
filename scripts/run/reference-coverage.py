@@ -189,6 +189,55 @@ def repo_relative(path):
     except ValueError:
         return path.as_posix()
 
+def _parse_yaml_scalar(value):
+    return value.strip().strip("'\"")
+
+def parse_test262_negative_metadata(source_code):
+    """Parse the test262 negative metadata subset used by coverage classification."""
+    match = re.search(r'/\*---(.*?)---\*/', source_code, re.DOTALL)
+    if not match:
+        return None, None
+
+    in_negative = False
+    negative_phase = None
+    negative_type = None
+
+    for raw_line in match.group(1).splitlines():
+        stripped = raw_line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        if not raw_line.startswith((" ", "\t")):
+            in_negative = False
+
+        if ":" not in stripped:
+            continue
+
+        key, value = stripped.split(":", 1)
+        key = key.strip()
+        value = _parse_yaml_scalar(value)
+
+        if key == "negative":
+            in_negative = True
+        elif in_negative and key == "phase":
+            negative_phase = value
+        elif in_negative and key == "type":
+            negative_type = value
+
+    return negative_phase, negative_type
+
+def is_expected_negative_parse_syntax_error(suite, file_path):
+    if suite != "test262":
+        return False
+
+    try:
+        source_code = file_path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+
+    negative_phase, negative_type = parse_test262_negative_metadata(source_code)
+    return negative_phase == "parse" and negative_type == "SyntaxError"
+
 def parse_paths_file(paths_file, suite_config, all_files):
     """Resolve a deterministic subset file list against the current suite."""
     list_path = Path(paths_file)
@@ -636,6 +685,14 @@ def main():
                 continue
             executed += 1
             detail_path = repo_relative(file_path)
+
+            if is_expected_negative_parse_syntax_error(suite, file_path):
+                unsupported_count += 1
+                unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
+                unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
+                if detail_output:
+                    file_details.append(f"{detail_path}: ExpectedNegativeSyntax: negative-parse-syntaxerror")
+                continue
             
             out_wasm = tmp_dir / "out.wasm"
             err_file = tmp_dir / "err.txt"
