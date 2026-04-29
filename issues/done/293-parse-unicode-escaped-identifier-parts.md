@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -62,9 +63,9 @@ The representative case and related bucket members no longer produce this exact 
 
 In scope:
 
-- [ ] Parse Unicode escape sequences in identifier parts for the representative test262 identifier case.
-- [ ] Invalid Unicode identifier escapes remain diagnostic-backed.
-- [ ] The exact `unsupported character: \` stderr bucket is reduced or removed.
+- [x] Parse Unicode escape sequences in identifier parts for the representative test262 identifier case.
+- [x] Invalid Unicode identifier escapes remain diagnostic-backed.
+- [x] The exact `unsupported character: \` stderr bucket is reduced or removed.
 
 Out of scope:
 
@@ -86,10 +87,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative case no longer emits the exact stderr bucket shown above.
-- [ ] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
-- [ ] If behavior changes, add or update a focused fixture or regression test for the representative case.
-- [ ] Update coverage artifacts or current-state only when the validation run produces new facts.
+- [x] The representative case no longer emits the exact stderr bucket shown above.
+- [x] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
+- [x] If behavior changes, add or update a focused fixture or regression test for the representative case.
+- [x] Update coverage artifacts or current-state only when the validation run produces new facts.
 
 ## Validation
 
@@ -117,18 +118,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
+- updated: not applicable
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- updated: not applicable
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
+- created/updated: not applicable
 
 ## Notes
 
@@ -140,14 +141,42 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `8ffb3189 issue-293: parse unicode identifier escapes`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: PASS (85 passed)
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli parser
+result: PASS (1 passed)
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/identifiers/part-unicode-5.2.0-escaped.js
+result: PASS; build_pass=1, semantic_pass=1, unsupported=0
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run test262 -- --category '^identifiers$' --jobs 4
+result: PASS; artifacts/coverage/results/test262-results.jsonl has 268 records and the exact `unsupported character: \` bucket count is 0
+date: 2026-04-29
+
+command: cargo nextest run
+result: PASS (540 passed, 4 skipped)
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS
+date: 2026-04-29
 ```
 
 Remaining risks:
