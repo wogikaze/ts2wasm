@@ -226,7 +226,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `super` | ES6 | parent class access | 未実装 | P1 | - |
 | static methods/fields | ES6 | class static members | 未実装 | P2 | - |
 | static initialization blocks | ES2022 | class static block parser/semantics | 実装済み（supported statement list executes at class declaration time in source order; `this` / `super` static-block forms remain issue-254 diagnostics） | - | 249, 254 |
-| private fields `#x` | ES2022 | private class fields | Lexer/parser accept private fields/methods/accessors; runtime storage/access semantics are 未実装 | P2 | 248, 255 |
+| private fields `#x` | ES2022 | private class fields | 部分実装（non-derived instance private field initializer and direct `this.#field` read/write have Node/iwasm differential coverage; private methods/accessors/static/brand checks remain issue-255） | P2 | 248, 255 |
 | prototype chain | ES1 | `__proto__` / inheritance | 実装済み (basic `Object.getPrototypeOf` / `Object.setPrototypeOf` / class prototype links) | - | 048, 207 |
 
 ## 文字列

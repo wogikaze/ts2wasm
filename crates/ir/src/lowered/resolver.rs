@@ -14,6 +14,7 @@ struct Resolver<'a> {
     class_method_ids: HashMap<(String, String), FuncId>,
     class_static_method_ids: HashMap<(String, String), FuncId>,
     class_parents: HashMap<String, Option<String>>,
+    class_private_fields: HashMap<String, HashSet<String>>,
     local_classes: HashMap<LocalId, String>,
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
@@ -43,6 +44,7 @@ impl<'a> Resolver<'a> {
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         class_parents: HashMap<String, Option<String>>,
+        class_private_fields: HashMap<String, HashSet<String>>,
         next_func_id: usize,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -63,6 +65,7 @@ impl<'a> Resolver<'a> {
             class_method_ids,
             class_static_method_ids,
             class_parents,
+            class_private_fields,
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
@@ -77,6 +80,7 @@ impl<'a> Resolver<'a> {
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         params: &[String],
         class_parents: HashMap<String, Option<String>>,
+        class_private_fields: HashMap<String, HashSet<String>>,
         current_class: Option<&str>,
         in_constructor: bool,
         next_func_id: usize,
@@ -99,6 +103,7 @@ impl<'a> Resolver<'a> {
             class_method_ids,
             class_static_method_ids,
             class_parents,
+            class_private_fields,
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
@@ -729,6 +734,13 @@ impl<'a> Resolver<'a> {
                 },
             },
             ResolvedExpr::PropertyAccess { object, key, span } => {
+                if key.starts_with('#') {
+                    let storage_key = self.private_field_storage_key(object, key, *span)?;
+                    return Ok(LoweredExpr::PropertyGet {
+                        obj: Box::new(self.lower_expr(object)?),
+                        key: storage_key,
+                    });
+                }
                 if let ResolvedExpr::Ident(name) = object.as_ref()
                     && self.resolve_func(name).is_ok()
                 {
@@ -1150,11 +1162,22 @@ impl<'a> Resolver<'a> {
                     })
                 }
             }
-            ResolvedExpr::PropertyAssign { object, key, value } => Ok(LoweredExpr::PropertySet {
-                object: Box::new(self.lower_expr(object)?),
-                key: key.clone(),
-                value: Box::new(self.lower_expr(value)?),
-            }),
+            ResolvedExpr::PropertyAssign { object, key, value } => {
+                if key.starts_with('#') {
+                    let storage_key =
+                        self.private_field_storage_key(object, key, Span { start: 0, end: 0 })?;
+                    return Ok(LoweredExpr::PropertySet {
+                        object: Box::new(self.lower_expr(object)?),
+                        key: storage_key,
+                        value: Box::new(self.lower_expr(value)?),
+                    });
+                }
+                Ok(LoweredExpr::PropertySet {
+                    object: Box::new(self.lower_expr(object)?),
+                    key: key.clone(),
+                    value: Box::new(self.lower_expr(value)?),
+                })
+            }
             ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
                 Ok(LoweredExpr::PropertySetDynamic {
                     object: Box::new(self.lower_expr(object)?),
@@ -1407,6 +1430,7 @@ impl<'a> Resolver<'a> {
             self.function_ids,
             self.function_signatures,
             self.class_parents.clone(),
+            self.class_private_fields.clone(),
             LowerFunctionOptions {
                 current_class: self.current_class.as_deref(),
                 in_constructor: false,
@@ -1479,6 +1503,7 @@ impl<'a> Resolver<'a> {
             self.function_ids,
             self.function_signatures,
             self.class_parents.clone(),
+            self.class_private_fields.clone(),
             LowerFunctionOptions {
                 current_class: self.current_class.as_deref(),
                 in_constructor: false,
@@ -1601,6 +1626,47 @@ impl<'a> Resolver<'a> {
             current = self.class_parents.get(&class).and_then(|p| p.clone());
         }
         None
+    }
+
+    fn private_field_storage_key(
+        &self,
+        object: &ResolvedExpr,
+        key: &str,
+        span: Span,
+    ) -> Result<String, Diagnostic> {
+        let Some(field_name) = key.strip_prefix('#') else {
+            return Ok(key.to_owned());
+        };
+        if !matches!(object, ResolvedExpr::This { .. }) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-255: private field `#{field_name}` access is currently supported only as `this.#{field_name}` inside class methods and constructors"
+                ),
+                span: Some(span),
+            });
+        }
+        let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-255: private field `#{field_name}` access requires class context"
+            ),
+            span: Some(span),
+        })?;
+        if !self
+            .class_private_fields
+            .get(class_name)
+            .is_some_and(|fields| fields.contains(field_name))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-255: private field `#{field_name}` is not declared in class `{class_name}`"
+                ),
+                span: Some(span),
+            });
+        }
+        Ok(private_field_storage_key(class_name, field_name))
     }
 
     fn is_date_receiver(&self, expr: &ResolvedExpr) -> bool {
@@ -1781,4 +1847,8 @@ fn class_maps(
     }
 
     (ctor_ids, method_ids, static_method_ids)
+}
+
+fn private_field_storage_key(class_name: &str, field_name: &str) -> String {
+    format!("__ts2wasm_private::{class_name}::{field_name}")
 }
