@@ -716,7 +716,7 @@ fn resolve_stmt_with_outer_bindings(
                 None => None,
             };
 
-            let (private_fields, private_field_initializers, private_methods) =
+            let (private_fields, static_private_fields, private_field_initializers, private_methods) =
                 resolve_private_elements(name, extends_name.as_ref(), private_elements)?;
 
             // Parse class body to extract constructor and methods
@@ -830,6 +830,23 @@ fn resolve_stmt_with_outer_bindings(
                 }
             }
             methods.extend(private_methods);
+            if !static_private_fields.is_empty() {
+                if !static_blocks.is_empty() {
+                    return Err(unsupported_private_element(
+                        "static private fields with static blocks require ordered class element initialization support",
+                        static_blocks[0].span,
+                    ));
+                }
+                let static_private_capture_names = static_private_fields
+                    .iter()
+                    .map(|(field, _)| static_private_field_local_name(name, field))
+                    .collect::<Vec<_>>();
+                for method in &mut methods {
+                    if method.name.starts_with("static::") {
+                        method.captures.extend(static_private_capture_names.iter().cloned());
+                    }
+                }
+            }
 
             if constructor.is_none() && !private_field_initializers.is_empty() {
                 constructor = Some((Vec::new(), private_field_initializers.clone()));
@@ -855,6 +872,7 @@ fn resolve_stmt_with_outer_bindings(
                 statics,
                 static_blocks,
                 private_fields,
+                static_private_fields,
             })
         }
         Stmt::TryCatch {
@@ -1954,8 +1972,17 @@ fn resolve_private_elements(
     class_name: &str,
     extends_name: Option<&String>,
     private_elements: &[ClassPrivateElement],
-) -> Result<(Vec<String>, Vec<ResolvedStmt>, Vec<ClassMethod>), Diagnostic> {
+) -> Result<
+    (
+        Vec<String>,
+        Vec<(String, ResolvedExpr)>,
+        Vec<ResolvedStmt>,
+        Vec<ClassMethod>,
+    ),
+    Diagnostic,
+> {
     let mut fields = Vec::new();
+    let mut static_fields = Vec::new();
     let mut initializers = Vec::new();
     let mut methods = Vec::new();
     let mut seen = HashSet::new();
@@ -1970,10 +1997,24 @@ fn resolve_private_elements(
                 span,
             } => {
                 if *is_static {
-                    return Err(unsupported_private_element(
-                        "static private fields are not supported in this private field runtime slice",
-                        *span,
+                    if !seen.insert(name.clone()) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: duplicate private field `#{name}` in class `{class_name}`"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    static_fields.push((
+                        name.clone(),
+                        value
+                            .as_ref()
+                            .map(resolve_expr)
+                            .transpose()?
+                            .unwrap_or(ResolvedExpr::Undefined),
                     ));
+                    continue;
                 }
                 if extends_name.is_some() {
                     return Err(unsupported_private_element(
@@ -2140,7 +2181,7 @@ fn resolve_private_elements(
         }
     }
 
-    Ok((fields, initializers, methods))
+    Ok((fields, static_fields, initializers, methods))
 }
 
 fn prepend_private_field_initializers(
@@ -2173,6 +2214,10 @@ fn private_getter_method_name(name: &str) -> String {
 
 fn private_setter_method_name(name: &str) -> String {
     format!("#set::{name}")
+}
+
+pub(crate) fn static_private_field_local_name(class_name: &str, field_name: &str) -> String {
+    format!("__ts2wasm_static_private::{class_name}::{field_name}")
 }
 
 fn block_contains_return_stmt(statements: &[Stmt]) -> bool {

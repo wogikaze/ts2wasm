@@ -15,7 +15,7 @@ updated: 2026-04-29
 
 Implement runtime storage and access semantics for private class elements after lexer/parser classification.
 
-Problem: Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support direct instance private field initialization plus `this.#field` read/write inside class constructors and instance methods, direct same-class instance private methods called as `this.#m()`, direct same-class static private methods called as `this.#m()` from static methods or `Class.#m()` inside the declaring class, direct same-class private getters read as `this.#x`, direct same-class private setters assigned as `this.#x = value`, and direct same-class static private accessors read/written as `this.#x` or `Class.#x` for non-derived classes. Full private brand storage, static private fields, derived-class private initialization, external/extracted private element access, and complete brand-checking behavior remain incomplete.
+Problem: Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support direct instance private field initialization plus `this.#field` read/write inside class constructors and instance methods, direct same-class instance private methods called as `this.#m()`, direct same-class static private methods called as `this.#m()` from static methods or `Class.#m()` inside the declaring class, direct same-class private getters read as `this.#x`, direct same-class private setters assigned as `this.#x = value`, direct same-class static private accessors read/written as `this.#x` or `Class.#x` for non-derived classes, and direct same-class static private fields read/written as `this.#x` or `Class.#x` inside static methods. Full private brand storage, static private field ordering with static blocks, derived-class private initialization, external/extracted private element access, and complete brand-checking behavior remain incomplete.
 
 ## Remaining failure
 
@@ -25,7 +25,7 @@ printf 'class C { static #x = 1; }\n' > "$tmp"
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-255-private-runtime.wasm
 ```
 
-Expected remaining result:
+Previously expected result before the 2026-04-29 static private field progress slice:
 
 ```text
 error: [UnsupportedSyntax] issue-255: static private fields are not supported in this private field runtime slice
@@ -175,7 +175,7 @@ mise run check issues
 2026-04-29 static private field diagnostic slice:
 
 - Kept static private fields on issue-255 diagnostics because mutable static private field support needs class-level private storage, not the existing instance private slot model or static method call lowering.
-- Added unsupported diagnostics coverage for a same-class static private field initializer plus `this.#value` read, `this.#value = value` write, and `Class.#value` read attempt: `fixtures/core-semantics/private-class-static-field-unsupported.ts`.
+- Added unsupported diagnostics coverage for a same-class static private field initializer plus `this.#value` read, `this.#value = value` write, and `Class.#value` read attempt; this was later converted into supported differential coverage at `fixtures/core-semantics/private-class-static-field-direct.ts`.
 - Verified the diagnostic remains source-spanned at the static private field declaration instead of compiling into an unsafe partial static storage model.
 
 Validation recorded in child branch:
@@ -232,3 +232,22 @@ Result:
 ```text
 error: [UnsupportedSyntax] issue-255: static private fields are not supported in this private field runtime slice at 17..24
 ```
+
+2026-04-29 static private field direct progress slice:
+
+- Added direct same-class static private field support for non-derived classes by lowering each static private field to a hidden compiler-internal env-cell local captured by same-class static methods.
+- Supported `this.#value` reads/writes inside static methods and `Class.#value` reads/writes inside the declaring class static method body.
+- Kept static private field ordering with static blocks, derived private elements, external/extracted private access, accessor get/set duplicate-pair semantics, and full brand checks on issue-255.
+- Converted the previous unsupported static private field fixture into Node/iwasm differential coverage: `fixtures/core-semantics/private-class-static-field-direct.ts`.
+- Added IR lowering regression coverage for static private field hidden env-cell storage and same-class read/write lowering.
+
+Validation recorded in child branch:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+mise run update-issue-index -- --check
+mise run check issues
+```
+
+`mise run check issues` still reports pre-existing missing test262 result artifact references in unrelated issue files after the issue-255 fixture path was updated.

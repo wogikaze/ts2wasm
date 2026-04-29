@@ -21,6 +21,7 @@ struct Resolver<'a> {
     class_static_method_ids: HashMap<(String, String), FuncId>,
     class_parents: HashMap<String, Option<String>>,
     class_private_fields: ClassPrivateFieldSlots,
+    class_static_private_fields: ClassStaticPrivateFields,
     local_classes: HashMap<LocalId, String>,
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
@@ -60,6 +61,7 @@ impl<'a> Resolver<'a> {
         heap_closure_names: &HashSet<String>,
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
+        class_static_private_fields: ClassStaticPrivateFields,
         next_func_id: usize,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -87,6 +89,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             class_private_fields,
+            class_static_private_fields,
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
@@ -111,6 +114,7 @@ impl<'a> Resolver<'a> {
         params: &[String],
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
+        class_static_private_fields: ClassStaticPrivateFields,
         current_class: Option<&str>,
         in_constructor: bool,
         next_func_id: usize,
@@ -140,6 +144,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             class_private_fields,
+            class_static_private_fields,
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
@@ -1019,6 +1024,23 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::Number(0));
                 }
                 if key.starts_with('#') {
+                    if let Some(local_name) = self.current_static_private_field_local_name(key) {
+                        if self.is_same_class_static_private_receiver(object) {
+                            let local = self.resolve_local(&local_name)?;
+                            return Ok(if self.env_cell_locals.contains(&local) {
+                                LoweredExpr::EnvCellGet(local)
+                            } else {
+                                LoweredExpr::Local(local)
+                            });
+                        }
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: static private field `{key}` access is currently supported only as `this.{key}` inside static methods or `Class.{key}` inside the declaring class"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
                     if let Some(getter_id) = self.current_static_private_getter_id(key) {
                         if self.is_same_class_static_private_receiver(object) {
                             return Ok(LoweredExpr::Call {
@@ -1738,6 +1760,24 @@ impl<'a> Resolver<'a> {
                     });
                 }
                 if key.starts_with('#') {
+                    if let Some(local_name) = self.current_static_private_field_local_name(key) {
+                        if self.is_same_class_static_private_receiver(object) {
+                            let local = self.resolve_local(&local_name)?;
+                            let expr = Box::new(self.lower_expr(value)?);
+                            return Ok(if self.env_cell_locals.contains(&local) {
+                                LoweredExpr::EnvCellSet { cell: local, expr }
+                            } else {
+                                LoweredExpr::Assign { local, expr }
+                            });
+                        }
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: static private field `{key}` assignment is currently supported only as `this.{key} = value` inside static methods or `Class.{key} = value` inside the declaring class"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
                     if let Some(setter_id) = self.current_static_private_setter_id(key) {
                         if self.is_same_class_static_private_receiver(object) {
                             return Ok(LoweredExpr::Call {
@@ -2764,6 +2804,7 @@ impl<'a> Resolver<'a> {
             &self.heap_closure_names,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
+            self.class_static_private_fields.clone(),
             LowerFunctionOptions {
                 current_class: self.current_class.as_deref(),
                 in_constructor: false,
@@ -2868,6 +2909,7 @@ impl<'a> Resolver<'a> {
             &self.heap_closure_names,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
+            self.class_static_private_fields.clone(),
             LowerFunctionOptions {
                 current_class: self.current_class.as_deref(),
                 in_constructor: false,
@@ -3043,6 +3085,15 @@ impl<'a> Resolver<'a> {
         self.class_static_method_ids
             .get(&(class_name.clone(), method.to_owned()))
             .copied()
+    }
+
+    fn current_static_private_field_local_name(&self, key: &str) -> Option<String> {
+        let class_name = self.current_class.as_ref()?;
+        let field_name = key.strip_prefix('#')?;
+        self.class_static_private_fields
+            .get(class_name)
+            .and_then(|fields| fields.get(field_name))
+            .cloned()
     }
 
     fn current_static_private_getter_id(&self, key: &str) -> Option<FuncId> {

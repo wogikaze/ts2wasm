@@ -904,6 +904,51 @@ fn lowering_represents_static_private_accessor_access_as_same_class_user_call() 
 }
 
 #[test]
+fn lowering_represents_static_private_field_access_as_same_class_env_cell() {
+    use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class C {
+          static #x = 3;
+          static read() { return this.#x; }
+          static write(next) { C.#x = next; return C.#x; }
+        }
+
+        console.log(C.read());
+        console.log(C.write(4));
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        LoweredStmt::Let(LocalId(0), LoweredExpr::EnvCellNew(initializer)) => {
+            assert!(matches!(initializer.as_ref(), LoweredExpr::Number(3)));
+        }
+        other => panic!("unexpected static private field storage lowering: {other:?}"),
+    }
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(0))) => {}
+        other => panic!("unexpected static private field read lowering: {other:?}"),
+    }
+
+    let write_method = &lowered.functions[2];
+    match &write_method.body[0] {
+        LoweredStmt::Expr(LoweredExpr::EnvCellSet {
+            cell: LocalId(1),
+            expr,
+        }) => assert!(matches!(expr.as_ref(), LoweredExpr::Local(LocalId(0)))),
+        other => panic!("unexpected static private field write lowering: {other:?}"),
+    }
+    match &write_method.body[1] {
+        LoweredStmt::Return(LoweredExpr::EnvCellGet(LocalId(1))) => {}
+        other => panic!("unexpected static private field class-name read lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_represents_direct_private_getter_access_as_same_class_user_call() {
     use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 

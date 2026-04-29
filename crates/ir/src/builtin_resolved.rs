@@ -93,6 +93,7 @@ pub enum ResolvedStmt {
         statics: Vec<(String, ResolvedExpr)>,
         static_blocks: Vec<Vec<ResolvedStmt>>,
         private_fields: Vec<String>,
+        static_private_fields: Vec<(String, ResolvedExpr)>,
     },
 }
 
