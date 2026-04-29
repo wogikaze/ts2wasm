@@ -2058,12 +2058,6 @@ fn resolve_private_elements(
                 span,
                 ..
             } => {
-                if *is_static {
-                    return Err(unsupported_private_element(
-                        "static private accessors are not supported in this private accessor runtime slice",
-                        *span,
-                    ));
-                }
                 if extends_name.is_some() {
                     return Err(unsupported_private_element(
                         "private accessors on derived classes require full private brand semantics",
@@ -2080,7 +2074,11 @@ fn resolve_private_elements(
                     });
                 }
                 methods.push(ClassMethod {
-                    name: private_getter_method_name(name),
+                    name: if *is_static {
+                        format!("static::{}", private_getter_method_name(name))
+                    } else {
+                        private_getter_method_name(name)
+                    },
                     params: Vec::new(),
                     body: body
                         .iter()
@@ -2097,12 +2095,6 @@ fn resolve_private_elements(
                 span,
                 ..
             } => {
-                if *is_static {
-                    return Err(unsupported_private_element(
-                        "static private accessors are not supported in this private accessor runtime slice",
-                        *span,
-                    ));
-                }
                 if extends_name.is_some() {
                     return Err(unsupported_private_element(
                         "private accessors on derived classes require full private brand semantics",
@@ -2130,7 +2122,11 @@ fn resolve_private_elements(
                     .collect::<Result<Vec<_>, _>>()?;
                 resolved_body.push(ResolvedStmt::Return(ResolvedExpr::Ident(param.clone())));
                 methods.push(ClassMethod {
-                    name: private_setter_method_name(name),
+                    name: if *is_static {
+                        format!("static::{}", private_setter_method_name(name))
+                    } else {
+                        private_setter_method_name(name)
+                    },
                     params: vec![ResolvedParam {
                         name: param.clone(),
                         default: None,

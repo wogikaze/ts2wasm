@@ -953,6 +953,7 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/private-class-field-internal-slot-gc.ts",
         "fixtures/core-semantics/private-class-method-call.ts",
         "fixtures/core-semantics/private-class-static-method-call.ts",
+        "fixtures/core-semantics/private-class-static-accessor-direct.ts",
         "fixtures/core-semantics/private-class-getter-direct.ts",
         "fixtures/core-semantics/private-class-setter-direct.ts",
     ] {

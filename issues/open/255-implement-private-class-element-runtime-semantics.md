@@ -15,20 +15,20 @@ updated: 2026-04-29
 
 Implement runtime storage and access semantics for private class elements after lexer/parser classification.
 
-Problem: Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support direct instance private field initialization plus `this.#field` read/write inside class constructors and instance methods, direct same-class instance private methods called as `this.#m()`, direct same-class static private methods called as `this.#m()` from static methods or `Class.#m()` inside the declaring class, direct same-class private getters read as `this.#x`, and direct same-class private setters assigned as `this.#x = value` for non-derived classes. Full private brand storage, static private fields/accessors, derived-class private initialization, external/extracted private element access, and complete brand-checking behavior remain incomplete.
+Problem: Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support direct instance private field initialization plus `this.#field` read/write inside class constructors and instance methods, direct same-class instance private methods called as `this.#m()`, direct same-class static private methods called as `this.#m()` from static methods or `Class.#m()` inside the declaring class, direct same-class private getters read as `this.#x`, direct same-class private setters assigned as `this.#x = value`, and direct same-class static private accessors read/written as `this.#x` or `Class.#x` for non-derived classes. Full private brand storage, static private fields, derived-class private initialization, external/extracted private element access, and complete brand-checking behavior remain incomplete.
 
 ## Remaining failure
 
 ```sh
 tmp=/tmp/ts2wasm-255-private-runtime.ts
-printf 'class C { static set #x(value) {} }\n' > "$tmp"
+printf 'class C { static #x = 1; }\n' > "$tmp"
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-255-private-runtime.wasm
 ```
 
 Expected remaining result:
 
 ```text
-error: [UnsupportedSyntax] issue-255: static private accessors are not supported in this private accessor runtime slice
+error: [UnsupportedSyntax] issue-255: static private fields are not supported in this private field runtime slice
 ```
 
 ## Desired final state
@@ -200,4 +200,35 @@ cargo fmt --all --check
 cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
 mise run update-issue-index -- --check
 mise run check issues
+```
+
+2026-04-29 static private accessor direct progress slice:
+
+- Added direct same-class static private getter/setter support for `this.#x` inside static methods and `Class.#x` inside the declaring class by representing static accessors as internal static class methods.
+- Kept static private fields, derived private elements, external/extracted private access, accessor get/set duplicate-pair semantics, and full brand checks on issue-255 diagnostics.
+- Added Node/iwasm differential coverage: `fixtures/core-semantics/private-class-static-accessor-direct.ts`.
+- Retargeted static accessor unsupported coverage to external static private accessor access/assignment attempts instead of same-class direct access.
+
+Validation recorded in child branch:
+
+```sh
+cargo nextest run -E 'test(private_class_field_read_write_fixture_matches_node_output_under_iwasm) or test(private_class_field_unsupported_forms_report_issue_255)'
+cargo fmt --all --check
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+mise run update-issue-index -- --check
+mise run check issues
+```
+
+Manual remaining static field diagnostic repro:
+
+```sh
+tmp=/tmp/ts2wasm-255-private-runtime.ts
+printf 'class C { static #x = 1; }\n' > "$tmp"
+cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-255-private-runtime.wasm
+```
+
+Result:
+
+```text
+error: [UnsupportedSyntax] issue-255: static private fields are not supported in this private field runtime slice at 17..24
 ```

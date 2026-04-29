@@ -844,6 +844,66 @@ fn lowering_represents_static_private_method_call_as_same_class_user_call() {
 }
 
 #[test]
+fn lowering_represents_static_private_accessor_access_as_same_class_user_call() {
+    use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class C {
+          static get #x() { return 3; }
+          static set #y(next) { console.log(next); }
+          static read() { return this.#x; }
+          static readByName() { return C.#x; }
+          static write(next) { this.#y = next; }
+          static writeByName(next) { C.#y = next; }
+        }
+
+        console.log(C.read());
+        console.log(C.readByName());
+        C.write(4);
+        C.writeByName(5);
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(5)),
+            args,
+        }) => assert!(args.is_empty()),
+        other => panic!("unexpected static private getter access lowering: {other:?}"),
+    }
+
+    let read_by_name_method = &lowered.functions[2];
+    match &read_by_name_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(5)),
+            args,
+        }) => assert!(args.is_empty()),
+        other => panic!("unexpected static private getter class-name lowering: {other:?}"),
+    }
+
+    let write_method = &lowered.functions[3];
+    match &write_method.body[0] {
+        LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(6)),
+            args,
+        }) => assert!(matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0))])),
+        other => panic!("unexpected static private setter assignment lowering: {other:?}"),
+    }
+
+    let write_by_name_method = &lowered.functions[4];
+    match &write_by_name_method.body[0] {
+        LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(6)),
+            args,
+        }) => assert!(matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0))])),
+        other => panic!("unexpected static private setter class-name lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_represents_direct_private_getter_access_as_same_class_user_call() {
     use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 
