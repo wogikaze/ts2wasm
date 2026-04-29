@@ -835,6 +835,14 @@ fn arrow_function_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn arrow_assigned_recursive_fixture_reports_function_valued_call_gap() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts",
+        "issue-211: function-valued local calls such as extracted method `fact(...)` are not supported",
+    );
+}
+
+#[test]
 fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/primitives-control-flow/function.ts",

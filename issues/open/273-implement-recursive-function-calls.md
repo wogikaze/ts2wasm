@@ -89,3 +89,17 @@ Remaining work:
 - Add explicit Node/iwasm coverage for assigned arrow recursion if supported, or diagnostics/follow-up if not.
 - Add stack-depth/base-case regression coverage for supported recursive forms.
 - Add or triage broader Test262 recursive function coverage.
+
+2026-04-29 assigned-arrow recursion diagnostic slice:
+
+- Added `fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts` for `const fact = n => n === 1 || n * fact(n - 1)`.
+- Added Node-diff harness coverage that this currently reports the existing `issue-211` function-valued local call diagnostic before recursion lowering can proceed.
+- This is evidence-backed PROGRESS only: assigned-arrow recursion is not implemented, and issue 273 remains open.
+
+Validation result:
+
+```text
+command: cargo nextest run -E 'test(recursive) or test(function) or test(node_diff)'
+result: pass after diagnostic coverage; 29 tests run, 29 passed, 500 skipped
+date: 2026-04-29
+```
