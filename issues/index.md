@@ -21,7 +21,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
 | 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | implementation-ready | P2 |  | `JSON.stringify` has validated narrow boxed `space` handling, but broader boxed and object-coercion edge cases are no... |
 | 052f | Implement JSON.parse throw-compatible diagnostics | feature | runtime/builtins | implementation-ready | P1 |  | Invalid `JSON.parse` cases are now rejected in many paths, but iwasm usually traps with `Exception: unreachable` inst... |
-| 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | implementation-ready | P1 |  | Ordinary function declarations and direct calls are a separate callable |
 | 062d | Implement function this and arguments semantics | feature | frontend/semantics | implementation-ready | P1 |  | Function receiver binding and the `arguments` object have observable |
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 062f | Implement function object metadata | feature | frontend/semantics | implementation-ready | P2 |  | Function object metadata such as `name`, `length`, and prototype |
@@ -249,6 +248,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |
 | 062a | Split function epic into callable child issues | cleanup | issues | see `issues/done/062a-split-function-epic-into-callable-child-issues.md` |
 | 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | see `issues/done/062b-dynamic-function-constructor-diagnostics.md` |
+| 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | see `issues/done/062c-ordinary-function-declarations-and-calls.md` |
 | 063 | Implement function resolution | feature | frontend | see `issues/done/063-implement-function-resolution.md` |
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
 | 065 | Implement parser syntax extensions | feature | frontend | see `issues/done/065-implement-parser-syntax.md` |
