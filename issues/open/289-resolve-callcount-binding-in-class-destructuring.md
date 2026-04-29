@@ -134,6 +134,24 @@ Follow-up issues:
 
 This issue was generated from exact stderr set frequency, not directory-level grouping. Start with the representative case, then rerun the aggregation to confirm the count movement.
 
+### Progress note: 2026-04-29 child-289-callcount-binding
+
+The first attempted close identified the likely implementation gap: class methods are lowered as separate functions, and references to outer locals such as `callCount` are not represented as span-preserving lexical captures for class elements. A reduced source with:
+
+```js
+var callCount = 0;
+var C = class {
+  method([x, y, z]) {
+    callCount = callCount + 1;
+  }
+};
+new C().method([1, 2, 3]);
+```
+
+reaches the `callCount` lowering path. However, the attempted narrow diagnostic was rejected because the IR `ResolvedExpr::Ident` / `ResolvedStmt::Assign` forms do not currently carry source spans, so the new source-origin diagnostic had `span: None`. That change was reverted.
+
+Current close requirement: implement a span-preserving class-method outer-local capture path, or otherwise produce a source diagnostic with a real span. Do not close this issue on an unspanned source diagnostic. In this worktree, the raw representative reference command still stops earlier at unresolved `assert`, so exact `callCount` bucket movement must be verified either after the issue-288/assert prerequisite lands or with an accepted reduced, source-span-backed representative.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
