@@ -695,8 +695,8 @@ fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
     )
     .to_ascii_lowercase();
     assert!(
-        iwasm_output.contains("unreachable"),
-        "expected iwasm trap for {fixture}, got:\n{iwasm_output}"
+        iwasm_output.contains("syntaxerror") && iwasm_output.contains("json.parse"),
+        "expected iwasm JSON.parse SyntaxError diagnostic for {fixture}, got:\n{iwasm_output}"
     );
 }
 
