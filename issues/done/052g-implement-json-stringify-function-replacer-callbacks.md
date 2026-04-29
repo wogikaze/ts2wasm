@@ -114,7 +114,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- implementation commit pending in this branch
+- `3ba6cb6`
 
 Validation result:
 
