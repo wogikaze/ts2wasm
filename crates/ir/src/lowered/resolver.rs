@@ -187,7 +187,11 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
-                let lowered = self.lower_expr(expr)?;
+                let lowered = if let ResolvedExpr::ArrowFn { params, body } = expr {
+                    self.lower_arrow_fn_with_self(params, body, Some(name))?
+                } else {
+                    self.lower_expr(expr)?
+                };
                 if let LoweredExpr::ArrowFn {
                     func_id, captures, ..
                 } = &lowered
@@ -2013,7 +2017,24 @@ impl<'a> Resolver<'a> {
         params: &[String],
         body: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let capture_names = self.arrow_capture_names(params, body)?;
+        self.lower_arrow_fn_with_self(params, body, None)
+    }
+
+    fn lower_arrow_fn_with_self(
+        &mut self,
+        params: &[String],
+        body: &ResolvedExpr,
+        self_name: Option<&str>,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let mut excluded = binding_param_names(params.iter().map(|param| (param.as_str(), None)))?;
+        let active_self_name = self_name.filter(|name| {
+            let is_shadowed_by_param = excluded.iter().any(|param| param == name);
+            !is_shadowed_by_param && self.resolve_local(name).is_ok()
+        });
+        if let Some(name) = active_self_name {
+            excluded.push(name.to_owned());
+        }
+        let capture_names = self.arrow_capture_names_with_excluded(body, &excluded);
         let captures = capture_names
             .iter()
             .map(|name| self.resolve_local(name))
@@ -2045,13 +2066,17 @@ impl<'a> Resolver<'a> {
             self.function_signatures,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
-            LowerFunctionOptions {
-                current_class: self.current_class.as_deref(),
-                in_constructor: false,
-                next_func_id: self.next_func_id,
-                self_closure: None,
-            },
-        )?;
+                LowerFunctionOptions {
+                    current_class: self.current_class.as_deref(),
+                    in_constructor: false,
+                    next_func_id: self.next_func_id,
+                    self_closure: active_self_name.map(|name| SelfClosureOptions {
+                        name,
+                        func_id,
+                        capture_names: &capture_names,
+                    }),
+                },
+            )?;
         self.next_func_id = lowered.next_func_id;
         self.generated_functions.push(lowered.function);
         self.generated_functions.extend(lowered.generated_functions);
@@ -2158,18 +2183,17 @@ impl<'a> Resolver<'a> {
         self.lower_nested_function(name, params, body)
     }
 
-    fn arrow_capture_names(
+    fn arrow_capture_names_with_excluded(
         &self,
-        params: &[String],
         body: &ResolvedExpr,
-    ) -> Result<Vec<String>, Diagnostic> {
-        let excluded = binding_param_names(params.iter().map(|param| (param.as_str(), None)))?;
+        excluded: &[String],
+    ) -> Vec<String> {
         let mut captures = Vec::new();
-        collect_arrow_captures(body, &excluded, &mut captures);
-        Ok(captures
+        collect_arrow_captures(body, excluded, &mut captures);
+        captures
             .into_iter()
             .filter(|name| self.resolve_local(name).is_ok())
-            .collect())
+            .collect()
     }
 
     fn nested_function_capture_names(

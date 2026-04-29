@@ -434,8 +434,9 @@ impl RuntimeLinkPlan {
                     LoweredBinaryOp::StrictNotEqual => {
                         self.add_required_runtime(RuntimeFn::StrictNotEqual)
                     }
-                    LoweredBinaryOp::And => self.add_required_runtime(RuntimeFn::And),
-                    LoweredBinaryOp::Or => self.add_required_runtime(RuntimeFn::Or),
+                    LoweredBinaryOp::And | LoweredBinaryOp::Or => {
+                        self.add_required_runtime(RuntimeFn::TruthyBool)
+                    }
                     LoweredBinaryOp::NullishCoalesce => {}
                 }
             }

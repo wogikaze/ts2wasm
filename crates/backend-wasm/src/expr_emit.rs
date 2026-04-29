@@ -244,6 +244,46 @@ impl WatEmitter<'_> {
                 );
             }
             LoweredExpr::Binary { left, op, right } => {
+                if *op == LoweredBinaryOp::And {
+                    let lhs_tmp = frame.switch_value_tmp();
+                    self.emit_expr(wat, left, indent, frame);
+                    wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
+                    wat.push_str(&format!("{pad}(if (result i32)\n"));
+                    wat.push_str(&format!(
+                        "{pad}  (call {}\n",
+                        RuntimeFn::TruthyBool.symbol()
+                    ));
+                    wat.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    self.emit_expr(wat, right, indent + 4, &frame.child_temp_frame());
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!(
+                        "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
+                        lhs_tmp
+                    ));
+                    return;
+                }
+                if *op == LoweredBinaryOp::Or {
+                    let lhs_tmp = frame.switch_value_tmp();
+                    self.emit_expr(wat, left, indent, frame);
+                    wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
+                    wat.push_str(&format!("{pad}(if (result i32)\n"));
+                    wat.push_str(&format!(
+                        "{pad}  (call {}\n",
+                        RuntimeFn::TruthyBool.symbol()
+                    ));
+                    wat.push_str(&format!("{pad}    (local.get {})\n", lhs_tmp));
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!(
+                        "{pad}  (then\n{pad}    (local.get {})\n{pad}  )\n",
+                        lhs_tmp
+                    ));
+                    wat.push_str(&format!("{pad}  (else\n"));
+                    self.emit_expr(wat, right, indent + 4, &frame.child_temp_frame());
+                    wat.push_str(&format!("{pad}  ))\n"));
+                    return;
+                }
                 if *op == LoweredBinaryOp::NullishCoalesce {
                     let lhs_tmp = frame.switch_value_tmp();
                     self.emit_expr(wat, left, indent, frame);
