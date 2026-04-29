@@ -2,8 +2,8 @@ use super::RuntimeFn;
 use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
 use ts2wasm_ir::lowered::{
-    FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
-    LoweredUnaryOp,
+    ClosureRepresentation, FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr,
+    LoweredLogicalAssignOp, LoweredUnaryOp,
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
@@ -12,6 +12,15 @@ use super::emitter::{
     builtin_error_prototype_global, builtin_error_stack_prefix, class_prototype_global,
     function_symbol,
 };
+
+const CLOSURE_SENTINEL: i32 = -2;
+const CLOSURE_SUBTYPE_OFFSET: u32 = 0;
+const CLOSURE_CODE_ID_OFFSET: u32 = 4;
+const CLOSURE_CAPTURE_COUNT_OFFSET: u32 = 8;
+const CLOSURE_ENV_FLAGS_OFFSET: u32 = 12;
+const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
+const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
+const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
 
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
@@ -75,14 +84,23 @@ impl WatEmitter<'_> {
                 // validate_lowered rejects residual `this`; supported receivers lower to Local.
                 wat.push_str(&format!("{pad}(unreachable)\n"))
             }
-            LoweredExpr::ArrowFn { func_id, .. } => {
-                // Local-arrow calls are devirtualized during lowering; this opaque
-                // token prevents local initialization from becoming `undefined`.
-                wat.push_str(&format!(
-                    "{pad}(i32.const {})\n",
-                    ValueTag::encode_number(func_id.0 as i32)
-                ))
-            }
+            LoweredExpr::ArrowFn {
+                func_id,
+                captures,
+                representation,
+            } => match representation {
+                ClosureRepresentation::DirectLocalToken => {
+                    // Local-arrow calls are devirtualized during lowering; this opaque
+                    // token prevents local initialization from becoming `undefined`.
+                    wat.push_str(&format!(
+                        "{pad}(i32.const {})\n",
+                        ValueTag::encode_number(func_id.0 as i32)
+                    ))
+                }
+                ClosureRepresentation::HeapObject => {
+                    self.emit_heap_closure_alloc(wat, *func_id, captures, indent, frame);
+                }
+            },
             LoweredExpr::Local(local_id) => {
                 wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
             }
@@ -561,6 +579,10 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(unreachable)\n"));
             }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
+                if runtime_fn == "HeapClosureCall" {
+                    self.emit_heap_closure_dispatch(wat, args, indent, frame);
+                    return;
+                }
                 for arg in args {
                     self.emit_expr(wat, arg, indent, frame);
                 }
@@ -733,6 +755,143 @@ impl WatEmitter<'_> {
             wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
         }
         wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
+    }
+
+    fn emit_heap_closure_alloc(
+        &self,
+        wat: &mut String,
+        func_id: ts2wasm_ir::lowered::FuncId,
+        captures: &[LocalId],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let size = CLOSURE_CAPTURE_SLOTS_OFFSET + captures.len() as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+
+        for capture in captures {
+            self.emit_gc_root_mirror(wat, &pad, *capture, frame);
+        }
+
+        wat.push_str(&format!(
+            "{pad}(local.set {} (call {} (i32.const {})))\n",
+            frame.heap_base_tmp(),
+            RuntimeFn::AllocHeap.symbol(),
+            size,
+        ));
+        self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (i32.sub (local.get {}) (i32.const {})) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            Layout::GC_KIND_OBJECT,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_SUBTYPE_OFFSET})) (i32.const {CLOSURE_SENTINEL}))\n",
+            frame.heap_base_tmp(),
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CODE_ID_OFFSET})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            func_id.0,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            captures.len(),
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_ENV_FLAGS_OFFSET})) (i32.const 0))\n",
+            frame.heap_base_tmp(),
+        ));
+        for (index, capture) in captures.iter().enumerate() {
+            let offset = CLOSURE_CAPTURE_SLOTS_OFFSET + index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+            wat.push_str(&format!(
+                "{pad}(i32.store (i32.add (local.get {}) (i32.const {offset})) (local.get {}))\n",
+                frame.heap_base_tmp(),
+                local_index(*capture),
+            ));
+        }
+        wat.push_str(&format!(
+            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            ValueTag::OBJECT_TAG,
+        ));
+    }
+
+    fn emit_heap_closure_dispatch(
+        &self,
+        wat: &mut String,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        if args.is_empty() || args.len() > MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS + 1 {
+            wat.push_str(&format!("{pad}(unreachable)\n"));
+            return;
+        }
+
+        let closure = &args[0];
+        let user_args = &args[1..];
+        let closure_value = frame.heap_base_tmp();
+        let arg_value = frame.heap_value_tmp();
+        let payload = frame.switch_value_tmp();
+
+        wat.push_str(&format!(
+            "{pad}(block $heap_closure_dispatch_done (result i32)\n"
+        ));
+        self.emit_expr(wat, closure, indent + 2, frame);
+        wat.push_str(&format!("{pad}  (local.set {closure_value})\n"));
+        self.emit_gc_root_mirror_index(wat, &format!("{pad}  "), closure_value, frame);
+        if let Some(user_arg) = user_args.first() {
+            self.emit_expr(wat, user_arg, indent + 2, frame);
+            wat.push_str(&format!("{pad}  (local.set {arg_value})\n"));
+            self.emit_gc_root_mirror_index(wat, &format!("{pad}  "), arg_value, frame);
+        }
+        wat.push_str(&format!(
+            "{pad}  (if (i32.ne (i32.and (local.get {closure_value}) (i32.const {})) (i32.const {}))\n",
+            ValueTag::TAG_MASK,
+            ValueTag::OBJECT_TAG,
+        ));
+        wat.push_str(&format!("{pad}    (then (unreachable)))\n"));
+        wat.push_str(&format!(
+            "{pad}  (local.set {payload} (i32.and (local.get {closure_value}) (i32.const {})))\n",
+            ValueTag::HEAP_MASK,
+        ));
+        wat.push_str(&format!(
+            "{pad}  (if (i32.ne (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_SUBTYPE_OFFSET}))) (i32.const {CLOSURE_SENTINEL}))\n",
+        ));
+        wat.push_str(&format!("{pad}    (then (unreachable)))\n"));
+
+        for function in &self.program.functions {
+            let Some(capture_count) = function.params.len().checked_sub(user_args.len()) else {
+                continue;
+            };
+            wat.push_str(&format!(
+                "{pad}  (if (i32.and\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CODE_ID_OFFSET}))) (i32.const {}))\n{pad}        (i32.eq (i32.load (i32.add (local.get {payload}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET}))) (i32.const {capture_count})))\n",
+                function.id.0,
+            ));
+            wat.push_str(&format!("{pad}    (then\n"));
+            if !user_args.is_empty() {
+                wat.push_str(&format!("{pad}      (local.get {arg_value})\n"));
+            }
+            for capture_index in 0..capture_count {
+                let offset =
+                    CLOSURE_CAPTURE_SLOTS_OFFSET + capture_index as u32 * CLOSURE_CAPTURE_SLOT_SIZE;
+                wat.push_str(&format!(
+                    "{pad}      (i32.load (i32.add (local.get {payload}) (i32.const {offset})))\n",
+                ));
+            }
+            wat.push_str(&format!(
+                "{pad}      (call ${})\n",
+                function_symbol(function.id)
+            ));
+            wat.push_str(&format!("{pad}      (br $heap_closure_dispatch_done)))\n"));
+        }
+
+        wat.push_str(&format!("{pad}  (unreachable)\n"));
+        wat.push_str(&format!("{pad})\n"));
     }
 
     fn emit_array_literal(
@@ -1350,9 +1509,11 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::Local(_)
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This
-        | LoweredExpr::ArrowFn { .. }
         | LoweredExpr::ClassPrototype(_)
         | LoweredExpr::BuiltinErrorPrototype(_) => false,
+        LoweredExpr::ArrowFn { representation, .. } => {
+            matches!(representation, ClosureRepresentation::HeapObject)
+        }
     }
 }
 
@@ -1388,9 +1549,9 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         LoweredExpr::PropertySet { object, value, .. } => {
             expr_uses_caller_backend_tmp(object) || expr_uses_caller_backend_tmp(value)
         }
-        LoweredExpr::Call { args, .. } | LoweredExpr::RuntimeCall { args, .. } => {
-            args.iter().any(expr_uses_caller_backend_tmp)
-        }
+        LoweredExpr::Call { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
+        LoweredExpr::RuntimeCall { runtime_fn, .. } if runtime_fn == "HeapClosureCall" => true,
+        LoweredExpr::RuntimeCall { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
         LoweredExpr::Number(_)
         | LoweredExpr::String(_)
         | LoweredExpr::Bool(_)
@@ -1399,8 +1560,10 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::Local(_)
         | LoweredExpr::ModuleLoad { .. }
         | LoweredExpr::This
-        | LoweredExpr::ArrowFn { .. }
         | LoweredExpr::ClassPrototype(_)
         | LoweredExpr::BuiltinErrorPrototype(_) => false,
+        LoweredExpr::ArrowFn { representation, .. } => {
+            matches!(representation, ClosureRepresentation::HeapObject)
+        }
     }
 }

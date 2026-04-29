@@ -581,7 +581,7 @@ fn lowering_represents_known_heap_closure_local_call_explicitly() {
 }
 
 #[test]
-fn validate_rejects_heap_closure_creation_until_issue_257_backend_support() {
+fn validate_accepts_heap_closure_creation_for_backend_dispatch() {
     let program = parse_and_resolve(
         r#"
         function makeReader() {
@@ -594,11 +594,8 @@ fn validate_rejects_heap_closure_creation_until_issue_257_backend_support() {
         "#,
     );
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
-    let errs = ts2wasm_ir::lowered::validate_lowered(&lowered).unwrap_err();
 
-    assert!(errs.iter().any(|err| {
-        err.code == DiagCode::UnsupportedSyntax && err.message.contains("issue-257:")
-    }));
+    ts2wasm_ir::lowered::validate_lowered(&lowered).unwrap();
 }
 
 #[test]
