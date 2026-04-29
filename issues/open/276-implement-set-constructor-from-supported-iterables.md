@@ -125,6 +125,7 @@ Split from stale broad issue 272 after issue 049 closed the zero-argument constr
 - 2026-04-29: Added `SetFromArray` runtime helper and lowering for `new Set(array)` when the constructor argument is a known dense array. This path preserves existing `new Set()`, `add`, `has`, `delete`, `size`, and `clear` behavior.
 - 2026-04-29: Added `fixtures/builtins-and-io/set-constructor-array.ts` and `set_constructor_array_fixture_matches_node_output_under_iwasm` to prove dense-array construction, duplicate suppression through current Set storage, `has`, and `size`.
 - 2026-04-29: Split observable `Set.prototype.add` monkey-patch dispatch to issue 279 because current Set methods are direct runtime helpers and Set prototype method mutation is not modeled yet.
+- 2026-04-29: False-done commit `b1912a83` moved this issue to done with only an unconnected root fixture and no observable add dispatch. Reopened because issue 279 remains required.
 
 Validation result:
 
