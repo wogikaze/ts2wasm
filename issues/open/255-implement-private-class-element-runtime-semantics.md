@@ -156,3 +156,18 @@ cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
 mise run update-issue-index -- --check
 mise run check issues
 ```
+
+2026-04-29 static private field diagnostic slice:
+
+- Kept static private fields on issue-255 diagnostics because mutable static private field support needs class-level private storage, not the existing instance private slot model or static method call lowering.
+- Added unsupported diagnostics coverage for a same-class static private field initializer plus `this.#value` read, `this.#value = value` write, and `Class.#value` read attempt: `fixtures/core-semantics/private-class-static-field-unsupported.ts`.
+- Verified the diagnostic remains source-spanned at the static private field declaration instead of compiling into an unsafe partial static storage model.
+
+Validation recorded in child branch:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+mise run update-issue-index -- --check
+mise run check issues
+```
