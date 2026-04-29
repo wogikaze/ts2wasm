@@ -141,6 +141,11 @@ out of the runtime helper and report source diagnostics linked to issue 280.
 This prevents the previous unsupported runtime trap for `let s = "10"; s = s +
 ""; BigInt(s)`. Runtime StringToBigInt support is still not implemented.
 
+2026-04-29 progress: added regression coverage that keeps dynamic string
+`BigInt(value)` and invalid decimal string diagnostics on the source-spanned
+issue-280 path. This is a guardrail only; it does not implement runtime
+StringToBigInt parsing.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
