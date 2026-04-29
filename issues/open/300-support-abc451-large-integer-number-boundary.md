@@ -5,7 +5,7 @@ type: feature
 area: runtime
 class: blocked
 priority: P1
-depends_on: [307]
+depends_on: [308]
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
@@ -404,6 +404,32 @@ search-only isolation:
   performance telemetry for the depth-9 live-set path. Issue 300 remains open
   and blocked until that path produces completion-time evidence and the
   official samples match Node.
+
+2026-04-29 child `307-abc451-telemetry-20260429T193520Z` depth-9 telemetry:
+
+- Issue 307 classified the WAT-only 1024/2048-page depth-9 search-only timeout
+  with bounded allocator/GC counters. Both caps reached the same diagnostic
+  abort after 1,000,000 allocation calls:
+
+```text
+alloc_count: 1000000
+allocated_block_bytes: 62700952
+gc_collect_count: 834
+gc_sweep_block_visits: 196941253
+gc_sweep_freed_blocks: 19816743
+heap_high_water_bytes: 20258192
+```
+
+- The matching 1024/2048-page counters show that this path is dominated by GC
+  sweep cadence and linear heap scan cost under recursive array/string
+  allocation pressure, not by the committed memory maximum alone. A no-telemetry
+  WAT-only 2048-page control still produced no output before a 20 second
+  timeout.
+- Issue 300 remains open. No official ABC451 sample compatibility is claimed
+  until the samples `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match
+  Node under committed runtime policy.
+- Issue 308 owns the next implementation slice for GC cadence / sweep scan
+  policy based on this telemetry.
 
 ## Completion evidence
 
