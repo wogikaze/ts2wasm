@@ -2,7 +2,7 @@
 id: 083
 title: "Implement Abstractclassinlocalscopeisabstract"
 type: spike
-area: frontend/resolver
+area: frontend/syntax
 class: triage-needed
 priority: P1
 depends_on: []

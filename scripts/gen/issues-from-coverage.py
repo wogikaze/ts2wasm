@@ -133,7 +133,11 @@ def group_key_to_title(group_key: str, files: List[Tuple[str, str, str]], suite:
         return f"Implement {title}"
 
 
-def area_for_feature_labels(feature_labels: List[str]) -> str:
+def area_for_feature_labels(feature_labels: List[str], diag_codes: List[str] | None = None) -> str:
+    diag_codes = diag_codes or []
+    if diag_codes and set(diag_codes) == {"UnsupportedSyntax"}:
+        return "frontend/syntax"
+
     if len(set(feature_labels)) > 1:
         return "reference/triage"
 
@@ -322,7 +326,8 @@ def generate_issue_content(
     # Get unique feature labels
     feature_labels = sorted(set(f[2] for f in files))
     feature_str = ", ".join(feature_labels)
-    area = area_for_feature_labels(feature_labels)
+    diag_codes = sorted(set(f[1] for f in files))
+    area = area_for_feature_labels(feature_labels, diag_codes)
     expected_paths, do_not_touch = affected_paths_for_area(area)
     
     # Sample files (first 10)

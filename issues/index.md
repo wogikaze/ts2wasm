@@ -78,8 +78,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 079 | Implement Parameterlist | spike | frontend/syntax | class: triage-needed | Implement Parameterlist |
 | 080 | Implement Systemmoduleforstatementnoinitializer | spike | frontend/syntax | class: triage-needed | Implement Systemmoduleforstatementnoinitializer |
 | 081 | Implement Transportstream | spike | frontend/syntax | class: triage-needed | Implement Transportstream |
-| 082 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: triage-needed | Implement Abstractclassinlocalscope |
-| 083 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: triage-needed | Implement Abstractclassinlocalscopeisabstract |
+| 082 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: triage-needed | Implement Abstractclassinlocalscope |
+| 083 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: triage-needed | Implement Abstractclassinlocalscopeisabstract |
 | 084 | Implement Abstractclassunioninstantiation | spike | frontend/syntax | class: triage-needed | Implement Abstractclassunioninstantiation |
 | 086 | Implement Abstractpropertybasics | spike | frontend/syntax | class: triage-needed | Implement Abstractpropertybasics |
 | 087 | Implement Abstractpropertyinconstructor | spike | frontend/syntax | class: triage-needed | Implement Abstractpropertyinconstructor |
@@ -126,7 +126,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 130 | Implement Aliasesinsystemmodule | spike | frontend/syntax | class: triage-needed | Implement Aliasesinsystemmodule |
 | 131 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | class: triage-needed | Implement Allowimportclausestomergewithtypes |
 | 132 | Implement Allowjsclassthistypecrash | spike | frontend/semantics | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 133 | Implement Allowjscrossmonorepopackage | spike | frontend/resolver | class: triage-needed | Implement Allowjscrossmonorepopackage |
+| 133 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | class: triage-needed | Implement Allowjscrossmonorepopackage |
 | 134 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: triage-needed | Implement Allowjscheckjstypeparameternocrash |
 | 135 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: triage-needed | Implement Allowsyntheticdefaultimports |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: triage-needed | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
@@ -162,7 +162,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 166 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
 | 167 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: triage-needed | Implement Ambiguousgenericassertion |
 | 168 | Implement Ambiguousoverload | spike | frontend/syntax | class: triage-needed | Implement Ambiguousoverload |
-| 169 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: triage-needed | Implement Ambiguousoverloadresolution |
+| 169 | Implement Ambiguousoverloadresolution | spike | frontend/syntax | class: triage-needed | Implement Ambiguousoverloadresolution |
 | 170 | Implement Amddeclarationemitnoextradeclare | spike | frontend/syntax | class: triage-needed | Implement Amddeclarationemitnoextradeclare |
 | 171 | Implement Amddependencycomment | spike | frontend/syntax | class: triage-needed | Implement Amddependencycomment |
 | 172 | Implement Amddependencycommentname | spike | frontend/syntax | class: triage-needed | Implement Amddependencycommentname |
@@ -180,7 +180,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 184 | Implement Anydeclare | spike | frontend/syntax | class: triage-needed | Implement Anydeclare |
 | 185 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
 | 187 | Implement Anyinferenceanonymousfunctions | spike | frontend/syntax | class: triage-needed | Implement Anyinferenceanonymousfunctions |
-| 192 | Implement Argsinscope | spike | frontend/resolver | class: triage-needed | Implement Argsinscope |
+| 192 | Implement Argsinscope | spike | frontend/syntax | class: triage-needed | Implement Argsinscope |
 | 193 | Implement Arguments | spike | frontend/resolver | class: triage-needed | Implement Arguments |
 | 194 | Implement Argumentsaspropertyname | spike | frontend/semantics | class: triage-needed | Implement Argumentsaspropertyname |
 | 195 | Implement Argumentsbindstofunctionscopeargumentlist | spike | frontend/resolver | class: triage-needed | Implement Argumentsbindstofunctionscopeargumentlist |
