@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 62 | 13 | 49 |
+| runtime | 62 | 12 | 50 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 289 | 145 | 144 |
+| total | 289 | 144 | 145 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,7 +46,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 253 | Implement optional chaining runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Issue 246 classifies `obj?.x`, `obj?.[key]`, and `fn?.()` in the frontend parser, but name resolution currently repor... |
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 249 parses `static { ... }` as `ClassStaticBlock`, but builtin resolution currently rejects static blocks with ... |
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters, but builtin resolution rejects ... |
-| 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | implementation-ready | P1 | 257 | A closure object that stores captured heap values is unsafe unless the |
 | 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | implementation-ready | P2 | 259 | BigInt cannot share the current primitive equality/comparison helpers because Number/BigInt and String/BigInt coercio... |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | implementation-ready | P2 | 259 | After BigInt values exist, builtin and conversion behavior still needs explicit runtime helpers and diagnostics so `B... |
@@ -343,6 +342,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | see `issues/done/252-implement-destructuring-assignment-pattern-parser.md` |
 | 256 | Lower returned immutable closures to heap closure values | feature | ir | see `issues/done/256-lower-returned-immutable-closures-to-heap-values.md` |
 | 257 | Emit heap closure allocation and dispatch | feature | backend | see `issues/done/257-emit-heap-closure-allocation-and-dispatch.md` |
+| 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | see `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md` |
 | 259 | Implement BigInt literal runtime values | feature | runtime/semantics | see `issues/done/259-implement-bigint-literal-runtime-values.md` |
 <!-- generated:done:end -->
 
