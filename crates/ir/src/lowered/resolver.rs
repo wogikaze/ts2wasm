@@ -1263,6 +1263,16 @@ impl<'a> Resolver<'a> {
                     }
 
                     if method == "map"
+                        && string_constructor_arrow_callback(args)
+                        && self.is_known_array_expr(object)
+                    {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayMapValueToString".to_owned(),
+                            args: vec![self.lower_expr(object)?],
+                        });
+                    }
+
+                    if method == "map"
                         && let ResolvedExpr::Array(elements) = object.as_ref()
                     {
                         return self.lower_array_literal_map_arrow(elements, args, *span);
@@ -3119,4 +3129,23 @@ fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> 
         return None;
     };
     Some(separator)
+}
+
+fn string_constructor_arrow_callback(args: &[ResolvedExpr]) -> bool {
+    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+        return false;
+    };
+    let [param] = params.as_slice() else {
+        return false;
+    };
+    let ResolvedExpr::Call { callee, args, .. } = body.as_ref() else {
+        return false;
+    };
+    if !matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "String") {
+        return false;
+    }
+    let [ResolvedExpr::Ident(arg_name)] = args.as_slice() else {
+        return false;
+    };
+    arg_name == param
 }

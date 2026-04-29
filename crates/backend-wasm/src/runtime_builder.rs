@@ -107,6 +107,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayPop => self.emit_array_pop(wat),
                 RuntimeFn::ArraySlice => self.emit_array_slice(wat),
                 RuntimeFn::ArrayConcat => self.emit_array_concat(wat),
+                RuntimeFn::ArrayMapValueToString => self.emit_array_map_value_to_string(wat),
                 RuntimeFn::ArrayMapStringSplit => self.emit_array_map_string_split(wat),
                 RuntimeFn::ArrayJoin => self.emit_array_join(wat),
                 RuntimeFn::ArrayReverse => self.emit_array_reverse(wat),
