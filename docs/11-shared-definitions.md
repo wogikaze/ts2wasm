@@ -31,6 +31,9 @@
     "stderr": false,
     "args": false,
     "env": false,
+    "clock": {
+      "realtime": false
+    },
     "filesystem": {
       "read": [],
       "write": [],
@@ -66,6 +69,9 @@ Node host が必要な場合は、`standalone` を `false` にし、`node_host.i
     "stderr": false,
     "args": false,
     "env": false,
+    "clock": {
+      "realtime": false
+    },
     "filesystem": {
       "read": [],
       "write": [],

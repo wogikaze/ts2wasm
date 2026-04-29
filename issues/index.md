@@ -184,6 +184,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 200 | Implement parser syntax extensions | spike | reference | class: triage-needed | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
+| 242 | Implement Date live time with WASI realtime clock | feature | runtime/builtins | 239 | Implement Date live time with WASI realtime clock |
 <!-- generated:blocked:end -->
 
 ## Done queue
