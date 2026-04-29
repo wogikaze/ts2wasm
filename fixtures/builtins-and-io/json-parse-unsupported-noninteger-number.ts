@@ -1,2 +1,2 @@
-JSON.parse("1.5");
-console.log("accepted");
+let value = JSON.parse("1.5");
+console.log(value);

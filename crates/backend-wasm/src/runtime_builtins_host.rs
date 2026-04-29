@@ -329,6 +329,11 @@ impl WatEmitter<'_> {
     (if (i32.eq (local.get $tag) (i32.const {string_tag}))
       (then
         (return (call $json_write_escaped_string (local.get $v) (local.get $ptr)))))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (if (i32.eq (i32.load (i32.and (local.get $v) (i32.const {heap_mask}))) (i32.const {heap_number_sentinel}))
+          (then
+            (return (call $value_to_string_into (local.get $v) (local.get $ptr)))))))
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
       (then
         (local.set $base (i32.and (local.get $v) (i32.const {heap_mask})))
@@ -511,6 +516,7 @@ impl WatEmitter<'_> {
             string_tag = ValueTag::STRING,
             array_tag = ValueTag::ARRAY,
             object_tag = ValueTag::OBJECT,
+            heap_number_sentinel = -1,
             unsupported = -1,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
@@ -864,6 +870,91 @@ impl WatEmitter<'_> {
         (br $copy_loop)))
     (i32.or (local.get $result_ptr) (i32.const {string_tag})))
 
+  (func $json_make_fraction_number (param $n i32) (param $sign i32) (param $frac_digits i32) (result i32)
+    (local $tmp i32)
+    (local $digit_count i32)
+    (local $decimal_pos i32)
+    (local $zero_count i32)
+    (local $str_len i32)
+    (local $result_ptr i32)
+    (local $data_ptr i32)
+    (local $write_pos i32)
+    (local $digits_left i32)
+    (local $prefix_pos i32)
+    (local $i i32)
+    (local.set $tmp (local.get $n))
+    (block $digits_done
+      (loop $digits
+        (local.set $digit_count (i32.add (local.get $digit_count) (i32.const {one})))
+        (local.set $tmp (i32.div_u (local.get $tmp) (i32.const {ten})))
+        (br_if $digits (i32.gt_u (local.get $tmp) (i32.const {zero})))))
+    (local.set $decimal_pos (i32.sub (local.get $digit_count) (local.get $frac_digits)))
+    (if (i32.gt_s (local.get $decimal_pos) (i32.const {zero}))
+      (then
+        (local.set $str_len
+          (i32.add
+            (local.get $digit_count)
+            (i32.const {one}))))
+      (else
+        (local.set $zero_count (i32.sub (i32.const {zero}) (local.get $decimal_pos)))
+        (local.set $str_len
+          (i32.add
+            (i32.add (i32.const 2) (local.get $zero_count))
+            (local.get $digit_count)))))
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then (local.set $str_len (i32.add (local.get $str_len) (i32.const {one})))))
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {heap_number_data}) (local.get $str_len))))
+    (i32.store (local.get $result_ptr) (i32.const {heap_number_sentinel}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {obj_proto})) (i32.const {zero}))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const {heap_number_len})) (local.get $str_len))
+    (local.set $data_ptr (i32.add (local.get $result_ptr) (i32.const {heap_number_data})))
+    (local.set $write_pos
+      (i32.add
+        (local.get $data_ptr)
+        (i32.sub (local.get $str_len) (i32.const {one}))))
+    (local.set $tmp (local.get $n))
+    (local.set $digits_left (local.get $digit_count))
+    (block $write_digits_done
+      (loop $write_digits
+        (i32.store8
+          (local.get $write_pos)
+          (i32.add
+            (i32.rem_u (local.get $tmp) (i32.const {ten}))
+            (i32.const {ascii_zero})))
+        (local.set $tmp (i32.div_u (local.get $tmp) (i32.const {ten})))
+        (local.set $write_pos (i32.sub (local.get $write_pos) (i32.const {one})))
+        (local.set $digits_left (i32.sub (local.get $digits_left) (i32.const {one})))
+        (if
+          (i32.and
+            (i32.gt_s (local.get $decimal_pos) (i32.const {zero}))
+            (i32.eq (local.get $digits_left) (local.get $decimal_pos)))
+          (then
+            (i32.store8 (local.get $write_pos) (i32.const {dot}))
+            (local.set $write_pos (i32.sub (local.get $write_pos) (i32.const {one})))))
+        (br_if $write_digits (i32.gt_u (local.get $digits_left) (i32.const {zero})))))
+    (local.set $prefix_pos (local.get $data_ptr))
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then
+        (i32.store8 (local.get $prefix_pos) (i32.const {minus}))
+        (local.set $prefix_pos (i32.add (local.get $prefix_pos) (i32.const {one})))))
+    (if (i32.le_s (local.get $decimal_pos) (i32.const {zero}))
+      (then
+        (i32.store8 (local.get $prefix_pos) (i32.const {ascii_zero}))
+        (local.set $prefix_pos (i32.add (local.get $prefix_pos) (i32.const {one})))
+        (i32.store8 (local.get $prefix_pos) (i32.const {dot}))
+        (local.set $prefix_pos (i32.add (local.get $prefix_pos) (i32.const {one})))
+        (local.set $i (i32.const {zero}))
+        (block $zeros_done
+          (loop $zeros
+            (br_if $zeros_done (i32.ge_u (local.get $i) (local.get $zero_count)))
+            (i32.store8 (local.get $prefix_pos) (i32.const {ascii_zero}))
+            (local.set $prefix_pos (i32.add (local.get $prefix_pos) (i32.const {one})))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $zeros)))))
+    (i32.or (local.get $result_ptr) (i32.const {object_tag})))
+
   (func $json_parse_number_value (param $obj i32) (param $len i32) (param $pos i32) (result i32)
     (local $ch i32)
     (local $sign i32)
@@ -1025,7 +1116,12 @@ impl WatEmitter<'_> {
       (loop $scale_down
         (br_if $scale_down_done (i32.ge_s (local.get $scale) (i32.const {zero})))
         (if (i32.ne (i32.rem_u (local.get $n) (i32.const {ten})) (i32.const {zero}))
-          (then (unreachable)))
+          (then
+            (return
+              (call $json_make_fraction_number
+                (local.get $n)
+                (local.get $sign)
+                (i32.sub (i32.const {zero}) (local.get $scale))))))
         (local.set $n (i32.div_u (local.get $n) (i32.const {ten})))
         (local.set $scale (i32.add (local.get $scale) (i32.const {one})))
         (br $scale_down)))
@@ -1531,6 +1627,9 @@ impl WatEmitter<'_> {
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             value_off = Layout::OBJECT_VALUE_OFFSET,
+            heap_number_sentinel = -1,
+            heap_number_len = 8,
+            heap_number_data = 12,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             ten = RuntimeConst::TEN,
