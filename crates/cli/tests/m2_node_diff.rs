@@ -130,10 +130,47 @@ fn bigint_literal_arithmetic_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_runtime_add_sub_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-add-sub.ts");
+}
+
+#[test]
+fn bigint_runtime_large_add_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-large-unsupported.ts",
+        "issue-260: dynamic BigInt runtime arithmetic is limited to signed-i64-backed first-limb values in this slice",
+    );
+}
+
+#[test]
+fn bigint_runtime_large_sub_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-large-sub-unsupported.ts",
+        "issue-260: dynamic BigInt runtime arithmetic is limited to signed-i64-backed first-limb values in this slice",
+    );
+}
+
+#[test]
+fn bigint_runtime_branch_large_assignment_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-branch-large-unsupported.ts",
+        "issue-260:",
+    );
+}
+
+#[test]
+fn bigint_runtime_mixed_add_reports_issue_260_with_span() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-mixed-unsupported.ts",
+        "issue-260: mixed Number/BigInt arithmetic is not implemented in the dynamic BigInt runtime slice",
+    );
+}
+
+#[test]
 fn bigint_mixed_arithmetic_reports_issue_260() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-arithmetic-unsupported.ts",
-        "issue-260: BigInt arithmetic and bitwise operators are tracked separately from literal runtime values",
+        "issue-260: mixed Number/BigInt arithmetic is not implemented in the dynamic BigInt runtime slice",
     );
 }
 
