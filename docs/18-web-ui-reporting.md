@@ -48,6 +48,30 @@ npm run dev
 
 The development server serves the report at `http://localhost:5173`.
 
+## Local Live Mode
+
+Static report mode reads the generated JSON files once. Local live mode keeps
+the static fallback and adds polling for the test result payload:
+
+```text
+http://localhost:5173/?live=1
+```
+
+When `live=1` is present, the Test Results tab polls
+`web-ui/public/data/test-results.json`, updates the summary counters and visible
+rows without a page reload, and displays the live connection state plus the last
+successful refresh time. The default poll interval is two seconds. Local
+debugging can override it with `liveIntervalMs`:
+
+```text
+http://localhost:5173/?live=1&liveIntervalMs=500
+```
+
+Live mode is intended for local development loops where a test runner or helper
+command refreshes `web-ui/public/data/test-results.json` during the run. Static
+deployment continues to use the generated JSON snapshot without requiring a live
+server.
+
 ## Static Deployment
 
 Build the static bundle after generating fresh data:

@@ -7,7 +7,7 @@ Interactive web UI for displaying test results, coverage, and historical data - 
 - **Test Results**: Interactive test result browser with filtering and search
 - **Coverage Visualization**: Implementation status, priority breakdown, and suite charts
 - **Historical Comparison**: Track test runs over time with result deltas, regression flags, and performance trends
-- **Real-time Updates**: Live updates during test runs (planned)
+- **Real-time Updates**: Optional local live mode polls refreshed test result JSON during runs
 - **Export Functionality**: Export the active view as JSON or CSV, or use browser print/PDF
 - **Theme Toggle**: Switch dark/light themes with a persisted browser preference
 
@@ -98,6 +98,23 @@ mise run test262 -- --sample 50 --web-ui
 
 These commands write the same `web-ui/public/data/*.json` files used by the UI.
 
+### Local Live Mode
+
+For local runs that refresh `web-ui/public/data/test-results.json`, open the UI
+with live mode enabled:
+
+```text
+http://localhost:5173/?live=1
+```
+
+Live mode polls `test-results.json` every two seconds, refreshes the summary and
+visible test rows without a page reload, and shows the connection/error state in
+the Test Results tab. The interval can be adjusted for local debugging:
+
+```text
+http://localhost:5173/?live=1&liveIntervalMs=500
+```
+
 ### Export
 
 The header export buttons operate on the active tab:
@@ -113,7 +130,5 @@ stored in `localStorage` and is restored on reload.
 
 ## Future Enhancements
 
-- [ ] Real-time WebSocket updates during test runs
 - [ ] CI/CD integration
 - [ ] Authentication/authorization
-- [ ] Mobile-responsive design improvements
