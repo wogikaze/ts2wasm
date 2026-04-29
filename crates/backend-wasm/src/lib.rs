@@ -413,6 +413,27 @@ mod tests {
     }
 
     #[test]
+    fn gc_mark_object_payload_marks_heap_closure_capture_slots() {
+        let program =
+            lower_fixture("../../fixtures/core-semantics/ordinary-function-closure-gc-pressure.ts");
+
+        let wat = emit_wat(&program).expect("returned closure GC fixture should emit WAT");
+
+        assert!(wat.contains("(func $gc_mark_object_payload"));
+        assert!(wat.contains("(i32.const -2)"));
+        assert!(wat.contains("(i32.const 8)"));
+        assert!(wat.contains("(block $closure_done"));
+        assert!(wat.contains("(loop $closure_scan"));
+        assert!(wat.contains("(i32.const 16)"));
+        assert!(wat.contains("(i32.const 4)"));
+        assert!(wat.contains("(call $gc_mark_value (i32.load (local.get $entry_ptr)))"));
+        assert!(
+            wat.contains("(return)))\n    (if (i32.eq (local.get $count) (i32.const -1))"),
+            "closure marking must return before ordinary object payload scanning"
+        );
+    }
+
+    #[test]
     fn gc_mark_helpers_visit_heap_graph_payloads() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew {

@@ -574,6 +574,7 @@ fn unsupported_function_prototype_metadata_reports_issue_062f() {
 fn returned_ordinary_function_closure_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/ordinary-function-closure-escape-unsupported.ts",
+        "fixtures/core-semantics/ordinary-function-closure-gc-pressure.ts",
         "fixtures/core-semantics/ordinary-function-closure-make-adder.ts",
     ] {
         assert_fixture_matches_node(fixture);

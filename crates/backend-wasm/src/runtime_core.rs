@@ -8,6 +8,11 @@ use ts2wasm_runtime_abi::{
     value::ValueTag,
 };
 
+const CLOSURE_SENTINEL: i32 = -2;
+const CLOSURE_CAPTURE_COUNT_OFFSET: u32 = 8;
+const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
+const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
+
 impl WatEmitter<'_> {
     pub(super) fn emit_read_stdin_bytes(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -1487,11 +1492,30 @@ impl WatEmitter<'_> {
     (local $i i32)
     (local $entry_ptr i32)
     (local $proto i32)
-    (local.set $proto
-      (i32.load (i32.add (local.get $payload) (i32.const {object_prototype_offset}))))
     (local.set $count (i32.load (local.get $payload)))
+    (if (i32.eq (local.get $count) (i32.const {closure_sentinel}))
+      (then
+        (local.set $count
+          (i32.load
+            (i32.add (local.get $payload) (i32.const {closure_capture_count_offset}))))
+        (local.set $i (i32.const 0))
+        (block $closure_done
+          (loop $closure_scan
+            (br_if $closure_done (i32.ge_u (local.get $i) (local.get $count)))
+            (local.set $entry_ptr
+              (i32.add
+                (local.get $payload)
+                (i32.add
+                  (i32.const {closure_capture_slots_offset})
+                  (i32.mul (local.get $i) (i32.const {closure_capture_slot_size})))))
+            (call $gc_mark_value (i32.load (local.get $entry_ptr)))
+            (local.set $i (i32.add (local.get $i) (i32.const 1)))
+            (br $closure_scan)))
+        (return)))
     (if (i32.eq (local.get $count) (i32.const {heap_number_sentinel}))
       (then (return)))
+    (local.set $proto
+      (i32.load (i32.add (local.get $payload) (i32.const {object_prototype_offset}))))
     (if (i32.ne (local.get $proto) (i32.const 0))
       (then
         (call $gc_mark_value
@@ -1604,6 +1628,10 @@ impl WatEmitter<'_> {
             object_entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             object_value_offset = Layout::OBJECT_VALUE_OFFSET,
             heap_number_sentinel = -1,
+            closure_sentinel = CLOSURE_SENTINEL,
+            closure_capture_count_offset = CLOSURE_CAPTURE_COUNT_OFFSET,
+            closure_capture_slots_offset = CLOSURE_CAPTURE_SLOTS_OFFSET,
+            closure_capture_slot_size = CLOSURE_CAPTURE_SLOT_SIZE,
             gc_roots = gc_roots,
             module_cache_marker = module_cache_marker,
         ));
