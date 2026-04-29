@@ -594,6 +594,11 @@ impl Parser {
         let expr = self.expression()?;
         if self.consume(TokenKind::Equal) {
             match &expr {
+                Expr::OptionalMember { .. }
+                | Expr::OptionalIndex { .. }
+                | Expr::OptionalCall { .. } => {
+                    return Err(self.invalid_optional_chain_target(expr.span()));
+                }
                 Expr::Member {
                     object,
                     property,
@@ -651,6 +656,12 @@ impl Parser {
                     });
                 }
             }
+        }
+        if self.is_optional_chain_expr(&expr)
+            && (matches!(self.peek(), Some(Token::Increment))
+                || matches!(self.peek(), Some(Token::Decrement)))
+        {
+            return Err(self.invalid_optional_chain_target(expr.span()));
         }
         let semi = self.expect(TokenKind::Semicolon)?;
         Ok(Stmt::Expr {
@@ -874,12 +885,22 @@ impl Parser {
     fn return_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Return)?;
         let expr = self.expression()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
+            semi.end
+        } else if matches!(self.peek(), Some(Token::RightBrace)) {
+            expr.span().end
+        } else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("expected Semicolon, got {:?}", self.peek()),
+                span: self.peek_span(),
+            });
+        };
         Ok(Stmt::Return {
             expr,
             span: Span {
                 start: start.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -1251,6 +1272,8 @@ impl Parser {
     ) -> Result<Stmt, Diagnostic> {
         self.expect(TokenKind::LeftBrace)?;
         let mut body = Vec::new();
+        let mut static_blocks = Vec::new();
+        let mut private_elements = Vec::new();
         while !matches!(self.peek(), Some(Token::RightBrace)) {
             if self.is_at_end() {
                 return Err(Diagnostic {
@@ -1260,7 +1283,27 @@ impl Parser {
                 });
             }
 
+            if self.consume(TokenKind::Semicolon) {
+                continue;
+            }
+
+            if matches!(self.peek(), Some(Token::Static))
+                && matches!(self.peek_n(1), Some(Token::LeftBrace))
+            {
+                static_blocks.push(self.class_static_block()?);
+                continue;
+            }
+
             let is_static = self.consume(TokenKind::Static);
+
+            if matches!(self.peek(), Some(Token::PrivateIdentifier(_)))
+                || (matches!(self.peek(), Some(Token::Ident(name)) if name == "get" || name == "set")
+                    && matches!(self.peek_n(1), Some(Token::PrivateIdentifier(_))))
+            {
+                private_elements.push(self.class_private_element(is_static)?);
+                continue;
+            }
+
             let (method_name, method_span) = self.expect_ident()?;
 
             self.expect(TokenKind::LeftParen)?;
@@ -1323,9 +1366,121 @@ impl Parser {
             name,
             extends,
             body,
+            static_blocks,
+            private_elements,
             span: Span {
                 start: span_start,
                 end,
+            },
+        })
+    }
+
+    fn class_static_block(&mut self) -> Result<ClassStaticBlock, Diagnostic> {
+        let start = self.expect(TokenKind::Static)?;
+        let body = self.block()?;
+        let end = self.prev_span().map(|span| span.end).unwrap_or(start.end);
+
+        Ok(ClassStaticBlock {
+            body,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
+    }
+
+    fn class_private_element(
+        &mut self,
+        is_static: bool,
+    ) -> Result<ClassPrivateElement, Diagnostic> {
+        if matches!(self.peek(), Some(Token::Ident(name)) if name == "get") {
+            let accessor_span = self.expect_contextual_keyword("get")?;
+            let (name, name_span) = self.expect_private_ident()?;
+            self.expect(TokenKind::LeftParen)?;
+            self.expect(TokenKind::RightParen)?;
+            let body = self.block()?;
+            let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
+            return Ok(ClassPrivateElement::Getter {
+                name,
+                name_span,
+                body,
+                is_static,
+                span: Span {
+                    start: accessor_span.start,
+                    end,
+                },
+            });
+        }
+
+        if matches!(self.peek(), Some(Token::Ident(name)) if name == "set") {
+            let accessor_span = self.expect_contextual_keyword("set")?;
+            let (name, name_span) = self.expect_private_ident()?;
+            self.expect(TokenKind::LeftParen)?;
+            let param = self.parse_param(false)?;
+            self.expect(TokenKind::RightParen)?;
+            let body = self.block()?;
+            let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
+            return Ok(ClassPrivateElement::Setter {
+                name,
+                name_span,
+                param: param.name,
+                body,
+                is_static,
+                span: Span {
+                    start: accessor_span.start,
+                    end,
+                },
+            });
+        }
+
+        let (name, name_span) = self.expect_private_ident()?;
+        if self.consume(TokenKind::LeftParen) {
+            let mut params = Vec::new();
+            if !self.consume(TokenKind::RightParen) {
+                loop {
+                    let param = self.parse_param(false)?;
+                    params.push((param.name, param.default, param.is_rest));
+                    if self.consume(TokenKind::RightParen) {
+                        break;
+                    }
+                    if param.is_rest {
+                        return Err(self.invalid_rest_binding_diagnostic(param.span));
+                    }
+                    self.expect(TokenKind::Comma)?;
+                }
+            }
+            if self.consume(TokenKind::Colon) {
+                self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+            }
+            let body = self.block()?;
+            let end = self.prev_span().map(|span| span.end).unwrap_or(name_span.end);
+            return Ok(ClassPrivateElement::Method {
+                name,
+                name_span,
+                params,
+                body,
+                is_static,
+                span: Span {
+                    start: name_span.start,
+                    end,
+                },
+            });
+        }
+
+        let value = if self.consume(TokenKind::Equal) {
+            Some(self.expression()?)
+        } else {
+            None
+        };
+        let semi = self.expect(TokenKind::Semicolon)?;
+        Ok(ClassPrivateElement::Field {
+            name,
+            name_span,
+            value,
+            is_static,
+            span: Span {
+                start: name_span.start,
+                end: semi.end,
             },
         })
     }

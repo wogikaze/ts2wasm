@@ -601,6 +601,15 @@ impl NameResolver {
                     span: *span,
                 })
             }
+            Expr::OptionalMember { span, .. }
+            | Expr::OptionalIndex { span, .. }
+            | Expr::OptionalCall { span, .. } => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-246: optional chaining parses, but lowering/runtime semantics are not implemented"
+                        .to_owned(),
+                span: Some(*span),
+            }),
             Expr::Array { elements, span } => Ok(Expr::Array {
                 elements: elements
                     .iter()

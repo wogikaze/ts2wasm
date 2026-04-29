@@ -3,8 +3,8 @@ use std::fs;
 use std::path::Path;
 
 use ts2wasm_frontend::{
-    BinaryOp, DiagCode, Diagnostic, Expr, Lexer, LogicalAssignOp, Parser, SpannedToken, Stmt,
-    UnaryOp, validate_type_reference_directives,
+    BinaryOp, ClassPrivateElement, DiagCode, Diagnostic, Expr, Lexer, LogicalAssignOp, Parser,
+    SpannedToken, Stmt, UnaryOp, validate_type_reference_directives,
 };
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
@@ -470,6 +470,8 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
             name,
             extends,
             body,
+            static_blocks,
+            private_elements,
             ..
         } => {
             let extends = extends
@@ -478,6 +480,16 @@ fn unparse_stmt(out: &mut String, stmt: &Stmt, indent: usize) {
                 .unwrap_or_default();
             let _ = writeln!(out, "class {name}{extends} {{");
             unparse_block(out, body, indent + 1);
+            for static_block in static_blocks {
+                write_indent(out, indent + 1);
+                let _ = writeln!(out, "static {{");
+                unparse_block(out, &static_block.body, indent + 2);
+                write_indent(out, indent + 1);
+                let _ = writeln!(out, "}}");
+            }
+            for element in private_elements {
+                unparse_private_class_element(out, element, indent + 1);
+            }
             write_indent(out, indent);
             let _ = writeln!(out, "}}");
         }
@@ -597,6 +609,80 @@ fn unparse_block(out: &mut String, body: &[Stmt], indent: usize) {
     }
 }
 
+fn unparse_private_class_element(out: &mut String, element: &ClassPrivateElement, indent: usize) {
+    match element {
+        ClassPrivateElement::Field {
+            name,
+            value,
+            is_static,
+            ..
+        } => {
+            write_indent(out, indent);
+            let prefix = if *is_static { "static " } else { "" };
+            match value {
+                Some(value) => {
+                    let _ = writeln!(out, "{prefix}#{name} = {};", unparse_expr(value));
+                }
+                None => {
+                    let _ = writeln!(out, "{prefix}#{name};");
+                }
+            }
+        }
+        ClassPrivateElement::Method {
+            name,
+            params,
+            body,
+            is_static,
+            ..
+        } => {
+            write_indent(out, indent);
+            let prefix = if *is_static { "static " } else { "" };
+            let params = params
+                .iter()
+                .map(|(name, default, is_rest)| {
+                    let prefix = if *is_rest { "..." } else { "" };
+                    match default {
+                        Some(expr) => format!("{prefix}{name} = {}", unparse_expr(expr)),
+                        None => format!("{prefix}{name}"),
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            let _ = writeln!(out, "{prefix}#{name}({params}) {{");
+            unparse_block(out, body, indent + 1);
+            write_indent(out, indent);
+            let _ = writeln!(out, "}}");
+        }
+        ClassPrivateElement::Getter {
+            name,
+            body,
+            is_static,
+            ..
+        } => {
+            write_indent(out, indent);
+            let prefix = if *is_static { "static " } else { "" };
+            let _ = writeln!(out, "{prefix}get #{name}() {{");
+            unparse_block(out, body, indent + 1);
+            write_indent(out, indent);
+            let _ = writeln!(out, "}}");
+        }
+        ClassPrivateElement::Setter {
+            name,
+            param,
+            body,
+            is_static,
+            ..
+        } => {
+            write_indent(out, indent);
+            let prefix = if *is_static { "static " } else { "" };
+            let _ = writeln!(out, "{prefix}set #{name}({param}) {{");
+            unparse_block(out, body, indent + 1);
+            write_indent(out, indent);
+            let _ = writeln!(out, "}}");
+        }
+    }
+}
+
 fn unparse_for_init(stmt: &Stmt) -> String {
     match stmt {
         Stmt::Let { name, expr, .. } => format!("let {name} = {}", unparse_expr(expr)),
@@ -638,8 +724,14 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::Member {
             object, property, ..
         } => format!("{}.{}", unparse_expr(object), property),
+        Expr::OptionalMember {
+            object, property, ..
+        } => format!("{}?.{}", unparse_expr(object), property),
         Expr::Call { callee, args, .. } => {
             format!("{}({})", unparse_expr(callee), unparse_expr_list(args))
+        }
+        Expr::OptionalCall { callee, args, .. } => {
+            format!("{}?.({})", unparse_expr(callee), unparse_expr_list(args))
         }
         Expr::Assign { name, expr, .. } => format!("{name} = {}", unparse_expr(expr)),
         Expr::LogicalAssign { name, op, expr, .. } => {
@@ -673,6 +765,9 @@ fn unparse_expr(expr: &Expr) -> String {
         }
         Expr::Index { object, index, .. } => {
             format!("{}[{}]", unparse_expr(object), unparse_expr(index))
+        }
+        Expr::OptionalIndex { object, index, .. } => {
+            format!("{}?.[{}]", unparse_expr(object), unparse_expr(index))
         }
         Expr::New { expr, args, .. } => {
             format!("new {}({})", unparse_expr(expr), unparse_expr_list(args))

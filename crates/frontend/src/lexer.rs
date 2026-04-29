@@ -3,6 +3,7 @@ use crate::{DiagCode, Diagnostic, Span};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Token {
     Ident(String),
+    PrivateIdentifier(String),
     Number(i32),
     BigIntLiteral(String),
     String(String),
@@ -116,6 +117,7 @@ pub struct SpannedToken {
 
 #[derive(Debug, Clone, Copy)]
 pub enum TokenKind {
+    PrivateIdentifier,
     Let,
     Const,
     Var,
@@ -211,7 +213,8 @@ impl TokenKind {
     pub fn matches(self, token: &Token) -> bool {
         matches!(
             (self, token),
-            (Self::Let, Token::Let)
+            (Self::PrivateIdentifier, Token::PrivateIdentifier(_))
+                | (Self::Let, Token::Let)
                 | (Self::Const, Token::Const)
                 | (Self::Var, Token::Var)
                 | (Self::Function, Token::Function)
@@ -571,6 +574,10 @@ impl<'a> Lexer<'a> {
                 }
                 'a'..='z' | 'A'..='Z' | '_' | '$' => {
                     let token = self.ident_or_keyword();
+                    self.add_token(&mut tokens, token);
+                }
+                '#' => {
+                    let token = self.private_identifier(start)?;
                     self.add_token(&mut tokens, token);
                 }
                 '+' => {
@@ -1941,6 +1948,36 @@ impl<'a> Lexer<'a> {
                 end: self.cursor,
             },
         }
+    }
+
+    fn private_identifier(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
+        self.advance_char();
+        if !matches!(self.peek_char(), Some('a'..='z' | 'A'..='Z' | '_' | '$')) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-248: invalid private identifier".to_owned(),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+            });
+        }
+
+        let name_start = self.cursor;
+        while matches!(
+            self.peek_char(),
+            Some('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '$')
+        ) {
+            self.advance_char();
+        }
+
+        Ok(SpannedToken {
+            kind: Token::PrivateIdentifier(self.source[name_start..self.cursor].to_owned()),
+            span: Span {
+                start,
+                end: self.cursor,
+            },
+        })
     }
 
     fn peek_char(&self) -> Option<char> {

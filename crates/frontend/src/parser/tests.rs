@@ -455,6 +455,95 @@ mod tests {
     }
 
     #[test]
+    fn parses_class_static_block_as_distinct_class_element() {
+        let program = parse_program("class C { static { console.log(1); } }").unwrap();
+
+        let Stmt::ClassDecl {
+            body,
+            static_blocks,
+            ..
+        } = &program[0]
+        else {
+            panic!("expected class declaration");
+        };
+
+        assert!(body.is_empty(), "static block must not parse as a method");
+        assert_eq!(static_blocks.len(), 1);
+        assert_eq!(
+            static_blocks[0].span,
+            Span {
+                start: 10,
+                end: 36
+            }
+        );
+        assert_eq!(static_blocks[0].body.len(), 1);
+        assert_eq!(
+            static_blocks[0].body[0].span(),
+            Span {
+                start: 19,
+                end: 34
+            }
+        );
+    }
+
+    #[test]
+    fn parses_private_class_elements_as_distinct_class_elements() {
+        let program = parse_program(
+            "class C { #x = 1; static #y; #m(value) { return value; } get #z() { return 1; } set #z(value) {} }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl {
+            body,
+            private_elements,
+            ..
+        } = &program[0]
+        else {
+            panic!("expected class declaration");
+        };
+
+        assert!(body.is_empty(), "private elements must not parse as methods");
+        assert_eq!(private_elements.len(), 5);
+        assert!(matches!(
+            &private_elements[0],
+            ClassPrivateElement::Field {
+                name,
+                is_static: false,
+                ..
+            } if name == "x"
+        ));
+        assert!(matches!(
+            &private_elements[1],
+            ClassPrivateElement::Field {
+                name,
+                is_static: true,
+                ..
+            } if name == "y"
+        ));
+        assert!(matches!(
+            &private_elements[2],
+            ClassPrivateElement::Method { name, .. } if name == "m"
+        ));
+        assert!(matches!(
+            &private_elements[3],
+            ClassPrivateElement::Getter { name, .. } if name == "z"
+        ));
+        assert!(matches!(
+            &private_elements[4],
+            ClassPrivateElement::Setter { name, param, .. } if name == "z" && param == "value"
+        ));
+    }
+
+    #[test]
+    fn rejects_invalid_private_identifier_with_issue_linked_diagnostic() {
+        let err = parse_program("class C { # = 1; }").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-248"), "{err:?}");
+        assert!(err.message.contains("invalid private identifier"), "{err:?}");
+    }
+
+    #[test]
     fn parses_uninitialized_typed_let_as_undefined() {
         let program = parse_program("let value: number;").unwrap();
         assert_eq!(program.len(), 1);
@@ -605,6 +694,62 @@ mod tests {
             }
             other => panic!("unexpected statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn parses_optional_chaining_expression_forms() {
+        let program = parse_program("let a = obj?.x; let b = obj?.[key]; let c = fn?.(1);").unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::OptionalMember { property, .. },
+                ..
+            } => assert_eq!(property, "x"),
+            other => panic!("unexpected optional member statement: {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::OptionalIndex { index, .. },
+                ..
+            } => assert!(matches!(index.as_ref(), Expr::Ident { name, .. } if name == "key")),
+            other => panic!("unexpected optional index statement: {other:?}"),
+        }
+        match &program[2] {
+            Stmt::Let {
+                expr: Expr::OptionalCall { args, .. },
+                ..
+            } => assert_eq!(args.len(), 1),
+            other => panic!("unexpected optional call statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_optional_chaining_assignment_and_update_targets() {
+        for source in ["obj?.x = 1;", "obj?.x++;"] {
+            let err = parse_program(source).unwrap_err();
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(err.message.contains("issue-246"), "{err:?}");
+            assert!(
+                err.message.contains("assignment or update target"),
+                "{err:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn accepts_return_without_semicolon_before_closing_brace() {
+        let program = parse_program("function fn() { return this?.a }").unwrap();
+
+        let Stmt::Function { body, .. } = &program[0] else {
+            panic!("expected function declaration");
+        };
+        assert!(matches!(
+            &body[0],
+            Stmt::Return {
+                expr: Expr::OptionalMember { .. },
+                ..
+            }
+        ));
     }
 
     #[test]

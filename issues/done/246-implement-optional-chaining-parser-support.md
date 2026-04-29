@@ -9,6 +9,8 @@ depends_on: []
 blocks: ["059"]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -46,11 +48,11 @@ Optional chaining syntax is parsed as a distinct frontend AST shape or lowered s
 
 In scope:
 
-- [ ] Parse optional property access `obj?.x`.
-- [ ] Parse optional element access `obj?.[key]`.
-- [ ] Parse optional call `fn?.()`.
-- [ ] Reject invalid optional chaining assignment/update targets.
-- [ ] Add parser and CLI dump coverage for accepted and rejected forms.
+- [x] Parse optional property access `obj?.x`.
+- [x] Parse optional element access `obj?.[key]`.
+- [x] Parse optional call `fn?.()`.
+- [x] Reject invalid optional chaining assignment/update targets.
+- [x] Add parser and CLI dump coverage for accepted and rejected forms.
 
 Out of scope:
 
@@ -74,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `obj?.x`, `obj?.[key]`, and `fn?.()` no longer fail with the current `expected Comma, got Some(OptionalChain)` parser error.
-- [ ] Invalid assignment/update targets such as `obj?.x = 1` and `obj?.x++` report explicit diagnostics.
-- [ ] CLI dump or diagnostics preserve optional-chain structure rather than erasing it accidentally.
-- [ ] `reference/test262/test/language/expressions/optional-chaining/member-expression.js` no longer fails due to the current parser comma error.
+- [x] `obj?.x`, `obj?.[key]`, and `fn?.()` no longer fail with the current `expected Comma, got Some(OptionalChain)` parser error.
+- [x] Invalid assignment/update targets such as `obj?.x = 1` and `obj?.x++` report explicit diagnostics.
+- [x] CLI dump or diagnostics preserve optional-chain structure rather than erasing it accidentally.
+- [x] `reference/test262/test/language/expressions/optional-chaining/member-expression.js` no longer fails due to the current parser comma error.
 
 ## Validation
 
@@ -106,15 +108,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update `docs/language-reference/javascript-features.md` when support status changes
+- [x] updated `docs/language-reference/javascript-features.md` for parser-supported/runtime-unsupported boundary
 
 Current state:
 
-- [ ] update `current-state.md` if semantic support boundary changes
+- [x] not updated; parser classification changed, semantic runtime support remains tracked separately
 
 Follow-up issues:
 
-- [ ] create semantic-lowering child issues for optional-chain forms left unsupported after parsing
+- [x] created `issues/open/253-implement-optional-chaining-runtime-semantics.md`
 
 ## Notes
 
@@ -126,16 +128,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending parent commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass; 76 tests run, 76 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: pass; 34 tests run, 34 passed
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/language/expressions/optional-chaining/member-expression.js --detail
+result: pass; member-expression.js is now classified as UnsupportedSyntax/function instead of parser-syntax
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Optional chaining lowering/runtime semantics are not implemented; tracked by issue 253.

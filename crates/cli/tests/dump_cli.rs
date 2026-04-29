@@ -115,6 +115,52 @@ fn dump_ast_reports_invalid_numeric_literal_separator() {
 }
 
 #[test]
+fn dump_ast_unparse_preserves_optional_chaining_forms() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let a = obj?.x; let b = obj?.[key]; let c = fn?.(1);",
+    );
+
+    assert_eq!(
+        output,
+        "let a = obj?.x;\nlet b = obj?.[key];\nlet c = fn?.(1);\n"
+    );
+}
+
+#[test]
+fn dump_ast_reports_invalid_optional_chaining_assignment_target() {
+    let stderr = run_dump_error(&["--ast"], "obj?.x = 1;");
+
+    assert!(stderr.contains("[UnsupportedSyntax]"), "{stderr}");
+    assert!(stderr.contains("issue-246"), "{stderr}");
+    assert!(stderr.contains("assignment or update target"), "{stderr}");
+}
+
+#[test]
+fn dump_ast_class_static_block_preserves_block_and_statement_spans() {
+    let output = run_dump(&["--ast"], "class C { static { console.log(1); } }");
+
+    assert!(output.contains("static_blocks"), "{output}");
+    assert!(output.contains("ClassStaticBlock"), "{output}");
+    assert!(output.contains("start: 10,"), "{output}");
+    assert!(output.contains("end: 36,"), "{output}");
+    assert!(output.contains("start: 19,"), "{output}");
+    assert!(output.contains("end: 34,"), "{output}");
+}
+
+#[test]
+fn dump_ast_private_class_field_preserves_private_identifier_span() {
+    let output = run_dump(&["--ast"], "class C { #x = 1; }");
+
+    assert!(output.contains("private_elements"), "{output}");
+    assert!(output.contains("Field"), "{output}");
+    assert!(output.contains("name: \"x\""), "{output}");
+    assert!(output.contains("name_span"), "{output}");
+    assert!(output.contains("start: 10,"), "{output}");
+    assert!(output.contains("end: 12,"), "{output}");
+}
+
+#[test]
 fn dump_ast_classifies_bigint_literals() {
     let output = run_dump(
         &["--ast"],

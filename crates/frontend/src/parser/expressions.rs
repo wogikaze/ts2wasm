@@ -24,19 +24,22 @@ impl Parser {
         }
 
         let expr = self.ternary()?;
-        if matches!(self.peek(), Some(Token::Equal))
-            && let Expr::Ident { name, span } = expr
-        {
-            self.advance();
-            let value = self.assignment()?;
-            return Ok(Expr::Assign {
-                name,
-                span: Span {
-                    start: span.start,
-                    end: value.span().end,
-                },
-                expr: Box::new(value),
-            });
+        if matches!(self.peek(), Some(Token::Equal)) {
+            if let Expr::Ident { name, span } = expr {
+                self.advance();
+                let value = self.assignment()?;
+                return Ok(Expr::Assign {
+                    name,
+                    span: Span {
+                        start: span.start,
+                        end: value.span().end,
+                    },
+                    expr: Box::new(value),
+                });
+            }
+            if self.is_optional_chain_expr(&expr) {
+                return Err(self.invalid_optional_chain_target(expr.span()));
+            }
         }
         if let Some(op) = self.logical_assignment_operator() {
             let target_span = expr.span();
@@ -780,6 +783,43 @@ impl Parser {
                 };
                 continue;
             }
+            if self.consume(TokenKind::OptionalChain) {
+                if self.consume(TokenKind::LeftBracket) {
+                    let index = self.expression()?;
+                    let right_span = self.expect(TokenKind::RightBracket)?;
+                    let start = expr.span().start;
+                    expr = Expr::OptionalIndex {
+                        object: Box::new(expr),
+                        index: Box::new(index),
+                        span: Span {
+                            start,
+                            end: right_span.end,
+                        },
+                    };
+                    continue;
+                }
+                if allow_call && self.consume(TokenKind::LeftParen) {
+                    let (args, end) = self.finish_call_args()?;
+                    let start = expr.span().start;
+                    expr = Expr::OptionalCall {
+                        callee: Box::new(expr),
+                        args,
+                        span: Span { start, end },
+                    };
+                    continue;
+                }
+                let (property, prop_span) = self.expect_member_property_name()?;
+                let start = expr.span().start;
+                expr = Expr::OptionalMember {
+                    object: Box::new(expr),
+                    property,
+                    span: Span {
+                        start,
+                        end: prop_span.end,
+                    },
+                };
+                continue;
+            }
             if self.consume(TokenKind::LeftBracket) {
                 let index = self.expression()?;
                 let right_span = self.expect(TokenKind::RightBracket)?;
@@ -798,32 +838,7 @@ impl Parser {
                 self.try_consume_typescript_call_type_arguments(&expr)?;
             }
             if allow_call && self.consume(TokenKind::LeftParen) {
-                let mut args = Vec::new();
-                if !self.consume(TokenKind::RightParen) {
-                    loop {
-                        if let Some(spread_span) = self.consume_span(TokenKind::Spread) {
-                            let spread_expr = self.unary()?;
-                            let end = spread_expr.span().end;
-                            args.push(Expr::Spread {
-                                expr: Box::new(spread_expr),
-                                span: Span {
-                                    start: spread_span.start,
-                                    end,
-                                },
-                            });
-                        } else {
-                            args.push(self.expression()?);
-                        }
-                        if self.consume(TokenKind::RightParen) {
-                            break;
-                        }
-                        self.expect(TokenKind::Comma)?;
-                    }
-                }
-                let end = self
-                    .prev_span()
-                    .map(|span| span.end)
-                    .unwrap_or(expr.span().end);
+                let (args, end) = self.finish_call_args()?;
                 let start = expr.span().start;
                 expr = Expr::Call {
                     callee: Box::new(expr),
@@ -835,6 +850,49 @@ impl Parser {
             break;
         }
         Ok(expr)
+    }
+
+    fn finish_call_args(&mut self) -> Result<(Vec<Expr>, usize), Diagnostic> {
+        let mut args = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                if let Some(spread_span) = self.consume_span(TokenKind::Spread) {
+                    let spread_expr = self.unary()?;
+                    let end = spread_expr.span().end;
+                    args.push(Expr::Spread {
+                        expr: Box::new(spread_expr),
+                        span: Span {
+                            start: spread_span.start,
+                            end,
+                        },
+                    });
+                } else {
+                    args.push(self.expression()?);
+                }
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                self.expect(TokenKind::Comma)?;
+            }
+        }
+        let end = self.prev_span().map(|span| span.end).unwrap_or(0);
+        Ok((args, end))
+    }
+
+    fn is_optional_chain_expr(&self, expr: &Expr) -> bool {
+        matches!(
+            expr,
+            Expr::OptionalMember { .. } | Expr::OptionalIndex { .. } | Expr::OptionalCall { .. }
+        )
+    }
+
+    fn invalid_optional_chain_target(&self, span: Span) -> Diagnostic {
+        Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-246: optional chaining cannot be used as an assignment or update target"
+                .to_owned(),
+            span: Some(span),
+        }
     }
 
     fn consume_typescript_const_angle_assertion(&mut self) -> bool {

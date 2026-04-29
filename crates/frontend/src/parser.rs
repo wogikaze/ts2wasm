@@ -2,7 +2,7 @@ use crate::{
     BinaryOp, DiagCode, Diagnostic, ExportNamedSpecifier, Expr, ImportDefaultSpecifier,
     ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp, ModuleSpecifier,
     ReExportNamedSpecifier, Span, SpannedToken, Stmt, Token, TokenKind, UnaryOp,
-    ast::ReExportNamespaceSpecifier,
+    ast::{ClassPrivateElement, ClassStaticBlock, ReExportNamespaceSpecifier},
 };
 use std::collections::HashSet;
 
