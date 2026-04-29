@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Amdmodulename` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage amdModuleName across 2 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `amdModuleName` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `amdModuleName` with diagnostics: module-system-amd. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Amdmodulename` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
+Problem: amdModuleName has 2 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdModuleName1.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdModuleName1.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/amdModuleName1.ts`
-Feature label: `parser-syntax`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdModuleName1.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdModuleName1.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdModuleName1.ts
 ```
 
 Not run:
@@ -120,7 +116,284 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage module system amd: amdModuleName1
+
+- Issue class: `triage-needed`
+- Feature label: `module-system-amd`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/amdModuleName1.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdModuleName1.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 159,
+  "lines": 10,
+  "extension": ".ts",
+  "first_code_line": "class Foo {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected LeftParen, got Some(Colon) at 87..88",
+  "span_start": 87,
+  "span_end": 88,
+  "line": 5,
+  "column": 6,
+  "feature_label": "module-system-amd",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+2 | //@module: amd
+3 | ///<amd-module name='NamedModule'/>
+4 | class Foo {
+5 |     x: number;
+6 |     constructor() {
+7 |         this.x = 5;
+8 |     }
+```
+
+Visible symbols before failure:
+
+```json
+[
+  {
+    "kind": "class",
+    "name": "Foo",
+    "line": 4,
+    "column": 1
+  }
+]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/176-implement-amdModuleName.md",
+    "title": "Implement Amdmodulename",
+    "reason": "same reference path"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+- Keep module graph behavior separate from parser syntax unless the diagnostic proves syntax is the blocker.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 70,
+            end: 75,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "Foo",
+        ),
+        span: Span {
+            start: 76,
+            end: 79,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 80,
+            end: 81,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "x",
+        ),
+        span: Span {
+            start: 86,
+            end: 87,
+        },
+    },
+    SpannedToken {
+        kind: Colon,
+        span: Span {
+            start: 87,
+            end: 88,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "number",
+        ),
+        span: Span {
+            start: 89,
+            end: 95,
+        },
+    },
+    SpannedToken {
+        kind: Semicolon,
+        span: Span {
+            start: 95,
+            end: 96,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "constructor",
+        ),
+        span: Span {
+            start: 101,
+            end: 112,
+        },
+    },
+    SpannedToken {
+        kind: LeftParen,
+        span: Span {
+            start: 112,
+            end: 113,
+        },
+    },
+    SpannedToken {
+        kind: RightParen,
+        span: Span {
+            start: 113,
+            end: 114,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 115,
+            end: 116,
+        },
+    },
+    SpannedToken {
+        kind: This,
+        span: Span {
+            start: 125,
+            end: 129,
+        },
+    },
+    SpannedToken {
+        kind: Dot,
+        span: Span {
+            start: 129,
+            end: 130,
+        },
+    },
+    SpannedToken {
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected LeftParen, got Some(Colon) at 87..88
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected LeftParen, got Some(Colon) at 87..88
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": true,
+    "diagnostics": [],
+    "hints": [],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "ClassDeclaration",
+        "text": "class Foo {\n    x: number;\n    constructor() {\n        this.x = 5;\n    }\n}",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "ExportAssignment",
+        "text": "export = Foo;",
+        "line": 10,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "class Foo {\n    x: number;\n    constructor() {\n        this.x = 5;\n    }\n}\nexport = Foo;\n",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "class Foo {\n    x: number;\n    constructor() {\n        this.x = 5;\n    }\n}",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "PropertyDeclaration",
+        "text": "x: number;",
+        "line": 5,
+        "character": 5
+      },
+      {
+        "kind": "Identifier",
+        "text": "x",
+        "line": 5,
+        "character": 5
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] expected LeftParen, got Some(Colon) at 87..88
+```
 
 ## Completion evidence
 

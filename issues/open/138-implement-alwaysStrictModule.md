@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Alwaysstrictmodule` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage alwaysStrictModule across 6 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 6 cases fail in directory `alwaysStrictModule` with diagnostics: parser-syntax, unknown-unsupported. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 6 cases fail in directory `alwaysStrictModule` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Alwaysstrictmodule` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
+Problem: alwaysStrictModule has 6 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alwaysStrictModule.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/alwaysStrictModule.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/alwaysStrictModule.ts`
-Feature label: `parser-syntax`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alwaysStrictModule.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/alwaysStrictModule.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alwaysStrictModule.ts
 ```
 
 Not run:
@@ -124,7 +120,303 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage import export: alwaysStrictModule
+
+- Issue class: `triage-needed`
+- Feature label: `import-export`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/alwaysStrictModule.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alwaysStrictModule.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 139,
+  "lines": 9,
+  "extension": ".ts",
+  "first_code_line": "namespace M {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Ident(\"M\")) at 74..75",
+  "span_start": 74,
+  "span_end": 75,
+  "line": 5,
+  "column": 11,
+  "feature_label": "import-export",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+2 | // @module: commonjs
+3 | // @alwaysStrict: true
+4 |
+5 | namespace M {
+6 |     export function f() {
+7 |         var arguments = [];
+8 |     }
+```
+
+Visible symbols before failure:
+
+```json
+[]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/138-implement-alwaysStrictModule.md",
+    "title": "Implement Alwaysstrictmodule",
+    "reason": "same reference path, title overlap"
+  },
+  {
+    "state": "done",
+    "path": "issues/done/055-implement-import-export.md",
+    "title": "Umbrella: implement import and export",
+    "reason": "same feature label, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+- Keep module graph behavior separate from parser syntax unless the diagnostic proves syntax is the blocker.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Ident(
+            "namespace",
+        ),
+        span: Span {
+            start: 64,
+            end: 73,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "M",
+        ),
+        span: Span {
+            start: 74,
+            end: 75,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 76,
+            end: 77,
+        },
+    },
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 82,
+            end: 88,
+        },
+    },
+    SpannedToken {
+        kind: Function,
+        span: Span {
+            start: 89,
+            end: 97,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "f",
+        ),
+        span: Span {
+            start: 98,
+            end: 99,
+        },
+    },
+    SpannedToken {
+        kind: LeftParen,
+        span: Span {
+            start: 99,
+            end: 100,
+        },
+    },
+    SpannedToken {
+        kind: RightParen,
+        span: Span {
+            start: 100,
+            end: 101,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 102,
+            end: 103,
+        },
+    },
+    SpannedToken {
+        kind: Var,
+        span: Span {
+            start: 112,
+            end: 115,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "arguments",
+        ),
+        span: Span {
+            start: 116,
+            end: 125,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 126,
+            end: 127,
+        },
+    },
+    SpannedToken {
+        kind: LeftBracket,
+        span: Span {
+            start: 128,
+            end: 129,
+        },
+    },
+    SpannedToken {
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 74..75
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 74..75
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": false,
+    "diagnostics": [
+      {
+        "code": 1100,
+        "category": "Error",
+        "message": "Invalid use of 'arguments' in strict mode.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/alwaysStrictModule.ts",
+        "start": 116,
+        "length": 9,
+        "line": 7,
+        "character": 13
+      }
+    ],
+    "hints": [
+      {
+        "kind": "function",
+        "typeText": "void",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/alwaysStrictModule.ts",
+        "start": 98,
+        "length": 1,
+        "line": 6,
+        "character": 21,
+        "name": "f"
+      },
+      {
+        "kind": "binding",
+        "typeText": "never[]",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/alwaysStrictModule.ts",
+        "start": 116,
+        "length": 9,
+        "line": 7,
+        "character": 13,
+        "name": "arguments"
+      }
+    ],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "ModuleDeclaration",
+        "text": "namespace M {\n    export function f() {\n        var arguments = [];\n    }\n}",
+        "line": 5,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "namespace M {\n    export function f() {\n        var arguments = [];\n    }\n}",
+        "line": 5,
+        "character": 1
+      },
+      {
+        "kind": "ModuleDeclaration",
+        "text": "namespace M {\n    export function f() {\n        var arguments = [];\n    }\n}",
+        "line": 5,
+        "character": 1
+      },
+      {
+        "kind": "Identifier",
+        "text": "M",
+        "line": 5,
+        "character": 11
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("M")) at 74..75
+```
 
 ## Completion evidence
 

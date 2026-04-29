@@ -3,41 +3,43 @@
   "suite_name": "tsc",
   "denominator": 6419,
   "executed": 200,
-  "build_coverage_percent": "0.11",
-  "semantic_coverage_percent": "0.06",
-  "build_pass": 7,
-  "semantic_pass": 4,
+  "build_coverage_percent": "0.26",
+  "semantic_coverage_percent": "0.16",
+  "build_pass": 17,
+  "semantic_pass": 10,
   "fail": 0,
-  "unsupported": 193,
+  "unsupported": 183,
   "blocked": 0,
   "skip_with_reason": 0,
   "unsupported_diagcodes": {
-    "UnsupportedSyntax": 191,
-    "UnresolvedName": 2
+    "UnsupportedSyntax": 177,
+    "UnresolvedName": 4,
+    "UnresolvedFunction": 2
   },
   "unsupported_features": {
-    "parser-syntax": 59,
+    "parser-syntax": 47,
     "jsdoc": 1,
+    "type-annotation": 1,
     "import-export": 21,
-    "class-accessor": 17,
+    "class-accessor": 16,
     "module-system-amd": 10,
     "scope-analysis": 3,
+    "name-resolution": 4,
     "type-alias": 23,
     "declaration-emit": 8,
+    "function-resolution": 2,
     "function": 1,
     "module-resolution": 2,
     "ambient-declaration": 30,
     "type-assertion": 1,
     "class": 3,
     "type-system": 1,
-    "object-literal": 1,
-    "arguments-object": 10,
-    "name-resolution": 2
+    "arguments-object": 9
   },
   "status": "in-progress",
   "selection": {
     "paths_file": null,
     "path_filters": []
   },
-  "evidence": "python scripts/manager.py reference-coverage tsc --limit 200"
+  "evidence": "mise run reference-coverage -- tsc --limit 200"
 }

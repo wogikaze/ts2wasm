@@ -191,7 +191,7 @@ def apply_path_filters(files, path_filters):
 
 def evidence_command(suite, limit, paths_file, path_filters):
     """Build a reproducible command string for reports and coverage artifacts."""
-    parts = ["python", "scripts/manager.py", "reference-coverage", suite]
+    parts = ["mise", "run", "reference-coverage", "--", suite]
     if limit is not None:
         parts.extend(["--limit", str(limit)])
     if paths_file:

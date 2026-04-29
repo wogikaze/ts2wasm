@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Exportassignment` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage ExportAssignment across 2 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `ExportAssignment` with diagnostics: unknown-unsupported. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `ExportAssignment` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Exportassignment` fails with `unknown-unsupported` and needs smart-triage evidence before implementation starts.
+Problem: ExportAssignment has 2 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ExportAssignment7.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ExportAssignment7.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/ExportAssignment7.ts`
-Feature label: `unknown-unsupported`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ExportAssignment7.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ExportAssignment7.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ExportAssignment7.ts
 ```
 
 Not run:
@@ -120,7 +116,290 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage import export: ExportAssignment7
+
+- Issue class: `triage-needed`
+- Feature label: `import-export`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/ExportAssignment7.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ExportAssignment7.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 71,
+  "lines": 6,
+  "extension": ".ts",
+  "first_code_line": "export class C {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "issue-055: unsupported class export; module resolution and loading are not implemented at 42..48",
+  "span_start": 42,
+  "span_end": 48,
+  "line": 3,
+  "column": 3,
+  "feature_label": "import-export",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+1 | // @target: es2015
+2 | // @module: commonjs
+3 | export class C {
+4 | }
+5 |
+6 | export = B;
+```
+
+Visible symbols before failure:
+
+```json
+[]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/075-implement-ExportAssignment.md",
+    "title": "Implement Exportassignment",
+    "reason": "same reference path"
+  },
+  {
+    "state": "done",
+    "path": "issues/done/055-implement-import-export.md",
+    "title": "Umbrella: implement import and export",
+    "reason": "same feature label, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+- Keep module graph behavior separate from parser syntax unless the diagnostic proves syntax is the blocker.
+
+Automatic repair sketch:
+
+```rust
+// Rough sketch only: make class syntax observable before lowering full semantics.
+// Candidate source class: C
+#[derive(Debug, Clone, PartialEq)]
+pub struct ClassDecl {
+    pub name: String,
+    pub constructor: Option<FunctionDecl>,
+    pub methods: Vec<MethodDecl>,
+    pub span: Span,
+}
+
+fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
+    let span = self.expect(TokenKind::Class)?;
+    let name = self.expect_ident()?;
+    self.expect(TokenKind::LeftBrace)?;
+    let mut methods = Vec::new();
+    while !self.consume(TokenKind::RightBrace) {
+        methods.push(self.class_method()?);
+    }
+    Ok(Stmt::ClassDecl(ClassDecl { name, constructor: None, methods, span }))
+}
+```
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `False`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 42,
+            end: 48,
+        },
+    },
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 49,
+            end: 54,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "C",
+        ),
+        span: Span {
+            start: 55,
+            end: 56,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 57,
+            end: 58,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 60,
+            end: 61,
+        },
+    },
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 65,
+            end: 71,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 72,
+            end: 73,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "B",
+        ),
+        span: Span {
+            start: 74,
+            end: 75,
+        },
+    },
+    SpannedToken {
+        kind: Semicolon,
+        span: Span {
+            start: 75,
+            end: 76,
+        },
+    },
+]
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 42..48
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 42..48
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": false,
+    "diagnostics": [
+      {
+        "code": 2309,
+        "category": "Error",
+        "message": "An export assignment cannot be used in a module with other exported elements.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/ExportAssignment7.ts",
+        "start": 65,
+        "length": 11,
+        "line": 6,
+        "character": 1
+      },
+      {
+        "code": 2304,
+        "category": "Error",
+        "message": "Cannot find name 'B'.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/ExportAssignment7.ts",
+        "start": 74,
+        "length": 1,
+        "line": 6,
+        "character": 10
+      }
+    ],
+    "hints": [],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class C {\r\n}",
+        "line": 3,
+        "character": 1
+      },
+      {
+        "kind": "ExportAssignment",
+        "text": "export = B;",
+        "line": 6,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "export class C {\r\n}\r\n\r\nexport = B;",
+        "line": 3,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class C {\r\n}",
+        "line": 3,
+        "character": 1
+      },
+      {
+        "kind": "ExportKeyword",
+        "text": "export",
+        "line": 3,
+        "character": 1
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 42..48
+```
 
 ## Completion evidence
 

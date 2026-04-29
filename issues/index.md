@@ -56,7 +56,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 074 | Implement Declarationerrorsnoemitonerror | spike | reference | class: triage-needed | Implement Declarationerrorsnoemitonerror |
 | 075 | Implement Exportassignment | spike | reference | class: triage-needed | Implement Exportassignment |
 | 076 | Implement Functiondeclaration | spike | reference | class: triage-needed | Implement Functiondeclaration |
-| 077 | Implement Interfacedeclaration | spike | reference | class: triage-needed | Implement Interfacedeclaration |
 | 078 | Implement Memberaccessordeclaration | spike | reference | class: triage-needed | Implement Memberaccessordeclaration |
 | 079 | Implement Parameterlist | spike | reference | class: triage-needed | Implement Parameterlist |
 | 080 | Implement Systemmoduleforstatementnoinitializer | spike | reference | class: triage-needed | Implement Systemmoduleforstatementnoinitializer |
@@ -64,7 +63,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 082 | Implement Abstractclassinlocalscope | spike | reference | class: triage-needed | Implement Abstractclassinlocalscope |
 | 083 | Implement Abstractclassinlocalscopeisabstract | spike | reference | class: triage-needed | Implement Abstractclassinlocalscopeisabstract |
 | 084 | Implement Abstractclassunioninstantiation | spike | reference | class: triage-needed | Implement Abstractclassunioninstantiation |
-| 085 | Implement Abstractinterfaceidentifiername | spike | reference | class: triage-needed | Implement Abstractinterfaceidentifiername |
 | 086 | Implement Abstractpropertybasics | spike | reference | class: triage-needed | Implement Abstractpropertybasics |
 | 087 | Implement Abstractpropertyinconstructor | spike | reference | class: triage-needed | Implement Abstractpropertyinconstructor |
 | 088 | Implement Abstractpropertynegative | spike | reference | class: triage-needed | Implement Abstractpropertynegative |
@@ -74,7 +72,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 092 | Implement Accessoverriddenbaseclassmember | spike | reference | class: triage-needed | Implement Accessoverriddenbaseclassmember |
 | 093 | Implement Accessstaticmemberfrominstancemethod | spike | reference | class: triage-needed | Implement Accessstaticmemberfrominstancemethod |
 | 094 | Implement Accessoraccidentalcalldiagnostic | spike | reference | class: triage-needed | Implement Accessoraccidentalcalldiagnostic |
-| 095 | Implement Accessorbodyintypecontext | spike | reference | class: triage-needed | Implement Accessorbodyintypecontext |
 | 096 | Implement Accessordeclarationemitjs | spike | reference | class: triage-needed | Implement Accessordeclarationemitjs |
 | 097 | Implement Accessordeclarationemitvisibilityerrors | spike | reference | class: triage-needed | Implement Accessordeclarationemitvisibilityerrors |
 | 098 | Implement Accessordeclarationorder | spike | reference | class: triage-needed | Implement Accessordeclarationorder |
@@ -89,7 +86,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 107 | Implement Accessorsemit | spike | reference | class: triage-needed | Implement Accessorsemit |
 | 108 | Implement Accessorsinambientcontext | spike | reference | class: triage-needed | Implement Accessorsinambientcontext |
 | 109 | Implement Addmorecallsignaturestobasesignature | spike | reference | class: triage-needed | Implement Addmorecallsignaturestobasesignature |
-| 110 | Implement Addmoreoverloadstobasesignature | spike | reference | class: triage-needed | Implement Addmoreoverloadstobasesignature |
 | 111 | Implement Aliasassignments | spike | reference | class: triage-needed | Implement Aliasassignments |
 | 112 | Implement Aliasbug | spike | reference | class: triage-needed | Implement Aliasbug |
 | 113 | Implement Aliasdoesnotduplicatesignatures | spike | reference | class: triage-needed | Implement Aliasdoesnotduplicatesignatures |
@@ -165,12 +161,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 183 | Implement Anyasreturntypefornewoncall | spike | reference | class: triage-needed | Implement Anyasreturntypefornewoncall |
 | 184 | Implement Anydeclare | spike | reference | class: triage-needed | Implement Anydeclare |
 | 185 | Implement Anyidenticaltoitself | spike | reference | class: triage-needed | Implement Anyidenticaltoitself |
-| 186 | Implement Anyindexedaccessarraynoexception | spike | reference | class: triage-needed | Implement Anyindexedaccessarraynoexception |
 | 187 | Implement Anyinferenceanonymousfunctions | spike | reference | class: triage-needed | Implement Anyinferenceanonymousfunctions |
-| 188 | Implement Anyisassignabletoobject | spike | reference | class: triage-needed | Implement Anyisassignabletoobject |
-| 189 | Implement Anyisassignabletovoid | spike | reference | class: triage-needed | Implement Anyisassignabletovoid |
-| 190 | Implement Anymappedtypeserror | spike | reference | class: triage-needed | Implement Anymappedtypeserror |
-| 191 | Implement Anyplusany | spike | reference | class: triage-needed | Implement Anyplusany |
 | 192 | Implement Argsinscope | spike | reference | class: triage-needed | Implement Argsinscope |
 | 193 | Implement Arguments | spike | reference | class: triage-needed | Implement Arguments |
 | 194 | Implement Argumentsaspropertyname | spike | reference | class: triage-needed | Implement Argumentsaspropertyname |
@@ -263,6 +254,15 @@ Issue files are the source of truth for work items. The generated section below 
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
 | 065 | Implement parser syntax extensions | feature | frontend | see `issues/done/065-implement-parser-syntax.md` |
 | 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | see `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` |
+| 077 | Implement Interfacedeclaration | spike | reference | see `issues/done/077-implement-InterfaceDeclaration.md` |
+| 085 | Implement Abstractinterfaceidentifiername | spike | reference | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
+| 095 | Implement Accessorbodyintypecontext | spike | reference | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
+| 110 | Implement Addmoreoverloadstobasesignature | spike | reference | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
+| 186 | Implement Anyindexedaccessarraynoexception | spike | reference | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
+| 188 | Implement Anyisassignabletoobject | spike | reference | see `issues/done/188-implement-anyIsAssignableToObject.md` |
+| 189 | Implement Anyisassignabletovoid | spike | reference | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
+| 190 | Implement Anymappedtypeserror | spike | reference | see `issues/done/190-implement-anyMappedTypesError.md` |
+| 191 | Implement Anyplusany | spike | reference | see `issues/done/191-implement-anyPlusAny.md` |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | see `issues/done/202-implement-regexp-literal-support.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 | 204 | Add typed IR dump command | feature | cli | see `issues/done/204-add-typed-ir-dump.md` |

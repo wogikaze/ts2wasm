@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Argsinscope` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage argsInScope across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `argsInScope` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `argsInScope` with diagnostics: scope-analysis. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Argsinscope` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
+Problem: argsInScope has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argsInScope.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/argsInScope.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/argsInScope.ts`
-Feature label: `parser-syntax`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argsInScope.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/argsInScope.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argsInScope.ts
 ```
 
 Not run:
@@ -119,7 +115,368 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage scope analysis: argsInScope
+
+- Issue class: `triage-needed`
+- Feature label: `scope-analysis`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/argsInScope.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argsInScope.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 221,
+  "lines": 11,
+  "extension": ".ts",
+  "first_code_line": "class C {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected RightParen, got Some(Increment) at 117..119",
+  "span_start": 117,
+  "span_end": 119,
+  "line": 4,
+  "column": 50,
+  "feature_label": "scope-analysis",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+1 | // @target: es2015
+2 | class C {
+3 |     P(ii:number, j:number, k:number) {
+4 |        for (var i = 0; i < arguments.length; i++) {
+5 |            // WScript.Echo("param: " + arguments[i]);
+6 |        }
+7 |     }
+```
+
+Visible symbols before failure:
+
+```json
+[
+  {
+    "kind": "class",
+    "name": "C",
+    "line": 2,
+    "column": 1
+  },
+  {
+    "kind": "binding",
+    "name": "i",
+    "line": 4,
+    "column": 13,
+    "initializer": "0"
+  }
+]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/192-implement-argsInScope.md",
+    "title": "Implement Argsinscope",
+    "reason": "same reference path, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 20,
+            end: 25,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "C",
+        ),
+        span: Span {
+            start: 26,
+            end: 27,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 28,
+            end: 29,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "P",
+        ),
+        span: Span {
+            start: 35,
+            end: 36,
+        },
+    },
+    SpannedToken {
+        kind: LeftParen,
+        span: Span {
+            start: 36,
+            end: 37,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "ii",
+        ),
+        span: Span {
+            start: 37,
+            end: 39,
+        },
+    },
+    SpannedToken {
+        kind: Colon,
+        span: Span {
+            start: 39,
+            end: 40,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "number",
+        ),
+        span: Span {
+            start: 40,
+            end: 46,
+        },
+    },
+    SpannedToken {
+        kind: Comma,
+        span: Span {
+            start: 46,
+            end: 47,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "j",
+        ),
+        span: Span {
+            start: 48,
+            end: 49,
+        },
+    },
+    SpannedToken {
+        kind: Colon,
+        span: Span {
+            start: 49,
+            end: 50,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "number",
+        ),
+        span: Span {
+            start: 50,
+            end: 56,
+        },
+    },
+    SpannedToken {
+        kind: Comma,
+        span: Span {
+            start: 56,
+            end: 57,
+        },
+    },
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected RightParen, got Some(Increment) at 117..119
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected RightParen, got Some(Increment) at 117..119
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": true,
+    "diagnostics": [],
+    "hints": [
+      {
+        "kind": "parameter",
+        "typeText": "number",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argsInScope.ts",
+        "start": 37,
+        "length": 2,
+        "line": 3,
+        "character": 7,
+        "name": "ii"
+      },
+      {
+        "kind": "parameter",
+        "typeText": "number",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argsInScope.ts",
+        "start": 48,
+        "length": 1,
+        "line": 3,
+        "character": 18,
+        "name": "j"
+      },
+      {
+        "kind": "parameter",
+        "typeText": "number",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argsInScope.ts",
+        "start": 58,
+        "length": 1,
+        "line": 3,
+        "character": 28,
+        "name": "k"
+      },
+      {
+        "kind": "binding",
+        "typeText": "number",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argsInScope.ts",
+        "start": 87,
+        "length": 1,
+        "line": 4,
+        "character": 17,
+        "name": "i"
+      },
+      {
+        "kind": "binding",
+        "typeText": "C",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argsInScope.ts",
+        "start": 205,
+        "length": 1,
+        "line": 10,
+        "character": 5,
+        "name": "c"
+      }
+    ],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "ClassDeclaration",
+        "text": "class C {\r\n    P(ii:number, j:number, k:number) {\r\n       for (var i = 0; i < arguments.length; i++) {\r\n           // WS",
+        "line": 2,
+        "character": 1
+      },
+      {
+        "kind": "FirstStatement",
+        "text": "var c = new C();",
+        "line": 10,
+        "character": 1
+      },
+      {
+        "kind": "ExpressionStatement",
+        "text": "c.P(1,2,3);",
+        "line": 11,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "class C {\r\n    P(ii:number, j:number, k:number) {\r\n       for (var i = 0; i < arguments.length; i++) {\r\n           // WS",
+        "line": 2,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "class C {\r\n    P(ii:number, j:number, k:number) {\r\n       for (var i = 0; i < arguments.length; i++) {\r\n           // WS",
+        "line": 2,
+        "character": 1
+      },
+      {
+        "kind": "MethodDeclaration",
+        "text": "P(ii:number, j:number, k:number) {\r\n       for (var i = 0; i < arguments.length; i++) {\r\n           // WScript.Echo(\"par",
+        "line": 3,
+        "character": 5
+      },
+      {
+        "kind": "Block",
+        "text": "{\r\n       for (var i = 0; i < arguments.length; i++) {\r\n           // WScript.Echo(\"param: \" + arguments[i]);\r\n       }\r",
+        "line": 3,
+        "character": 38
+      },
+      {
+        "kind": "ForStatement",
+        "text": "for (var i = 0; i < arguments.length; i++) {\r\n           // WScript.Echo(\"param: \" + arguments[i]);\r\n       }",
+        "line": 4,
+        "character": 8
+      },
+      {
+        "kind": "PostfixUnaryExpression",
+        "text": "i++",
+        "line": 4,
+        "character": 46
+      },
+      {
+        "kind": "Identifier",
+        "text": "i",
+        "line": 4,
+        "character": 46
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] expected RightParen, got Some(Increment) at 117..119
+```
 
 ## Completion evidence
 

@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Amddeclarationemitnoextradeclare` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage amdDeclarationEmitNoExtraDeclare across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `amdDeclarationEmitNoExtraDeclare` with diagnostics: unknown-unsupported. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `amdDeclarationEmitNoExtraDeclare` with diagnostics: declaration-emit. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Amddeclarationemitnoextradeclare` fails with `unknown-unsupported` and needs smart-triage evidence before implementation starts.
+Problem: amdDeclarationEmitNoExtraDeclare has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts`
-Feature label: `unknown-unsupported`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts
 ```
 
 Not run:
@@ -119,7 +115,344 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage declaration emit: amdDeclarationEmitNoExtraDeclare
+
+- Issue class: `triage-needed`
+- Feature label: `declaration-emit`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 519,
+  "lines": 23,
+  "extension": ".ts",
+  "first_code_line": "import { Configurable } from \"./Configurable\""
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Export) at 155..161",
+  "span_start": 155,
+  "span_end": 161,
+  "line": 8,
+  "column": 8,
+  "feature_label": "declaration-emit",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+ 5 | // @filename: Class.ts
+ 6 | import { Configurable } from "./Configurable"
+ 7 |
+ 8 | export class HiddenClass {}
+ 9 |
+10 | export class ActualClass extends Configurable(HiddenClass) {}
+11 | // @filename: Configurable.ts
+```
+
+Visible symbols before failure:
+
+```json
+[
+  {
+    "kind": "import",
+    "name": "./Configurable",
+    "line": 6,
+    "column": 1
+  }
+]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/170-implement-amdDeclarationEmitNoExtraDeclare.md",
+    "title": "Implement Amddeclarationemitnoextradeclare",
+    "reason": "same reference path, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Import,
+        span: Span {
+            start: 106,
+            end: 112,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 113,
+            end: 114,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "Configurable",
+        ),
+        span: Span {
+            start: 115,
+            end: 127,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 128,
+            end: 129,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "from",
+        ),
+        span: Span {
+            start: 130,
+            end: 134,
+        },
+    },
+    SpannedToken {
+        kind: String(
+            "./Configurable",
+        ),
+        span: Span {
+            start: 135,
+            end: 151,
+        },
+    },
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 155,
+            end: 161,
+        },
+    },
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 162,
+            end: 167,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "HiddenClass",
+        ),
+        span: Span {
+            start: 168,
+            end: 179,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 180,
+            end: 181,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 181,
+            end: 182,
+        },
+    },
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 186,
+            end: 192,
+        },
+    },
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 193,
+            end: 198,
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Export) at 155..161
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Export) at 155..161
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": false,
+    "diagnostics": [
+      {
+        "code": 2307,
+        "category": "Error",
+        "message": "Cannot find module './Configurable' or its corresponding type declarations.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts",
+        "start": 135,
+        "length": 16,
+        "line": 6,
+        "character": 30
+      }
+    ],
+    "hints": [
+      {
+        "kind": "parameter",
+        "typeText": "any[]",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts",
+        "start": 323,
+        "length": 4,
+        "line": 13,
+        "character": 12,
+        "name": "args"
+      },
+      {
+        "kind": "function",
+        "typeText": "T",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts",
+        "start": 360,
+        "length": 12,
+        "line": 15,
+        "character": 17,
+        "name": "Configurable"
+      },
+      {
+        "kind": "parameter",
+        "typeText": "T",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts",
+        "start": 400,
+        "length": 4,
+        "line": 15,
+        "character": 57,
+        "name": "base"
+      },
+      {
+        "kind": "parameter",
+        "typeText": "any[]",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/amdDeclarationEmitNoExtraDeclare.ts",
+        "start": 473,
+        "length": 4,
+        "line": 18,
+        "character": 24,
+        "name": "args"
+      }
+    ],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "ImportDeclaration",
+        "text": "import { Configurable } from \"./Configurable\"",
+        "line": 6,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class HiddenClass {}",
+        "line": 8,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class ActualClass extends Configurable(HiddenClass) {}",
+        "line": 10,
+        "character": 1
+      },
+      {
+        "kind": "TypeAliasDeclaration",
+        "text": "export type Constructor<T> = {\r\n    new(...args: any[]): T;\r\n}",
+        "line": 12,
+        "character": 1
+      },
+      {
+        "kind": "FunctionDeclaration",
+        "text": "export function Configurable<T extends Constructor<{}>>(base: T): T {\r\n    return class extends base {\r\n\r\n        constr",
+        "line": 15,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "import { Configurable } from \"./Configurable\"\r\n\r\nexport class HiddenClass {}\r\n\r\nexport class ActualClass extends Configu",
+        "line": 6,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class HiddenClass {}",
+        "line": 8,
+        "character": 1
+      },
+      {
+        "kind": "ExportKeyword",
+        "text": "export",
+        "line": 8,
+        "character": 1
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Export) at 155..161
+```
 
 ## Completion evidence
 
