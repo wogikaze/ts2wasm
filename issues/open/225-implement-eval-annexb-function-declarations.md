@@ -98,7 +98,7 @@ If this issue exceeds one child cycle, split before implementation stalls:
 
 Created from issue 060 classification evidence on 2026-04-28.
 
-Split on 2026-04-30:
+Split on 2026-04-29:
 
 - issue 302: first implementation-ready slice for
   `func-block-decl-eval-func-init.js` and
