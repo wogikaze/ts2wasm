@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 6 | 2 | 4 |
-| runtime | 79 | 11 | 68 |
+| runtime | 80 | 12 | 68 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 323 | 143 | 180 |
+| total | 324 | 144 | 180 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,6 +50,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
+| 295 | Support Array.map arrow callbacks and chained receivers | feature | runtime/builtins | implementation-ready | P1 |  | `inputText.trim().split("\n").map(row => row.split(" "))` fails before |
 <!-- generated:ready:end -->
 
 ## Blocked queue
