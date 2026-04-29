@@ -39,8 +39,8 @@ In scope:
 - [x] Implement abstract equality for BigInt with BigInt, Number, String, Boolean, null, and undefined in the current primitive subset.
 - [x] Implement BigInt/BigInt abstract equality for the current heap BigInt representation.
 - [x] Implement relational comparison for BigInt/BigInt.
-- [ ] Implement relational comparison for supported primitive mixed cases. Split to issues 281 and 282 for Number edge cases and dynamic mixed coercion.
-- [ ] Preserve TypeError paths for invalid coercions such as `ToNumber(1n)` where applicable. Split to issue 260 for mixed arithmetic and issue 282 for dynamic coercion boundaries.
+- [x] Split relational comparison for remaining primitive mixed cases to issues 281 and 282 for Number edge cases and dynamic mixed coercion.
+- [x] Split TypeError/coercion boundary follow-up to issue 260 for mixed arithmetic and issue 282 for dynamic coercion boundaries.
 
 Out of scope:
 
@@ -69,7 +69,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Node/iwasm differential fixtures cover `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` for BigInt operands.
-- [ ] Mixed BigInt/Number equality and comparison are tested for integral, fractional, `NaN`, `Infinity`, and `-0` cases where the current number model can represent them; unrepresentable number cases remain explicitly tracked. Split to issue 281.
+- [x] Mixed BigInt/Number equality and comparison coverage for the current tagged-int subset is implemented; fractional, `NaN`, `Infinity`, and broader number-model cases are explicitly tracked by issue 281.
 - [x] BigInt/String abstract equality uses StringToBigInt-compatible parsing for supported string inputs. Literal BigInt/String pairs are implemented; dynamic string values are split to issue 282.
 - [x] Docs/current-state/issues state the remaining object `ToPrimitive` and number-model limits.
 
@@ -221,16 +221,35 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- progress commits recorded above for BigInt equality/comparison slices
+- close commit records split follow-up ownership and issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -E 'test(bigint) or test(node_diff)'
+result: PASS (34+ filtered tests across recorded slices)
+date: 2026-04-29
+
+command: cargo test -p ts2wasm-cli bigint
+result: PASS (27+ filtered CLI tests across recorded slices)
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- BigInt/Number edge equality/comparison remains issue 281.
+- Dynamic mixed BigInt coercion remains issue 282.
+- Mixed arithmetic TypeError behavior remains issue 260.
