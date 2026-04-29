@@ -137,16 +137,16 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `array` | ES1 | heap object | 実装済み (dense) | - | - |
 | `function` | ES1 | closure object | 実装済み (basic) | - | - |
 | `symbol` | ES6 | interned value | 未実装 | P2 | - |
-| `bigint` | ES2020 | heap object | literal runtime values 実装済み（decimal/binary/octal/hex, `console.log`, `typeof`, `String(bigint)`, concatenation/template ToString, truthiness）。`BigInt(...)` は signed decimal string、unsigned binary/octal/hex string、empty/whitespace-to-zero、boolean/integer number/BigInt literal inputs の narrow subset を実装済み。`BigInt.asIntN` / `BigInt.asUintN` は literal bit width `0..=64` と literal BigInt input の fold subset に加え、同じ範囲の number/BigInt literal に束縛された単純 identifier 引数を compile-time fold する slice を実装済み。literal arithmetic は compile-time folding 対応。dynamic unary minus と `+` / `-` / `*` / `/` / `%` は proven-safe signed-i64-backed runtime slice のみ対応し、out-of-slice dynamic 値は issue-260 diagnostic。division/remainder by zero は runtime trap まで実装済みだが、compatible `RangeError` throw は未実装。BigInt/BigInt equality/comparison、literal BigInt/String abstract equality、literal BigInt/Boolean abstract equality、literal BigInt/Number tagged-int abstract equality は実装済み。その他の mixed BigInt coercion は statically visible case を issue-261 diagnostic、runtime-only case を trap にしており未実装。full multi-limb arithmetic 260 / broader dynamic BigInt builtin inputs 280 は未実装 | P2 | 260, 261, 280 |
+| `bigint` | ES2020 | heap object | literal runtime values 実装済み（decimal/binary/octal/hex, `console.log`, `typeof`, `String(bigint)`, concatenation/template ToString, truthiness）。`BigInt(...)` は signed decimal string、unsigned binary/octal/hex string、empty/whitespace-to-zero、boolean/integer number/BigInt literal inputs の narrow subset を実装済み。`BigInt.asIntN` / `BigInt.asUintN` は literal bit width `0..=64` と literal BigInt input の fold subset に加え、同じ範囲の number/BigInt literal に束縛された単純 identifier 引数を compile-time fold する slice を実装済み。literal arithmetic は compile-time folding 対応。dynamic unary minus と `+` / `-` / `*` / `/` / `%` は proven-safe signed-i64-backed runtime slice のみ対応し、out-of-slice dynamic 値は issue-260 diagnostic。division/remainder by zero は runtime trap まで実装済みだが、compatible `RangeError` throw は未実装。BigInt/BigInt equality/comparison、literal BigInt/String abstract equality、literal BigInt/Boolean abstract equality、literal BigInt/Number tagged-int abstract equality、literal BigInt/nullish abstract equality は実装済み。その他の mixed BigInt coercion は statically visible case を issue-linked diagnostic、runtime-only case を trap にしており未実装。full multi-limb arithmetic 260 / mixed BigInt Number edge comparison 281 / dynamic mixed BigInt coercion 282 / broader dynamic BigInt builtin inputs 280 は未実装 | P2 | 260, 280, 281, 282 |
 
 ## 式と演算子
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | `===` (strict equality) | ES3 | primitive fast path | 実装済み（BigInt/BigInt mathematical value 比較を含む） | - | - |
-| `==` (abstract equality) | ES1 | runtime helper | 実装済み（primitive coercion: nullish / boolean / number / string; BigInt/BigInt; object ToPrimitive と mixed BigInt coercion は未実装） | P2 | 261 |
+| `==` (abstract equality) | ES1 | runtime helper | 実装済み（primitive coercion: nullish / boolean / number / string; BigInt/BigInt; literal BigInt/String/Boolean/tagged-int Number/nullish; object ToPrimitive と broader mixed BigInt coercion は未実装） | P2 | 281, 282 |
 | `!==`, `!=` | ES1 | derived from equality | 実装済み | - | - |
-| `<`, `>`, `<=`, `>=` | ES1 | number/string/BigInt comparison | 実装済み（BigInt/BigInt 含む; mixed BigInt coercion は未実装） | P2 | 261 |
+| `<`, `>`, `<=`, `>=` | ES1 | number/string/BigInt comparison | 実装済み（BigInt/BigInt 含む; mixed BigInt coercion は未実装） | P2 | 281, 282 |
 | `+` (addition) | ES1 | number/string overload | 実装済み | - | - |
 | `-`, `*`, `/`, `%` | ES1 | arithmetic | 実装済み | - | - |
 | `++`, `--` | ES1 | arithmetic with assignment | 実装済み | - | - |

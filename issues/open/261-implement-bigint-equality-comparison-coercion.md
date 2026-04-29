@@ -25,7 +25,7 @@ printf 'console.log(1n === 1n); console.log(1n === 1); console.log(1n == "1"); c
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-261-bigint-comparison.wasm
 ```
 
-Current result: BigInt/BigInt `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` now match Node for the current heap BigInt representation, including negative values, canonical zero, and a large literal that exceeds the first-limb payload. Statically visible BigInt/String literal abstract equality folds supported StringToBigInt forms and invalid string inputs to Node-compatible booleans. Statically visible BigInt/Boolean literal abstract equality folds through Boolean-to-0/1 coercion. Statically visible BigInt/Number integer-literal abstract equality folds for representable tagged-int number literals. Other statically visible mixed BigInt abstract equality and relational comparison emit issue-261 diagnostics; runtime-only mixed BigInt abstract equality and relational comparison trap instead of silently returning a normal wrong boolean.
+Current result: BigInt/BigInt `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` now match Node for the current heap BigInt representation, including negative values, canonical zero, and a large literal that exceeds the first-limb payload. Statically visible BigInt/String literal abstract equality folds supported StringToBigInt forms and invalid string inputs to Node-compatible booleans. Statically visible BigInt/Boolean literal abstract equality folds through Boolean-to-0/1 coercion. Statically visible BigInt/Number integer-literal abstract equality folds for representable tagged-int number literals. Statically visible BigInt/nullish literal abstract equality folds to Node-compatible false/true. Other statically visible mixed BigInt abstract equality and relational comparison emit issue-linked diagnostics; runtime-only mixed BigInt abstract equality and relational comparison trap instead of silently returning a normal wrong boolean.
 
 ## Desired final state
 
@@ -36,11 +36,11 @@ BigInt equality and relational comparison match Node for supported primitive val
 In scope:
 
 - [x] Implement strict equality for BigInt mathematical values.
-- [ ] Implement abstract equality for BigInt with BigInt, Number, String, Boolean, null, and undefined in the current primitive subset.
+- [x] Implement abstract equality for BigInt with BigInt, Number, String, Boolean, null, and undefined in the current primitive subset.
 - [x] Implement BigInt/BigInt abstract equality for the current heap BigInt representation.
 - [x] Implement relational comparison for BigInt/BigInt.
-- [ ] Implement relational comparison for supported primitive mixed cases.
-- [ ] Preserve TypeError paths for invalid coercions such as `ToNumber(1n)` where applicable.
+- [ ] Implement relational comparison for supported primitive mixed cases. Split to issues 281 and 282 for Number edge cases and dynamic mixed coercion.
+- [ ] Preserve TypeError paths for invalid coercions such as `ToNumber(1n)` where applicable. Split to issue 260 for mixed arithmetic and issue 282 for dynamic coercion boundaries.
 
 Out of scope:
 
@@ -69,8 +69,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Node/iwasm differential fixtures cover `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` for BigInt operands.
-- [ ] Mixed BigInt/Number equality and comparison are tested for integral, fractional, `NaN`, `Infinity`, and `-0` cases where the current number model can represent them; unrepresentable number cases remain explicitly tracked.
-- [ ] BigInt/String abstract equality uses StringToBigInt-compatible parsing for supported string inputs. Literal BigInt/String pairs are implemented; dynamic string values remain issue-261 unsupported.
+- [ ] Mixed BigInt/Number equality and comparison are tested for integral, fractional, `NaN`, `Infinity`, and `-0` cases where the current number model can represent them; unrepresentable number cases remain explicitly tracked. Split to issue 281.
+- [x] BigInt/String abstract equality uses StringToBigInt-compatible parsing for supported string inputs. Literal BigInt/String pairs are implemented; dynamic string values are split to issue 282.
 - [x] Docs/current-state/issues state the remaining object `ToPrimitive` and number-model limits.
 
 ## Validation
@@ -106,7 +106,8 @@ Current state:
 
 Follow-up issues:
 
-- [ ] create follow-up for unsupported object `ToPrimitive` interactions if needed
+- [x] issue 281: BigInt/Number edge equality and comparison
+- [x] issue 282: dynamic BigInt mixed coercion, including dynamic StringToBigInt and object `ToPrimitive`
 
 ## Notes
 
@@ -119,6 +120,8 @@ Do not claim full equality parity if broader `number` support still cannot repre
 2026-04-29 progress slice: statically folded BigInt/Boolean literal abstract equality now applies Boolean-to-Number-to-BigInt-equivalent comparison for the literal `false -> 0n` and `true -> 1n` cases. Covered Node/iwasm fixtures include symmetric forms such as `0n == false`, `false == 0n`, `1n == true`, `true == 1n`, and mismatch `!=` cases. Dynamic boolean values still remain issue-261 diagnostics/traps until the runtime mixed primitive equality boundary is intentionally widened.
 
 2026-04-29 progress slice: statically folded BigInt/Number integer-literal abstract equality now compares known BigInt literals against `Expr::Number` tagged-int literals. Covered Node/iwasm fixtures include symmetric forms such as `1n == 1`, `1 == 1n`, `0n == 0`, and mismatch `!=` cases. Fractional numbers, `NaN`, `Infinity`, `-0`, dynamic numbers, and relational BigInt/Number comparisons remain issue-261 diagnostics/traps.
+
+2026-04-29 progress slice: statically folded BigInt/nullish literal abstract equality now folds `BigInt == null`, `null == BigInt`, `BigInt == undefined`, and `undefined == BigInt` to Node-compatible false, with `!=` forms folded to true. Remaining BigInt/Number edge equality/comparison is split to issue 281. Dynamic BigInt/String/Boolean/nullish coercion, mixed primitive relational comparison beyond BigInt/BigInt, and object `ToPrimitive` interactions are split to issue 282.
 
 Validation for this progress slice:
 
@@ -201,6 +204,14 @@ date: 2026-04-29
 
 command: mise run check issues
 result: passed
+date: 2026-04-29
+```
+
+Validation for BigInt/nullish progress slice:
+
+```text
+command: cargo nextest run -E 'test(bigint_mixed_nullish_abstract_equality_fixture_matches_node_output_under_iwasm)'
+result: passed (1 passed, 530 skipped)
 date: 2026-04-29
 ```
 
