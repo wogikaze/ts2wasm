@@ -120,6 +120,13 @@ fn array_map_arrow_unary_plus_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_map_arrow_pushed_local_string_constructor_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/array-map-arrow-pushed-local-string-constructor.ts",
+    );
+}
+
+#[test]
 fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         // tag-check safety: out-of-bounds array access → undefined

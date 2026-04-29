@@ -166,6 +166,7 @@ struct FunctionSignature {
     has_rest: bool,
     metadata_length: Option<usize>,
     returns_heap_closure: bool,
+    returns_dense_array: bool,
 }
 
 fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
@@ -288,6 +289,7 @@ fn collect_function_signatures(
                         has_rest: params.iter().any(|param| param.is_rest),
                         metadata_length: fixed_arity_metadata_length(params),
                         returns_heap_closure: block_returns_declared_function(body),
+                        returns_dense_array: block_returns_dense_array_local(body),
                     },
                 );
             }
@@ -309,12 +311,16 @@ fn collect_function_signatures(
                 let ctor_returns_heap_closure = constructor
                     .as_ref()
                     .is_some_and(|(_, body)| block_returns_declared_function(body));
+                let ctor_returns_dense_array = constructor
+                    .as_ref()
+                    .is_some_and(|(_, body)| block_returns_dense_array_local(body));
                 signatures.insert(
                     function_ids[&ctor_key],
                     FunctionSignature {
                         explicit_params: ctor_params_len,
                         has_rest: ctor_has_rest,
                         returns_heap_closure: ctor_returns_heap_closure,
+                        returns_dense_array: ctor_returns_dense_array,
                         ..FunctionSignature::default()
                     },
                 );
@@ -328,6 +334,7 @@ fn collect_function_signatures(
                             explicit_params: method.params.len() + receiver_param_count,
                             has_rest: method.params.iter().any(|param| param.is_rest),
                             returns_heap_closure: block_returns_declared_function(&method.body),
+                            returns_dense_array: block_returns_dense_array_local(&method.body),
                             ..FunctionSignature::default()
                         },
                     );
@@ -359,6 +366,136 @@ fn block_returns_declared_function(stmts: &[ResolvedStmt]) -> bool {
     let mut function_names = HashSet::new();
     collect_declared_function_names(stmts, &mut function_names);
     !function_names.is_empty() && block_returns_any_name(stmts, &function_names)
+}
+
+fn block_returns_dense_array_local(stmts: &[ResolvedStmt]) -> bool {
+    let mut dense_locals = HashSet::new();
+    let mut saw_return = false;
+    let mut all_returns_dense = true;
+    scan_dense_array_returns(
+        stmts,
+        &mut dense_locals,
+        &mut saw_return,
+        &mut all_returns_dense,
+    );
+    saw_return && all_returns_dense
+}
+
+fn scan_dense_array_returns(
+    stmts: &[ResolvedStmt],
+    dense_locals: &mut HashSet<String>,
+    saw_return: &mut bool,
+    all_returns_dense: &mut bool,
+) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(name, expr) | ResolvedStmt::Assign(name, expr) => {
+                if expr_is_dense_array_seed(expr) {
+                    dense_locals.insert(name.clone());
+                } else {
+                    dense_locals.remove(name);
+                }
+            }
+            ResolvedStmt::Expr(expr) => {
+                if let Some(receiver) = pushed_dense_array_local(expr)
+                    && dense_locals.contains(receiver)
+                {
+                    continue;
+                }
+            }
+            ResolvedStmt::Return(expr) => {
+                *saw_return = true;
+                if !expr_is_known_dense_array_return(expr, dense_locals) {
+                    *all_returns_dense = false;
+                }
+            }
+            ResolvedStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                scan_dense_array_returns(then_body, dense_locals, saw_return, all_returns_dense);
+                scan_dense_array_returns(else_body, dense_locals, saw_return, all_returns_dense);
+            }
+            ResolvedStmt::While { body, .. }
+            | ResolvedStmt::DoWhile { body, .. }
+            | ResolvedStmt::ForIn { body, .. }
+            | ResolvedStmt::ForOf { body, .. } => {
+                scan_dense_array_returns(body, dense_locals, saw_return, all_returns_dense);
+            }
+            ResolvedStmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    scan_dense_array_returns(
+                        std::slice::from_ref(init.as_ref()),
+                        dense_locals,
+                        saw_return,
+                        all_returns_dense,
+                    );
+                }
+                scan_dense_array_returns(body, dense_locals, saw_return, all_returns_dense);
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                scan_dense_array_returns(try_block, dense_locals, saw_return, all_returns_dense);
+                if let Some(block) = catch_block {
+                    scan_dense_array_returns(block, dense_locals, saw_return, all_returns_dense);
+                }
+                if let Some(block) = finally_block {
+                    scan_dense_array_returns(block, dense_locals, saw_return, all_returns_dense);
+                }
+            }
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    scan_dense_array_returns(body, dense_locals, saw_return, all_returns_dense);
+                }
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                scan_dense_array_returns(
+                    std::slice::from_ref(body.as_ref()),
+                    dense_locals,
+                    saw_return,
+                    all_returns_dense,
+                );
+            }
+            ResolvedStmt::Function { .. }
+            | ResolvedStmt::DestructureLet { .. }
+            | ResolvedStmt::Throw(_)
+            | ResolvedStmt::Export { .. }
+            | ResolvedStmt::ModuleExportsAssign { .. }
+            | ResolvedStmt::ClassDecl { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+        }
+    }
+}
+
+fn expr_is_dense_array_seed(expr: &ResolvedExpr) -> bool {
+    matches!(expr, ResolvedExpr::Array(_))
+}
+
+fn pushed_dense_array_local(expr: &ResolvedExpr) -> Option<&str> {
+    let ResolvedExpr::MethodCall { object, method, .. } = expr else {
+        return None;
+    };
+    if method != "push" {
+        return None;
+    }
+    let ResolvedExpr::Ident(name) = object.as_ref() else {
+        return None;
+    };
+    Some(name)
+}
+
+fn expr_is_known_dense_array_return(expr: &ResolvedExpr, dense_locals: &HashSet<String>) -> bool {
+    match expr {
+        ResolvedExpr::Array(_) => true,
+        ResolvedExpr::Ident(name) => dense_locals.contains(name),
+        _ => false,
+    }
 }
 
 fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
