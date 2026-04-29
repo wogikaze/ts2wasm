@@ -72,3 +72,6 @@ cargo fmt --all --check
 - 2026-04-29: Added a follow-up executable array-literal slice:
   - array literal spread over dense array literals, such as `[1, ...[2, 3], 4]`, lowers to the existing dense `ArrayNew` representation and matches Node/iwasm output;
   - dynamic array literal spread, object literal spread, and dynamic call spread remain explicitly guarded by `issue-274` unsupported diagnostics.
+- 2026-04-29: Added the next executable object-literal slice:
+  - object literal spread over static object literal operands, such as `{ left: 0, ...{ a: 1, b: 2 }, b: 3 }`, lowers by flattening those literal properties into the existing `ObjectNew` representation and matches Node/iwasm output;
+  - dynamic object spread, including spreading a local object value, remains explicitly guarded by an `issue-274` unsupported diagnostic because the runtime still lacks general own-enumerable property copy/enumeration semantics.
