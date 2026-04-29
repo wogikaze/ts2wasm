@@ -339,6 +339,13 @@ impl WatEmitter<'_> {
                         self.emit_expr(wat, right, indent, frame);
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::MulFast.symbol()));
                     }
+                    LoweredBinaryOp::Power
+                        if left_ty == InferredType::Number && right_ty == InferredType::Number =>
+                    {
+                        self.emit_expr(wat, left, indent, frame);
+                        self.emit_expr(wat, right, indent, frame);
+                        wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::MathPow.symbol()));
+                    }
                     LoweredBinaryOp::Divide
                         if left_ty == InferredType::Number && right_ty == InferredType::Number =>
                     {
@@ -395,6 +402,7 @@ impl WatEmitter<'_> {
                             LoweredBinaryOp::Add => RuntimeFn::Add,
                             LoweredBinaryOp::Subtract => RuntimeFn::Sub,
                             LoweredBinaryOp::Multiply => RuntimeFn::Mul,
+                            LoweredBinaryOp::Power => RuntimeFn::MathPow,
                             LoweredBinaryOp::Divide => RuntimeFn::Div,
                             LoweredBinaryOp::Modulo => RuntimeFn::Mod,
                             LoweredBinaryOp::Less => RuntimeFn::Less,
