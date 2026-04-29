@@ -508,6 +508,10 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(index);
             }
+            LoweredExpr::OptionalCall { callee, call } => {
+                self.collect_required_runtime_expr(callee);
+                self.collect_required_runtime_expr(call);
+            }
             LoweredExpr::PropertySet { object, value, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertySet);
                 self.collect_required_runtime_expr(object);
