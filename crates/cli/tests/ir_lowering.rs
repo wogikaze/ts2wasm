@@ -475,6 +475,133 @@ fn validate_rejects_arity_mismatch() {
 }
 
 #[test]
+fn lowering_represents_returned_ordinary_closure_as_heap_creation() {
+    use ts2wasm_ir::lowered::{ClosureRepresentation, FuncId, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function makeReader() {
+          let value = "escaped-closure";
+          function read() {
+            return value;
+          }
+          return read;
+        }
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    assert_eq!(lowered.functions.len(), 2);
+    let make_reader = &lowered.functions[0];
+    let read_func = &lowered.functions[1];
+    assert_eq!(read_func.params, vec![LocalId(0)]);
+
+    match &make_reader.body[1] {
+        LoweredStmt::Let(
+            LocalId(1),
+            LoweredExpr::ArrowFn {
+                func_id,
+                captures,
+                representation,
+            },
+        ) => {
+            assert_eq!(*func_id, FuncId(1));
+            assert_eq!(captures, &vec![LocalId(0)]);
+            assert_eq!(*representation, ClosureRepresentation::DirectLocalToken);
+        }
+        other => panic!("unexpected local closure binding: {other:?}"),
+    }
+
+    match &make_reader.body[2] {
+        LoweredStmt::Return(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation,
+        }) => {
+            assert_eq!(*func_id, FuncId(1));
+            assert_eq!(captures, &vec![LocalId(0)]);
+            assert_eq!(*representation, ClosureRepresentation::HeapObject);
+        }
+        other => panic!("unexpected returned closure representation: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_represents_known_heap_closure_local_call_explicitly() {
+    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        function makeReader() {
+          let value = "escaped-closure";
+          function read() {
+            return value;
+          }
+          return read;
+        }
+
+        let reader = makeReader();
+        console.log(reader());
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::Call {
+                kind: FunctionCallKind::User(_),
+                ..
+            },
+        ) => {}
+        other => panic!("unexpected heap closure local binding: {other:?}"),
+    }
+
+    match &lowered.top_level_statements[1] {
+        LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+            args,
+        }) => match &args[..] {
+            [
+                LoweredExpr::RuntimeCall {
+                    runtime_fn,
+                    args: call_args,
+                },
+            ] => {
+                assert_eq!(runtime_fn, "HeapClosureCall");
+                assert!(matches!(
+                    call_args.as_slice(),
+                    [LoweredExpr::Local(LocalId(0))]
+                ));
+            }
+            other => panic!("unexpected console.log argument for heap closure call: {other:?}"),
+        },
+        other => panic!("unexpected lowered heap closure call statement: {other:?}"),
+    }
+}
+
+#[test]
+fn validate_rejects_heap_closure_creation_until_issue_257_backend_support() {
+    let program = parse_and_resolve(
+        r#"
+        function makeReader() {
+          let value = "escaped-closure";
+          function read() {
+            return value;
+          }
+          return read;
+        }
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+    let errs = ts2wasm_ir::lowered::validate_lowered(&lowered).unwrap_err();
+
+    assert!(errs.iter().any(|err| {
+        err.code == DiagCode::UnsupportedSyntax && err.message.contains("issue-257:")
+    }));
+}
+
+#[test]
 fn builtin_console_log_contract_is_effect_only() {
     use ts2wasm_ir::builtin::{BuiltinId, BuiltinResult};
     assert_eq!(BuiltinId::ConsoleLog.expected_arity(), 1);

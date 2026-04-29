@@ -542,13 +542,19 @@ fn unsupported_function_prototype_metadata_reports_issue_062f() {
 }
 
 #[test]
-fn unsupported_ordinary_function_closure_forms_report_issue_062e() {
-    for fixture in [
+fn unsupported_returned_ordinary_function_closure_reports_issue_257() {
+    assert_build_fails_with_unsupported_syntax_without_span(
         "fixtures/core-semantics/ordinary-function-closure-escape-unsupported.ts",
+        "issue-257:",
+    );
+}
+
+#[test]
+fn unsupported_mutable_ordinary_function_closure_reports_issue_062e() {
+    assert_build_fails_with_unsupported_syntax_without_span(
         "fixtures/core-semantics/ordinary-function-closure-mutation-unsupported.ts",
-    ] {
-        assert_build_fails_with_unsupported_syntax_without_span(fixture, "issue-062e:");
-    }
+        "issue-062e:",
+    );
 }
 
 #[test]
