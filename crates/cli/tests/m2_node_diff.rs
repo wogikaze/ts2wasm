@@ -215,6 +215,11 @@ fn bigint_equality_comparison_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_mixed_string_abstract_equality_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-mixed-string-abstract-equality.ts");
+}
+
+#[test]
 fn bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/bigint-builtins-string-conversion.ts");
 }
