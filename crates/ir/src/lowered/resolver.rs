@@ -532,6 +532,9 @@ impl<'a> Resolver<'a> {
                 op,
                 expr,
             } => {
+                if is_private_field_storage_key(key) {
+                    return Err(private_storage_observable_access_diagnostic(None));
+                }
                 let object = self.resolve_local(object)?;
                 Ok(LoweredExpr::LogicalPropertyAssign {
                     object,
@@ -547,6 +550,9 @@ impl<'a> Resolver<'a> {
                 expr,
             } => {
                 let object = self.resolve_local(object)?;
+                if self.local_has_private_progress_storage(object) {
+                    return Err(private_storage_observable_access_diagnostic(None));
+                }
                 Ok(LoweredExpr::LogicalComputedPropertyAssign {
                     object,
                     key: Box::new(self.lower_expr(key)?),
@@ -560,7 +566,12 @@ impl<'a> Resolver<'a> {
                 op,
                 expr,
             } => Ok(LoweredExpr::LogicalComputedMemberAssign {
-                object: Box::new(self.lower_expr(object)?),
+                object: {
+                    if self.expr_has_private_progress_storage(object) {
+                        return Err(private_storage_observable_access_diagnostic(None));
+                    }
+                    Box::new(self.lower_expr(object)?)
+                },
                 key: Box::new(self.lower_expr(key)?),
                 op: lower_logical_assign_op(*op),
                 expr: Box::new(self.lower_expr(expr)?),
@@ -734,6 +745,9 @@ impl<'a> Resolver<'a> {
                 },
             },
             ResolvedExpr::PropertyAccess { object, key, span } => {
+                if is_private_field_storage_key(key) {
+                    return Err(private_storage_observable_access_diagnostic(Some(*span)));
+                }
                 if key.starts_with('#') {
                     let storage_key = self.private_field_storage_key(object, key, *span)?;
                     return Ok(LoweredExpr::PropertyGet {
@@ -752,18 +766,27 @@ impl<'a> Resolver<'a> {
                 })
             },
             ResolvedExpr::OptionalPropertyAccess { object, key, .. } => {
+                if is_private_field_storage_key(key) {
+                    return Err(private_storage_observable_access_diagnostic(None));
+                }
                 Ok(LoweredExpr::OptionalPropertyGet {
                     obj: Box::new(self.lower_expr(object)?),
                     key: key.clone(),
                 })
             }
             ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+                if self.expr_has_private_progress_storage(object) {
+                    return Err(private_storage_observable_access_diagnostic(None));
+                }
                 Ok(LoweredExpr::OptionalIndex {
                     object: Box::new(self.lower_expr(object)?),
                     index: Box::new(self.lower_expr(index)?),
                 })
             }
             ResolvedExpr::ComputedIndex { object, index } => {
+                if self.expr_has_private_progress_storage(object) {
+                    return Err(private_storage_observable_access_diagnostic(None));
+                }
                 // Lower the object first to determine its type
                 let lowered_object = self.lower_expr(object)?;
                 let lowered_index = self.lower_expr(index)?;
@@ -887,6 +910,8 @@ impl<'a> Resolver<'a> {
                     })
                 } else if self.is_unsupported_regexp_compile_receiver(object, method) {
                     Err(unsupported_regexp_compile_diagnostic(Some(*span)))
+                } else if self.is_object_key_enumeration_leak(object, method, args) {
+                    Err(private_storage_observable_access_diagnostic(Some(*span)))
                 } else if let Some(regexp_args) = regexp_test_runtime(object, method, args, *span)?
                 {
                     let lowered_args = regexp_args
@@ -1163,6 +1188,9 @@ impl<'a> Resolver<'a> {
                 }
             }
             ResolvedExpr::PropertyAssign { object, key, value } => {
+                if is_private_field_storage_key(key) {
+                    return Err(private_storage_observable_access_diagnostic(None));
+                }
                 if key.starts_with('#') {
                     let storage_key =
                         self.private_field_storage_key(object, key, Span { start: 0, end: 0 })?;
@@ -1179,6 +1207,9 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+                if self.expr_has_private_progress_storage(object) {
+                    return Err(private_storage_observable_access_diagnostic(None));
+                }
                 Ok(LoweredExpr::PropertySetDynamic {
                     object: Box::new(self.lower_expr(object)?),
                     index: Box::new(self.lower_expr(key)?),
@@ -1669,6 +1700,46 @@ impl<'a> Resolver<'a> {
         Ok(private_field_storage_key(class_name, field_name))
     }
 
+    fn is_object_key_enumeration_leak(
+        &self,
+        object: &ResolvedExpr,
+        method: &str,
+        args: &[ResolvedExpr],
+    ) -> bool {
+        matches!(object, ResolvedExpr::Ident(name) if name == "Object")
+            && matches!(method, "keys" | "values" | "entries")
+            && args
+                .first()
+                .is_some_and(|arg| self.expr_has_private_progress_storage(arg))
+    }
+
+    fn expr_has_private_progress_storage(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::This { .. } => self
+                .current_class
+                .as_ref()
+                .is_some_and(|class_name| self.class_has_private_progress_storage(class_name)),
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local| self.local_has_private_progress_storage(local)),
+            ResolvedExpr::New { class_name, .. } => self.class_has_private_progress_storage(class_name),
+            _ => false,
+        }
+    }
+
+    fn local_has_private_progress_storage(&self, local: LocalId) -> bool {
+        self.local_classes
+            .get(&local)
+            .is_some_and(|class_name| self.class_has_private_progress_storage(class_name))
+    }
+
+    fn class_has_private_progress_storage(&self, class_name: &str) -> bool {
+        self.class_private_fields
+            .get(class_name)
+            .is_some_and(|fields| !fields.is_empty())
+    }
+
     fn is_date_receiver(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::New { class_name, .. } => class_name == "Date",
@@ -1850,5 +1921,19 @@ fn class_maps(
 }
 
 fn private_field_storage_key(class_name: &str, field_name: &str) -> String {
-    format!("__ts2wasm_private::{class_name}::{field_name}")
+    format!("{PRIVATE_FIELD_STORAGE_PREFIX}{class_name}::{field_name}")
+}
+
+const PRIVATE_FIELD_STORAGE_PREFIX: &str = "__ts2wasm_private::";
+
+fn is_private_field_storage_key(key: &str) -> bool {
+    key.starts_with(PRIVATE_FIELD_STORAGE_PREFIX)
+}
+
+fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned(),
+        span,
+    }
 }

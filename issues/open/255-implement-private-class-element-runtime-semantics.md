@@ -81,8 +81,9 @@ Split from issue 248 so parser support can close independently from runtime sema
 - Added constructor injection for instance private field initializers on non-derived classes.
 - Added `this.#field` read/write lowering for fields declared on the current class.
 - Added issue-linked diagnostics for private methods and external/non-`this` private field access in the current slice.
+- Reserved the temporary private backing-key namespace from ordinary property access and rejects key enumeration on private-field progress objects, so `c["__ts2wasm_private::Class::field"]` and `Object.keys(c)` do not silently expose private storage.
 - Added Node/iwasm differential coverage: `fixtures/core-semantics/private-class-field-read-write.ts`.
-- Added unsupported diagnostics coverage: `fixtures/core-semantics/private-class-field-method-unsupported.ts` and `fixtures/core-semantics/private-class-field-external-unsupported.ts`.
+- Added unsupported diagnostics coverage: `fixtures/core-semantics/private-class-field-method-unsupported.ts`, `fixtures/core-semantics/private-class-field-external-unsupported.ts`, `fixtures/core-semantics/private-class-field-backing-key-unsupported.ts`, and `fixtures/core-semantics/private-class-field-object-keys-unsupported.ts`.
 
 Validation recorded in the child branch:
 
