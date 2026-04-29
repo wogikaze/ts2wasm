@@ -383,6 +383,13 @@ fn validate_expr(
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
+            if runtime_fn == "ArrayPushMany" && args.is_empty() {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "ArrayPushMany must include an array receiver argument".to_owned(),
+                    span: None,
+                });
+            }
             if runtime_fn == "HeapClosureCall" && args.is_empty() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
