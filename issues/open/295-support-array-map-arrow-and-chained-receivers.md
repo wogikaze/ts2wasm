@@ -177,6 +177,17 @@ Progress on 2026-04-29:
 - Remaining issue-295 work: chained `trim().split(...).map(...)` receiver,
   plus unary plus callbacks.
 
+Progress on 2026-04-29:
+
+- Added a focused chained local string receiver fixture for
+  `inputText.trim().split("\n").map(row => row.split(" "))`, covered by
+  Node/iwasm differential test
+  `array_map_arrow_chained_trim_split_fixture_matches_node_output_under_iwasm`.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` now advances past the
+  chained input parsing map and reaches the next blocker:
+  `error: [UnsupportedSyntax] binary operator Power not yet supported`.
+- Remaining issue-295 work: unary plus callbacks.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
