@@ -1,1 +1,0 @@
-# assemblyscript Test Suite
