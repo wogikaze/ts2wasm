@@ -29,13 +29,13 @@ Current result: issue-linked unsupported BigInt runtime diagnostic.
 
 ## Desired final state
 
-Supported BigInt literals lower to canonical heap BigInt objects through the runtime ABI described in `docs/14-runtime-abi.md`. `console.log(1n)`, `String(1n)`, `typeof 1n`, and truthiness for `0n` / non-zero BigInt have Node differential coverage.
+Supported BigInt literals lower to heap BigInt objects through the runtime ABI described in `docs/14-runtime-abi.md`. This closes the observable literal slice: `console.log(1n)`, `String(1n)`, `typeof 1n`, and truthiness for `0n` / non-zero BigInt have Node differential coverage. Full arbitrary-precision multi-limb arithmetic/storage correctness is owned by issue 260.
 
 ## Scope
 
 In scope:
 
-- [x] Add a BigInt heap object kind and canonical sign/limb payload.
+- [x] Add a BigInt heap object kind and the literal-slice sign/first-limb payload plus cached decimal bytes.
 - [x] Add `make_bigint_literal` and minimal `bigint_to_boolean` / `bigint_to_string` runtime helpers needed to observe literals.
 - [x] Lower decimal, binary, octal, and hexadecimal BigInt AST literals to the runtime constructor.
 - [x] Update BigInt literal unsupported diagnostics to point at this issue only for runtime-value gaps that remain.
@@ -108,7 +108,7 @@ Follow-up issues:
 
 ## Notes
 
-Use the heap object representation accepted by issue 250. Do not add a new `RawValue` low-bit tag.
+Use the heap object representation accepted by issue 250. Do not add a new `RawValue` low-bit tag. Issue 259 only claims observable literal construction and conversion through the current first-limb-plus-decimal-cache payload; issue 260 owns full canonical multi-limb storage/operation correctness.
 
 ## Completion evidence
 
@@ -128,12 +128,14 @@ PASS
 mise run check issues
 PASS
 cargo nextest run -E 'test(bigint) or test(node_diff)'
-PASS (10 tests)
+PASS (11 tests)
 cargo nextest run
-PASS (463 tests; 4 skipped)
+PASS (464 tests; 4 skipped)
+cargo run -q -p ts2wasm-cli -- build /tmp/ts2wasm-review-neg-bigint.ts -o /tmp/ts2wasm-review-neg-bigint.wasm
+PASS: build fails with issue-260 for -1n
 2026-04-29
 ```
 
 Remaining risks:
 
-- BigInt arithmetic, equality/comparison/coercion, and broader builtins remain unsupported and tracked by issues 260-262.
+- BigInt unary/binary arithmetic, full canonical multi-limb operation/storage correctness, equality/comparison/coercion, and broader builtins remain unsupported and tracked by issues 260-262.
