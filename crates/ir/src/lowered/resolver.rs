@@ -1262,6 +1262,12 @@ impl<'a> Resolver<'a> {
                         });
                     }
 
+                    if method == "map"
+                        && let ResolvedExpr::Array(elements) = object.as_ref()
+                    {
+                        return self.lower_array_literal_map_arrow(elements, args, *span);
+                    }
+
                     if (method == "map" && self.is_known_array_expr(object))
                         || is_array_prototype_map_call_receiver(object, method)
                     {
@@ -1702,6 +1708,42 @@ impl<'a> Resolver<'a> {
             };
         }
         Ok(combined)
+    }
+
+    fn lower_array_literal_map_arrow(
+        &mut self,
+        elements: &[ResolvedExpr],
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let [callback] = args else {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        };
+        let ResolvedExpr::ArrowFn { params, body } = callback else {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        };
+        if params.len() != 1 {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        }
+
+        let LoweredExpr::ArrowFn {
+            func_id, captures, ..
+        } = self.lower_arrow_fn(params, body)?
+        else {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        };
+
+        let mut mapped = Vec::with_capacity(elements.len());
+        for element in elements {
+            let mut call_args = vec![self.lower_expr(element)?];
+            call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+            mapped.push(LoweredExpr::Call {
+                kind: FunctionCallKind::User(func_id),
+                args: call_args,
+            });
+        }
+
+        Ok(LoweredExpr::ArrayNew { elements: mapped })
     }
 
     fn lower_array_literal_elements(
