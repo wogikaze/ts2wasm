@@ -5,10 +5,12 @@ type: feature
 area: backend
 class: implementation-ready
 priority: P1
+status: done
 depends_on: [256]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -34,12 +36,12 @@ loading `code_id` and capture slots.
 
 In scope:
 
-- [ ] Emit closure object allocation with `OBJECT_TAG`, closure sentinel,
+- [x] Emit closure object allocation with `OBJECT_TAG`, closure sentinel,
       `code_id`, `capture_count`, reserved flags, and capture slots.
-- [ ] Root every evaluated capture across `$alloc_heap`.
-- [ ] Emit a supported closure-call dispatch path for the arity used by the
+- [x] Root every evaluated capture across `$alloc_heap`.
+- [x] Emit a supported closure-call dispatch path for the arity used by the
       returned immutable closure fixture.
-- [ ] Trap or compile-diagnose unsupported closure arities/code IDs rather than
+- [x] Trap or compile-diagnose unsupported closure arities/code IDs rather than
       falling through to wrong calls.
 
 Out of scope:
@@ -68,13 +70,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A returned immutable closure fixture compiles to WAT/WASM without using the
+- [x] A returned immutable closure fixture compiles to WAT/WASM without using the
       opaque numeric `ArrowFn` token as the returned callable value.
-- [ ] Calling the returned closure produces Node/iwasm-matching stdout for a
+- [x] Calling the returned closure produces Node/iwasm-matching stdout for a
       fixture equivalent to `makeAdder(4)(5) -> 9`.
-- [ ] Unsupported closure dispatch forms produce an issue-linked diagnostic or
+- [x] Unsupported closure dispatch forms produce an issue-linked diagnostic or
       explicit runtime trap with a follow-up issue, not a wrong direct call.
-- [ ] Emitted WAT keeps capture values rooted while allocating the closure.
+- [x] Emitted WAT keeps capture values rooted while allocating the closure.
 
 ## Validation
 
@@ -101,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected unless the ABI contract changes
+- [x] not affected unless the ABI contract changes
 
 Current state:
 
-- [ ] updated: `current-state.md`
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -122,16 +124,38 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `115d5cf74a9d19840303ff951463264529deb415`
 
 Validation result:
 
 ```text
 command:
-result:
-date:
+cargo fmt --all --check
+result: passed
+date: 2026-04-29
+
+command:
+cargo nextest run -p ts2wasm-cli -E 'test(returned_ordinary_function_closure_fixtures_match_node_output_under_iwasm) or test(lowering_represents_known_heap_closure_local_call_explicitly) or test(validate_accepts_heap_closure_creation_for_backend_dispatch)'
+result: passed (3 tests)
+date: 2026-04-29
+
+command:
+cargo nextest run -p ts2wasm-backend-wasm -E 'test(heap_closure_allocation_and_dispatch_emit_abi_payload_and_roots)'
+result: passed (1 test)
+date: 2026-04-29
+
+command:
+cargo nextest run -E 'test(closure) or test(function) or test(node_diff)'
+result: passed (32 tests)
+date: 2026-04-29
+
+command:
+cargo nextest run
+result: passed (469 tests, 4 skipped)
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- GC marking for closure capture slots remains issue 258. This issue does not
+  claim closure retention under later allocation pressure.
