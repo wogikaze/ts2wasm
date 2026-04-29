@@ -282,6 +282,8 @@ Preferred merge:
 git merge --no-ff <child-branch>
 ```
 
+Cherry-pick is acceptable when it keeps the parent history simpler or avoids broad merge conflicts, but record that the child was integrated by cherry-pick rather than by a Git merge commit.
+
 If conflict occurs:
 
 - do not resolve blindly
@@ -295,8 +297,18 @@ If conflict occurs:
 
 - update parent reports
 - update queues
-- optionally prune the worktree only after the merge is verified
+- clean up the child git worktree and `agent/*` branch after the integration is verified
+- before cleanup, make sure the child has no uncommitted useful work and that required local reports were copied or recorded
+- remove the worktree first, then delete the branch; branches checked out by a worktree cannot be deleted directly
+- do not delete branches with unintegrated commits unless the parent explicitly rejected or superseded them and recorded that decision
 - assign the child another issue list
+
+Cleanup commands:
+
+```bash
+git worktree remove ../ts2wasm-<issue-id>-<short-title>-<timestamp>
+git branch -d agent/<issue-id>-<short-title>-<timestamp>
+```
 
 ## Queue refill
 
