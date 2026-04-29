@@ -778,6 +778,15 @@ impl<'a> Resolver<'a> {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
                 if key.starts_with('#') {
+                    if self.current_private_method_id(key).is_some() {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: private method `{key}` extraction is not supported in this private method runtime slice; call it directly as `this.{key}(...)`"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
                     let slot = self.private_field_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateFieldGet".to_owned(),
@@ -868,6 +877,36 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
+                if method.starts_with('#') {
+                    if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: private method `{method}` calls are currently supported only as `this.{method}(...)` inside the declaring class"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    let method_id = self.current_private_method_id(method).ok_or_else(|| {
+                        Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: private method `{method}` is not declared in this class"
+                            ),
+                            span: Some(*span),
+                        }
+                    })?;
+                    let mut lowered_args = vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                    lowered_args.extend(
+                        args.iter()
+                            .map(|e| self.lower_expr(e))
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
+                    return Ok(LoweredExpr::Call {
+                        kind: FunctionCallKind::User(method_id),
+                        args: lowered_args,
+                    });
+                }
                 if is_json_static_call(object, method) {
                     validate_json_stringify_args(
                         args,
@@ -1859,6 +1898,13 @@ impl<'a> Resolver<'a> {
             current = self.class_parents.get(&class).and_then(|p| p.clone());
         }
         None
+    }
+
+    fn current_private_method_id(&self, method: &str) -> Option<FuncId> {
+        let class_name = self.current_class.as_ref()?;
+        self.class_method_ids
+            .get(&(class_name.clone(), method.to_owned()))
+            .copied()
     }
 
     fn private_field_slot(
