@@ -1931,6 +1931,14 @@ fn array_map_fixtures_report_issue_270() {
 }
 
 #[test]
+fn object_get_own_property_descriptor_reports_issue_291() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/builtins-and-io/object-get-own-property-descriptor-unsupported.ts",
+        "issue-291: Object.getOwnPropertyDescriptor is not implemented in the current Object global binding slice",
+    );
+}
+
+#[test]
 fn function_constructor_call_fixture_reports_issue_062() {
     assert_build_fails_with_issue_062_function_constructor(
         "fixtures/core-semantics/function-constructor-call-unsupported.ts",
