@@ -991,6 +991,10 @@ impl Parser {
                 span,
             }) => Ok(Expr::Number { value, span }),
             Some(SpannedToken {
+                kind: Token::BigIntLiteral(raw),
+                span,
+            }) => Ok(Expr::BigInt { raw, span }),
+            Some(SpannedToken {
                 kind: Token::String(value),
                 span,
             }) => Ok(Expr::String { value, span }),

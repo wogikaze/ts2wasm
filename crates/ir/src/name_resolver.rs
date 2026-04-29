@@ -456,6 +456,10 @@ impl NameResolver {
                 value: *value,
                 span: *span,
             }),
+            Expr::BigInt { raw, span } => Ok(Expr::BigInt {
+                raw: raw.clone(),
+                span: *span,
+            }),
             Expr::String { value, span } => Ok(Expr::String {
                 value: value.clone(),
                 span: *span,

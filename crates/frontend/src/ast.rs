@@ -267,6 +267,10 @@ pub enum Expr {
         value: i32,
         span: Span,
     },
+    BigInt {
+        raw: String,
+        span: Span,
+    },
     String {
         value: String,
         span: Span,
@@ -426,6 +430,7 @@ impl Expr {
     pub fn span(&self) -> Span {
         match self {
             Self::Number { span, .. }
+            | Self::BigInt { span, .. }
             | Self::String { span, .. }
             | Self::Bool { span, .. }
             | Self::Null { span }

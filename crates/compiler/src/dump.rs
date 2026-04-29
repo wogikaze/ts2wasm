@@ -609,6 +609,7 @@ fn unparse_for_init(stmt: &Stmt) -> String {
 fn unparse_expr(expr: &Expr) -> String {
     match expr {
         Expr::Number { value, .. } => value.to_string(),
+        Expr::BigInt { raw, .. } => raw.clone(),
         Expr::String { value, .. } => format!("{:?}", value),
         Expr::Bool { value, .. } => value.to_string(),
         Expr::Null { .. } => "null".to_owned(),

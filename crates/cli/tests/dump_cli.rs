@@ -37,6 +37,24 @@ fn run_dump(args: &[&str], source: &str) -> String {
     String::from_utf8(output.stdout).expect("dump output should be valid UTF-8")
 }
 
+fn run_dump_error(args: &[&str], source: &str) -> String {
+    let path = write_temp_source("cli-error", source);
+    let output = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("dump")
+        .args(args)
+        .arg(&path)
+        .output()
+        .expect("ts2wasm dump should execute");
+
+    assert!(
+        !output.status.success(),
+        "dump unexpectedly succeeded:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+
+    String::from_utf8(output.stderr).expect("dump stderr should be valid UTF-8")
+}
+
 fn fixture_path(fixture: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -73,6 +91,50 @@ fn dump_ast_unparse_emits_pseudo_source() {
     let output = run_dump(&["--ast", "--unparse"], "let x = 1 + 2;");
 
     assert_eq!(output, "let x = (1 + 2);\n");
+}
+
+#[test]
+fn dump_ast_classifies_bigint_literals() {
+    let output = run_dump(
+        &["--ast"],
+        "let dec = 1n; let bin = 0b101n; let oct = 0o77n; let hex = 0xFFn;",
+    );
+
+    assert!(output.contains("BigInt"), "{output}");
+    for raw in ["1n", "0b101n", "0o77n", "0xFFn"] {
+        assert!(output.contains(raw), "{output}");
+    }
+    assert!(!output.contains("Ident(\n            \"n\""), "{output}");
+}
+
+#[test]
+fn dump_ast_unparse_preserves_bigint_literals() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let dec = 1n; let bin = 0b101n; let oct = 0o77n; let hex = 0xFFn;",
+    );
+
+    assert_eq!(
+        output,
+        "let dec = 1n;\nlet bin = 0b101n;\nlet oct = 0o77n;\nlet hex = 0xFFn;\n"
+    );
+}
+
+#[test]
+fn dump_reports_stable_invalid_bigint_diagnostics() {
+    for source in [
+        "let value = 1.0n;",
+        "let value = 1e2n;",
+        "let value = 0b2n;",
+        "let value = 01n;",
+    ] {
+        let stderr = run_dump_error(&["--ast"], source);
+
+        assert!(stderr.contains("[UnsupportedSyntax]"), "{stderr}");
+        assert!(stderr.contains("issue-244"), "{stderr}");
+        assert!(!stderr.contains("expected Semicolon"), "{stderr}");
+        assert!(!stderr.contains("Ident(\"n\")"), "{stderr}");
+    }
 }
 
 #[test]
