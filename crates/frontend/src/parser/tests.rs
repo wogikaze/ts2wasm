@@ -626,6 +626,59 @@ mod tests {
     }
 
     #[test]
+    fn parses_destructuring_assignment_patterns() {
+        let program = parse_program(
+            "({ x, y: target.value = 3, nested: [a, , b], ...rest } = obj); [first, , second = fallback, ...tail] = arr;",
+        )
+        .unwrap();
+
+        assert_eq!(program.len(), 2);
+        match &program[0] {
+            Stmt::Expr {
+                expr: Expr::Assign { name, expr, .. },
+                ..
+            } => {
+                assert_eq!(
+                    name,
+                    "{x, y: target.value = 3, nested: [a, , b], ...rest}"
+                );
+                assert!(matches!(expr.as_ref(), Expr::Ident { name, .. } if name == "obj"));
+            }
+            other => panic!("unexpected object assignment statement: {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Expr {
+                expr: Expr::Assign { name, expr, .. },
+                ..
+            } => {
+                assert_eq!(name, "[first, , second = fallback, ...tail]");
+                assert!(matches!(expr.as_ref(), Expr::Ident { name, .. } if name == "arr"));
+            }
+            other => panic!("unexpected array assignment statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_non_final_rest_in_assignment_patterns() {
+        let err = parse_program("[...a, b] = arr;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-252"));
+        assert!(
+            err.message
+                .contains("rest assignment target must be the final element")
+        );
+        assert_eq!(err.span, Some(Span { start: 1, end: 4 }));
+    }
+
+    #[test]
+    fn rejects_invalid_destructuring_assignment_targets() {
+        let err = parse_program("({ x: call() } = obj);").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-252"));
+        assert!(err.message.contains("invalid destructuring assignment target"));
+    }
+
+    #[test]
     fn parses_string_literal_computed_logical_assignment_as_property_assignment() {
         let program = parse_program("target[\"value\"] ||= rhs();").unwrap();
 

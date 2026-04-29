@@ -242,6 +242,35 @@ fn dump_ast_reports_explicit_invalid_destructuring_rest() {
 }
 
 #[test]
+fn dump_ast_covers_destructuring_assignment_patterns() {
+    let output = run_dump(
+        &["--ast"],
+        "({ x, y: target.value = 3, nested: [a, , b], ...rest } = obj); [first, , second = fallback, ...tail] = arr;",
+    );
+
+    assert!(output.contains("Assign"), "{output}");
+    assert!(
+        output.contains("\"{x, y: target.value = 3, nested: [a, , b], ...rest}\""),
+        "{output}"
+    );
+    assert!(
+        output.contains("\"[first, , second = fallback, ...tail]\""),
+        "{output}"
+    );
+}
+
+#[test]
+fn dump_ast_reports_invalid_destructuring_assignment_rest() {
+    let stderr = run_dump_error(&["--ast"], "[...a, b] = arr;");
+
+    assert!(stderr.contains("issue-252"), "{stderr}");
+    assert!(
+        stderr.contains("rest assignment target must be the final element"),
+        "{stderr}"
+    );
+}
+
+#[test]
 fn dump_ast_unparse_erases_typescript_interface_declarations() {
     let output = run_dump(
         &["--ast", "--unparse"],
