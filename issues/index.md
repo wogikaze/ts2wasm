@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 198 | 129 | 69 |
+| frontend | 199 | 130 | 69 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 325 | 143 | 182 |
+| total | 326 | 144 | 182 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,6 +50,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
+| 297 | Track pushed dense array locals for map callbacks | feature | frontend/runtime | implementation-ready | P1 |  | after issue 296, `fixtures/atcoder/abc451-d-concat-power2.ts` |
 <!-- generated:ready:end -->
 
 ## Blocked queue

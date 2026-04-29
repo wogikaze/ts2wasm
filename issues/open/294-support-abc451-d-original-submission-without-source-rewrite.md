@@ -249,6 +249,8 @@ This issue is intentionally blocked because the fixture crosses several existing
   `error: [UnsupportedSyntax] issue-211: unknown receiver class for method
   map at 970..996`, on the next dense-array map path after constructing
   `powersOfTwo`.
+- Split issue 297 for the pushed dense array local tracking required by
+  `powersOfTwo.map(n => String(n))`.
 
 ## Completion evidence
 
