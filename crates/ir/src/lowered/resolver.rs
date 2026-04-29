@@ -175,6 +175,47 @@ impl<'a> Resolver<'a> {
         lowered
     }
 
+    fn lower_direct_iife_stmt(
+        &mut self,
+        expr: &ResolvedExpr,
+    ) -> Result<Option<LoweredStmt>, Diagnostic> {
+        let ResolvedExpr::Call { callee, args, span } = expr else {
+            return Ok(None);
+        };
+        let ResolvedExpr::FunctionExpr { params, body, .. } = callee.as_ref() else {
+            return Ok(None);
+        };
+        if !args.is_empty() || !params.is_empty() {
+            return Ok(None);
+        }
+        if !direct_iife_body_has_static_eval_block_function_binding(body) {
+            return Ok(None);
+        }
+        if direct_iife_body_has_unsupported_return(body) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-302: direct eval IIFE lowering does not support function returns"
+                        .to_owned(),
+                span: Some(*span),
+            });
+        }
+        if block_contains_this(body) || block_contains_arguments(body) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-302: direct eval IIFE lowering does not support `this` or `arguments`"
+                        .to_owned(),
+                span: Some(*span),
+            });
+        }
+
+        self.scopes.push(HashMap::new());
+        let lowered = self.lower_block(body);
+        self.scopes.pop();
+        lowered.map(|statements| Some(LoweredStmt::Block(statements)))
+    }
+
     fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
             ResolvedStmt::DestructureLet { pattern, expr } => {
@@ -268,6 +309,9 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredStmt::Assign(local_id, lowered))
             }
             ResolvedStmt::Expr(expr) => {
+                if let Some(lowered) = self.lower_direct_iife_stmt(expr)? {
+                    return Ok(lowered);
+                }
                 if let ResolvedExpr::MethodCall {
                     object,
                     method,

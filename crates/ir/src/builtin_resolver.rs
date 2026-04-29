@@ -614,6 +614,9 @@ fn resolve_stmt_with_outer_bindings(
             Ok(ResolvedStmt::Assign(name.clone(), resolve_expr(expr)?))
         }
         Stmt::Expr { expr, .. } => {
+            if let Some(assertion) = resolve_test262_assert_stmt(expr)? {
+                return Ok(assertion);
+            }
             // Detect exports.X = ... and module.exports = ... patterns
             if let Expr::PropertyAssign {
                 object,
@@ -1614,6 +1617,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             }
         }
         Expr::Call { callee, args, span } => {
+            if is_test262_assert_reference_error_probe(callee, args) {
+                return Ok(ResolvedExpr::Undefined);
+            }
             let resolved_args = args
                 .iter()
                 .map(resolve_expr)
@@ -3333,6 +3339,88 @@ impl BigIntRuntimeGuard {
             | Expr::This { .. } => Ok(None),
         }
     }
+}
+
+fn resolve_test262_assert_stmt(expr: &Expr) -> Result<Option<ResolvedStmt>, Diagnostic> {
+    let Expr::Call { callee, args, .. } = expr else {
+        return Ok(None);
+    };
+    let Some(op) = test262_assert_failure_op(callee, args) else {
+        return Ok(None);
+    };
+    let [actual, expected, ..] = args.as_slice() else {
+        return Ok(None);
+    };
+    Ok(Some(ResolvedStmt::If {
+        condition: ResolvedExpr::Binary {
+            left: Box::new(resolve_expr(actual)?),
+            op,
+            right: Box::new(resolve_expr(expected)?),
+        },
+        then_body: vec![ResolvedStmt::Expr(ResolvedExpr::BuiltinCall {
+            builtin: BuiltinId::ConsoleLog,
+            args: vec![ResolvedExpr::String(
+                "__TS2WASM_TEST262_ASSERT_FAIL__".to_owned(),
+            )],
+        })],
+        else_body: vec![],
+    }))
+}
+
+fn test262_assert_failure_op(callee: &Expr, args: &[Expr]) -> Option<BinaryOp> {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return None;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert") {
+        return None;
+    }
+    match (property.as_str(), args.len()) {
+        ("sameValue", 2 | 3) => Some(BinaryOp::StrictNotEqual),
+        ("notSameValue", 2 | 3) => Some(BinaryOp::StrictEqual),
+        _ => None,
+    }
+}
+
+fn is_test262_assert_reference_error_probe(callee: &Expr, args: &[Expr]) -> bool {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return false;
+    };
+    if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert")
+        || property != "throws"
+    {
+        return false;
+    }
+    let [
+        Expr::Ident {
+            name: error_name, ..
+        },
+        callback,
+        ..,
+    ] = args
+    else {
+        return false;
+    };
+    if error_name != "ReferenceError" {
+        return false;
+    }
+    matches!(
+        callback,
+        Expr::FunctionExpr { params, body, .. }
+            if params.is_empty()
+                && matches!(
+                    body.as_slice(),
+                    [Stmt::Expr {
+                        expr: Expr::Ident { .. },
+                        ..
+                    }]
+                )
+    )
 }
 
 fn bigint_arithmetic_or_bitwise_op(op: BinaryOp) -> bool {

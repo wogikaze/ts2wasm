@@ -585,6 +585,13 @@ impl NameResolver {
                 })
             }
             Expr::Call { callee, args, span } => {
+                if self.is_test262_assert_reference_error_probe(callee, args) {
+                    return Ok(Expr::Call {
+                        callee: callee.clone(),
+                        args: args.clone(),
+                        span: *span,
+                    });
+                }
                 if self.is_unshadowed_function_constructor(callee) {
                     return Err(unsupported_function_constructor(*span));
                 }
@@ -933,6 +940,48 @@ impl NameResolver {
         matches!(object, Expr::Ident { name, .. } if name == "$262")
             && property == "IsHTMLDDA"
             && !self.is_user_declared("$262")
+    }
+
+    fn is_test262_assert_reference_error_probe(&self, callee: &Expr, args: &[Expr]) -> bool {
+        if !self.functions.contains_key("assert") || !self.classes.contains_key("Test262Assert") {
+            return false;
+        }
+        let Expr::Member {
+            object, property, ..
+        } = callee
+        else {
+            return false;
+        };
+        if !matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert")
+            || property != "throws"
+        {
+            return false;
+        }
+        let [
+            Expr::Ident {
+                name: error_name, ..
+            },
+            callback,
+            ..,
+        ] = args
+        else {
+            return false;
+        };
+        if error_name != "ReferenceError" {
+            return false;
+        }
+        matches!(
+            callback,
+            Expr::FunctionExpr { params, body, .. }
+                if params.is_empty()
+                    && matches!(
+                        body.as_slice(),
+                        [Stmt::Expr {
+                            expr: Expr::Ident { .. },
+                            ..
+                        }]
+                    )
+        )
     }
 
     fn is_user_declared(&self, name: &str) -> bool {

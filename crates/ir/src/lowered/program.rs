@@ -780,6 +780,66 @@ fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_arguments)
 }
 
+fn direct_iife_body_has_static_eval_block_function_binding(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(|stmt| match stmt {
+        ResolvedStmt::Let(_, ResolvedExpr::Undefined) | ResolvedStmt::Function { .. } => true,
+        _ => false,
+    })
+}
+
+fn direct_iife_body_has_unsupported_return(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_has_direct_return)
+}
+
+fn stmt_has_direct_return(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Return(_) => true,
+        ResolvedStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => {
+            direct_iife_body_has_unsupported_return(then_body)
+                || direct_iife_body_has_unsupported_return(else_body)
+        }
+        ResolvedStmt::While { body, .. } | ResolvedStmt::DoWhile { body, .. } => {
+            direct_iife_body_has_unsupported_return(body)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            direct_iife_body_has_unsupported_return(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| direct_iife_body_has_unsupported_return(block))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| direct_iife_body_has_unsupported_return(block))
+        }
+        ResolvedStmt::Switch { cases, .. } => cases
+            .iter()
+            .any(|(_, body)| direct_iife_body_has_unsupported_return(body)),
+        ResolvedStmt::For { body, .. }
+        | ResolvedStmt::ForIn { body, .. }
+        | ResolvedStmt::ForOf { body, .. } => direct_iife_body_has_unsupported_return(body),
+        ResolvedStmt::Labeled { body, .. } => stmt_has_direct_return(body),
+        ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Let(_, _)
+        | ResolvedStmt::DestructureLet { .. }
+        | ResolvedStmt::Assign(_, _)
+        | ResolvedStmt::Expr(_)
+        | ResolvedStmt::Throw(_)
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. }
+        | ResolvedStmt::Export { .. }
+        | ResolvedStmt::ModuleExportsAssign { .. } => false,
+    }
+}
+
 fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
