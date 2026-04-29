@@ -65,6 +65,10 @@ run = "python scripts/manager.py reference-coverage"
 description = "Generate rich diagnostics for one reference test path"
 run = "python scripts/manager.py reference-triage"
 
+[tasks."repo-metrics"]
+description = "Repository line, byte, and content-kind metrics"
+run = "python scripts/manager.py repo-metrics"
+
 [tasks."coverage-report"]
 description = "Generate language coverage report from language-reference (args: --format text|markdown)"
 run = "python scripts/manager.py coverage-report"
