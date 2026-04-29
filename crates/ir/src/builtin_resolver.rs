@@ -1,3 +1,5 @@
+use std::collections::{HashMap, HashSet};
+
 use ts2wasm_frontend::{
     BinaryOp, ClassPrivateElement, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp,
 };
@@ -7,6 +9,7 @@ use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
 
 pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
+    BigIntRuntimeGuard::default().visit_stmts(program)?;
     program.iter().map(resolve_stmt).collect()
 }
 
@@ -383,6 +386,10 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     if let Some(value) = bigint_from_resolved(&resolved) {
                         return Ok(bigint_to_resolved(value.negated()));
                     }
+                    return Ok(ResolvedExpr::Unary {
+                        op: *op,
+                        expr: Box::new(resolved),
+                    });
                 }
                 if let Some(message) = bigint_unary_op_issue(*op) {
                     return Err(Diagnostic {
@@ -407,7 +414,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             right,
             span,
         } => {
-            if expr_contains_bigint(left) || expr_contains_bigint(right) {
+            let left_contains_bigint = expr_contains_bigint(left);
+            let right_contains_bigint = expr_contains_bigint(right);
+            if left_contains_bigint || right_contains_bigint {
                 if bigint_arithmetic_op(*op) {
                     let left_resolved = resolve_expr(left)?;
                     let right_resolved = resolve_expr(right)?;
@@ -417,6 +426,23 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     ) {
                         let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
                         return Ok(bigint_to_resolved(result));
+                    }
+                    let syntactic_number_mix =
+                        (left_contains_bigint && matches!(right.as_ref(), Expr::Number { .. }))
+                            || (right_contains_bigint && matches!(left.as_ref(), Expr::Number { .. }));
+                    if syntactic_number_mix {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-260: mixed Number/BigInt arithmetic is not implemented in the dynamic BigInt runtime slice".to_owned(),
+                            span: Some(*span),
+                        });
+                    }
+                    if matches!(op, BinaryOp::Add | BinaryOp::Subtract) {
+                        return Ok(ResolvedExpr::Binary {
+                            left: Box::new(left_resolved),
+                            op: *op,
+                            right: Box::new(right_resolved),
+                        });
                     }
                 }
                 let issue = match op {
@@ -823,6 +849,10 @@ impl BigIntConst {
         out.extend(self.digits.iter().map(|digit| char::from(b'0' + *digit)));
         out
     }
+
+    fn fits_runtime_signed_i64(&self) -> bool {
+        decimal_digits_to_u64(&self.digits).is_some_and(|magnitude| magnitude <= i64::MAX as u64)
+    }
 }
 
 fn bigint_from_resolved(expr: &ResolvedExpr) -> Option<BigIntConst> {
@@ -864,6 +894,620 @@ fn bigint_arithmetic_op(op: BinaryOp) -> bool {
             | BinaryOp::Divide
             | BinaryOp::Modulo
     )
+}
+
+#[derive(Debug, Clone)]
+struct BigIntStaticInfo {
+    value: Option<BigIntConst>,
+    helper_safe: bool,
+    runtime_needed: bool,
+}
+
+impl BigIntStaticInfo {
+    fn from_const(value: BigIntConst) -> Self {
+        let helper_safe = value.fits_runtime_signed_i64();
+        Self {
+            value: Some(value),
+            helper_safe,
+            runtime_needed: false,
+        }
+    }
+}
+
+#[derive(Default)]
+struct BigIntRuntimeGuard {
+    locals: HashMap<String, BigIntStaticInfo>,
+}
+
+impl BigIntRuntimeGuard {
+    fn visit_stmts(&mut self, stmts: &[Stmt]) -> Result<(), Diagnostic> {
+        for stmt in stmts {
+            self.visit_stmt(stmt)?;
+        }
+        Ok(())
+    }
+
+    fn visit_stmt(&mut self, stmt: &Stmt) -> Result<(), Diagnostic> {
+        match stmt {
+            Stmt::Let { name, expr, .. } | Stmt::Assign { name, expr, .. } => {
+                let info = self.expr_bigint_info(expr)?;
+                if let Some(info) = info {
+                    self.locals.insert(name.clone(), info);
+                } else {
+                    self.locals.remove(name);
+                }
+                Ok(())
+            }
+            Stmt::Expr { expr, .. } | Stmt::Return { expr, .. } | Stmt::Throw { expr, .. } => {
+                self.expr_bigint_info(expr).map(|_| ())
+            }
+            Stmt::If {
+                condition,
+                then_body,
+                else_body,
+                ..
+            } => {
+                self.expr_bigint_info(condition)?;
+                self.fork().visit_stmts(then_body)?;
+                self.fork().visit_stmts(else_body)?;
+                self.invalidate_assigned_in_stmts(then_body);
+                self.invalidate_assigned_in_stmts(else_body);
+                Ok(())
+            }
+            Stmt::While {
+                condition, body, ..
+            }
+            | Stmt::DoWhile {
+                condition, body, ..
+            } => {
+                self.expr_bigint_info(condition)?;
+                self.fork().visit_stmts(body)?;
+                self.invalidate_assigned_in_stmts(body);
+                Ok(())
+            }
+            Stmt::Function { body, .. } => BigIntRuntimeGuard::default().visit_stmts(body),
+            Stmt::ClassDecl { body, .. } => {
+                for item in body {
+                    if let Stmt::Function { body, .. } = item {
+                        BigIntRuntimeGuard::default().visit_stmts(body)?;
+                    }
+                }
+                Ok(())
+            }
+            Stmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                self.fork().visit_stmts(try_block)?;
+                if let Some(catch_block) = catch_block {
+                    self.fork().visit_stmts(catch_block)?;
+                }
+                if let Some(finally_block) = finally_block {
+                    self.fork().visit_stmts(finally_block)?;
+                }
+                self.invalidate_assigned_in_stmts(try_block);
+                if let Some(catch_block) = catch_block {
+                    self.invalidate_assigned_in_stmts(catch_block);
+                }
+                if let Some(finally_block) = finally_block {
+                    self.invalidate_assigned_in_stmts(finally_block);
+                }
+                Ok(())
+            }
+            Stmt::Switch { expr, cases, .. } => {
+                self.expr_bigint_info(expr)?;
+                for (case_expr, body) in cases {
+                    if let Some(case_expr) = case_expr {
+                        self.expr_bigint_info(case_expr)?;
+                    }
+                    self.fork().visit_stmts(body)?;
+                    self.invalidate_assigned_in_stmts(body);
+                }
+                Ok(())
+            }
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                ..
+            } => {
+                let mut loop_guard = self.fork();
+                if let Some(init) = init {
+                    loop_guard.visit_stmt(init)?;
+                }
+                if let Some(condition) = condition {
+                    loop_guard.expr_bigint_info(condition)?;
+                }
+                if let Some(update) = update {
+                    loop_guard.expr_bigint_info(update)?;
+                }
+                loop_guard.visit_stmts(body)?;
+                if let Some(update) = update {
+                    self.invalidate_assigned_in_expr(update);
+                }
+                self.invalidate_assigned_in_stmts(body);
+                Ok(())
+            }
+            Stmt::ForIn {
+                var, iter, body, ..
+            }
+            | Stmt::ForOf {
+                var, iter, body, ..
+            } => {
+                self.expr_bigint_info(iter)?;
+                let mut body_guard = self.fork();
+                body_guard.locals.remove(var);
+                body_guard.visit_stmts(body)?;
+                self.locals.remove(var);
+                self.invalidate_assigned_in_stmts(body);
+                Ok(())
+            }
+            Stmt::Labeled { body, .. } => self.visit_stmt(body),
+            Stmt::ImportSideEffect { .. }
+            | Stmt::ImportNamed { .. }
+            | Stmt::ImportDefault { .. }
+            | Stmt::ImportDefaultNamed { .. }
+            | Stmt::ImportNamespace { .. }
+            | Stmt::ImportDefaultNamespace { .. }
+            | Stmt::ExportNamed { .. }
+            | Stmt::ExportNamedFrom { .. }
+            | Stmt::ExportAllFrom { .. }
+            | Stmt::ExportNamespaceFrom { .. }
+            | Stmt::ExportDecl { .. }
+            | Stmt::ExportDefault { .. }
+            | Stmt::Break { .. }
+            | Stmt::Continue { .. } => Ok(()),
+        }
+    }
+
+    fn fork(&self) -> Self {
+        Self {
+            locals: self.locals.clone(),
+        }
+    }
+
+    fn invalidate_assigned_in_stmts(&mut self, stmts: &[Stmt]) {
+        for name in assigned_names_in_stmts(stmts) {
+            self.locals.remove(&name);
+        }
+    }
+
+    fn invalidate_assigned_in_expr(&mut self, expr: &Expr) {
+        for name in assigned_names_in_expr(expr) {
+            self.locals.remove(&name);
+        }
+    }
+
+    fn expr_bigint_info(&mut self, expr: &Expr) -> Result<Option<BigIntStaticInfo>, Diagnostic> {
+        match expr {
+            Expr::BigInt { raw, span } => {
+                let resolved = parse_bigint_literal(raw, *span)?;
+                Ok(bigint_from_resolved(&resolved).map(BigIntStaticInfo::from_const))
+            }
+            Expr::Ident { name, .. } => Ok(self.locals.get(name).cloned().map(|mut info| {
+                info.runtime_needed = true;
+                info
+            })),
+            Expr::Unary { op, expr, span } => {
+                let info = self.expr_bigint_info(expr)?;
+                if let Some(info) = info
+                    && *op == UnaryOp::Negate
+                {
+                    let value = info.value.map(BigIntConst::negated);
+                    let helper_safe = value
+                        .as_ref()
+                        .is_some_and(BigIntConst::fits_runtime_signed_i64);
+                    if info.runtime_needed && !helper_safe {
+                        return Err(bigint_dynamic_runtime_diagnostic(*span));
+                    }
+                    return Ok(Some(BigIntStaticInfo {
+                        value,
+                        helper_safe,
+                        runtime_needed: info.runtime_needed,
+                    }));
+                }
+                Ok(None)
+            }
+            Expr::Binary {
+                left,
+                op,
+                right,
+                span,
+            } => {
+                let left_info = self.expr_bigint_info(left)?;
+                let right_info = self.expr_bigint_info(right)?;
+                if left_info.is_none() && right_info.is_none() {
+                    return Ok(None);
+                }
+                if !bigint_arithmetic_or_bitwise_op(*op) {
+                    return Ok(None);
+                }
+                let (Some(left_info), Some(right_info)) = (left_info, right_info) else {
+                    return Err(bigint_mixed_runtime_diagnostic(*span));
+                };
+                if !matches!(op, BinaryOp::Add | BinaryOp::Subtract) {
+                    return Ok(None);
+                }
+                let runtime_needed = left_info.runtime_needed || right_info.runtime_needed;
+                let value = match (left_info.value, right_info.value) {
+                    (Some(left), Some(right)) => {
+                        let result = fold_bigint_binary(left, *op, right, *span)?;
+                        if runtime_needed && !result.fits_runtime_signed_i64() {
+                            return Err(bigint_dynamic_runtime_diagnostic(*span));
+                        }
+                        Some(result)
+                    }
+                    _ if runtime_needed => return Err(bigint_dynamic_runtime_diagnostic(*span)),
+                    _ => None,
+                };
+                Ok(Some(BigIntStaticInfo {
+                    value,
+                    helper_safe: left_info.helper_safe && right_info.helper_safe,
+                    runtime_needed,
+                }))
+            }
+            Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
+                self.expr_bigint_info(callee)?;
+                for arg in args {
+                    self.expr_bigint_info(arg)?;
+                }
+                Ok(None)
+            }
+            Expr::Member { object, .. }
+            | Expr::OptionalMember { object, .. }
+            | Expr::TypeOf { expr: object, .. }
+            | Expr::Spread { expr: object, .. } => {
+                self.expr_bigint_info(object)?;
+                Ok(None)
+            }
+            Expr::Assign { name, expr, .. } | Expr::LogicalAssign { name, expr, .. } => {
+                let info = self.expr_bigint_info(expr)?;
+                if let Some(info) = &info {
+                    self.locals.insert(name.clone(), info.clone());
+                } else {
+                    self.locals.remove(name);
+                }
+                Ok(info)
+            }
+            Expr::LogicalPropertyAssign {
+                object_expr,
+                computed_key,
+                expr,
+                ..
+            } => {
+                if let Some(object_expr) = object_expr {
+                    self.expr_bigint_info(object_expr)?;
+                }
+                if let Some(computed_key) = computed_key {
+                    self.expr_bigint_info(computed_key)?;
+                }
+                self.expr_bigint_info(expr)?;
+                Ok(None)
+            }
+            Expr::Array { elements, .. } => {
+                for element in elements {
+                    self.expr_bigint_info(element)?;
+                }
+                Ok(None)
+            }
+            Expr::Object { props, .. } => {
+                for (_, value) in props {
+                    self.expr_bigint_info(value)?;
+                }
+                Ok(None)
+            }
+            Expr::Index { object, index, .. } | Expr::OptionalIndex { object, index, .. } => {
+                self.expr_bigint_info(object)?;
+                self.expr_bigint_info(index)?;
+                Ok(None)
+            }
+            Expr::New { expr, args, .. } => {
+                self.expr_bigint_info(expr)?;
+                for arg in args {
+                    self.expr_bigint_info(arg)?;
+                }
+                Ok(None)
+            }
+            Expr::InstanceOf {
+                expr, type_expr, ..
+            } => {
+                self.expr_bigint_info(expr)?;
+                self.expr_bigint_info(type_expr)?;
+                Ok(None)
+            }
+            Expr::Ternary {
+                condition,
+                then_expr,
+                else_expr,
+                ..
+            } => {
+                self.expr_bigint_info(condition)?;
+                self.fork().expr_bigint_info(then_expr)?;
+                self.fork().expr_bigint_info(else_expr)?;
+                Ok(None)
+            }
+            Expr::PropertyAssign { object, value, .. } => {
+                self.expr_bigint_info(object)?;
+                self.expr_bigint_info(value)?;
+                Ok(None)
+            }
+            Expr::IndexAssign {
+                object,
+                index,
+                value,
+                ..
+            } => {
+                self.expr_bigint_info(object)?;
+                self.expr_bigint_info(index)?;
+                self.expr_bigint_info(value)?;
+                Ok(None)
+            }
+            Expr::ArrowFn { body, .. } => BigIntRuntimeGuard::default().expr_bigint_info(body),
+            Expr::Number { .. }
+            | Expr::String { .. }
+            | Expr::Bool { .. }
+            | Expr::Null { .. }
+            | Expr::Undefined { .. }
+            | Expr::This { .. } => Ok(None),
+        }
+    }
+}
+
+fn bigint_arithmetic_or_bitwise_op(op: BinaryOp) -> bool {
+    matches!(
+        op,
+        BinaryOp::Add
+            | BinaryOp::Subtract
+            | BinaryOp::Multiply
+            | BinaryOp::Divide
+            | BinaryOp::Modulo
+            | BinaryOp::Power
+            | BinaryOp::BitwiseAnd
+            | BinaryOp::BitwiseOr
+            | BinaryOp::BitwiseXor
+            | BinaryOp::LeftShift
+            | BinaryOp::RightShift
+            | BinaryOp::UnsignedRightShift
+    )
+}
+
+fn bigint_dynamic_runtime_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-260: dynamic BigInt runtime arithmetic is limited to signed-i64-backed first-limb values in this slice".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn bigint_mixed_runtime_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-260: mixed Number/BigInt arithmetic is not implemented in the dynamic BigInt runtime slice".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn assigned_names_in_stmts(stmts: &[Stmt]) -> HashSet<String> {
+    let mut names = HashSet::new();
+    for stmt in stmts {
+        collect_assigned_names_in_stmt(stmt, &mut names);
+    }
+    names
+}
+
+fn assigned_names_in_expr(expr: &Expr) -> HashSet<String> {
+    let mut names = HashSet::new();
+    collect_assigned_names_in_expr(expr, &mut names);
+    names
+}
+
+fn collect_assigned_names_in_stmt(stmt: &Stmt, names: &mut HashSet<String>) {
+    match stmt {
+        Stmt::Let { name, .. } | Stmt::Assign { name, .. } => {
+            names.insert(name.clone());
+        }
+        Stmt::Expr { expr, .. } | Stmt::Return { expr, .. } | Stmt::Throw { expr, .. } => {
+            collect_assigned_names_in_expr(expr, names);
+        }
+        Stmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            collect_assigned_names_in_expr(condition, names);
+            collect_assigned_names_in_stmts(then_body, names);
+            collect_assigned_names_in_stmts(else_body, names);
+        }
+        Stmt::While {
+            condition, body, ..
+        }
+        | Stmt::DoWhile {
+            condition, body, ..
+        } => {
+            collect_assigned_names_in_expr(condition, names);
+            collect_assigned_names_in_stmts(body, names);
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            collect_assigned_names_in_stmts(try_block, names);
+            if let Some(catch_block) = catch_block {
+                collect_assigned_names_in_stmts(catch_block, names);
+            }
+            if let Some(finally_block) = finally_block {
+                collect_assigned_names_in_stmts(finally_block, names);
+            }
+        }
+        Stmt::Switch { expr, cases, .. } => {
+            collect_assigned_names_in_expr(expr, names);
+            for (case_expr, body) in cases {
+                if let Some(case_expr) = case_expr {
+                    collect_assigned_names_in_expr(case_expr, names);
+                }
+                collect_assigned_names_in_stmts(body, names);
+            }
+        }
+        Stmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            if let Some(init) = init {
+                collect_assigned_names_in_stmt(init, names);
+            }
+            if let Some(condition) = condition {
+                collect_assigned_names_in_expr(condition, names);
+            }
+            if let Some(update) = update {
+                collect_assigned_names_in_expr(update, names);
+            }
+            collect_assigned_names_in_stmts(body, names);
+        }
+        Stmt::ForIn {
+            var, iter, body, ..
+        }
+        | Stmt::ForOf {
+            var, iter, body, ..
+        } => {
+            names.insert(var.clone());
+            collect_assigned_names_in_expr(iter, names);
+            collect_assigned_names_in_stmts(body, names);
+        }
+        Stmt::Labeled { body, .. } => collect_assigned_names_in_stmt(body, names),
+        Stmt::Function { .. }
+        | Stmt::ClassDecl { .. }
+        | Stmt::ImportSideEffect { .. }
+        | Stmt::ImportNamed { .. }
+        | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
+        | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
+        | Stmt::ExportNamed { .. }
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::ExportDecl { .. }
+        | Stmt::ExportDefault { .. }
+        | Stmt::Break { .. }
+        | Stmt::Continue { .. } => {}
+    }
+}
+
+fn collect_assigned_names_in_stmts(stmts: &[Stmt], names: &mut HashSet<String>) {
+    for stmt in stmts {
+        collect_assigned_names_in_stmt(stmt, names);
+    }
+}
+
+fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<String>) {
+    match expr {
+        Expr::Assign { name, expr, .. } | Expr::LogicalAssign { name, expr, .. } => {
+            names.insert(name.clone());
+            collect_assigned_names_in_expr(expr, names);
+        }
+        Expr::Binary { left, right, .. }
+        | Expr::Index {
+            object: left,
+            index: right,
+            ..
+        }
+        | Expr::OptionalIndex {
+            object: left,
+            index: right,
+            ..
+        }
+        | Expr::InstanceOf {
+            expr: left,
+            type_expr: right,
+            ..
+        } => {
+            collect_assigned_names_in_expr(left, names);
+            collect_assigned_names_in_expr(right, names);
+        }
+        Expr::Unary { expr, .. }
+        | Expr::Member { object: expr, .. }
+        | Expr::OptionalMember { object: expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Spread { expr, .. } => collect_assigned_names_in_expr(expr, names),
+        Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
+            collect_assigned_names_in_expr(callee, names);
+            for arg in args {
+                collect_assigned_names_in_expr(arg, names);
+            }
+        }
+        Expr::LogicalPropertyAssign {
+            object_expr,
+            computed_key,
+            expr,
+            ..
+        } => {
+            if let Some(object_expr) = object_expr {
+                collect_assigned_names_in_expr(object_expr, names);
+            }
+            if let Some(computed_key) = computed_key {
+                collect_assigned_names_in_expr(computed_key, names);
+            }
+            collect_assigned_names_in_expr(expr, names);
+        }
+        Expr::Array { elements, .. } => {
+            for element in elements {
+                collect_assigned_names_in_expr(element, names);
+            }
+        }
+        Expr::Object { props, .. } => {
+            for (_, value) in props {
+                collect_assigned_names_in_expr(value, names);
+            }
+        }
+        Expr::New { expr, args, .. } => {
+            collect_assigned_names_in_expr(expr, names);
+            for arg in args {
+                collect_assigned_names_in_expr(arg, names);
+            }
+        }
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            collect_assigned_names_in_expr(condition, names);
+            collect_assigned_names_in_expr(then_expr, names);
+            collect_assigned_names_in_expr(else_expr, names);
+        }
+        Expr::PropertyAssign { object, value, .. } => {
+            collect_assigned_names_in_expr(object, names);
+            collect_assigned_names_in_expr(value, names);
+        }
+        Expr::IndexAssign {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            collect_assigned_names_in_expr(object, names);
+            collect_assigned_names_in_expr(index, names);
+            collect_assigned_names_in_expr(value, names);
+        }
+        Expr::ArrowFn { .. }
+        | Expr::Number { .. }
+        | Expr::BigInt { .. }
+        | Expr::String { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::Undefined { .. }
+        | Expr::This { .. }
+        | Expr::Ident { .. } => {}
+    }
 }
 
 fn fold_bigint_binary(

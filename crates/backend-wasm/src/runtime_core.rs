@@ -527,6 +527,125 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_bigint_add(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_from_signed_i64 (param $value i64) (result i32)
+    (local $sign i32)
+    (local $abs i64)
+    (local $ptr i32)
+    (local $start i32)
+    (local $left i32)
+    (local $right i32)
+    (local $tmp i32)
+    (local.set $ptr (i32.const {scratch}))
+    (local.set $sign (i32.const 1))
+    (local.set $abs (local.get $value))
+    (if (i64.eq (local.get $value) (i64.const 0))
+      (then
+        (local.set $sign (i32.const 0))
+        (local.set $abs (i64.const 0))))
+    (if (i64.lt_s (local.get $value) (i64.const 0))
+      (then
+        (local.set $sign (i32.const -1))
+        (local.set $abs (i64.sub (i64.const 0) (local.get $value)))
+        (i32.store8 (local.get $ptr) (i32.const {ascii_minus}))
+        (local.set $ptr (i32.add (local.get $ptr) (i32.const 1)))))
+    (local.set $start (local.get $ptr))
+    (if (i64.eqz (local.get $abs))
+      (then
+        (i32.store8 (local.get $ptr) (i32.const {ascii_zero}))
+        (local.set $ptr (i32.add (local.get $ptr) (i32.const 1))))
+      (else
+        (block $digits_done
+          (loop $digits
+            (i32.store8
+              (local.get $ptr)
+              (i32.add
+                (i32.wrap_i64 (i64.rem_u (local.get $abs) (i64.const 10)))
+                (i32.const {ascii_zero})))
+            (local.set $ptr (i32.add (local.get $ptr) (i32.const 1)))
+            (local.set $abs (i64.div_u (local.get $abs) (i64.const 10)))
+            (br_if $digits (i64.gt_u (local.get $abs) (i64.const 0)))))))
+    (local.set $left (local.get $start))
+    (local.set $right (i32.sub (local.get $ptr) (i32.const 1)))
+    (block $reverse_done
+      (loop $reverse
+        (br_if $reverse_done (i32.ge_u (local.get $left) (local.get $right)))
+        (local.set $tmp (i32.load8_u (local.get $left)))
+        (i32.store8 (local.get $left) (i32.load8_u (local.get $right)))
+        (i32.store8 (local.get $right) (local.get $tmp))
+        (local.set $left (i32.add (local.get $left) (i32.const 1)))
+        (local.set $right (i32.sub (local.get $right) (i32.const 1)))
+        (br $reverse)))
+    (local.set $abs
+      (if (result i64) (i64.lt_s (local.get $value) (i64.const 0))
+        (then (i64.sub (i64.const 0) (local.get $value)))
+        (else (local.get $value))))
+    (call $make_bigint_literal
+      (local.get $sign)
+      (if (result i32) (i32.eqz (local.get $sign))
+        (then (i32.const 0))
+        (else (i32.const 1)))
+      (i32.wrap_i64 (local.get $abs))
+      (i32.wrap_i64 (i64.shr_u (local.get $abs) (i64.const 32)))
+      (i32.const {scratch})
+      (i32.sub (local.get $ptr) (i32.const {scratch}))))
+
+  (func $bigint_signed_i64 (param $v i32) (result i64)
+    (local $obj i32)
+    (local $sign i32)
+    (local $mag i64)
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $sign (i32.load (i32.add (local.get $obj) (i32.const {bigint_sign_offset}))))
+    (local.set $mag
+      (i64.or
+        (i64.extend_i32_u (i32.load (i32.add (local.get $obj) (i32.const {bigint_limb0_low_offset}))))
+        (i64.shl
+          (i64.extend_i32_u (i32.load (i32.add (local.get $obj) (i32.const {bigint_limb0_high_offset}))))
+          (i64.const 32))))
+    (if (result i64) (i32.lt_s (local.get $sign) (i32.const 0))
+      (then (i64.sub (i64.const 0) (local.get $mag)))
+      (else (local.get $mag))))
+
+  (func $bigint_add (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.add
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+            scratch = Layout::SCRATCH_OFFSET,
+            heap_mask = ValueTag::HEAP_MASK,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            bigint_limb0_low_offset = Layout::BIGINT_LIMB0_LOW_OFFSET,
+            bigint_limb0_high_offset = Layout::BIGINT_LIMB0_HIGH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_bigint_sub(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_sub (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.sub
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
+    pub(super) fn emit_bigint_unary_minus(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_unary_minus (param $v i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.sub (i64.const 0) (call $bigint_signed_i64 (local.get $v)))))
+"#,
+        );
+    }
+
     pub(super) fn emit_string_equal(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
