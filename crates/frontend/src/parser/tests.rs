@@ -832,6 +832,32 @@ mod tests {
     }
 
     #[test]
+    fn accepts_expression_statement_without_semicolon_at_eof() {
+        let program = parse_program("1 * {}").unwrap();
+
+        match &program[0] {
+            Stmt::Expr {
+                expr:
+                    Expr::Binary {
+                        op: BinaryOp::Multiply,
+                        right,
+                        ..
+                    },
+                ..
+            } => assert!(matches!(right.as_ref(), Expr::Object { props, .. } if props.is_empty())),
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_missing_expression_semicolon_before_adjacent_token() {
+        let err = parse_program("1 * {} 2").unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("expected Semicolon"), "{err:?}");
+    }
+
+    #[test]
     fn rejects_unsupported_regexp_flag_with_issue_linked_diagnostic() {
         let err = parse_program("let r = /abc/d;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);

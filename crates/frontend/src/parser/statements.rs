@@ -605,7 +605,7 @@ impl Parser {
                     span,
                 } if !property.is_empty() => {
                     let value = self.expression()?;
-                    let semi = self.expect(TokenKind::Semicolon)?;
+                    let end = self.statement_terminator_end(value.span().end)?;
                     let member_span = *span;
                     return Ok(Stmt::Expr {
                         expr: Expr::PropertyAssign {
@@ -614,12 +614,12 @@ impl Parser {
                             value: Box::new(value),
                             span: Span {
                                 start: member_span.start,
-                                end: semi.end,
+                                end,
                             },
                         },
                         span: Span {
                             start: member_span.start,
-                            end: semi.end,
+                            end,
                         },
                     });
                 }
@@ -629,7 +629,7 @@ impl Parser {
                     span: index_span,
                 } => {
                     let value = self.expression()?;
-                    let semi = self.expect(TokenKind::Semicolon)?;
+                    let end = self.statement_terminator_end(value.span().end)?;
                     return Ok(Stmt::Expr {
                         expr: Expr::IndexAssign {
                             object: object.clone(),
@@ -637,12 +637,12 @@ impl Parser {
                             value: Box::new(value),
                             span: Span {
                                 start: index_span.start,
-                                end: semi.end,
+                                end,
                             },
                         },
                         span: Span {
                             start: index_span.start,
-                            end: semi.end,
+                            end,
                         },
                     });
                 }
@@ -663,13 +663,27 @@ impl Parser {
         {
             return Err(self.invalid_optional_chain_target(expr.span()));
         }
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Expr {
             span: Span {
                 start: expr.span().start,
-                end: semi.end,
+                end,
             },
             expr,
+        })
+    }
+
+    fn statement_terminator_end(&mut self, fallback_end: usize) -> Result<usize, Diagnostic> {
+        if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
+            return Ok(semi.end);
+        }
+        if self.is_at_end() || matches!(self.peek(), Some(Token::RightBrace)) {
+            return Ok(fallback_end);
+        }
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("expected Semicolon, got {:?}", self.peek()),
+            span: self.peek_span(),
         })
     }
 
@@ -885,17 +899,7 @@ impl Parser {
     fn return_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Return)?;
         let expr = self.expression()?;
-        let end = if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
-            semi.end
-        } else if matches!(self.peek(), Some(Token::RightBrace)) {
-            expr.span().end
-        } else {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("expected Semicolon, got {:?}", self.peek()),
-                span: self.peek_span(),
-            });
-        };
+        let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Return {
             expr,
             span: Span {
