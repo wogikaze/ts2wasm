@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 203 | 132 | 71 |
+| frontend | 203 | 130 | 73 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 336 | 148 | 188 |
+| total | 336 | 146 | 190 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,7 +51,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
 | 301 | Implement mutable class-method outer environment cells | feature | frontend/ir/runtime | implementation-ready | P2 |  | `callCount = callCount + 1` inside a class method needs a shared |
-| 306 | Implement mutable direct eval block-function environments | feature | frontend/ir/runtime | implementation-ready | P3 |  | `func-block-decl-eval-func-block-scoping.js` now gets past the static |
 | 307 | Investigate ABC451 depth-9 allocation performance | spike | runtime/performance | implementation-ready | P1 |  | The depth-9 reducer prints `1404832` under Node. Under the committed |
 <!-- generated:ready:end -->
 
@@ -195,7 +194,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
-| 302 | Implement direct eval block function declaration slice | feature | frontend/semantics | class: blocked | Implement direct eval block function declaration slice |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -389,9 +387,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 297 | Track pushed dense array locals for map callbacks | feature | frontend/runtime | see `issues/done/297-track-pushed-dense-array-locals-for-map.md` |
 | 298 | Allow reused for-loop local names in separate loop scopes | bug | frontend/ir | see `issues/done/298-allow-reused-for-loop-local-names.md` |
 | 299 | Support Array.sort numeric comparator slice | feature | runtime/builtins | see `issues/done/299-support-array-sort-numeric-comparator.md` |
+| 302 | Implement direct eval block function declaration slice | feature | frontend/semantics | see `issues/done/302-implement-direct-eval-block-function-declaration-slice.md` |
 | 303 | Define runtime memory limit policy for large live sets | feature | runtime/memory | see `issues/done/303-define-runtime-memory-limit-policy-for-large-live-sets.md` |
 | 304 | Support ABC451 depth-8 live-set after memory policy | feature | runtime/memory | see `issues/done/304-support-abc451-depth8-live-set-after-memory-policy.md` |
 | 305 | Support ABC451 depth-9 search budget | feature | runtime/memory | see `issues/done/305-support-abc451-depth9-search-budget.md` |
+| 306 | Implement mutable direct eval block-function environments | feature | frontend/ir/runtime | see `issues/done/306-implement-mutable-direct-eval-block-function-environments.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
