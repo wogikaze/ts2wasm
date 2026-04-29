@@ -49,9 +49,9 @@ In scope:
 - [ ] Historical comparison view
 - [ ] Performance metrics dashboard
 - [ ] Real-time test run updates
-- [ ] Export functionality (JSON, CSV, PDF)
+- [x] Export functionality (JSON, CSV, PDF)
 - [ ] Responsive design
-- [ ] Dark/light theme support
+- [x] Dark/light theme support
 
 Out of scope:
 
@@ -82,8 +82,8 @@ Do not touch:
 - [ ] Historical comparison shows regressions
 - [ ] Performance metrics displayed with trends
 - [ ] Real-time updates during test runs
-- [ ] Export functionality works for all views
-- [ ] Documentation covers usage and deployment
+- [x] Export functionality works for all views
+- [x] Documentation covers usage and deployment
 - [ ] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
@@ -126,7 +126,7 @@ Follow-up issues:
   - `issues/done/267a-web-ui-data-generation-and-script-integration.md`
   - `issues/open/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
   - `issues/open/267c-web-ui-real-time-test-run-updates.md`
-  - `issues/open/267d-web-ui-export-theme-and-usage-docs.md`
+  - `issues/done/267d-web-ui-export-theme-and-usage-docs.md`
 
 ## Notes
 

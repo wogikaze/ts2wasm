@@ -38,11 +38,11 @@ Users can export every view in the requested formats, switch dark/light theme, a
 
 In scope:
 
-- [ ] Implement JSON export for test, coverage, and history views.
-- [ ] Implement CSV export for tabular views.
-- [ ] Implement PDF export or a documented browser-print/PDF export path that is exposed from the UI.
-- [ ] Add dark/light theme toggle with persisted preference.
-- [ ] Add final-state usage/deployment documentation under `docs/`.
+- [x] Implement JSON export for test, coverage, and history views.
+- [x] Implement CSV export for tabular views.
+- [x] Implement PDF export or a documented browser-print/PDF export path that is exposed from the UI.
+- [x] Add dark/light theme toggle with persisted preference.
+- [x] Add final-state usage/deployment documentation under `docs/`.
 
 Out of scope:
 
@@ -65,12 +65,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Export control produces JSON for each view.
-- [ ] Export control produces CSV for test results and history.
-- [ ] Export control provides PDF output or a documented equivalent from the UI.
-- [ ] Theme toggle switches dark/light mode and persists across reloads.
-- [ ] `docs/` contains web UI usage and deployment instructions.
-- [ ] Docs/current-state/issues are synchronized when status or design changes.
+- [x] Export control produces JSON for each view.
+- [x] Export control produces CSV for test results and history.
+- [x] Export control provides PDF output or a documented equivalent from the UI.
+- [x] Theme toggle switches dark/light mode and persists across reloads.
+- [x] `docs/` contains web UI usage and deployment instructions.
+- [x] Docs/current-state/issues are synchronized when status or design changes.
 
 ## Validation
 
@@ -97,15 +97,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/` web UI usage/deployment documentation
+- [x] updated: `docs/18-web-ui-reporting.md`
 
 Current state:
 
-- [ ] not affected
+- not affected
 
 Follow-up issues:
 
-- [ ] none
+- none
 
 ## Notes
 
@@ -134,14 +134,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `15295019` issue-267d export controls
+- `ee1184ef` issue-267d theme toggle
+- close commit records final `docs/` usage/deployment documentation and issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cd web-ui && npm run build
+result: PASS
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:

@@ -1,0 +1,101 @@
+# Web UI Reporting
+
+The ts2wasm web UI is a static reporting interface for test results, reference
+coverage, and historical run comparison. It is built from generated JSON data
+under `web-ui/public/data/` and can be served by the Vite development server or
+by any static file host after `npm run build`.
+
+## Data Contract
+
+The UI reads these files from `web-ui/public/data/`:
+
+| File | Purpose |
+|---|---|
+| `test-results.json` | Test rows, status, duration, and error text for the Test Results tab. |
+| `coverage.json` | Coverage totals, priority breakdowns, and suite-level coverage metrics. |
+| `history.json` | Historical run totals, compile/runtime measurements, and run timestamps. |
+| `metadata.json` | Generator metadata for the data snapshot. |
+
+Generate the data before running or deploying the UI:
+
+```bash
+mise run web-ui-data
+```
+
+Reference and test262 runs can refresh the same files as part of a local run:
+
+```bash
+mise run reference-coverage -- test262 --limit 50 --web-ui
+mise run test262 -- --sample 50 --web-ui
+```
+
+## Local Use
+
+Install dependencies once:
+
+```bash
+cd web-ui
+npm install
+```
+
+Start the local UI:
+
+```bash
+mise run web-ui-data
+cd web-ui
+npm run dev
+```
+
+The development server serves the report at `http://localhost:5173`.
+
+## Static Deployment
+
+Build the static bundle after generating fresh data:
+
+```bash
+mise run web-ui-data
+cd web-ui
+npm run build
+```
+
+Deploy the generated `web-ui/dist/` directory to the static host. The deployed
+bundle is self-contained except for the JSON files copied into the build output
+from `web-ui/public/data/`.
+
+## Views
+
+The Test Results tab provides status filtering and search over individual test
+records. The Coverage tab renders implementation status, priority mix, and
+suite-level coverage charts. The History tab compares runs over time, including
+pass/fail/skip deltas, regression flags, and compile/runtime trend charts.
+
+## Export Controls
+
+The header export controls operate on the active tab:
+
+| Control | Output |
+|---|---|
+| `JSON` | Downloads the active tab payload as formatted JSON. |
+| `CSV` | Downloads tabular rows for test results, coverage, or history. |
+| `PDF` | Opens the browser print flow so the active view can be saved as PDF. |
+
+JSON and CSV downloads are local browser downloads. The PDF path uses the
+browser's print/save-as-PDF support and does not require a server-side renderer.
+
+## Theme Preference
+
+The header theme control switches between dark and light themes. The selected
+theme is stored in browser `localStorage` under `ts2wasm-web-ui-theme` and is
+restored on reload. If no stored preference exists, the UI follows the browser
+`prefers-color-scheme` setting.
+
+## Operational Checks
+
+Use these checks when changing the UI, generator, or documentation:
+
+```bash
+cd web-ui && npm run build
+cargo fmt --all --check
+mise run update-issue-index -- --check
+mise run check issues
+```
