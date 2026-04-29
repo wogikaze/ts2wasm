@@ -143,6 +143,7 @@ mise run update-issue-index
 
 # カバレッジから Issue 生成
 mise run gen-issues-from-coverage -- --suite test262
+mise run reference-triage -- test262 reference/test262/test/path/to/case.js
 ```
 
 ### 6. 開始前の最終確認
@@ -179,7 +180,7 @@ mise run gate-fast
 - `check`, `gate`, `gate-fast`, `gate-all`
 - `fmt`, `clippy`, `nextest`
 - `update-issue-index`, `gen-issues-from-coverage`
-- `update-coverage-matrix`, `coverage-report`, `reference-coverage`
+- `update-coverage-matrix`, `coverage-report`, `reference-coverage`, `reference-triage`
 - `test262`, `test-differential-reporter`, `test-regression-gate`
 - `benchmark-tracker`, `install-hooks`
 

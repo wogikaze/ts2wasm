@@ -59,6 +59,7 @@ mise run test262 -- --sample 50 --jobs 4  # test262実行
 # Issue追加（カバレッジ結果から自動生成）
 mise run reference-coverage -- test262 --limit 500 --detail | \
   mise run gen-issues-from-coverage -- --suite test262
+mise run reference-triage -- test262 reference/test262/test/path/to/case.js
 ```
 
 ## 5) 運用上の最小ルール
@@ -83,8 +84,9 @@ mise run reference-coverage -- test262 --limit 500 --detail | \
 **Issue addition workflow** (when Ready queue is low):
 1. Run reference-coverage with --detail flag
 2. Pipe to gen-issues-from-coverage to auto-generate issues
-3. Update issue index
-4. Commit changes
+3. Use reference-triage output in generated triage-needed issues before creating implementation-ready child issues
+4. Update issue index
+5. Commit changes
 
 **Coverage expansion** (when implementation targets decrease):
 - Increase --limit in reference-coverage (e.g., 50 → 100 → 500 → 1000)

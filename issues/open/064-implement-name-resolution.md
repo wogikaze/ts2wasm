@@ -1,68 +1,81 @@
 ---
 id: 064
 title: "Implement name resolution"
-type: feature
-area: frontend
-class: blocked
+type: spike
+area: reference
+class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-26
+updated: 2026-04-29
 ---
 
 ## Summary
 
-Implement name-resolution feature to handle 72 failing test cases in reference tests.
-
-Problem: Name resolution is an epic across global builtins, lexical scope, duplicate locals, and builtin namespace recognition; direct selection does not identify one resolver change.
-
-Queue design note:
-
-- This is an epic-level issue and must not be selected directly from the Ready queue.
-- Use child slices that name one binding family, one resolver module boundary, and one fixture/reference reduction.
-- Date/global builtin recognition should start with issue 064a.
+Triage the generated reference bucket `Implement name resolution` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
 
 ## Problem
 
 Reference test results show 72 cases fail with name-resolution diagnostic. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
+Problem: generated reference bucket `Implement name resolution` fails with `name-resolution` and needs smart-triage evidence before implementation starts.
+
+## Current failure
+
+Representative reproduction:
+
+```sh
+mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js
+```
+
+Narrow coverage reproduction:
+
+```sh
+mise run reference-coverage -- test262 --path-filter reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js --detail
+```
+
+Representative path: `reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js`
+Feature label: `name-resolution`
+
 ## Desired final state
 
-name-resolution feature is correctly implemented according to JavaScript/TypeScript specifications. Related diagnostics are only emitted for genuinely unsupported cases.
+This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
 
 ## Scope
 
 In scope:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for name-resolution feature
-- [ ] Add fixtures for name-resolution feature behavior
-- [ ] Update diagnostics appropriately
+- [ ] Run the representative `mise run reference-triage -- ...` command
+- [ ] Confirm whether duplicate candidates already cover this failure
+- [ ] Split one observable behavior or fixed reference window into child issues
+- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- Direct implementation from this generated bucket
+- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
 
 ## Affected paths
 
 Expected:
 
+- `issues/open/`
+- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
 
 Do not touch:
 
-- `crates/runtime-abi/`
-- `crates/backend-wasm/`
+- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] name-resolution feature passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for name-resolution feature
-- [ ] Docs updated if semantics change
+- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -76,7 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- test262 --limit 144
+mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js
+mise run reference-coverage -- test262 --path-filter reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js --detail
 ```
 
 Not run:
@@ -112,6 +126,10 @@ Follow-up issues:
 - `reference/test262/test/annexB/built-ins/RegExp/prototype/compile/B.RegExp.prototype.compile.js`
 - `reference/test262/test/annexB/built-ins/RegExp/prototype/compile/length.js`
 - ... and 62 more files
+
+## Duplicate detection
+
+- none found by path/title/feature scan
 
 ## Completion evidence
 

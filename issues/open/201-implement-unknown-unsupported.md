@@ -1,9 +1,9 @@
 ---
 id: 201
 title: "Investigate and classify unknown-unsupported cases"
-type: feature
-area: frontend
-class: blocked
+type: spike
+area: reference
+class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
@@ -13,48 +13,69 @@ updated: 2026-04-29
 
 ## Summary
 
-Implement unknown-unsupported feature to handle 41 failing test cases in reference tests.
+Triage the generated reference bucket `Investigate and classify unknown-unsupported cases` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
 
 ## Problem
 
 Reference test results show 41 cases fail with unknown-unsupported diagnostic. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
+Problem: generated reference bucket `Investigate and classify unknown-unsupported cases` fails with `unknown-unsupported` and needs smart-triage evidence before implementation starts.
+
+## Current failure
+
+Representative reproduction:
+
+```sh
+mise run reference-triage -- tsgo reference/typescript-go/testdata/tests/cases/compiler/allowSyntheticDefaultImports9.ts
+```
+
+Narrow coverage reproduction:
+
+```sh
+mise run reference-coverage -- tsgo --path-filter reference/typescript-go/testdata/tests/cases/compiler/allowSyntheticDefaultImports9.ts --detail
+```
+
+Representative path: `reference/typescript-go/testdata/tests/cases/compiler/allowSyntheticDefaultImports9.ts`
+Feature label: `unknown-unsupported`
+
 ## Desired final state
 
-unknown-unsupported feature is correctly implemented according to JavaScript/TypeScript specifications. Related diagnostics are only emitted for genuinely unsupported cases.
+This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
 
 ## Scope
 
 In scope:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for unknown-unsupported feature
-- [ ] Add fixtures for unknown-unsupported feature behavior
-- [ ] Update diagnostics appropriately
+- [ ] Run the representative `mise run reference-triage -- ...` command
+- [ ] Confirm whether duplicate candidates already cover this failure
+- [ ] Split one observable behavior or fixed reference window into child issues
+- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- Direct implementation from this generated bucket
+- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
 
 ## Affected paths
 
 Expected:
 
+- `issues/open/`
+- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
 
 Do not touch:
 
-- `crates/runtime-abi/`
-- `crates/backend-wasm/`
+- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] unknown-unsupported feature passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for unknown-unsupported feature
-- [ ] Docs updated if semantics change
+- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -68,7 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsgo --limit 82
+mise run reference-triage -- tsgo reference/typescript-go/testdata/tests/cases/compiler/allowSyntheticDefaultImports9.ts
+mise run reference-coverage -- tsgo --path-filter reference/typescript-go/testdata/tests/cases/compiler/allowSyntheticDefaultImports9.ts --detail
 ```
 
 Not run:
@@ -104,6 +126,11 @@ Follow-up issues:
 - `reference/typescript-go/testdata/tests/cases/compiler/declarationEmitBigInt.ts`
 - `reference/typescript-go/testdata/tests/cases/compiler/declarationEmitConstObjectLiteralGenericMethod1.ts`
 - ... and 31 more files
+
+## Duplicate detection
+
+- `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, title overlap)
+- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, title overlap)
 
 ## Completion evidence
 
