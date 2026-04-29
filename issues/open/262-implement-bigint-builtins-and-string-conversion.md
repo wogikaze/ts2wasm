@@ -128,3 +128,31 @@ date:
 Remaining risks:
 
 - none
+
+## Progress evidence
+
+2026-04-29 progress slice:
+
+- Implemented `BigInt(...)` builtin folding for supported string, boolean, integer number, unary-negative integer number, and BigInt literal inputs.
+- Implemented known-BigInt `String(...)` lowering through `BigIntToString`, including known BigInt locals.
+- Corrected runtime BigInt ToString behavior used by concatenation/template interpolation to omit the `n` suffix, while keeping `console.log(bigint)` output with the `n` suffix.
+- Added issue-262 diagnostics for unsupported `BigInt(...)` inputs, invalid decimal string literals, `new BigInt(...)`, and `BigInt.asIntN` / `BigInt.asUintN`.
+- Added Node/iwasm differential coverage: `fixtures/core-semantics/bigint-builtins-string-conversion.ts`.
+- Added unsupported diagnostics coverage: `fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts`, `fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts`, `fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts`, and `fixtures/core-semantics/bigint-new-unsupported.ts`.
+- Added runtime linker coverage that `BigIntToString` and `MakeBigIntLiteral` are selected without host imports.
+
+Validation recorded in the child branch:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -E 'test(bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm) or test(bigint_builtin_unsupported_forms_report_issue_262) or test(bigint_builtin_string_conversion_selects_helper_deps_without_imports)'
+cargo nextest run -E 'test(bigint) or test(node_diff)'
+cargo nextest run
+mise run update-issue-index -- --check
+mise run check issues
+```
+
+Remaining issue-262 work:
+
+- Implement `BigInt.asIntN` / `BigInt.asUintN` semantics.
+- Broaden `BigInt(string)` beyond the current decimal integer string subset if full ECMAScript string-to-BigInt parsing is required.

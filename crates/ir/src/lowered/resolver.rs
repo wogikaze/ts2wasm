@@ -698,10 +698,12 @@ impl<'a> Resolver<'a> {
                 }
 
                 if func_name == "String" {
-                    if let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice() {
+                    if let [arg] = args.as_slice()
+                        && self.resolved_expr_is_bigint(arg)
+                    {
                         return Ok(LoweredExpr::RuntimeCall {
                             runtime_fn: "BigIntToString".to_owned(),
-                            args: vec![self.lower_expr(&args[0])?],
+                            args: vec![self.lower_expr(arg)?],
                         });
                     }
                 }
