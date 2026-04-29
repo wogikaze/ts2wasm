@@ -367,9 +367,12 @@ fn bigint_runtime_mixed_string_abstract_equality_matches_node_output_under_iwasm
 
 #[test]
 fn bigint_runtime_mixed_relational_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node(
+    for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-boolean-relational.ts",
-    );
+        "fixtures/core-semantics/bigint-runtime-mixed-string-relational.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]
