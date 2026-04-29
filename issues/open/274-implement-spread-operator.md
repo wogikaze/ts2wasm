@@ -75,3 +75,6 @@ cargo fmt --all --check
 - 2026-04-29: Added the next executable object-literal slice:
   - object literal spread over static object literal operands, such as `{ left: 0, ...{ a: 1, b: 2 }, b: 3 }`, lowers by flattening those literal properties into the existing `ObjectNew` representation and matches Node/iwasm output;
   - dynamic object spread, including spreading a local object value, remains explicitly guarded by an `issue-274` unsupported diagnostic because the runtime still lacks general own-enumerable property copy/enumeration semantics.
+- 2026-04-29: Added a focused function-expression call slice:
+  - anonymous function expressions now parse in call position, and direct calls such as `(function(a, b, c) { console.log(a + b + c); }(...[3, 4, 5]))` lower to a generated function call with literal-array spread expansion and match Node/iwasm output;
+  - broader function-expression spread calls that use `this`, `arguments`, rest parameters, or mutable captured outer locals remain explicitly guarded. The representative test262 case `language/expressions/call/spread-sngl-literal.js` now reaches the spread/IIFE boundary and reports `issue-274: direct function-expression spread calls with this or arguments require broader call-expression runtime support`.

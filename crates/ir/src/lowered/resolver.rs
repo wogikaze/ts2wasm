@@ -644,6 +644,10 @@ impl<'a> Resolver<'a> {
                 expr: Box::new(self.lower_expr(expr)?),
             }),
             ResolvedExpr::Call { callee, args, span } => {
+                if let ResolvedExpr::FunctionExpr { name, params, body } = callee.as_ref() {
+                    return self.lower_function_expr_call(name, params, body, args, *span);
+                }
+
                 let func_name = match callee.as_ref() {
                     ResolvedExpr::Ident(name) => name,
                     _ => {
@@ -1993,6 +1997,57 @@ impl<'a> Resolver<'a> {
         Ok(lowered_args)
     }
 
+    fn lower_function_expr_call(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if params.iter().any(|param| param.is_rest) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-274: direct function-expression spread calls do not support rest parameters in this slice".to_owned(),
+                span: Some(span),
+            });
+        }
+        if block_contains_this(body) || block_contains_arguments(body) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-274: direct function-expression spread calls with `this` or `arguments` require broader call-expression runtime support".to_owned(),
+                span: Some(span),
+            });
+        }
+
+        let lowered = self.lower_named_function_expr(name, params, body)?;
+        let LoweredExpr::ArrowFn {
+            func_id, captures, ..
+        } = lowered
+        else {
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: "function expression lowering must produce a direct function token"
+                    .to_owned(),
+                span: Some(span),
+            });
+        };
+
+        let explicit_args = self.lower_call_args(args)?;
+        let mut lowered_args = explicit_args
+            .into_iter()
+            .take(params.len())
+            .collect::<Vec<_>>();
+        for _ in lowered_args.len()..params.len() {
+            lowered_args.push(LoweredExpr::Undefined);
+        }
+        lowered_args.extend(captures.into_iter().map(LoweredExpr::Local));
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+        })
+    }
+
     fn function_props_for_object_expr(
         &self,
         expr: &ResolvedExpr,
@@ -2197,6 +2252,12 @@ impl<'a> Resolver<'a> {
 
         let func_id = FuncId(self.next_func_id);
         self.next_func_id += 1;
+        let self_closure = (!name.is_empty()).then_some(SelfClosureOptions {
+            name,
+            func_id,
+            capture_names: &capture_names,
+        });
+
         let lowered = lower_function(
             func_id,
             &lowered_params,
@@ -2209,11 +2270,7 @@ impl<'a> Resolver<'a> {
                 current_class: self.current_class.as_deref(),
                 in_constructor: false,
                 next_func_id: self.next_func_id,
-                self_closure: Some(SelfClosureOptions {
-                    name,
-                    func_id,
-                    capture_names: &capture_names,
-                }),
+                self_closure,
             },
         )?;
         self.next_func_id = lowered.next_func_id;

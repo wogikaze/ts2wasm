@@ -189,6 +189,24 @@ mod tests {
     }
 
     #[test]
+    fn parses_anonymous_function_expression_call_with_spread() {
+        let program = parse_program("(function(a, b, c) { return a + b + c; }(...[1, 2, 3]));")
+            .unwrap();
+        let [Stmt::Expr {
+            expr: Expr::Call { callee, args, .. },
+            ..
+        }] = program.as_slice()
+        else {
+            panic!("expected function expression call statement");
+        };
+        assert!(matches!(
+            callee.as_ref(),
+            Expr::FunctionExpr { name, .. } if name.is_empty()
+        ));
+        assert!(matches!(args[0], Expr::Spread { .. }));
+    }
+
+    #[test]
     fn parses_typescript_const_assertions_as_erased_syntax() {
         let source = r#"
             let value = { x: 3 } as const;
