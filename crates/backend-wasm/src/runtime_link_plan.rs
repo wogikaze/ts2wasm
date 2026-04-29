@@ -579,7 +579,9 @@ impl RuntimeLinkPlan {
 
 #[cfg(test)]
 mod tests {
-    use ts2wasm_ir::lowered::{LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo};
+    use ts2wasm_ir::lowered::{
+        LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo,
+    };
 
     use super::{RuntimeFn, RuntimeLinkPlan};
 
@@ -713,6 +715,42 @@ mod tests {
         assert!(
             plan.required_runtime_functions()
                 .contains(&RuntimeFn::MakeBigIntLiteral)
+        );
+    }
+
+    #[test]
+    fn bigint_runtime_comparison_selects_helper_deps() {
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Expr(LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
+                }),
+                LoweredStmt::Expr(LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))),
+                    op: LoweredBinaryOp::Less,
+                    right: Box::new(LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(1))),
+                }),
+            ],
+            top_level_locals: vec![
+                ts2wasm_ir::lowered::LocalId(0),
+                ts2wasm_ir::lowered::LocalId(1),
+            ],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let plan = RuntimeLinkPlan::from_program(&program);
+
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::StrictEqual)
+        );
+        assert!(plan.required_runtime_functions().contains(&RuntimeFn::Less));
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntCompare)
         );
     }
 }

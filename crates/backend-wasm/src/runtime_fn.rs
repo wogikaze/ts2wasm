@@ -46,6 +46,7 @@ pub(crate) enum RuntimeFn {
     BigIntMul,
     BigIntDiv,
     BigIntRem,
+    BigIntCompare,
     StringEqual,
     Concat,
     IsString,
@@ -554,11 +555,19 @@ const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];
 const MUL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mul];
 const DIV_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Div];
 const MOD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mod];
+const LESS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
 const LESS_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Less];
+const LESS_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
 const LESS_EQUAL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::LessEqual];
+const GREATER_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
 const GREATER_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Greater];
+const GREATER_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
 const GREATER_EQUAL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::GreaterEqual];
-const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::StringEqual];
+const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::StringEqual,
+    RuntimeFn::BigIntCompare,
+];
 const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const BANG_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::EqualEqual];
 const STRICT_NOT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
@@ -863,6 +872,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::BigIntCompare => RuntimeSpec {
+                symbol: "$bigint_compare",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::StringEqual => RuntimeSpec {
                 symbol: "$string_equal",
                 deps: STRING_EQUAL_DEPS,
@@ -977,7 +994,7 @@ impl RuntimeFn {
             },
             Self::Less => RuntimeSpec {
                 symbol: "$less",
-                deps: NO_DEPS,
+                deps: LESS_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -993,7 +1010,7 @@ impl RuntimeFn {
             },
             Self::LessEqual => RuntimeSpec {
                 symbol: "$less_equal",
-                deps: NO_DEPS,
+                deps: LESS_EQUAL_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1009,7 +1026,7 @@ impl RuntimeFn {
             },
             Self::Greater => RuntimeSpec {
                 symbol: "$greater",
-                deps: NO_DEPS,
+                deps: GREATER_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1025,7 +1042,7 @@ impl RuntimeFn {
             },
             Self::GreaterEqual => RuntimeSpec {
                 symbol: "$greater_equal",
-                deps: NO_DEPS,
+                deps: GREATER_EQUAL_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1694,6 +1711,7 @@ impl RuntimeFn {
             Self::BigIntMul => "bigint_mul",
             Self::BigIntDiv => "bigint_div",
             Self::BigIntRem => "bigint_rem",
+            Self::BigIntCompare => "bigint_compare",
             Self::StringEqual => "string_equal",
             Self::Concat => "concat",
             Self::IsString => "is_string",
@@ -1820,6 +1838,7 @@ impl RuntimeFn {
             Self::Mod,
             Self::ModFast,
             Self::Negate,
+            Self::BigIntCompare,
             Self::Less,
             Self::LessFast,
             Self::LessEqual,
@@ -1950,6 +1969,7 @@ impl RuntimeFn {
             Self::Mod,
             Self::ModFast,
             Self::Negate,
+            Self::BigIntCompare,
             Self::Less,
             Self::LessFast,
             Self::LessEqual,

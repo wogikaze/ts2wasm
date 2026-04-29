@@ -432,6 +432,13 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $greater_equal (param $a i32) (param $b i32) (result i32)
+    (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then
+        (if (i32.ge_s (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then (unreachable)))
     (if (result i32)
       (i32.ge_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
       (then (i32.const {true_tag}))
@@ -440,6 +447,7 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
