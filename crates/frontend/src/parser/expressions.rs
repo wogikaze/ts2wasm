@@ -705,6 +705,15 @@ impl Parser {
     }
 
     fn equality(&mut self) -> Result<Expr, Diagnostic> {
+        if let Some(diagnostic) = self.bigint_fractional_left_gap(&[
+            TokenKind::StrictEqual,
+            TokenKind::EqualEqual,
+            TokenKind::BangEqual,
+            TokenKind::StrictNotEqual,
+        ]) {
+            return Err(diagnostic);
+        }
+
         let mut expr = self.relational()?;
         while self.consume(TokenKind::StrictEqual)
             || self.consume(TokenKind::EqualEqual)
@@ -722,6 +731,11 @@ impl Parser {
             } else {
                 unreachable!()
             };
+            if parser_expr_is_bigint_literal_operand(&expr) {
+                if let Some(diagnostic) = self.bigint_fractional_right_gap() {
+                    return Err(diagnostic);
+                }
+            }
             let right = self.relational()?;
             let span = Span {
                 start: expr.span().start,
@@ -764,6 +778,15 @@ impl Parser {
     }
 
     fn comparison(&mut self) -> Result<Expr, Diagnostic> {
+        if let Some(diagnostic) = self.bigint_fractional_left_gap(&[
+            TokenKind::Less,
+            TokenKind::LessEqual,
+            TokenKind::Greater,
+            TokenKind::GreaterEqual,
+        ]) {
+            return Err(diagnostic);
+        }
+
         let mut expr = self.bitwise()?;
         loop {
             let op = if self.consume(TokenKind::Less) {
@@ -778,6 +801,11 @@ impl Parser {
                 None
             };
             let Some(op) = op else { break };
+            if parser_expr_is_bigint_literal_operand(&expr) {
+                if let Some(diagnostic) = self.bigint_fractional_right_gap() {
+                    return Err(diagnostic);
+                }
+            }
             let right = self.bitwise()?;
             let span = Span {
                 start: expr.span().start,
@@ -791,6 +819,106 @@ impl Parser {
             };
         }
         Ok(expr)
+    }
+
+    fn bigint_fractional_left_gap(&self, op_kinds: &[TokenKind]) -> Option<Diagnostic> {
+        let (value, fractional_span, consumed) = self.fractional_number_literal_at(0)?;
+        let op_token = self.tokens.get(self.cursor + consumed)?;
+        if !op_kinds.iter().any(|kind| kind.matches(&op_token.kind)) {
+            return None;
+        }
+        let bigint_span = self.bigint_literal_span_at(consumed + 1)?;
+        Some(bigint_fractional_number_diagnostic(
+            &value,
+            Span {
+                start: fractional_span.start,
+                end: bigint_span.end,
+            },
+        ))
+    }
+
+    fn bigint_fractional_right_gap(&self) -> Option<Diagnostic> {
+        let (value, span, _) = self.fractional_number_literal_at(0)?;
+        Some(bigint_fractional_number_diagnostic(&value, span))
+    }
+
+    fn fractional_number_literal_at(&self, offset: usize) -> Option<(String, Span, usize)> {
+        let mut token_offset = offset;
+        let mut sign = "";
+        let mut start = None;
+        match self.tokens.get(self.cursor + token_offset) {
+            Some(SpannedToken {
+                kind: Token::Plus,
+                span,
+            }) => {
+                sign = "+";
+                start = Some(span.start);
+                token_offset += 1;
+            }
+            Some(SpannedToken {
+                kind: Token::Minus,
+                span,
+            }) => {
+                sign = "-";
+                start = Some(span.start);
+                token_offset += 1;
+            }
+            _ => {}
+        }
+
+        let Some(SpannedToken {
+            kind: Token::Number(integer),
+            span: integer_span,
+        }) = self.tokens.get(self.cursor + token_offset)
+        else {
+            return None;
+        };
+        if !matches!(
+            self.tokens.get(self.cursor + token_offset + 1),
+            Some(SpannedToken {
+                kind: Token::Dot,
+                ..
+            })
+        ) {
+            return None;
+        }
+        let Some(SpannedToken {
+            kind: Token::Number(fraction),
+            span: fraction_span,
+        }) = self.tokens.get(self.cursor + token_offset + 2)
+        else {
+            return None;
+        };
+
+        let span = Span {
+            start: start.unwrap_or(integer_span.start),
+            end: fraction_span.end,
+        };
+        Some((
+            format!("{sign}{integer}.{fraction}"),
+            span,
+            token_offset - offset + 3,
+        ))
+    }
+
+    fn bigint_literal_span_at(&self, offset: usize) -> Option<Span> {
+        let mut token_offset = offset;
+        if matches!(
+            self.tokens.get(self.cursor + token_offset),
+            Some(SpannedToken {
+                kind: Token::Plus | Token::Minus,
+                ..
+            })
+        ) {
+            token_offset += 1;
+        }
+        match self.tokens.get(self.cursor + token_offset) {
+            Some(SpannedToken {
+                kind: Token::BigIntLiteral(_),
+                span,
+            }) => Some(*span),
+            _ => None,
+        }
     }
 
     fn bitwise(&mut self) -> Result<Expr, Diagnostic> {
@@ -1738,5 +1866,54 @@ impl Parser {
                 span,
             })
         }
+    }
+}
+
+fn bigint_fractional_number_diagnostic(value: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-281: BigInt/Number comparison with fractional number `{value}` requires broader number-model support"
+        ),
+        span: Some(span),
+    }
+}
+
+fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
+    match expr {
+        Expr::BigInt { .. } => true,
+        Expr::Unary { op, expr, .. } if matches!(op, UnaryOp::Plus | UnaryOp::Negate) => {
+            parser_expr_is_bigint_literal_operand(expr)
+        }
+        Expr::FunctionExpr { .. }
+        | Expr::Number { .. }
+        | Expr::String { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::Undefined { .. }
+        | Expr::This { .. }
+        | Expr::Ident { .. }
+        | Expr::Unary { .. }
+        | Expr::Binary { .. }
+        | Expr::InstanceOf { .. }
+        | Expr::Index { .. }
+        | Expr::OptionalIndex { .. }
+        | Expr::Call { .. }
+        | Expr::OptionalCall { .. }
+        | Expr::Member { .. }
+        | Expr::OptionalMember { .. }
+        | Expr::Assign { .. }
+        | Expr::LogicalAssign { .. }
+        | Expr::LogicalPropertyAssign { .. }
+        | Expr::Array { .. }
+        | Expr::Object { .. }
+        | Expr::New { .. }
+        | Expr::Ternary { .. }
+        | Expr::ArrowFn { .. }
+        | Expr::PropertyAssign { .. }
+        | Expr::IndexAssign { .. }
+        | Expr::TypeOf { .. }
+        | Expr::Await { .. }
+        | Expr::Spread { .. } => false,
     }
 }
