@@ -278,7 +278,7 @@ impl Parser {
     }
 
     fn ternary(&mut self) -> Result<Expr, Diagnostic> {
-        let mut expr = self.logical_or()?;
+        let mut expr = self.coalesce()?;
         if self.consume(TokenKind::Question) {
             let then_expr = self.expression()?;
             self.expect(TokenKind::Colon)?;
@@ -295,6 +295,55 @@ impl Parser {
             };
         }
         Ok(expr)
+    }
+
+    fn coalesce(&mut self) -> Result<Expr, Diagnostic> {
+        let mut expr = self.logical_or()?;
+        while self.consume(TokenKind::NullishCoalesce) {
+            let op_span = self.prev_span();
+            if self.is_unparenthesized_logical_expr(&expr) {
+                return Err(self.nullish_mixing_error(op_span));
+            }
+            let right = self.logical_or()?;
+            if self.is_unparenthesized_logical_expr(&right) {
+                return Err(self.nullish_mixing_error(op_span));
+            }
+            let span = Span {
+                start: expr.span().start,
+                end: right.span().end,
+            };
+            expr = Expr::Binary {
+                left: Box::new(expr),
+                op: BinaryOp::NullishCoalesce,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(expr)
+    }
+
+    fn is_unparenthesized_logical_expr(&self, expr: &Expr) -> bool {
+        if self
+            .parenthesized_expr_spans
+            .contains(&(expr.span().start, expr.span().end))
+        {
+            return false;
+        }
+        matches!(
+            expr,
+            Expr::Binary {
+                op: BinaryOp::And | BinaryOp::Or,
+                ..
+            }
+        )
+    }
+
+    fn nullish_mixing_error(&self, span: Option<Span>) -> Diagnostic {
+        Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "unparenthesized `??` cannot be mixed directly with `&&` or `||`".to_owned(),
+            span,
+        }
     }
 
     fn logical_or(&mut self) -> Result<Expr, Diagnostic> {
@@ -1039,6 +1088,8 @@ impl Parser {
             }) => {
                 let expr = self.expression()?;
                 self.expect(TokenKind::RightParen)?;
+                self.parenthesized_expr_spans
+                    .insert((expr.span().start, expr.span().end));
                 Ok(expr)
             }
             Some(SpannedToken {
