@@ -1,5 +1,6 @@
 use ts2wasm_frontend::{
-    BinaryOp, ClassPrivateElement, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp,
+    BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic, Expr, Span, Stmt,
+    UnaryOp,
 };
 
 use super::builtin::BuiltinId;
@@ -112,15 +113,6 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
             private_elements,
             ..
         } => {
-            if let Some(static_block) = static_blocks.first() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-249: class static blocks parse, but runtime execution semantics are not implemented"
-                            .to_owned(),
-                    span: Some(static_block.span),
-                });
-            }
             if let Some(private_element) = private_elements.first() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -233,12 +225,25 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 }
             }
 
+            let static_blocks = static_blocks
+                .iter()
+                .map(|block| {
+                    validate_static_block_supported(block)?;
+                    block
+                        .body
+                        .iter()
+                        .map(resolve_stmt)
+                        .collect::<Result<Vec<_>, _>>()
+                })
+                .collect::<Result<Vec<_>, _>>()?;
+
             Ok(ResolvedStmt::ClassDecl {
                 name: name.clone(),
                 extends: extends_name,
                 constructor,
                 methods,
                 statics,
+                static_blocks,
             })
         }
         Stmt::TryCatch {
@@ -1337,5 +1342,259 @@ fn private_element_span(element: &ClassPrivateElement) -> Span {
         | ClassPrivateElement::Method { span, .. }
         | ClassPrivateElement::Getter { span, .. }
         | ClassPrivateElement::Setter { span, .. } => *span,
+    }
+}
+
+fn validate_static_block_supported(block: &ClassStaticBlock) -> Result<(), Diagnostic> {
+    for stmt in &block.body {
+        validate_static_block_stmt(stmt)?;
+    }
+    Ok(())
+}
+
+fn validate_static_block_stmt(stmt: &Stmt) -> Result<(), Diagnostic> {
+    match stmt {
+        Stmt::Return { span, .. } => Err(static_block_unsupported(
+            "return statements are not valid in class static blocks",
+            *span,
+        )),
+        Stmt::Let { expr, .. }
+        | Stmt::Assign { expr, .. }
+        | Stmt::Expr { expr, .. }
+        | Stmt::Throw { expr, .. } => validate_static_block_expr(expr),
+        Stmt::If {
+            condition,
+            then_body,
+            else_body,
+            ..
+        } => {
+            validate_static_block_expr(condition)?;
+            validate_static_block_stmts(then_body)?;
+            validate_static_block_stmts(else_body)
+        }
+        Stmt::While {
+            condition, body, ..
+        }
+        | Stmt::DoWhile {
+            condition, body, ..
+        } => {
+            validate_static_block_expr(condition)?;
+            validate_static_block_stmts(body)
+        }
+        Stmt::Function { params, body, .. } => {
+            for (_, default, _) in params {
+                if let Some(default) = default {
+                    validate_static_block_expr(default)?;
+                }
+            }
+            validate_static_block_stmts(body)
+        }
+        Stmt::ClassDecl {
+            extends,
+            body,
+            static_blocks,
+            ..
+        } => {
+            if let Some(extends) = extends {
+                validate_static_block_expr(extends)?;
+            }
+            validate_static_block_stmts(body)?;
+            for block in static_blocks {
+                validate_static_block_supported(block)?;
+            }
+            Ok(())
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            validate_static_block_stmts(try_block)?;
+            if let Some(block) = catch_block {
+                validate_static_block_stmts(block)?;
+            }
+            if let Some(block) = finally_block {
+                validate_static_block_stmts(block)?;
+            }
+            Ok(())
+        }
+        Stmt::Switch { expr, cases, .. } => {
+            validate_static_block_expr(expr)?;
+            for (case, body) in cases {
+                if let Some(case) = case {
+                    validate_static_block_expr(case)?;
+                }
+                validate_static_block_stmts(body)?;
+            }
+            Ok(())
+        }
+        Stmt::For {
+            init,
+            condition,
+            update,
+            body,
+            ..
+        } => {
+            if let Some(init) = init {
+                validate_static_block_stmt(init)?;
+            }
+            if let Some(condition) = condition {
+                validate_static_block_expr(condition)?;
+            }
+            if let Some(update) = update {
+                validate_static_block_expr(update)?;
+            }
+            validate_static_block_stmts(body)
+        }
+        Stmt::ForIn { iter, body, .. } | Stmt::ForOf { iter, body, .. } => {
+            validate_static_block_expr(iter)?;
+            validate_static_block_stmts(body)
+        }
+        Stmt::Labeled { body, .. } => validate_static_block_stmt(body),
+        Stmt::Break { .. } | Stmt::Continue { .. } => Ok(()),
+        Stmt::ImportSideEffect { span, .. }
+        | Stmt::ImportNamed { span, .. }
+        | Stmt::ImportDefault { span, .. }
+        | Stmt::ImportDefaultNamed { span, .. }
+        | Stmt::ImportNamespace { span, .. }
+        | Stmt::ImportDefaultNamespace { span, .. }
+        | Stmt::ExportNamed { span, .. }
+        | Stmt::ExportNamedFrom { span, .. }
+        | Stmt::ExportAllFrom { span, .. }
+        | Stmt::ExportNamespaceFrom { span, .. }
+        | Stmt::ExportDecl { span, .. }
+        | Stmt::ExportDefault { span, .. } => Err(static_block_unsupported(
+            "module declarations inside class static blocks are not supported",
+            *span,
+        )),
+    }
+}
+
+fn validate_static_block_stmts(stmts: &[Stmt]) -> Result<(), Diagnostic> {
+    for stmt in stmts {
+        validate_static_block_stmt(stmt)?;
+    }
+    Ok(())
+}
+
+fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> {
+    match expr {
+        Expr::This { span } => Err(static_block_unsupported(
+            "`this` in class static blocks needs constructor-object binding support",
+            *span,
+        )),
+        Expr::Ident { name, span } if name == "super" => Err(static_block_unsupported(
+            "`super` in class static blocks is not supported",
+            *span,
+        )),
+        Expr::Unary { expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Assign { expr, .. }
+        | Expr::Spread { expr, .. } => validate_static_block_expr(expr),
+        Expr::Binary {
+            left: expr_left,
+            right: expr_right,
+            ..
+        }
+        | Expr::Index {
+            object: expr_left,
+            index: expr_right,
+            ..
+        }
+        | Expr::PropertyAssign {
+            object: expr_left,
+            value: expr_right,
+            ..
+        } => {
+            validate_static_block_expr(expr_left)?;
+            validate_static_block_expr(expr_right)
+        }
+        Expr::InstanceOf {
+            expr, type_expr, ..
+        } => {
+            validate_static_block_expr(expr)?;
+            validate_static_block_expr(type_expr)
+        }
+        Expr::LogicalAssign { name: _, expr, .. } => validate_static_block_expr(expr),
+        Expr::LogicalPropertyAssign {
+            object_expr,
+            computed_key,
+            expr,
+            ..
+        } => {
+            if let Some(object) = object_expr {
+                validate_static_block_expr(object)?;
+            }
+            if let Some(key) = computed_key {
+                validate_static_block_expr(key)?;
+            }
+            validate_static_block_expr(expr)
+        }
+        Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
+            validate_static_block_expr(callee)?;
+            validate_static_block_exprs(args)
+        }
+        Expr::Member { object, .. } | Expr::OptionalMember { object, .. } => {
+            validate_static_block_expr(object)
+        }
+        Expr::OptionalIndex { object, index, .. } => {
+            validate_static_block_expr(object)?;
+            validate_static_block_expr(index)
+        }
+        Expr::IndexAssign {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            validate_static_block_expr(object)?;
+            validate_static_block_expr(index)?;
+            validate_static_block_expr(value)
+        }
+        Expr::Array { elements, .. } => validate_static_block_exprs(elements),
+        Expr::Object { props, .. } => {
+            for (_, value) in props {
+                validate_static_block_expr(value)?;
+            }
+            Ok(())
+        }
+        Expr::New { expr, args, .. } => {
+            validate_static_block_expr(expr)?;
+            validate_static_block_exprs(args)
+        }
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            validate_static_block_expr(condition)?;
+            validate_static_block_expr(then_expr)?;
+            validate_static_block_expr(else_expr)
+        }
+        Expr::ArrowFn { body, .. } => validate_static_block_expr(body),
+        Expr::Number { .. }
+        | Expr::BigInt { .. }
+        | Expr::String { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::Undefined { .. }
+        | Expr::Ident { .. } => Ok(()),
+    }
+}
+
+fn validate_static_block_exprs(exprs: &[Expr]) -> Result<(), Diagnostic> {
+    for expr in exprs {
+        validate_static_block_expr(expr)?;
+    }
+    Ok(())
+}
+
+fn static_block_unsupported(detail: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("issue-254: {detail}"),
+        span: Some(span),
     }
 }

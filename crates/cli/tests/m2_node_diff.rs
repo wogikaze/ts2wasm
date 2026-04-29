@@ -498,6 +498,21 @@ fn class_super_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn class_static_block_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/class-static-block.ts");
+}
+
+#[test]
+fn class_static_block_unsupported_forms_report_issue_254() {
+    for fixture in [
+        "fixtures/core-semantics/class-static-block-this-unsupported.ts",
+        "fixtures/core-semantics/class-static-block-super-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, "issue-254:");
+    }
+}
+
+#[test]
 fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/this-receiver-method.ts",
