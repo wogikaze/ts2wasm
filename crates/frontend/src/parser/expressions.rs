@@ -1046,6 +1046,7 @@ impl Parser {
             self.unary()
         } else if let Some(new_span) = self.consume_span(TokenKind::New) {
             let expr = self.call_member_no_call()?;
+            self.try_consume_typescript_new_type_arguments(&expr)?;
             let mut args = Vec::new();
             if self.consume(TokenKind::LeftParen) && !self.consume(TokenKind::RightParen) {
                 loop {
@@ -1325,6 +1326,34 @@ impl Parser {
 
     fn is_typescript_generic_call_callee(&self, callee: &Expr) -> bool {
         matches!(callee, Expr::Ident { name, .. } if self.typescript_generic_functions.contains(name))
+    }
+
+    fn try_consume_typescript_new_type_arguments(
+        &mut self,
+        callee: &Expr,
+    ) -> Result<(), Diagnostic> {
+        let start = self.cursor;
+        let Some(less_span) = self.consume_span(TokenKind::Less) else {
+            return Ok(());
+        };
+        let callee_end = callee.span().end;
+        if less_span.start != callee_end {
+            self.cursor = start;
+            return Ok(());
+        }
+
+        let greater_span =
+            self.skip_typescript_angle_list_after_less(less_span, "new expression type argument list")?;
+        if matches!(self.peek(), Some(Token::LeftParen))
+            && self
+                .peek_span()
+                .is_some_and(|left_paren| left_paren.start == greater_span.end)
+        {
+            Ok(())
+        } else {
+            self.cursor = start;
+            Ok(())
+        }
     }
 
     fn consume_typescript_expression_type_erasure_keyword(
