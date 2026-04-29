@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 72 | 16 | 56 |
+| runtime | 72 | 15 | 57 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 303 | 146 | 157 |
+| total | 303 | 145 | 158 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -49,7 +49,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 267 | Implement interactive web UI for test results | feature | coverage | implementation-ready | P1 |  | No interactive web UI for test results, coverage visualization, and historical comparison. |
 | 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
 | 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
-| 273 | Implement recursive function calls | feature | runtime/semantics | implementation-ready | P2 |  | Implement recursive function calls |
 | 274 | Implement spread operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement spread operator |
 | 276 | Implement Set constructor from supported iterables | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 validates only the zero-argument Set constructor; the broad issue 272 cited `reference/test262/test/built-i... |
 | 277 | Implement Set SameValueZero identity | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 explicitly closed basic Set operations while recording that Map/Set keys are currently normalized through `... |
@@ -358,6 +357,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 268 | Implement for loop increment operator | feature | frontend/semantics | see file |
 | 269 | Implement Math.pow | feature | runtime/builtins | see file |
 | 272 | Implement Set | feature | runtime/builtins | see `issues/done/272-implement-set.md` |
+| 273 | Implement recursive function calls | feature | runtime/semantics | see file |
 | 275 | Implement Set size and clear | feature | runtime/builtins | see `issues/done/275-implement-set-size-clear.md` |
 <!-- generated:done:end -->
 
