@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 203 | 128 | 75 |
+| frontend | 203 | 127 | 76 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 337 | 144 | 193 |
+| total | 337 | 143 | 194 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 280 | Implement dynamic BigInt builtin inputs | feature | runtime/builtins | implementation-ready | P2 | 259, 262 | `BigInt(...)`, `BigInt.asIntN(...)`, and `BigInt.asUintN(...)` currently work for documented static inputs, but dynam... |
 | 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 folds representable tagged-int number literals such as `1n == 1`, but the current number model does not yet... |
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
-| 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | implementation-ready | P1 |  | the depth-9 search-only reducer reaches 1,000,000 allocation calls |
 <!-- generated:ready:end -->
 
@@ -380,6 +379,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | see `issues/done/289-resolve-callcount-binding-in-class-destructuring.md` |
 | 290 | Fix ASI EOF semicolon parser bucket | bug | frontend | see `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` |
 | 291 | Provide Object global binding for test262 cases | feature | runtime/semantics | see `issues/done/291-provide-object-global-binding-for-test262.md` |
+| 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | see `issues/done/292-resolve-initcount-binding-in-class-destructuring.md` |
 | 293 | Parse Unicode escaped identifier parts | feature | frontend | see `issues/done/293-parse-unicode-escaped-identifier-parts.md` |
 | 295 | Support Array.map arrow callbacks and chained receivers | feature | runtime/builtins | see `issues/done/295-support-array-map-arrow-and-chained-receivers.md` |
 | 296 | Support small-int exponentiation operator | feature | runtime/semantics | see `issues/done/296-support-small-int-exponentiation-operator.md` |
