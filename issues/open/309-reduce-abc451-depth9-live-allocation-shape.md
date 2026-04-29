@@ -3,12 +3,12 @@ id: 309
 title: "Reduce ABC451 depth-9 live allocation shape"
 type: feature
 area: runtime/memory
-class: blocked
+class: implementation-ready
 priority: P1
-depends_on: [310]
+depends_on: []
 blocks: [308, 300]
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -18,9 +18,10 @@ cadence and free-list policy work: reduce the live allocation shape or
 allocation size that still reaches the committed 185-page cap.
 
 Problem: The depth-9 search-only reducer now fails at the explicit
-remaining-page guard with `size=6140`, `block_size=6160`, `new_heap=12126520`,
-`memory_pages=185`, `needed_pages=1`, `remaining_pages=0`, and
-`gc_free_list_max_body_size=3584`.
+remaining-page guard with `size=24572`, `block_size=24592`,
+`new_heap=12139256`, `memory_pages=185`, `needed_pages=1`,
+`remaining_pages=0`, and `gc_free_list_max_body_size=12392` after issue 310's
+backend-temp root narrowing.
 
 ## Current failure
 
@@ -217,6 +218,22 @@ gc_free_list_max_body_size=3584
   liveness narrowing safe for the depth-8 fixture before retrying this
   depth-9 allocation-shape reduction.
 - Issue 300 remains open. No official ABC451 sample compatibility is claimed.
+
+2026-04-30 issue 310 safe root-liveness slice:
+
+- Direct block-scoped user-local root clearing remains unsafe for depth-8. A
+  reproduction that cleared direct `let` locals after each `for` body trapped
+  `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` at the
+  explicit remaining-page guard with `size=6140`, `block_size=6160`,
+  `new_heap=12129576`, `memory_pages=185`, `needed_pages=1`,
+  `remaining_pages=0`, and `gc_free_list_max_body_size=2088`.
+- The committed safe narrowing clears backend-owned temporary root slots at
+  statement boundaries but leaves user locals rooted until reassignment or
+  frame pop. Required depth-8/OOM validations pass.
+- The depth-9 reducer still traps under the committed cap, now at `size=24572`,
+  `block_size=24592`, `new_heap=12139256`, `memory_pages=185`,
+  `needed_pages=1`, `remaining_pages=0`, and
+  `gc_free_list_max_body_size=12392`.
 
 ## Completion evidence
 

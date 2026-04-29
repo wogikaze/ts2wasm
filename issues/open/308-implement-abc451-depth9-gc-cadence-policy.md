@@ -5,10 +5,10 @@ type: feature
 area: runtime/memory
 class: blocked
 priority: P1
-depends_on: [309, 310]
+depends_on: [309]
 blocks: [300]
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-30
 ---
 
 ## Summary
