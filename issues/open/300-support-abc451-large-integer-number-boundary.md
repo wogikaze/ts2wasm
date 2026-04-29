@@ -5,7 +5,7 @@ type: feature
 area: runtime
 class: blocked
 priority: P1
-depends_on: [308, 309]
+depends_on: [308, 309, 310]
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
@@ -222,6 +222,29 @@ allocator (`wasm function 26`, `$alloc_heap`) called from recursive search
 (`wasm function 49`). A temporary experiment with a larger memory maximum still
 ended in `$alloc_heap`, so the remaining blocker is narrower than the original
 out-of-bounds write but not yet safe to close.
+
+2026-04-29 child `309-depth9-live-allocation-20260429T2312Z`:
+
+- Issue 309 tested stale function activation-frame root clearing for direct
+  block-scoped `let` locals in `for` bodies. The broad variant advanced the
+  depth-9 search-only reducer beyond the previous issue-309 remaining-page
+  guard shape, but was not committed because it regressed the required depth-8
+  fixture with `Exception: unreachable`.
+- Experimental depth-9 guard evidence from that rejected variant is:
+
+```text
+size=3068
+block_size=3088
+new_heap=12126704
+memory_pages=185
+needed_pages=1
+remaining_pages=0
+gc_free_list_max_body_size=1592
+```
+
+- Official ABC451 sample inputs `10`, `69`, and `1099898` were not claimed as
+  compatible in this slice. Issue 300 remains open and blocked on issues 309
+  and 310.
 
 2026-04-29 child `019dda13-74bf-7ec2-9146-e75ae64c098c` follow-up:
 
