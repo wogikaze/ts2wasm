@@ -275,6 +275,7 @@ This issue is intentionally blocked because the fixture crosses several existing
 - Current first failure is now:
   `error: [UnsupportedSyntax] issue-211: unknown receiver class for method
   sort at 1200..1232`, on `allGoodInt.sort((a, b) => a - b)`.
+- Split issue 299 for the dense numeric `Array.sort((a, b) => a - b)` slice.
 
 ## Completion evidence
 
