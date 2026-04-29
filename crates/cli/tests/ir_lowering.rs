@@ -721,6 +721,40 @@ fn lowering_represents_direct_private_getter_access_as_same_class_user_call() {
 }
 
 #[test]
+fn lowering_represents_direct_private_setter_assignment_as_same_class_user_call() {
+    use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class C {
+          #value = 0;
+          set #x(next) { this.#value = next; }
+          write(next) { this.#x = next; }
+        }
+
+        let c = new C();
+        console.log(c.write(2));
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let write_method = &lowered.functions[1];
+    match &write_method.body[0] {
+        LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(2)),
+            args,
+        }) => assert!(matches!(
+            args.as_slice(),
+            [
+                LoweredExpr::Local(LocalId(0)),
+                LoweredExpr::Local(LocalId(1))
+            ]
+        )),
+        other => panic!("unexpected private setter assignment lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn builtin_console_log_contract_is_effect_only() {
     use ts2wasm_ir::builtin::{BuiltinId, BuiltinResult};
     assert_eq!(BuiltinId::ConsoleLog.expected_arity(), 1);

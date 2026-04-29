@@ -212,6 +212,7 @@ pub enum ResolvedExpr {
         object: Box<ResolvedExpr>,
         key: String,
         value: Box<ResolvedExpr>,
+        span: Span,
     },
     Spread(Box<ResolvedExpr>),
     PropertyAssignDynamic {
