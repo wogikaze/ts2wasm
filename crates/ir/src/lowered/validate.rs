@@ -263,6 +263,7 @@ fn validate_expr(
                 });
             }
         }
+        LoweredExpr::BigIntLiteral { .. } => {}
         LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
         LoweredExpr::Unary { expr, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);

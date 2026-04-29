@@ -155,6 +155,24 @@ impl WatEmitter<'_> {
     (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
       (then
         (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then
+            (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {bigint_decimal_len_offset}))))
+            (call $copy
+              (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset}))
+              (local.get $ptr)
+              (local.get $len))
+            (i32.store8
+              (i32.add (local.get $ptr) (local.get $len))
+              (i32.const {ascii_n}))
+            (return (i32.add (local.get $len) (i32.const {one})))))
         (if (i32.eq (i32.load (local.get $obj)) (i32.const {heap_number_sentinel}))
           (then
             (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len_offset}))))
@@ -207,6 +225,12 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
             number_shift = ValueTag::NUMBER_SHIFT,
             heap_number_sentinel = -1,
             heap_number_len_offset = 8,
@@ -216,6 +240,7 @@ impl WatEmitter<'_> {
             false_len = RuntimeString::FALSE.len() as i32,
             true_len = RuntimeString::TRUE.len() as i32,
             ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_n = b'n',
             ascii_minus = RuntimeConst::ASCII_MINUS,
             ten = RuntimeConst::TEN,
             one = RuntimeConst::ONE,
@@ -267,6 +292,22 @@ impl WatEmitter<'_> {
       (then
       (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
       (return (i32.ne (i32.load (local.get $obj)) (i32.const {zero})))))
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then
+            (return
+              (i32.ne
+                (i32.load (i32.add (local.get $obj) (i32.const {bigint_sign_offset})))
+                (i32.const {zero})))))))
     (i32.ne (i32.shr_s (local.get $v) (i32.const {number_shift})) (i32.const {zero})))
   "#,
             zero = RuntimeConst::ZERO,
@@ -276,8 +317,14 @@ impl WatEmitter<'_> {
             false_tag = ValueTag::FALSE,
             true_tag = ValueTag::TRUE,
             string_tag = ValueTag::STRING,
+            object_tag = ValueTag::OBJECT,
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
             number_shift = ValueTag::NUMBER_SHIFT,
         ));
     }
@@ -318,6 +365,7 @@ impl WatEmitter<'_> {
         let str_boolean = self.intern_string("boolean");
         let str_number = self.intern_string("number");
         let str_string = self.intern_string("string");
+        let str_bigint = self.intern_string("bigint");
 
         wat.push_str(&format!(
             r#"
@@ -338,6 +386,17 @@ impl WatEmitter<'_> {
       (then (return (i32.or (i32.const {str_string}) (i32.const {string_tag})))))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
       (then
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub
+                      (i32.and (local.get $v) (i32.const {heap_mask}))
+                      (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then (return (i32.or (i32.const {str_bigint}) (i32.const {string_tag})))))
         (if (i32.eq (i32.load (i32.and (local.get $v) (i32.const {heap_mask}))) (i32.const {heap_number_sentinel}))
           (then (return (i32.or (i32.const {str_number}) (i32.const {string_tag})))))))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
@@ -356,12 +415,110 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT_TAG,
             array_tag = ValueTag::ARRAY_TAG,
             heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
             heap_number_sentinel = -1,
             str_undefined = str_undefined + Layout::STRING_HEADER_SIZE,
             str_object = str_object + Layout::STRING_HEADER_SIZE,
             str_boolean = str_boolean + Layout::STRING_HEADER_SIZE,
             str_number = str_number + Layout::STRING_HEADER_SIZE,
             str_string = str_string + Layout::STRING_HEADER_SIZE,
+            str_bigint = str_bigint + Layout::STRING_HEADER_SIZE,
+        ));
+    }
+
+    pub(super) fn emit_make_bigint_literal(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $make_bigint_literal
+    (param $sign i32)
+    (param $limb_count i32)
+    (param $limb_low i32)
+    (param $limb_high i32)
+    (param $decimal_src i32)
+    (param $decimal_len i32)
+    (result i32)
+    (local $obj i32)
+    (local.set $obj
+      (call $alloc_heap
+        (i32.add (i32.const {bigint_decimal_data_offset}) (local.get $decimal_len))))
+    (i32.store
+      (i32.add
+        (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+        (i32.const {gc_flags_offset}))
+      (i32.const {gc_kind_bigint}))
+    (i32.store (i32.add (local.get $obj) (i32.const {bigint_sign_offset})) (local.get $sign))
+    (i32.store (i32.add (local.get $obj) (i32.const {bigint_limb_count_offset})) (local.get $limb_count))
+    (i32.store (i32.add (local.get $obj) (i32.const {bigint_limb0_low_offset})) (local.get $limb_low))
+    (i32.store (i32.add (local.get $obj) (i32.const {bigint_limb0_high_offset})) (local.get $limb_high))
+    (i32.store (i32.add (local.get $obj) (i32.const {bigint_decimal_len_offset})) (local.get $decimal_len))
+    (call $copy
+      (local.get $decimal_src)
+      (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset}))
+      (local.get $decimal_len))
+    (i32.or (local.get $obj) (i32.const {object_tag})))
+"#,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            bigint_limb_count_offset = Layout::BIGINT_LIMB_COUNT_OFFSET,
+            bigint_limb0_low_offset = Layout::BIGINT_LIMB0_LOW_OFFSET,
+            bigint_limb0_high_offset = Layout::BIGINT_LIMB0_HIGH_OFFSET,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
+            object_tag = ValueTag::OBJECT,
+        ));
+    }
+
+    pub(super) fn emit_bigint_to_string(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_to_string (param $v i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $ptr i32)
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {bigint_decimal_len_offset}))))
+    (local.set $ptr
+      (call $alloc_heap
+        (i32.add (i32.const {string_header_size}) (local.get $len))))
+    (i32.store (local.get $ptr) (local.get $len))
+    (call $copy
+      (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset}))
+      (i32.add (local.get $ptr) (i32.const {string_header_size}))
+      (local.get $len))
+    (i32.or (local.get $ptr) (i32.const {string_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+        ));
+    }
+
+    pub(super) fn emit_bigint_to_boolean(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_to_boolean (param $v i32) (result i32)
+    (if
+      (i32.ne
+        (i32.load
+          (i32.add
+            (i32.and (local.get $v) (i32.const {heap_mask}))
+            (i32.const {bigint_sign_offset})))
+        (i32.const {zero}))
+      (then (return (i32.const {true_tag}))))
+    (i32.const {false_tag}))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            zero = RuntimeConst::ZERO,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
         ));
     }
 
@@ -1297,7 +1454,17 @@ impl WatEmitter<'_> {
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
       (then (call $gc_mark_array_payload (local.get $payload))))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
-      (then (call $gc_mark_object_payload (local.get $payload)))))
+      (then
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $payload) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then (return)))
+        (call $gc_mark_object_payload (local.get $payload)))))
 
   (func $gc_mark_array_payload (param $payload i32)
     (local $len i32)
@@ -1419,6 +1586,8 @@ impl WatEmitter<'_> {
             gc_reserved_offset = Layout::GC_RESERVED_OFFSET,
             gc_call_frame_header_size = Layout::GC_CALL_FRAME_HEADER_SIZE,
             gc_kind_unknown = Layout::GC_KIND_UNKNOWN,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
             gc_mark_flag = Layout::GC_MARK_FLAG,
             gc_mark_clear_mask = !(Layout::GC_MARK_FLAG as i32),
             page_size = Layout::WASM_PAGE_SIZE,

@@ -160,6 +160,12 @@ pub enum FunctionCallKind {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoweredExpr {
     Number(i32),
+    BigIntLiteral {
+        decimal: String,
+        sign: i32,
+        limb_low: u32,
+        limb_high: u32,
+    },
     String(String),
     Bool(bool),
     Null,
@@ -337,6 +343,7 @@ impl LoweredExpr {
     pub fn inferred_type(&self) -> InferredType {
         match self {
             Self::Number(_) => InferredType::Number,
+            Self::BigIntLiteral { .. } => InferredType::Unknown,
             Self::String(_) => InferredType::String,
             Self::Bool(_) => InferredType::Boolean,
             Self::Unary { op, expr } => match op {

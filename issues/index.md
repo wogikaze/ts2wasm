@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 62 | 14 | 48 |
+| runtime | 62 | 13 | 49 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 289 | 148 | 141 |
+| total | 289 | 147 | 142 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 249 parses `static { ... }` as `ClassStaticBlock`, but builtin resolution currently rejects static blocks with ... |
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters, but builtin resolution rejects ... |
 | 256 | Lower returned immutable closures to heap closure values | feature | ir | implementation-ready | P1 |  | Returned nested closures are currently rejected with `issue-062e` |
-| 259 | Implement BigInt literal runtime values | feature | runtime/semantics | implementation-ready | P2 |  | BigInt literals parse as explicit AST nodes, but build/runtime phases still report unsupported diagnostics instead of... |
+| 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
+| 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | implementation-ready | P2 | 259 | BigInt cannot share the current primitive equality/comparison helpers because Number/BigInt and String/BigInt coercio... |
+| 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | implementation-ready | P2 | 259 | After BigInt values exist, builtin and conversion behavior still needs explicit runtime helpers and diagnostics so `B... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -192,9 +194,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
 | 257 | Emit heap closure allocation and dispatch | feature | backend | 256 | Emit heap closure allocation and dispatch |
 | 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | 257 | Mark heap closure captures and add allocation-pressure fixture |
-| 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | 259 | Implement BigInt arithmetic operators |
-| 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | 259 | Implement BigInt equality comparison and coercion boundaries |
-| 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | 259 | Implement BigInt builtins and string conversion |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -344,6 +343,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 249 | Implement class static block parser support | feature | frontend/syntax | see `issues/done/249-implement-class-static-block-parser.md` |
 | 250 | Design BigInt runtime value support | feature | runtime/semantics | see `issues/done/250-design-bigint-runtime-value-support.md` |
 | 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | see `issues/done/252-implement-destructuring-assignment-pattern-parser.md` |
+| 259 | Implement BigInt literal runtime values | feature | runtime/semantics | see `issues/done/259-implement-bigint-literal-runtime-values.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

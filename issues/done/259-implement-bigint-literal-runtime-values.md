@@ -3,7 +3,7 @@ id: 259
 title: "Implement BigInt literal runtime values"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
@@ -35,10 +35,10 @@ Supported BigInt literals lower to canonical heap BigInt objects through the run
 
 In scope:
 
-- [ ] Add a BigInt heap object kind and canonical sign/limb payload.
-- [ ] Add `make_bigint_literal` and minimal `bigint_to_boolean` / `bigint_to_string` runtime helpers needed to observe literals.
-- [ ] Lower decimal, binary, octal, and hexadecimal BigInt AST literals to the runtime constructor.
-- [ ] Update BigInt literal unsupported diagnostics to point at this issue only for runtime-value gaps that remain.
+- [x] Add a BigInt heap object kind and canonical sign/limb payload.
+- [x] Add `make_bigint_literal` and minimal `bigint_to_boolean` / `bigint_to_string` runtime helpers needed to observe literals.
+- [x] Lower decimal, binary, octal, and hexadecimal BigInt AST literals to the runtime constructor.
+- [x] Update BigInt literal unsupported diagnostics to point at this issue only for runtime-value gaps that remain.
 
 Out of scope:
 
@@ -66,10 +66,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] BigInt literals build and execute for decimal, binary, octal, and hexadecimal forms without parser/tokenization regressions.
-- [ ] Node/iwasm differential fixtures cover literal printing, `typeof`, `String`, and truthiness for `0n` and non-zero BigInt.
-- [ ] Runtime ABI docs and current-state describe the implemented literal slice and remaining BigInt gaps.
-- [ ] Unsupported diagnostics that remain are issue-linked to the relevant BigInt child issue.
+- [x] BigInt literals build and execute for decimal, binary, octal, and hexadecimal forms without parser/tokenization regressions.
+- [x] Node/iwasm differential fixtures cover literal printing, `typeof`, `String`, and truthiness for `0n` and non-zero BigInt.
+- [x] Runtime ABI docs and current-state describe the implemented literal slice and remaining BigInt gaps.
+- [x] Unsupported diagnostics that remain are issue-linked to the relevant BigInt child issue.
 
 ## Validation
 
@@ -95,16 +95,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md`
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -116,16 +116,24 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `2f747de`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check
+PASS
+mise run update-issue-index -- --check
+PASS
+mise run check issues
+PASS
+cargo nextest run -E 'test(bigint) or test(node_diff)'
+PASS (10 tests)
+cargo nextest run
+PASS (463 tests; 4 skipped)
+2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- BigInt arithmetic, equality/comparison/coercion, and broader builtins remain unsupported and tracked by issues 260-262.
