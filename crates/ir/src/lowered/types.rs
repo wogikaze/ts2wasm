@@ -13,6 +13,7 @@ pub struct FuncId(pub usize);
 
 type ClassConstructorMap = HashMap<String, FuncId>;
 type ClassMethodMap = HashMap<(String, String), FuncId>;
+type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ClassPrototypeRef {
@@ -301,6 +302,7 @@ pub enum LoweredExpr {
         prototype: ClassPrototypeRef,
         args: Vec<LoweredExpr>,
         base_local: LocalId,
+        private_slot_count: usize,
     },
     ClassPrototype(ClassPrototypeRef),
     BuiltinErrorPrototype(BuiltinErrorConstructor),
