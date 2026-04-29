@@ -235,7 +235,7 @@ fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<Str
     parents
 }
 
-fn collect_class_private_fields(program: &[ResolvedStmt]) -> HashMap<String, HashSet<String>> {
+fn collect_class_private_fields(program: &[ResolvedStmt]) -> ClassPrivateFieldSlots {
     let mut fields = HashMap::new();
     for stmt in program {
         if let ResolvedStmt::ClassDecl {
@@ -244,7 +244,14 @@ fn collect_class_private_fields(program: &[ResolvedStmt]) -> HashMap<String, Has
             ..
         } = stmt
         {
-            fields.insert(name.clone(), private_fields.iter().cloned().collect());
+            fields.insert(
+                name.clone(),
+                private_fields
+                    .iter()
+                    .enumerate()
+                    .map(|(slot, field)| (field.clone(), slot))
+                    .collect(),
+            );
         }
     }
     fields
@@ -735,7 +742,7 @@ fn lower_function(
     function_ids: &HashMap<String, FuncId>,
     function_signatures: &HashMap<FuncId, FunctionSignature>,
     class_parents: HashMap<String, Option<String>>,
-    class_private_fields: HashMap<String, HashSet<String>>,
+    class_private_fields: ClassPrivateFieldSlots,
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
     let signature = function_signatures.get(&id).copied().unwrap_or_default();

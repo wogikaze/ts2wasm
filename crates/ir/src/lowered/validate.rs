@@ -388,6 +388,27 @@ fn validate_expr(
                     span: None,
                 });
             }
+            if runtime_fn == "PrivateFieldGet"
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(slot)] if *slot >= 0)
+            {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "PrivateFieldGet must include an object and non-negative private slot"
+                        .to_owned(),
+                    span: None,
+                });
+            }
+            if runtime_fn == "PrivateFieldSet"
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(slot), _] if *slot >= 0)
+            {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message:
+                        "PrivateFieldSet must include an object, non-negative private slot, and value"
+                            .to_owned(),
+                    span: None,
+                });
+            }
         }
         LoweredExpr::ArrayNew { elements } => {
             for elem in elements {
@@ -434,6 +455,7 @@ fn validate_expr(
             prototype,
             args,
             base_local,
+            private_slot_count: _,
         } => {
             check_func_id(*constructor, num_funcs, errors);
             check_func_id(prototype.constructor, num_funcs, errors);

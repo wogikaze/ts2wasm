@@ -21,6 +21,8 @@ const CLOSURE_ENV_FLAGS_OFFSET: u32 = 12;
 const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
 const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
+const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
+const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
 
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
@@ -592,6 +594,14 @@ impl WatEmitter<'_> {
                     self.emit_heap_closure_dispatch(wat, args, indent, frame);
                     return;
                 }
+                if runtime_fn == "PrivateFieldGet" {
+                    self.emit_private_field_get(wat, args, indent, frame);
+                    return;
+                }
+                if runtime_fn == "PrivateFieldSet" {
+                    self.emit_private_field_set(wat, args, indent, frame);
+                    return;
+                }
                 for arg in args {
                     self.emit_expr(wat, arg, indent, frame);
                 }
@@ -648,9 +658,12 @@ impl WatEmitter<'_> {
                 prototype,
                 args,
                 base_local,
+                private_slot_count,
             } => {
                 // Pre-allocate an object with room for constructor property writes.
-                let object_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE);
+                let object_size = Layout::OBJECT_HEADER_SIZE
+                    + (CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * Layout::OBJECT_ENTRY_SIZE)
+                    + ((*private_slot_count as u32) * PRIVATE_FIELD_SLOT_SIZE);
                 wat.push_str(&format!(
                     "{pad}(local.set {} (call {} (i32.const {})))\n",
                     local_index(*base_local),
@@ -667,6 +680,15 @@ impl WatEmitter<'_> {
                     Layout::OBJECT_PROTOTYPE_OFFSET,
                     class_prototype_global(prototype.constructor),
                 ));
+                if *private_slot_count > 0 {
+                    wat.push_str(&format!(
+                        "{pad}(i32.store (i32.add (i32.sub (local.get {}) (i32.const {})) (i32.const {})) (i32.const {}))\n",
+                        local_index(*base_local),
+                        Layout::GC_HEADER_SIZE,
+                        Layout::GC_RESERVED_OFFSET,
+                        private_slot_count,
+                    ));
+                }
 
                 // Call constructor with implicit `this` first argument.
                 if let Some(func) = self.program.functions.get(constructor.0) {
@@ -901,6 +923,78 @@ impl WatEmitter<'_> {
 
         wat.push_str(&format!("{pad}  (unreachable)\n"));
         wat.push_str(&format!("{pad})\n"));
+    }
+
+    fn emit_private_field_get(
+        &self,
+        wat: &mut String,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let [object, LoweredExpr::Number(slot)] = args else {
+            wat.push_str(&format!("{pad}(unreachable)\n"));
+            return;
+        };
+        let object_value = frame.heap_base_tmp();
+        let slot_offset = private_field_slot_offset(*slot as u32);
+
+        self.emit_expr(wat, object, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {object_value})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, object_value, frame);
+        wat.push_str(&format!("{pad}(if (result i32)\n"));
+        wat.push_str(&format!(
+            "{pad}  (i32.eq (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
+            ValueTag::TAG_MASK,
+            ValueTag::OBJECT_TAG,
+        ));
+        wat.push_str(&format!("{pad}  (then\n"));
+        wat.push_str(&format!(
+            "{pad}    (i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n",
+            ValueTag::HEAP_MASK,
+        ));
+        wat.push_str(&format!("{pad}  )\n"));
+        wat.push_str(&format!(
+            "{pad}  (else\n{pad}    (i32.const {})\n{pad}  ))\n",
+            ValueTag::UNDEFINED,
+        ));
+    }
+
+    fn emit_private_field_set(
+        &self,
+        wat: &mut String,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let [object, LoweredExpr::Number(slot), value] = args else {
+            wat.push_str(&format!("{pad}(unreachable)\n"));
+            return;
+        };
+        let object_value = frame.heap_base_tmp();
+        let stored_value = frame.heap_value_tmp();
+        let slot_offset = private_field_slot_offset(*slot as u32);
+
+        self.emit_expr(wat, object, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {object_value})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, object_value, frame);
+        self.emit_expr(wat, value, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {stored_value})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, stored_value, frame);
+        wat.push_str(&format!(
+            "{pad}(if (i32.eq (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
+            ValueTag::TAG_MASK,
+            ValueTag::OBJECT_TAG,
+        ));
+        wat.push_str(&format!("{pad}  (then\n"));
+        wat.push_str(&format!(
+            "{pad}    (i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n",
+            ValueTag::HEAP_MASK,
+        ));
+        wat.push_str(&format!("{pad}  ))\n"));
+        wat.push_str(&format!("{pad}(local.get {stored_value})\n"));
     }
 
     fn emit_array_literal(
@@ -1555,6 +1649,12 @@ fn local_index(id: LocalId) -> usize {
     id.0
 }
 
+fn private_field_slot_offset(slot: u32) -> u32 {
+    Layout::OBJECT_HEADER_SIZE
+        + (CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * Layout::OBJECT_ENTRY_SIZE)
+        + (slot * PRIVATE_FIELD_SLOT_SIZE)
+}
+
 fn expr_may_collect(expr: &LoweredExpr) -> bool {
     match expr {
         LoweredExpr::Call { .. }
@@ -1667,6 +1767,11 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         }
         LoweredExpr::Call { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
         LoweredExpr::RuntimeCall { runtime_fn, .. } if runtime_fn == "HeapClosureCall" => true,
+        LoweredExpr::RuntimeCall { runtime_fn, .. }
+            if runtime_fn == "PrivateFieldGet" || runtime_fn == "PrivateFieldSet" =>
+        {
+            true
+        }
         LoweredExpr::RuntimeCall { args, .. } => args.iter().any(expr_uses_caller_backend_tmp),
         LoweredExpr::Number(_)
         | LoweredExpr::String(_)
