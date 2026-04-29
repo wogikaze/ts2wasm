@@ -1793,6 +1793,18 @@ impl<'a> Lexer<'a> {
 
         while let Some(ch) = self.advance_char() {
             if escaped {
+                if ch == '\n' {
+                    escaped = false;
+                    continue;
+                }
+                if ch == '\r' {
+                    if self.char_at(self.cursor) == Some('\n') {
+                        self.advance_char();
+                    }
+                    escaped = false;
+                    continue;
+                }
+
                 value.push(match ch {
                     '"' => '"',
                     '\'' => '\'',

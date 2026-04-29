@@ -133,6 +133,18 @@ This is split from issue 225 because the parent covers multiple direct-eval
 families and existing-binding/early-error variants. Keep this slice limited to
 the first block-function declaration behavior.
 
+2026-04-30 child progress:
+
+- Added a narrow static direct eval parser slice for source that is exactly one
+  block containing one function declaration, plus Node/iwasm differential
+  fixture coverage in `fixtures/core-semantics/direct-eval-block-function.ts`.
+- Kept broader eval source open: the two selected upstream test262 files still
+  do not complete in this worktree. With upstream raw files fetched to `/tmp`,
+  they now reach `[UnresolvedName] unresolved name: eval` after the lexer/parser
+  unblockers, rather than the earlier string-continuation parser failure.
+- Required `reference-coverage` commands were blocked locally because
+  `reference/test262` is missing in the assigned worktree.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

@@ -11,12 +11,17 @@ impl Parser {
             strict_mode,
             typescript_generic_functions: HashSet::new(),
             parenthesized_expr_spans: HashSet::new(),
+            pending_statements: Vec::new(),
         }
     }
 
     pub fn parse_program(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
         let mut statements = Vec::new();
         while !self.is_at_end() {
+            if let Some(stmt) = self.take_pending_statement() {
+                statements.push(stmt);
+                continue;
+            }
             if self.consume(TokenKind::Semicolon) {
                 continue;
             }
@@ -26,6 +31,14 @@ impl Parser {
             statements.push(self.statement()?);
         }
         Ok(statements)
+    }
+
+    fn take_pending_statement(&mut self) -> Option<Stmt> {
+        if self.pending_statements.is_empty() {
+            None
+        } else {
+            Some(self.pending_statements.remove(0))
+        }
     }
 
     fn consume_erasable_typescript_declaration(&mut self) -> Result<bool, Diagnostic> {
@@ -663,6 +676,9 @@ impl Parser {
         {
             return Err(self.invalid_optional_chain_target(expr.span()));
         }
+        if let Some(function) = self.direct_eval_static_block_function(&expr)? {
+            return Ok(function);
+        }
         let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Expr {
             span: Span {
@@ -671,6 +687,58 @@ impl Parser {
             },
             expr,
         })
+    }
+
+    fn direct_eval_static_block_function(&self, expr: &Expr) -> Result<Option<Stmt>, Diagnostic> {
+        let Expr::Call { callee, args, span } = expr else {
+            return Ok(None);
+        };
+        if !matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "eval") {
+            return Ok(None);
+        }
+        let [Expr::String { value: source, .. }] = args.as_slice() else {
+            return Ok(None);
+        };
+        let Some(inner_source) = Self::single_block_source(source) else {
+            return Ok(None);
+        };
+
+        let tokens = crate::Lexer::new_with_strict_mode(inner_source, self.strict_mode)
+            .tokenize()
+            .map_err(|mut diagnostic| {
+                diagnostic.span = Some(*span);
+                diagnostic
+            })?;
+        let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode);
+        let mut statements = parser.parse_program().map_err(|mut diagnostic| {
+            diagnostic.span = Some(*span);
+            diagnostic
+        })?;
+        if statements.len() != 1 {
+            return Ok(None);
+        }
+
+        match statements.pop().unwrap() {
+            Stmt::Function {
+                name, params, body, ..
+            } => Ok(Some(Stmt::Function {
+                name,
+                params,
+                body,
+                span: *span,
+            })),
+            _ => Ok(None),
+        }
+    }
+
+    fn single_block_source(source: &str) -> Option<&str> {
+        let trimmed = source.trim();
+        let inner = trimmed.strip_prefix('{')?.strip_suffix('}')?.trim();
+        if inner.starts_with("function ") {
+            Some(inner)
+        } else {
+            None
+        }
     }
 
     fn statement_terminator_end(&mut self, fallback_end: usize) -> Result<usize, Diagnostic> {
@@ -739,6 +807,44 @@ impl Parser {
         } else {
             Expr::Undefined { span: binding.span }
         };
+        while self.consume(TokenKind::Comma) {
+            let extra_binding = self.parse_binding_pattern()?;
+            if self.consume(TokenKind::Colon) {
+                self.skip_type_annotation_until(&[
+                    TokenKind::Equal,
+                    TokenKind::Semicolon,
+                    TokenKind::Comma,
+                    TokenKind::RightParen,
+                ])?;
+            }
+            let extra_expr = if self.consume(TokenKind::Equal) {
+                self.expression()?
+            } else if is_const {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "const declarations require an initializer".to_owned(),
+                    span: Some(extra_binding.span),
+                });
+            } else if !extra_binding.is_identifier {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-247: binding patterns require an initializer".to_owned(),
+                    span: Some(extra_binding.span),
+                });
+            } else {
+                Expr::Undefined {
+                    span: extra_binding.span,
+                }
+            };
+            self.pending_statements.push(Stmt::Let {
+                name: extra_binding.text,
+                expr: extra_expr,
+                span: Span {
+                    start: start.start,
+                    end: extra_binding.span.end,
+                },
+            });
+        }
         let semi = self.expect(TokenKind::Semicolon)?;
         let stmt = Stmt::Let {
             name: binding.text.clone(),
@@ -1809,6 +1915,10 @@ impl Parser {
         self.expect(TokenKind::LeftBrace)?;
         let mut statements = Vec::new();
         while !self.consume(TokenKind::RightBrace) {
+            if let Some(stmt) = self.take_pending_statement() {
+                statements.push(stmt);
+                continue;
+            }
             if self.is_at_end() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
