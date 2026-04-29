@@ -620,13 +620,39 @@ impl<'a> Resolver<'a> {
                 if *op == UnaryOp::Delete {
                     // Lower delete to PropertyDelete or PropertyDeleteDynamic
                     match expr.as_ref() {
-                        ResolvedExpr::PropertyAccess { object, key, .. } => {
+                        ResolvedExpr::PropertyAccess {
+                            object,
+                            key,
+                            span,
+                        } => {
+                            if is_private_field_storage_key(key) {
+                                return Err(private_storage_observable_access_diagnostic(Some(
+                                    *span,
+                                )));
+                            }
+                            if key.starts_with('#') {
+                                return Err(Diagnostic {
+                                    code: DiagCode::UnsupportedSyntax,
+                                    message: format!(
+                                        "issue-255: private member `{key}` cannot be deleted in this private class runtime slice"
+                                    ),
+                                    span: Some(*span),
+                                });
+                            }
                             Ok(LoweredExpr::PropertyDelete {
                                 object: Box::new(self.lower_expr(object)?),
                                 key: key.clone(),
                             })
                         }
                         ResolvedExpr::ComputedIndex { object, index } => {
+                            if self.expr_has_private_progress_storage(object) {
+                                return Err(private_storage_observable_access_diagnostic(None));
+                            }
+                            if let ResolvedExpr::String(key) = index.as_ref()
+                                && is_private_field_storage_key(key)
+                            {
+                                return Err(private_storage_observable_access_diagnostic(None));
+                            }
                             Ok(LoweredExpr::PropertyDeleteDynamic {
                                 object: Box::new(self.lower_expr(object)?),
                                 key: Box::new(self.lower_expr(index)?),
