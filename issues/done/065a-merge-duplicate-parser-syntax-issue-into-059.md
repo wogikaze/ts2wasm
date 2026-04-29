@@ -35,7 +35,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/059-implement-parser-syntax-extensions.md`
+- `issues/done/059-implement-parser-syntax-extensions.md`
 - `issues/done/065-implement-parser-syntax.md`
 - `issues/done/`
 - `issues/index.md`

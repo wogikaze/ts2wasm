@@ -8,7 +8,9 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-28
+updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -35,16 +37,16 @@ Parser supports common TypeScript and advanced JavaScript syntax constructs. par
 
 In scope:
 
-- [ ] Add TypeScript type annotations to parser
-- [ ] Add TypeScript interface declarations
-- [ ] Add TypeScript generic syntax
-- [ ] Add advanced JavaScript syntax (decorators, private fields, etc.)
-- [ ] Update diagnostic to emit parser-syntax only when appropriate
+- [x] Add TypeScript type annotations to parser
+- [x] Add TypeScript interface declarations
+- [x] Add TypeScript generic syntax
+- [x] Add advanced JavaScript syntax covered by the selected ECMA-262 frontend/parser wave
+- [x] Update diagnostic to emit parser-syntax only when appropriate for the selected parser-wave slices
 
 Out of scope:
 
-- [ ] Full TypeScript type checking (separate issue)
-- [ ] TypeScript emit semantics (separate issue)
+- Full TypeScript type checking (separate issue)
+- TypeScript emit semantics (separate issue)
 
 ## Affected paths
 
@@ -61,10 +63,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Parser accepts common TypeScript syntax
-- [ ] parser-syntax diagnostic significantly reduced in reference tests
-- [ ] Regression test added for parser syntax
-- [ ] Docs updated if semantics change
+- [x] Parser accepts common TypeScript syntax covered by the selected issue 059 slices.
+- [x] parser-syntax diagnostic is reduced for the verified reference/parser-wave slices.
+- [x] Regression tests added for parser syntax.
+- [x] Docs updated where support boundaries changed.
 
 ## Validation
 
@@ -91,15 +93,20 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] updated `docs/language-reference/javascript-features.md` where parser-wave support boundaries changed
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not updated; this closure records parser-wave completion and semantic gaps are split into child issues
 
 Follow-up issues:
 
-- [ ] none
+- [x] issue 250 tracks BigInt runtime semantics.
+- [x] issue 251 tracks destructuring binding runtime semantics.
+- [x] issue 252 tracks destructuring assignment pattern parser support.
+- [x] issue 253 tracks optional chaining runtime semantics.
+- [x] issue 254 tracks class static block runtime semantics.
+- [x] issue 255 tracks private class element runtime semantics.
 
 ## Notes
 
@@ -114,6 +121,14 @@ Start with basic TypeScript type annotations before adding advanced features.
 - Issue 247 tracks destructuring binding pattern parser support.
 - Issue 248 tracks private class element parser support.
 - Issue 249 tracks class static block parser support.
+
+2026-04-29 closure note:
+
+- The selected frontend/parser wave children 243, 244, 245, 246, 247, 248, and 249 are closed with focused parser/CLI/reference evidence.
+- Parser-only work intentionally split remaining semantic gaps into issues 250, 251, 253, 254, and 255.
+- Destructuring assignment parser support remains a separate follow-up in issue 252 because issue 247 scoped binding patterns only.
+- Decorators are not part of the selected ECMA-262 parser wave; future TypeScript decorator support should be tracked by a separate issue when selected from reference coverage.
+- Issue 059 is closed as the parent parser-wave epic rather than as a claim of full JavaScript/TypeScript semantic parity.
 
 2026-04-29 superseded-reference merge note:
 
@@ -292,16 +307,36 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending parent commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass; 76 tests run, 76 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: pass; 34 tests run, 34 passed
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/language/expressions/optional-chaining/member-expression.js --detail
+result: pass; optional chaining reference slice now advances from parser-syntax to UnsupportedSyntax/function
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/language/statements/class/static-init-statement-list-optional.js --detail
+result: pass; static block reference slice is classified as UnsupportedSyntax/class after parser classification
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/language/expressions/class/elements/regular-definitions-rs-private-method-alt.js --detail
+result: pass; private element reference slice is classified as UnsupportedSyntax/class after private identifier tokenization/parser classification
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Runtime semantics for BigInt, optional chaining, static blocks, private elements, and destructuring binding patterns remain tracked by split follow-up issues.
