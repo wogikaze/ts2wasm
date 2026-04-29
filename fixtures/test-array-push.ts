@@ -1,8 +1,0 @@
-const arr = [];
-arr.push(1);
-arr.push(2);
-arr.push(3);
-console.log(arr.length);
-console.log(arr[0]);
-console.log(arr[1]);
-console.log(arr[2]);
