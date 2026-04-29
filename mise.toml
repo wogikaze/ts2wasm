@@ -73,6 +73,10 @@ run = "python scripts/manager.py repo-metrics"
 description = "Generate language coverage report from language-reference (args: --format text|markdown)"
 run = "python scripts/manager.py coverage-report"
 
+[tasks."web-ui-data"]
+description = "Generate web-ui/public/data JSON from coverage/test artifacts"
+run = "python scripts/manager.py web-ui-data"
+
 [tasks."discord-report"]
 description = "Send or validate a Discord cycle report payload"
 run = "python scripts/manager.py discord-report"

@@ -1,29 +1,29 @@
 [
   {
-    "run_id": "2026-04-29-01",
-    "timestamp": "2026-04-29T01:00:00Z",
-    "passed": 92,
-    "failed": 8,
-    "skipped": 5,
-    "compile_time": 1.2,
-    "runtime": 0.8
+    "compile_time": 0,
+    "failed": 0,
+    "passed": 5,
+    "run_id": "test262-18000",
+    "runtime": 0,
+    "skipped": 17995,
+    "timestamp": "2026-04-29T09:49:40Z"
   },
   {
-    "run_id": "2026-04-29-02",
-    "timestamp": "2026-04-29T02:00:00Z",
-    "passed": 93,
-    "failed": 7,
-    "skipped": 5,
-    "compile_time": 1.1,
-    "runtime": 0.7
+    "compile_time": 0,
+    "failed": 0,
+    "passed": 17,
+    "run_id": "tsc-200",
+    "runtime": 0,
+    "skipped": 183,
+    "timestamp": "2026-04-29T09:49:40Z"
   },
   {
-    "run_id": "2026-04-29-03",
-    "timestamp": "2026-04-29T03:00:00Z",
-    "passed": 95,
-    "failed": 5,
-    "skipped": 5,
-    "compile_time": 1.0,
-    "runtime": 0.6
+    "compile_time": 0,
+    "failed": 0,
+    "passed": 9,
+    "run_id": "tsgo-120",
+    "runtime": 0,
+    "skipped": 111,
+    "timestamp": "2026-04-29T09:49:40Z"
   }
 ]
