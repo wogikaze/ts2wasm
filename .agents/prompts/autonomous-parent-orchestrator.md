@@ -408,15 +408,18 @@ Include:
 - queue sizes
 - next assignments
 
-End every parent cycle with exactly one line:
+Parent cycle reports are loop artifacts, not user-facing completion messages.
+After writing and sending or deferring the Discord report:
+
+- If more work is safe to dispatch, do not send a user-facing summary and do not stop; immediately continue to `QUEUE_SCAN`.
+- If a child is still active, do not send a user-facing summary and do not stop; keep supervising or assign non-conflicting work.
+- Send a user-facing final response only for a clean stop, explicit unsafe state, explicit human-review request, or explicit user pause/stop request.
+- When stopping, the local/Discord report must state one terminal status:
 
 ```text
-ORCHESTRATOR_STATUS: CONTINUE
 ORCHESTRATOR_STATUS: CLEAN_STOP
 ORCHESTRATOR_STATUS: NEED_HUMAN_REVIEW
 ORCHESTRATOR_STATUS: FAILED_RECOVERABLE
 ```
 
-Prefer `CONTINUE` unless a clean stop condition or explicit unsafe state is reached.
-
-If a parent cycle ends with `ORCHESTRATOR_STATUS: CONTINUE`, do not treat the parent cycle report as a stopping point. Immediately start the next cycle from `QUEUE_SCAN` unless the user explicitly asked to pause or a `CLEAN_STOP`, `NEED_HUMAN_REVIEW`, or `FAILED_RECOVERABLE` condition is reached.
+Do not use `ORCHESTRATOR_STATUS: CONTINUE` as a report line or user-facing response. Continuation is represented by immediately starting the next cycle, not by announcing continuation.
