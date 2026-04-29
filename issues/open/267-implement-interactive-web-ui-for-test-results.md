@@ -123,7 +123,7 @@ Follow-up issues:
 
 - [ ] none
 - [x] created/updated:
-  - `issues/open/267a-web-ui-data-generation-and-script-integration.md`
+  - `issues/done/267a-web-ui-data-generation-and-script-integration.md`
   - `issues/open/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
   - `issues/open/267c-web-ui-real-time-test-run-updates.md`
   - `issues/open/267d-web-ui-export-theme-and-usage-docs.md`

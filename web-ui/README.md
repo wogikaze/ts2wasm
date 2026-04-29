@@ -87,6 +87,16 @@ The web UI can be integrated into test workflows by:
 2. Generating web UI data after test completion
 3. Serving the UI or deploying to static hosting
 
+The reference coverage and test262 runners can also refresh the data files as
+part of a local run:
+
+```bash
+mise run reference-coverage -- test262 --limit 50 --web-ui
+mise run test262 -- --sample 50 --web-ui
+```
+
+These commands write the same `web-ui/public/data/*.json` files used by the UI.
+
 ## Future Enhancements
 
 - [ ] Real-time WebSocket updates during test runs
