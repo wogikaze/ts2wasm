@@ -79,6 +79,7 @@ pub enum ResolvedStmt {
         constructor: Option<ResolvedConstructor>,
         methods: Vec<ClassMethod>,
         statics: Vec<(String, ResolvedExpr)>,
+        static_blocks: Vec<Vec<ResolvedStmt>>,
     },
 }
 
