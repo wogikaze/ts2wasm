@@ -3,7 +3,7 @@ use ts2wasm_frontend::{DiagCode, Diagnostic, Span};
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ArrayBinding {
     pub index: usize,
-    pub name: String,
+    pub target: BindingTarget,
     pub default: Option<BindingDefault>,
     pub is_rest: bool,
 }
@@ -11,7 +11,7 @@ pub struct ArrayBinding {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectBinding {
     pub key: String,
-    pub name: String,
+    pub target: BindingTarget,
     pub default: Option<BindingDefault>,
 }
 
@@ -30,17 +30,54 @@ pub enum BindingPattern {
     Object(Vec<ObjectBinding>),
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BindingTarget {
+    Identifier(String),
+    Pattern(Box<BindingPattern>),
+}
+
 impl BindingPattern {
     pub fn names(&self) -> Vec<&str> {
+        let mut names = Vec::new();
+        self.collect_names(&mut names);
+        names
+    }
+
+    fn collect_names<'a>(&'a self, names: &mut Vec<&'a str>) {
         match self {
-            Self::Array(bindings) => bindings
-                .iter()
-                .map(|binding| binding.name.as_str())
-                .collect(),
-            Self::Object(bindings) => bindings
-                .iter()
-                .map(|binding| binding.name.as_str())
-                .collect(),
+            Self::Array(bindings) => {
+                for binding in bindings {
+                    binding.target.collect_names(names);
+                }
+            }
+            Self::Object(bindings) => {
+                for binding in bindings {
+                    binding.target.collect_names(names);
+                }
+            }
+        }
+    }
+}
+
+impl BindingTarget {
+    pub fn identifier(&self) -> Option<&str> {
+        match self {
+            Self::Identifier(name) => Some(name),
+            Self::Pattern(_) => None,
+        }
+    }
+
+    pub fn pattern(&self) -> Option<&BindingPattern> {
+        match self {
+            Self::Identifier(_) => None,
+            Self::Pattern(pattern) => Some(pattern),
+        }
+    }
+
+    fn collect_names<'a>(&'a self, names: &mut Vec<&'a str>) {
+        match self {
+            Self::Identifier(name) => names.push(name.as_str()),
+            Self::Pattern(pattern) => pattern.collect_names(names),
         }
     }
 }
@@ -77,22 +114,28 @@ fn parse_array_binding_pattern(
     }
 
     let mut bindings = Vec::new();
-    for (index, raw_part) in inner.split(',').enumerate() {
+    for (index, raw_part) in split_top_level_commas(inner).into_iter().enumerate() {
         let part = raw_part.trim();
         if part.is_empty() {
             continue;
         }
         let (target, default, is_rest) = split_array_binding_target(part, span)?;
-        reject_unsupported_target(target, span)?;
-        if !is_identifier(target) {
+        let target = parse_array_binding_target(target, span)?;
+        if is_rest && !matches!(target, BindingTarget::Identifier(_)) {
             return Err(issue_251(
-                "array binding elements must be identifiers in this runtime slice",
+                "rest binding targets must be identifiers in this runtime slice",
+                span,
+            ));
+        }
+        if default.is_some() && matches!(target, BindingTarget::Pattern(_)) {
+            return Err(issue_251(
+                "nested binding defaults are not supported in this runtime slice",
                 span,
             ));
         }
         bindings.push(ArrayBinding {
             index,
-            name: target.to_owned(),
+            target,
             default,
             is_rest,
         });
@@ -113,7 +156,7 @@ fn parse_object_binding_pattern(
     }
 
     let mut bindings = Vec::new();
-    for raw_part in inner.split(',') {
+    for raw_part in split_top_level_commas(inner) {
         let part = raw_part.trim();
         if part.is_empty() {
             return Err(issue_251(
@@ -124,9 +167,15 @@ fn parse_object_binding_pattern(
         let (target_part, default) = split_binding_default(part, span)?;
         reject_unsupported_target(target_part, span)?;
 
-        let (key, name) = if let Some((key, target)) = target_part.split_once(':') {
+        let (key, target) = if let Some((key, target)) = split_top_level_once(target_part, ':') {
             let key = key.trim();
             let target = target.trim();
+            if target.starts_with('[') || target.starts_with('{') {
+                return Err(issue_251(
+                    "nested object binding aliases are not supported in this runtime slice",
+                    span,
+                ));
+            }
             reject_unsupported_target(target, span)?;
             if !is_identifier(key) || !is_identifier(target) {
                 return Err(issue_251(
@@ -134,7 +183,7 @@ fn parse_object_binding_pattern(
                     span,
                 ));
             }
-            (key.to_owned(), target.to_owned())
+            (key.to_owned(), BindingTarget::Identifier(target.to_owned()))
         } else {
             if !is_identifier(target_part) {
                 return Err(issue_251(
@@ -142,11 +191,43 @@ fn parse_object_binding_pattern(
                     span,
                 ));
             }
-            (target_part.to_owned(), target_part.to_owned())
+            (
+                target_part.to_owned(),
+                BindingTarget::Identifier(target_part.to_owned()),
+            )
         };
-        bindings.push(ObjectBinding { key, name, default });
+        bindings.push(ObjectBinding {
+            key,
+            target,
+            default,
+        });
     }
     Ok(BindingPattern::Object(bindings))
+}
+
+fn parse_array_binding_target(
+    target: &str,
+    span: Option<Span>,
+) -> Result<BindingTarget, Diagnostic> {
+    reject_unsupported_target(target, span)?;
+    if target.starts_with('[') {
+        return Ok(BindingTarget::Pattern(Box::new(
+            parse_array_binding_pattern(target, span)?,
+        )));
+    }
+    if target.starts_with('{') {
+        return Err(issue_251(
+            "nested object binding patterns are not supported in this runtime slice",
+            span,
+        ));
+    }
+    if !is_identifier(target) {
+        return Err(issue_251(
+            "array binding elements must be identifiers in this runtime slice",
+            span,
+        ));
+    }
+    Ok(BindingTarget::Identifier(target.to_owned()))
 }
 
 fn split_binding_default(
@@ -205,6 +286,9 @@ fn reject_unsupported_target(target: &str, span: Option<Span>) -> Result<(), Dia
             span,
         ));
     }
+    if target.starts_with('[') || target.starts_with('{') {
+        return Ok(());
+    }
     if target.contains('[') || target.contains(']') || target.contains('{') || target.contains('}')
     {
         return Err(issue_251(
@@ -213,6 +297,59 @@ fn reject_unsupported_target(target: &str, span: Option<Span>) -> Result<(), Dia
         ));
     }
     Ok(())
+}
+
+fn split_top_level_commas(text: &str) -> Vec<&str> {
+    split_top_level(text, ',')
+}
+
+fn split_top_level_once(text: &str, delimiter: char) -> Option<(&str, &str)> {
+    let index = split_top_level_index(text, delimiter)?;
+    Some((&text[..index], &text[index + delimiter.len_utf8()..]))
+}
+
+fn split_top_level(text: &str, delimiter: char) -> Vec<&str> {
+    let mut parts = Vec::new();
+    let mut start = 0;
+    for index in top_level_delimiter_indices(text, delimiter) {
+        parts.push(&text[start..index]);
+        start = index + delimiter.len_utf8();
+    }
+    parts.push(&text[start..]);
+    parts
+}
+
+fn split_top_level_index(text: &str, delimiter: char) -> Option<usize> {
+    top_level_delimiter_indices(text, delimiter)
+        .into_iter()
+        .next()
+}
+
+fn top_level_delimiter_indices(text: &str, delimiter: char) -> Vec<usize> {
+    let mut indices = Vec::new();
+    let mut depth = 0usize;
+    let mut quote: Option<char> = None;
+    let mut escaped = false;
+    for (index, ch) in text.char_indices() {
+        if let Some(quote_ch) = quote {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == quote_ch {
+                quote = None;
+            }
+            continue;
+        }
+        match ch {
+            '"' | '\'' => quote = Some(ch),
+            '[' | '{' | '(' => depth += 1,
+            ']' | '}' | ')' => depth = depth.saturating_sub(1),
+            _ if ch == delimiter && depth == 0 => indices.push(index),
+            _ => {}
+        }
+    }
+    indices
 }
 
 fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefault, Diagnostic> {
