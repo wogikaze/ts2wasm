@@ -2593,6 +2593,17 @@ fn resolve_builtin_call(
                 })
             };
         }
+        if object_name == "Math" {
+            return if property == "pow" {
+                Ok(Some(BuiltinId::MathPow))
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("Math.{} is not supported in this milestone", property),
+                    span: span_of_expr(callee),
+                })
+            };
+        }
         if object_name == "process" {
             return if property == "exit" {
                 Ok(Some(BuiltinId::ProcessExit))

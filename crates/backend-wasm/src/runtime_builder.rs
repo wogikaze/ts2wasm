@@ -112,6 +112,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::MathAbs => self.emit_math_abs(wat),
                 RuntimeFn::MathMax => self.emit_math_max(wat),
                 RuntimeFn::MathMin => self.emit_math_min(wat),
+                RuntimeFn::MathPow => self.emit_math_pow(wat),
                 RuntimeFn::MathRandom => self.emit_math_random(wat),
                 RuntimeFn::JsonStringify => self.emit_json_stringify(wat),
                 RuntimeFn::JsonParse => self.emit_json_parse(wat),

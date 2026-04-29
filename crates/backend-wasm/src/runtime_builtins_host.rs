@@ -100,6 +100,47 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_math_pow(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_pow (param $base i32) (param $exp i32) (result i32)
+    (local $base_tag i32)
+    (local $exp_tag i32)
+    (local $base_n i32)
+    (local $exp_n i32)
+    (local $result i32)
+    (local $i i32)
+    (local.set $base_tag (i32.and (local.get $base) (i32.const {tag_mask})))
+    (local.set $exp_tag (i32.and (local.get $exp) (i32.const {tag_mask})))
+    (if (i32.or (i32.ne (local.get $base_tag) (i32.const {number_tag})) (i32.ne (local.get $exp_tag) (i32.const {number_tag})))
+      (then (return (i32.const {undefined}))))
+    (local.set $base_n (i32.shr_s (local.get $base) (i32.const {number_shift})))
+    (local.set $exp_n (i32.shr_s (local.get $exp) (i32.const {number_shift})))
+    ;; Simplified integer pow: base^exp
+    ;; Handle special cases: exp = 0 returns 1, exp < 0 returns undefined (not supported for integers)
+    (if (i32.lt_s (local.get $exp_n) (i32.const {zero}))
+      (then (return (i32.const {undefined}))))
+    (if (i32.eq (local.get $exp_n) (i32.const {zero}))
+      (then (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (local.set $result (i32.const 1))
+    (local.set $i (local.get $exp_n))
+    (block $pow_break
+      (loop $pow_loop
+        (if (i32.eq (local.get $i) (i32.const {zero}))
+          (then (br $pow_break)))
+        (local.set $result (i32.mul (local.get $result) (local.get $base_n)))
+        (local.set $i (i32.sub (local.get $i) (i32.const 1)))
+        (br $pow_loop)))
+    (i32.or (i32.shl (local.get $result) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
     pub(super) fn emit_math_min(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
