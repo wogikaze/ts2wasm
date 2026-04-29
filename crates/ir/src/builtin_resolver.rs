@@ -2515,6 +2515,15 @@ fn bigint_from_string_builtin(value: &str, span: Span) -> Result<BigIntConst, Di
     Ok(BigIntConst::from_decimal(sign, &decimal))
 }
 
+fn bigint_fits_runtime_from_string(value: &BigIntConst) -> bool {
+    match value.sign.cmp(&0) {
+        std::cmp::Ordering::Less => decimal_digits_to_u64(&value.digits)
+            .is_some_and(|magnitude| magnitude <= i64::MAX as u64),
+        std::cmp::Ordering::Equal => true,
+        std::cmp::Ordering::Greater => decimal_digits_to_u64(&value.digits).is_some(),
+    }
+}
+
 fn fold_bigint_static_abstract_equality(
     left: &ResolvedExpr,
     op: BinaryOp,
@@ -2835,6 +2844,7 @@ impl BigIntStaticInfo {
 struct BigIntRuntimeGuard {
     locals: HashMap<String, BigIntStaticInfo>,
     string_locals: HashSet<String>,
+    string_values: HashMap<String, String>,
 }
 
 impl BigIntRuntimeGuard {
@@ -2856,8 +2866,14 @@ impl BigIntRuntimeGuard {
                 }
                 if self.expr_is_definitely_string(expr) {
                     self.string_locals.insert(name.clone());
+                    if let Some(value) = self.expr_static_string_value(expr) {
+                        self.string_values.insert(name.clone(), value);
+                    } else {
+                        self.string_values.remove(name);
+                    }
                 } else {
                     self.string_locals.remove(name);
+                    self.string_values.remove(name);
                 }
                 Ok(())
             }
@@ -2990,6 +3006,7 @@ impl BigIntRuntimeGuard {
         Self {
             locals: self.locals.clone(),
             string_locals: self.string_locals.clone(),
+            string_values: self.string_values.clone(),
         }
     }
 
@@ -2997,6 +3014,7 @@ impl BigIntRuntimeGuard {
         for name in assigned_names_in_stmts(stmts) {
             self.locals.remove(&name);
             self.string_locals.remove(&name);
+            self.string_values.remove(&name);
         }
     }
 
@@ -3004,6 +3022,7 @@ impl BigIntRuntimeGuard {
         for name in assigned_names_in_expr(expr) {
             self.locals.remove(&name);
             self.string_locals.remove(&name);
+            self.string_values.remove(&name);
         }
     }
 
@@ -3018,6 +3037,24 @@ impl BigIntRuntimeGuard {
                 ..
             } => self.expr_is_definitely_string(left) || self.expr_is_definitely_string(right),
             _ => false,
+        }
+    }
+
+    fn expr_static_string_value(&self, expr: &Expr) -> Option<String> {
+        match expr {
+            Expr::String { value, .. } => Some(value.clone()),
+            Expr::Ident { name, .. } => self.string_values.get(name).cloned(),
+            Expr::Binary {
+                left,
+                op: BinaryOp::Add,
+                right,
+                ..
+            } => {
+                let mut value = self.expr_static_string_value(left)?;
+                value.push_str(&self.expr_static_string_value(right)?);
+                Some(value)
+            }
+            _ => None,
         }
     }
 
@@ -3174,6 +3211,14 @@ impl BigIntRuntimeGuard {
                 if static_supported_arg {
                     return Ok(None);
                 }
+                if self.expr_is_definitely_string(arg)
+                    && let Some(value) = self.expr_static_string_value(arg)
+                {
+                    let parsed = bigint_from_string_builtin(&value, *span)?;
+                    if !bigint_fits_runtime_from_string(&parsed) {
+                        return Err(bigint_string_diagnostic(*span));
+                    }
+                }
                 Ok(Some(BigIntStaticInfo {
                     value: None,
                     helper_safe: true,
@@ -3236,8 +3281,14 @@ impl BigIntRuntimeGuard {
                 }
                 if self.expr_is_definitely_string(expr) {
                     self.string_locals.insert(name.clone());
+                    if let Some(value) = self.expr_static_string_value(expr) {
+                        self.string_values.insert(name.clone(), value);
+                    } else {
+                        self.string_values.remove(name);
+                    }
                 } else {
                     self.string_locals.remove(name);
+                    self.string_values.remove(name);
                 }
                 Ok(info)
             }

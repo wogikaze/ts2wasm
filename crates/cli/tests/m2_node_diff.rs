@@ -365,6 +365,7 @@ fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts",
+        "fixtures/core-semantics/bigint-builtin-dynamic-invalid-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts",
     ] {
@@ -376,6 +377,14 @@ fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
 fn bigint_invalid_static_string_diagnostics_remain_source_spanned_issue_280() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
+        "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals",
+    );
+}
+
+#[test]
+fn bigint_invalid_dynamic_string_diagnostics_remain_source_spanned_issue_280() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-builtin-dynamic-invalid-string-unsupported.ts",
         "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals",
     );
 }

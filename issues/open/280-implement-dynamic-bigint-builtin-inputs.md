@@ -77,6 +77,7 @@ issue until dynamic runtime handling is implemented:
 
 - `fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts`
+- `fixtures/core-semantics/bigint-builtin-dynamic-invalid-string-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts`
 
@@ -105,11 +106,11 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md`
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
@@ -154,6 +155,12 @@ representation. `fixtures/core-semantics/bigint-builtin-dynamic-string.ts`
 has Node/iwasm differential coverage. Static invalid strings remain
 source-spanned issue-280 diagnostics; dynamic invalid/out-of-range strings still
 trap until compatible runtime exception throwing is implemented.
+
+2026-04-29 progress: literal-derived dynamic string inputs tracked through
+string-only concatenation (for example `s = s + ""`) now keep invalid or
+out-of-runtime-range `BigInt(s)` on the source-spanned issue-280 diagnostic
+path instead of lowering to a runtime trap. Unknown dynamic string contents
+still require compatible runtime exception throwing before the issue can close.
 
 ## Completion evidence
 
