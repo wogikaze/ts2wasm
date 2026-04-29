@@ -103,7 +103,7 @@ Follow-up issues:
 
 Commits:
 
-- `<pending final commit>`
+- `ec9ffa4`
 
 Validation result:
 
