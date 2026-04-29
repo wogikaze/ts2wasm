@@ -3,12 +3,14 @@ id: 302
 title: "Implement direct eval block function declaration slice"
 type: feature
 area: frontend/semantics
-class: blocked
+class: done
 priority: P3
 depends_on: [306]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -50,11 +52,11 @@ coverage if a shim is required.
 
 In scope:
 
-- [ ] Direct `eval` calls where the callee is the unshadowed identifier `eval`.
-- [ ] Static string-literal eval source for a single block containing a function declaration, matching `func-block-decl-eval-func-init.js`.
-- [ ] The companion block-scoping behavior from `func-block-decl-eval-func-block-scoping.js`.
-- [ ] Regression fixture covering direct eval block-level function declaration behavior.
-- [ ] Existing non-eval ordinary function declaration/call fixture remains passing.
+- [x] Direct `eval` calls where the callee is the unshadowed identifier `eval`.
+- [x] Static string-literal eval source for a single block containing a function declaration, matching `func-block-decl-eval-func-init.js`.
+- [x] The companion block-scoping behavior from `func-block-decl-eval-func-block-scoping.js`.
+- [x] Regression fixture covering direct eval block-level function declaration behavior.
+- [x] Existing non-eval ordinary function declaration/call fixture remains passing.
 
 Out of scope:
 
@@ -83,11 +85,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `func-block-decl-eval-func-init.js` no longer reports unsupported feature label `eval`.
-- [ ] `func-block-decl-eval-func-block-scoping.js` no longer reports unsupported feature label `eval`.
-- [ ] A new fixture under `fixtures/core-semantics/` exercises direct eval with a block-level function declaration and passes Node/iwasm differential validation.
-- [ ] A non-eval ordinary function fixture remains in the focused validation set to prove existing function behavior is preserved.
-- [ ] If shim JavaScript is emitted, its host capability is represented in link planning and manifest output.
+- [x] `func-block-decl-eval-func-init.js` no longer reports unsupported feature label `eval`.
+- [x] `func-block-decl-eval-func-block-scoping.js` no longer reports unsupported feature label `eval`.
+- [x] A new fixture under `fixtures/core-semantics/` exercises direct eval with a block-level function declaration and passes Node/iwasm differential validation.
+- [x] A non-eval ordinary function fixture remains in the focused validation set to prove existing function behavior is preserved.
+- [x] No shim JavaScript is emitted for this slice.
 
 ## Validation
 
@@ -117,15 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -235,20 +237,35 @@ the first block-function declaration behavior.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `51c27cc5` (`issue-306: progress direct eval mutable env cells`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli direct_eval_block_function
+result: pass; 2 tests passed
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/eval-code/direct/func-block-decl-eval-func-init.js --detail
+result: pass; build_pass=1, semantic_pass=1
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/eval-code/direct/func-block-decl-eval-func-block-scoping.js --detail
+result: pass; build_pass=1, semantic_pass=1
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check && mise run check issues
+result: pass
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Broader direct-eval families remain tracked by parent issue 225 and future
+  slices.

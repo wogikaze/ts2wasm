@@ -3,12 +3,14 @@ id: 306
 title: "Implement mutable direct eval block-function environments"
 type: feature
 area: frontend/ir/runtime
-class: implementation-ready
+class: done
 priority: P3
 depends_on: []
 blocks: [302]
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -74,14 +76,14 @@ eval inputs, or dynamic eval source.
 
 In scope:
 
-- [ ] Mutable environment cells for the static direct-eval block-function
+- [x] Mutable environment cells for the static direct-eval block-function
       shape used by `func-block-decl-eval-func-block-scoping.js`.
-- [ ] Function-valued local calls for the eval-created function values needed
+- [x] Function-valued local calls for the eval-created function values needed
       by `initialBV()` and `varBinding()`.
-- [ ] Preservation of block function binding independence: mutation of block
+- [x] Preservation of block function binding independence: mutation of block
       local `f` does not overwrite the outer var-scoped function value used by
       `varBinding()`.
-- [ ] Focused Node/iwasm fixture under `fixtures/core-semantics/`.
+- [x] Focused Node/iwasm fixture under `fixtures/core-semantics/`.
 
 Out of scope:
 
@@ -99,7 +101,7 @@ Expected:
 - `crates/backend-wasm/src/` only if new lowered environment operations need emission
 - `crates/cli/tests/`
 - `fixtures/core-semantics/`
-- `issues/open/302-implement-direct-eval-block-function-declaration-slice.md`
+- `issues/done/302-implement-direct-eval-block-function-declaration-slice.md`
 - `issues/index.md`
 
 Do not touch:
@@ -111,15 +113,15 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `func-block-decl-eval-func-block-scoping.js` reports `build_pass` and
+- [x] `func-block-decl-eval-func-block-scoping.js` reports `build_pass` and
       `semantic_pass=1`.
-- [ ] `func-block-decl-eval-func-init.js` remains `build_pass` and
+- [x] `func-block-decl-eval-func-init.js` remains `build_pass` and
       `semantic_pass=1`.
-- [ ] A focused fixture covers the mutable direct-eval block-function
+- [x] A focused fixture covers the mutable direct-eval block-function
       environment behavior and passes Node/iwasm differential validation.
-- [ ] Existing direct-eval block-function fixtures and ordinary function direct
+- [x] Existing direct-eval block-function fixtures and ordinary function direct
       call fixture remain in focused validation.
-- [ ] Unsupported shadowed eval remains rejected with the issue-302 diagnostic.
+- [x] Unsupported shadowed eval remains rejected with the issue-302 diagnostic.
 
 ## Validation
 
@@ -149,15 +151,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -191,20 +193,35 @@ limited to the static block-function reference shape until issue 302 can close.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `51c27cc5` (`issue-306: progress direct eval mutable env cells`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli direct_eval_block_function
+result: pass; 2 tests passed
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/eval-code/direct/func-block-decl-eval-func-init.js --detail
+result: pass; build_pass=1, semantic_pass=1
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/eval-code/direct/func-block-decl-eval-func-block-scoping.js --detail
+result: pass; build_pass=1, semantic_pass=1
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check && mise run check issues
+result: pass
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- The implementation is intentionally limited to the selected static direct-eval
+  block-function IIFE shape. Broader dynamic eval families remain out of scope.
