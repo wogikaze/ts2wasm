@@ -1163,6 +1163,11 @@ fn spread_operator_array_local_call_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_array_alias_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-alias.ts");
+}
+
+#[test]
 fn spread_operator_string_literal_call_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-call-string-literal.ts");
 }
@@ -1218,11 +1223,17 @@ fn spread_operator_object_local_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_object_alias_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-object-alias.ts");
+}
+
+#[test]
 fn spread_operator_unsupported_forms_report_issue_274() {
     for fixture in [
         "fixtures/core-semantics/spread-call-dynamic-unsupported.ts",
         "fixtures/core-semantics/spread-array-unsupported.ts",
         "fixtures/core-semantics/spread-object-unsupported.ts",
+        "fixtures/core-semantics/spread-object-alias-mutated-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax_without_span(fixture, "issue-274:");
     }
