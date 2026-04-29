@@ -84,3 +84,6 @@ cargo fmt --all --check
 - 2026-04-29: Extended the Set-to-array spread slice to mixed dense array literals:
   - literals such as `[0, ...set, 4]` lower as dense array segments concatenated with `SetValuesArray(set)`, preserving Set insertion order under Node/iwasm differential coverage;
   - Map/custom iterator/general iterator protocol, object spread beyond the existing static object-literal slice, and dynamic non-Set iterable spread remain guarded by `issue-274` diagnostics.
+- 2026-04-29: Added a dense array local spread slice:
+  - array literals such as `[0, ...base, 3]` where `base` is a known dense array local lower through the existing `ArrayConcat` path and match Node/iwasm output;
+  - string/custom iterable spread, sparse arrays, object spread beyond static object literals, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.
