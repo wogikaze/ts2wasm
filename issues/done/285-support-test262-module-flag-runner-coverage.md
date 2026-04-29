@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -62,9 +64,9 @@ The representative case and related bucket members no longer produce this exact 
 
 In scope:
 
-- [ ] Add a deliberate handling path for test262 `module` metadata in the runner.
-- [ ] Representative module-flag cases produce compiler diagnostics or semantic results instead of metadata rejection.
-- [ ] Regenerated web-ui data shows this exact stderr bucket reduced or removed.
+- [x] Add a deliberate handling path for test262 `module` metadata in the runner.
+- [x] Representative module-flag cases produce compiler diagnostics or semantic results instead of metadata rejection.
+- [x] Regenerated runner JSONL evidence shows this exact stderr bucket reduced or removed.
 
 Out of scope:
 
@@ -86,10 +88,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative case no longer emits the exact stderr bucket shown above.
-- [ ] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
-- [ ] If behavior changes, add or update a focused fixture or regression test for the representative case.
-- [ ] Update coverage artifacts or current-state only when the validation run produces new facts.
+- [x] The representative case no longer emits the exact stderr bucket shown above.
+- [x] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
+- [x] If behavior changes, add or update a focused fixture or regression test for the representative case.
+- [x] Update coverage artifacts or current-state only when the validation run produces new facts.
 
 ## Validation
 
@@ -117,18 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
 
 ## Notes
 
@@ -140,14 +139,38 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `8b7ca15343602384acc0b02c239d40e906b94dd8`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: python3 -m py_compile scripts/run/test262.py scripts/run/reference-coverage.py
+result: pass
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/comments/hashbang/module.js
+result: pass; representative classified as UnsupportedSyntax/import-export, not UnsupportedTest262Metadata/test262-metadata
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run test262 -- --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/arguments-object/async-gen-meth-args-trailing-comma-multiple.js --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/comments/hashbang/module.js --jobs 1
+result: pass; regenerated local test262-results.jsonl had async metadata bucket count 0 and module metadata bucket count 0
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass; 540 tests passed, 4 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass before close; index was up to date
+date: 2026-04-29
+
+command: mise run check issues
+result: pass before close
+date: 2026-04-29
 ```
 
 Remaining risks:
