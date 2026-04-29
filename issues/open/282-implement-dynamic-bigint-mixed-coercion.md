@@ -122,6 +122,18 @@ Progress on 2026-04-29:
   BigInt/String and BigInt/Boolean comparisons, and unsupported string grammar
   outside the current small-int runtime boundary.
 
+Progress on 2026-04-29:
+
+- Added Node/iwasm differential coverage for object-carried dynamic
+  BigInt/Boolean relational comparison over the first `<`, `<=`, and `>`
+  slice, including symmetric boolean-left cases.
+- Implemented the matching runtime helper path by comparing booleans as the
+  current small integer boundary (`false -> 0`, `true -> 1`) without changing
+  BigInt/Number or BigInt/String relational behavior.
+- Remaining issue-282 work: `>=` coverage/helper parity, mixed BigInt/String
+  relational comparison, object `ToPrimitive`, and unsupported string grammar
+  outside the current small-int runtime boundary.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
