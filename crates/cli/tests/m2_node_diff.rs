@@ -14,6 +14,11 @@ use iwasm_runtime::{IwasmRunResult, run_iwasm_child_with_timeout, run_iwasm_with
 use ts2wasm_shared::{TestRecord, TestStatus};
 
 #[test]
+fn basics_hello_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/basics-hello/hello.ts");
+}
+
+#[test]
 fn m2_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/primitives-control-flow/number.ts",
