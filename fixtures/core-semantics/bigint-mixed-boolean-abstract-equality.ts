@@ -1,0 +1,10 @@
+console.log(0n == false);
+console.log(false == 0n);
+console.log(1n == true);
+console.log(true == 1n);
+console.log(2n != true);
+console.log(true != 2n);
+console.log(0n != true);
+console.log(false != 1n);
+console.log(-1n == true);
+console.log(-1n != true);
