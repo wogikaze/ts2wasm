@@ -140,6 +140,7 @@ pub(crate) enum RuntimeFn {
     ArrayPop,
     ArraySlice,
     ArrayConcat,
+    ArrayMapValueToString,
     ArrayMapStringSplit,
     ArrayJoin,
     ArrayReverse,
@@ -409,6 +410,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArraySlice" => Some(RuntimeFn::ArraySlice),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
+        "ArrayMapValueToString" => Some(RuntimeFn::ArrayMapValueToString),
         "ArrayMapStringSplit" => Some(RuntimeFn::ArrayMapStringSplit),
         "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
         "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
@@ -696,6 +698,11 @@ const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[
 const ARRAY_POP_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_MAP_VALUE_TO_STRING_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::ValueToStringInto,
+];
 const ARRAY_MAP_STRING_SPLIT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::StringSplit];
 const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
@@ -1530,6 +1537,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayMapValueToString => RuntimeSpec {
+                symbol: "$array_map_value_to_string",
+                deps: ARRAY_MAP_VALUE_TO_STRING_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayMapStringSplit => RuntimeSpec {
                 symbol: "$array_map_string_split",
                 deps: ARRAY_MAP_STRING_SPLIT_DEPS,
@@ -1921,6 +1936,7 @@ impl RuntimeFn {
             Self::ArrayPop => "array_pop",
             Self::ArraySlice => "array_slice",
             Self::ArrayConcat => "array_concat",
+            Self::ArrayMapValueToString => "array_map_value_to_string",
             Self::ArrayMapStringSplit => "array_map_string_split",
             Self::ArrayJoin => "array_join",
             Self::ArrayReverse => "array_reverse",
@@ -2056,6 +2072,7 @@ impl RuntimeFn {
             Self::ArrayPop,
             Self::ArraySlice,
             Self::ArrayConcat,
+            Self::ArrayMapValueToString,
             Self::ArrayMapStringSplit,
             Self::ArrayJoin,
             Self::ArrayReverse,
@@ -2198,6 +2215,7 @@ impl RuntimeFn {
             Self::ArrayPop,
             Self::ArraySlice,
             Self::ArrayConcat,
+            Self::ArrayMapValueToString,
             Self::ArrayMapStringSplit,
             Self::ArrayJoin,
             Self::ArrayReverse,
