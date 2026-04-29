@@ -4,6 +4,7 @@ use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp,
     LoweredProgram, LoweredStmt, LoweredUnaryOp,
 };
+use ts2wasm_runtime_abi::ValueTag;
 
 use super::runtime_fn::{Capability, HostAbi, HostImport, RuntimeFn, RuntimeGlobal};
 
@@ -450,8 +451,12 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::from_builtin(*builtin));
                 }
             }
-            LoweredExpr::Number(_)
-            | LoweredExpr::String(_)
+            LoweredExpr::Number(value) => {
+                if !ValueTag::can_encode_number(*value) {
+                    self.add_required_runtime(RuntimeFn::NumberFromI32);
+                }
+            }
+            LoweredExpr::String(_)
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null
             | LoweredExpr::Undefined

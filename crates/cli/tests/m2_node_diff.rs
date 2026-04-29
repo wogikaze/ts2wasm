@@ -62,6 +62,11 @@ fn small_int_exponentiation_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn large_integer_number_boundary_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/large-integer-number-boundary.ts");
+}
+
+#[test]
 fn prototype_chain_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/prototype.ts");
 }

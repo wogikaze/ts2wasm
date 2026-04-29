@@ -559,7 +559,11 @@ impl WatEmitter<'_> {
           (i32.add (local.get $base)
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (if (i32.eq (i32.load (local.get $entry_base)) (local.get $value))
+        (if (i32.eq
+              (call $strict_equal
+                (i32.load (local.get $entry_base))
+                (local.get $value))
+              (i32.const {true}))
           (then (return (local.get $set))))
         (br $scan)))
     (local.set $entry_base
@@ -579,6 +583,7 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             true_value = ValueTag::TRUE,
+            true = ValueTag::TRUE,
             undefined = ValueTag::UNDEFINED,
         ));
     }
@@ -605,7 +610,11 @@ impl WatEmitter<'_> {
           (i32.add (local.get $base)
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (if (i32.eq (i32.load (local.get $entry_base)) (local.get $value))
+        (if (i32.eq
+              (call $strict_equal
+                (i32.load (local.get $entry_base))
+                (local.get $value))
+              (i32.const {true}))
           (then (return (i32.const {true}))))
         (br $scan)))
     (i32.const {false}))
@@ -646,7 +655,11 @@ impl WatEmitter<'_> {
           (i32.add (local.get $base)
             (i32.add (i32.const {obj_header})
               (i32.shl (local.get $i) (i32.const {entry_shift})))))
-        (if (i32.eq (i32.load (local.get $entry_base)) (local.get $value))
+        (if (i32.eq
+              (call $strict_equal
+                (i32.load (local.get $entry_base))
+                (local.get $value))
+              (i32.const {true}))
           (then
             (local.set $last_index (i32.sub (local.get $count) (i32.const {one})))
             (local.set $last_entry_base

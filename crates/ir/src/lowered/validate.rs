@@ -253,19 +253,7 @@ fn validate_expr(
     value_required: bool,
 ) {
     match expr {
-        LoweredExpr::Number(n) => {
-            if !ValueTag::can_encode_number(*n) {
-                errors.push(Diagnostic {
-                    code: DiagCode::NumberOutOfRange,
-                    message: format!(
-                        "number literal {n} is out of small-int tagged range ({MIN}..={MAX})",
-                        MIN = ValueTag::NUMBER_PAYLOAD_MIN,
-                        MAX = ValueTag::NUMBER_PAYLOAD_MAX,
-                    ),
-                    span: None,
-                });
-            }
-        }
+        LoweredExpr::Number(_) => {}
         LoweredExpr::BigIntLiteral { .. } => {}
         LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
         LoweredExpr::Unary { expr, .. } => {

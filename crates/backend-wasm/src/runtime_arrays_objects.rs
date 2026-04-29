@@ -407,19 +407,8 @@ impl WatEmitter<'_> {
               (i32.add (local.get $left_addr) (i32.const 4)))
             (local.set $left_value (i32.load (local.get $left_addr)))
             (local.set $right_value (i32.load (local.get $right_addr)))
-            (if
-              (i32.or
-                (i32.ne
-                  (i32.and (local.get $left_value) (i32.const {tag_mask}))
-                  (i32.const {number_tag}))
-                (i32.ne
-                  (i32.and (local.get $right_value) (i32.const {tag_mask}))
-                  (i32.const {number_tag})))
-              (then (return (i32.const {undefined}))))
-            (local.set $left_num
-              (i32.shr_s (local.get $left_value) (i32.const {number_shift})))
-            (local.set $right_num
-              (i32.shr_s (local.get $right_value) (i32.const {number_shift})))
+            (local.set $left_num (call $number_to_i32 (local.get $left_value)))
+            (local.set $right_num (call $number_to_i32 (local.get $right_value)))
             (if (i32.gt_s (local.get $left_num) (local.get $right_num))
               (then
                 (i32.store (local.get $left_addr) (local.get $right_value))
@@ -432,9 +421,7 @@ impl WatEmitter<'_> {
 "#,
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
-            number_tag = ValueTag::NUMBER,
             heap_mask = ValueTag::HEAP_MASK,
-            number_shift = ValueTag::NUMBER_SHIFT,
             array_header = Layout::ARRAY_HEADER_SIZE,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             zero = RuntimeConst::ZERO,
@@ -795,7 +782,7 @@ impl WatEmitter<'_> {
     (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
       (then (unreachable)))
     (if (result i32)
-      (i32.ge_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+      (i32.ge_s (call $number_to_i32 (local.get $a)) (call $number_to_i32 (local.get $b)))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
 "#,
