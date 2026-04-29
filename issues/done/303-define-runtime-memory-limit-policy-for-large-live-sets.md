@@ -8,9 +8,9 @@ priority: P1
 depends_on: []
 blocks: [300]
 created: 2026-04-29
-updated: 2026-04-30
+updated: 2026-04-29
 status: done
-completed: 2026-04-30
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -200,27 +200,27 @@ Validation result:
 ```text
 command: cargo run -q -- build /tmp/abc451-search-depth-7.ts -o /tmp/abc451-search-depth-7.wasm --host-deny && iwasm /tmp/abc451-search-depth-7.wasm
 result: pass; iwasm stdout `61002`
-date: 2026-04-30
+date: 2026-04-29
 
 command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
 result: pass; intentional OOM fixture still traps under the 42-page cap
-date: 2026-04-30
+date: 2026-04-29
 
 command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-memory-policy-child.wasm --host-deny
 result: pass
-date: 2026-04-30
+date: 2026-04-29
 
 command: printf '10\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
 result: blocked; `Exception: unreachable`
-date: 2026-04-30
+date: 2026-04-29
 
 command: printf '69\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
 result: blocked; `Exception: unreachable`
-date: 2026-04-30
+date: 2026-04-29
 
 command: printf '1099898\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
 result: blocked; `Exception: unreachable`
-date: 2026-04-30
+date: 2026-04-29
 ```
 
 Remaining risks:

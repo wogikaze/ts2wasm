@@ -255,7 +255,7 @@ out-of-bounds write but not yet safe to close.
   allocator free-list corruption bug. Issue 300 remains open until issue 303 is
   resolved and the three ABC451 official samples are verified.
 
-2026-04-30 child `019dda50-d705-7782-bce9-c7e3e8dbf72d` memory-policy follow-up:
+2026-04-29 child `019dda50-d705-7782-bce9-c7e3e8dbf72d` memory-policy follow-up:
 
 - Implemented issue 303's bounded memory policy by raising
   `Layout::MEMORY_MAX_PAGES` from 16 to 42 pages. The depth-7 ABC451 live-set
