@@ -66,6 +66,8 @@ TypeScript は実行時には JavaScript であるため、値表現は JS 値�
 | bigint    | heap object         | 段階対応 |
 | symbol    | interned value      | 段階対応 |
 
+BigInt は heap object representation を採用する。`RawValue` の low-bit tag は増やさず、object-tagged heap pointer の header kind で BigInt を判別する。literal allocation、arithmetic、comparison/coercion、builtin/string conversion は `docs/14-runtime-abi.md` の BigInt ABI boundary と issue 259-262 の実装 slice で段階的に導入する。
+
 性能を考えると、すべてを boxed value にすると遅くなる。そのため、型情報と範囲解析が十分にある場合は fast path を生成する。たとえば TypeScript 上では `let x: number` と書かれた値でも、局所的に整数範囲であることを compiler が証明できる場合は、内部 IR では unboxed integer として扱える。ただし、ユーザーに `i32` のような AssemblyScript 由来の型注釈を書かせてはいけない。JavaScript の `number` は基本的に IEEE 754 double なので、TypeScript の型注釈だけで勝手に整数意味論に変えてはいけない。最適化は意味論を壊さない範囲で行う。
 
 ## メモリ管理
