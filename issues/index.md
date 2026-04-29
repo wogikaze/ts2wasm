@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 1 | 1 | 0 |
 | docs | 2 | 0 | 2 |
-| frontend | 191 | 126 | 65 |
+| frontend | 193 | 128 | 65 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 63 | 10 | 53 |
+| runtime | 68 | 15 | 53 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 292 | 140 | 152 |
+| total | 299 | 147 | 152 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,6 +48,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | implementation-ready | P2 | 259 | BigInt cannot share the current primitive equality/comparison helpers because Number/BigInt and String/BigInt coercio... |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | implementation-ready | P2 | 259 | After BigInt values exist, builtin and conversion behavior still needs explicit runtime helpers and diagnostics so `B... |
 | 267 | Implement interactive web UI for test results | feature | coverage | implementation-ready | P1 |  | No interactive web UI for test results, coverage visualization, and historical comparison. |
+| 268 | Implement for loop increment operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement for loop increment operator |
+| 269 | Implement Math.pow | feature | runtime/builtins | implementation-ready | P2 |  | Implement Math.pow |
+| 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
+| 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
+| 272 | Implement Set | feature | runtime/builtins | implementation-ready | P2 |  | Implement Set |
+| 273 | Implement recursive function calls | feature | runtime/semantics | implementation-ready | P2 |  | Implement recursive function calls |
+| 274 | Implement spread operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement spread operator |
 <!-- generated:ready:end -->
 
 ## Blocked queue
