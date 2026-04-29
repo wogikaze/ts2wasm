@@ -3,12 +3,14 @@ id: 299
 title: "Support Array.sort numeric comparator slice"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -52,10 +54,10 @@ same observable subset Node uses for numeric ascending sort.
 
 In scope:
 
-- [ ] Recognize `.sort((a, b) => a - b)` on known dense array locals.
-- [ ] Implement a small in-place numeric sort runtime/lowering path.
-- [ ] Add focused Node/iwasm differential coverage.
-- [ ] Verify ABC451 advances past the `sort` blocker and record the next
+- [x] Recognize `.sort((a, b) => a - b)` on known dense array locals.
+- [x] Implement a small in-place numeric sort runtime/lowering path.
+- [x] Add focused Node/iwasm differential coverage.
+- [x] Verify ABC451 advances past the `sort` blocker and record the next
   blocker.
 
 Out of scope:
@@ -84,12 +86,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Focused fixture with `values.sort((a, b) => a - b)` matches Node output
+- [x] Focused fixture with `values.sort((a, b) => a - b)` matches Node output
   under `iwasm`.
-- [ ] Unsupported sort forms remain issue-linked diagnostics.
-- [ ] `fixtures/atcoder/abc451-d-concat-power2.ts` advances past
+- [x] Unsupported sort forms remain issue-linked diagnostics.
+- [x] `fixtures/atcoder/abc451-d-concat-power2.ts` advances past
   `unknown receiver class for method sort`.
-- [ ] No code path detects the ABC451 source text or substitutes another
+- [x] No code path detects the ABC451 source text or substitutes another
   program.
 
 ## Validation
@@ -117,40 +119,60 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- [x] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 ## Notes
 
 Prefer a simple O(n^2) in-place sort over dense tagged small-int numbers if it
 keeps the slice small and testable.
 
-## Completion evidence
+Progress on 2026-04-29:
 
-Fill only when moving to `done/`.
+- Added lowering for known dense-array `.sort((a, b) => a - b)` calls to the
+  new `ArraySortNumeric` runtime helper.
+- Added a small in-place numeric array sort helper over the current tagged
+  small-int representation. Unsupported comparator/default sort forms remain
+  `issue-299` diagnostics.
+- Added focused Node/iwasm coverage in
+  `fixtures/core-semantics/array-sort-numeric-comparator.ts` and unsupported
+  diagnostic coverage in
+  `fixtures/core-semantics/array-sort-default-unsupported.ts`.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` no longer stops at
+  `unknown receiver class for method sort`. The next visible blocker is
+  `error: [NumberOutOfRange] number literal 1000000000 is out of small-int
+  tagged range (-268435456..=268435455)`.
+
+## Completion evidence
 
 Commits:
 
-- `...`
+- `4bdfb86d` issue-299 numeric array sort implementation.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli array_sort_numeric_comparator_fixture_matches_node_output_under_iwasm array_sort_unsupported_forms_report_issue_299
+result: pass, 2 passed
+date: 2026-04-29
+
+command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-sort-child.wasm --host-deny
+result: advanced past issue-211 sort blocker; next blocker is NumberOutOfRange for 1000000000
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- This is intentionally limited to dense numeric arrays and comparator shape
+  `(a, b) => a - b`; broader ECMAScript sort semantics remain out of scope.
