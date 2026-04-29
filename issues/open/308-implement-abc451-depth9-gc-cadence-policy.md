@@ -637,3 +637,64 @@ Remaining risks:
 
 - Depth-9 search-only and official ABC451 sample compatibility remain open in
   issue 308 / issue 300.
+
+2026-04-29 child `019ddb5f-121b-7950-84ab-2af593faf5a9` evidence slice:
+
+- Reproduced the depth-9 live-set reducer from
+  `fixtures/core-semantics/abc451-depth8-live-set.ts` by changing the reducer
+  depth from 8 to 9. Node prints the expected `1404832`, while the committed
+  185-page runtime still traps in `$alloc_heap`:
+
+```text
+command: cp fixtures/core-semantics/abc451-depth8-live-set.ts /tmp/abc451-depth9-live-shape.ts && perl -0pi -e 's/remainDigits = 8 - before.length/remainDigits = 9 - before.length/' /tmp/abc451-depth9-live-shape.ts && node /tmp/abc451-depth9-live-shape.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cp fixtures/core-semantics/abc451-depth8-live-set.ts /tmp/abc451-depth9-live-shape-build.ts && perl -0pi -e 's/remainDigits = 8 - before.length/remainDigits = 9 - before.length/' /tmp/abc451-depth9-live-shape-build.ts && cargo run -q -- build /tmp/abc451-depth9-live-shape-build.ts -o /tmp/abc451-depth9-live-shape.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-depth9-live-shape.wasm
+result: trapped with Exception: unreachable after 10.10s under committed 185-page policy
+date: 2026-04-29
+```
+
+- Added temporary WAT-only instrumentation at the explicit
+  `needed_pages > remaining_pages` guard. The trap is now narrowed to a live
+  allocation shape where memory is already at `MEMORY_MAX_PAGES=185`, the
+  allocation needs one more page, no pages remain, and the swept free-list
+  summary is too small for the requested payload:
+
+```text
+command: wat2wasm /tmp/abc451-depth9-live-shape-instrumented.wat -o /tmp/abc451-depth9-live-shape-instrumented.wasm && /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-depth9-live-shape-instrumented.wasm
+result: diagnostic trap after 9.63s
+size: 6140
+block_size: 6160
+new_heap: 12126520
+memory_pages: 185
+needed_pages: 1
+remaining_pages: 0
+gc_free_list_max_body_size: 3584
+date: 2026-04-29
+```
+
+- The official smallest sample remains blocked under the same committed
+  memory policy:
+
+```text
+command: printf '10\n' | node fixtures/atcoder/abc451-d-concat-power2.ts
+result: pass; stdout 21
+date: 2026-04-29
+
+command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-live-shape.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-live-shape.wasm"
+result: trapped with Exception: unreachable after 5.64s under committed 185-page policy
+date: 2026-04-29
+```
+
+- No runtime policy change was committed. Raising `MEMORY_MAX_PAGES` remains
+  out of scope without official/reducer completion evidence and OOM regression
+  proof. Issue 308 remains open; issue 300 remains open.

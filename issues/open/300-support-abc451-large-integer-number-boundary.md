@@ -654,6 +654,39 @@ date: 2026-04-29
   until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
   committed runtime policy.
 
+2026-04-29 child `019ddb5f-121b-7950-84ab-2af593faf5a9` issue 308 follow-up:
+
+- Issue 308 WAT-only instrumentation narrowed the current depth-9 trap to the
+  explicit remaining-page guard with the committed cap already exhausted:
+
+```text
+size: 6140
+block_size: 6160
+new_heap: 12126520
+memory_pages: 185
+needed_pages: 1
+remaining_pages: 0
+gc_free_list_max_body_size: 3584
+```
+
+- This remains a runtime memory/live-set blocker, not issue 300 completion
+  evidence. The official smallest sample still matches Node at `21`, but wasm
+  traps under the committed 185-page cap:
+
+```text
+command: printf '10\n' | node fixtures/atcoder/abc451-d-concat-power2.ts
+result: pass; stdout 21
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-live-shape.wasm"
+result: trapped with Exception: unreachable after 5.64s under committed 185-page policy
+date: 2026-04-29
+```
+
+- No official ABC451 sample output parity is claimed; issue 300 remains open
+  until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
