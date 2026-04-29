@@ -654,6 +654,7 @@ const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
 ];
+const JSON_STRINGIFY_RUNTIME_STRINGS: &[&str] = &[""];
 const JSON_PARSE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
@@ -1417,7 +1418,7 @@ impl RuntimeFn {
                 deps: JSON_STRINGIFY_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: JSON_STRINGIFY_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::JsonParse => RuntimeSpec {
