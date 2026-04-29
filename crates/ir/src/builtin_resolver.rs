@@ -11,8 +11,555 @@ use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedParam, ResolvedStmt};
 
 pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
-    BigIntRuntimeGuard::default().visit_stmts(program)?;
+    let program = BigIntStaticBuiltinFolder::default().fold_stmts(program);
+    BigIntRuntimeGuard::default().visit_stmts(&program)?;
     program.iter().map(resolve_stmt).collect()
+}
+
+#[derive(Default)]
+struct BigIntStaticBuiltinFolder {
+    locals: HashMap<String, Expr>,
+}
+
+impl BigIntStaticBuiltinFolder {
+    fn fold_stmts(&mut self, stmts: &[Stmt]) -> Vec<Stmt> {
+        stmts.iter().map(|stmt| self.fold_stmt(stmt)).collect()
+    }
+
+    fn fold_stmt(&mut self, stmt: &Stmt) -> Stmt {
+        match stmt {
+            Stmt::Let { name, expr, span } => {
+                let expr = self.fold_expr(expr);
+                if let Some(value) = static_bigint_builtin_const_expr(&expr) {
+                    self.locals.insert(name.clone(), value);
+                } else {
+                    self.locals.remove(name);
+                }
+                Stmt::Let {
+                    name: name.clone(),
+                    expr,
+                    span: *span,
+                }
+            }
+            Stmt::Assign { name, expr, span } => {
+                let expr = self.fold_expr(expr);
+                if let Some(value) = static_bigint_builtin_const_expr(&expr) {
+                    self.locals.insert(name.clone(), value);
+                } else {
+                    self.locals.remove(name);
+                }
+                Stmt::Assign {
+                    name: name.clone(),
+                    expr,
+                    span: *span,
+                }
+            }
+            Stmt::Expr { expr, span } => Stmt::Expr {
+                expr: self.fold_expr(expr),
+                span: *span,
+            },
+            Stmt::If {
+                condition,
+                then_body,
+                else_body,
+                span,
+            } => {
+                let condition = self.fold_expr(condition);
+                let then_body = self.fork().fold_stmts(then_body);
+                let else_body = self.fork().fold_stmts(else_body);
+                self.invalidate_assigned_in_stmts(then_body.as_slice());
+                self.invalidate_assigned_in_stmts(else_body.as_slice());
+                Stmt::If {
+                    condition,
+                    then_body,
+                    else_body,
+                    span: *span,
+                }
+            }
+            Stmt::While {
+                condition,
+                body,
+                span,
+            } => {
+                let condition = self.fold_expr(condition);
+                let body = self.fork().fold_stmts(body);
+                self.invalidate_assigned_in_stmts(body.as_slice());
+                Stmt::While {
+                    condition,
+                    body,
+                    span: *span,
+                }
+            }
+            Stmt::Function {
+                name,
+                params,
+                body,
+                span,
+            } => Stmt::Function {
+                name: name.clone(),
+                params: params.clone(),
+                body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
+                span: *span,
+            },
+            Stmt::Return { expr, span } => Stmt::Return {
+                expr: self.fold_expr(expr),
+                span: *span,
+            },
+            Stmt::ClassDecl {
+                name,
+                extends,
+                body,
+                static_blocks,
+                private_elements,
+                span,
+            } => Stmt::ClassDecl {
+                name: name.clone(),
+                extends: extends
+                    .as_ref()
+                    .map(|extends| Box::new(self.fold_expr(extends))),
+                body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
+                static_blocks: static_blocks
+                    .iter()
+                    .map(|block| ClassStaticBlock {
+                        body: BigIntStaticBuiltinFolder::default().fold_stmts(&block.body),
+                        span: block.span,
+                    })
+                    .collect(),
+                private_elements: private_elements.clone(),
+                span: *span,
+            },
+            Stmt::TryCatch {
+                try_block,
+                catch_param,
+                catch_block,
+                finally_block,
+                span,
+            } => {
+                let try_block = self.fork().fold_stmts(try_block);
+                let catch_block = catch_block
+                    .as_ref()
+                    .map(|body| self.fork().fold_stmts(body));
+                let finally_block = finally_block
+                    .as_ref()
+                    .map(|body| self.fork().fold_stmts(body));
+                self.invalidate_assigned_in_stmts(try_block.as_slice());
+                if let Some(catch_block) = &catch_block {
+                    self.invalidate_assigned_in_stmts(catch_block.as_slice());
+                }
+                if let Some(finally_block) = &finally_block {
+                    self.invalidate_assigned_in_stmts(finally_block.as_slice());
+                }
+                Stmt::TryCatch {
+                    try_block,
+                    catch_param: catch_param.clone(),
+                    catch_block,
+                    finally_block,
+                    span: *span,
+                }
+            }
+            Stmt::Throw { expr, span } => Stmt::Throw {
+                expr: self.fold_expr(expr),
+                span: *span,
+            },
+            Stmt::Switch { expr, cases, span } => {
+                let expr = self.fold_expr(expr);
+                let cases = cases
+                    .iter()
+                    .map(|(case_expr, body)| {
+                        let case_expr = case_expr.as_ref().map(|expr| self.fold_expr(expr));
+                        let body = self.fork().fold_stmts(body);
+                        self.invalidate_assigned_in_stmts(body.as_slice());
+                        (case_expr, body)
+                    })
+                    .collect();
+                Stmt::Switch {
+                    expr,
+                    cases,
+                    span: *span,
+                }
+            }
+            Stmt::DoWhile {
+                body,
+                condition,
+                span,
+            } => {
+                let body = self.fork().fold_stmts(body);
+                let condition = self.fold_expr(condition);
+                self.invalidate_assigned_in_stmts(body.as_slice());
+                Stmt::DoWhile {
+                    body,
+                    condition,
+                    span: *span,
+                }
+            }
+            Stmt::For {
+                init,
+                condition,
+                update,
+                body,
+                span,
+            } => {
+                let mut loop_folder = self.fork();
+                let init = init
+                    .as_ref()
+                    .map(|init| Box::new(loop_folder.fold_stmt(init)));
+                let condition = condition
+                    .as_ref()
+                    .map(|condition| loop_folder.fold_expr(condition));
+                let update = update.as_ref().map(|update| loop_folder.fold_expr(update));
+                let body = loop_folder.fold_stmts(body);
+                if let Some(update) = &update {
+                    self.invalidate_assigned_in_expr(update);
+                }
+                self.invalidate_assigned_in_stmts(body.as_slice());
+                Stmt::For {
+                    init,
+                    condition,
+                    update,
+                    body,
+                    span: *span,
+                }
+            }
+            Stmt::ForIn {
+                var,
+                iter,
+                body,
+                span,
+            } => {
+                let iter = self.fold_expr(iter);
+                let mut body_folder = self.fork();
+                body_folder.locals.remove(var);
+                let body = body_folder.fold_stmts(body);
+                self.locals.remove(var);
+                self.invalidate_assigned_in_stmts(body.as_slice());
+                Stmt::ForIn {
+                    var: var.clone(),
+                    iter,
+                    body,
+                    span: *span,
+                }
+            }
+            Stmt::ForOf {
+                var,
+                iter,
+                body,
+                span,
+            } => {
+                let iter = self.fold_expr(iter);
+                let mut body_folder = self.fork();
+                body_folder.locals.remove(var);
+                let body = body_folder.fold_stmts(body);
+                self.locals.remove(var);
+                self.invalidate_assigned_in_stmts(body.as_slice());
+                Stmt::ForOf {
+                    var: var.clone(),
+                    iter,
+                    body,
+                    span: *span,
+                }
+            }
+            Stmt::Labeled { label, body, span } => Stmt::Labeled {
+                label: label.clone(),
+                body: Box::new(self.fold_stmt(body)),
+                span: *span,
+            },
+            Stmt::ExportDefault {
+                expr,
+                default_span,
+                span,
+            } => Stmt::ExportDefault {
+                expr: self.fold_expr(expr),
+                default_span: *default_span,
+                span: *span,
+            },
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                span,
+            } => Stmt::ExportDecl {
+                declaration: Box::new(self.fold_stmt(declaration)),
+                specifier: specifier.clone(),
+                span: *span,
+            },
+            Stmt::ImportSideEffect { .. }
+            | Stmt::ImportNamed { .. }
+            | Stmt::ImportDefault { .. }
+            | Stmt::ImportDefaultNamed { .. }
+            | Stmt::ImportNamespace { .. }
+            | Stmt::ImportDefaultNamespace { .. }
+            | Stmt::ExportNamed { .. }
+            | Stmt::ExportNamedFrom { .. }
+            | Stmt::ExportAllFrom { .. }
+            | Stmt::ExportNamespaceFrom { .. }
+            | Stmt::Break { .. }
+            | Stmt::Continue { .. } => stmt.clone(),
+        }
+    }
+
+    fn fold_expr(&mut self, expr: &Expr) -> Expr {
+        match expr {
+            Expr::Call { callee, args, span } if is_bigint_static_builtin_callee(callee) => {
+                let callee = Box::new(self.fold_expr(callee));
+                let args = args
+                    .iter()
+                    .map(|arg| {
+                        if let Expr::Ident { name, .. } = arg {
+                            self.locals
+                                .get(name)
+                                .cloned()
+                                .unwrap_or_else(|| self.fold_expr(arg))
+                        } else {
+                            self.fold_expr(arg)
+                        }
+                    })
+                    .collect();
+                Expr::Call {
+                    callee,
+                    args,
+                    span: *span,
+                }
+            }
+            Expr::Call { callee, args, span } => Expr::Call {
+                callee: Box::new(self.fold_expr(callee)),
+                args: args.iter().map(|arg| self.fold_expr(arg)).collect(),
+                span: *span,
+            },
+            Expr::OptionalCall { callee, args, span } => Expr::OptionalCall {
+                callee: Box::new(self.fold_expr(callee)),
+                args: args.iter().map(|arg| self.fold_expr(arg)).collect(),
+                span: *span,
+            },
+            Expr::Unary { op, expr, span } => Expr::Unary {
+                op: *op,
+                expr: Box::new(self.fold_expr(expr)),
+                span: *span,
+            },
+            Expr::Binary {
+                left,
+                op,
+                right,
+                span,
+            } => Expr::Binary {
+                left: Box::new(self.fold_expr(left)),
+                op: *op,
+                right: Box::new(self.fold_expr(right)),
+                span: *span,
+            },
+            Expr::Member {
+                object,
+                property,
+                span,
+            } => Expr::Member {
+                object: Box::new(self.fold_expr(object)),
+                property: property.clone(),
+                span: *span,
+            },
+            Expr::OptionalMember {
+                object,
+                property,
+                span,
+            } => Expr::OptionalMember {
+                object: Box::new(self.fold_expr(object)),
+                property: property.clone(),
+                span: *span,
+            },
+            Expr::Assign { name, expr, span } => {
+                let folded = self.fold_expr(expr);
+                if let Some(value) = static_bigint_builtin_const_expr(&folded) {
+                    self.locals.insert(name.clone(), value);
+                } else {
+                    self.locals.remove(name);
+                }
+                Expr::Assign {
+                    name: name.clone(),
+                    expr: Box::new(folded),
+                    span: *span,
+                }
+            }
+            Expr::LogicalAssign {
+                name,
+                op,
+                expr,
+                span,
+            } => {
+                self.locals.remove(name);
+                Expr::LogicalAssign {
+                    name: name.clone(),
+                    op: *op,
+                    expr: Box::new(self.fold_expr(expr)),
+                    span: *span,
+                }
+            }
+            Expr::LogicalPropertyAssign {
+                object,
+                object_expr,
+                property,
+                computed_key,
+                op,
+                expr,
+                span,
+            } => Expr::LogicalPropertyAssign {
+                object: object.clone(),
+                object_expr: object_expr
+                    .as_ref()
+                    .map(|object_expr| Box::new(self.fold_expr(object_expr))),
+                property: property.clone(),
+                computed_key: computed_key
+                    .as_ref()
+                    .map(|computed_key| Box::new(self.fold_expr(computed_key))),
+                op: *op,
+                expr: Box::new(self.fold_expr(expr)),
+                span: *span,
+            },
+            Expr::Array { elements, span } => Expr::Array {
+                elements: elements
+                    .iter()
+                    .map(|element| self.fold_expr(element))
+                    .collect(),
+                span: *span,
+            },
+            Expr::Object { props, span } => Expr::Object {
+                props: props
+                    .iter()
+                    .map(|(key, value)| (key.clone(), self.fold_expr(value)))
+                    .collect(),
+                span: *span,
+            },
+            Expr::Index {
+                object,
+                index,
+                span,
+            } => Expr::Index {
+                object: Box::new(self.fold_expr(object)),
+                index: Box::new(self.fold_expr(index)),
+                span: *span,
+            },
+            Expr::OptionalIndex {
+                object,
+                index,
+                span,
+            } => Expr::OptionalIndex {
+                object: Box::new(self.fold_expr(object)),
+                index: Box::new(self.fold_expr(index)),
+                span: *span,
+            },
+            Expr::New { expr, args, span } => Expr::New {
+                expr: Box::new(self.fold_expr(expr)),
+                args: args.iter().map(|arg| self.fold_expr(arg)).collect(),
+                span: *span,
+            },
+            Expr::TypeOf { expr, span } => Expr::TypeOf {
+                expr: Box::new(self.fold_expr(expr)),
+                span: *span,
+            },
+            Expr::InstanceOf {
+                expr,
+                type_expr,
+                span,
+            } => Expr::InstanceOf {
+                expr: Box::new(self.fold_expr(expr)),
+                type_expr: Box::new(self.fold_expr(type_expr)),
+                span: *span,
+            },
+            Expr::Ternary {
+                condition,
+                then_expr,
+                else_expr,
+                span,
+            } => Expr::Ternary {
+                condition: Box::new(self.fold_expr(condition)),
+                then_expr: Box::new(self.fork().fold_expr(then_expr)),
+                else_expr: Box::new(self.fork().fold_expr(else_expr)),
+                span: *span,
+            },
+            Expr::ArrowFn { params, body, span } => Expr::ArrowFn {
+                params: params.clone(),
+                body: Box::new(BigIntStaticBuiltinFolder::default().fold_expr(body)),
+                span: *span,
+            },
+            Expr::FunctionExpr {
+                name,
+                params,
+                body,
+                span,
+            } => Expr::FunctionExpr {
+                name: name.clone(),
+                params: params.clone(),
+                body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
+                span: *span,
+            },
+            Expr::Spread { expr, span } => Expr::Spread {
+                expr: Box::new(self.fold_expr(expr)),
+                span: *span,
+            },
+            Expr::PropertyAssign {
+                object,
+                property,
+                value,
+                span,
+            } => Expr::PropertyAssign {
+                object: Box::new(self.fold_expr(object)),
+                property: property.clone(),
+                value: Box::new(self.fold_expr(value)),
+                span: *span,
+            },
+            Expr::IndexAssign {
+                object,
+                index,
+                value,
+                span,
+            } => Expr::IndexAssign {
+                object: Box::new(self.fold_expr(object)),
+                index: Box::new(self.fold_expr(index)),
+                value: Box::new(self.fold_expr(value)),
+                span: *span,
+            },
+            Expr::Number { .. }
+            | Expr::BigInt { .. }
+            | Expr::String { .. }
+            | Expr::Bool { .. }
+            | Expr::Null { .. }
+            | Expr::Undefined { .. }
+            | Expr::This { .. }
+            | Expr::Ident { .. } => expr.clone(),
+        }
+    }
+
+    fn fork(&self) -> Self {
+        Self {
+            locals: self.locals.clone(),
+        }
+    }
+
+    fn invalidate_assigned_in_stmts(&mut self, stmts: &[Stmt]) {
+        for name in assigned_names_in_stmts(stmts) {
+            self.locals.remove(&name);
+        }
+    }
+
+    fn invalidate_assigned_in_expr(&mut self, expr: &Expr) {
+        for name in assigned_names_in_expr(expr) {
+            self.locals.remove(&name);
+        }
+    }
+}
+
+fn static_bigint_builtin_const_expr(expr: &Expr) -> Option<Expr> {
+    match expr {
+        Expr::Number { .. } | Expr::BigInt { .. } => Some(expr.clone()),
+        _ => None,
+    }
+}
+
+fn is_bigint_static_builtin_callee(callee: &Expr) -> bool {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return false;
+    };
+    matches!(object.as_ref(), Expr::Ident { name, .. } if name == "BigInt")
+        && matches!(property.as_str(), "asIntN" | "asUintN")
 }
 
 fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {

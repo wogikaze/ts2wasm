@@ -119,6 +119,13 @@ Follow-up issues:
 
 Issue 262 closed the literal-safe builtin slice: `BigInt(...)` for supported static inputs, known-BigInt `String(...)` and interpolation ToString, and selected literal `asIntN` / `asUintN` folding.
 
+2026-04-29 progress: resolver-side pre-folding now recognizes direct
+identifier-bound number/BigInt literal inputs for `BigInt.asIntN` and
+`BigInt.asUintN` when the value is still known at the call site. This covers
+`const bits = 8; const value = 255n; console.log(BigInt.asIntN(bits, value));`
+without adding runtime helpers or broadening the runtime BigInt representation.
+Bindings invalidated by later assignment remain issue-280 diagnostics.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
