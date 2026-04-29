@@ -154,6 +154,18 @@ the first block-function declaration behavior.
 - Added `direct-eval-block-function-shadowed-unsupported.ts` to prove local
   `eval` shadowing is rejected.
 
+2026-04-29 parent validation:
+
+- Merged the static block-function fixture slice and shadowed-eval guard after
+  focused validation.
+- Parent reference coverage for both selected files now advances from the
+  original `eval` unsupported feature bucket to
+  `UnresolvedName/name-resolution`.
+- Remaining work for this issue is the next direct-eval binding slice: expand
+  the selected static eval source into the caller's variable environment enough
+  for the introduced function binding to resolve without treating broader
+  dynamic eval as supported.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
