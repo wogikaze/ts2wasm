@@ -1146,6 +1146,11 @@ fn spread_operator_string_literal_call_fixture_matches_node_output_under_iwasm()
 }
 
 #[test]
+fn spread_operator_string_local_call_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-call-string-local.ts");
+}
+
+#[test]
 fn spread_operator_literal_iife_call_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-call-iife-literal-array.ts");
 }

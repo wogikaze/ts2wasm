@@ -93,3 +93,6 @@ cargo fmt --all --check
 - 2026-04-29: Added an ASCII string literal call-spread slice:
   - direct fixed-arity function calls such as `join(..."abc")` lower to one-character string arguments and match Node/iwasm output;
   - string locals, non-ASCII string iterator parity, custom iterable call spread, rest/`arguments`-observing callees, sparse arrays, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.
+- 2026-04-29: Added an ASCII literal-derived string local call-spread slice:
+  - direct fixed-arity function calls such as `join(...copy)` where `copy` is assigned from a known ASCII string literal local lower to one-character string arguments and match Node/iwasm output;
+  - non-ASCII string iterator parity, runtime-computed string locals, custom iterable call spread, sparse arrays, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.
