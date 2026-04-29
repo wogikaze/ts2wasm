@@ -53,9 +53,9 @@ true
 
 In scope:
 
-- [ ] Support `new Set(array)` for dense arrays in the current runtime representation.
-- [ ] Preserve observable calls through `Set.prototype.add` for the supported slice.
-- [ ] Add Node/iwasm differential coverage based on `set-iterable-calls-add.js`.
+- [x] Support `new Set(array)` for dense arrays in the current runtime representation.
+- [ ] Preserve observable calls through `Set.prototype.add` for the supported slice; split to issue 279.
+- [x] Add Node/iwasm differential coverage for dense-array construction.
 
 Out of scope:
 
@@ -79,9 +79,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A fixture based on `set-iterable-calls-add.js` shows the supported iterable constructor calls `Set.prototype.add` for each array element.
-- [ ] The resulting Set contains each provided value.
-- [ ] Node and iwasm stdout match for the fixture.
+- [ ] A fixture based on `set-iterable-calls-add.js` shows the supported iterable constructor calls `Set.prototype.add` for each array element; split to issue 279.
+- [x] The resulting Set contains each provided value.
+- [x] Node and iwasm stdout match for the dense-array constructor fixture.
 
 ## Validation
 
@@ -114,11 +114,49 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/279-implement-observable-set-constructor-add-dispatch.md`
 
 ## Notes
 
 Split from stale broad issue 272 after issue 049 closed the zero-argument constructor/add/has/delete subset.
+
+## Progress evidence
+
+- 2026-04-29: Added `SetFromArray` runtime helper and lowering for `new Set(array)` when the constructor argument is a known dense array. This path preserves existing `new Set()`, `add`, `has`, `delete`, `size`, and `clear` behavior.
+- 2026-04-29: Added `fixtures/builtins-and-io/set-constructor-array.ts` and `set_constructor_array_fixture_matches_node_output_under_iwasm` to prove dense-array construction, duplicate suppression through current Set storage, `has`, and `size`.
+- 2026-04-29: Split observable `Set.prototype.add` monkey-patch dispatch to issue 279 because current Set methods are direct runtime helpers and Set prototype method mutation is not modeled yet.
+
+Validation result:
+
+```text
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/set-constructor-array.ts -o /tmp/issue276-set-array.wasm && iwasm /tmp/issue276-set-array.wasm && node fixtures/builtins-and-io/set-constructor-array.ts
+result: pass; iwasm and Node printed `true`, `true`, `false`, `2`
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli set
+result: pass; 5 tests run, 5 passed, 329 skipped
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli map_set_collection_fixture_matches_node_output_under_iwasm set_size_clear_fixture_matches_node_output_under_iwasm
+result: pass; 2 tests run, 2 passed, 332 skipped
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass; 521 tests run, 521 passed, 4 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass; issues/index.md regenerated
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-04-29
+
+command: mise run check issues
+result: pass; issues/index.md queue OK; check_issue_health OK
+date: 2026-04-29
+```
 
 ## Completion evidence
 

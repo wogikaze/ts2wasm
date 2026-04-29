@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 72 | 16 | 56 |
+| runtime | 73 | 17 | 56 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 303 | 146 | 157 |
+| total | 304 | 147 | 157 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -54,6 +54,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 276 | Implement Set constructor from supported iterables | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 validates only the zero-argument Set constructor; the broad issue 272 cited `reference/test262/test/built-i... |
 | 277 | Implement Set SameValueZero identity | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 explicitly closed basic Set operations while recording that Map/Set keys are currently normalized through `... |
 | 278 | Implement Set iteration | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 deliberately left Map/Set iteration out of scope, and issue 272's broad "Test262 Set tests pass" criterion ... |
+| 279 | Implement observable Set constructor add dispatch | feature | runtime/builtins | implementation-ready | P2 |  | issue 276 added a narrow dense-array constructor path through the current direct `$set_add` runtime helper, but the r... |
 <!-- generated:ready:end -->
 
 ## Blocked queue

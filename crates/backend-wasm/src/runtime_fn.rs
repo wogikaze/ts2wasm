@@ -105,6 +105,7 @@ pub(crate) enum RuntimeFn {
     SetDelete,
     SetSize,
     SetClear,
+    SetFromArray,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -409,6 +410,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetDelete" => Some(RuntimeFn::SetDelete),
         "SetSize" => Some(RuntimeFn::SetSize),
         "SetClear" => Some(RuntimeFn::SetClear),
+        "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "DateNew" => Some(RuntimeFn::DateNew),
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
@@ -690,6 +692,7 @@ const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::Pr
 const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
 const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
+const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
 const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, RuntimeFn::DateNew];
@@ -1273,6 +1276,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::SetFromArray => RuntimeSpec {
+                symbol: "$set_from_array",
+                deps: SET_FROM_ARRAY_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateNew => RuntimeSpec {
                 symbol: "$date_new",
                 deps: DATE_NEW_DEPS,
@@ -1793,6 +1804,7 @@ impl RuntimeFn {
             Self::SetDelete => "set_delete",
             Self::SetSize => "set_size",
             Self::SetClear => "set_clear",
+            Self::SetFromArray => "set_from_array",
             Self::DateNew => "date_new",
             Self::DateNewLive => "date_new_live",
             Self::DateNow => "date_now",
@@ -1918,6 +1930,7 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
+            Self::SetFromArray,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
@@ -2052,6 +2065,7 @@ impl RuntimeFn {
             Self::SetDelete,
             Self::SetSize,
             Self::SetClear,
+            Self::SetFromArray,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
