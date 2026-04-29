@@ -346,6 +346,7 @@ pub enum LoweredBinaryOp {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LoweredUnaryOp {
     Not,
+    Plus,
     Negate,
     TypeOf,
     Delete,
@@ -374,6 +375,9 @@ impl LoweredExpr {
             Self::String(_) => InferredType::String,
             Self::Bool(_) => InferredType::Boolean,
             Self::Unary { op, expr } => match op {
+                LoweredUnaryOp::Plus if expr.inferred_type() == InferredType::Number => {
+                    InferredType::Number
+                }
                 LoweredUnaryOp::Negate if expr.inferred_type() == InferredType::Number => {
                     InferredType::Number
                 }

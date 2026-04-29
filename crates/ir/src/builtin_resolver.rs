@@ -3830,6 +3830,7 @@ fn div_rem_abs(left: &[u8], right: &[u8]) -> (Vec<u8>, Vec<u8>) {
 fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
     match op {
         UnaryOp::Negate
+        | UnaryOp::Plus
         | UnaryOp::BitwiseNot
         | UnaryOp::Increment
         | UnaryOp::Decrement

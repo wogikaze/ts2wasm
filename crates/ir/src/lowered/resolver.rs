@@ -1273,6 +1273,16 @@ impl<'a> Resolver<'a> {
                     }
 
                     if method == "map"
+                        && unary_plus_arrow_callback(args)
+                        && self.is_known_array_expr(object)
+                    {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayMapUnaryPlus".to_owned(),
+                            args: vec![self.lower_expr(object)?],
+                        });
+                    }
+
+                    if method == "map"
                         && let ResolvedExpr::Array(elements) = object.as_ref()
                     {
                         return self.lower_array_literal_map_arrow(elements, args, *span);
@@ -2812,10 +2822,21 @@ impl<'a> Resolver<'a> {
     }
 
     fn update_array_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
-        if matches!(expr, ResolvedExpr::Array(_)) {
+        if self.resolved_expr_produces_dense_array(expr) {
             self.array_locals.insert(local_id);
         } else {
             self.array_locals.remove(&local_id);
+        }
+    }
+
+    fn resolved_expr_produces_dense_array(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Array(_) => true,
+            ResolvedExpr::MethodCall { object, method, args, .. } if method == "map" => {
+                self.is_known_array_expr(object)
+                    && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
+            }
+            _ => false,
         }
     }
 
@@ -3148,4 +3169,17 @@ fn string_constructor_arrow_callback(args: &[ResolvedExpr]) -> bool {
         return false;
     };
     arg_name == param
+}
+
+fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
+    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+        return false;
+    };
+    let [param] = params.as_slice() else {
+        return false;
+    };
+    let ResolvedExpr::Unary { op, expr } = body.as_ref() else {
+        return false;
+    };
+    *op == UnaryOp::Plus && matches!(expr.as_ref(), ResolvedExpr::Ident(name) if name == param)
 }

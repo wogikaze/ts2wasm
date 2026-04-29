@@ -186,6 +186,9 @@ impl WatEmitter<'_> {
                     LoweredUnaryOp::Not => {
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Not.symbol()))
                     }
+                    LoweredUnaryOp::Plus => {
+                        wat.push_str(&format!("{pad}(call $primitive_to_number_for_equality)\n"))
+                    }
                     LoweredUnaryOp::Negate => {
                         wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::Negate.symbol()))
                     }
