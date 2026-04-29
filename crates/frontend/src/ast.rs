@@ -428,6 +428,12 @@ pub enum Expr {
         body: Box<Expr>,
         span: Span,
     },
+    FunctionExpr {
+        name: String,
+        params: Vec<(String, Option<Expr>, bool)>,
+        body: Vec<Stmt>,
+        span: Span,
+    },
     Spread {
         expr: Box<Expr>,
         span: Span,
@@ -514,6 +520,7 @@ impl Expr {
             | Self::InstanceOf { span, .. }
             | Self::Ternary { span, .. }
             | Self::ArrowFn { span, .. }
+            | Self::FunctionExpr { span, .. }
             | Self::Spread { span, .. }
             | Self::PropertyAssign { span, .. }
             | Self::IndexAssign { span, .. }

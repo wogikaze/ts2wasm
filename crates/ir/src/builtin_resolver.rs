@@ -828,6 +828,26 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 body: Box::new(resolved_body),
             })
         }
+        Expr::FunctionExpr {
+            name, params, body, ..
+        } => Ok(ResolvedExpr::FunctionExpr {
+            name: name.clone(),
+            params: params
+                .iter()
+                .map(|(param_name, default, is_rest)| {
+                    Ok(ResolvedParam {
+                        name: param_name.clone(),
+                        default: default.as_ref().map(resolve_expr).transpose()?,
+                        is_rest: *is_rest,
+                        span: None,
+                    })
+                })
+                .collect::<Result<Vec<_>, Diagnostic>>()?,
+            body: body
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
+        }),
         Expr::Spread { expr, .. } => Ok(ResolvedExpr::Spread(Box::new(resolve_expr(expr)?))),
         Expr::TypeOf { expr, .. } => Ok(ResolvedExpr::Unary {
             op: UnaryOp::TypeOf,
@@ -1993,6 +2013,10 @@ impl BigIntRuntimeGuard {
                 Ok(None)
             }
             Expr::ArrowFn { body, .. } => BigIntRuntimeGuard::default().expr_bigint_info(body),
+            Expr::FunctionExpr { body, .. } => {
+                BigIntRuntimeGuard::default().visit_stmts(body)?;
+                Ok(None)
+            }
             Expr::Number { .. }
             | Expr::String { .. }
             | Expr::Bool { .. }
@@ -2325,6 +2349,7 @@ fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<String>) {
             collect_assigned_names_in_expr(value, names);
         }
         Expr::ArrowFn { .. }
+        | Expr::FunctionExpr { .. }
         | Expr::Number { .. }
         | Expr::BigInt { .. }
         | Expr::String { .. }
@@ -2578,6 +2603,7 @@ fn expr_contains_bigint(expr: &Expr) -> bool {
                 || expr_contains_bigint(else_expr)
         }
         Expr::ArrowFn { body, .. } => expr_contains_bigint(body),
+        Expr::FunctionExpr { .. } => false,
         Expr::PropertyAssign { object, value, .. } => {
             expr_contains_bigint(object) || expr_contains_bigint(value)
         }
@@ -2807,6 +2833,7 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::InstanceOf { span, .. }
         | Expr::Ternary { span, .. }
         | Expr::ArrowFn { span, .. }
+        | Expr::FunctionExpr { span, .. }
         | Expr::Spread { span, .. }
         | Expr::PropertyAssign { span, .. }
         | Expr::IndexAssign { span, .. } => Some(*span),
@@ -3042,6 +3069,7 @@ fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> {
             validate_static_block_expr(else_expr)
         }
         Expr::ArrowFn { body, .. } => validate_static_block_expr(body),
+        Expr::FunctionExpr { body, .. } => validate_static_block_stmts(body),
         Expr::Number { .. }
         | Expr::BigInt { .. }
         | Expr::String { .. }

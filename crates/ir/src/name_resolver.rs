@@ -482,6 +482,40 @@ impl NameResolver {
             Expr::Null { span } => Ok(Expr::Null { span: *span }),
             Expr::Undefined { span } => Ok(Expr::Undefined { span: *span }),
             Expr::This { span } => Ok(Expr::This { span: *span }),
+            Expr::FunctionExpr {
+                name,
+                params,
+                body,
+                span,
+            } => {
+                self.enter_scope();
+                self.function_depth += 1;
+                self.declare_binding(name, Some(*span))?;
+                for (param_name, default, is_rest) in params {
+                    if *is_rest && is_binding_pattern_text(param_name) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-251: rest parameter binding patterns are not supported"
+                                .to_owned(),
+                            span: Some(*span),
+                        });
+                    }
+                    self.declare_binding(param_name, Some(*span))?;
+                    if let Some(default_expr) = default {
+                        self.resolve_expr(default_expr)?;
+                    }
+                    let _ = is_rest;
+                }
+                let resolved_body = self.resolve_block(body)?;
+                self.function_depth -= 1;
+                self.exit_scope();
+                Ok(Expr::FunctionExpr {
+                    name: name.clone(),
+                    params: params.clone(),
+                    body: resolved_body,
+                    span: *span,
+                })
+            }
             Expr::Ident { name, span } => {
                 // Check if it's a function name
                 if self.functions.contains_key(name) || self.is_implicit_arguments(name) {
