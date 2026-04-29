@@ -1374,6 +1374,12 @@ fn fold_bigint_static_abstract_equality(
         Some((bigint, Some(bigint_from_bool(*value))))
     } else if let (ResolvedExpr::Bool(value), Some(bigint)) = (left, bigint_from_resolved(right)) {
         Some((bigint, Some(bigint_from_bool(*value))))
+    } else if let (Some(bigint), ResolvedExpr::Number(value)) = (bigint_from_resolved(left), right)
+    {
+        Some((bigint, Some(bigint_from_i32(*value))))
+    } else if let (ResolvedExpr::Number(value), Some(bigint)) = (left, bigint_from_resolved(right))
+    {
+        Some((bigint, Some(bigint_from_i32(*value))))
     } else {
         None
     };
@@ -1777,10 +1783,21 @@ impl BigIntRuntimeGuard {
                                 right,
                                 right_info.as_ref(),
                             );
+                        let static_bigint_number_equality =
+                            is_static_bigint_number_abstract_equality(
+                                left,
+                                left_info.as_ref(),
+                                *op,
+                                right,
+                                right_info.as_ref(),
+                            );
                         if both_bigint || strict_equality {
                             return Ok(None);
                         }
-                        if static_bigint_string_equality || static_bigint_boolean_equality {
+                        if static_bigint_string_equality
+                            || static_bigint_boolean_equality
+                            || static_bigint_number_equality
+                        {
                             return Ok(None);
                         }
                         return Err(bigint_comparison_runtime_diagnostic(*span));
@@ -2025,6 +2042,25 @@ fn is_static_bigint_boolean_abstract_equality(
     });
     let right_static_bigint = right_info.is_some_and(|info| {
         !info.runtime_needed && info.value.is_some() && matches!(left, Expr::Bool { .. })
+    });
+    left_static_bigint || right_static_bigint
+}
+
+fn is_static_bigint_number_abstract_equality(
+    left: &Expr,
+    left_info: Option<&BigIntStaticInfo>,
+    op: BinaryOp,
+    right: &Expr,
+    right_info: Option<&BigIntStaticInfo>,
+) -> bool {
+    if !matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual) {
+        return false;
+    }
+    let left_static_bigint = left_info.is_some_and(|info| {
+        !info.runtime_needed && info.value.is_some() && matches!(right, Expr::Number { .. })
+    });
+    let right_static_bigint = right_info.is_some_and(|info| {
+        !info.runtime_needed && info.value.is_some() && matches!(left, Expr::Number { .. })
     });
     left_static_bigint || right_static_bigint
 }
