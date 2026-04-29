@@ -105,7 +105,12 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
-            ResolvedStmt::Function { .. } | ResolvedStmt::ClassDecl { .. } => {}
+            ResolvedStmt::Function { .. } => {}
+            ResolvedStmt::ClassDecl { static_blocks, .. } => {
+                for block in static_blocks {
+                    top_level_statements.extend(resolver.lower_nested_block(block)?);
+                }
+            }
             _ => top_level_statements.push(resolver.lower_stmt(stmt)?),
         }
     }
