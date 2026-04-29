@@ -1,2 +1,2 @@
-JSON.parse("[1.5]");
-console.log("accepted");
+let arr = JSON.parse("[1.5]");
+console.log(arr[0]);
