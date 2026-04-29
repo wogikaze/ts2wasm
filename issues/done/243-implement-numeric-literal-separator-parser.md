@@ -9,6 +9,8 @@ depends_on: []
 blocks: ["059"]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -46,10 +48,10 @@ Valid numeric separators parse as the same numeric value as the equivalent liter
 
 In scope:
 
-- [ ] Parse decimal, binary, octal, and hexadecimal number literals with valid `_` separators.
-- [ ] Reject leading, trailing, doubled, and otherwise invalid separator placement.
-- [ ] Preserve source spans for the original literal.
-- [ ] Add parser/unit and CLI dump coverage for valid and invalid separator forms.
+- [x] Parse decimal, binary, octal, and hexadecimal number literals with valid `_` separators.
+- [x] Reject leading, trailing, doubled, and otherwise invalid separator placement.
+- [x] Preserve source spans for the original literal.
+- [x] Add parser/unit and CLI dump coverage for valid and invalid separator forms.
 
 Out of scope:
 
@@ -72,10 +74,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `let x = 1_000;` parses and `dump --ast --unparse` emits a numeric expression equivalent to `1000`.
-- [ ] At least one decimal, binary, octal, and hexadecimal valid separator case is covered.
-- [ ] At least one invalid doubled or trailing separator case reports an explicit diagnostic.
-- [ ] A focused reference slice under `reference/test262/test/language/literals/numeric/numeric-separators/` no longer fails due to `_000` being tokenized as an identifier.
+- [x] `let x = 1_000;` parses and `dump --ast --unparse` emits a numeric expression equivalent to `1000`.
+- [x] At least one decimal, binary, octal, and hexadecimal valid separator case is covered.
+- [x] At least one invalid doubled or trailing separator case reports an explicit diagnostic.
+- [x] A focused reference slice under `reference/test262/test/language/literals/numeric/numeric-separators/` no longer fails due to `_000` being tokenized as an identifier.
 
 ## Validation
 
@@ -104,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated if language-reference coverage rows change
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] not affected unless implementation status changes
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -124,14 +126,31 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `8d5c409` (`issue-243: support numeric literal separators`)
+- close commit records this issue completion
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: tmp=/tmp/ts2wasm-243-numeric-separator.ts; printf 'let x = 1_000;\nconsole.log(x);\n' > "$tmp"; cargo run -q -p ts2wasm-cli -- dump --ast --unparse "$tmp"
+result: pass; output normalized `1_000` to `1000`
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass; 61 tests run, 61 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: pass; 25 tests run, 25 passed
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter reference/test262/test/language/literals/numeric/numeric-separators/numeric-separator-literal-nzd-nsl-dd.js --detail
+result: pass; executed=1, unsupported=1, unsupported_diagcodes=UnresolvedName:1, unsupported_features=name-resolution:1; no parser-syntax or `_000` identifier split remains
+date: 2026-04-29
 ```
 
 Remaining risks:

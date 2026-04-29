@@ -83,7 +83,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 
 ## Implemented (high-level)
 
-- frontend crate（`crates/frontend`）: AST/span/diagnostic/token definitions plus lexer/parser implementation
+- frontend crate（`crates/frontend`）: AST/span/diagnostic/token definitions plus lexer/parser implementation; integer numeric literal separators are accepted for decimal, binary, octal, and hexadecimal literals
 - compiler/driver crate（`crates/compiler`）: build pipeline, dump pipeline, AST validation, lowering orchestration
 - TypeScript compiler API oracle: explicit `ts2wasm check <input.ts>` and `ts2wasm_frontend::check_typescript_file` type-check through the local TypeScript devDependency; the oracle also exposes binding/parameter/binary-expression type hints and number/string optimization candidates. Normal `build` does not invoke tsc.
 - WAT/WASM emitter と runtime subset（`crates/backend-wasm`）
