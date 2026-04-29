@@ -151,6 +151,19 @@ This issue was generated from exact stderr set frequency, not directory-level gr
   - `mise run check issues` failed because this worktree is missing `artifacts/coverage/results/test262-results.jsonl`; the same missing path is reported by unrelated open/done issue files 288, 289, 291, 284, 285, 286, and 293.
 - Not closed: this is not the full runtime fix for mutable outer environments, and the representative remains blocked from semantic pass by broader test262 harness/class support work.
 
+2026-04-29:
+
+- After issue 289 landed, the representative
+  `language/expressions/class/dstr/meth-ary-ptrn-elem-id-init-skipped.js`
+  no longer surfaces as the raw `initCount` unresolved-name bucket in the
+  narrow reference run. It now stops earlier at the class-method lexical capture
+  boundary with `unsupported_features=class:1`.
+- This is only PROGRESS for issue 292. The mutable outer environment lowering
+  required by the `initCount` default-initializer case is still not implemented.
+- Validation evidence:
+  - `mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-ptrn-elem-id-init-skipped.js` passed with `executed=1`, `unsupported=1`, `unsupported_diagcodes=UnsupportedSyntax:1`, `unsupported_features=class:1`.
+  - `cargo nextest run -E 'test(class_method_outer_local_capture_reports_spanned_issue_289) or test(rejects_top_level_function_outer_mutation_with_span_for_issue_292)'` passed with 2 tests.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
