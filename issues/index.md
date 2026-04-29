@@ -17,7 +17,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 021a | Implement wasm-encoder hello binary MVP | feature | backend | implementation-ready | P2 |  | The wasm backend needs a first direct binary emission slice for a WASI stdout fixture; WAT and wasm binary are equiva... |
 | 052b | Implement JSON non-integer number representation | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.parse` currently rejects JSON numbers that cannot be reduced exactly to the tagged small-int representation, ev... |
 | 052c | Implement JSON UTF-16 and surrogate string handling | feature | runtime/builtins | implementation-ready | P1 |  | JSON string parsing currently supports ASCII and ASCII-valued `\uXXXX` escapes, but rejects non-ASCII code points and... |
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
@@ -207,6 +206,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 020a | Design JavaScript semantic IR | feature | ir/semantics | see file |
 | 020b | Implement IR lowering from TypeScript AST | feature | ir/semantics | see file |
 | 020c | Add IR validation passes and document contracts | feature | ir/semantics | see file |
+| 021a | Implement wasm-encoder hello binary MVP | feature | backend | see `issues/done/021a-implement-wasm-encoder-hello-binary-mvp.md` |
 | 022 | Expand test262 differential coverage | feature | tests/coverage | see file |
 | 023 | Implement host-deny and auditable E2E manifest | feature | security/capability | see `issues/done/023-implement-host-deny-and-auditable-e2e-manifest.md` |
 | 024 | Migrate runtime module to runtime-abi crate | refactor | abi | see `issues/done/024-migrate-runtime-module-to-runtime-abi-crate.md` |
