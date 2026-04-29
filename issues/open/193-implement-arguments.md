@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same group key, title overlap)
+- `issues/done/062d-function-this-and-arguments.md` - Implement function this and arguments semantics (same group key, title overlap)
 - `issues/open/195-implement-argumentsBindsToFunctionScopeArgumentList.md` - Implement Argumentsbindstofunctionscopeargumentlist (same feature label, same group key, title overlap)
 - `issues/done/039-implement-spread-arguments.md` - Implement spread arguments (same group key, title overlap)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
