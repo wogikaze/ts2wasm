@@ -20,6 +20,7 @@ struct Resolver<'a> {
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
     bigint_locals: HashSet<LocalId>,
+    array_locals: HashSet<LocalId>,
     current_class: Option<String>,
     in_constructor: bool,
 }
@@ -72,6 +73,7 @@ impl<'a> Resolver<'a> {
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
+            array_locals: HashSet::new(),
             current_class: None,
             in_constructor: false,
         }
@@ -111,6 +113,7 @@ impl<'a> Resolver<'a> {
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
+            array_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
         };
@@ -199,6 +202,7 @@ impl<'a> Resolver<'a> {
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
+                self.update_array_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -234,6 +238,7 @@ impl<'a> Resolver<'a> {
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
+                self.update_array_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -1149,6 +1154,12 @@ impl<'a> Resolver<'a> {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
                         });
+                    }
+
+                    if (method == "map" && self.is_known_array_expr(object))
+                        || is_array_prototype_map_call_receiver(object, method)
+                    {
+                        return Err(unsupported_array_map_diagnostic(Some(*span)));
                     }
 
                     if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
@@ -2315,6 +2326,25 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    fn update_array_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if matches!(expr, ResolvedExpr::Array(_)) {
+            self.array_locals.insert(local_id);
+        } else {
+            self.array_locals.remove(&local_id);
+        }
+    }
+
+    fn is_known_array_expr(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Array(_) => true,
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local_id| self.array_locals.contains(&local_id)),
+            _ => false,
+        }
+    }
+
     fn expr_is_known_heap_closure(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::Call { callee, .. } => match callee.as_ref() {
@@ -2471,4 +2501,34 @@ fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnosti
         message: "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned(),
         span,
     }
+}
+
+fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-270: Array.prototype.map requires callback dispatch and new array allocation semantics that are not supported in this runtime slice".to_owned(),
+        span,
+    }
+}
+
+fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
+    method == "call" && matches_array_prototype_map_property(object)
+}
+
+fn matches_array_prototype_map_property(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    key == "map" && matches_array_prototype_property(object)
+}
+
+fn matches_array_prototype_property(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    key == "prototype"
+        && matches!(
+            object.as_ref(),
+            ResolvedExpr::Ident(name) if name == "Array"
+        )
 }
