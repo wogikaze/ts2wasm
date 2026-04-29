@@ -654,6 +654,27 @@ mod tests {
                     runtime_fn: "BigIntUnaryMinus".to_owned(),
                     args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
                 }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntMul".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntDiv".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntRem".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
             ],
             top_level_locals: vec![ts2wasm_ir::lowered::LocalId(0)],
             functions: vec![],
@@ -669,6 +690,18 @@ mod tests {
         assert!(
             plan.required_runtime_functions()
                 .contains(&RuntimeFn::BigIntUnaryMinus)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntMul)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntDiv)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntRem)
         );
         assert!(
             plan.required_runtime_functions()

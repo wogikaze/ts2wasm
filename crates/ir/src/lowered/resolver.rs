@@ -485,13 +485,23 @@ impl<'a> Resolver<'a> {
                             key: Box::new(self.lower_expr(left)?),
                         }),
                     }
-                } else if matches!(op, BinaryOp::Add | BinaryOp::Subtract)
+                } else if matches!(
+                    op,
+                    BinaryOp::Add
+                        | BinaryOp::Subtract
+                        | BinaryOp::Multiply
+                        | BinaryOp::Divide
+                        | BinaryOp::Modulo
+                )
                     && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
                 {
                     let runtime_fn = match op {
                         BinaryOp::Add => "BigIntAdd",
                         BinaryOp::Subtract => "BigIntSub",
+                        BinaryOp::Multiply => "BigIntMul",
+                        BinaryOp::Divide => "BigIntDiv",
+                        BinaryOp::Modulo => "BigIntRem",
                         _ => unreachable!("checked above"),
                     };
                     Ok(LoweredExpr::RuntimeCall {
@@ -1699,7 +1709,14 @@ impl<'a> Resolver<'a> {
                 *op == UnaryOp::Negate && self.resolved_expr_is_bigint(expr)
             }
             ResolvedExpr::Binary { left, op, right } => {
-                matches!(op, BinaryOp::Add | BinaryOp::Subtract)
+                matches!(
+                    op,
+                    BinaryOp::Add
+                        | BinaryOp::Subtract
+                        | BinaryOp::Multiply
+                        | BinaryOp::Divide
+                        | BinaryOp::Modulo
+                )
                     && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
             }

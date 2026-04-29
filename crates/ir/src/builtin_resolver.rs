@@ -1154,7 +1154,14 @@ impl BigIntRuntimeGuard {
                 let (Some(left_info), Some(right_info)) = (left_info, right_info) else {
                     return Err(bigint_mixed_runtime_diagnostic(*span));
                 };
-                if !matches!(op, BinaryOp::Add | BinaryOp::Subtract) {
+                if !matches!(
+                    op,
+                    BinaryOp::Add
+                        | BinaryOp::Subtract
+                        | BinaryOp::Multiply
+                        | BinaryOp::Divide
+                        | BinaryOp::Modulo
+                ) {
                     return Ok(None);
                 }
                 let runtime_needed = left_info.runtime_needed || right_info.runtime_needed;

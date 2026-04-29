@@ -636,6 +636,42 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(super) fn emit_bigint_mul(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_mul (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.mul
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
+    pub(super) fn emit_bigint_div(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_div (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.div_s
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
+    pub(super) fn emit_bigint_rem(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_rem (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.rem_s
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
     pub(super) fn emit_bigint_unary_minus(&self, wat: &mut String) {
         wat.push_str(
             r#"
