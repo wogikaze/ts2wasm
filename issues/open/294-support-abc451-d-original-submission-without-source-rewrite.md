@@ -265,6 +265,17 @@ This issue is intentionally blocked because the fixture crosses several existing
 - Split issue 298 for the repeated `for (let i = ...)` loop-local scope
   blocker.
 
+2026-04-29 progress:
+
+- Added the issue-298 repeated loop-local scope slice. Separate
+  `for (let i = ...)` loops now lower their initializer locals in distinct loop
+  scopes while true same-scope duplicate local diagnostics remain intact.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` advances beyond the
+  prior `DuplicateLocal: duplicate local binding: i` blocker.
+- Current first failure is now:
+  `error: [UnsupportedSyntax] issue-211: unknown receiver class for method
+  sort at 1200..1232`, on `allGoodInt.sort((a, b) => a - b)`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
