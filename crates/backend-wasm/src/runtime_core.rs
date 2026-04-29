@@ -803,6 +803,33 @@ impl WatEmitter<'_> {
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $scan)))
     (i32.const {zero}))
+
+  (func $bigint_equal_small_int (param $v i32) (param $n i32) (result i32)
+    (local $obj i32)
+    (local $sign i32)
+    (local $len i32)
+    (local $ptr i32)
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $sign (i32.load (i32.add (local.get $obj) (i32.const {bigint_sign_offset}))))
+    (if (i32.eqz (local.get $n))
+      (then
+        (return
+          (if (result i32)
+            (i32.eqz (local.get $sign))
+            (then (i32.const {one}))
+            (else (i32.const {zero}))))))
+    (if (i32.le_s (local.get $sign) (i32.const {zero}))
+      (then (return (i32.const {zero}))))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {bigint_decimal_len_offset}))))
+    (if (i32.ne (local.get $len) (i32.const {one}))
+      (then (return (i32.const {zero}))))
+    (local.set $ptr (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset})))
+    (if (result i32)
+      (i32.eq
+        (i32.load8_u (local.get $ptr))
+        (i32.add (i32.const {ascii_zero}) (local.get $n)))
+      (then (i32.const {one}))
+      (else (i32.const {zero}))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
@@ -813,6 +840,7 @@ impl WatEmitter<'_> {
             bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
             bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
             bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
             minus_one = -1,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
@@ -991,8 +1019,54 @@ impl WatEmitter<'_> {
       (then (return (i32.const {true_tag}))))
     (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
     (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
-    (if (i32.ne (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
-      (then (unreachable)))
+    (if (call $is_bigint (local.get $a))
+      (then
+        (if
+          (i32.or
+            (i32.eq (local.get $b) (i32.const {undefined_tag}))
+            (i32.eq (local.get $b) (i32.const {null_tag})))
+          (then (return (i32.const {false_tag}))))
+        (if (i32.eq (local.get $b) (i32.const {false_tag}))
+          (then
+            (return
+              (if (result i32)
+                (call $bigint_equal_small_int (local.get $a) (i32.const {zero}))
+                (then (i32.const {true_tag}))
+                (else (i32.const {false_tag}))))))
+        (if (i32.eq (local.get $b) (i32.const {true_tag}))
+          (then
+            (return
+              (if (result i32)
+                (call $bigint_equal_small_int (local.get $a) (i32.const {one}))
+                (then (i32.const {true_tag}))
+                (else (i32.const {false_tag}))))))
+        (if (i32.eqz (call $is_bigint (local.get $b)))
+          (then (unreachable)))))
+    (if
+      (i32.and
+        (call $is_bigint (local.get $b))
+        (i32.eqz (call $is_bigint (local.get $a))))
+      (then
+        (if
+          (i32.or
+            (i32.eq (local.get $a) (i32.const {undefined_tag}))
+            (i32.eq (local.get $a) (i32.const {null_tag})))
+          (then (return (i32.const {false_tag}))))
+        (if (i32.eq (local.get $a) (i32.const {false_tag}))
+          (then
+            (return
+              (if (result i32)
+                (call $bigint_equal_small_int (local.get $b) (i32.const {zero}))
+                (then (i32.const {true_tag}))
+                (else (i32.const {false_tag}))))))
+        (if (i32.eq (local.get $a) (i32.const {true_tag}))
+          (then
+            (return
+              (if (result i32)
+                (call $bigint_equal_small_int (local.get $b) (i32.const {one}))
+                (then (i32.const {true_tag}))
+                (else (i32.const {false_tag}))))))
+        (unreachable)))
     (if
       (i32.or
         (i32.eq (local.get $a) (i32.const {false_tag}))
