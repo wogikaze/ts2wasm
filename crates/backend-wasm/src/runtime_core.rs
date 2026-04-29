@@ -615,6 +615,57 @@ impl WatEmitter<'_> {
       (i32.const {scratch})
       (i32.sub (local.get $ptr) (i32.const {scratch}))))
 
+  (func $bigint_from_unsigned_i64 (param $value i64) (result i32)
+    (local $sign i32)
+    (local $ptr i32)
+    (local $start i32)
+    (local $left i32)
+    (local $right i32)
+    (local $tmp i32)
+    (local $work i64)
+    (local.set $ptr (i32.const {scratch}))
+    (local.set $sign
+      (if (result i32) (i64.eqz (local.get $value))
+        (then (i32.const 0))
+        (else (i32.const 1))))
+    (local.set $work (local.get $value))
+    (if (i64.eqz (local.get $work))
+      (then
+        (i32.store8 (local.get $ptr) (i32.const {ascii_zero}))
+        (local.set $ptr (i32.add (local.get $ptr) (i32.const 1))))
+      (else
+        (block $digits_done
+          (loop $digits
+            (i32.store8
+              (local.get $ptr)
+              (i32.add
+                (i32.wrap_i64 (i64.rem_u (local.get $work) (i64.const 10)))
+                (i32.const {ascii_zero})))
+            (local.set $ptr (i32.add (local.get $ptr) (i32.const 1)))
+            (local.set $work (i64.div_u (local.get $work) (i64.const 10)))
+            (br_if $digits (i64.gt_u (local.get $work) (i64.const 0)))))))
+    (local.set $start (i32.const {scratch}))
+    (local.set $left (local.get $start))
+    (local.set $right (i32.sub (local.get $ptr) (i32.const 1)))
+    (block $reverse_done
+      (loop $reverse
+        (br_if $reverse_done (i32.ge_u (local.get $left) (local.get $right)))
+        (local.set $tmp (i32.load8_u (local.get $left)))
+        (i32.store8 (local.get $left) (i32.load8_u (local.get $right)))
+        (i32.store8 (local.get $right) (local.get $tmp))
+        (local.set $left (i32.add (local.get $left) (i32.const 1)))
+        (local.set $right (i32.sub (local.get $right) (i32.const 1)))
+        (br $reverse)))
+    (call $make_bigint_literal
+      (local.get $sign)
+      (if (result i32) (i32.eqz (local.get $sign))
+        (then (i32.const 0))
+        (else (i32.const 1)))
+      (i32.wrap_i64 (local.get $value))
+      (i32.wrap_i64 (i64.shr_u (local.get $value) (i64.const 32)))
+      (i32.const {scratch})
+      (i32.sub (local.get $ptr) (i32.const {scratch}))))
+
   (func $bigint_signed_i64 (param $v i32) (result i64)
     (local $obj i32)
     (local $sign i32)
@@ -711,6 +762,138 @@ impl WatEmitter<'_> {
       (i64.sub (i64.const 0) (call $bigint_signed_i64 (local.get $v)))))
 "#,
         );
+    }
+
+    pub(super) fn emit_bigint_from_value(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_value_is_bigint (param $v i32) (result i32)
+    (local $obj i32)
+    (if (i32.ne (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then (return (i32.const {zero}))))
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (if (result i32)
+      (i32.eq
+        (i32.load
+          (i32.add
+            (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+            (i32.const {gc_flags_offset})))
+        (i32.const {gc_kind_bigint}))
+      (then (i32.const {one}))
+      (else (i32.const {zero}))))
+
+  (func $bigint_from_value (param $v i32) (result i32)
+    (if (call $bigint_value_is_bigint (local.get $v))
+      (then (return (local.get $v))))
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then
+        (return
+          (call $bigint_from_signed_i64
+            (i64.extend_i32_s
+              (i32.shr_s (local.get $v) (i32.const {number_shift})))))))
+    (if (i32.eq (local.get $v) (i32.const {true_tag}))
+      (then (return (call $bigint_from_signed_i64 (i64.const 1)))))
+    (if (i32.eq (local.get $v) (i32.const {false_tag}))
+      (then (return (call $bigint_from_signed_i64 (i64.const 0)))))
+    (unreachable))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
+    pub(super) fn emit_bigint_as_int_n(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_as_int_n (param $bits_value i32) (param $v i32) (result i32)
+    (local $bits i32)
+    (local $value i64)
+    (local $mask i64)
+    (local $unsigned i64)
+    (local $sign_bit i64)
+    (if (i32.ne (i32.and (local.get $bits_value) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then (unreachable)))
+    (local.set $bits (i32.shr_s (local.get $bits_value) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $bits) (i32.const 0))
+      (then (unreachable)))
+    (if (i32.gt_s (local.get $bits) (i32.const 64))
+      (then (unreachable)))
+    (if (i32.eqz (local.get $bits))
+      (then (return (call $bigint_from_signed_i64 (i64.const 0)))))
+    (local.set $value (call $bigint_signed_i64 (local.get $v)))
+    (if (i32.eq (local.get $bits) (i32.const 64))
+      (then (return (call $bigint_from_signed_i64 (local.get $value)))))
+    (local.set $mask
+      (i64.sub
+        (i64.shl
+          (i64.const 1)
+          (i64.extend_i32_u (local.get $bits)))
+        (i64.const 1)))
+    (local.set $unsigned (i64.and (local.get $value) (local.get $mask)))
+    (local.set $sign_bit
+      (i64.shl
+        (i64.const 1)
+        (i64.extend_i32_u (i32.sub (local.get $bits) (i32.const 1)))))
+    (if (i64.ge_u (local.get $unsigned) (local.get $sign_bit))
+      (then
+        (return
+          (call $bigint_from_signed_i64
+            (i64.sub
+              (local.get $unsigned)
+              (i64.shl
+                (i64.const 1)
+                (i64.extend_i32_u (local.get $bits))))))))
+    (call $bigint_from_signed_i64 (local.get $unsigned)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
+    pub(super) fn emit_bigint_as_uint_n(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_as_uint_n (param $bits_value i32) (param $v i32) (result i32)
+    (local $bits i32)
+    (local $value i64)
+    (local $mask i64)
+    (local $unsigned i64)
+    (if (i32.ne (i32.and (local.get $bits_value) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then (unreachable)))
+    (local.set $bits (i32.shr_s (local.get $bits_value) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $bits) (i32.const 0))
+      (then (unreachable)))
+    (if (i32.gt_s (local.get $bits) (i32.const 64))
+      (then (unreachable)))
+    (if (i32.eqz (local.get $bits))
+      (then (return (call $bigint_from_signed_i64 (i64.const 0)))))
+    (local.set $value (call $bigint_signed_i64 (local.get $v)))
+    (if (i32.eq (local.get $bits) (i32.const 64))
+      (then (return (call $bigint_from_unsigned_i64 (local.get $value)))))
+    (local.set $mask
+      (i64.sub
+        (i64.shl
+          (i64.const 1)
+          (i64.extend_i32_u (local.get $bits)))
+        (i64.const 1)))
+    (local.set $unsigned (i64.and (local.get $value) (local.get $mask)))
+    (call $bigint_from_signed_i64 (local.get $unsigned)))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+        ));
     }
 
     pub(super) fn emit_bigint_compare(&self, wat: &mut String) {

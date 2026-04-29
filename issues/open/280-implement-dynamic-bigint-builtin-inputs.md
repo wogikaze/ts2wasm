@@ -126,6 +126,15 @@ identifier-bound number/BigInt literal inputs for `BigInt.asIntN` and
 without adding runtime helpers or broadening the runtime BigInt representation.
 Bindings invalidated by later assignment remain issue-280 diagnostics.
 
+2026-04-29 progress: dynamic `BigInt.asIntN(bits, value)` and
+`BigInt.asUintN(bits, value)` now lower through standalone runtime helpers when
+the value is a guarded signed-i64-backed BigInt and the runtime bit width is in
+the supported `0..=64` range. Dynamic `BigInt(value)` now lowers for runtime
+boolean, tagged-int number, and BigInt inputs. Node/iwasm differential fixtures
+cover these dynamic helper paths, and non-BigInt `asIntN` / `asUintN` value
+inputs remain issue-280 diagnostics. The issue remains open for dynamic
+StringToBigInt and remaining out-of-slice dynamic conversion edges.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

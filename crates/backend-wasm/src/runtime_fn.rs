@@ -42,6 +42,9 @@ pub(crate) enum RuntimeFn {
     MakeBigIntLiteral,
     BigIntToString,
     BigIntToBoolean,
+    BigIntFromValue,
+    BigIntAsIntN,
+    BigIntAsUintN,
     BigIntUnaryMinus,
     BigIntAdd,
     BigIntSub,
@@ -374,6 +377,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MakeBigIntLiteral" => Some(RuntimeFn::MakeBigIntLiteral),
         "BigIntToString" => Some(RuntimeFn::BigIntToString),
         "BigIntToBoolean" => Some(RuntimeFn::BigIntToBoolean),
+        "BigIntFromValue" => Some(RuntimeFn::BigIntFromValue),
+        "BigIntAsIntN" => Some(RuntimeFn::BigIntAsIntN),
+        "BigIntAsUintN" => Some(RuntimeFn::BigIntAsUintN),
         "BigIntUnaryMinus" => Some(RuntimeFn::BigIntUnaryMinus),
         "BigIntAdd" => Some(RuntimeFn::BigIntAdd),
         "BigIntSub" => Some(RuntimeFn::BigIntSub),
@@ -595,6 +601,9 @@ const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const MAKE_BIGINT_LITERAL_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const BIGINT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
@@ -844,6 +853,30 @@ impl RuntimeFn {
             Self::BigIntToBoolean => RuntimeSpec {
                 symbol: "$bigint_to_boolean",
                 deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntFromValue => RuntimeSpec {
+                symbol: "$bigint_from_value",
+                deps: BIGINT_FROM_VALUE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntAsIntN => RuntimeSpec {
+                symbol: "$bigint_as_int_n",
+                deps: BIGINT_AS_INT_N_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntAsUintN => RuntimeSpec {
+                symbol: "$bigint_as_uint_n",
+                deps: BIGINT_AS_UINT_N_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1789,6 +1822,9 @@ impl RuntimeFn {
             Self::MakeBigIntLiteral => "make_bigint_literal",
             Self::BigIntToString => "bigint_to_string",
             Self::BigIntToBoolean => "bigint_to_boolean",
+            Self::BigIntFromValue => "bigint_from_value",
+            Self::BigIntAsIntN => "bigint_as_int_n",
+            Self::BigIntAsUintN => "bigint_as_uint_n",
             Self::BigIntUnaryMinus => "bigint_unary_minus",
             Self::BigIntAdd => "bigint_add",
             Self::BigIntSub => "bigint_sub",
@@ -1949,6 +1985,9 @@ impl RuntimeFn {
             Self::BigIntToString,
             Self::BigIntToBoolean,
             Self::BigIntAdd,
+            Self::BigIntFromValue,
+            Self::BigIntAsIntN,
+            Self::BigIntAsUintN,
             Self::BigIntUnaryMinus,
             Self::BigIntSub,
             Self::BigIntMul,
@@ -2087,6 +2126,9 @@ impl RuntimeFn {
             Self::BigIntToString,
             Self::BigIntToBoolean,
             Self::BigIntAdd,
+            Self::BigIntFromValue,
+            Self::BigIntAsIntN,
+            Self::BigIntAsUintN,
             Self::BigIntUnaryMinus,
             Self::BigIntSub,
             Self::BigIntMul,

@@ -10,6 +10,11 @@ use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedParam, ResolvedStmt};
 
+const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";
+const BIGINT_AS_INT_N_RUNTIME_CALL: &str = "__ts2wasm_bigint_as_int_n";
+const BIGINT_AS_UINT_N_RUNTIME_CALL: &str = "__ts2wasm_bigint_as_uint_n";
+const BIGINT_RUNTIME_OBJECT: &str = "__ts2wasm_bigint_runtime";
+
 pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     let program = BigIntStaticBuiltinFolder::default().fold_stmts(program);
     BigIntRuntimeGuard::default().visit_stmts(&program)?;
@@ -1930,7 +1935,17 @@ fn resolve_bigint_function_call(
             };
             bigint_from_i64(-i64::from(*value))
         }
-        _ => return Err(bigint_builtin_unsupported_diagnostic(span)),
+        ResolvedExpr::Null | ResolvedExpr::Undefined => {
+            return Err(bigint_builtin_unsupported_diagnostic(span));
+        }
+        _ => {
+            return Ok(ResolvedExpr::MethodCall {
+                object: Box::new(ResolvedExpr::Ident(BIGINT_RUNTIME_OBJECT.to_owned())),
+                method: BIGINT_FROM_VALUE_RUNTIME_CALL.to_owned(),
+                args: args.to_vec(),
+                span,
+            });
+        }
     };
     Ok(bigint_to_resolved(value))
 }
@@ -2125,7 +2140,7 @@ fn bigint_string_diagnostic(span: Span) -> Diagnostic {
 fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-280: BigInt(...) currently supports string, boolean, integer number, or BigInt literal inputs in this builtin slice".to_owned(),
+        message: "issue-280: BigInt(...) currently supports static string/boolean/integer number inputs and dynamic boolean/integer number/BigInt inputs in this builtin slice".to_owned(),
         span: Some(span),
     }
 }
@@ -2151,19 +2166,58 @@ fn resolve_bigint_static_function_call(
     let [bits_arg, value_arg] = args else {
         return Err(bigint_static_width_diagnostic(span));
     };
-    let bits = bigint_static_width(bits_arg, span)?;
-    let value = bigint_from_resolved(value_arg).ok_or_else(|| Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-280: BigInt.asIntN/asUintN currently require a BigInt literal value input"
-            .to_owned(),
-        span: Some(span),
-    })?;
-    let value = if property == "asIntN" {
-        bigint_as_int_n(bits, value)
-    } else {
-        bigint_as_uint_n(bits, value)
+    let static_bits = match bits_arg {
+        ResolvedExpr::Number(_) => Some(bigint_static_width(bits_arg, span)?),
+        ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::BigIntLiteral { .. } => return Err(bigint_static_width_diagnostic(span)),
+        _ => None,
     };
-    Ok(Some(bigint_to_resolved(value)))
+    let static_value = bigint_from_resolved(value_arg);
+    if let (Some(bits), Some(value)) = (static_bits, static_value) {
+        let value = if property == "asIntN" {
+            bigint_as_int_n(bits, value)
+        } else {
+            bigint_as_uint_n(bits, value)
+        };
+        return Ok(Some(bigint_to_resolved(value)));
+    }
+    if matches!(
+        value_arg,
+        ResolvedExpr::Number(_)
+            | ResolvedExpr::String(_)
+            | ResolvedExpr::Bool(_)
+            | ResolvedExpr::Null
+            | ResolvedExpr::Undefined
+    ) {
+        return Err(bigint_as_value_diagnostic(span));
+    }
+    Ok(Some(ResolvedExpr::MethodCall {
+        object: Box::new(ResolvedExpr::Ident(BIGINT_RUNTIME_OBJECT.to_owned())),
+        method: if property == "asIntN" {
+            BIGINT_AS_INT_N_RUNTIME_CALL
+        } else {
+            BIGINT_AS_UINT_N_RUNTIME_CALL
+        }
+        .to_owned(),
+        args: args.to_vec(),
+        span,
+    }))
+}
+
+fn bigint_runtime_call_name(name: &str) -> Option<&'static str> {
+    match name {
+        BIGINT_FROM_VALUE_RUNTIME_CALL => Some("BigIntFromValue"),
+        BIGINT_AS_INT_N_RUNTIME_CALL => Some("BigIntAsIntN"),
+        BIGINT_AS_UINT_N_RUNTIME_CALL => Some("BigIntAsUintN"),
+        _ => None,
+    }
+}
+
+pub(crate) fn bigint_runtime_fn_name(name: &str) -> Option<&'static str> {
+    bigint_runtime_call_name(name)
 }
 
 fn bigint_static_width(arg: &ResolvedExpr, span: Span) -> Result<u32, Diagnostic> {
@@ -2181,6 +2235,16 @@ fn bigint_static_width_diagnostic(span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message:
             "issue-280: BigInt.asIntN/asUintN currently support integer literal bit widths 0..64"
+                .to_owned(),
+        span: Some(span),
+    }
+}
+
+fn bigint_as_value_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message:
+            "issue-280: BigInt.asIntN/asUintN currently require a supported BigInt value input"
                 .to_owned(),
         span: Some(span),
     }
@@ -2561,6 +2625,65 @@ impl BigIntRuntimeGuard {
                     value,
                     helper_safe: left_info.helper_safe && right_info.helper_safe,
                     runtime_needed,
+                }))
+            }
+            Expr::Call { callee, args, span } if matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "BigInt") =>
+            {
+                let [arg] = args.as_slice() else {
+                    return Err(bigint_builtin_unsupported_diagnostic(*span));
+                };
+                self.expr_bigint_info(arg)?;
+                let static_supported_arg = match arg {
+                    Expr::String { .. }
+                    | Expr::Bool { .. }
+                    | Expr::Number { .. }
+                    | Expr::BigInt { .. } => true,
+                    Expr::Unary {
+                        op: UnaryOp::Negate,
+                        expr,
+                        ..
+                    } => matches!(expr.as_ref(), Expr::Number { .. }),
+                    _ => false,
+                };
+                if static_supported_arg {
+                    return Ok(None);
+                }
+                Ok(Some(BigIntStaticInfo {
+                    value: None,
+                    helper_safe: true,
+                    runtime_needed: true,
+                }))
+            }
+            Expr::Call { callee, args, span }
+                if is_bigint_static_builtin_callee(callee.as_ref()) =>
+            {
+                let [bits, value] = args.as_slice() else {
+                    return Err(bigint_static_width_diagnostic(*span));
+                };
+                let static_bits = match bits {
+                    Expr::Number { value, .. } if (0..=64).contains(value) => true,
+                    Expr::Number { .. }
+                    | Expr::String { .. }
+                    | Expr::Bool { .. }
+                    | Expr::Null { .. }
+                    | Expr::Undefined { .. }
+                    | Expr::BigInt { .. } => return Err(bigint_static_width_diagnostic(*span)),
+                    _ => {
+                        self.expr_bigint_info(bits)?;
+                        false
+                    }
+                };
+                let Some(value_info) = self.expr_bigint_info(value)? else {
+                    return Err(bigint_as_value_diagnostic(*span));
+                };
+                let runtime_needed = !static_bits || value_info.runtime_needed;
+                if runtime_needed && !value_info.helper_safe {
+                    return Err(bigint_as_value_diagnostic(*span));
+                }
+                Ok(Some(BigIntStaticInfo {
+                    value: None,
+                    helper_safe: true,
+                    runtime_needed: true,
                 }))
             }
             Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {

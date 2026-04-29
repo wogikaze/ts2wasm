@@ -689,6 +689,24 @@ mod tests {
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
                     ],
                 }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntFromValue".to_owned(),
+                    args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntAsIntN".to_owned(),
+                    args: vec![
+                        LoweredExpr::Number(8),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntAsUintN".to_owned(),
+                    args: vec![
+                        LoweredExpr::Number(8),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
             ],
             top_level_locals: vec![ts2wasm_ir::lowered::LocalId(0)],
             functions: vec![],
@@ -719,7 +737,23 @@ mod tests {
         );
         assert!(
             plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntFromValue)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntAsIntN)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntAsUintN)
+        );
+        assert!(
+            plan.required_runtime_functions()
                 .contains(&RuntimeFn::MakeBigIntLiteral)
+        );
+        assert!(
+            plan.required_imports().is_empty(),
+            "dynamic BigInt builtin helpers must not add host imports"
         );
     }
 

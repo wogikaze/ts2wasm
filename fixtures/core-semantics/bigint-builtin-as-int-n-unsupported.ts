@@ -1,3 +1,2 @@
-let bits = 8;
-bits = bits + 0;
-console.log(BigInt.asIntN(bits, 255n));
+let value = 255;
+console.log(BigInt.asIntN(8, value));
