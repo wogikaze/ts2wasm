@@ -1,4 +1,8 @@
 let fromString = BigInt("10");
+let fromBinaryString = BigInt("0b101");
+let fromOctalString = BigInt("0o17");
+let fromHexString = BigInt("  0Xff  ");
+let fromEmptyString = BigInt("");
 let fromNumber = BigInt(12);
 let fromNegativeNumber = BigInt(-3);
 let fromTrue = BigInt(true);
@@ -6,6 +10,10 @@ let fromFalse = BigInt(false);
 let fromBigInt = BigInt(13n);
 
 console.log(fromString);
+console.log(fromBinaryString);
+console.log(fromOctalString);
+console.log(fromHexString);
+console.log(fromEmptyString);
 console.log(fromNumber);
 console.log(fromNegativeNumber);
 console.log(fromTrue);
