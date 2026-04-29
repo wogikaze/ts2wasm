@@ -881,12 +881,6 @@ fn resolve_private_elements(
                 span,
                 ..
             } => {
-                if *is_static {
-                    return Err(unsupported_private_element(
-                        "static private methods are not supported in this private method runtime slice",
-                        *span,
-                    ));
-                }
                 if extends_name.is_some() {
                     return Err(unsupported_private_element(
                         "private methods on derived classes require full private brand semantics",
@@ -903,7 +897,11 @@ fn resolve_private_elements(
                     });
                 }
                 methods.push(ClassMethod {
-                    name: format!("#{name}"),
+                    name: if *is_static {
+                        format!("static::#{name}")
+                    } else {
+                        format!("#{name}")
+                    },
                     params: params
                         .iter()
                         .map(|(param_name, default, is_rest)| {

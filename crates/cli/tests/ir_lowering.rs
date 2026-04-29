@@ -694,6 +694,43 @@ fn lowering_represents_direct_private_method_call_as_same_class_user_call() {
 }
 
 #[test]
+fn lowering_represents_static_private_method_call_as_same_class_user_call() {
+    use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class C {
+          static #m() { return 3; }
+          static read() { return this.#m(); }
+          static readByName() { return C.#m(); }
+        }
+
+        console.log(C.read());
+        console.log(C.readByName());
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(3)),
+            args,
+        }) => assert!(args.is_empty()),
+        other => panic!("unexpected static private method call lowering: {other:?}"),
+    }
+
+    let read_by_name_method = &lowered.functions[2];
+    match &read_by_name_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(3)),
+            args,
+        }) => assert!(args.is_empty()),
+        other => panic!("unexpected static private method class-name call lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_represents_direct_private_getter_access_as_same_class_user_call() {
     use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 

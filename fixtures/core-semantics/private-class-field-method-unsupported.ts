@@ -1,4 +1,6 @@
-class C {
+class Base {}
+
+class C extends Base {
   static #m() {
     return 1;
   }
