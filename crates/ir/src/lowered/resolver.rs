@@ -904,6 +904,32 @@ impl<'a> Resolver<'a> {
                 span,
             } => {
                 if method.starts_with('#') {
+                    if let Some(method_id) = self.current_static_private_method_id(method) {
+                        let same_class_static_receiver = match object.as_ref() {
+                            ResolvedExpr::This { .. } => self.resolve_local("this").is_err(),
+                            ResolvedExpr::Ident(name) => {
+                                self.current_class.as_deref() == Some(name.as_str())
+                            }
+                            _ => false,
+                        };
+                        if same_class_static_receiver {
+                            let lowered_args = args
+                                .iter()
+                                .map(|e| self.lower_expr(e))
+                                .collect::<Result<Vec<_>, _>>()?;
+                            return Ok(LoweredExpr::Call {
+                                kind: FunctionCallKind::User(method_id),
+                                args: lowered_args,
+                            });
+                        }
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: static private method `{method}` calls are currently supported only as `this.{method}(...)` inside static methods or `Class.{method}(...)` inside the declaring class"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
                     if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1987,6 +2013,13 @@ impl<'a> Resolver<'a> {
     fn current_private_method_id(&self, method: &str) -> Option<FuncId> {
         let class_name = self.current_class.as_ref()?;
         self.class_method_ids
+            .get(&(class_name.clone(), method.to_owned()))
+            .copied()
+    }
+
+    fn current_static_private_method_id(&self, method: &str) -> Option<FuncId> {
+        let class_name = self.current_class.as_ref()?;
+        self.class_static_method_ids
             .get(&(class_name.clone(), method.to_owned()))
             .copied()
     }
