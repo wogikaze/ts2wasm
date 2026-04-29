@@ -644,8 +644,8 @@ const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const MAKE_BIGINT_LITERAL_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const BIGINT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
-const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
+const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::BigIntAsIntN];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];

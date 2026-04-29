@@ -11,3 +11,7 @@ console.log(BigInt.asUintN(bits, converted));
 let wideBits = 64;
 wideBits = wideBits + 0;
 console.log(BigInt.asUintN(wideBits, converted));
+
+let stringBits = "8";
+stringBits = "" + stringBits;
+console.log(BigInt.asUintN(stringBits, value));
