@@ -1,5 +1,6 @@
 struct Resolver<'a> {
     function_ids: &'a HashMap<String, FuncId>,
+    function_signatures: &'a HashMap<FuncId, FunctionSignature>,
     scopes: Vec<HashMap<String, LocalId>>,
     next_local_id: usize,
     locals: Vec<LocalId>,
@@ -13,6 +14,7 @@ struct Resolver<'a> {
     class_static_method_ids: HashMap<(String, String), FuncId>,
     class_parents: HashMap<String, Option<String>>,
     local_classes: HashMap<LocalId, String>,
+    object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
     current_class: Option<String>,
     in_constructor: bool,
@@ -27,6 +29,7 @@ struct ArrowClosure {
 impl<'a> Resolver<'a> {
     fn new(
         function_ids: &'a HashMap<String, FuncId>,
+        function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         class_parents: HashMap<String, Option<String>>,
         next_func_id: usize,
     ) -> Self {
@@ -34,6 +37,7 @@ impl<'a> Resolver<'a> {
             class_maps(function_ids);
         Self {
             function_ids,
+            function_signatures,
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -47,6 +51,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             local_classes: HashMap::new(),
+            object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
             current_class: None,
             in_constructor: false,
@@ -55,6 +60,7 @@ impl<'a> Resolver<'a> {
 
     fn with_params(
         function_ids: &'a HashMap<String, FuncId>,
+        function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         params: &[String],
         class_parents: HashMap<String, Option<String>>,
         current_class: Option<&str>,
@@ -65,6 +71,7 @@ impl<'a> Resolver<'a> {
             class_maps(function_ids);
         let mut resolver = Self {
             function_ids,
+            function_signatures,
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -78,6 +85,7 @@ impl<'a> Resolver<'a> {
             class_static_method_ids,
             class_parents,
             local_classes: HashMap::new(),
+            object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
@@ -136,6 +144,7 @@ impl<'a> Resolver<'a> {
         match stmt {
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
+                let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
                 if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
                     self.arrow_locals.insert(
@@ -147,6 +156,11 @@ impl<'a> Resolver<'a> {
                     );
                 } else {
                     self.arrow_locals.remove(&local_id);
+                }
+                if let Some(props) = function_props {
+                    self.object_function_props.insert(local_id, props);
+                } else {
+                    self.object_function_props.remove(&local_id);
                 }
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = expr_class {
@@ -159,6 +173,7 @@ impl<'a> Resolver<'a> {
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
+                let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
                 if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
                     self.arrow_locals.insert(
@@ -170,6 +185,11 @@ impl<'a> Resolver<'a> {
                     );
                 } else {
                     self.arrow_locals.remove(&local_id);
+                }
+                if let Some(props) = function_props {
+                    self.object_function_props.insert(local_id, props);
+                } else {
+                    self.object_function_props.remove(&local_id);
                 }
                 let expr_class = self.infer_class_for_expr(expr);
                 if let Some(class_name) = expr_class {
@@ -318,11 +338,19 @@ impl<'a> Resolver<'a> {
                 Ok(local) => Ok(LoweredExpr::Local(local)),
                 Err(_) => Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
-                    message: "issue-211: `this` is only supported inside receiver-bound class constructors and instance methods".to_owned(),
+                    message: "issue-062d: `this` is only supported inside receiver-bound functions, class constructors, and instance methods in this milestone".to_owned(),
                     span: Some(*span),
                 }),
             },
-            ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
+            ResolvedExpr::Ident(name) => match self.resolve_local(name) {
+                Ok(local) => Ok(LoweredExpr::Local(local)),
+                Err(_) if name == "arguments" => Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone".to_owned(),
+                    span: None,
+                }),
+                Err(err) => Err(err),
+            },
             ResolvedExpr::Spread(_) => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "spread expressions are only supported in call arguments".to_owned(),
@@ -537,7 +565,6 @@ impl<'a> Resolver<'a> {
                     });
                 }
 
-                let lowered_args = self.lower_call_args(args)?;
                 let func_id = match self.resolve_func(func_name) {
                     Ok(func_id) => func_id,
                     Err(_) if self.resolve_local(func_name).is_ok() => {
@@ -551,6 +578,21 @@ impl<'a> Resolver<'a> {
                     }
                     Err(err) => return Err(err),
                 };
+                if self
+                    .function_signatures
+                    .get(&func_id)
+                    .is_some_and(|signature| signature.needs_receiver)
+                {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-062d: direct call `{func_name}(...)` cannot bind a supported receiver for `this`; call through a supported receiver object"
+                        ),
+                        span: Some(*span),
+                    });
+                }
+                let lowered_args =
+                    self.lower_function_call_args(func_id, LoweredExpr::Undefined, args)?;
 
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
@@ -611,10 +653,13 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredExpr::ArrayNew { elements: lowered })
             }
             ResolvedExpr::Object(props) => {
-                let lowered = props
-                    .iter()
-                    .map(|(k, v)| Ok((k.clone(), self.lower_expr(v)?)))
-                    .collect::<Result<Vec<_>, _>>()?;
+                let mut lowered = Vec::new();
+                for (key, value) in props {
+                    if self.is_function_identifier(value) {
+                        continue;
+                    }
+                    lowered.push((key.clone(), self.lower_expr(value)?));
+                }
                 Ok(LoweredExpr::ObjectNew { props: lowered })
             }
             ResolvedExpr::MethodCall {
@@ -777,6 +822,25 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     })
                 } else {
+                    if let ResolvedExpr::Ident(receiver_name) = object.as_ref()
+                        && let Ok(obj_local) = self.resolve_local(receiver_name)
+                        && let Some(method_id) = self
+                            .object_function_props
+                            .get(&obj_local)
+                            .and_then(|props| props.get(method))
+                            .copied()
+                    {
+                        let lowered_args = self.lower_function_call_args(
+                            method_id,
+                            LoweredExpr::Local(obj_local),
+                            args,
+                        )?;
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(method_id),
+                            args: lowered_args,
+                        });
+                    }
+
                     if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
                         let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1060,6 +1124,70 @@ impl<'a> Resolver<'a> {
         Ok(lowered_args)
     }
 
+    fn lower_function_call_args(
+        &mut self,
+        func_id: FuncId,
+        receiver: LoweredExpr,
+        args: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let signature = self
+            .function_signatures
+            .get(&func_id)
+            .copied()
+            .unwrap_or_default();
+        let explicit_args = self.lower_call_args(args)?;
+        let mut lowered_args = Vec::new();
+
+        if signature.needs_receiver {
+            lowered_args.push(receiver);
+        }
+
+        if signature.has_rest {
+            lowered_args.extend(explicit_args.iter().cloned());
+        } else {
+            lowered_args.extend(explicit_args.iter().take(signature.explicit_params).cloned());
+            for _ in explicit_args.len()..signature.explicit_params {
+                lowered_args.push(LoweredExpr::Undefined);
+            }
+        }
+
+        if signature.needs_arguments {
+            lowered_args.push(LoweredExpr::ArrayNew {
+                elements: explicit_args,
+            });
+        }
+
+        Ok(lowered_args)
+    }
+
+    fn function_props_for_object_expr(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<HashMap<String, FuncId>> {
+        let ResolvedExpr::Object(props) = expr else {
+            return None;
+        };
+        let function_props = props
+            .iter()
+            .filter_map(|(key, value)| {
+                if let ResolvedExpr::Ident(name) = value {
+                    self.resolve_func(name).ok().map(|func_id| (key.clone(), func_id))
+                } else {
+                    None
+                }
+            })
+            .collect::<HashMap<_, _>>();
+        if function_props.is_empty() {
+            None
+        } else {
+            Some(function_props)
+        }
+    }
+
+    fn is_function_identifier(&self, expr: &ResolvedExpr) -> bool {
+        matches!(expr, ResolvedExpr::Ident(name) if self.resolve_func(name).is_ok())
+    }
+
     fn lower_arrow_fn(
         &mut self,
         params: &[String],
@@ -1084,6 +1212,7 @@ impl<'a> Resolver<'a> {
             &lowered_params,
             &body_stmts,
             self.function_ids,
+            self.function_signatures,
             self.class_parents.clone(),
             LowerFunctionOptions {
                 current_class: self.current_class.as_deref(),
