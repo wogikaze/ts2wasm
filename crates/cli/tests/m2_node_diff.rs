@@ -305,6 +305,7 @@ fn bigint_dynamic_builtin_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-dynamic-as-int-n.ts",
         "fixtures/core-semantics/bigint-builtin-dynamic-as-uint-n.ts",
+        "fixtures/core-semantics/bigint-builtin-dynamic-string.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -315,7 +316,6 @@ fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts",
-        "fixtures/core-semantics/bigint-builtin-dynamic-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts",
     ] {
@@ -324,11 +324,7 @@ fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
 }
 
 #[test]
-fn bigint_dynamic_string_diagnostics_remain_source_spanned_issue_280() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-builtin-dynamic-string-unsupported.ts",
-        "issue-280: dynamic StringToBigInt conversion is not implemented in this builtin slice",
-    );
+fn bigint_invalid_static_string_diagnostics_remain_source_spanned_issue_280() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
         "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals",

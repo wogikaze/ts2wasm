@@ -77,7 +77,6 @@ issue until dynamic runtime handling is implemented:
 
 - `fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts`
-- `fixtures/core-semantics/bigint-builtin-dynamic-string-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts`
 
@@ -145,6 +144,16 @@ This prevents the previous unsupported runtime trap for `let s = "10"; s = s +
 `BigInt(value)` and invalid decimal string diagnostics on the source-spanned
 issue-280 path. This is a guardrail only; it does not implement runtime
 StringToBigInt parsing.
+
+2026-04-30 progress: dynamic definitely-string `BigInt(value)` inputs now lower
+through the existing `BigIntFromValue` runtime helper. The runtime helper
+parses the current small StringToBigInt-compatible range: ASCII-trimmed decimal
+strings with optional sign, unsigned `0b` / `0o` / `0x` prefixes, and
+empty/whitespace-to-zero, bounded by the current single-limb/u64 BigInt
+representation. `fixtures/core-semantics/bigint-builtin-dynamic-string.ts`
+has Node/iwasm differential coverage. Static invalid strings remain
+source-spanned issue-280 diagnostics; dynamic invalid/out-of-range strings still
+trap until compatible runtime exception throwing is implemented.
 
 ## Completion evidence
 

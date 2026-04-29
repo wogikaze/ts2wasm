@@ -2595,15 +2595,6 @@ fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
     }
 }
 
-fn bigint_dynamic_string_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-280: dynamic StringToBigInt conversion is not implemented in this builtin slice; use a string literal BigInt(...) input or keep the value in the supported boolean/integer number/BigInt runtime subset"
-            .to_owned(),
-        span: Some(span),
-    }
-}
-
 fn resolve_bigint_static_function_call(
     callee: &Expr,
     args: &[ResolvedExpr],
@@ -3129,9 +3120,6 @@ impl BigIntRuntimeGuard {
                 };
                 if static_supported_arg {
                     return Ok(None);
-                }
-                if self.expr_is_definitely_string(arg) {
-                    return Err(bigint_dynamic_string_diagnostic(*span));
                 }
                 Ok(Some(BigIntStaticInfo {
                     value: None,
