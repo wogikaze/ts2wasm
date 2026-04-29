@@ -9,6 +9,8 @@ depends_on: [259]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -66,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover `BigInt(...)`, `String(bigint)`, template/string interpolation involving BigInt, and selected `BigInt.asIntN` / `BigInt.asUintN` cases or a split follow-up if those are not in this slice.
-- [ ] Unsupported BigInt builtin and conversion forms produce source diagnostics with issue 262 or a narrower follow-up issue ID.
-- [ ] Runtime linker structure tests cover selected BigInt builtin helpers and avoid new host imports.
-- [ ] Docs/current-state/issues state the supported builtin subset and remaining limits.
+- [x] Node/iwasm differential fixtures cover `BigInt(...)`, `String(bigint)`, template/string interpolation involving BigInt, and selected `BigInt.asIntN` / `BigInt.asUintN` cases or a split follow-up if those are not in this slice.
+- [x] Unsupported BigInt builtin and conversion forms produce source diagnostics with issue 262 or a narrower follow-up issue ID.
+- [x] Runtime linker structure tests cover selected BigInt builtin helpers and avoid new host imports.
+- [x] Docs/current-state/issues state the supported builtin subset and remaining limits.
 
 ## Validation
 
@@ -95,15 +97,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md`
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] create narrower builtin follow-up if `asIntN` / `asUintN` cannot fit safely
+- [x] created narrower follow-up for broader dynamic BigInt builtin inputs: `issues/open/280-implement-dynamic-bigint-builtin-inputs.md`
 
 ## Notes
 
@@ -115,19 +117,27 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- Close commit pending in branch `agent/262-bigint-builtins-close-20260429T092800Z`.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(bigint) or test(node_diff)'
+result: PASS (34 tests passed, 494 skipped)
+date: 2026-04-29
+
+command: cargo nextest run
+result: PASS (524 tests passed, 4 skipped)
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- The closed slice covers the documented literal-safe builtin subset. Broader dynamic `BigInt(...)`, `BigInt.asIntN`, and `BigInt.asUintN` inputs are split to issue 280.
 
 ## Progress evidence
 
@@ -171,9 +181,9 @@ cargo nextest run -E 'test(bigint_builtin_string_conversion_fixture_matches_node
 PASS
 ```
 
-Remaining issue-262 work after this slice:
+Residual behavior split after close:
 
-- Runtime/helper support for nonliteral `BigInt.asIntN` / `BigInt.asUintN` inputs if required beyond the current literal-safe subset.
+- Runtime/helper support for nonliteral `BigInt.asIntN` / `BigInt.asUintN` inputs if required beyond the current literal-safe subset is tracked by issue 280.
 - Broader StringToBigInt compatibility edge cases outside the current literal-safe subset.
 
 2026-04-29 progress slice for `BigInt.asIntN` / `BigInt.asUintN`:
