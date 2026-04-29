@@ -37,6 +37,12 @@ assert(accessed, 'accessed !== true');
 
 Current behavior: UnsupportedSyntax error for increment operator in for loop update expression.
 
+2026-04-29 progress: the first runtime slice supports postfix identifier updates in `for`
+loop update slots (`for (...; ...; i++)`) by resolving them to the existing assignment
+lowering path. The regression fixture `fixtures/core-semantics/for-loop-post-increment.ts`
+matches Node output under iwasm. Prefix increment and decrement forms remain out of scope
+for this slice and are covered by source-spanned issue-268 diagnostics.
+
 ## Acceptance criteria
 
 1. Parser accepts for loop with increment operator in update expression
