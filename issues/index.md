@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 6 | 2 | 4 |
-| runtime | 82 | 11 | 71 |
+| runtime | 83 | 12 | 71 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 328 | 144 | 184 |
+| total | 329 | 145 | 184 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,6 +51,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
 | 297 | Track pushed dense array locals for map callbacks | feature | frontend/runtime | implementation-ready | P1 |  | after issue 296, `fixtures/atcoder/abc451-d-concat-power2.ts` |
+| 300 | Support ABC451 large integer number boundary | feature | runtime | implementation-ready | P1 |  | `fixtures/atcoder/abc451-d-concat-power2.ts` now reaches a large |
 <!-- generated:ready:end -->
 
 ## Blocked queue
