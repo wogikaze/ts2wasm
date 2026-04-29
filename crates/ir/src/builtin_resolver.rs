@@ -772,23 +772,25 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             object,
             property,
             value,
-            ..
+            span,
         } => Ok(ResolvedExpr::PropertyAssign {
             object: Box::new(resolve_expr(object)?),
             key: property.clone(),
             value: Box::new(resolve_expr(value)?),
+            span: *span,
         }),
         Expr::IndexAssign {
             object,
             index,
             value,
-            ..
+            span,
         } => {
             if let Expr::String { value: key, .. } = index.as_ref() {
                 return Ok(ResolvedExpr::PropertyAssign {
                     object: Box::new(resolve_expr(object)?),
                     key: key.clone(),
                     value: Box::new(resolve_expr(value)?),
+                    span: *span,
                 });
             }
             Ok(ResolvedExpr::PropertyAssignDynamic {
@@ -863,6 +865,7 @@ fn resolve_private_elements(
                             .transpose()?
                             .unwrap_or(ResolvedExpr::Undefined),
                     ),
+                    span: *span,
                 }));
             }
             ClassPrivateElement::Method {
@@ -950,11 +953,56 @@ fn resolve_private_elements(
                         .collect::<Result<Vec<_>, _>>()?,
                 });
             }
-            ClassPrivateElement::Setter { span, .. } => {
-                return Err(unsupported_private_element(
-                    "private setters are not supported in this private accessor runtime slice",
-                    *span,
-                ));
+            ClassPrivateElement::Setter {
+                name,
+                param,
+                body,
+                is_static,
+                span,
+                ..
+            } => {
+                if *is_static {
+                    return Err(unsupported_private_element(
+                        "static private accessors are not supported in this private accessor runtime slice",
+                        *span,
+                    ));
+                }
+                if extends_name.is_some() {
+                    return Err(unsupported_private_element(
+                        "private accessors on derived classes require full private brand semantics",
+                        *span,
+                    ));
+                }
+                if block_contains_return_stmt(body) {
+                    return Err(unsupported_private_element(
+                        "private setters with explicit return are not supported in this private setter runtime slice",
+                        *span,
+                    ));
+                }
+                if !seen.insert(name.clone()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-255: duplicate private element `#{name}` in class `{class_name}`"
+                        ),
+                        span: Some(*span),
+                    });
+                }
+                let mut resolved_body = body
+                    .iter()
+                    .map(resolve_stmt)
+                    .collect::<Result<Vec<_>, _>>()?;
+                resolved_body.push(ResolvedStmt::Return(ResolvedExpr::Ident(param.clone())));
+                methods.push(ClassMethod {
+                    name: private_setter_method_name(name),
+                    params: vec![ResolvedParam {
+                        name: param.clone(),
+                        default: None,
+                        is_rest: false,
+                        span: Some(*span),
+                    }],
+                    body: resolved_body,
+                });
             }
         }
     }
@@ -988,6 +1036,70 @@ fn is_private_member_key(key: &str) -> bool {
 
 fn private_getter_method_name(name: &str) -> String {
     format!("#get::{name}")
+}
+
+fn private_setter_method_name(name: &str) -> String {
+    format!("#set::{name}")
+}
+
+fn block_contains_return_stmt(statements: &[Stmt]) -> bool {
+    statements.iter().any(stmt_contains_return_stmt)
+}
+
+fn stmt_contains_return_stmt(stmt: &Stmt) -> bool {
+    match stmt {
+        Stmt::Return { .. } => true,
+        Stmt::If {
+            then_body,
+            else_body,
+            ..
+        } => block_contains_return_stmt(then_body) || block_contains_return_stmt(else_body),
+        Stmt::While { body, .. }
+        | Stmt::DoWhile { body, .. }
+        | Stmt::ForIn { body, .. }
+        | Stmt::ForOf { body, .. } => block_contains_return_stmt(body),
+        Stmt::For { init, body, .. } => {
+            init.as_deref().is_some_and(stmt_contains_return_stmt)
+                || block_contains_return_stmt(body)
+        }
+        Stmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_return_stmt(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|body| block_contains_return_stmt(body))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|body| block_contains_return_stmt(body))
+        }
+        Stmt::Switch { cases, .. } => cases
+            .iter()
+            .any(|(_, body)| block_contains_return_stmt(body)),
+        Stmt::Labeled { body, .. } => stmt_contains_return_stmt(body),
+        Stmt::Function { .. } | Stmt::ClassDecl { .. } => false,
+        Stmt::ImportSideEffect { .. }
+        | Stmt::ImportNamed { .. }
+        | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
+        | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
+        | Stmt::ExportNamed { .. }
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::ExportDecl { .. }
+        | Stmt::ExportDefault { .. }
+        | Stmt::Let { .. }
+        | Stmt::Assign { .. }
+        | Stmt::Expr { .. }
+        | Stmt::Throw { .. }
+        | Stmt::Break { .. }
+        | Stmt::Continue { .. } => false,
+    }
 }
 
 fn parse_bigint_literal(raw: &str, span: Span) -> Result<ResolvedExpr, Diagnostic> {

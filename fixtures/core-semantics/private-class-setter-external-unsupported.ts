@@ -1,6 +1,7 @@
 class C {
-  static set #x(value) {}
+  set #x(value) {}
 }
 
 let c = new C();
+c.#x = 1;
 console.log(c);

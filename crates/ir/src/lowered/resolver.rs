@@ -1284,12 +1284,46 @@ impl<'a> Resolver<'a> {
                     })
                 }
             }
-            ResolvedExpr::PropertyAssign { object, key, value } => {
+            ResolvedExpr::PropertyAssign {
+                object,
+                key,
+                value,
+                span,
+            } => {
                 if is_private_field_storage_key(key) {
-                    return Err(private_storage_observable_access_diagnostic(None));
+                    return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
                 if key.starts_with('#') {
-                    let slot = self.private_field_slot(object, key, Span { start: 0, end: 0 })?;
+                    if let Some(setter_id) = self.current_private_setter_id(key) {
+                        if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-255: private setter `{key}` assignment is currently supported only as `this.{key} = value` inside the declaring class"
+                                ),
+                                span: Some(*span),
+                            });
+                        }
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(setter_id),
+                            args: vec![
+                                LoweredExpr::Local(self.resolve_local("this")?),
+                                self.lower_expr(value)?,
+                            ],
+                        });
+                    }
+                    if let Some(class_name) = self.infer_class_for_expr(object)
+                        && self.private_setter_id_for_class(&class_name, key).is_some()
+                    {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: private setter `{key}` external assignment is not supported in this private setter runtime slice"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    let slot = self.private_field_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateFieldSet".to_owned(),
                         args: vec![
@@ -1942,6 +1976,18 @@ impl<'a> Resolver<'a> {
         let getter_name = key.strip_prefix('#')?;
         self.class_method_ids
             .get(&(class_name.to_owned(), format!("#get::{getter_name}")))
+            .copied()
+    }
+
+    fn current_private_setter_id(&self, key: &str) -> Option<FuncId> {
+        let class_name = self.current_class.as_ref()?;
+        self.private_setter_id_for_class(class_name, key)
+    }
+
+    fn private_setter_id_for_class(&self, class_name: &str, key: &str) -> Option<FuncId> {
+        let setter_name = key.strip_prefix('#')?;
+        self.class_method_ids
+            .get(&(class_name.to_owned(), format!("#set::{setter_name}")))
             .copied()
     }
 
