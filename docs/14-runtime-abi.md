@@ -3,12 +3,12 @@
 このドキュメントは ts2wasm の runtime ABI を定める。
 `RawValue` の tagged representation、heap レイアウト、`RuntimeFn` カタログ、host import ABI を定義する。
 
-## Tagged i32 value representation（small-int subset）
+## Tagged i32 value representation（small-int plus integer heap-number subset）
 
 ### RawValue (i32 tagged encoding)
 
 現行パイプラインでは JavaScript の値を wasm モジュール内で `i32` の tagged encoding として表現する。
-これは意図的な **small-int subset** であり、JS 全体の `number` セマンティクスではない。
+これは意図的な **integer-only subset** であり、JS 全体の `number` セマンティクスではない。
 
 > **論理 ABI との関係**: `docs/04-compiler-architecture-and-runtime.md` の論理 ABI では `jsval` を `i64` として定義し、`crates/shared/src/abi.rs` の `AbiType::JsVal` もそれに従う。`i32` RawValue は wasm 本体の wire 表現であり、論理 `i64` との変換は明示的な bridge のみで行う。backend は wire と論理表現を暗黙に混在させてはならない。
 
@@ -31,10 +31,33 @@ HEAP_MASK: !0b111 (= -8 in two's complement)
 定数は `runtime/value.rs` の `ValueTag` で定義する。
 backend が直接数値を埋め込むことは禁止。
 
+Tagged `number` は small-int payload range
+`ValueTag::NUMBER_PAYLOAD_MIN..=ValueTag::NUMBER_PAYLOAD_MAX` の整数だけを
+直接表す。issue 300 の progress slice では、この範囲外でも `i32` に収まる
+整数値を **heap number** として扱う narrow path を追加している。heap number
+は `object` tag (`ptr | 0b111`) を使い、ordinary object payload の count slot
+に `HEAP_NUMBER_SENTINEL == -1` を置くことで object / BigInt / closure と区別する。
+
+```text
+Heap number payload:
+
+  +0  i32 sentinel      ; HEAP_NUMBER_SENTINEL (-1)
+  +4  i32 prototype     ; 0 in the current primitive-number slice
+  +8  i32 decimal_len   ; cached decimal spelling length
+  +12 u8 decimal[...]   ; signed base-10 spelling, no fractional form
+```
+
+`$number_from_i32` は small-int payload range 内なら tagged number を返し、
+範囲外の `i32` 整数なら heap number を割り当てる。`$number_to_i32` は tagged
+number または heap number の cached decimal spelling から `i32` へ戻す。現時点の
+保証範囲は ABC451 D で必要な integer-only arithmetic / comparison / `String(n)` /
+unary-plus round trip であり、fractional values、`NaN`、`Infinity`、`-0`、
+IEEE-754 丸めは未実装のまま維持する。
+
 ## Memory Layout
 
 ```text
-linear memory (4 MiB):
+bounded linear memory (current default: initial 2 pages, max 16 pages):
 
   [0 .. 8)                          — 予約
   [8 .. 16)                         — fd_write iovec (IOVEC_PTR=8, IOVEC_LEN=12)
@@ -52,6 +75,8 @@ linear memory (4 MiB):
 
 | 定数 | 値 | 用途 |
 |---|---|---|
+| `MEMORY_MIN_PAGES` | 2 | wasm memory の初期 page 数 |
+| `MEMORY_MAX_PAGES` | 16 | wasm memory.grow の現在の上限 (1 MiB)。large live-set policy は issue 303 |
 | `DATA_START` | 256 | interned string data の開始オフセット |
 | `ALIGN` | 8 | data segment / heap の alignment |
 | `SCRATCH_OFFSET` | 1500 | 一時バッファの開始オフセット |
@@ -81,6 +106,26 @@ RawValue = ptr | 0b110  (ptr は 8-byte aligned)
 ptr を取り出すには: `ptr = raw_value & HEAP_MASK`
 length を読むには: `len = i32.load(ptr)`
 文字列バイトは: `ptr + 4` から `len` バイト
+
+### Heap Array Object
+
+Array payload は以下の形式を使う。
+
+```text
+offset + 0 .. +4       : i32 length
+offset + 4 .. +4+N*4   : RawValue elements
+
+RawValue = ptr | 0b101  (ptr は 8-byte aligned)
+```
+
+GC header の `body_size_bytes` から `ARRAY_HEADER_SIZE` を引き、`ARRAY_ELEM_SHIFT`
+で割ることで、現 allocation が保持できる element capacity を求められる。
+issue 300 の progress slice では、unused statement 形式の local-array
+`arr.push(value);` だけを `ArrayPushGrow` lowering/backend path に落とし、
+capacity が残っていれば in-place で length と element を更新し、足りなければ
+payload を倍増させた新 array に copy して local を差し替える。expression value
+として `push` の戻り値を観測する broader path や array-like object receiver は、
+既存の `Array.prototype.push` runtime boundary に従う。
 
 ### BigInt value representation (accepted design)
 
@@ -264,14 +309,15 @@ allocation pressure and after the declaring function's activation has returned.
 
 `$alloc_heap` は以下のどちらかを満たすと GC を試行する:
 
-- `alloc_bytes_since_last_gc >= 4096`
-- `next_free >= memory.size * 0x80 / 100` （メモリ使用率が 80% を超える）
+- `alloc_bytes_since_last_gc + requested_block_size >= GC_THRESHOLD`
+- 現在の memory に収まらない場合は bounded `memory.grow` を試みる
 
 Pseudo flow:
 
 1. markフェーズ: ルートとして `globals` / `runtime stacks` / `module cache` を走査
-2. sweepフェーズ: 生存フラグがないブロックを `sweep_list` へ回収（空きリストへ）
-3. 回収後に再試行、必要なら `memory.grow`、それでも足りなければ trap
+2. sweepフェーズ: 生存フラグがないブロックを free-list へ回収
+3. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する
+4. 必要なら `memory.grow`、`MEMORY_MAX_PAGES` まで増やせなければ trap
 
 ### Safety and compatibility notes
 
@@ -333,8 +379,11 @@ string alloc 時は以下の手順で行う。
 ### OOM Handling
 
 `$alloc_heap` は `memory.size` を使用して利用可能なメモリをチェックする。
-割り当てが現在のメモリサイズを超える場合、`unreachable` で trap する。
+割り当てが現在のメモリサイズを超える場合、bounded `memory.grow` を試みる。
+`MEMORY_MAX_PAGES` まで増やせなければ `unreachable` で trap する。
 これにより、大きな割り当てによる未定義動作やメモリ破損を防ぐ。
+現在の上限は 16 pages で、ABC451 D の large live-set reducer はこの cap に到達する。
+cap の policy 変更は issue 303 に分離している。
 
 ## GC Strategy
 
@@ -350,22 +399,27 @@ string alloc 時は以下の手順で行う。
 
 ### Heap Object Header Design
 
-すべての heap object は以下の header を持つ:
+すべての GC-managed heap allocation は payload の直前に以下の header を持つ:
 
 ```text
-[offset + 0 .. +4)   : i32 size (バイト数、header を含む)
-[offset + 4 .. +8)   : i32 type_tag (object type と mark bit をエンコード)
-[offset + 8 .. +N)   : type-specific payload
+payload_ptr - 16 .. -12 : i32 flags_and_type    ; mark bit + heap kind
+payload_ptr - 12 .. -8  : i32 body_size_bytes   ; aligned payload size
+payload_ptr - 8  .. -4  : i32 sweep_next        ; free-list linkage
+payload_ptr - 4  ..  0  : i32 reserved          ; future generation/finalizer/private count
+payload_ptr             : type-specific payload
 ```
 
-type_tag encoding:
-- bit 0-7: object type (OBJECT, ARRAY, STRING, CLOSURE)
-- bit 31: mark bit (GC mark phase で使用)
+`flags_and_type` encoding:
+- bit 0: mark bit
+- bit 1: reserved finalizer bit
+- bits 2-4: heap kind (`string`, `array`, `object`, `bigint`)
+- bits 5-31: reserved
 
 定数は `runtime/layout.rs` の `Layout` で定義:
-- `OBJECT_HEADER_SIZE`: 8 (size + type_tag)
-- `OBJECT_TYPE_MASK`: 0x7F
-- `GC_MARK_BIT`: 0x80000000
+- `GC_HEADER_SIZE`: 16
+- `GC_BODY_SIZE_OFFSET`: 4
+- `GC_SWEEP_NEXT_OFFSET`: 8
+- `GC_RESERVED_OFFSET`: 12
 
 ### GC Trigger Points
 
