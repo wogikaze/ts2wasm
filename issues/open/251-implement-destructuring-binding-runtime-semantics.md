@@ -157,3 +157,10 @@ Parent-review follow-up:
 - Carried `ResolvedParam` source spans into issue-251 diagnostics for unsupported rest/defaulted parameter binding patterns.
 - Added `fixtures/core-semantics/destructuring-binding-param-default-unsupported.ts` and `fixtures/core-semantics/destructuring-binding-param-rest-unsupported.ts`; the CLI negative fixture helper asserts issue-251 diagnostics include source span text.
 - Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (10 passed); `cargo nextest run` (489 passed, 4 skipped); `mise run update-issue-index -- --check`; `mise run check issues`.
+
+Defaults follow-up:
+
+- Implemented literal default initializers for simple identifier-only array/object binding elements and ordinary function whole-pattern parameter defaults.
+- Added `fixtures/core-semantics/destructuring-binding-defaults-runtime.ts` and Node/iwasm differential coverage.
+- Kept non-literal defaults, rest, nested patterns, elisions, and broad iterator semantics as issue-251 unsupported diagnostics; updated unsupported fixtures to assert source-spanned non-literal default diagnostics.
+- Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (11 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (496 passed, 4 skipped).

@@ -1,5 +1,5 @@
-function first([value] = [1]) {
+function first([value = makeDefault()]) {
   return value;
 }
 
-console.log(first());
+console.log(first([]));
