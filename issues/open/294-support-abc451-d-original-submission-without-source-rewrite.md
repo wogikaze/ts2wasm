@@ -229,6 +229,14 @@ This issue is intentionally blocked because the fixture crosses several existing
   the next unsupported boundary at chained `Array.prototype.map` on
   `inputText.trim().split("\n")`.
 
+2026-04-29 progress:
+
+- The original ABC451 repro now advances beyond chained
+  `inputText.trim().split("\n").map(row => row.split(" "))` input parsing.
+- Current first failure is now:
+  `error: [UnsupportedSyntax] binary operator Power not yet supported`, at the
+  `2 ** i` condition/value expressions in the powers-of-two loop.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
