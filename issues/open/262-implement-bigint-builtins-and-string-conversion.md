@@ -152,7 +152,41 @@ mise run update-issue-index -- --check
 mise run check issues
 ```
 
-Remaining issue-262 work:
+Remaining issue-262 work at that point:
 
 - Implement `BigInt.asIntN` / `BigInt.asUintN` semantics.
+- Broaden `BigInt(string)` beyond the current decimal integer string subset if full ECMAScript string-to-BigInt parsing is required.
+
+2026-04-29 progress slice for `BigInt.asIntN` / `BigInt.asUintN`:
+
+- Implemented resolver-side folding for `BigInt.asIntN(bits, value)` and `BigInt.asUintN(bits, value)` when `bits` is an integer number literal in `0..=64` and `value` resolves to a BigInt literal.
+- Covered signed wrap, unsigned wrap, zero-width, string conversion of the result, and 64-bit boundary values in `fixtures/core-semantics/bigint-builtin-as-int-n.ts`.
+- Kept unsupported diagnostics for dynamic bit widths and non-BigInt value inputs in the existing issue-262 unsupported fixtures.
+- Preserved the existing `BigInt(...)` and `String(bigint)` behavior from the earlier slice.
+
+Validation recorded in the child branch:
+
+```sh
+cargo fmt --all --check
+PASS
+
+cargo nextest run -E 'test(bigint_builtin_as_int_n_fixture_matches_node_output_under_iwasm) or test(bigint_builtin_unsupported_forms_report_issue_262)'
+PASS (2 tests)
+
+cargo nextest run -E 'test(bigint) or test(node_diff)'
+PASS (31 tests)
+
+mise run update-issue-index -- --check
+PASS
+
+mise run check issues
+PASS
+
+cargo nextest run
+PASS (503 tests, 4 skipped)
+```
+
+Remaining issue-262 work after this slice:
+
+- Runtime/helper support for nonliteral `BigInt.asIntN` / `BigInt.asUintN` inputs if required beyond the current literal-safe subset.
 - Broaden `BigInt(string)` beyond the current decimal integer string subset if full ECMAScript string-to-BigInt parsing is required.

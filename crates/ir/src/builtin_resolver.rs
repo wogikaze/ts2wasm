@@ -548,6 +548,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             {
                 return resolve_bigint_function_call(&resolved_args, *span);
             }
+            if let Some(resolved) =
+                resolve_bigint_static_function_call(callee.as_ref(), &resolved_args, *span)?
+            {
+                return Ok(resolved);
+            }
             if let Some(builtin) = resolve_builtin_call(callee.as_ref(), args)? {
                 let builtin_args = if matches!(builtin, BuiltinId::ReadStdinUtf8) {
                     Vec::new()
@@ -1206,6 +1211,103 @@ fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
         message: "issue-262: BigInt(...) currently supports string, boolean, integer number, or BigInt literal inputs in this builtin slice".to_owned(),
         span: Some(span),
     }
+}
+
+fn resolve_bigint_static_function_call(
+    callee: &Expr,
+    args: &[ResolvedExpr],
+    span: Span,
+) -> Result<Option<ResolvedExpr>, Diagnostic> {
+    let Expr::Member {
+        object, property, ..
+    } = callee
+    else {
+        return Ok(None);
+    };
+    let Expr::Ident { name, .. } = object.as_ref() else {
+        return Ok(None);
+    };
+    if name != "BigInt" || !matches!(property.as_str(), "asIntN" | "asUintN") {
+        return Ok(None);
+    }
+
+    let [bits_arg, value_arg] = args else {
+        return Err(bigint_static_width_diagnostic(span));
+    };
+    let bits = bigint_static_width(bits_arg, span)?;
+    let value = bigint_from_resolved(value_arg).ok_or_else(|| Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-262: BigInt.asIntN/asUintN currently require a BigInt literal value input"
+            .to_owned(),
+        span: Some(span),
+    })?;
+    let value = if property == "asIntN" {
+        bigint_as_int_n(bits, value)
+    } else {
+        bigint_as_uint_n(bits, value)
+    };
+    Ok(Some(bigint_to_resolved(value)))
+}
+
+fn bigint_static_width(arg: &ResolvedExpr, span: Span) -> Result<u32, Diagnostic> {
+    let ResolvedExpr::Number(bits) = arg else {
+        return Err(bigint_static_width_diagnostic(span));
+    };
+    if !(0..=64).contains(bits) {
+        return Err(bigint_static_width_diagnostic(span));
+    }
+    Ok(*bits as u32)
+}
+
+fn bigint_static_width_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message:
+            "issue-262: BigInt.asIntN/asUintN currently support integer literal bit widths 0..64"
+                .to_owned(),
+        span: Some(span),
+    }
+}
+
+fn bigint_as_uint_n(bits: u32, value: BigIntConst) -> BigIntConst {
+    if bits == 0 || value.sign == 0 {
+        return BigIntConst::zero();
+    }
+    let modulo = decimal_power_of_two(bits);
+    let (_, remainder) = div_rem_abs(&value.digits, &modulo);
+    if value.sign > 0 || remainder == [0] {
+        return BigIntConst {
+            sign: if remainder == [0] { 0 } else { 1 },
+            digits: remainder,
+        };
+    }
+    BigIntConst {
+        sign: 1,
+        digits: sub_abs(&modulo, &remainder),
+    }
+}
+
+fn bigint_as_int_n(bits: u32, value: BigIntConst) -> BigIntConst {
+    if bits == 0 {
+        return BigIntConst::zero();
+    }
+    let unsigned = bigint_as_uint_n(bits, value);
+    let threshold = decimal_power_of_two(bits - 1);
+    if unsigned.sign == 0 || cmp_abs(&unsigned.digits, &threshold) == std::cmp::Ordering::Less {
+        return unsigned;
+    }
+    BigIntConst {
+        sign: -1,
+        digits: sub_abs(&decimal_power_of_two(bits), &unsigned.digits),
+    }
+}
+
+fn decimal_power_of_two(bits: u32) -> Vec<u8> {
+    let mut digits = vec![1_u8];
+    for _ in 0..bits {
+        digits = mul_abs(&digits, &[2]);
+    }
+    digits
 }
 
 fn decimal_digits_to_u64(digits: &[u8]) -> Option<u64> {
@@ -2181,7 +2283,7 @@ fn resolve_builtin_call(
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-262: BigInt.asIntN/asUintN are not implemented in this builtin slice"
+                    "issue-262: BigInt.asIntN/asUintN require literal bit width and BigInt value inputs in this builtin slice"
                         .to_owned(),
                 span: span_of_expr(callee),
             });
