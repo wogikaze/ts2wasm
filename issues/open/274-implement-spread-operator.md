@@ -61,3 +61,11 @@ cargo fmt --all --check
 - Requires iterator protocol implementation
 - Should work with Array, Set, Map, and custom iterables
 - Consider rest parameter syntax in parallel (related feature)
+
+## Progress
+
+- 2026-04-29: Added the smallest safe slice for issue 274:
+  - parser accepts spread syntax in array literals, object literals, and existing call arguments;
+  - literal-array call spread such as `sum(...[3, 4, 5])` remains executable and is covered by a Node/iwasm fixture;
+  - dynamic call spread, array literal spread, and object literal spread now fail with explicit `issue-274` unsupported diagnostics instead of falling through to generic spread/lowering errors.
+- Remaining acceptance criteria are not complete: iterator protocol integration, sparse arrays, object property enumeration, Set/Map/custom iterable spread, and broad Test262 spread coverage still require follow-up implementation.

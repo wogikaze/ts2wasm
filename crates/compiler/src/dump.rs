@@ -3,8 +3,9 @@ use std::fs;
 use std::path::Path;
 
 use ts2wasm_frontend::{
-    BinaryOp, ClassPrivateElement, DiagCode, Diagnostic, Expr, Lexer, LogicalAssignOp, Parser,
-    SpannedToken, Stmt, UnaryOp, validate_type_reference_directives,
+    BinaryOp, ClassPrivateElement, DiagCode, Diagnostic, Expr, Lexer, LogicalAssignOp,
+    OBJECT_SPREAD_SENTINEL, Parser, SpannedToken, Stmt, UnaryOp,
+    validate_type_reference_directives,
 };
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_ir::builtin_resolved::ResolvedStmt;
@@ -758,7 +759,13 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::Object { props, .. } => {
             let props = props
                 .iter()
-                .map(|(key, value)| format!("{key}: {}", unparse_expr(value)))
+                .map(|(key, value)| {
+                    if key == OBJECT_SPREAD_SENTINEL {
+                        format!("...{}", unparse_expr(value))
+                    } else {
+                        format!("{key}: {}", unparse_expr(value))
+                    }
+                })
                 .collect::<Vec<_>>()
                 .join(", ");
             format!("{{{props}}}")
