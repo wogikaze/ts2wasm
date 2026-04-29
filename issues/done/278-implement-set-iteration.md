@@ -45,9 +45,9 @@ Supported Set iteration preserves insertion order and works through the same ite
 
 In scope:
 
-- [ ] Support `for...of` over Set values for the current Set representation.
-- [ ] Add or wire `Set.prototype.values` and `Set.prototype[Symbol.iterator]` as needed for the supported slice.
-- [ ] Add Node/iwasm differential coverage for insertion-order iteration.
+- [x] Support `for...of` over Set values for the current Set representation.
+- [x] Add the runtime values snapshot needed by the supported `for...of` slice.
+- [x] Add Node/iwasm differential coverage for insertion-order iteration.
 
 Out of scope:
 
@@ -71,10 +71,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A fixture proves `for...of` over Set emits values in insertion order.
-- [ ] Duplicate `add` calls do not produce duplicate iteration entries.
-- [ ] Node and iwasm stdout match for the fixture.
-- [ ] Issue 274 remains the spread syntax owner unless spread is explicitly included in a future assignment.
+- [x] A fixture proves `for...of` over Set emits values in insertion order.
+- [x] Duplicate `add` calls do not produce duplicate iteration entries.
+- [x] Node and iwasm stdout match for the fixture.
+- [x] Issue 274 remains the spread syntax owner unless spread is explicitly included in a future assignment.
 
 ## Validation
 
@@ -99,15 +99,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- not affected
 
 Current state:
 
-- [ ] not affected
+- not affected
 
 Follow-up issues:
 
-- [ ] none
+- none
 
 ## Notes
 
@@ -119,7 +119,10 @@ Split from stale broad issue 272 after issue 049 closed the basic constructor/ad
 3. Modifying the for...of lowering to handle Set iterables
 4. Ensuring insertion order is preserved
 
-This requires substantial changes to the iteration infrastructure.
+This slice snapshots known Set locals to an array with `SetValuesArray` and then
+reuses the existing array `for...of` lowering. Broader iterator protocol
+surface, mutation-during-iteration behavior, and spread remain outside this
+issue.
 
 ## Completion evidence
 
@@ -127,17 +130,29 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- close commit records `SetValuesArray`, `for...of` lowering, fixture coverage, validation, and issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli set
+result: PASS; 7 tests run, 7 passed, 338 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- Requires substantial changes to iteration infrastructure
-- May impact Map iteration as well
+- General iterator protocol APIs and spread remain out of scope.
+- Map iteration remains out of scope.

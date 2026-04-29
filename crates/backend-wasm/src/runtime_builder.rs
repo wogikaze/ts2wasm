@@ -80,6 +80,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::SetSize => self.emit_set_size(wat),
                 RuntimeFn::SetClear => self.emit_set_clear(wat),
                 RuntimeFn::SetFromArray => self.emit_set_from_array(wat),
+                RuntimeFn::SetValuesArray => self.emit_set_values_array(wat),
                 RuntimeFn::DateNew => self.emit_date_new(wat),
                 RuntimeFn::DateNewLive => self.emit_date_new_live(wat),
                 RuntimeFn::DateNow => self.emit_date_now(wat),
