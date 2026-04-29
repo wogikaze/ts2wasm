@@ -26,6 +26,7 @@ struct Resolver<'a> {
     regexp_literal_locals: HashSet<LocalId>,
     bigint_locals: HashSet<LocalId>,
     array_locals: HashSet<LocalId>,
+    static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
     string_literal_locals: HashMap<LocalId, String>,
     native_set_add_locals: HashSet<LocalId>,
     current_class: Option<String>,
@@ -90,6 +91,7 @@ impl<'a> Resolver<'a> {
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            static_object_literal_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: None,
@@ -141,6 +143,7 @@ impl<'a> Resolver<'a> {
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            static_object_literal_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
@@ -292,6 +295,7 @@ impl<'a> Resolver<'a> {
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
+                self.update_static_object_literal_local_on_let(local_id, expr);
                 self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);
                 if let Some(props) = function_props {
@@ -310,6 +314,7 @@ impl<'a> Resolver<'a> {
             }
             ResolvedStmt::Assign(name, expr) => {
                 let local_id = self.resolve_local(name)?;
+                self.invalidate_static_object_literal_local(local_id);
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
                 if let LoweredExpr::ArrowFn {
@@ -747,6 +752,7 @@ impl<'a> Resolver<'a> {
             }
             ResolvedExpr::Assign { name, expr } => {
                 let local = self.resolve_local(name)?;
+                self.invalidate_static_object_literal_local(local);
                 let expr = Box::new(self.lower_expr(expr)?);
                 if self.env_cell_locals.contains(&local) {
                     Ok(LoweredExpr::EnvCellSet { cell: local, expr })
@@ -756,6 +762,7 @@ impl<'a> Resolver<'a> {
             }
             ResolvedExpr::LogicalAssign { name, op, expr } => {
                 let local = self.resolve_local(name)?;
+                self.invalidate_static_object_literal_local(local);
                 Ok(LoweredExpr::LogicalAssign {
                     local,
                     op: lower_logical_assign_op(*op),
@@ -772,6 +779,7 @@ impl<'a> Resolver<'a> {
                     return Err(private_storage_observable_access_diagnostic(None));
                 }
                 let object = self.resolve_local(object)?;
+                self.invalidate_static_object_literal_local(object);
                 Ok(LoweredExpr::LogicalPropertyAssign {
                     object,
                     key: key.clone(),
@@ -786,6 +794,7 @@ impl<'a> Resolver<'a> {
                 expr,
             } => {
                 let object = self.resolve_local(object)?;
+                self.invalidate_static_object_literal_local(object);
                 if self.local_has_private_progress_storage(object) {
                     return Err(private_storage_observable_access_diagnostic(None));
                 }
@@ -1688,6 +1697,11 @@ impl<'a> Resolver<'a> {
                 value,
                 span,
             } => {
+                if let ResolvedExpr::Ident(name) = object.as_ref()
+                    && let Ok(local_id) = self.resolve_local(name)
+                {
+                    self.invalidate_static_object_literal_local(local_id);
+                }
                 if is_private_field_storage_key(key) {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
@@ -1752,6 +1766,11 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+                if let ResolvedExpr::Ident(name) = object.as_ref()
+                    && let Ok(local_id) = self.resolve_local(name)
+                {
+                    self.invalidate_static_object_literal_local(local_id);
+                }
                 if self.expr_has_private_progress_storage(object) {
                     return Err(private_storage_observable_access_diagnostic(None));
                 }
@@ -2130,16 +2149,16 @@ impl<'a> Resolver<'a> {
         let mut lowered = Vec::new();
         for (key, value) in props {
             if key == OBJECT_SPREAD_SENTINEL {
-                let ResolvedExpr::Object(spread_props) = value else {
-                    return Err(Diagnostic {
+                let spread_props = self.static_object_literal_spread_props(value).ok_or_else(|| {
+                    Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message:
-                            "issue-274: object literal spread is only supported for object literals in this milestone"
+                            "issue-274: object literal spread is only supported for object literals and known static object-literal locals in this milestone"
                                 .to_owned(),
                         span: None,
-                    });
-                };
-                lowered.extend(self.lower_object_literal_props(spread_props)?);
+                    }
+                })?;
+                lowered.extend(self.lower_object_literal_props(&spread_props)?);
                 continue;
             }
             if self.is_function_identifier(value) {
@@ -2148,6 +2167,23 @@ impl<'a> Resolver<'a> {
             lowered.push((key.clone(), self.lower_expr(value)?));
         }
         Ok(lowered)
+    }
+
+    fn static_object_literal_spread_props(
+        &self,
+        value: &ResolvedExpr,
+    ) -> Option<Vec<(String, ResolvedExpr)>> {
+        match value {
+            ResolvedExpr::Object(spread_props) => Some(spread_props.clone()),
+            ResolvedExpr::Ident(name) => {
+                let local_id = self.resolve_local(name).ok()?;
+                if self.env_cell_locals.contains(&local_id) {
+                    return None;
+                }
+                self.static_object_literal_locals.get(&local_id).cloned()
+            }
+            _ => None,
+        }
     }
 
     fn lower_set_prototype_add_assignment_value(
@@ -3187,6 +3223,43 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    fn update_static_object_literal_local_on_let(
+        &mut self,
+        local_id: LocalId,
+        expr: &ResolvedExpr,
+    ) {
+        if let Some(props) = self.static_copy_safe_object_literal_props(expr) {
+            self.static_object_literal_locals.insert(local_id, props);
+        } else {
+            self.static_object_literal_locals.remove(&local_id);
+        }
+    }
+
+    fn invalidate_static_object_literal_local(&mut self, local_id: LocalId) {
+        self.static_object_literal_locals.remove(&local_id);
+    }
+
+    fn static_copy_safe_object_literal_props(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<Vec<(String, ResolvedExpr)>> {
+        let ResolvedExpr::Object(props) = expr else {
+            return None;
+        };
+        let mut flattened = Vec::new();
+        for (key, value) in props {
+            if key == OBJECT_SPREAD_SENTINEL {
+                flattened.extend(self.static_copy_safe_object_literal_props(value)?);
+                continue;
+            }
+            if !is_static_copy_safe_object_prop_value(value) {
+                return None;
+            }
+            flattened.push((key.clone(), value.clone()));
+        }
+        Some(flattened)
+    }
+
     fn update_string_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
         if let Some(value) = self.resolved_expr_static_string_value(expr) {
             self.string_literal_locals.insert(local_id, value);
@@ -3422,6 +3495,17 @@ fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnosti
         message: "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned(),
         span,
     }
+}
+
+fn is_static_copy_safe_object_prop_value(expr: &ResolvedExpr) -> bool {
+    matches!(
+        expr,
+        ResolvedExpr::Number(_)
+            | ResolvedExpr::String(_)
+            | ResolvedExpr::Bool(_)
+            | ResolvedExpr::Null
+            | ResolvedExpr::Undefined
+    )
 }
 
 fn is_set_prototype_property(object: &ResolvedExpr, key: &str, expected_key: &str) -> bool {

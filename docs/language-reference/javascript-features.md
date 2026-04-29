@@ -199,7 +199,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | property access `obj.key` | ES1 | static property access | 実装済み | - | - |
 | method shorthand | ES2015 | object method | 未実装 | P2 | - |
 | computed property literal | ES2015 | `{[expr]: v}` | 未実装 | P2 | - |
-| spread properties `...obj` | ES2018 | object spreading | 未実装 | P2 | - |
+| spread properties `...obj` | ES2018 | object spreading | 実装済み (basic: static object literals / known static object-literal locals without intervening assignment) | - | 274 |
 | shorthand properties `{x}` | ES2015 | property shorthand | 未実装 | P2 | - |
 | getter / setter | ES5 | accessor properties | 未実装 | P2 | - |
 
