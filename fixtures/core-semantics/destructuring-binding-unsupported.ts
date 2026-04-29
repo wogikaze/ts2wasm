@@ -1,2 +1,2 @@
-let [a = 1] = [];
+let [a = makeDefault()] = [];
 console.log(a);
