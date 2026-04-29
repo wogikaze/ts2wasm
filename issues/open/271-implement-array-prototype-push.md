@@ -74,7 +74,7 @@ error: [UnresolvedName] unresolved name: `Array`
 1. [x] Direct `arr.push(value)` is available on supported Array objects.
 2. [x] Direct `arr.push(value)` appends to the end of supported arrays.
 3. [x] Direct `arr.push(value)` returns the new length.
-4. [ ] Multiple arguments are handled correctly.
+4. [x] Multiple arguments are handled correctly for direct identifier array receivers.
 5. [ ] `Array.prototype.push` exists as an observable builtin.
 6. [ ] Array-like objects via `Array.prototype.push`/method extraction/call-style behavior are supported or explicitly split with diagnostics.
 7. [ ] Reference-backed Node/iwasm differential coverage exists for the completed slice.
@@ -95,3 +95,10 @@ mise run check issues
 - Do not close this issue using direct `arr.push` smoke coverage alone.
 - A safe next slice may either implement `Array.prototype.push` for the reference-backed array-like case or split the capacity/grow and prototype-call boundaries into smaller issues.
 - Earlier unsafe work that weakened `Array.push` expectations or added hidden spare-capacity mutation without a clear grow contract was rejected.
+
+## Progress 2026-04-29
+
+- Direct identifier receiver `arr.push(a, b)` lowers through an `ArrayPushMany` runtime call that expands to repeated `$array_push` calls and returns the final length.
+- Added `fixtures/builtins-and-io/array-push-multi-arg.ts` with Node/iwasm differential coverage for final length, updated `.length`, and appended indexes.
+- Validation: `cargo fmt --all --check`; `cargo nextest run -p ts2wasm-cli array_push` (3 passed, 341 skipped).
+- Remaining open: observable `Array.prototype.push`, method extraction/call-style array-like behavior, and a real growth/reallocation contract for pushes beyond literal allocation.

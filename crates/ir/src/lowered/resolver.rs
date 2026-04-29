@@ -1123,6 +1123,24 @@ impl<'a> Resolver<'a> {
                         })
                     }
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                    if runtime_fn == "ArrayPush" && args.len() != 1 {
+                        if !matches!(object.as_ref(), ResolvedExpr::Ident(_)) {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "issue-271: multi-argument Array.prototype.push is currently supported only for identifier array receivers".to_owned(),
+                                span: Some(*span),
+                            });
+                        }
+                        let mut lowered_args = vec![self.lower_expr(object)?];
+                        lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<
+                            Result<Vec<_>, _>,
+                        >(
+                        )?);
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayPushMany".to_owned(),
+                            args: lowered_args,
+                        });
+                    }
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
                         object.as_ref(),

@@ -590,6 +590,10 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(unreachable)\n"));
             }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
+                if runtime_fn == "ArrayPushMany" {
+                    self.emit_array_push_many_call(wat, args, indent, frame);
+                    return;
+                }
                 if runtime_fn == "HeapClosureCall" {
                     self.emit_heap_closure_dispatch(wat, args, indent, frame);
                     return;
@@ -995,6 +999,33 @@ impl WatEmitter<'_> {
         ));
         wat.push_str(&format!("{pad}  ))\n"));
         wat.push_str(&format!("{pad}(local.get {stored_value})\n"));
+    }
+
+    fn emit_array_push_many_call(
+        &self,
+        wat: &mut String,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let Some((array, values)) = args.split_first() else {
+            return;
+        };
+        let pad = " ".repeat(indent);
+        if values.is_empty() {
+            self.emit_expr(wat, array, indent, frame);
+            wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::GetLength.symbol()));
+            return;
+        }
+
+        for (index, value) in values.iter().enumerate() {
+            self.emit_expr(wat, array, indent, frame);
+            self.emit_expr(wat, value, indent, frame);
+            wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ArrayPush.symbol()));
+            if index + 1 != values.len() {
+                wat.push_str(&format!("{pad}(drop)\n"));
+            }
+        }
     }
 
     fn emit_array_literal(

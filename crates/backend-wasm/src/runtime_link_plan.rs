@@ -548,6 +548,10 @@ impl RuntimeLinkPlan {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
             }
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
+                if runtime_fn == "ArrayPushMany" {
+                    self.add_required_runtime(RuntimeFn::ArrayPush);
+                    self.add_required_runtime(RuntimeFn::GetLength);
+                }
                 if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(runtime_fn) {
                     self.add_required_runtime(runtime_fn_enum);
                 }
