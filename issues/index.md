@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 68 | 15 | 53 |
+| runtime | 68 | 14 | 54 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 299 | 146 | 153 |
+| total | 299 | 145 | 154 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | implementation-ready | P2 | 259 | After BigInt values exist, builtin and conversion behavior still needs explicit runtime helpers and diagnostics so `B... |
 | 267 | Implement interactive web UI for test results | feature | coverage | implementation-ready | P1 |  | No interactive web UI for test results, coverage visualization, and historical comparison. |
 | 268 | Implement for loop increment operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement for loop increment operator |
-| 269 | Implement Math.pow | feature | runtime/builtins | implementation-ready | P2 |  | Implement Math.pow |
 | 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
 | 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
 | 272 | Implement Set | feature | runtime/builtins | implementation-ready | P2 |  | Implement Set |
@@ -355,6 +354,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 259 | Implement BigInt literal runtime values | feature | runtime/semantics | see `issues/done/259-implement-bigint-literal-runtime-values.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
 | 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
+| 269 | Implement Math.pow | feature | runtime/builtins | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
