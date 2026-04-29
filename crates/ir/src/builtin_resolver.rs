@@ -146,8 +146,8 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 None => None,
             };
 
-            let (private_fields, private_field_initializers) =
-                resolve_private_field_initializers(name, extends_name.as_ref(), private_elements)?;
+            let (private_fields, private_field_initializers, private_methods) =
+                resolve_private_elements(name, extends_name.as_ref(), private_elements)?;
 
             // Parse class body to extract constructor and methods
             let mut constructor = None;
@@ -243,6 +243,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                     }
                 }
             }
+            methods.extend(private_methods);
 
             if constructor.is_none() && !private_field_initializers.is_empty() {
                 constructor = Some((Vec::new(), private_field_initializers.clone()));
@@ -547,15 +548,6 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             {
                 return resolve_bigint_function_call(&resolved_args, *span);
             }
-            if let Expr::Member { property, .. } = callee.as_ref()
-                && is_private_member_key(property)
-            {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-255: private methods are not supported in this private field runtime slice".to_owned(),
-                    span: Some(*span),
-                });
-            }
             if let Some(builtin) = resolve_builtin_call(callee.as_ref(), args)? {
                 let builtin_args = if matches!(builtin, BuiltinId::ReadStdinUtf8) {
                     Vec::new()
@@ -820,13 +812,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     }
 }
 
-fn resolve_private_field_initializers(
+fn resolve_private_elements(
     class_name: &str,
     extends_name: Option<&String>,
     private_elements: &[ClassPrivateElement],
-) -> Result<(Vec<String>, Vec<ResolvedStmt>), Diagnostic> {
+) -> Result<(Vec<String>, Vec<ResolvedStmt>, Vec<ClassMethod>), Diagnostic> {
     let mut fields = Vec::new();
     let mut initializers = Vec::new();
+    let mut methods = Vec::new();
     let mut seen = HashSet::new();
 
     for element in private_elements {
@@ -872,11 +865,53 @@ fn resolve_private_field_initializers(
                     ),
                 }));
             }
-            ClassPrivateElement::Method { span, .. } => {
-                return Err(unsupported_private_element(
-                    "private methods are not supported in this private field runtime slice",
-                    *span,
-                ));
+            ClassPrivateElement::Method {
+                name,
+                params,
+                body,
+                is_static,
+                span,
+                ..
+            } => {
+                if *is_static {
+                    return Err(unsupported_private_element(
+                        "static private methods are not supported in this private method runtime slice",
+                        *span,
+                    ));
+                }
+                if extends_name.is_some() {
+                    return Err(unsupported_private_element(
+                        "private methods on derived classes require full private brand semantics",
+                        *span,
+                    ));
+                }
+                if !seen.insert(name.clone()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-255: duplicate private element `#{name}` in class `{class_name}`"
+                        ),
+                        span: Some(*span),
+                    });
+                }
+                methods.push(ClassMethod {
+                    name: format!("#{name}"),
+                    params: params
+                        .iter()
+                        .map(|(param_name, default, is_rest)| {
+                            Ok(ResolvedParam {
+                                name: param_name.clone(),
+                                default: default.as_ref().map(resolve_expr).transpose()?,
+                                is_rest: *is_rest,
+                                span: Some(*span),
+                            })
+                        })
+                        .collect::<Result<Vec<_>, Diagnostic>>()?,
+                    body: body
+                        .iter()
+                        .map(resolve_stmt)
+                        .collect::<Result<Vec<_>, _>>()?,
+                });
             }
             ClassPrivateElement::Getter { span, .. } | ClassPrivateElement::Setter { span, .. } => {
                 return Err(unsupported_private_element(
@@ -887,7 +922,7 @@ fn resolve_private_field_initializers(
         }
     }
 
-    Ok((fields, initializers))
+    Ok((fields, initializers, methods))
 }
 
 fn prepend_private_field_initializers(
