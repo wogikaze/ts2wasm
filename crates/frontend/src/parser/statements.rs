@@ -898,6 +898,22 @@ impl Parser {
 
     fn return_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Return)?;
+        if matches!(self.peek(), Some(Token::Semicolon)) {
+            let semi = self.expect(TokenKind::Semicolon)?;
+            return Ok(Stmt::Return {
+                expr: Expr::Undefined { span: start },
+                span: Span {
+                    start: start.start,
+                    end: semi.end,
+                },
+            });
+        }
+        if matches!(self.peek(), Some(Token::RightBrace) | None) {
+            return Ok(Stmt::Return {
+                expr: Expr::Undefined { span: start },
+                span: start,
+            });
+        }
         let expr = self.expression()?;
         let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Return {
