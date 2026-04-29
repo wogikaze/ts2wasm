@@ -210,6 +210,34 @@ elapsed: 16.29
   but did not reduce issue 307 telemetry (`gc_collect_count=837`,
   `gc_sweep_block_visits=197777965`).
 
+2026-04-29 child `308-free-list-scan-20260429T201523Z` progress:
+
+- Committed a bounded free-list scan guard in `$alloc_heap`: `$gc_sweep`
+  now records `$gc_free_list_max_body_size`, and allocation skips the linear
+  free-list scan when the aligned requested payload is larger than every free
+  block found by the last sweep. The guard is conservative: stale values can
+  only overestimate and cause an extra scan, not skip a reusable block.
+- Added backend WAT contract coverage for the new runtime global, sweep reset,
+  max-body update, and allocation-side guard.
+- The depth-9 search-only reducer still does not complete under the committed
+  185-page memory cap:
+
+```text
+command: node /tmp/abc451-search-depth-9-308-slice.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-search-depth-9-308-slice.ts -o /tmp/abc451-search-depth-9-308-free-list-scan.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-free-list-scan.wasm
+result: trapped with Exception: unreachable after 7.60s under committed 185-page policy
+date: 2026-04-29
+```
+
+- Issue 300 remains open. No official ABC451 sample compatibility is claimed.
+
 ## Completion evidence
 
 Commits:
@@ -267,12 +295,28 @@ command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
 result: pass; 27 tests passed
 date: 2026-04-29
 
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 tests passed including free-list max-scan guard WAT contract
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
 command: cargo fmt --all --check
 result: pass
 date: 2026-04-29
 
 command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
 result: pass; 1 test passed with `GC_HEADROOM_PAGES=12`
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; 1 test passed
 date: 2026-04-29
 
 command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
@@ -285,6 +329,18 @@ date: 2026-04-29
 
 command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-slice.wasm
 result: trapped with Exception: unreachable after 6.44s under committed 185-page policy
+date: 2026-04-29
+
+command: node /tmp/abc451-search-depth-9-308-slice.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-search-depth-9-308-slice.ts -o /tmp/abc451-search-depth-9-308-free-list-scan.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-free-list-scan.wasm
+result: trapped with Exception: unreachable after 7.60s under committed 185-page policy
 date: 2026-04-29
 
 command: /usr/bin/time -f 'elapsed:%e' timeout 60s iwasm /tmp/abc451-search-depth-9-308-slice-telemetry-cap1024.wasm

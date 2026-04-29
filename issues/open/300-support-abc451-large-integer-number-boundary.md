@@ -503,6 +503,21 @@ heap_high_water_bytes: 20524256
   until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
   committed runtime policy.
 
+2026-04-29 child `308-free-list-scan-20260429T201523Z` issue 308 follow-up:
+
+- Committed a conservative `$gc_free_list_max_body_size` guard so `$alloc_heap`
+  skips a linear free-list scan when the aligned request is larger than every
+  free block found by the last sweep.
+- Required depth-8 and OOM regressions still pass, but the depth-9 search-only
+  reducer still traps under the committed 185-page memory cap:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-free-list-scan.wasm
+result: Exception: unreachable; elapsed 7.60
+```
+
+- Issue 300 remains open. No official ABC451 sample compatibility is claimed.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
