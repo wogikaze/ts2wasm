@@ -443,9 +443,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             let left_contains_bigint = expr_contains_bigint(left);
             let right_contains_bigint = expr_contains_bigint(right);
             if left_contains_bigint || right_contains_bigint {
+                let left_resolved = resolve_expr(left)?;
+                let right_resolved = resolve_expr(right)?;
                 if bigint_arithmetic_op(*op) {
-                    let left_resolved = resolve_expr(left)?;
-                    let right_resolved = resolve_expr(right)?;
                     if let (Some(left_value), Some(right_value)) = (
                         bigint_from_resolved(&left_resolved),
                         bigint_from_resolved(&right_resolved),
@@ -494,7 +494,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     | BinaryOp::EqualEqual
                     | BinaryOp::BangEqual
                     | BinaryOp::StrictNotEqual => {
-                        "issue-261: BigInt equality and comparison are tracked separately from literal runtime values"
+                        return Ok(ResolvedExpr::Binary {
+                            left: Box::new(left_resolved),
+                            op: *op,
+                            right: Box::new(right_resolved),
+                        });
                     }
                     BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => "",
                     BinaryOp::InstanceOf | BinaryOp::In => {
@@ -1294,6 +1298,15 @@ impl BigIntRuntimeGuard {
                     return Ok(None);
                 }
                 if !bigint_arithmetic_or_bitwise_op(*op) {
+                    if bigint_equality_or_comparison_op(*op) {
+                        let both_bigint = left_info.is_some() && right_info.is_some();
+                        let strict_equality =
+                            matches!(op, BinaryOp::StrictEqual | BinaryOp::StrictNotEqual);
+                        if both_bigint || strict_equality {
+                            return Ok(None);
+                        }
+                        return Err(bigint_comparison_runtime_diagnostic(*span));
+                    }
                     return Ok(None);
                 }
                 let (Some(left_info), Some(right_info)) = (left_info, right_info) else {
@@ -1466,6 +1479,28 @@ fn bigint_mixed_runtime_diagnostic(span: Span) -> Diagnostic {
         message: "issue-260: mixed Number/BigInt arithmetic is not implemented in the dynamic BigInt runtime slice".to_owned(),
         span: Some(span),
     }
+}
+
+fn bigint_comparison_runtime_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-261: mixed BigInt abstract equality and relational comparison coercion is not implemented in this slice".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn bigint_equality_or_comparison_op(op: BinaryOp) -> bool {
+    matches!(
+        op,
+        BinaryOp::Less
+            | BinaryOp::LessEqual
+            | BinaryOp::Greater
+            | BinaryOp::GreaterEqual
+            | BinaryOp::StrictEqual
+            | BinaryOp::EqualEqual
+            | BinaryOp::BangEqual
+            | BinaryOp::StrictNotEqual
+    )
 }
 
 fn assigned_names_in_stmts(stmts: &[Stmt]) -> HashSet<String> {
