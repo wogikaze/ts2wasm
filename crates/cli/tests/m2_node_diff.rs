@@ -340,10 +340,14 @@ fn bigint_mixed_relational_reports_issue_282() {
 }
 
 #[test]
-fn bigint_runtime_mixed_abstract_equality_traps_instead_of_false() {
-    assert_fixture_iwasm_traps(
+fn bigint_runtime_mixed_string_abstract_equality_matches_node_output_under_iwasm() {
+    for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-abstract-equality-trap.ts",
-    );
+        "fixtures/core-semantics/bigint-runtime-mixed-string-abstract-equality.ts",
+        "fixtures/core-semantics/bigint-runtime-mixed-string-prefix-equality.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]
@@ -1862,6 +1866,15 @@ fn m6_stdin_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bun_stdin_text_fixture_matches_node_baseline_under_iwasm() {
+    assert_stdin_fixture_matches_node_baseline(
+        "fixtures/builtins-and-io/bun-stdin-text.ts",
+        r#"const s = require("fs").readFileSync(0, "utf8"); console.log(s);"#,
+        b"hello",
+    );
+}
+
+#[test]
 fn differential_test_runner_classifies_fixtures() {
     // Test the differential test runner with various fixtures
     let fixtures = vec![
@@ -2029,6 +2042,76 @@ fn assert_build_fails_with_issue_062_function_constructor(fixture: &str) {
     assert!(
         stderr.contains("runtime code evaluation is intentionally not implemented"),
         "expected dynamic evaluation policy diagnostic for {fixture}, got:\n{stderr}"
+    );
+}
+
+fn assert_stdin_fixture_matches_node_baseline(
+    fixture: &str,
+    js_baseline: &str,
+    stdin_input: &[u8],
+) {
+    use std::io::Write;
+
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let mut node = Command::new("node")
+        .arg("-e")
+        .arg(js_baseline)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    node.stdin.take().unwrap().write_all(stdin_input).unwrap();
+    let node_out = node.wait_with_output().unwrap();
+    assert!(
+        node_out.status.success(),
+        "node baseline failed for {fixture}\nstderr:\n{}",
+        String::from_utf8_lossy(&node_out.stderr)
+    );
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let mut iwasm = Command::new("iwasm")
+        .arg(&output)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    iwasm.stdin.take().unwrap().write_all(stdin_input).unwrap();
+    let iwasm_out = run_iwasm_child_with_timeout(iwasm).unwrap();
+    assert!(
+        !iwasm_out.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm_out.output.stdout),
+        String::from_utf8_lossy(&iwasm_out.output.stderr)
+    );
+    assert!(
+        iwasm_out.output.status.success(),
+        "iwasm failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm_out.output.stdout),
+        String::from_utf8_lossy(&iwasm_out.output.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&iwasm_out.output.stdout),
+        String::from_utf8_lossy(&node_out.stdout),
+        "stdout mismatch for {fixture}"
     );
 }
 
