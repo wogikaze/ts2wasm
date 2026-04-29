@@ -184,7 +184,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | function expression | ES1 | anonymous function | 実装済み (basic) | - | - |
 | arrow function | ES6 | lexical `this` | 実装済み (local binding calls; expression body / single-return block body / captured local / lexical `this` differential coverage) | - | 210 |
 | `this` | ES1 | call site receiver | 実装済み (class constructor / instance method receiver; top-level・static・extracted method は issue-linked diagnostic) | - | 211 |
-| `arguments` | ES1 | function arguments object | 未実装 | P2 | - |
+| `arguments` | ES1 | function arguments object | 実装済み (basic `.length` / indexed reads; top-level `arguments` remains issue-linked unsupported) | - | 062d |
 | rest parameters | ES6 | variadic parameters | 実装済み (argument collection) | - | 212 |
 | spread arguments | ES6 | argument spreading | 実装済み (basic) | - | 039 |
 | default parameters | ES6 | parameter defaults | 実装済み (basic) | - | 040 |

@@ -7,8 +7,10 @@ class: blocked
 priority: P1
 depends_on: []
 blocks: []
+status: done
 created: 2026-04-26
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -31,6 +33,7 @@ Queue design note:
   - issue 062d: function receiver `this` and `arguments`
   - issue 062e: closures and captured lexical environments
   - issue 062f: function object metadata
+  - issue 062g: heap closure object ABI and rooting for escaping closures
 - Issue 063 was closed as superseded by issue 062b; its Annex B dynamic
   Function constructor cases are owned there.
 
@@ -46,21 +49,24 @@ function feature is correctly implemented according to JavaScript/TypeScript spe
 
 In scope for the epic:
 
-- [ ] Track the child issue list.
-- [ ] Keep shared function support constraints discoverable.
-- [ ] Close only after all child issues are closed or explicitly superseded.
+- [x] Track the child issue list.
+- [x] Keep shared function support constraints discoverable.
+- [x] Close only after all child issues are closed or explicitly superseded.
 
 Implementation scope belongs to child issues:
 
 - [x] Dynamic Function constructor diagnostics and policy: issue 062b
-- [ ] Ordinary function declarations and direct calls: issue 062c
-- [ ] Function receiver `this` and `arguments`: issue 062d
+- [x] Ordinary function declarations and direct calls: issue 062c
+- [x] Function receiver `this` and `arguments`: issue 062d
 - [x] Closures and captured lexical environments: issue 062e
-- [ ] Function object metadata: issue 062f
+- [x] Function object metadata: issue 062f
+- [x] Heap closure object ABI/rooting for escaping returned closures: issue 062g
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- [x] Related features remain separate issues/scopes when explicitly out of the
+      function epic, including dynamic `eval`, Annex B semantics, generators,
+      async functions, and broader mutable closure environments.
 
 ## Affected paths
 
@@ -77,10 +83,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] All child issues listed in the queue design note are closed or explicitly superseded.
-- [ ] Related function diagnostics are reduced in reference tests through child issues.
-- [ ] Regression coverage exists for each supported function semantic surface.
-- [ ] Docs/current-state are updated by child issues when semantics change.
+- [x] All child issues listed in the queue design note are closed or explicitly superseded.
+- [x] Related function diagnostics are reduced in reference tests through child issues.
+- [x] Regression coverage exists for each supported function semantic surface.
+- [x] Docs/current-state are updated by child issues when semantics change.
 
 ## Validation
 
@@ -105,15 +111,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none for the 062 epic close. Remaining unsupported behavior is outside
+      this parent issue and tracked by separate issues/scopes.
 
 ## Notes
 
@@ -131,6 +138,16 @@ Follow-up issues:
 - The diagnostic intentionally reports unsupported runtime code evaluation and does not implement dynamic evaluation semantics.
 - Added resolver and CLI regression coverage plus direct unsupported fixtures.
 - Issue remains open because the broader function syntax/semantics acceptance criteria are not complete.
+
+2026-04-29 epic close verification:
+
+- issue 062b is done for diagnostic-only dynamic `Function(...)` / `new Function(...)` policy.
+- issue 062c is done for ordinary declarations, direct calls, positional arguments, and returns.
+- issue 062d is done for supported receiver binding plus basic `arguments.length` and indexed reads.
+- issue 062e is done for immutable ordinary closure capture, returned closures, and mutation diagnostics.
+- issue 062f is done for supported `name` / `length` function object metadata.
+- issue 062g is done for heap closure object ABI, dispatch, and GC rooting for escaping returned closures.
+- Dynamic `eval`, Annex B semantics, generators, async functions, mutable captured environments, and broader closure dispatch remain outside this epic and are covered by separate issue scopes.
 
 ## Affected test files
 
@@ -152,16 +169,43 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `062b`: done; dynamic Function constructor diagnostics and policy
+- `062c`: `446224c`
+- `062d`: `bf80f0b`
+- `062e`: `a558aca269c61f0ba64f82d6799d729874930b0f`, `b1e9a98c8fc94ccf794998ba97376045e7438cb9`, `115d5cf74a9d19840303ff951463264529deb415`, `29d57aced2fdcc3273ead0997bac39797780e0e5`
+- `062f`: `6448031`
+- `062g`: `50e36ded2d68eb09dc29d5ed7fcd7723bc49c867`, `b1e9a98c8fc94ccf794998ba97376045e7438cb9`, `115d5cf74a9d19840303ff951463264529deb415`, `29d57aced2fdcc3273ead0997bac39797780e0e5`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(function) or test(arguments) or test(closure) or test(node_diff)'
+result: passed (33 tests run, 33 passed, 476 skipped)
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: passed
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: passed
+date: 2026-04-29
+
+command: mise run check issues
+result: passed
+date: 2026-04-29
+
+command: cargo nextest run
+result: passed (505 tests run, 505 passed, 4 skipped)
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Dynamic `Function(...)` and `new Function(...)` remain diagnostic-only by policy.
+- Dynamic `eval` and Annex B function declaration semantics remain separate issue 225 work.
+- Mutable captured environments, generators, async functions, and broader closure dispatch forms remain outside this epic close and are tracked by separate issue scopes.
