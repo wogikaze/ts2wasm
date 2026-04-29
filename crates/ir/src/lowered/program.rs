@@ -526,7 +526,11 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
             args.iter().any(expr_contains_this)
         }
         ResolvedExpr::BuiltinProperty { object, .. }
-        | ResolvedExpr::PropertyAccess { object, .. } => expr_contains_this(object),
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_this(object),
+        ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_contains_this(object) || expr_contains_this(index)
+        }
         ResolvedExpr::MethodCall { object, args, .. } => {
             expr_contains_this(object) || args.iter().any(expr_contains_this)
         }
@@ -659,7 +663,11 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
             args.iter().any(expr_contains_arguments)
         }
         ResolvedExpr::BuiltinProperty { object, .. }
-        | ResolvedExpr::PropertyAccess { object, .. } => expr_contains_arguments(object),
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_arguments(object),
+        ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_contains_arguments(object) || expr_contains_arguments(index)
+        }
         ResolvedExpr::MethodCall { object, args, .. } => {
             expr_contains_arguments(object) || args.iter().any(expr_contains_arguments)
         }
@@ -1546,8 +1554,13 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
             }
         }
         ResolvedExpr::BuiltinProperty { object, .. }
-        | ResolvedExpr::PropertyAccess { object, .. } => {
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
             collect_arrow_captures(object, params, captures);
+        }
+        ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            collect_arrow_captures(object, params, captures);
+            collect_arrow_captures(index, params, captures);
         }
         ResolvedExpr::MethodCall { object, args, .. } => {
             collect_arrow_captures(object, params, captures);
@@ -1863,7 +1876,13 @@ fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bool {
             args.iter().any(|arg| expr_assigns_any_name(arg, names))
         }
         ResolvedExpr::BuiltinProperty { object, .. }
-        | ResolvedExpr::PropertyAccess { object, .. } => expr_assigns_any_name(object, names),
+        | ResolvedExpr::PropertyAccess { object, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object, .. } => {
+            expr_assigns_any_name(object, names)
+        }
+        ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+            expr_assigns_any_name(object, names) || expr_assigns_any_name(index, names)
+        }
         ResolvedExpr::MethodCall { object, args, .. } => {
             expr_assigns_any_name(object, names)
                 || args.iter().any(|arg| expr_assigns_any_name(arg, names))
