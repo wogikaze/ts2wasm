@@ -23,6 +23,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         current_class: None,
                         in_constructor: false,
                         next_func_id,
+                        self_closure: None,
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -64,6 +65,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         current_class: Some(name),
                         in_constructor: true,
                         next_func_id,
+                        self_closure: None,
                     },
                 )?;
                 next_func_id = lowered.next_func_id;
@@ -98,6 +100,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             current_class: Some(name),
                             in_constructor: false,
                             next_func_id,
+                            self_closure: None,
                         },
                     )?;
                     next_func_id = lowered.next_func_id;
@@ -746,6 +749,13 @@ struct LowerFunctionOptions<'a> {
     current_class: Option<&'a str>,
     in_constructor: bool,
     next_func_id: usize,
+    self_closure: Option<SelfClosureOptions<'a>>,
+}
+
+struct SelfClosureOptions<'a> {
+    name: &'a str,
+    func_id: FuncId,
+    capture_names: &'a [String],
 }
 
 fn lower_function(
@@ -799,6 +809,14 @@ fn lower_function(
         options.in_constructor,
         options.next_func_id,
     )?;
+
+    if let Some(self_closure) = options.self_closure {
+        resolver.declare_self_closure(
+            self_closure.name,
+            self_closure.func_id,
+            self_closure.capture_names,
+        )?;
+    }
 
     let rest_param_index = params
         .iter()

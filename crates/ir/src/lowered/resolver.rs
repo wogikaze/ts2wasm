@@ -1867,6 +1867,7 @@ impl<'a> Resolver<'a> {
                 current_class: self.current_class.as_deref(),
                 in_constructor: false,
                 next_func_id: self.next_func_id,
+                self_closure: None,
             },
         )?;
         self.next_func_id = lowered.next_func_id;
@@ -1948,6 +1949,11 @@ impl<'a> Resolver<'a> {
                 current_class: self.current_class.as_deref(),
                 in_constructor: false,
                 next_func_id: self.next_func_id,
+                self_closure: Some(SelfClosureOptions {
+                    name,
+                    func_id,
+                    capture_names: &capture_names,
+                }),
             },
         )?;
         self.next_func_id = lowered.next_func_id;
@@ -2013,6 +2019,22 @@ impl<'a> Resolver<'a> {
         self.locals.push(local_id);
         scope.insert(name.to_owned(), local_id);
         Ok(local_id)
+    }
+
+    fn declare_self_closure(
+        &mut self,
+        name: &str,
+        func_id: FuncId,
+        capture_names: &[String],
+    ) -> Result<(), Diagnostic> {
+        let local_id = self.declare_local(name)?;
+        let captures = capture_names
+            .iter()
+            .map(|capture| self.resolve_local(capture))
+            .collect::<Result<Vec<_>, _>>()?;
+        self.arrow_locals
+            .insert(local_id, ArrowClosure { func_id, captures });
+        Ok(())
     }
 
     fn alloc_temp(&mut self) -> LocalId {
