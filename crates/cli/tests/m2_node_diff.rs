@@ -466,10 +466,30 @@ fn this_receiver_method_unsupported_forms_report_issue_211() {
     for fixture in [
         "fixtures/core-semantics/this-extracted-method-unsupported.ts",
         "fixtures/core-semantics/this-non-identifier-receiver-unsupported.ts",
-        "fixtures/core-semantics/this-top-level-unsupported.ts",
         "fixtures/core-semantics/this-unknown-receiver-class-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-211:");
+    }
+}
+
+#[test]
+fn function_this_receiver_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-this-receiver.ts");
+}
+
+#[test]
+fn function_arguments_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-arguments.ts");
+}
+
+#[test]
+fn function_this_arguments_unsupported_forms_report_issue_062d() {
+    for fixture in [
+        "fixtures/core-semantics/this-top-level-unsupported.ts",
+        "fixtures/core-semantics/function-this-direct-call-unsupported.ts",
+        "fixtures/core-semantics/arguments-top-level-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, "issue-062d:");
     }
 }
 
