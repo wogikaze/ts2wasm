@@ -375,6 +375,20 @@ fn validate_expr(
                 }
             }
         }
+        LoweredExpr::RuntimeCall { runtime_fn, args } => {
+            for arg in args {
+                validate_expr(arg, local_count, num_funcs, program, errors, true);
+            }
+            if runtime_fn == "HeapClosureCall" {
+                errors.push(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-257: heap closure call dispatch is not implemented by the backend yet"
+                            .to_owned(),
+                    span: None,
+                });
+            }
+        }
         LoweredExpr::ArrayNew { elements } => {
             for elem in elements {
                 validate_expr(elem, local_count, num_funcs, program, errors, true);

@@ -9,4 +9,4 @@ function makeReader() {
 }
 
 let reader = makeReader();
-console.log(0);
+console.log(reader());

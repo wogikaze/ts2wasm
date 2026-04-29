@@ -143,6 +143,7 @@ struct FunctionSignature {
     needs_arguments: bool,
     has_rest: bool,
     metadata_length: Option<usize>,
+    returns_heap_closure: bool,
 }
 
 fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
@@ -242,6 +243,7 @@ fn collect_function_signatures(
                             && !params.iter().any(|(name, _, _)| name == "arguments"),
                         has_rest: params.iter().any(|(_, _, is_rest)| *is_rest),
                         metadata_length: fixed_arity_metadata_length(params),
+                        returns_heap_closure: block_returns_declared_function(body),
                     },
                 );
             }
@@ -260,11 +262,15 @@ fn collect_function_signatures(
                 let ctor_has_rest = constructor
                     .as_ref()
                     .is_some_and(|(params, _)| params.iter().any(|(_, _, is_rest)| *is_rest));
+                let ctor_returns_heap_closure = constructor
+                    .as_ref()
+                    .is_some_and(|(_, body)| block_returns_declared_function(body));
                 signatures.insert(
                     function_ids[&ctor_key],
                     FunctionSignature {
                         explicit_params: ctor_params_len,
                         has_rest: ctor_has_rest,
+                        returns_heap_closure: ctor_returns_heap_closure,
                         ..FunctionSignature::default()
                     },
                 );
@@ -277,6 +283,7 @@ fn collect_function_signatures(
                         FunctionSignature {
                             explicit_params: method.params.len() + receiver_param_count,
                             has_rest: method.params.iter().any(|(_, _, is_rest)| *is_rest),
+                            returns_heap_closure: block_returns_declared_function(&method.body),
                             ..FunctionSignature::default()
                         },
                     );
@@ -301,6 +308,125 @@ fn fixed_arity_metadata_length(params: &[ResolvedParam]) -> Option<usize> {
         None
     } else {
         Some(params.len())
+    }
+}
+
+fn block_returns_declared_function(stmts: &[ResolvedStmt]) -> bool {
+    let mut function_names = HashSet::new();
+    collect_declared_function_names(stmts, &mut function_names);
+    !function_names.is_empty() && block_returns_any_name(stmts, &function_names)
+}
+
+fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Function { name, .. } => {
+                names.insert(name.clone());
+            }
+            ResolvedStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_declared_function_names(then_body, names);
+                collect_declared_function_names(else_body, names);
+            }
+            ResolvedStmt::While { body, .. }
+            | ResolvedStmt::DoWhile { body, .. }
+            | ResolvedStmt::ForIn { body, .. }
+            | ResolvedStmt::ForOf { body, .. } => collect_declared_function_names(body, names),
+            ResolvedStmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    collect_declared_function_names(std::slice::from_ref(init.as_ref()), names);
+                }
+                collect_declared_function_names(body, names);
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_declared_function_names(try_block, names);
+                if let Some(block) = catch_block {
+                    collect_declared_function_names(block, names);
+                }
+                if let Some(block) = finally_block {
+                    collect_declared_function_names(block, names);
+                }
+            }
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_declared_function_names(body, names);
+                }
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_declared_function_names(std::slice::from_ref(body.as_ref()), names);
+            }
+            ResolvedStmt::Let(_, _)
+            | ResolvedStmt::Assign(_, _)
+            | ResolvedStmt::Expr(_)
+            | ResolvedStmt::Return(_)
+            | ResolvedStmt::Throw(_)
+            | ResolvedStmt::Export { .. }
+            | ResolvedStmt::ModuleExportsAssign { .. }
+            | ResolvedStmt::ClassDecl { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+        }
+    }
+}
+
+fn block_returns_any_name(stmts: &[ResolvedStmt], names: &HashSet<String>) -> bool {
+    stmts.iter().any(|stmt| stmt_returns_any_name(stmt, names))
+}
+
+fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
+    match stmt {
+        ResolvedStmt::Return(ResolvedExpr::Ident(name)) => names.contains(name),
+        ResolvedStmt::If {
+            then_body,
+            else_body,
+            ..
+        } => block_returns_any_name(then_body, names) || block_returns_any_name(else_body, names),
+        ResolvedStmt::While { body, .. }
+        | ResolvedStmt::DoWhile { body, .. }
+        | ResolvedStmt::ForIn { body, .. }
+        | ResolvedStmt::ForOf { body, .. } => block_returns_any_name(body, names),
+        ResolvedStmt::For { init, body, .. } => {
+            init.as_ref()
+                .is_some_and(|stmt| stmt_returns_any_name(stmt, names))
+                || block_returns_any_name(body, names)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_returns_any_name(try_block, names)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_returns_any_name(block, names))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_returns_any_name(block, names))
+        }
+        ResolvedStmt::Switch { cases, .. } => cases
+            .iter()
+            .any(|(_, body)| block_returns_any_name(body, names)),
+        ResolvedStmt::Labeled { body, .. } => stmt_returns_any_name(body, names),
+        ResolvedStmt::Function { .. }
+        | ResolvedStmt::Let(_, _)
+        | ResolvedStmt::Assign(_, _)
+        | ResolvedStmt::Expr(_)
+        | ResolvedStmt::Return(_)
+        | ResolvedStmt::Throw(_)
+        | ResolvedStmt::Export { .. }
+        | ResolvedStmt::ModuleExportsAssign { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
     }
 }
 
