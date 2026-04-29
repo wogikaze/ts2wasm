@@ -493,7 +493,9 @@ impl NameResolver {
             } => {
                 self.enter_scope();
                 self.function_depth += 1;
-                self.declare_binding(name, Some(*span))?;
+                if !name.is_empty() {
+                    self.declare_binding(name, Some(*span))?;
+                }
                 for (param_name, default, is_rest) in params {
                     if *is_rest && is_binding_pattern_text(param_name) {
                         return Err(Diagnostic {

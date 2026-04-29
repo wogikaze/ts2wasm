@@ -963,6 +963,11 @@ fn spread_operator_literal_call_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_literal_iife_call_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-call-iife-literal-array.ts");
+}
+
+#[test]
 fn spread_operator_literal_array_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-array-literal.ts");
 }

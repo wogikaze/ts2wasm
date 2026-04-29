@@ -1631,11 +1631,16 @@ impl Parser {
     }
 
     fn function_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
-        let (name, _) = self.expect_ident()?;
-        let has_generic_params = self.consume_typescript_generic_parameter_list()?;
-        if has_generic_params {
-            self.typescript_generic_functions.insert(name.clone());
-        }
+        let name = if matches!(self.peek(), Some(Token::Ident(_))) {
+            let (name, _) = self.expect_ident()?;
+            let has_generic_params = self.consume_typescript_generic_parameter_list()?;
+            if has_generic_params {
+                self.typescript_generic_functions.insert(name.clone());
+            }
+            name
+        } else {
+            String::new()
+        };
         self.expect(TokenKind::LeftParen)?;
         let mut params = Vec::new();
         if !self.consume(TokenKind::RightParen) {
