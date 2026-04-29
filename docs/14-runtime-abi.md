@@ -307,10 +307,13 @@ allocation pressure and after the declaring function's activation has returned.
 
 ### GC trigger points
 
-`$alloc_heap` は以下のどちらかを満たすと GC または memory growth を試行する:
+`$alloc_heap` は以下を満たすと GC または memory growth を試行する:
 
 - `alloc_bytes_since_last_gc + requested_block_size >= GC_THRESHOLD` かつ
   bump allocation result が現在の `memory.size` の末尾 12 pages 以内に入る場合
+- 現在の `memory.size` が `MEMORY_MAX_PAGES` に達しており、bump allocation
+  result が現在の memory に収まらない場合は、free-list scan の前に last-chance
+  GC を実行する
 - 現在の memory に収まらない場合は bounded `memory.grow` を試みる
 
 Pseudo flow:
@@ -383,6 +386,9 @@ string alloc 時は以下の手順で行う。
 割り当てが現在のメモリサイズを超える場合、bounded `memory.grow` を試みる。
 小さい growth は `MEMORY_MAX_PAGES` に収まる範囲で最低 16 pages ずつ要求し、
 GC の直後に小刻みな `memory.grow` と sweep を繰り返す状態を避ける。
+現在の `memory.size` がすでに `MEMORY_MAX_PAGES` の場合は、`memory.grow` が
+失敗して trap する前に last-chance GC を実行し、直後の free-list scan で
+回収済み block を再利用できるようにする。
 `MEMORY_MAX_PAGES` まで増やせなければ `unreachable` で trap する。
 これにより、大きな割り当てによる未定義動作やメモリ破損を防ぐ。
 現在の上限は 185 pages で、ABC451 D の depth-8 large live-set reducer はこの cap で
@@ -437,7 +443,11 @@ GC は以下のタイミングで実行:
      維持しながら depth-9 1,000,000-allocation telemetry の sweep pressure を下げる
    - threshold は GC 後に動的に調整可能
 
-2. **Explicit collection**: 将来的に `gc()` API を追加可能
+2. **Max-cap last chance**: `memory.size == MEMORY_MAX_PAGES` かつ bump allocation
+   result が現在の memory に収まらない場合。これは free-list scan と OOM trap の
+   前に行い、回収可能 block を再利用できるか確認する。
+
+3. **Explicit collection**: 将来的に `gc()` API を追加可能
 
 ### Mark Phase
 
