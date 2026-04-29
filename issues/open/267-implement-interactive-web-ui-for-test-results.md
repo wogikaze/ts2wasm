@@ -122,7 +122,11 @@ Current state:
 Follow-up issues:
 
 - [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] created/updated:
+  - `issues/open/267a-web-ui-data-generation-and-script-integration.md`
+  - `issues/open/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
+  - `issues/open/267c-web-ui-real-time-test-run-updates.md`
+  - `issues/open/267d-web-ui-export-theme-and-usage-docs.md`
 
 ## Notes
 
@@ -137,6 +141,33 @@ Data sources:
 - `artifacts/coverage/results/test262.json`
 - `test_report.json` schema
 - `artifacts/coverage/reference-coverage-matrix.md`
+
+## Progress evidence
+
+Review date: 2026-04-29.
+
+Implemented in `web-ui/`:
+
+- Vite + React + TypeScript project exists with locked dependencies.
+- Static test-result browser loads `public/data/test-results.json`.
+- Test table displays pass/fail/skip statuses and supports search plus status filtering.
+- Coverage tab displays implementation totals and priority breakdown from `public/data/coverage.json`.
+- History tab displays run rows with pass/fail/skip counts and compile/runtime fields from `public/data/history.json`.
+- `cd web-ui && npm ci` completed on 2026-04-29 with Node engine warnings for Node `v23.6.0`.
+- `cd web-ui && npm run build` passed on 2026-04-29.
+- `cargo fmt --all --check` passed on 2026-04-29.
+
+Close blockers found during review:
+
+- No suite filter exists; current filters cover search and status only.
+- Coverage visualization is progress bars only, not interactive charts.
+- History view is a table only; no regression detection or historical diff UI is implemented.
+- Performance metrics are displayed as raw fields only; no trends are implemented.
+- Real-time updates are not implemented; `web-ui/README.md` explicitly marks them planned.
+- Export is a non-functional header button; JSON, CSV, and PDF export are not implemented.
+- Dark/light theme toggle is not implemented; `web-ui/README.md` explicitly marks it planned.
+- The documented web UI data generator, metadata output, and `--web-ui` command integration referenced by docs/issue are absent.
+- Web UI usage docs exist only in `web-ui/README.md`; no final-state `docs/` usage/deployment document exists.
 
 ## Completion evidence
 
