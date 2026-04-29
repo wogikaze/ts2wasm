@@ -173,6 +173,19 @@ Progress on 2026-04-29:
   coercion and handling unknown object-carried dynamic strings outside the
   current signed-i32 boundary.
 
+Progress on 2026-04-29:
+
+- Added source-backed issue-282 diagnostics for literal-derived object-property
+  BigInt/String comparisons where the string value is outside the current
+  signed-i32 `StringToBigInt` comparison helper boundary, covered by
+  `fixtures/core-semantics/bigint-runtime-mixed-object-string-out-of-range-unsupported.ts`.
+- Node prints `false` for that fixture while the previous iwasm output was
+  `true`, so the guard prevents a silent incorrect boolean until broader
+  runtime string parsing is implemented.
+- Remaining issue-282 work: compatible object `ToPrimitive` coercion and
+  broader unknown out-of-range dynamic string handling that is not
+  source-backed by literal/local object-property values.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

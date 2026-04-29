@@ -460,6 +460,14 @@ fn bigint_runtime_mixed_string_out_of_range_reports_issue_282() {
 }
 
 #[test]
+fn bigint_runtime_mixed_object_string_out_of_range_reports_issue_282() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-mixed-object-string-out-of-range-unsupported.ts",
+        "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice",
+    );
+}
+
+#[test]
 fn bigint_runtime_mixed_object_toprimitive_reports_issue_282() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
