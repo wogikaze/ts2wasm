@@ -240,6 +240,11 @@ mod tests {
         assert!(wat.contains("(local $payload_base i32)"));
         assert!(wat.contains("(i32.const 16)"));
         assert!(wat.contains("(i32.const 65536)"));
+        assert!(wat.contains(&format!(
+            "(i32.const {})",
+            Layout::GC_HEADROOM_PAGES * Layout::WASM_PAGE_SIZE
+        )));
+        assert!(wat.contains(&format!("(i32.const {})", Layout::HEAP_GROW_MIN_PAGES)));
         assert!(wat.contains("(local $needed_pages i32)"));
         assert!(wat.contains("(memory.grow (local.get $needed_pages))"));
         assert!(wat.contains("(i32.const -1)"));

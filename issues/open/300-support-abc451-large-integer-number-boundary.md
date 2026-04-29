@@ -469,6 +469,40 @@ heap_high_water_bytes: 20487448
   `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
   committed runtime policy.
 
+2026-04-29 child `308-gc-scan-slice-20260429T195405Z` GC cadence progress:
+
+- Committed a headroom-aware allocation-pressure GC policy for issue 308.
+  `$alloc_heap` keeps `MEMORY_MAX_PAGES=185`, delays threshold GC until the
+  bump allocation result is within `GC_HEADROOM_PAGES=12` pages of reserved
+  memory, and rounds small successful growth requests up to
+  `HEAP_GROW_MIN_PAGES=16` pages when that remains below the cap.
+- Required regressions passed with the committed policy:
+  `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` and
+  `oom_alloc_check_must_fail_iwasm`.
+- The depth-9 search-only reducer still traps under the committed 185-page cap:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-slice.wasm
+result: Exception: unreachable; elapsed 6.44
+```
+
+- WAT-only 1024-page telemetry improves the issue 307 baseline at the
+  1,000,000-allocation diagnostic abort from `gc_collect_count=834` and
+  `gc_sweep_block_visits=196941253` to:
+
+```text
+alloc_count: 1000000
+allocated_block_bytes: 62908504
+gc_collect_count: 790
+gc_sweep_block_visits: 192697486
+gc_sweep_freed_blocks: 20567471
+heap_high_water_bytes: 20524256
+```
+
+- Issue 300 remains open. No official ABC451 sample compatibility is claimed
+  until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

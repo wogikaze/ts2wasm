@@ -2530,6 +2530,7 @@ impl WatEmitter<'_> {
     (local $free_body_size i32)
     (local $split_header i32)
     (local $split_body_size i32)
+    (local $alloc_pressure i32)
     (local.set $header_base
       (i32.and
         (i32.add (global.get $heap) (i32.const {align_mask}))
@@ -2544,12 +2545,19 @@ impl WatEmitter<'_> {
       (i32.add (i32.const {gc_header_size}) (local.get $payload_size)))
     (local.set $new_heap (i32.add (local.get $header_base) (local.get $block_size)))
 
-    ;; Trigger a collection hook once allocation pressure crosses the threshold.
-    (if
-      (i32.ge_u
-        (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $block_size))
-        (i32.const {gc_threshold}))
-      (then (call $gc_collect)))
+    ;; Trigger a collection hook once allocation pressure crosses the threshold
+    ;; and the bump pointer is close to the currently reserved memory end.
+    (local.set $alloc_pressure
+      (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $block_size)))
+    (if (i32.ge_u (local.get $alloc_pressure) (i32.const {gc_threshold}))
+      (then
+        (local.set $memory_pages (memory.size))
+        (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
+        (if
+          (i32.ge_u
+            (local.get $new_heap)
+            (i32.sub (local.get $memory_bytes) (i32.const {gc_headroom_bytes})))
+          (then (call $gc_collect)))))
 
     ;; Reuse a swept block when one is large enough for this payload.
     (local.set $free_header (global.get $gc_free_list))
@@ -2639,6 +2647,14 @@ impl WatEmitter<'_> {
               (i32.sub (local.get $new_heap) (local.get $memory_bytes))
               (i32.const {page_align_mask}))
             (i32.const {page_size})))
+        (if
+          (i32.and
+            (i32.lt_u (local.get $needed_pages) (i32.const {heap_grow_min_pages}))
+            (i32.le_u
+              (i32.add (local.get $memory_pages) (i32.const {heap_grow_min_pages}))
+              (i32.const {memory_max_pages})))
+          (then
+            (local.set $needed_pages (i32.const {heap_grow_min_pages}))))
         (if
           (i32.eq
             (memory.grow (local.get $needed_pages))
@@ -2922,6 +2938,9 @@ impl WatEmitter<'_> {
             gc_header_size = Layout::GC_HEADER_SIZE,
             gc_header_size_plus_min_payload = Layout::GC_HEADER_SIZE + Layout::ALIGN,
             gc_threshold = Layout::GC_THRESHOLD,
+            gc_headroom_bytes = Layout::GC_HEADROOM_PAGES * Layout::WASM_PAGE_SIZE,
+            heap_grow_min_pages = Layout::HEAP_GROW_MIN_PAGES,
+            memory_max_pages = Layout::MEMORY_MAX_PAGES,
             gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
             gc_body_size_offset = Layout::GC_BODY_SIZE_OFFSET,
             gc_sweep_next_offset = Layout::GC_SWEEP_NEXT_OFFSET,
