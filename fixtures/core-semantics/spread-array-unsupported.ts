@@ -1,3 +1,3 @@
-let values = [3, 4, 5];
+let values = "abc";
 let copy = [...values];
 console.log(copy.length);
