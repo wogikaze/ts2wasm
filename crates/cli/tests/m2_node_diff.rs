@@ -1406,6 +1406,10 @@ fn assert_build_fails_with_issue_062_function_constructor(fixture: &str) {
         stderr.contains("issue-062: dynamic Function constructor is not supported"),
         "expected issue-linked Function constructor diagnostic for {fixture}, got:\n{stderr}"
     );
+    assert!(
+        stderr.contains("runtime code evaluation is intentionally not implemented"),
+        "expected dynamic evaluation policy diagnostic for {fixture}, got:\n{stderr}"
+    );
 }
 
 fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
