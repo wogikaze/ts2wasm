@@ -80,6 +80,7 @@ pub enum ResolvedStmt {
         methods: Vec<ClassMethod>,
         statics: Vec<(String, ResolvedExpr)>,
         static_blocks: Vec<Vec<ResolvedStmt>>,
+        private_fields: Vec<String>,
     },
 }
 
