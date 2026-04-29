@@ -2052,6 +2052,7 @@ fn push_capture(name: &str, params: &[String], captures: &mut Vec<String>) {
 fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
     match op {
         UnaryOp::Not => Ok(LoweredUnaryOp::Not),
+        UnaryOp::Plus => Ok(LoweredUnaryOp::Plus),
         UnaryOp::Negate => Ok(LoweredUnaryOp::Negate),
         UnaryOp::TypeOf => Ok(LoweredUnaryOp::TypeOf),
         UnaryOp::Delete => Ok(LoweredUnaryOp::Delete),

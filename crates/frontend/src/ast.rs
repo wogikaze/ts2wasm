@@ -34,6 +34,7 @@ pub enum BinaryOp {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UnaryOp {
     Not,
+    Plus,
     Negate,
     Increment,
     Decrement,

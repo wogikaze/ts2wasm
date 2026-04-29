@@ -186,7 +186,12 @@ Progress on 2026-04-29:
 - Verified `fixtures/atcoder/abc451-d-concat-power2.ts` now advances past the
   chained input parsing map and reaches the next blocker:
   `error: [UnsupportedSyntax] binary operator Power not yet supported`.
-- Remaining issue-295 work: unary plus callbacks.
+- Added a focused unary plus map callback slice for
+  `strings.map(n => +n)`, covered by parser test
+  `preserves_unary_plus_in_arrow_callback_body` and Node/iwasm differential
+  fixture `fixtures/core-semantics/array-map-arrow-unary-plus.ts`.
+- Remaining issue-295 work: verify the original ABC451 D repro against the
+  current parent state before closing issue 295.
 
 ## Completion evidence
 

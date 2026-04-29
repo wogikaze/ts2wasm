@@ -280,6 +280,7 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(expr);
                 match op {
                     LoweredUnaryOp::Not => self.add_required_runtime(RuntimeFn::Not),
+                    LoweredUnaryOp::Plus => self.add_required_runtime(RuntimeFn::EqualEqual),
                     LoweredUnaryOp::Negate => self.add_required_runtime(RuntimeFn::Negate),
                     LoweredUnaryOp::TypeOf => self.add_required_runtime(RuntimeFn::TypeOf),
                     LoweredUnaryOp::Delete => {
