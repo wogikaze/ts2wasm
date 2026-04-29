@@ -574,8 +574,32 @@ date: 2026-04-29
   `1404832`:
 
 ```text
-command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-secondmax.wasm
+ command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-secondmax.wasm
 result: Exception: unreachable; elapsed 10.06
+date: 2026-04-29
+```
+
+- No official ABC451 sample output parity is claimed; issue 300 remains open
+  until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
+2026-04-29 child `308-gc-depth9-next-20260429T2133Z` issue 308 follow-up:
+
+- Issue 308 made the tail-trim policy immediately visible to the active
+  allocation: after `$gc_collect`, `$alloc_heap` recomputes its bump cursor
+  from the possibly lowered `$heap` before free-list scan, `memory.grow`, or
+  OOM trap.
+- This does not establish issue 300 compatibility. The depth-9 search-only
+  reducer still traps under the committed 185-page cap after Node confirms
+  `1404832`, and the smallest official ABC451 sample still traps:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-recompute.wasm
+result: Exception: unreachable; elapsed 9.87
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-recompute.wasm"
+result: Exception: unreachable; elapsed 5.78
 date: 2026-04-29
 ```
 

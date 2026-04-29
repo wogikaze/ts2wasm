@@ -2564,6 +2564,16 @@ impl WatEmitter<'_> {
           (i32.eq (local.get $memory_pages) (i32.const {memory_max_pages}))
           (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))))
       (then (call $gc_collect)))
+    ;; A collection can tail-trim $heap. Recompute the bump cursor so the same
+    ;; allocation can immediately reuse top-of-heap garbage if no free-list
+    ;; block is suitable.
+    (local.set $header_base
+      (i32.and
+        (i32.add (global.get $heap) (i32.const {align_mask}))
+        (i32.const {heap_align})))
+    (local.set $payload_base
+      (i32.add (local.get $header_base) (i32.const {gc_header_size})))
+    (local.set $new_heap (i32.add (local.get $header_base) (local.get $block_size)))
 
     ;; Reuse a swept block when one is large enough for this payload.
     ;; Skip the linear free-list scan when sweep proved no free block is large

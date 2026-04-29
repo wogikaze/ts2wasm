@@ -340,8 +340,42 @@ reducer. Issue 308 remains open. Issue 300 remains open.
   remains blocked under the committed 185-page cap:
 
 ```text
-command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-secondmax.wasm
+ command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-secondmax.wasm
 result: trapped with Exception: unreachable after 10.06s under committed 185-page policy
+date: 2026-04-29
+```
+
+Issue 308 remains open. Issue 300 remains open.
+
+2026-04-29 child `308-gc-depth9-next-20260429T2133Z` progress:
+
+- Committed a same-allocation tail-trim reuse policy: `$alloc_heap` now
+  recomputes its bump cursor after `$gc_collect`, so a `$gc_sweep` tail trim
+  that lowers `$heap` can satisfy the active allocation before free-list scan,
+  `memory.grow`, or the explicit OOM trap.
+- Added backend WAT contract coverage for the post-GC bump cursor recompute.
+- Required depth-8 and OOM regressions still pass, but the depth-9 reducer and
+  official smallest sample remain blocked under the committed 185-page cap:
+
+```text
+command: node /tmp/abc451-search-depth-9-308-lastchance.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-search-depth-9-308-lastchance.ts -o /tmp/abc451-search-depth-9-recompute.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-recompute.wasm
+result: trapped with Exception: unreachable after 9.87s under committed 185-page policy
+date: 2026-04-29
+
+command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-recompute.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-recompute.wasm"
+result: trapped with Exception: unreachable after 5.78s under committed 185-page policy
 date: 2026-04-29
 ```
 
