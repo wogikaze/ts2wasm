@@ -26,6 +26,8 @@ cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-280-dynamic-bigint-b
 ```
 
 Current result: issue-linked unsupported diagnostic for dynamic BigInt builtin inputs.
+The diagnostic owner is this issue; closed issue 262 owns only the literal-safe
+BigInt builtin slice and the stable `new BigInt(...)` constructor rejection.
 
 ## Desired final state
 
@@ -67,6 +69,16 @@ Do not touch:
 - [ ] Dynamic `BigInt(...)` conversions either match Node for supported runtime values or produce source diagnostics linked to issue 280.
 - [ ] Runtime linker structure tests cover any new BigInt builtin helpers and avoid new host imports.
 - [ ] Docs/current-state/issues state the supported dynamic builtin subset and remaining limits.
+
+## Current diagnostic coverage
+
+The following residual unsupported fixtures are intentionally linked to this
+issue until dynamic runtime handling is implemented:
+
+- `fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts`
+- `fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts`
+- `fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts`
+- `fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts`
 
 ## Validation
 
