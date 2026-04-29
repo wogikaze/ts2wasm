@@ -1891,17 +1891,7 @@ impl<'a> Resolver<'a> {
     }
 
     fn static_string_spread_value(&self, spread_expr: &ResolvedExpr) -> Option<String> {
-        match spread_expr {
-            ResolvedExpr::String(value) => Some(value.clone()),
-            ResolvedExpr::Ident(name) => {
-                let local_id = self.resolve_local(name).ok()?;
-                if self.env_cell_locals.contains(&local_id) {
-                    return None;
-                }
-                self.string_literal_locals.get(&local_id).cloned()
-            }
-            _ => None,
-        }
+        self.resolved_expr_static_string_value(spread_expr)
     }
 
     fn lower_ascii_string_spread_chars(value: &str) -> Result<Vec<LoweredExpr>, Diagnostic> {
@@ -3214,6 +3204,11 @@ impl<'a> Resolver<'a> {
                     return None;
                 }
                 self.string_literal_locals.get(&local_id).cloned()
+            }
+            ResolvedExpr::Binary { left, op, right } if *op == BinaryOp::Add => {
+                let mut value = self.resolved_expr_static_string_value(left)?;
+                value.push_str(&self.resolved_expr_static_string_value(right)?);
+                Some(value)
             }
             _ => None,
         }
