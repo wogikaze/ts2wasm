@@ -223,6 +223,26 @@ allocator (`wasm function 26`, `$alloc_heap`) called from recursive search
 ended in `$alloc_heap`, so the remaining blocker is narrower than the original
 out-of-bounds write but not yet safe to close.
 
+2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c` follow-up:
+
+- Narrowed the allocator trap to free-list reuse under recursive
+  string/array-allocation pressure. `$alloc_heap` previously reused a swept
+  block wholesale for any smaller request, so a small string allocation could
+  consume an entire large temporary array block until the next collection.
+- Added allocator free-block splitting when the swept block can hold the
+  requested payload plus a remainder header and one aligned payload slot. This
+  keeps the existing GC header layout and does not change number semantics.
+- Validated the allocator change against the focused array-growth regression
+  and OOM smoke. The committed memory ceiling remains unchanged at 16 pages.
+- This does not close the ABC451 sample path: with the committed 16-page
+  memory ceiling, the official `10` sample still reaches `$alloc_heap`
+  `Exception: unreachable`. A temporary 512-page ceiling plus block splitting
+  delayed the failure to a long recursive-search run but still ended in
+  `$alloc_heap`; a 2048-page experiment was stopped after exceeding one minute
+  without producing sample output. The remaining decision is whether ABC451's
+  live result set requires an accepted memory-limit policy change or a further
+  GC/representation fix.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
