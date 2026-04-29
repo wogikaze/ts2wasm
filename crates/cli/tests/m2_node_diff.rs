@@ -280,6 +280,7 @@ fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts",
+        "fixtures/core-semantics/bigint-builtin-dynamic-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts",
     ] {

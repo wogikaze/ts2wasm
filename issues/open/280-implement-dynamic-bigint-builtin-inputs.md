@@ -77,6 +77,7 @@ issue until dynamic runtime handling is implemented:
 
 - `fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts`
+- `fixtures/core-semantics/bigint-builtin-dynamic-string-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts`
 
@@ -134,6 +135,11 @@ boolean, tagged-int number, and BigInt inputs. Node/iwasm differential fixtures
 cover these dynamic helper paths, and non-BigInt `asIntN` / `asUintN` value
 inputs remain issue-280 diagnostics. The issue remains open for dynamic
 StringToBigInt and remaining out-of-slice dynamic conversion edges.
+
+2026-04-29 progress: definitely-string dynamic `BigInt(value)` inputs now stay
+out of the runtime helper and report source diagnostics linked to issue 280.
+This prevents the previous unsupported runtime trap for `let s = "10"; s = s +
+""; BigInt(s)`. Runtime StringToBigInt support is still not implemented.
 
 ## Completion evidence
 

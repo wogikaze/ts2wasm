@@ -2152,6 +2152,15 @@ fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
     }
 }
 
+fn bigint_dynamic_string_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-280: dynamic StringToBigInt conversion is not implemented in this builtin slice; use a string literal BigInt(...) input or keep the value in the supported boolean/integer number/BigInt runtime subset"
+            .to_owned(),
+        span: Some(span),
+    }
+}
+
 fn resolve_bigint_static_function_call(
     callee: &Expr,
     args: &[ResolvedExpr],
@@ -2338,6 +2347,7 @@ impl BigIntStaticInfo {
 #[derive(Default)]
 struct BigIntRuntimeGuard {
     locals: HashMap<String, BigIntStaticInfo>,
+    string_locals: HashSet<String>,
 }
 
 impl BigIntRuntimeGuard {
@@ -2356,6 +2366,11 @@ impl BigIntRuntimeGuard {
                     self.locals.insert(name.clone(), info);
                 } else {
                     self.locals.remove(name);
+                }
+                if self.expr_is_definitely_string(expr) {
+                    self.string_locals.insert(name.clone());
+                } else {
+                    self.string_locals.remove(name);
                 }
                 Ok(())
             }
@@ -2487,18 +2502,35 @@ impl BigIntRuntimeGuard {
     fn fork(&self) -> Self {
         Self {
             locals: self.locals.clone(),
+            string_locals: self.string_locals.clone(),
         }
     }
 
     fn invalidate_assigned_in_stmts(&mut self, stmts: &[Stmt]) {
         for name in assigned_names_in_stmts(stmts) {
             self.locals.remove(&name);
+            self.string_locals.remove(&name);
         }
     }
 
     fn invalidate_assigned_in_expr(&mut self, expr: &Expr) {
         for name in assigned_names_in_expr(expr) {
             self.locals.remove(&name);
+            self.string_locals.remove(&name);
+        }
+    }
+
+    fn expr_is_definitely_string(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::String { .. } => true,
+            Expr::Ident { name, .. } => self.string_locals.contains(name),
+            Expr::Binary {
+                left,
+                op: BinaryOp::Add,
+                right,
+                ..
+            } => self.expr_is_definitely_string(left) || self.expr_is_definitely_string(right),
+            _ => false,
         }
     }
 
@@ -2655,6 +2687,9 @@ impl BigIntRuntimeGuard {
                 if static_supported_arg {
                     return Ok(None);
                 }
+                if self.expr_is_definitely_string(arg) {
+                    return Err(bigint_dynamic_string_diagnostic(*span));
+                }
                 Ok(Some(BigIntStaticInfo {
                     value: None,
                     helper_safe: true,
@@ -2713,6 +2748,11 @@ impl BigIntRuntimeGuard {
                     self.locals.insert(name.clone(), info.clone());
                 } else {
                     self.locals.remove(name);
+                }
+                if self.expr_is_definitely_string(expr) {
+                    self.string_locals.insert(name.clone());
+                } else {
+                    self.string_locals.remove(name);
                 }
                 Ok(info)
             }
