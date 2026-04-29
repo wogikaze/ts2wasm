@@ -320,8 +320,9 @@ Pseudo flow:
 
 1. markフェーズ: ルートとして `globals` / `runtime stacks` / `module cache` を走査
 2. sweepフェーズ: 生存フラグがないブロックを free-list へ回収
-3. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する。sweep は free-list 内の最大 body size も記録し、要求 payload がそれを超える場合は `$alloc_heap` の線形 free-list scan を省略する。sweep が heap 末尾まで続く unmarked range を見つけた場合は、その range を free-list に入れず `$heap` を range 先頭へ戻す
-4. 必要なら `memory.grow`、`MEMORY_MAX_PAGES` まで増やせなければ trap
+3. GC 後は bump allocation cursor を再計算する。sweep が heap 末尾まで続く unmarked range を見つけて `$heap` を range 先頭へ戻した場合、同じ allocation がその top-of-heap garbage を即時再利用できる
+4. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する。sweep は free-list 内の最大 body size も記録し、要求 payload がそれを超える場合は `$alloc_heap` の線形 free-list scan を省略する。sweep が heap 末尾まで続く unmarked range を見つけた場合は、その range を free-list に入れず `$heap` を range 先頭へ戻す
+5. 必要なら `memory.grow`、`MEMORY_MAX_PAGES` まで増やせなければ trap
 
 ### Safety and compatibility notes
 
@@ -508,7 +509,9 @@ When a coalesced unmarked range reaches the current `$heap` end, sweep lowers
 `$heap` to the start of that range and exits instead of linking the tail into
 the free list. This keeps the high-water bump pointer from staying pinned by
 dead top-of-heap objects and avoids scanning a tail block that future bump
-allocation can reuse directly.
+allocation can reuse directly. Allocation recomputes its bump cursor after the
+collection hook, so a tail-trimmed `$heap` can satisfy the same allocation
+attempt before `memory.grow` or the explicit OOM trap.
 
 ### Implementation Notes
 

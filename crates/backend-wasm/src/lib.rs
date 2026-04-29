@@ -257,6 +257,7 @@ mod tests {
         assert!(wat.contains("(i32.const -1)"));
         assert!(wat.contains("(global.get $alloc_bytes_since_last_gc)"));
         assert!(wat.contains("(call $gc_collect)"));
+        assert!(wat.contains("(call $gc_collect)))\n    ;; A collection can tail-trim $heap."));
         assert!(wat.contains("(global.set $alloc_bytes_since_last_gc"));
         assert!(wat.contains("(local.get $payload_base))"));
     }
