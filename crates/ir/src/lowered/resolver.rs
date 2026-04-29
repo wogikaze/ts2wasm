@@ -1558,8 +1558,15 @@ impl<'a> Resolver<'a> {
         value: &LoweredExpr,
         source: Option<&ResolvedExpr>,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let property_value = LoweredExpr::PropertyGet {
+            obj: Box::new(value.clone()),
+            key: binding.key.clone(),
+        };
         let Some(name) = binding.target.identifier() else {
-            unreachable!("object binding parser rejects nested targets");
+            if let Some(pattern) = binding.target.pattern() {
+                return self.lower_binding_pattern_declarations(pattern, property_value, None);
+            }
+            unreachable!("binding target must be identifier or pattern");
         };
         let local_id = self.declare_local(name)?;
         if binding.is_rest {
@@ -1573,10 +1580,7 @@ impl<'a> Resolver<'a> {
         }
         self.lower_binding_declaration_with_default(
             local_id,
-            LoweredExpr::PropertyGet {
-                obj: Box::new(value.clone()),
-                key: binding.key.clone(),
-            },
+            property_value,
             binding.default.as_ref(),
         )
     }
@@ -1827,7 +1831,7 @@ impl<'a> Resolver<'a> {
         params: &[String],
         body: &ResolvedExpr,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let capture_names = self.arrow_capture_names(params, body);
+        let capture_names = self.arrow_capture_names(params, body)?;
         let captures = capture_names
             .iter()
             .map(|name| self.resolve_local(name))
@@ -1904,7 +1908,7 @@ impl<'a> Resolver<'a> {
             });
         }
 
-        let capture_names = self.nested_function_capture_names(name, params, body);
+        let capture_names = self.nested_function_capture_names(name, params, body)?;
         if block_assigns_any_name(body, &capture_names) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -1957,13 +1961,18 @@ impl<'a> Resolver<'a> {
         })
     }
 
-    fn arrow_capture_names(&self, params: &[String], body: &ResolvedExpr) -> Vec<String> {
+    fn arrow_capture_names(
+        &self,
+        params: &[String],
+        body: &ResolvedExpr,
+    ) -> Result<Vec<String>, Diagnostic> {
+        let excluded = binding_param_names(params.iter().map(|param| (param.as_str(), None)))?;
         let mut captures = Vec::new();
-        collect_arrow_captures(body, params, &mut captures);
-        captures
+        collect_arrow_captures(body, &excluded, &mut captures);
+        Ok(captures
             .into_iter()
             .filter(|name| self.resolve_local(name).is_ok())
-            .collect()
+            .collect())
     }
 
     fn nested_function_capture_names(
@@ -1971,20 +1980,23 @@ impl<'a> Resolver<'a> {
         name: &str,
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
-    ) -> Vec<String> {
-        let mut excluded = params
-            .iter()
-            .map(|param| param.name.clone())
-            .collect::<HashSet<_>>();
+    ) -> Result<Vec<String>, Diagnostic> {
+        let mut excluded = binding_param_names(
+            params
+                .iter()
+                .map(|param| (param.name.as_str(), param.span)),
+        )?
+        .into_iter()
+        .collect::<HashSet<_>>();
         excluded.insert(name.to_owned());
         collect_declared_names_in_stmts(body, &mut excluded);
 
         let mut captures = Vec::new();
         collect_stmt_captures(body, &excluded, &mut captures);
-        captures
+        Ok(captures
             .into_iter()
             .filter(|capture| self.resolve_local(capture).is_ok())
-            .collect()
+            .collect())
     }
 
     fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
@@ -2409,6 +2421,20 @@ fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
         BindingDefault::Null => LoweredExpr::Null,
         BindingDefault::Undefined => LoweredExpr::Undefined,
     }
+}
+
+fn binding_param_names<'a>(
+    params: impl Iterator<Item = (&'a str, Option<Span>)>,
+) -> Result<Vec<String>, Diagnostic> {
+    let mut names = Vec::new();
+    for (param, span) in params {
+        if let Some(pattern) = parse_binding_pattern(param, span)? {
+            names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
+        } else {
+            names.push(param.to_owned());
+        }
+    }
+    Ok(names)
 }
 
 const PRIVATE_FIELD_STORAGE_PREFIX: &str = "__ts2wasm_private::";

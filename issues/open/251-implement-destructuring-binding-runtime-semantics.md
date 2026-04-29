@@ -183,7 +183,7 @@ Nested array follow-up:
 
 - Implemented nested array binding patterns for dense-array declaration and parameter patterns by making binding targets recursive and reusing existing array element lowering.
 - Added `fixtures/core-semantics/destructuring-binding-nested-runtime.ts` and Node/iwasm differential coverage for declaration, ordinary function parameter, and arrow parameter nested arrays.
-- Added `fixtures/core-semantics/destructuring-binding-nested-object-unsupported.ts`; nested object binding remains a source-spanned issue-251 unsupported diagnostic.
+- Added nested object unsupported coverage at the time; this boundary was later replaced by nested object runtime coverage.
 - Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (14 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (506 passed, 4 skipped).
 
 Object rest follow-up:
@@ -192,3 +192,10 @@ Object rest follow-up:
 - Added `fixtures/core-semantics/destructuring-binding-object-rest-runtime.ts` and Node/iwasm differential coverage for shorthand and alias exclusions.
 - Kept dynamic-source and parameter object rest out of scope with source-spanned issue-251 diagnostics via `fixtures/core-semantics/destructuring-binding-object-rest-unsupported.ts`.
 - Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (15 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (507 passed, 4 skipped).
+
+Nested object follow-up:
+
+- Implemented nested object binding aliases such as `let { outer: { value } } = obj` by representing object alias targets as nested binding patterns and lowering from the parent property value.
+- Added `fixtures/core-semantics/destructuring-binding-nested-object-runtime.ts` and Node/iwasm differential coverage for declaration, ordinary function parameter, and arrow parameter nested object bindings.
+- Fixed arrow/nested-function capture exclusion to treat names introduced by destructuring parameter patterns as local parameters instead of outer captures.
+- Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (16 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (510 passed, 4 skipped).
