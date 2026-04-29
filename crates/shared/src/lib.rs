@@ -6,6 +6,7 @@ pub mod test_status;
 
 pub use abi::{AbiFunction, AbiType, RuntimeAbi};
 pub use capability::{
-    CapabilityManifest, FilesystemCapabilities, NodeHostCapabilities, WasiCapabilities,
+    CapabilityManifest, ClockCapabilities, FilesystemCapabilities, NodeHostCapabilities,
+    WasiCapabilities,
 };
 pub use test_status::{TestRecord, TestStatus};

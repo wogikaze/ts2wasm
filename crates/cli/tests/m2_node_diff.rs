@@ -5,6 +5,7 @@ use std::hash::Hasher;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::process::Stdio;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 #[path = "common/iwasm_runtime.rs"]
 mod iwasm_runtime;
@@ -350,12 +351,12 @@ fn date_epoch_value_of_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn date_live_time_fixtures_report_capability_policy_diagnostic() {
+fn date_live_time_fixtures_return_epoch_ms_within_host_window() {
     for fixture in [
-        "fixtures/builtins-and-io/date-now-live-time-unsupported.ts",
-        "fixtures/builtins-and-io/date-noarg-live-time-unsupported.ts",
+        "fixtures/builtins-and-io/date-now-live-time.ts",
+        "fixtures/builtins-and-io/date-noarg-live-time.ts",
     ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "auditable time capability policy");
+        assert_live_time_fixture_in_host_window(fixture);
     }
 }
 
@@ -639,6 +640,61 @@ fn assert_fixture_matches_node(fixture: &str) {
         String::from_utf8_lossy(&node.stdout),
         "stdout mismatch for {fixture}"
     );
+}
+
+fn assert_live_time_fixture_in_host_window(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let before = host_epoch_ms();
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    let after = host_epoch_ms();
+
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        iwasm.output.status.success(),
+        "iwasm failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+
+    let stdout = String::from_utf8_lossy(&iwasm.output.stdout);
+    let observed = stdout.trim().parse::<u128>().unwrap_or_else(|err| {
+        panic!("expected epoch milliseconds from {fixture}, got {stdout:?}: {err}")
+    });
+    assert!(
+        (before..=after).contains(&observed),
+        "expected {fixture} timestamp {observed} in host execution window {before}..={after}"
+    );
+}
+
+fn host_epoch_ms() -> u128 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system clock should be after UNIX_EPOCH")
+        .as_millis()
 }
 
 fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {

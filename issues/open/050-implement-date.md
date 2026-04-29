@@ -13,7 +13,7 @@ updated: 2026-04-26
 
 ## Summary
 
-Implement Date object for date/time operations. The current supported subset is deterministic epoch-millisecond Date values only: integer-literal `new Date(<epoch-ms integer>)`, `Date.prototype.getTime()`, and `Date.prototype.valueOf()`.
+Implement Date object for date/time operations. The current supported subset covers deterministic integer-literal epoch-millisecond Date values plus live epoch-millisecond time for `Date.now()` and no-argument `new Date()` through the WASI realtime clock capability.
 
 Problem: Date support is currently tracked as a broad epic; direct selection leaves live-time policy, frontend recognition, runtime helpers, and Annex B behavior mixed in one work item.
 
@@ -21,16 +21,15 @@ Queue design note:
 
 - This is an epic-level issue and must not be selected directly from the Ready queue.
 - Use child slices for deterministic Date behavior, host time policy, timezone formatting policy, and Annex B legacy methods.
-- Keep live host time work out of implementation slices until a capability policy child is complete.
 - Current child slices:
-  - issue 239: live-time capability policy for `new Date()` / `Date.now()` (policy prerequisite)
-  - issue 242: implement live-time Date entry points after issue 239
+  - issue 239: live-time capability policy for `new Date()` / `Date.now()` (done)
+  - issue 242: implement live-time Date entry points after issue 239 (done)
   - issue 240: timezone-aware `Date.prototype.toString()` policy/implementation
   - issue 241: Annex B legacy `getYear` / `setYear` / `toGMTString` diagnostics
 
 ## Problem
 
-Full Date is not implemented. Deterministic epoch-millisecond Date slices exist, but live host time, timezone formatting, non-integer/non-literal inputs, and Annex B legacy Date methods remain separate policy-backed child work.
+Full Date is not implemented. Deterministic epoch-millisecond Date slices and WASI-backed live host time exist, but timezone formatting, non-integer/non-literal inputs, and broader Date API behavior remain separate policy-backed child work.
 
 ## Desired final state
 
@@ -41,7 +40,7 @@ Full Date is not implemented. Deterministic epoch-millisecond Date slices exist,
 In scope:
 
 - [ ] Implement Date constructor
-- [ ] Implement Date.now()
+- [x] Implement Date.now()
 - [ ] Implement Date.prototype.getTime
 - [ ] Implement Date.prototype.toString
 - [ ] Add fixtures for Date behavior
@@ -123,8 +122,22 @@ Follow-up issues:
   `capability_reasons["wasi.clock.realtime"]` with `Date.now` or `new Date()`,
   and the matching `wasi_snapshot_preview1.clock_time_get` import.
 - The existing unsupported diagnostics for `Date.now()` and no-argument `new Date()`
-  remain correct until issue 242 consumes that policy and adds manifest/import and
+  were superseded by issue 242, which consumes that policy and adds manifest/import and
   host-deny coverage.
+
+2026-04-29 live-time implementation note:
+
+- Issue 242 implemented `Date.now()` and no-argument `new Date()` with WASI Preview 1
+  `clock_time_get`.
+- Live-time Date fixtures now assert the returned epoch millisecond value falls within the
+  host execution clock window instead of comparing exact Node timestamps.
+- Manifest and host-deny coverage verifies `wasi.clock.realtime: true`,
+  `capability_reasons["wasi.clock.realtime"]` with `Date.now` or `new Date()`, and the
+  matching `wasi_snapshot_preview1.clock_time_get` import.
+- Deterministic `new Date(<epoch-ms integer>)` fixtures remain free of
+  `wasi.clock.realtime` and `clock_time_get`.
+- Remaining issue 050 scope stays open: timezone formatting, non-integer/non-literal Date
+  inputs, and broader Date API behavior are not complete.
 
 2026-04-29 Annex B legacy method note:
 

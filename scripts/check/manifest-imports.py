@@ -93,6 +93,8 @@ def main():
             manifest_imports.add(("wasi_snapshot_preview1", "fd_read"))
         if manifest.get("wasi", {}).get("stderr"):
             manifest_imports.add(("wasi_snapshot_preview1", "fd_write"))
+        if manifest.get("wasi", {}).get("clock", {}).get("realtime"):
+            manifest_imports.add(("wasi_snapshot_preview1", "clock_time_get"))
         
         # Extract Node host imports
         for imp in manifest.get("node_host", {}).get("imports", []):

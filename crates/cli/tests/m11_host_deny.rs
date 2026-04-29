@@ -199,3 +199,120 @@ fn math_random_declares_wasi_random_without_node_host() {
         "wasm import section should include random_get"
     );
 }
+
+#[test]
+fn date_live_time_declares_wasi_realtime_without_node_host() {
+    for (fixture_name, reason) in [
+        ("builtins-and-io/date-now-live-time.ts", "Date.now"),
+        ("builtins-and-io/date-noarg-live-time.ts", "new Date()"),
+    ] {
+        let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../fixtures")
+            .join(fixture_name);
+
+        let output_wasm = std::env::temp_dir().join(format!(
+            "ts2wasm-host-deny-date-live-time-{}-{}.wasm",
+            reason.replace([' ', '(', ')'], "_"),
+            std::process::id()
+        ));
+
+        let output_manifest = std::env::temp_dir().join(format!(
+            "ts2wasm-host-deny-date-live-time-{}-{}.json",
+            reason.replace([' ', '(', ')'], "_"),
+            std::process::id()
+        ));
+
+        let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+            .arg("build")
+            .arg(&fixture)
+            .arg("-o")
+            .arg(&output_wasm)
+            .arg("--emit-manifest")
+            .arg(&output_manifest)
+            .arg("--host-deny")
+            .output()
+            .expect("Failed to execute ts2wasm");
+
+        assert!(
+            output.status.success(),
+            "{reason} should compile as standalone WASI realtime clock: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+
+        let manifest_content =
+            std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+        let manifest: serde_json::Value =
+            serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+
+        assert_eq!(manifest["standalone"], true);
+        assert_eq!(manifest["node_host"]["required"], false);
+        assert_eq!(manifest["wasi"]["clock"]["realtime"], true);
+        assert!(
+            manifest["capability_reasons"]["wasi.clock.realtime"]
+                .as_array()
+                .expect("wasi.clock.realtime should have reasons")
+                .iter()
+                .any(|entry| entry == reason)
+        );
+
+        let wasm = std::fs::read(&output_wasm).expect("Failed to read wasm");
+        assert!(
+            wasm.windows(b"clock_time_get".len())
+                .any(|window| window == b"clock_time_get"),
+            "wasm import section should include clock_time_get for {reason}"
+        );
+    }
+}
+
+#[test]
+fn date_deterministic_epoch_omits_wasi_realtime() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("builtins-and-io/date-epoch-get-time.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-host-deny-date-deterministic-{}.wasm",
+        std::process::id()
+    ));
+
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-host-deny-date-deterministic-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .arg("--host-deny")
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "deterministic Date should compile without realtime clock: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+    assert_ne!(manifest["wasi"]["clock"]["realtime"], true);
+    assert!(
+        manifest["capability_reasons"]
+            .get("wasi.clock.realtime")
+            .is_none()
+    );
+
+    let wasm = std::fs::read(&output_wasm).expect("Failed to read wasm");
+    assert!(
+        !wasm
+            .windows(b"clock_time_get".len())
+            .any(|window| window == b"clock_time_get"),
+        "deterministic Date fixture should not import clock_time_get"
+    );
+}

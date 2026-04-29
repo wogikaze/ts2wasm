@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 52 | 9 | 43 |
+| runtime | 52 | 8 | 44 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 267 | 143 | 124 |
+| total | 267 | 142 | 125 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 062f | Implement function object metadata | feature | frontend/semantics | implementation-ready | P2 |  | Function object metadata such as `name`, `length`, and prototype |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
-| 242 | Implement Date live time with WASI realtime clock | feature | runtime/builtins | implementation-ready | P1 | 239 | Live Date entry points still emit unsupported diagnostics even after the policy decision; implementation now needs to... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -322,6 +321,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 238 | Make strict warning gates pass | infra | tests | see `issues/done/238-make-strict-warning-gates-pass.md` |
 | 239 | Design Date live-time capability policy | docs | runtime/builtins | see `issues/done/239-design-date-live-time-capability-policy.md` |
 | 241 | Implement Annex B Date legacy methods | feature | runtime/builtins | see `issues/done/241-implement-annex-b-date-legacy-methods.md` |
+| 242 | Implement Date live time with WASI realtime clock | feature | runtime/builtins | see `issues/done/242-implement-date-live-time-wasi-clock.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

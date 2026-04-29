@@ -625,16 +625,6 @@ fn json_stringify_replacer_diagnostic(kind: &str, span: Span) -> Diagnostic {
     }
 }
 
-fn unsupported_live_time_diagnostic(operation: &str, span: Option<Span>) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-050: {operation} requires live host time; define an auditable time capability policy before enabling it. Use new Date(<epoch-ms integer>) for deterministic Date values"
-        ),
-        span,
-    }
-}
-
 fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) -> bool {
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
 }
