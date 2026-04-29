@@ -3,12 +3,14 @@ id: 304
 title: "Support ABC451 depth-8 live-set after memory policy"
 type: feature
 area: runtime/memory
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [300,294]
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -110,12 +112,12 @@ and tested.
 
 In scope:
 
-- [ ] Support the exact depth-8 recursive search live-set reducer under iwasm.
-- [ ] Choose the smallest architecture-preserving implementation path:
+- [x] Support the exact depth-8 recursive search live-set reducer under iwasm.
+- [x] Choose the smallest architecture-preserving implementation path:
       documented memory-policy adjustment, reduced temporary retention, or a
       compact allocation/representation change.
-- [ ] Preserve the intentional OOM regression boundary.
-- [ ] Keep the existing integer-only heap-number subset unchanged.
+- [x] Preserve the intentional OOM regression boundary.
+- [x] Keep the existing integer-only heap-number subset unchanged.
 
 Out of scope:
 
@@ -146,11 +148,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A committed regression fixture or scripted validation proves the depth-8
+- [x] A committed regression fixture or scripted validation proves the depth-8
       reducer prints `292743` under the default emitted wasm memory policy.
-- [ ] Existing depth-7 reducer evidence remains valid.
-- [ ] Existing intentional OOM coverage still traps under the chosen policy.
-- [ ] Issue 300 is updated with the depth-8 result and the next blocker.
+- [x] Existing depth-7 reducer evidence remains valid.
+- [x] Existing intentional OOM coverage still traps under the chosen policy.
+- [x] Issue 300 is updated with the depth-8 result and the next blocker.
 
 ## Validation
 
@@ -181,18 +183,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if runtime memory policy/layout changes
+- [x] updated: `docs/14-runtime-abi.md` for runtime memory policy change
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` if supported behavior changes
+- [x] updated: `current-state.md` for supported live-set behavior change
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated if depth 9 or official samples expose a distinct next
+- [x] updated: issue 300 remains the depth-9 / official sample follow-up
       runtime allocation/GC/representation blocker.
 
 ## Notes
@@ -207,16 +206,40 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `423feb4f` (`issue-304: support depth-8 live set`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo run -q -- build /tmp/abc451-search-depth-8.ts -o /tmp/abc451-search-depth-8.wasm --host-deny && iwasm /tmp/abc451-search-depth-8.wasm
+result: pass; iwasm stdout `292743`
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; generated fast OOM fixture traps under the 185-page cap
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-04-29
+
+command: mise run check issues
+result: unrelated pre-existing failure; issue 304 is clean, remaining errors are missing test262 result artifact references in issues 289, 292, 271, 284, 285, 286, 288, 291, 293, and 296
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-search-depth-7.ts -o /tmp/abc451-search-depth-7.wasm --host-deny && iwasm /tmp/abc451-search-depth-7.wasm
+result: pass; iwasm stdout `61002`
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Official depth-9 ABC451 sample compatibility remains unclaimed and tracked by issue 300.

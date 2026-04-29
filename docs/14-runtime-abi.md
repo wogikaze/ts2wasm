@@ -57,7 +57,7 @@ IEEE-754 丸めは未実装のまま維持する。
 ## Memory Layout
 
 ```text
-bounded linear memory (current default: initial 2 pages, max 42 pages):
+bounded linear memory (current default: initial 2 pages, max 185 pages):
 
   [0 .. 8)                          — 予約
   [8 .. 16)                         — fd_write iovec (IOVEC_PTR=8, IOVEC_LEN=12)
@@ -76,7 +76,7 @@ bounded linear memory (current default: initial 2 pages, max 42 pages):
 | 定数 | 値 | 用途 |
 |---|---|---|
 | `MEMORY_MIN_PAGES` | 2 | wasm memory の初期 page 数 |
-| `MEMORY_MAX_PAGES` | 42 | wasm memory.grow の現在の上限 (2.625 MiB)。ABC451 depth-7 live-set reducer が `61002` を出力する最小確認値で、OOM trap 境界は維持する |
+| `MEMORY_MAX_PAGES` | 185 | wasm memory.grow の現在の上限 (11.5625 MiB)。ABC451 depth-8 live-set reducer が `292743` を出力する最小確認値で、OOM trap 境界は維持する |
 | `DATA_START` | 256 | interned string data の開始オフセット |
 | `ALIGN` | 8 | data segment / heap の alignment |
 | `SCRATCH_OFFSET` | 1500 | 一時バッファの開始オフセット |
@@ -382,8 +382,8 @@ string alloc 時は以下の手順で行う。
 割り当てが現在のメモリサイズを超える場合、bounded `memory.grow` を試みる。
 `MEMORY_MAX_PAGES` まで増やせなければ `unreachable` で trap する。
 これにより、大きな割り当てによる未定義動作やメモリ破損を防ぐ。
-現在の上限は 42 pages で、ABC451 D の depth-7 large live-set reducer はこの cap で
-Node と同じ `61002` を出力する。40 pages では同じ reducer が `$alloc_heap` で trap
+現在の上限は 185 pages で、ABC451 D の depth-8 large live-set reducer はこの cap で
+Node と同じ `292743` を出力する。184 pages では同じ reducer が `$alloc_heap` で trap
 するため、現在の default はこの reducer を通す最小確認値として扱う。意図的な
 large allocation fixture は引き続き `unreachable` で trap し、OOM 境界を保持する。
 

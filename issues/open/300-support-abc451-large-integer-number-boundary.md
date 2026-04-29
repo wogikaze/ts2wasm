@@ -311,6 +311,20 @@ recursive `search` (wasm function 49), before the later Set/spread/sort path.
   this triage, so issue 304 intentionally owns only depth 8. Issue 300 is
   blocked on issue 304 before official sample compatibility can be rechecked.
 
+2026-04-29 child `304-depth8-live-set-20260429T182250Z` depth-8 follow-up:
+
+- Closed issue 304 by raising `Layout::MEMORY_MAX_PAGES` from 42 to 185 pages.
+  The depth-8 ABC451 live-set reducer now prints Node-matching `292743` under
+  default emitted wasm memory policy. Cap trials classify the previous
+  committed policy as too small for the depth-8 live result set: 184 pages
+  traps in `$alloc_heap`, while 185 pages prints `292743`.
+- Added `fixtures/core-semantics/abc451-depth8-live-set.ts` as regression
+  coverage. The intentional OOM fixture still traps, preserving the explicit
+  bounded-memory failure boundary.
+- Issue 300 remains open for the next ABC451 blocker: official depth-9 sample
+  compatibility is still unclaimed, and previous 512/1024-page depth-9 trials
+  did not finish within 90 seconds.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
