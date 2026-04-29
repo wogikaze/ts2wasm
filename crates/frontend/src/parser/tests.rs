@@ -1131,6 +1131,37 @@ mod tests {
     }
 
     #[test]
+    fn preserves_unary_plus_in_arrow_callback_body() {
+        let program = parse_program("let numbers = values.map(n => +n);").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::Let {
+                expr:
+                    Expr::Call {
+                        args,
+                        ..
+                    },
+                ..
+            } => {
+                let [Expr::ArrowFn { params, body, .. }] = args.as_slice() else {
+                    panic!("expected one arrow callback argument, got {args:?}");
+                };
+                assert_eq!(params, &vec!["n".to_owned()]);
+                match body.as_ref() {
+                    Expr::Unary { op, expr, span } => {
+                        assert_eq!(*op, UnaryOp::Plus);
+                        assert!(matches!(expr.as_ref(), Expr::Ident { name, .. } if name == "n"));
+                        assert_eq!(*span, Span { start: 30, end: 32 });
+                    }
+                    other => panic!("expected unary plus arrow body, got {other:?}"),
+                }
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_const_declaration_export_with_exported_local_span() {
         let program = parse_program("export const value = 1;").unwrap();
         assert_eq!(program.len(), 1);

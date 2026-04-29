@@ -985,9 +985,17 @@ impl Parser {
                     end,
                 },
             })
-        } else if let Some(_plus_span) = self.consume_span(TokenKind::Plus) {
-            // Unary + is a no-op in JavaScript (just evaluates the expression)
-            self.unary()
+        } else if let Some(plus_span) = self.consume_span(TokenKind::Plus) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Unary {
+                op: UnaryOp::Plus,
+                expr: Box::new(expr),
+                span: Span {
+                    start: plus_span.start,
+                    end,
+                },
+            })
         } else if let Some(minus_span) = self.consume_span(TokenKind::Minus) {
             let expr = self.unary()?;
             let end = expr.span().end;

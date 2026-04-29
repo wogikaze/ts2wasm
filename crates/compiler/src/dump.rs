@@ -705,6 +705,7 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::Ident { name, .. } => name.clone(),
         Expr::Unary { op, expr, .. } => match op {
             UnaryOp::Not => format!("!{}", unparse_expr(expr)),
+            UnaryOp::Plus => format!("+{}", unparse_expr(expr)),
             UnaryOp::Negate => format!("-{}", unparse_expr(expr)),
             UnaryOp::Increment => format!("{}++", unparse_expr(expr)),
             UnaryOp::Decrement => format!("{}--", unparse_expr(expr)),
