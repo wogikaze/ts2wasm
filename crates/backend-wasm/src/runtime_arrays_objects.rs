@@ -491,6 +491,34 @@ impl WatEmitter<'_> {
         (if (i32.ge_s (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
           (then (return (i32.const {true_tag}))))
         (return (i32.const {false_tag}))))
+    (if
+      (i32.and
+        (call $is_bigint (local.get $a))
+        (i32.or
+          (i32.eq (local.get $b) (i32.const {false_tag}))
+          (i32.eq (local.get $b) (i32.const {true_tag}))))
+      (then
+        (if (i32.ge_s
+              (call $bigint_compare_small_int
+                (local.get $a)
+                (i32.eq (local.get $b) (i32.const {true_tag})))
+              (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if
+      (i32.and
+        (i32.or
+          (i32.eq (local.get $a) (i32.const {false_tag}))
+          (i32.eq (local.get $a) (i32.const {true_tag})))
+        (call $is_bigint (local.get $b)))
+      (then
+        (if (i32.le_s
+              (call $bigint_compare_small_int
+                (local.get $b)
+                (i32.eq (local.get $a) (i32.const {true_tag})))
+              (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
     (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
       (then (unreachable)))
     (if (result i32)
