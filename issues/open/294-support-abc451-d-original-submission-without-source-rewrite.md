@@ -308,6 +308,18 @@ This issue is intentionally blocked because the fixture crosses several existing
 - Issue 300 owns the narrow large integer number boundary needed for ABC451 and
   must not silently weaken the tagged small-int validator.
 
+2026-04-29 progress:
+
+- After issue 304, the rewritten fixture still is not official-sample
+  compatible under the committed `MEMORY_MAX_PAGES=185` policy. Inputs `10`,
+  `69`, and `1099898` all trap with `Exception: unreachable` under `iwasm`;
+  Node expected outputs remain `21`, `328`, and `819264512`.
+- The smallest sample backtrace still points to `$alloc_heap` inside recursive
+  search before the post-search Set/spread/sort path. A temporary 512-page cap
+  trial for input `10` timed out after 60 seconds without output.
+- Issue 305 now owns the depth-9 recursive search memory/performance blocker
+  before issue 300 can claim official sample compatibility.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

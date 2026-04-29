@@ -3,9 +3,9 @@ id: 300
 title: "Support ABC451 large integer number boundary"
 type: feature
 area: runtime
-class: implementation-ready
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [305]
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
@@ -329,6 +329,62 @@ recursive `search` (wasm function 49), before the later Set/spread/sort path.
 
 - Issue 304 is now closed, so issue 300 is unblocked for the next official
   ABC451 sample compatibility investigation and implementation slice.
+
+2026-04-29 child `300-abc451-post-depth8-20260429T184750Z` official sample
+recheck:
+
+- Rebuilt `fixtures/atcoder/abc451-d-concat-power2.ts` under the committed
+  post-304 runtime policy (`MEMORY_MAX_PAGES=185`):
+
+```sh
+cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-post-depth8-300.wasm --host-deny
+```
+
+- Confirmed the official Node sample outputs for the rewritten fixture:
+
+```text
+10       -> 21
+69       -> 328
+1099898  -> 819264512
+```
+
+- Rechecked all three official samples under `iwasm` with 90 second command
+  timeouts. All still trap before producing output:
+
+```sh
+timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-post-depth8-300.wasm"
+timeout 90s sh -c "printf '69\n' | iwasm /tmp/abc451-d-post-depth8-300.wasm"
+timeout 90s sh -c "printf '1099898\n' | iwasm /tmp/abc451-d-post-depth8-300.wasm"
+```
+
+Result for each command:
+
+```text
+Exception: unreachable
+```
+
+- `wasmtime` backtrace for the smallest sample still places the trap in
+  wasm function 26 (`$alloc_heap`) called from recursive search function 49,
+  before the later Set/spread/sort output path.
+- A temporary WAT-only memory-cap trial changed the symptom but did not prove
+  compatibility:
+
+```sh
+tail -n +2 /tmp/abc451-d-post-depth8-300.raw.wat | perl -pe 's/\(memory \(export "memory"\) 2 185\)/(memory (export "memory") 2 512)/' > /tmp/abc451-d-post-depth8-300-cap512.wat
+wat2wasm /tmp/abc451-d-post-depth8-300-cap512.wat -o /tmp/abc451-d-post-depth8-300-cap512.wasm
+timeout 60s sh -c "printf '10\n' | iwasm /tmp/abc451-d-post-depth8-300-cap512.wasm"
+```
+
+Result:
+
+```text
+exit 124, no output
+```
+
+- This child did not raise the committed memory cap again because there is no
+  bounded evidence that the official depth-9 sample path completes under the
+  larger cap. Issue 305 now owns the next concrete blocker: depth-9 recursive
+  search memory/performance isolation.
 
 ## Completion evidence
 
