@@ -131,7 +131,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `null` | ES1 | immediate tag | 実装済み | - | - |
 | `boolean` | ES1 | immediate tag | 実装済み | - | - |
 | `number` (IEEE 754 double) | ES1 | `i64` tagged value / fast path 候補 | 実装済み | - | - |
-| numeric separators `1_000` | ES2021 | parser normalizes separator syntax | 未実装 | P2 | 243 |
+| numeric separators `1_000` | ES2021 | parser normalizes separator syntax | 実装済み | - | 243 |
 | `string` | ES1 | heap object (UTF-8) | 実装済み (ASCII only) | - | - |
 | `object` | ES1 | heap object | 実装済み (basic) | - | - |
 | `array` | ES1 | heap object | 実装済み (dense) | - | - |
