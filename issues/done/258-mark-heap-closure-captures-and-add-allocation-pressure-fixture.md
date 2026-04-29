@@ -5,10 +5,12 @@ type: feature
 area: runtime
 class: implementation-ready
 priority: P1
+status: done
 depends_on: [257]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -36,11 +38,11 @@ across allocation pressure.
 
 In scope:
 
-- [ ] Add closure-sentinel detection to the runtime object mark path.
-- [ ] Mark each `RawValue` capture slot from the closure payload.
-- [ ] Add a fixture where a returned closure captures a heap value and is called
+- [x] Add closure-sentinel detection to the runtime object mark path.
+- [x] Mark each `RawValue` capture slot from the closure payload.
+- [x] Add a fixture where a returned closure captures a heap value and is called
       after enough allocations to trigger GC.
-- [ ] Update current-state support notes once the fixture passes.
+- [x] Update current-state support notes once the fixture passes.
 
 Out of scope:
 
@@ -67,13 +69,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `gc_mark_object_payload` or its replacement detects the closure sentinel
+- [x] `gc_mark_object_payload` or its replacement detects the closure sentinel
       and marks all capture slots.
-- [ ] A returned closure with a captured string or object survives allocation
+- [x] A returned closure with a captured string or object survives allocation
       pressure in Node/iwasm differential coverage.
-- [ ] Existing object, array, string, class prototype, module cache, top-level
+- [x] Existing object, array, string, class prototype, module cache, top-level
       root, and call-frame GC fixtures still pass.
-- [ ] `current-state.md` records the new supported closure/GC boundary.
+- [x] `current-state.md` records the new supported closure/GC boundary.
 
 ## Validation
 
@@ -100,15 +102,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected unless the ABI contract changes
+- [x] not affected unless the ABI contract changes
 
 Current state:
 
-- [ ] updated: `current-state.md`
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -121,16 +123,38 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `29d57aced2fdcc3273ead0997bac39797780e0e5`
 
 Validation result:
 
 ```text
 command:
-result:
-date:
+cargo fmt --all --check
+result: passed
+date: 2026-04-29
+
+command:
+cargo nextest run -p ts2wasm-backend-wasm -E 'test(gc_mark_object_payload_marks_heap_closure_capture_slots)'
+result: passed (1 test)
+date: 2026-04-29
+
+command:
+cargo nextest run -p ts2wasm-cli -E 'test(returned_ordinary_function_closure_fixtures_match_node_output_under_iwasm)'
+result: passed (1 test, including `fixtures/core-semantics/ordinary-function-closure-gc-pressure.ts`)
+date: 2026-04-29
+
+command:
+cargo nextest run -E 'test(closure) or test(function) or test(node_diff) or test(gc)'
+result: passed (42 tests)
+date: 2026-04-29
+
+command:
+cargo nextest run
+result: passed (470 tests, 4 skipped)
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Mutable captured environments, function metadata/prototype properties, and
+  broader closure arity dispatch remain out of scope.
