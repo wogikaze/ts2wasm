@@ -2845,6 +2845,7 @@ struct BigIntRuntimeGuard {
     locals: HashMap<String, BigIntStaticInfo>,
     string_locals: HashSet<String>,
     string_values: HashMap<String, String>,
+    nullish_locals: HashSet<String>,
 }
 
 impl BigIntRuntimeGuard {
@@ -2874,6 +2875,11 @@ impl BigIntRuntimeGuard {
                 } else {
                     self.string_locals.remove(name);
                     self.string_values.remove(name);
+                }
+                if self.expr_is_definitely_nullish(expr) {
+                    self.nullish_locals.insert(name.clone());
+                } else {
+                    self.nullish_locals.remove(name);
                 }
                 Ok(())
             }
@@ -2979,8 +2985,10 @@ impl BigIntRuntimeGuard {
                 self.expr_bigint_info(iter)?;
                 let mut body_guard = self.fork();
                 body_guard.locals.remove(var);
+                body_guard.nullish_locals.remove(var);
                 body_guard.visit_stmts(body)?;
                 self.locals.remove(var);
+                self.nullish_locals.remove(var);
                 self.invalidate_assigned_in_stmts(body);
                 Ok(())
             }
@@ -3007,6 +3015,7 @@ impl BigIntRuntimeGuard {
             locals: self.locals.clone(),
             string_locals: self.string_locals.clone(),
             string_values: self.string_values.clone(),
+            nullish_locals: self.nullish_locals.clone(),
         }
     }
 
@@ -3015,6 +3024,7 @@ impl BigIntRuntimeGuard {
             self.locals.remove(&name);
             self.string_locals.remove(&name);
             self.string_values.remove(&name);
+            self.nullish_locals.remove(&name);
         }
     }
 
@@ -3023,6 +3033,7 @@ impl BigIntRuntimeGuard {
             self.locals.remove(&name);
             self.string_locals.remove(&name);
             self.string_values.remove(&name);
+            self.nullish_locals.remove(&name);
         }
     }
 
@@ -3055,6 +3066,14 @@ impl BigIntRuntimeGuard {
                 Some(value)
             }
             _ => None,
+        }
+    }
+
+    fn expr_is_definitely_nullish(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Null { .. } | Expr::Undefined { .. } => true,
+            Expr::Ident { name, .. } => self.nullish_locals.contains(name),
+            _ => false,
         }
     }
 
@@ -3220,6 +3239,9 @@ impl BigIntRuntimeGuard {
                     if !bigint_fits_runtime_from_string(&parsed) {
                         return Err(bigint_string_diagnostic(*span));
                     }
+                }
+                if self.expr_is_definitely_nullish(arg) {
+                    return Err(bigint_builtin_unsupported_diagnostic(*span));
                 }
                 Ok(Some(BigIntStaticInfo {
                     value: None,

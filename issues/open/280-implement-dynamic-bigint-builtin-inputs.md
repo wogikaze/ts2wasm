@@ -78,6 +78,7 @@ issue until dynamic runtime handling is implemented:
 - `fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-dynamic-invalid-string-unsupported.ts`
+- `fixtures/core-semantics/bigint-builtin-dynamic-nullish-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts`
 - `fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts`
 
@@ -161,6 +162,12 @@ string-only concatenation (for example `s = s + ""`) now keep invalid or
 out-of-runtime-range `BigInt(s)` on the source-spanned issue-280 diagnostic
 path instead of lowering to a runtime trap. Unknown dynamic string contents
 still require compatible runtime exception throwing before the issue can close.
+
+2026-04-29 progress: literal-derived nullish dynamic `BigInt(value)` inputs now
+stay out of the `BigIntFromValue` runtime helper and report source diagnostics
+linked to issue 280. `fixtures/core-semantics/bigint-builtin-dynamic-nullish-unsupported.ts`
+guards the self-assigned local case so known nullish inputs do not regress to
+runtime traps.
 
 ## Completion evidence
 
