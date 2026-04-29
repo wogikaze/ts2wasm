@@ -459,7 +459,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             }),
         },
         Expr::Member {
-            object, property, ..
+            object,
+            property,
+            span,
         } => {
             if let Expr::Ident { name, .. } = object.as_ref()
                 && name == "process"
@@ -486,11 +488,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 Ok(ResolvedExpr::BuiltinProperty {
                     builtin: BuiltinPropertyId::Length,
                     object: resolved_object,
+                    span: *span,
                 })
             } else {
                 Ok(ResolvedExpr::PropertyAccess {
                     object: resolved_object,
                     key: property.clone(),
+                    span: *span,
                 })
             }
         }
@@ -513,6 +517,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 Ok(ResolvedExpr::PropertyAccess {
                     object: Box::new(resolve_expr(object)?),
                     key: value.clone(),
+                    span: span_of_expr(expr).unwrap_or(Span { start: 0, end: 0 }),
                 })
             } else {
                 Ok(ResolvedExpr::ComputedIndex {

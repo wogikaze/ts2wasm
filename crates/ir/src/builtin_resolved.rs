@@ -160,10 +160,12 @@ pub enum ResolvedExpr {
     BuiltinProperty {
         builtin: BuiltinPropertyId,
         object: Box<ResolvedExpr>,
+        span: Span,
     },
     PropertyAccess {
         object: Box<ResolvedExpr>,
         key: String,
+        span: Span,
     },
     MethodCall {
         object: Box<ResolvedExpr>,

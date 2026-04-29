@@ -517,6 +517,19 @@ fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn function_object_metadata_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-object-metadata.ts");
+}
+
+#[test]
+fn unsupported_function_prototype_metadata_reports_issue_062f() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/function-prototype-metadata-unsupported.ts",
+        "issue-062f: function `score` prototype metadata is not supported",
+    );
+}
+
+#[test]
 fn nested_function_declaration_fixture_reports_issue_062c() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/nested-function-declaration-unsupported.ts",

@@ -423,12 +423,14 @@ impl<'a> HirLowerer<'a> {
                 builtin: *builtin,
                 args: self.lower_args(args)?,
             }),
-            ResolvedExpr::BuiltinProperty { builtin, object } => match builtin {
+            ResolvedExpr::BuiltinProperty {
+                builtin, object, ..
+            } => match builtin {
                 BuiltinPropertyId::Length => {
                     Ok(HirExpr::ArrayLength(Box::new(self.lower_expr(object)?)))
                 }
             },
-            ResolvedExpr::PropertyAccess { object, key } => Ok(HirExpr::GetProp {
+            ResolvedExpr::PropertyAccess { object, key, .. } => Ok(HirExpr::GetProp {
                 object: Box::new(self.lower_expr(object)?),
                 key: key.clone(),
             }),
