@@ -17,4 +17,5 @@ impl RuntimeString {
     pub const FALSE: &'static str = "false";
     pub const TRUE: &'static str = "true";
     pub const NEWLINE: &'static str = "\n";
+    pub const JSON_PARSE_SYNTAX_ERROR: &'static str = "SyntaxError: JSON.parse invalid JSON\n";
 }
