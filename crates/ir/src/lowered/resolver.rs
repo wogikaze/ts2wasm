@@ -1697,6 +1697,7 @@ impl<'a> Resolver<'a> {
                 element,
                 ResolvedExpr::Spread(spread_expr)
                     if self.is_known_set_local_spread_operand(spread_expr.as_ref())
+                        || self.is_known_dense_array_local_spread_operand(spread_expr.as_ref())
             )
         }) {
             let lowered = self.lower_array_literal_elements(elements)?;
@@ -1714,6 +1715,14 @@ impl<'a> Resolver<'a> {
                         continue;
                     }
 
+                    if let Some(array_segment) =
+                        self.lower_dense_array_local_spread_operand(spread_expr.as_ref())?
+                    {
+                        Self::flush_array_segment(&mut segments, &mut pending_dense);
+                        segments.push(array_segment);
+                        continue;
+                    }
+
                     if let Some(set_array) = self.lower_set_spread_operand(spread_expr.as_ref())? {
                         Self::flush_array_segment(&mut segments, &mut pending_dense);
                         segments.push(set_array);
@@ -1723,7 +1732,7 @@ impl<'a> Resolver<'a> {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message:
-                            "issue-274: array literal spread is only supported for literal arrays and known Set locals in this milestone"
+                            "issue-274: array literal spread is only supported for literal arrays, known dense array locals, and known Set locals in this milestone"
                                 .to_owned(),
                         span: None,
                     });
@@ -1815,6 +1824,38 @@ impl<'a> Resolver<'a> {
         segments.push(LoweredExpr::ArrayNew {
             elements: std::mem::take(pending_dense),
         });
+    }
+
+    fn lower_dense_array_local_spread_operand(
+        &mut self,
+        spread_expr: &ResolvedExpr,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = spread_expr else {
+            return Ok(None);
+        };
+        let Ok(local_id) = self.resolve_local(name) else {
+            return Ok(None);
+        };
+        if self.array_locals.contains(&local_id) {
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                runtime_fn: "ArrayConcat".to_owned(),
+                args: vec![
+                    LoweredExpr::ArrayNew { elements: vec![] },
+                    LoweredExpr::Local(local_id),
+                ],
+            }));
+        }
+        Ok(None)
+    }
+
+    fn is_known_dense_array_local_spread_operand(&self, spread_expr: &ResolvedExpr) -> bool {
+        let ResolvedExpr::Ident(name) = spread_expr else {
+            return false;
+        };
+        let Ok(local_id) = self.resolve_local(name) else {
+            return false;
+        };
+        self.array_locals.contains(&local_id)
     }
 
     fn lower_set_spread_operand(
