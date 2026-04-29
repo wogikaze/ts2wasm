@@ -6,7 +6,7 @@ area: runtime/builtins
 class: blocked
 priority: P1
 depends_on: []
-blocks: [052b, 052c, 052d, 052e, 052f]
+blocks: [052b, 052d, 052e, 052f]
 created: 2026-04-26
 updated: 2026-04-29
 ---
@@ -21,7 +21,7 @@ Queue design note:
 
 - This is an epic-level issue and must not be selected directly from the Ready queue.
 - The currently supported subset contract was closed by issue 052a.
-- Track remaining behavior as separate child issues: 052b, 052c, 052d, 052e, and 052f.
+- Track remaining behavior as separate child issues: 052b, 052d, 052e, and 052f. Issue 052c is closed for the current byte-backed UTF-8 string contract.
 - Keep this parent issue `blocked` until those child issues close or the final-state goal changes.
 
 ## Supported subset contract
@@ -32,8 +32,10 @@ Current validated JSON behavior is intentionally a subset, not full JSON support
 
 - whitespace-trimmed primitives: `true`, `false`, `null`, supported strings, and supported numbers;
 - small integer numbers, decimal/exponent forms that reduce exactly to the current tagged small-int representation, and non-integer decimal/exponent forms represented by the current heap-backed observable number subset;
-- ASCII strings with standard single-byte escapes (`\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, and `\t`);
-- `\uXXXX` escapes only when the decoded code point fits the current single-byte ASCII string representation;
+- strings with standard single-byte escapes (`\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, and `\t`);
+- `\uXXXX` escapes that map to Unicode scalar values in the runtime's byte-backed UTF-8 string representation;
+- valid UTF-16 surrogate pairs decoded to their Unicode scalar value and emitted as UTF-8 bytes;
+- lone surrogate escapes materialized as U+FFFD under the current byte-backed string contract;
 - arrays and objects containing supported primitive values, nested arrays, nested objects, arrays inside objects, and objects inside arrays;
 - rejection of trailing tokens, incomplete object/array/string/number paths, invalid literals, leading-zero numbers, invalid unicode escapes, unsupported non-ASCII/surrogate unicode escapes, and unescaped control characters.
 
@@ -47,7 +49,6 @@ Current validated JSON behavior is intentionally a subset, not full JSON support
 
 Remaining full-spec work is not part of this parent issue's Ready queue surface:
 
-- 052c: full UTF-16, non-ASCII, and surrogate-pair string handling.
 - 052d: broader `JSON.stringify` replacer semantics.
 - 052e: remaining boxed/object coercion edge cases for `JSON.stringify` arguments.
 - 052f: broader throw-compatible `JSON.parse` diagnostics.

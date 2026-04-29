@@ -1,2 +1,2 @@
-JSON.parse('"\\udc00"');
-console.log("accepted");
+let value = JSON.parse('"\\udc00"');
+console.log(value);

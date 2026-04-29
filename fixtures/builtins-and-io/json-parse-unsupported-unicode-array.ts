@@ -1,2 +1,3 @@
-JSON.parse('["\\u00e9"]');
-console.log("accepted");
+let arr = JSON.parse('["\\u00e9"]');
+console.log(arr[0]);
+console.log(JSON.stringify(arr));
