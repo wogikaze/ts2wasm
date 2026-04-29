@@ -1,9 +1,9 @@
 ---
 id: 127
 title: "Implement Aliasusageinvarassignment"
-type: feature
-area: frontend
-class: blocked
+type: spike
+area: reference
+class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
@@ -13,48 +13,69 @@ updated: 2026-04-29
 
 ## Summary
 
-Implement aliasUsageInVarAssignment to handle 1 failing test cases in reference tests.
+Triage the generated reference bucket `Implement Aliasusageinvarassignment` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
 
 ## Problem
 
 Reference test results show 1 cases fail in directory `aliasUsageInVarAssignment` with diagnostics: unknown-unsupported. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
+Problem: generated reference bucket `Implement Aliasusageinvarassignment` fails with `unknown-unsupported` and needs smart-triage evidence before implementation starts.
+
+## Current failure
+
+Representative reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/aliasUsageInVarAssignment.ts
+```
+
+Narrow coverage reproduction:
+
+```sh
+mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/aliasUsageInVarAssignment.ts --detail
+```
+
+Representative path: `reference/TypeScript/tests/cases/compiler/aliasUsageInVarAssignment.ts`
+Feature label: `unknown-unsupported`
+
 ## Desired final state
 
-aliasUsageInVarAssignment is correctly implemented according to JavaScript/TypeScript specifications. Related diagnostics are only emitted for genuinely unsupported cases.
+This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
 
 ## Scope
 
 In scope:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for aliasUsageInVarAssignment
-- [ ] Add fixtures for aliasUsageInVarAssignment behavior
-- [ ] Update diagnostics appropriately
+- [ ] Run the representative `mise run reference-triage -- ...` command
+- [ ] Confirm whether duplicate candidates already cover this failure
+- [ ] Split one observable behavior or fixed reference window into child issues
+- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- Direct implementation from this generated bucket
+- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
 
 ## Affected paths
 
 Expected:
 
+- `issues/open/`
+- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
 
 Do not touch:
 
-- `crates/runtime-abi/`
-- `crates/backend-wasm/`
+- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] aliasUsageInVarAssignment passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for aliasUsageInVarAssignment
-- [ ] Docs updated if semantics change
+- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -68,7 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
+mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/aliasUsageInVarAssignment.ts
+mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/aliasUsageInVarAssignment.ts --detail
 ```
 
 Not run:
@@ -94,6 +116,10 @@ Follow-up issues:
 ## Affected test files
 
 - `reference/TypeScript/tests/cases/compiler/aliasUsageInVarAssignment.ts`
+
+## Duplicate detection
+
+- none found by path/title/feature scan
 
 ## Completion evidence
 

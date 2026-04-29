@@ -1,9 +1,9 @@
 ---
 id: 066
 title: "Implement RegExp literal support"
-type: feature
-area: frontend
-class: blocked
+type: spike
+area: reference
+class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
@@ -13,48 +13,69 @@ updated: 2026-04-29
 
 ## Summary
 
-Implement regexp-literal feature to handle 59 failing test cases in reference tests.
+Triage the generated reference bucket `Implement RegExp literal support` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
 
 ## Problem
 
 Reference test results show 59 cases fail with regexp-literal diagnostic. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
+Problem: generated reference bucket `Implement RegExp literal support` fails with `regexp-literal` and needs smart-triage evidence before implementation starts.
+
+## Current failure
+
+Representative reproduction:
+
+```sh
+mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js
+```
+
+Narrow coverage reproduction:
+
+```sh
+mise run reference-coverage -- test262 --path-filter reference/test262/test/annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js --detail
+```
+
+Representative path: `reference/test262/test/annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js`
+Feature label: `regexp-literal`
+
 ## Desired final state
 
-regexp-literal feature is correctly implemented according to JavaScript/TypeScript specifications. Related diagnostics are only emitted for genuinely unsupported cases.
+This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
 
 ## Scope
 
 In scope:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for regexp-literal feature
-- [ ] Add fixtures for regexp-literal feature behavior
-- [ ] Update diagnostics appropriately
+- [ ] Run the representative `mise run reference-triage -- ...` command
+- [ ] Confirm whether duplicate candidates already cover this failure
+- [ ] Split one observable behavior or fixed reference window into child issues
+- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- Direct implementation from this generated bucket
+- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
 
 ## Affected paths
 
 Expected:
 
+- `issues/open/`
+- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
 
 Do not touch:
 
-- `crates/runtime-abi/`
-- `crates/backend-wasm/`
+- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] regexp-literal feature passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for regexp-literal feature
-- [ ] Docs updated if semantics change
+- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -68,7 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- test262 --limit 118
+mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js
+mise run reference-coverage -- test262 --path-filter reference/test262/test/annexB/built-ins/RegExp/RegExp-control-escape-russian-letter.js --detail
 ```
 
 Not run:
@@ -104,6 +126,10 @@ Follow-up issues:
 - `reference/test262/test/annexB/built-ins/RegExp/RegExp-trailing-escape.js`
 - `reference/test262/test/annexB/built-ins/RegExp/incomplete_hex_unicode_escape.js`
 - ... and 49 more files
+
+## Duplicate detection
+
+- `issues/done/051-implement-regexp.md` - Implement RegExp (same feature label, title overlap)
 
 ## Completion evidence
 

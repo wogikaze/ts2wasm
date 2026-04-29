@@ -191,7 +191,7 @@ def compute_blocked_ids(issues: list[Issue], open_ids: set[str]) -> set[str]:
         if issue.state != "open":
             continue
         orch_class = issue.orch_class.lower()
-        is_blocked = orch_class == "blocked"
+        is_blocked = orch_class in {"blocked", "triage-needed"}
         if not is_blocked:
             for dep in issue.depends:
                 if dep in open_ids:
@@ -265,7 +265,7 @@ def render_blocked_table(issues: list[Issue], blocked_ids: set[str]) -> str:
                 summary = summary[:97] + "..."
 
             orch_class = issue.orch_class.lower()
-            if orch_class == "blocked":
+            if orch_class in {"blocked", "triage-needed"}:
                 blockers = f"class: {issue.orch_class}"
             else:
                 blockers = ", ".join(issue.depends) if issue.depends else ""

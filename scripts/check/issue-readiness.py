@@ -39,7 +39,7 @@ PLACEHOLDER_PHRASES = (
 )
 
 EXACT_COMMAND_RE = re.compile(
-    r"\b(cargo|scripts/manager|mise run|node|iwasm|wasm-tools|python|TS2WASM_REFERENCE_ROOT=)"
+    r"\b(cargo|mise run|node|iwasm|wasm-tools|python|TS2WASM_REFERENCE_ROOT=)"
 )
 
 
@@ -264,8 +264,12 @@ def measure(issue: Issue) -> IssueReadiness:
     size = score_size(issue, findings)
     total = round((metadata * 0.5) + problem + scope + acceptance + validation + (size * 0.5))
     generated_reference_bucket = (
-        "Reference test results show" in issue.text
-        and "Related diagnostics reduced in reference tests" in issue.text
+        issue.orch_class == "triage-needed"
+        or "Reference test results show" in issue.text
+        and (
+            "Related diagnostics reduced in reference tests" in issue.text
+            or "needs smart-triage evidence before implementation starts" in issue.text
+        )
         and "## Affected test files" in issue.text
     )
     if generated_reference_bucket:
@@ -350,7 +354,7 @@ def main(argv: list[str]) -> int:
         offenders = [
             row
             for row in rows
-            if row.issue_class != "blocked" and row.score < args.fail_ready_below
+            if row.issue_class not in {"blocked", "triage-needed"} and row.score < args.fail_ready_below
         ]
         if offenders:
             print(

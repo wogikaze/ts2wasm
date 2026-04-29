@@ -3,16 +3,20 @@
 Auto-generate issues from reference-coverage --detail output.
 
 Usage:
-  scripts/manager reference-coverage test262 --limit 500 --detail | \
-    python3 scripts/gen/issues-from-coverage.py --start-id 061
+  mise run reference-coverage -- test262 --limit 500 --detail | \
+    mise run gen-issues-from-coverage -- --start-id 061 --suite test262
 """
 
 import sys
 import re
+import subprocess
 from pathlib import Path
 from collections import defaultdict
 from typing import Dict, List, Tuple
 import argparse
+from datetime import date
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def parse_detail_output(lines: List[str], suite: str) -> Dict[str, List[Tuple[str, str, str]]]:
@@ -113,15 +117,96 @@ def group_key_to_title(group_key: str, files: List[Tuple[str, str, str]], suite:
         return f"Implement {title}"
 
 
+def rel_issue_path(path: Path) -> str:
+    try:
+        return path.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def load_existing_issue_texts() -> List[Tuple[str, str]]:
+    issues = []
+    for state in ["open", "done"]:
+        issue_dir = REPO_ROOT / "issues" / state
+        if not issue_dir.exists():
+            continue
+        for path in sorted(issue_dir.glob("*.md")):
+            issues.append((rel_issue_path(path), path.read_text(encoding="utf-8", errors="replace")))
+    return issues
+
+
+def duplicate_candidates(
+    group_key: str,
+    title: str,
+    files: List[Tuple[str, str, str]],
+    existing_issues: List[Tuple[str, str]],
+) -> List[str]:
+    labels = {feature for _, _, feature in files}
+    paths = {file_path for file_path, _, _ in files[:20]}
+    title_terms = {term.lower() for term in re.findall(r"[A-Za-z0-9_+-]{4,}", title)}
+    candidates = []
+    for issue_path, text in existing_issues:
+        score = 0
+        reasons = []
+        if any(file_path in text for file_path in paths):
+            score += 4
+            reasons.append("same reference path")
+        if any(label in text for label in labels):
+            score += 2
+            reasons.append("same feature label")
+        if group_key in text:
+            score += 2
+            reasons.append("same group key")
+        issue_title_match = re.search(r'^title:\s*"?(.+?)"?\s*$', text, re.M)
+        issue_title = issue_title_match.group(1).strip().strip('"') if issue_title_match else issue_path
+        overlap = title_terms & {term.lower() for term in re.findall(r"[A-Za-z0-9_+-]{4,}", issue_title)}
+        if overlap:
+            score += min(3, len(overlap))
+            reasons.append("title overlap")
+        if score >= 4:
+            candidates.append(f"- `{issue_path}` - {issue_title} ({', '.join(reasons)})")
+    return candidates[:10]
+
+
+def run_reference_triage(suite: str, file_path: str, max_dump_chars: int) -> str:
+    result = subprocess.run(
+        [
+            "python3",
+            str(REPO_ROOT / "scripts" / "run" / "reference-triage.py"),
+            "--max-dump-chars",
+            str(max_dump_chars),
+            suite,
+            file_path,
+        ],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    if result.returncode != 0:
+        return "\n".join([
+            "### Smart triage unavailable",
+            "",
+            "```text",
+            (result.stderr or result.stdout).strip()[:4000],
+            "```",
+        ])
+    return result.stdout.strip()
+
+
 def generate_issue_content(
     issue_id: str,
     group_key: str,
     files: List[Tuple[str, str, str]],
-    suite: str = "test262"
+    suite: str = "test262",
+    existing_issues: List[Tuple[str, str]] | None = None,
+    triage_limit: int = 1,
+    triage_max_dump_chars: int = 3500,
 ) -> str:
     """Generate issue markdown content."""
     title = group_key_to_title(group_key, files, suite)
     count = len(files)
+    today = date.today().isoformat()
     
     # Get unique feature labels
     feature_labels = sorted(set(f[2] for f in files))
@@ -136,7 +221,8 @@ def generate_issue_content(
         file_list += f"\n- ... and {count - 10} more files"
     
     # Build validation command
-    validation_cmd = f"scripts/manager reference-coverage {suite} --limit {count * 2}"
+    validation_cmd = f"mise run reference-coverage -- {suite} --limit {count * 2}"
+    exact_triage_cmd = f"mise run reference-triage -- {suite} {sample_files[0][0]}" if sample_files else ""
     
     # Adjust description based on suite
     if suite in ["test262", "tsgo"]:
@@ -145,44 +231,70 @@ def generate_issue_content(
     else:
         scope_desc = f"{group_key}"
         problem_desc = f"Reference test results show {count} cases fail in directory `{group_key}` with diagnostics: {feature_str}"
+
+    existing_issues = existing_issues or []
+    duplicates = duplicate_candidates(group_key, title, files, existing_issues)
+    duplicate_text = "\n".join(duplicates) if duplicates else "- none found by path/title/feature scan"
+    triage_reports = [
+        run_reference_triage(suite, file_path, triage_max_dump_chars)
+        for file_path, _, _ in sample_files[:triage_limit]
+    ]
+    triage_text = "\n\n".join(triage_reports) if triage_reports else "Not generated. Rerun with `--triage-limit 1` or higher."
     
     content = f"""---
 id: {issue_id}
 title: "{title}"
-type: feature
-area: frontend
-class: design-ready
+type: spike
+area: reference
+class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
-updated: 2026-04-26
+created: {today}
+updated: {today}
 ---
 
 ## Summary
 
-Implement {scope_desc} to handle {count} failing test cases in reference tests.
+Triage {scope_desc} across {count} failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
 {problem_desc}. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
+Problem: {scope_desc} has {count} reference failures and needs smart-triage evidence before implementation starts.
+
+## Current failure
+
+Representative reproduction:
+
+```sh
+{exact_triage_cmd}
+```
+
+Coverage window:
+
+```sh
+{validation_cmd} --detail
+```
+
 ## Desired final state
 
-{scope_desc} is correctly implemented according to JavaScript/TypeScript specifications. Related diagnostics are only emitted for genuinely unsupported cases.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Add required syntax to lexer/parser
-- [ ] Implement semantics for {scope_desc}
-- [ ] Add fixtures for {scope_desc} behavior
-- [ ] Update diagnostics appropriately
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
-- [ ] Related features (separate issues)
+- Direct implementation from this generated bucket
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
@@ -191,18 +303,18 @@ Expected:
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- `crates/runtime-abi/`
-- `crates/backend-wasm/`
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] {scope_desc} passes for basic cases
-- [ ] Related diagnostics reduced in reference tests
-- [ ] Regression test added for {scope_desc}
-- [ ] Docs updated if semantics change
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -217,6 +329,7 @@ Impacted commands:
 
 ```sh
 {validation_cmd}
+{exact_triage_cmd}
 ```
 
 Not run:
@@ -242,6 +355,14 @@ Follow-up issues:
 ## Affected test files
 
 {file_list}
+
+## Duplicate detection
+
+{duplicate_text}
+
+## Smart triage
+
+{triage_text}
 
 ## Completion evidence
 
@@ -269,12 +390,15 @@ Remaining risks:
 def find_next_issue_id(output_dir: Path) -> int:
     """Find the next available issue ID by scanning existing issues."""
     max_id = 0
-    for file_path in output_dir.glob("*.md"):
-        match = re.match(r'^(\d+)-', file_path.name)
-        if match:
-            issue_id = int(match.group(1))
-            if issue_id > max_id:
-                max_id = issue_id
+    for issue_root in [output_dir, output_dir.parent / "done"]:
+        if not issue_root.exists():
+            continue
+        for file_path in issue_root.glob("*.md"):
+            match = re.match(r'^(\d+)-', file_path.name)
+            if match:
+                issue_id = int(match.group(1))
+                if issue_id > max_id:
+                    max_id = issue_id
     return max_id + 1
 
 
@@ -283,6 +407,8 @@ def main():
     parser.add_argument("--start-id", type=int, default=None, help="Starting issue ID (auto-detect if not specified)")
     parser.add_argument("--suite", type=str, default="test262", help="Test suite name (default: test262)")
     parser.add_argument("--output-dir", type=str, default="issues/open", help="Output directory (default: issues/open)")
+    parser.add_argument("--triage-limit", type=int, default=1, help="Number of representative files to smart-triage per generated issue")
+    parser.add_argument("--triage-max-dump-chars", type=int, default=3500, help="Maximum characters per compiler dump in smart triage")
     args = parser.parse_args()
     
     # Auto-detect next issue ID if not specified
@@ -300,6 +426,7 @@ def main():
     # Generate issues
     output_dir = Path(args.output_dir)
     current_id = int(args.start_id)
+    existing_issues = load_existing_issue_texts()
     
     for group_key, files in sorted(groups.items()):
         # Lower threshold for tsc to get finer granularity
@@ -309,7 +436,15 @@ def main():
             continue
         
         issue_id = f"{current_id:03d}"
-        content = generate_issue_content(issue_id, group_key, files, args.suite)
+        content = generate_issue_content(
+            issue_id,
+            group_key,
+            files,
+            args.suite,
+            existing_issues=existing_issues,
+            triage_limit=args.triage_limit,
+            triage_max_dump_chars=args.triage_max_dump_chars,
+        )
         
         # Sanitize group key for filename
         if args.suite in ["test262", "tsgo"]:

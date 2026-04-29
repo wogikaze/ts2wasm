@@ -61,6 +61,10 @@ run = "python scripts/manager.py update-coverage-matrix"
 description = "Run reference-based coverage (see script for args)"
 run = "python scripts/manager.py reference-coverage"
 
+[tasks."reference-triage"]
+description = "Generate rich diagnostics for one reference test path"
+run = "python scripts/manager.py reference-triage"
+
 [tasks."coverage-report"]
 description = "Generate language coverage report from language-reference (args: --format text|markdown)"
 run = "python scripts/manager.py coverage-report"

@@ -26,9 +26,9 @@ Use when adding, closing, moving, splitting, or reclassifying issues under `issu
 
 ## Blocked to ready flow
 
-`blocked` issues are not executable work orders. They are parking lots for epics, duplicates, generated reference buckets, or work that lacks a required design/policy decision. Do not move an issue out of `blocked` just because it is important.
+`blocked` and `triage-needed` issues are not executable work orders. `blocked` is for epics, duplicates, and work that lacks a required design/policy decision. `triage-needed` is for generated reference buckets that need smart-runner evidence and duplicate review before child issues are created. Do not move an issue out of either class just because it is important.
 
-Before changing `class: blocked` to another class:
+Before changing `class: blocked` or `class: triage-needed` to another class:
 
 1. Run `mise run check issue-readiness -- --format markdown --limit 20` and inspect the issue's missing dimensions.
 2. Decide whether the blocked issue itself can become one executable slice. If not, create child issues and leave the parent blocked.
@@ -48,7 +48,7 @@ mise run check issues
 mise run check issue-readiness -- --fail-ready-below 80
 ```
 
-Do not unblock generated reference bucket issues directly. Split them first into one feature family, one observable behavior, or one fixed reference window. Do not unblock duplicate parent issues; merge or supersede them through a cleanup child.
+Do not unblock generated reference bucket issues directly. Run `mise run reference-triage -- <suite> <path>` for representative failures, record duplicate candidates, then split them first into one feature family, one observable behavior, or one fixed reference window. Do not unblock duplicate parent issues; merge or supersede them through a cleanup child.
 
 ## Anti-patterns
 
