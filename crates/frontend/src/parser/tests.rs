@@ -9,6 +9,52 @@ mod tests {
     }
 
     #[test]
+    fn parses_numeric_literal_separators_in_integer_literals() {
+        let source = "let decimal = 1_000; let binary = 0b1010_0101; let octal = 0o7_7; let hex = 0xF_F;";
+        let program = parse_program(source).unwrap();
+        let expected = [
+            ("decimal", 1000, Span { start: 14, end: 19 }),
+            ("binary", 165, Span { start: 34, end: 45 }),
+            ("octal", 63, Span { start: 59, end: 64 }),
+            ("hex", 255, Span { start: 76, end: 81 }),
+        ];
+
+        assert_eq!(program.len(), expected.len());
+        for (stmt, (expected_name, expected_value, expected_span)) in program.iter().zip(expected) {
+            match stmt {
+                Stmt::Let {
+                    name,
+                    expr: Expr::Number { value, span },
+                    ..
+                } => {
+                    assert_eq!(name, expected_name);
+                    assert_eq!(*value, expected_value);
+                    assert_eq!(*span, expected_span);
+                }
+                other => panic!("expected numeric let statement, got {other:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn rejects_invalid_numeric_literal_separator_placement() {
+        for source in [
+            "let value = 1__0;",
+            "let value = 1_;",
+            "let value = 0_1;",
+            "let value = 0x_FF;",
+        ] {
+            let err = parse_program(source).unwrap_err();
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(
+                err.message.contains("numeric separator"),
+                "unexpected diagnostic for {source}: {err:?}"
+            );
+            assert!(err.span.is_some(), "diagnostic should preserve a span");
+        }
+    }
+
+    #[test]
     fn parses_typescript_interface_declarations_as_erased_syntax() {
         let source = r#"
             interface Point {
