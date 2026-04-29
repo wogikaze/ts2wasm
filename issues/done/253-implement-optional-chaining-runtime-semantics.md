@@ -9,6 +9,8 @@ depends_on: ["246"]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -41,7 +43,7 @@ In scope:
 
 - [x] Lower `obj?.x` for supported object/property access.
 - [x] Lower `obj?.[key]` for supported computed access.
-- [ ] Lower `fn?.()` for supported function calls.
+- [x] Lower `fn?.()` for supported function calls.
 - [x] Preserve single evaluation of the base expression for the implemented property/index subset.
 - [x] Add Node/iwasm differential fixtures for nullish and non-nullish bases for the implemented property/index subset.
 
@@ -69,7 +71,7 @@ Do not touch:
 
 - [x] `obj?.x` returns `undefined` for nullish bases and the property value for supported objects.
 - [x] `obj?.[key]` preserves key evaluation only when required by the supported semantics.
-- [ ] `fn?.()` short-circuits nullish callees and calls supported functions otherwise.
+- [x] `fn?.()` short-circuits nullish callees and calls supported functions otherwise.
 - [x] Node/iwasm differential coverage proves the supported property/index subset.
 
 ## Validation
@@ -98,6 +100,8 @@ Split from issue 246 so parser classification can close independently from runti
 
 - Implemented `obj?.x` and `obj?.[key]` lowering/runtime behavior for the supported object/index subset.
 - Added `fixtures/core-semantics/optional-chaining-member-index.ts` and `optional_chaining_member_index_fixture_matches_node_output_under_iwasm`.
-- `fn?.()` remains open and is still diagnosed as `issue-253`.
-- Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(optional) or test(node_diff)'` (5 passed); `cargo nextest run` (472 passed, 4 skipped); `mise run update-issue-index -- --check`; `mise run check issues`.
+- Implemented `fn?.()` lowering/runtime behavior for the supported identifier-call subset: known-nullish locals short-circuit to `undefined`, and known local/function closures call normally when non-nullish.
+- Added `fixtures/core-semantics/optional-chaining-call.ts` and `optional_chaining_call_fixture_matches_node_output_under_iwasm`.
+- Validation passed for the focused optional-call differential test: `cargo nextest run -p ts2wasm-cli --test m2_node_diff optional_chaining_call_fixture_matches_node_output_under_iwasm` (1 passed).
+- Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(optional) or test(node_diff)'` (6 passed); `cargo nextest run` (481 passed, 4 skipped); `mise run update-issue-index -- --check`; `mise run check issues`.
 - Impacted reference coverage command could not run because `reference/test262` is not checked out in this worktree.

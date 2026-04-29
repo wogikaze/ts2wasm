@@ -116,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created `issues/open/253-implement-optional-chaining-runtime-semantics.md`
+- [x] created `issues/done/253-implement-optional-chaining-runtime-semantics.md`
 
 ## Notes
 

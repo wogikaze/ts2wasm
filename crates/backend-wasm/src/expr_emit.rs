@@ -577,6 +577,9 @@ impl WatEmitter<'_> {
             LoweredExpr::OptionalIndex { object, index } => {
                 self.emit_optional_index(wat, object, index, indent, frame);
             }
+            LoweredExpr::OptionalCall { callee, call } => {
+                self.emit_optional_call(wat, callee, call, indent, frame);
+            }
             LoweredExpr::MethodCall {
                 object: _,
                 method: _,
@@ -1162,6 +1165,32 @@ impl WatEmitter<'_> {
         wat.push_str(&format!("{pad})\n"));
     }
 
+    fn emit_optional_call(
+        &self,
+        wat: &mut String,
+        callee_expr: &LoweredExpr,
+        call_expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let callee = frame.heap_base_tmp();
+        let child_frame = frame.child_temp_frame();
+
+        self.emit_expr(wat, callee_expr, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {callee})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, callee, frame);
+        self.emit_nullish_check(wat, callee, indent);
+        wat.push_str(&format!("{pad}(if (result i32)\n"));
+        wat.push_str(&format!("{pad}  (then\n"));
+        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
+        wat.push_str(&format!("{pad}  )\n"));
+        wat.push_str(&format!("{pad}  (else\n"));
+        self.emit_expr(wat, call_expr, indent + 4, &child_frame);
+        wat.push_str(&format!("{pad}  )\n"));
+        wat.push_str(&format!("{pad})\n"));
+    }
+
     fn emit_nullish_check(&self, wat: &mut String, local: usize, indent: usize) {
         let pad = " ".repeat(indent);
         wat.push_str(&format!(
@@ -1573,6 +1602,9 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::PropertyDeleteDynamic { object: obj, key } => {
             expr_may_collect(obj) || expr_may_collect(key)
         }
+        LoweredExpr::OptionalCall { callee, call } => {
+            expr_may_collect(callee) || expr_may_collect(call)
+        }
         LoweredExpr::PropertySet { object, value, .. } => {
             expr_may_collect(object) || expr_may_collect(value)
         }
@@ -1610,6 +1642,7 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::PropertySetDynamic { .. }
         | LoweredExpr::OptionalPropertyGet { .. }
         | LoweredExpr::OptionalIndex { .. }
+        | LoweredExpr::OptionalCall { .. }
         | LoweredExpr::New { .. } => true,
         LoweredExpr::Binary { left, right, .. } => {
             expr_uses_caller_backend_tmp(left) || expr_uses_caller_backend_tmp(right)

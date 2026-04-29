@@ -184,6 +184,11 @@ pub enum ResolvedExpr {
         index: Box<ResolvedExpr>,
         span: Span,
     },
+    OptionalCall {
+        callee: Box<ResolvedExpr>,
+        args: Vec<ResolvedExpr>,
+        span: Span,
+    },
     MethodCall {
         object: Box<ResolvedExpr>,
         method: String,
