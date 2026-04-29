@@ -14,6 +14,7 @@ pub enum BinaryOp {
     StrictNotEqual,
     And,
     Or,
+    NullishCoalesce,
     Multiply,
     Divide,
     Modulo,

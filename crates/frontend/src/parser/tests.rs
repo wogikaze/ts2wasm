@@ -214,6 +214,54 @@ mod tests {
     }
 
     #[test]
+    fn parses_nullish_coalescing_expression() {
+        let program = parse_program("let result = null ?? fallback;").unwrap();
+        let Stmt::Let { expr, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        let Expr::Binary {
+            left, op, right, ..
+        } = expr
+        else {
+            panic!("expected nullish coalescing binary expression, got {expr:?}");
+        };
+        assert_eq!(*op, BinaryOp::NullishCoalesce);
+        assert!(matches!(left.as_ref(), Expr::Null { .. }));
+        assert!(matches!(right.as_ref(), Expr::Ident { name, .. } if name == "fallback"));
+    }
+
+    #[test]
+    fn rejects_unparenthesized_nullish_logical_mixing() {
+        for source in [
+            "let result = a ?? b || c;",
+            "let result = a ?? b && c;",
+            "let result = a || b ?? c;",
+            "let result = a && b ?? c;",
+        ] {
+            let err = parse_program(source).unwrap_err();
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(
+                err.message.contains("cannot be mixed"),
+                "unexpected diagnostic for {source}: {err:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn allows_parenthesized_nullish_logical_mixing() {
+        for source in [
+            "let result = (a ?? b) || c;",
+            "let result = a || (b ?? c);",
+            "let result = (a || b) ?? c;",
+            "let result = a ?? (b && c);",
+        ] {
+            parse_program(source).unwrap_or_else(|err| {
+                panic!("parenthesized nullish/logical mix should parse for {source}: {err:?}")
+            });
+        }
+    }
+
+    #[test]
     fn parses_supported_regexp_literals_as_string_subset() {
         let program =
             parse_program("let a = /abc/i; let b = /a*/g; let c = /a\\/b/; let d = /[a/]/;")
