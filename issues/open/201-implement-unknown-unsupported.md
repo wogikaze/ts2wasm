@@ -130,7 +130,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same feature label, title overlap)
-- `issues/open/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, title overlap)
+- `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, title overlap)
 
 ## Completion evidence
 

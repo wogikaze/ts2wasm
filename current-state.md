@@ -79,7 +79,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 - 生成テーブル: `artifacts/coverage/reference-coverage-matrix.md`
 - ポリシーと列定義: `docs/15-coverage-matrix.md`
 - 列 `build_pass` / `semantic_pass` は `mise run reference-coverage` の出力に対応（semantic-pass は Node + `iwasm` が利用可能な環境でのみ増分）。
-- issue 060 progress classified current `unknown-unsupported` coverage windows into concrete feature labels; stored matrix rows now include test262 limit 18000, tsc limit 200, and tsgo limit 120. The test262 limit-18000 row has zero `unknown-unsupported`; the expanded window remained covered by existing feature labels. The exact assigned tsc root `/home/wogikaze/wgkz/ts2wasm/reference` lacks `TypeScript`, so the stored tsc row was refreshed with the existing `/tmp/ts2wasm-issue060-reference` checkout.
+- issue 060 is closed against a fixed `test262` window: `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --detail` passed on 2026-04-29 with `unknown-unsupported=0` (executed=17000; build_pass=5; semantic_pass=3; unsupported=16994; blocked=1). Later stored matrix context includes test262 limit 18000, tsc limit 200, and tsgo limit 120. The exact assigned tsc root `/home/wogikaze/wgkz/ts2wasm/reference` lacks `TypeScript`, so tsc validation from that root remains a residual external-reference risk; existing tsc evidence used `/tmp/ts2wasm-issue060-reference`. Future unknown-unsupported expansion should use separate fixed-window ramp issues.
 
 ## Implemented (high-level)
 

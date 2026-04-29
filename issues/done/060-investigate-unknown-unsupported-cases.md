@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-28
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -35,15 +37,15 @@ All unknown-unsupported cases are investigated and classified into specific feat
 
 In scope:
 
-- [ ] Investigate each unknown-unsupported case
-- [ ] Determine root cause (parser, runtime, type system, etc.)
-- [ ] Classify into appropriate feature categories
-- [ ] Update feature-labels.sh with new categories if needed
-- [ ] Create or update feature issues for classified gaps
+- [x] Investigate each unknown-unsupported case
+- [x] Determine root cause (parser, runtime, type system, etc.)
+- [x] Classify into appropriate feature categories
+- [x] Update feature-labels.sh with new categories if needed
+- [x] Create or update feature issues for classified gaps
 
 Out of scope:
 
-- [ ] Implementing the features (separate issues)
+- [x] Implementing the features (separate issues)
 
 ## Affected paths
 
@@ -59,10 +61,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] All unknown-unsupported cases are classified
-- [ ] Feature-labels.sh updated with new categories if needed
-- [ ] Appropriate feature issues created or updated
-- [ ] unknown-unsupported count reduced to 0 or only genuinely unclassifiable cases
+- [x] All unknown-unsupported cases are classified
+- [x] Feature-labels.sh updated with new categories if needed
+- [x] Appropriate feature issues created or updated
+- [x] unknown-unsupported count reduced to 0 or only genuinely unclassifiable cases
 
 ## Validation
 
@@ -89,15 +91,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] Feature issues based on classification results
+- [x] Feature issues based on classification results
 
 ## Notes
 
@@ -184,7 +186,7 @@ TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-
 result: pass; unsupported_features=import-export:20,parser-syntax:17,declaration-emit:16,module-resolution:10,jsx:8,class:7,type-system:7,decorator:4,enum:3,object-literal:3,type-assertion:3,type-directive-resolution:3,destructuring:2,jsdoc:2,parameter-property:2,type-alias:2,class-accessor:1,module-system-amd:1,name-resolution:1,scope-analysis:1; unknown-unsupported=0
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This is the fixed close boundary for issue 060: `test262` with `--limit 17000` against `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference` must report `unknown-unsupported=0`. Broader suite/window expansion is not part of this parent spike; future work must be filed as separate ramp issues with an explicit suite, limit, command, and expected unknown count. The assigned reference root still lacks the external TypeScript checkout required for exact tsc validation, so tsc/tsgo expansion remains residual risk outside this close boundary.
 
 2026-04-28 child coverage ramp continuation:
 
@@ -225,7 +227,7 @@ mise run check agent-state
 result: pass
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This later ramp evidence exceeds the close boundary above and remains useful context, but issue 060 is closed by the fixed `test262 --limit 17000` contract rather than by an unbounded coverage ramp.
 
 2026-04-28 child coverage ramp2 continuation:
 
@@ -771,20 +773,23 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `pending in child-060a close commit`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --detail
+result: pass; executed=17000; build_pass=5; semantic_pass=3; unsupported=16994; blocked=1; unsupported_features=name-resolution:5224,builtin-api:3740,array-builtin:2120,object-builtin:2058,regexp-literal:1476,string-builtin:698,function:595,eval:460,date:405,parser-syntax:131,duplicate-local:45,legacy-global-builtin:16,annexb-ishtmldda:12,declaration-emit:4,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; unknown-unsupported=0
+date: 2026-04-29
+
+command: mise run update-issue-index && mise run update-issue-index -- --check && mise run check issue-index && mise run check issues && mise run check-agent-state
+result: partial; update-issue-index passed; update-issue-index -- --check passed; check-agent-state passed; check issue-index and check issues failed on pre-existing missing report paths in issue 052 and issue 228, outside child-060a allowed paths
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- The exact assigned `/home/wogikaze/wgkz/ts2wasm/reference` root lacks `TypeScript`, so exact tsc coverage validation from that root remains out of scope for this close. Existing tsc evidence used `/tmp/ts2wasm-issue060-reference`.
+- The 2026-04-29 detail run reported one blocked test262 case: `annexB/built-ins/Array/from/iterator-method-emulates-undefined.js`. It did not affect the `unknown-unsupported=0` close criterion.
