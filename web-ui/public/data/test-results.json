@@ -1,0 +1,68 @@
+{
+  "tests": [
+    {
+      "id": "1",
+      "name": "array-nonnumber-index",
+      "status": "pass",
+      "suite": "arrays-objects",
+      "duration": 120
+    },
+    {
+      "id": "2",
+      "name": "array-oob",
+      "status": "pass",
+      "suite": "arrays-objects",
+      "duration": 85
+    },
+    {
+      "id": "3",
+      "name": "json-parse",
+      "status": "fail",
+      "suite": "builtins-and-io",
+      "duration": 200,
+      "error": "Unexpected token"
+    },
+    {
+      "id": "4",
+      "name": "math-random",
+      "status": "pass",
+      "suite": "builtins-and-io",
+      "duration": 45
+    },
+    {
+      "id": "5",
+      "name": "arrow-basic",
+      "status": "skip",
+      "suite": "arrow-functions",
+      "duration": 0
+    },
+    {
+      "id": "6",
+      "name": "string-index-of",
+      "status": "pass",
+      "suite": "builtins-and-io",
+      "duration": 32
+    },
+    {
+      "id": "7",
+      "name": "object-keys",
+      "status": "pass",
+      "suite": "builtins-and-io",
+      "duration": 28
+    },
+    {
+      "id": "8",
+      "name": "array-concat",
+      "status": "fail",
+      "suite": "builtins-and-io",
+      "duration": 150,
+      "error": "Array method not implemented"
+    }
+  ],
+  "summary": {
+    "total": 8,
+    "passed": 5,
+    "failed": 2,
+    "skipped": 1
+  }
+}
