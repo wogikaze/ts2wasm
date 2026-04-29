@@ -69,3 +69,6 @@ cargo fmt --all --check
   - literal-array call spread such as `sum(...[3, 4, 5])` remains executable and is covered by a Node/iwasm fixture;
   - dynamic call spread, array literal spread, and object literal spread now fail with explicit `issue-274` unsupported diagnostics instead of falling through to generic spread/lowering errors.
 - Remaining acceptance criteria are not complete: iterator protocol integration, sparse arrays, object property enumeration, Set/Map/custom iterable spread, and broad Test262 spread coverage still require follow-up implementation.
+- 2026-04-29: Added a follow-up executable array-literal slice:
+  - array literal spread over dense array literals, such as `[1, ...[2, 3], 4]`, lowers to the existing dense `ArrayNew` representation and matches Node/iwasm output;
+  - dynamic array literal spread, object literal spread, and dynamic call spread remain explicitly guarded by `issue-274` unsupported diagnostics.
