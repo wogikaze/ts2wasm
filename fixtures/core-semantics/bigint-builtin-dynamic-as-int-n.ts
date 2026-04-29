@@ -11,3 +11,7 @@ console.log(BigInt.asIntN(bits, negative));
 
 let converted = BigInt(255 + 0);
 console.log(BigInt.asIntN(bits, converted));
+
+let stringBits = "8";
+stringBits = stringBits + "";
+console.log(BigInt.asIntN(stringBits, value));

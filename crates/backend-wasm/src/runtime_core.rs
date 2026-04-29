@@ -1160,13 +1160,7 @@ impl WatEmitter<'_> {
     (local $mask i64)
     (local $unsigned i64)
     (local $sign_bit i64)
-    (if (i32.ne (i32.and (local.get $bits_value) (i32.const {tag_mask})) (i32.const {number_tag}))
-      (then (unreachable)))
-    (local.set $bits (i32.shr_s (local.get $bits_value) (i32.const {number_shift})))
-    (if (i32.lt_s (local.get $bits) (i32.const 0))
-      (then (unreachable)))
-    (if (i32.gt_s (local.get $bits) (i32.const 64))
-      (then (unreachable)))
+    (local.set $bits (call $bigint_index_0_64 (local.get $bits_value)))
     (if (i32.eqz (local.get $bits))
       (then (return (call $bigint_from_signed_i64 (i64.const 0)))))
     (local.set $value (call $bigint_signed_i64 (local.get $v)))
@@ -1193,28 +1187,112 @@ impl WatEmitter<'_> {
                 (i64.const 1)
                 (i64.extend_i32_u (local.get $bits))))))))
     (call $bigint_from_signed_i64 (local.get $unsigned)))
+
+  (func $bigint_index_0_64 (param $bits_value i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $start i32)
+    (local $end i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $bits i32)
+    (if (i32.eq (i32.and (local.get $bits_value) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then
+        (local.set $bits (i32.shr_s (local.get $bits_value) (i32.const {number_shift})))
+        (if (i32.lt_s (local.get $bits) (i32.const 0))
+          (then (unreachable)))
+        (if (i32.gt_s (local.get $bits) (i32.const 64))
+          (then (unreachable)))
+        (return (local.get $bits))))
+    (if (i32.eqz (call $is_string (local.get $bits_value)))
+      (then (unreachable)))
+    (local.set $obj (i32.and (local.get $bits_value) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $end (local.get $len))
+    (block $leading_done
+      (loop $leading
+        (br_if $leading_done (i32.ge_u (local.get $start) (local.get $end)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (local.get $start))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $start (i32.add (local.get $start) (i32.const 1)))
+            (br $leading))
+          (else (br $leading_done)))))
+    (block $trailing_done
+      (loop $trailing
+        (br_if $trailing_done (i32.le_u (local.get $end) (local.get $start)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (i32.sub (local.get $end) (i32.const 1)))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $end (i32.sub (local.get $end) (i32.const 1)))
+            (br $trailing))
+          (else (br $trailing_done)))))
+    (if (i32.ge_u (local.get $start) (local.get $end))
+      (then (return (i32.const 0))))
+    (local.set $i (local.get $start))
+    (block $parse_done
+      (loop $parse
+        (br_if $parse_done (i32.ge_u (local.get $i) (local.get $end)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (local.get $i))))
+        (if
+          (i32.or
+            (i32.lt_u (local.get $ch) (i32.const {ascii_zero}))
+            (i32.gt_u (local.get $ch) (i32.const {ascii_nine})))
+          (then (unreachable)))
+        (local.set $bits
+          (i32.add
+            (i32.mul (local.get $bits) (i32.const 10))
+            (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+        (if (i32.gt_u (local.get $bits) (i32.const 64))
+          (then (unreachable)))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $parse)))
+    (local.get $bits))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             number_shift = ValueTag::NUMBER_SHIFT,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            ascii_tab = 9,
+            ascii_cr = 13,
+            ascii_space = 32,
+            ascii_zero = 48,
+            ascii_nine = 57,
         ));
     }
 
     pub(super) fn emit_bigint_as_uint_n(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $bigint_as_uint_n (param $bits_value i32) (param $v i32) (result i32)
     (local $bits i32)
     (local $value i64)
     (local $mask i64)
     (local $unsigned i64)
-    (if (i32.ne (i32.and (local.get $bits_value) (i32.const {tag_mask})) (i32.const {number_tag}))
-      (then (unreachable)))
-    (local.set $bits (i32.shr_s (local.get $bits_value) (i32.const {number_shift})))
-    (if (i32.lt_s (local.get $bits) (i32.const 0))
-      (then (unreachable)))
-    (if (i32.gt_s (local.get $bits) (i32.const 64))
-      (then (unreachable)))
+    (local.set $bits (call $bigint_index_0_64 (local.get $bits_value)))
     (if (i32.eqz (local.get $bits))
       (then (return (call $bigint_from_signed_i64 (i64.const 0)))))
     (local.set $value (call $bigint_signed_i64 (local.get $v)))
@@ -1229,10 +1307,7 @@ impl WatEmitter<'_> {
     (local.set $unsigned (i64.and (local.get $value) (local.get $mask)))
     (call $bigint_from_signed_i64 (local.get $unsigned)))
 "#,
-            tag_mask = ValueTag::TAG_MASK,
-            number_tag = ValueTag::NUMBER,
-            number_shift = ValueTag::NUMBER_SHIFT,
-        ));
+        );
     }
 
     pub(super) fn emit_bigint_compare(&self, wat: &mut String) {

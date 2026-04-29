@@ -169,6 +169,13 @@ linked to issue 280. `fixtures/core-semantics/bigint-builtin-dynamic-nullish-uns
 guards the self-assigned local case so known nullish inputs do not regress to
 runtime traps.
 
+2026-04-29 progress: dynamic `BigInt.asIntN(bits, value)` and
+`BigInt.asUintN(bits, value)` now accept literal-derived decimal string bit
+widths through the runtime helper when the parsed width is within the existing
+`0..=64` slice. `fixtures/core-semantics/bigint-builtin-dynamic-as-int-n.ts`
+and `fixtures/core-semantics/bigint-builtin-dynamic-as-uint-n.ts` cover the
+string-width path with Node/iwasm differential output.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
