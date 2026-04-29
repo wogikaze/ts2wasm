@@ -278,26 +278,33 @@ def main():
     unsupported = 0
     blocked = 0
     
+    # Save JSONL results to file
+    results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    jsonl_file = results_dir / "test262-results.jsonl"
+    
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         
-        with ThreadPoolExecutor(max_workers=jobs) as executor:
-            futures = {executor.submit(process_one_test, f, tmp_dir): f for f in selected_files}
-            
-            for future in as_completed(futures):
-                record, status = future.result()
+        with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
+            with ThreadPoolExecutor(max_workers=jobs) as executor:
+                futures = {executor.submit(process_one_test, f, tmp_dir): f for f in selected_files}
                 
-                if record:
-                    print(record)
-                
-                if status == "pass":
-                    passed += 1
-                elif status == "fail":
-                    failed += 1
-                elif status == "unsupported":
-                    unsupported += 1
-                elif status == "blocked":
-                    blocked += 1
+                for future in as_completed(futures):
+                    record, status = future.result()
+                    
+                    if record:
+                        print(record)
+                        jsonl_out.write(record + "\n")
+                    
+                    if status == "pass":
+                        passed += 1
+                    elif status == "fail":
+                        failed += 1
+                    elif status == "unsupported":
+                        unsupported += 1
+                    elif status == "blocked":
+                        blocked += 1
     
     print("", file=sys.stderr)
     print("=== Test262 Summary ===", file=sys.stderr)
@@ -315,14 +322,27 @@ def main():
         "unsupported": unsupported,
         "blocked": blocked,
         "total": passed + failed + unsupported + blocked,
-        "timestamp": datetime.now().isoformat()
+        "timestamp": datetime.now().isoformat(),
+        "jsonl_file": str(jsonl_file)
     }
     
-    results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
-    results_dir.mkdir(parents=True, exist_ok=True)
-    results_file = results_dir / "test262.json"
+    results_file = results_dir / "test262-summary.json"
     results_file.write_text(json.dumps(results, indent=2), encoding="utf-8")
     print(f"Results saved to {results_file}", file=sys.stderr)
+    print(f"JSONL results saved to {jsonl_file}", file=sys.stderr)
+    
+    # Also create legacy test262.json for backward compatibility
+    legacy_file = results_dir / "test262.json"
+    legacy_results = {
+        "suite": "test262",
+        "passed": passed,
+        "failed": failed,
+        "unsupported": unsupported,
+        "blocked": blocked,
+        "total": passed + failed + unsupported + blocked,
+        "timestamp": datetime.now().isoformat()
+    }
+    legacy_file.write_text(json.dumps(legacy_results, indent=2), encoding="utf-8")
     
     # Auto-generate site after test completion
     print("Generating documentation site...", file=sys.stderr)
