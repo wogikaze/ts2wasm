@@ -723,6 +723,7 @@ fn private_class_field_unsupported_forms_report_issue_255() {
         "fixtures/core-semantics/private-class-method-extracted-unsupported.ts",
         "fixtures/core-semantics/private-class-static-method-external-unsupported.ts",
         "fixtures/core-semantics/private-class-getter-external-unsupported.ts",
+        "fixtures/core-semantics/private-class-static-accessor-unsupported.ts",
         "fixtures/core-semantics/private-class-setter-unsupported.ts",
         "fixtures/core-semantics/private-class-setter-external-unsupported.ts",
     ] {

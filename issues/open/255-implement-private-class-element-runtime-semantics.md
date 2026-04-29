@@ -157,6 +157,21 @@ mise run update-issue-index -- --check
 mise run check issues
 ```
 
+2026-04-29 static private accessor diagnostic slice:
+
+- Kept static private getters/setters on issue-255 diagnostics because they need class-level private accessor storage/brand semantics rather than the current instance getter/setter lowering.
+- Added unsupported diagnostics coverage for `static get #value()`, `static set #value(next)`, same-class static `this.#value` read, `this.#value = next` write, and `Class.#value` read attempt: `fixtures/core-semantics/private-class-static-accessor-unsupported.ts`.
+- Preserved the existing narrower static setter declaration fixture while adding explicit getter/access attempt coverage.
+
+Validation recorded in child branch:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+mise run update-issue-index -- --check
+mise run check issues
+```
+
 2026-04-29 static private field diagnostic slice:
 
 - Kept static private fields on issue-255 diagnostics because mutable static private field support needs class-level private storage, not the existing instance private slot model or static method call lowering.
