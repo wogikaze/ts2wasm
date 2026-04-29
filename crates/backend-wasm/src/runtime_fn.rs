@@ -143,6 +143,7 @@ pub(crate) enum RuntimeFn {
     ArrayMapValueToString,
     ArrayMapUnaryPlus,
     ArrayMapStringSplit,
+    ArraySortNumeric,
     ArrayJoin,
     ArrayReverse,
     /// M10: Object statics
@@ -414,6 +415,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayMapValueToString" => Some(RuntimeFn::ArrayMapValueToString),
         "ArrayMapUnaryPlus" => Some(RuntimeFn::ArrayMapUnaryPlus),
         "ArrayMapStringSplit" => Some(RuntimeFn::ArrayMapStringSplit),
+        "ArraySortNumeric" => Some(RuntimeFn::ArraySortNumeric),
         "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
         "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
         "MapNew" => Some(RuntimeFn::MapNew),
@@ -707,6 +709,7 @@ const ARRAY_MAP_VALUE_TO_STRING_DEPS: &[RuntimeFn] = &[
 ];
 const ARRAY_MAP_UNARY_PLUS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::EqualEqual];
 const ARRAY_MAP_STRING_SPLIT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::StringSplit];
+const ARRAY_SORT_NUMERIC_DEPS: &[RuntimeFn] = &[];
 const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
@@ -1564,6 +1567,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArraySortNumeric => RuntimeSpec {
+                symbol: "$array_sort_numeric",
+                deps: ARRAY_SORT_NUMERIC_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayJoin => RuntimeSpec {
                 symbol: "$array_join",
                 deps: ARRAY_JOIN_DEPS,
@@ -1950,6 +1961,7 @@ impl RuntimeFn {
             Self::ArrayMapValueToString => "array_map_value_to_string",
             Self::ArrayMapUnaryPlus => "array_map_unary_plus",
             Self::ArrayMapStringSplit => "array_map_string_split",
+            Self::ArraySortNumeric => "array_sort_numeric",
             Self::ArrayJoin => "array_join",
             Self::ArrayReverse => "array_reverse",
             Self::ObjectKeys => "object_keys",
@@ -2087,6 +2099,7 @@ impl RuntimeFn {
             Self::ArrayMapValueToString,
             Self::ArrayMapUnaryPlus,
             Self::ArrayMapStringSplit,
+            Self::ArraySortNumeric,
             Self::ArrayJoin,
             Self::ArrayReverse,
             // Object statics
@@ -2231,6 +2244,7 @@ impl RuntimeFn {
             Self::ArrayMapValueToString,
             Self::ArrayMapUnaryPlus,
             Self::ArrayMapStringSplit,
+            Self::ArraySortNumeric,
             Self::ArrayJoin,
             Self::ArrayReverse,
             // Object statics

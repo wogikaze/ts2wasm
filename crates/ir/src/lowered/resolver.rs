@@ -1318,6 +1318,16 @@ impl<'a> Resolver<'a> {
                         });
                     }
 
+                    if method == "sort" && self.is_known_array_expr(object) {
+                        if numeric_ascending_sort_arrow_callback(args) {
+                            return Ok(LoweredExpr::RuntimeCall {
+                                runtime_fn: "ArraySortNumeric".to_owned(),
+                                args: vec![self.lower_expr(object)?],
+                            });
+                        }
+                        return Err(unsupported_array_sort_diagnostic(Some(*span)));
+                    }
+
                     if (method == "map" && self.is_known_array_expr(object))
                         || is_array_prototype_map_call_receiver(object, method)
                     {
@@ -3145,6 +3155,14 @@ fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {
     }
 }
 
+fn unsupported_array_sort_diagnostic(span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-299: Array.prototype.sort is currently supported only for dense numeric arrays with comparator `(a, b) => a - b`".to_owned(),
+        span,
+    }
+}
+
 fn is_array_prototype_map_call_receiver(object: &ResolvedExpr, method: &str) -> bool {
     method == "call" && matches_array_prototype_map_property(object)
 }
@@ -3245,4 +3263,23 @@ fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
         return false;
     };
     *op == UnaryOp::Plus && matches!(expr.as_ref(), ResolvedExpr::Ident(name) if name == param)
+}
+
+fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bool {
+    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+        return false;
+    };
+    let [left_param, right_param] = params.as_slice() else {
+        return false;
+    };
+    let ResolvedExpr::Binary {
+        left,
+        op: BinaryOp::Subtract,
+        right,
+    } = body.as_ref()
+    else {
+        return false;
+    };
+    matches!(left.as_ref(), ResolvedExpr::Ident(name) if name == left_param)
+        && matches!(right.as_ref(), ResolvedExpr::Ident(name) if name == right_param)
 }
