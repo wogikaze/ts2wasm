@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 52 | 6 | 46 |
+| runtime | 53 | 7 | 46 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 267 | 138 | 129 |
+| total | 268 | 139 | 129 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -40,7 +40,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
+| 052g | Implement JSON.stringify function replacer callbacks | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` still reports issue-052 diagnostics for function replacer callbacks instead of invoking the callback... |
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 <!-- generated:ready:end -->
@@ -54,6 +54,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 021 | Implement full wasm backend | feature | backend | class: blocked | Implement full wasm backend |
 | 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
+| 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS |
 | 062 | Implement function support | feature | frontend/semantics | class: blocked | Implement function support |
 | 064 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
