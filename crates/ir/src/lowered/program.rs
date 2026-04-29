@@ -536,6 +536,9 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
             expr_contains_this(object) || expr_contains_this(index)
         }
+        ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_contains_this(callee) || args.iter().any(expr_contains_this)
+        }
         ResolvedExpr::MethodCall { object, args, .. } => {
             expr_contains_this(object) || args.iter().any(expr_contains_this)
         }
@@ -672,6 +675,9 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         | ResolvedExpr::OptionalPropertyAccess { object, .. } => expr_contains_arguments(object),
         ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
             expr_contains_arguments(object) || expr_contains_arguments(index)
+        }
+        ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_contains_arguments(callee) || args.iter().any(expr_contains_arguments)
         }
         ResolvedExpr::MethodCall { object, args, .. } => {
             expr_contains_arguments(object) || args.iter().any(expr_contains_arguments)
@@ -1567,6 +1573,12 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
             collect_arrow_captures(object, params, captures);
             collect_arrow_captures(index, params, captures);
         }
+        ResolvedExpr::OptionalCall { callee, args, .. } => {
+            collect_arrow_captures(callee, params, captures);
+            for arg in args {
+                collect_arrow_captures(arg, params, captures);
+            }
+        }
         ResolvedExpr::MethodCall { object, args, .. } => {
             collect_arrow_captures(object, params, captures);
             for arg in args {
@@ -1887,6 +1899,10 @@ fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bool {
         }
         ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
             expr_assigns_any_name(object, names) || expr_assigns_any_name(index, names)
+        }
+        ResolvedExpr::OptionalCall { callee, args, .. } => {
+            expr_assigns_any_name(callee, names)
+                || args.iter().any(|arg| expr_assigns_any_name(arg, names))
         }
         ResolvedExpr::MethodCall { object, args, .. } => {
             expr_assigns_any_name(object, names)

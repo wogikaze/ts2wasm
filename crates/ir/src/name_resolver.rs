@@ -626,12 +626,13 @@ impl NameResolver {
                     span: *span,
                 })
             }
-            Expr::OptionalCall { span, .. } => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-253: optional call runtime semantics are not implemented in this slice"
-                        .to_owned(),
-                span: Some(*span),
+            Expr::OptionalCall { callee, args, span } => Ok(Expr::OptionalCall {
+                callee: Box::new(self.resolve_expr(callee)?),
+                args: args
+                    .iter()
+                    .map(|arg| self.resolve_expr(arg))
+                    .collect::<Result<Vec<_>, _>>()?,
+                span: *span,
             }),
             Expr::Array { elements, span } => Ok(Expr::Array {
                 elements: elements

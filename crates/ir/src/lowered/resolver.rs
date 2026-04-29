@@ -8,6 +8,7 @@ struct Resolver<'a> {
     generated_functions: Vec<LoweredFunction>,
     arrow_locals: HashMap<LocalId, ArrowClosure>,
     heap_closure_locals: HashSet<LocalId>,
+    nullish_locals: HashSet<LocalId>,
     module_ids: HashMap<String, usize>,
     modules: Vec<ModuleInfo>,
     class_constructor_ids: HashMap<String, FuncId>,
@@ -57,6 +58,7 @@ impl<'a> Resolver<'a> {
             generated_functions: Vec::new(),
             arrow_locals: HashMap::new(),
             heap_closure_locals: HashSet::new(),
+            nullish_locals: HashSet::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -93,6 +95,7 @@ impl<'a> Resolver<'a> {
             generated_functions: Vec::new(),
             arrow_locals: HashMap::new(),
             heap_closure_locals: HashSet::new(),
+            nullish_locals: HashSet::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -177,6 +180,7 @@ impl<'a> Resolver<'a> {
                     self.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
+                self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
@@ -211,6 +215,7 @@ impl<'a> Resolver<'a> {
                     self.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
+                self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
@@ -268,6 +273,7 @@ impl<'a> Resolver<'a> {
                         },
                     );
                 }
+                self.nullish_locals.remove(&local_id);
                 Ok(LoweredStmt::Let(local_id, closure))
             }
             ResolvedStmt::TryCatch {
@@ -750,6 +756,9 @@ impl<'a> Resolver<'a> {
                     object: Box::new(self.lower_expr(object)?),
                     index: Box::new(self.lower_expr(index)?),
                 })
+            }
+            ResolvedExpr::OptionalCall { callee, args, span } => {
+                self.lower_optional_call(callee, args, *span)
             }
             ResolvedExpr::ComputedIndex { object, index } => {
                 // Lower the object first to determine its type
@@ -1273,6 +1282,72 @@ impl<'a> Resolver<'a> {
         Ok(lowered_args)
     }
 
+    fn lower_optional_call(
+        &mut self,
+        callee: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let func_name = match callee {
+            ResolvedExpr::Ident(name) => name,
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-253: optional calls are currently supported only for identifier callees"
+                            .to_owned(),
+                    span: Some(span),
+                });
+            }
+        };
+
+        if let Ok(local_id) = self.resolve_local(func_name) {
+            if self.nullish_locals.contains(&local_id) {
+                return Ok(LoweredExpr::Undefined);
+            }
+
+            if let Some(closure) = self.arrow_locals.get(&local_id).cloned() {
+                let mut lowered_args = self.lower_call_args(args)?;
+                lowered_args.extend(closure.captures.iter().copied().map(LoweredExpr::Local));
+                return Ok(LoweredExpr::OptionalCall {
+                    callee: Box::new(LoweredExpr::Local(local_id)),
+                    call: Box::new(LoweredExpr::Call {
+                        kind: FunctionCallKind::User(closure.func_id),
+                        args: lowered_args,
+                    }),
+                });
+            }
+
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-253: optional call `{func_name}?.(...)` is supported only for known functions or nullish locals"
+                ),
+                span: Some(span),
+            });
+        }
+
+        let func_id = self.resolve_func(func_name)?;
+        if self
+            .function_signatures
+            .get(&func_id)
+            .is_some_and(|signature| signature.needs_receiver)
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062d: optional direct call `{func_name}?.(...)` cannot bind a supported receiver for `this`; call through a supported receiver object"
+                ),
+                span: Some(span),
+            });
+        }
+        let lowered_args = self.lower_function_call_args(func_id, LoweredExpr::Undefined, args)?;
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: lowered_args,
+        })
+    }
+
     fn lower_function_call_args(
         &mut self,
         func_id: FuncId,
@@ -1667,6 +1742,25 @@ impl<'a> Resolver<'a> {
             self.heap_closure_locals.insert(local_id);
         } else {
             self.heap_closure_locals.remove(&local_id);
+        }
+    }
+
+    fn update_nullish_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if self.resolved_expr_is_nullish(expr) {
+            self.nullish_locals.insert(local_id);
+        } else {
+            self.nullish_locals.remove(&local_id);
+        }
+    }
+
+    fn resolved_expr_is_nullish(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Null | ResolvedExpr::Undefined => true,
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local_id| self.nullish_locals.contains(&local_id)),
+            _ => false,
         }
     }
 

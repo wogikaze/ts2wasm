@@ -266,6 +266,10 @@ pub enum LoweredExpr {
         object: Box<LoweredExpr>,
         index: Box<LoweredExpr>,
     },
+    OptionalCall {
+        callee: Box<LoweredExpr>,
+        call: Box<LoweredExpr>,
+    },
     MethodCall {
         object: Box<LoweredExpr>,
         method: String,

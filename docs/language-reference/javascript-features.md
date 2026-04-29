@@ -152,7 +152,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `++`, `--` | ES1 | arithmetic with assignment | 実装済み | - | - |
 | `&&`, `\|\|`, `!` | ES1 | logical operators | 実装済み | - | - |
 | `??` (nullish coalescing) | ES2020 | null/undefined check with short-circuit RHS evaluation | 実装済み (primitive/local expression subset; direct unparenthesized mixing with `&&` / `\|\|` is rejected) | - | 245 |
-| `?.` (optional chaining) | ES2020 | nullish short-circuit lowering | Parser accepts property / element / call forms; property and element access runtime semantics are supported for the covered object/index subset; optional call remains 未実装 | P2 | 246, 253 |
+| `?.` (optional chaining) | ES2020 | nullish short-circuit lowering | Parser accepts property / element / call forms; property, element, and identifier-call runtime semantics are supported for the covered subset | P2 | 246, 253 |
 | `typeof` | ES1 | type tag check | 実装済み (basic) | - | 029 |
 | `instanceof` | ES1 | prototype chain check | 実装済み（ordinary class constructor / prototype-chain traversal; `Symbol.hasInstance` は対象外） | - | 207 |
 | `in` | ES1 | property existence check | 実装済み (basic) | - | 031 |
