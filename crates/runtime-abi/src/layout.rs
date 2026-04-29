@@ -120,6 +120,15 @@ impl Layout {
     pub const BIGINT_DECIMAL_LEN_OFFSET: u32 = 16;
     /// BigInt payload offset: cached decimal UTF-8 bytes without an `n` suffix.
     pub const BIGINT_DECIMAL_DATA_OFFSET: u32 = 20;
+
+    // ---- Heap number layout -----------------------------------------------
+    /// Heap number sentinel stored in the object count slot.
+    pub const HEAP_NUMBER_SENTINEL: i32 = -1;
+    /// Heap number byte offset for cached decimal spelling length.
+    pub const HEAP_NUMBER_DECIMAL_LEN_OFFSET: u32 = 8;
+    /// Heap number byte offset for cached decimal UTF-8 bytes.
+    pub const HEAP_NUMBER_DECIMAL_DATA_OFFSET: u32 = 12;
+
     /// Bit mask for object type in type_tag field.
     pub const OBJECT_TYPE_MASK: u32 = 0x7F;
     /// Mark bit for GC mark phase.

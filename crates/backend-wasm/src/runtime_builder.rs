@@ -21,6 +21,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::TruthyBool => self.emit_truthy_bool(wat),
                 RuntimeFn::Not => self.emit_not(wat),
                 RuntimeFn::TypeOf => self.emit_typeof(wat),
+                RuntimeFn::NumberFromI32 => self.emit_number_from_i32(wat),
+                RuntimeFn::NumberToI32 => self.emit_number_to_i32(wat),
                 RuntimeFn::MakeBigIntLiteral => self.emit_make_bigint_literal(wat),
                 RuntimeFn::BigIntToString => self.emit_bigint_to_string(wat),
                 RuntimeFn::BigIntToBoolean => self.emit_bigint_to_boolean(wat),

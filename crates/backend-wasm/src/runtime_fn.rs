@@ -39,6 +39,8 @@ pub(crate) enum RuntimeFn {
     TruthyBool,
     Not,
     TypeOf,
+    NumberFromI32,
+    NumberToI32,
     MakeBigIntLiteral,
     BigIntToString,
     BigIntToBoolean,
@@ -570,6 +572,8 @@ const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
 const COPY_DEPS: &[RuntimeFn] = &[];
 const VTS_DEPS: &[RuntimeFn] = &[RuntimeFn::Copy];
+const NUMBER_FROM_I32_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const NUMBER_ARITH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
 const ERROR_MESSAGE_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
@@ -583,26 +587,48 @@ const CONCAT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
     RuntimeFn::ValueToStringInto,
 ];
-const ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::Concat];
+const ADD_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::IsString,
+    RuntimeFn::Concat,
+    RuntimeFn::NumberToI32,
+    RuntimeFn::NumberFromI32,
+];
 const ADD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Add];
 const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];
 const MUL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mul];
 const DIV_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Div];
 const MOD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mod];
-const LESS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
+const LESS_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::BigIntCompare,
+    RuntimeFn::EqualEqual,
+    RuntimeFn::NumberToI32,
+];
 const LESS_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Less];
-const LESS_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
+const LESS_EQUAL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::BigIntCompare,
+    RuntimeFn::EqualEqual,
+    RuntimeFn::NumberToI32,
+];
 const LESS_EQUAL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::LessEqual];
-const GREATER_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
+const GREATER_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::BigIntCompare,
+    RuntimeFn::EqualEqual,
+    RuntimeFn::NumberToI32,
+];
 const GREATER_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Greater];
-const GREATER_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
+const GREATER_EQUAL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::BigIntCompare,
+    RuntimeFn::EqualEqual,
+    RuntimeFn::NumberToI32,
+];
 const GREATER_EQUAL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::GreaterEqual];
 const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
     RuntimeFn::StringEqual,
     RuntimeFn::BigIntCompare,
+    RuntimeFn::NumberToI32,
 ];
-const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual, RuntimeFn::NumberFromI32];
 const BANG_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::EqualEqual];
 const STRICT_NOT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
@@ -709,7 +735,7 @@ const ARRAY_MAP_VALUE_TO_STRING_DEPS: &[RuntimeFn] = &[
 ];
 const ARRAY_MAP_UNARY_PLUS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::EqualEqual];
 const ARRAY_MAP_STRING_SPLIT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::StringSplit];
-const ARRAY_SORT_NUMERIC_DEPS: &[RuntimeFn] = &[];
+const ARRAY_SORT_NUMERIC_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32];
 const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,
     RuntimeFn::AllocHeap,
@@ -729,9 +755,9 @@ const MAP_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::Pr
 const MAP_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
 const MAP_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
 const SET_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
-const SET_ADD_DEPS: &[RuntimeFn] = &[];
-const SET_HAS_DEPS: &[RuntimeFn] = &[];
-const SET_DELETE_DEPS: &[RuntimeFn] = &[];
+const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
@@ -742,7 +768,7 @@ const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, Runt
 const DATE_EPOCH_MS_NOW_NUMBER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
 // Math function dependencies (no deps)
-const MATH_DEPS: &[RuntimeFn] = &[];
+const MATH_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32, RuntimeFn::NumberFromI32];
 const MATH_RANDOM_DEPS: &[RuntimeFn] = &[];
 
 // JSON function dependencies
@@ -853,6 +879,22 @@ impl RuntimeFn {
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: TYPEOF_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::NumberFromI32 => RuntimeSpec {
+                symbol: "$number_from_i32",
+                deps: NUMBER_FROM_I32_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::NumberToI32 => RuntimeSpec {
+                symbol: "$number_to_i32",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::MakeBigIntLiteral => RuntimeSpec {
@@ -1001,7 +1043,7 @@ impl RuntimeFn {
             },
             Self::Sub => RuntimeSpec {
                 symbol: "$sub",
-                deps: NO_DEPS,
+                deps: NUMBER_ARITH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1017,7 +1059,7 @@ impl RuntimeFn {
             },
             Self::Mul => RuntimeSpec {
                 symbol: "$mul",
-                deps: NO_DEPS,
+                deps: NUMBER_ARITH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1033,7 +1075,7 @@ impl RuntimeFn {
             },
             Self::Div => RuntimeSpec {
                 symbol: "$div",
-                deps: NO_DEPS,
+                deps: NUMBER_ARITH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1049,7 +1091,7 @@ impl RuntimeFn {
             },
             Self::Mod => RuntimeSpec {
                 symbol: "$mod",
-                deps: NO_DEPS,
+                deps: NUMBER_ARITH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1065,7 +1107,7 @@ impl RuntimeFn {
             },
             Self::Negate => RuntimeSpec {
                 symbol: "$negate",
-                deps: NO_DEPS,
+                deps: NUMBER_ARITH_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1872,6 +1914,8 @@ impl RuntimeFn {
             Self::TruthyBool => "truthy_bool",
             Self::Not => "not",
             Self::TypeOf => "typeof",
+            Self::NumberFromI32 => "number_from_i32",
+            Self::NumberToI32 => "number_to_i32",
             Self::MakeBigIntLiteral => "make_bigint_literal",
             Self::BigIntToString => "bigint_to_string",
             Self::BigIntToBoolean => "bigint_to_boolean",
@@ -2008,6 +2052,8 @@ impl RuntimeFn {
             Self::TruthyBool,
             Self::Not,
             Self::TypeOf,
+            Self::NumberFromI32,
+            Self::NumberToI32,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -2153,6 +2199,8 @@ impl RuntimeFn {
             Self::TruthyBool,
             Self::Not,
             Self::TypeOf,
+            Self::NumberFromI32,
+            Self::NumberToI32,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,

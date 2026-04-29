@@ -457,6 +457,156 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_number_from_i32(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $number_from_i32 (param $n i32) (result i32)
+    (local $abs i64)
+    (local $tmp i64)
+    (local $digit_count i32)
+    (local $str_len i32)
+    (local $result_ptr i32)
+    (local $data_ptr i32)
+    (local $write_pos i32)
+    (local $digits_left i32)
+    (if
+      (i32.and
+        (i32.ge_s (local.get $n) (i32.const {small_min}))
+        (i32.le_s (local.get $n) (i32.const {small_max})))
+      (then
+        (return
+          (i32.or
+            (i32.shl (local.get $n) (i32.const {number_shift}))
+            (i32.const {number_tag})))))
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then
+        (local.set $abs
+          (i64.sub
+            (i64.const 0)
+            (i64.extend_i32_s (local.get $n)))))
+      (else
+        (local.set $abs (i64.extend_i32_s (local.get $n)))))
+    (local.set $tmp (local.get $abs))
+    (block $digits_done
+      (loop $digits
+        (local.set $digit_count (i32.add (local.get $digit_count) (i32.const {one})))
+        (local.set $tmp (i64.div_u (local.get $tmp) (i64.const 10)))
+        (br_if $digits (i64.gt_u (local.get $tmp) (i64.const 0)))))
+    (local.set $str_len (local.get $digit_count))
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then (local.set $str_len (i32.add (local.get $str_len) (i32.const {one})))))
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {heap_number_data}) (local.get $str_len))))
+    (i32.store (local.get $result_ptr) (i32.const {heap_number_sentinel}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const {prototype_offset}))
+      (i32.const {zero}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const {heap_number_len}))
+      (local.get $str_len))
+    (local.set $data_ptr (i32.add (local.get $result_ptr) (i32.const {heap_number_data})))
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then (i32.store8 (local.get $data_ptr) (i32.const {ascii_minus}))))
+    (local.set $write_pos
+      (i32.add
+        (local.get $data_ptr)
+        (i32.sub (local.get $str_len) (i32.const {one}))))
+    (local.set $tmp (local.get $abs))
+    (local.set $digits_left (local.get $digit_count))
+    (block $write_done
+      (loop $write_digits
+        (i32.store8
+          (local.get $write_pos)
+          (i32.add
+            (i32.wrap_i64 (i64.rem_u (local.get $tmp) (i64.const 10)))
+            (i32.const {ascii_zero})))
+        (local.set $tmp (i64.div_u (local.get $tmp) (i64.const 10)))
+        (local.set $write_pos (i32.sub (local.get $write_pos) (i32.const {one})))
+        (local.set $digits_left (i32.sub (local.get $digits_left) (i32.const {one})))
+        (br_if $write_digits (i32.gt_u (local.get $digits_left) (i32.const {zero})))))
+    (i32.or (local.get $result_ptr) (i32.const {object_tag})))
+"#,
+            small_min = ValueTag::NUMBER_PAYLOAD_MIN,
+            small_max = ValueTag::NUMBER_PAYLOAD_MAX,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            prototype_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            object_tag = ValueTag::OBJECT,
+        ));
+    }
+
+    pub(super) fn emit_number_to_i32(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $number_to_i32 (param $v i32) (result i32)
+    (local $obj i32)
+    (local $ptr i32)
+    (local $len i32)
+    (local $i i32)
+    (local $sign i32)
+    (local $n i32)
+    (local $ch i32)
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then
+        (return (i32.shr_s (local.get $v) (i32.const {number_shift})))))
+    (if (i32.ne (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then unreachable))
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (if (i32.ne (i32.load (local.get $obj)) (i32.const {heap_number_sentinel}))
+      (then unreachable))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len}))))
+    (local.set $ptr (i32.add (local.get $obj) (i32.const {heap_number_data})))
+    (local.set $sign (i32.const {one}))
+    (if (i32.gt_u (local.get $len) (i32.const {zero}))
+      (then
+        (local.set $ch (i32.load8_u (local.get $ptr)))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_minus}))
+          (then
+            (local.set $sign (i32.const -1))
+            (local.set $i (i32.const {one}))))))
+    (block $digits_done
+      (loop $digits
+        (br_if $digits_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (if
+          (i32.or
+            (i32.lt_u (local.get $ch) (i32.const {ascii_zero}))
+            (i32.gt_u (local.get $ch) (i32.const {ascii_nine})))
+          (then unreachable))
+        (local.set $n
+          (i32.add
+            (i32.mul (local.get $n) (i32.const 10))
+            (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $digits)))
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then (return (i32.sub (i32.const {zero}) (local.get $n)))))
+    (local.get $n))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
+            heap_number_len = Layout::HEAP_NUMBER_DECIMAL_LEN_OFFSET,
+            heap_number_data = Layout::HEAP_NUMBER_DECIMAL_DATA_OFFSET,
+            one = RuntimeConst::ONE,
+            zero = RuntimeConst::ZERO,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = b'9',
+        ));
+    }
+
     pub(super) fn emit_make_bigint_literal(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -1307,6 +1457,12 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $strict_equal (param $a i32) (param $b i32) (result i32)
+    (local $a_tag i32)
+    (local $b_tag i32)
+    (local $a_is_number i32)
+    (local $b_is_number i32)
+    (local.set $a_tag (i32.and (local.get $a) (i32.const {tag_mask})))
+    (local.set $b_tag (i32.and (local.get $b) (i32.const {tag_mask})))
     (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
       (then
         (if (i32.eq (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
@@ -1318,6 +1474,27 @@ impl WatEmitter<'_> {
       (then (return (call $string_equal (local.get $a) (local.get $b)))))
     (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
       (then (return (i32.const {false_tag}))))
+    (local.set $a_is_number (i32.eq (local.get $a_tag) (i32.const {number_tag})))
+    (local.set $b_is_number (i32.eq (local.get $b_tag) (i32.const {number_tag})))
+    (if (i32.eq (local.get $a_tag) (i32.const {object_tag}))
+      (then
+        (local.set $a_is_number
+          (i32.eq
+            (i32.load (i32.and (local.get $a) (i32.const {heap_mask})))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.eq (local.get $b_tag) (i32.const {object_tag}))
+      (then
+        (local.set $b_is_number
+          (i32.eq
+            (i32.load (i32.and (local.get $b) (i32.const {heap_mask})))
+            (i32.const {heap_number_sentinel})))))
+    (if (i32.and (local.get $a_is_number) (local.get $b_is_number))
+      (then
+        (return
+          (if (result i32)
+            (i32.eq (call $number_to_i32 (local.get $a)) (call $number_to_i32 (local.get $b)))
+            (then (i32.const {true_tag}))
+            (else (i32.const {false_tag}))))))
     (if (result i32) (i32.eq (local.get $a) (local.get $b))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
@@ -1325,6 +1502,11 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
             zero = RuntimeConst::ZERO,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
         ));
     }
 
@@ -1471,14 +1653,19 @@ impl WatEmitter<'_> {
           (else (return (i32.const {nan_sentinel}))))))
     (if (i32.lt_s (local.get $sign) (i32.const {zero}))
       (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
-    (i32.or
-      (i32.shl (local.get $n) (i32.const {number_shift}))
-      (i32.const {number_tag})))
+    (call $number_from_i32 (local.get $n)))
 
   (func $primitive_to_number_for_equality (param $v i32) (result i32)
     (local $tag i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (local.get $v))))
+    (if
+      (i32.and
+        (i32.eq (local.get $tag) (i32.const {object_tag}))
+        (i32.eq
+          (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
+          (i32.const {heap_number_sentinel})))
       (then (return (local.get $v))))
     (if (i32.or
           (i32.eq (local.get $v) (i32.const {false_tag}))
@@ -1629,6 +1816,8 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             number_zero = ValueTag::encode_number(0),
             number_one = ValueTag::encode_number(1),
+            object_tag = ValueTag::OBJECT,
+            heap_number_sentinel = Layout::HEAP_NUMBER_SENTINEL,
             nan_sentinel = ValueTag::UNDEFINED,
             ascii_tab = 9,
             ascii_lf = 10,
@@ -1779,14 +1968,11 @@ impl WatEmitter<'_> {
   (func $add (param $a i32) (param $b i32) (result i32)
     (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
       (then (return (call $concat (local.get $a) (local.get $b)))))
-    (i32.or
-      (i32.shl
-        (i32.add (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
-        (i32.const {number_shift}))
-      (i32.const {number_tag})))
+    (call $number_from_i32
+      (i32.add
+        (call $number_to_i32 (local.get $a))
+        (call $number_to_i32 (local.get $b)))))
 "#,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
         ));
     }
 
@@ -1798,35 +1984,24 @@ impl WatEmitter<'_> {
           (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
           (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
       (then
-        (return
-          (i32.or
-            (i32.shl
-              (i32.add
-                (i32.shr_s (local.get $a) (i32.const {number_shift}))
-                (i32.shr_s (local.get $b) (i32.const {number_shift})))
-              (i32.const {number_shift}))
-            (i32.const {number_tag})))))
+        (return (call $add (local.get $a) (local.get $b)))))
     (call $add (local.get $a) (local.get $b)))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
-            number_shift = ValueTag::NUMBER_SHIFT,
         ));
     }
 
     pub(super) fn emit_sub(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $sub (param $a i32) (param $b i32) (result i32)
-    (i32.or
-      (i32.shl
-        (i32.sub (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
-        (i32.const {number_shift}))
-      (i32.const {number_tag})))
+    (call $number_from_i32
+      (i32.sub
+        (call $number_to_i32 (local.get $a))
+        (call $number_to_i32 (local.get $b)))))
 "#,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
-        ));
+        );
     }
 
     pub(super) fn emit_sub_fast(&self, wat: &mut String) {
@@ -1837,35 +2012,24 @@ impl WatEmitter<'_> {
           (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {number_tag}))
           (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {number_tag})))
       (then
-        (return
-          (i32.or
-            (i32.shl
-              (i32.sub
-                (i32.shr_s (local.get $a) (i32.const {number_shift}))
-                (i32.shr_s (local.get $b) (i32.const {number_shift})))
-              (i32.const {number_shift}))
-            (i32.const {number_tag})))))
+        (return (call $sub (local.get $a) (local.get $b)))))
     (call $sub (local.get $a) (local.get $b)))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
-            number_shift = ValueTag::NUMBER_SHIFT,
         ));
     }
 
     pub(super) fn emit_mul(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $mul (param $a i32) (param $b i32) (result i32)
-    (i32.or
-      (i32.shl
-        (i32.mul (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
-        (i32.const {number_shift}))
-      (i32.const {number_tag})))
+    (call $number_from_i32
+      (i32.mul
+        (call $number_to_i32 (local.get $a))
+        (call $number_to_i32 (local.get $b)))))
 "#,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
-        ));
+        );
     }
 
     pub(super) fn emit_mul_fast(&self, wat: &mut String) {
@@ -1888,17 +2052,12 @@ impl WatEmitter<'_> {
             r#"
   (func $div (param $a i32) (param $b i32) (result i32)
     (local $rhs i32)
-    (local.set $rhs (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (local.set $rhs (call $number_to_i32 (local.get $b)))
     (if (i32.eqz (local.get $rhs))
       (then (return (i32.const {undefined_tag}))))
-    (i32.or
-      (i32.shl
-        (i32.div_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (local.get $rhs))
-        (i32.const {number_shift}))
-      (i32.const {number_tag})))
+    (call $number_from_i32
+      (i32.div_s (call $number_to_i32 (local.get $a)) (local.get $rhs))))
 "#,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
             undefined_tag = ValueTag::UNDEFINED,
         ));
     }
@@ -1923,17 +2082,12 @@ impl WatEmitter<'_> {
             r#"
   (func $mod (param $a i32) (param $b i32) (result i32)
     (local $rhs i32)
-    (local.set $rhs (i32.shr_s (local.get $b) (i32.const {number_shift})))
+    (local.set $rhs (call $number_to_i32 (local.get $b)))
     (if (i32.eqz (local.get $rhs))
       (then (return (i32.const {undefined_tag}))))
-    (i32.or
-      (i32.shl
-        (i32.rem_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (local.get $rhs))
-        (i32.const {number_shift}))
-      (i32.const {number_tag})))
+    (call $number_from_i32
+      (i32.rem_s (call $number_to_i32 (local.get $a)) (local.get $rhs))))
 "#,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
             undefined_tag = ValueTag::UNDEFINED,
         ));
     }
@@ -1954,18 +2108,13 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_negate(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $negate (param $a i32) (result i32)
-    (i32.or
-      (i32.shl
-        (i32.sub (i32.const 0) (i32.shr_s (local.get $a) (i32.const {number_shift})))
-        (i32.const {number_shift}))
-      (i32.const {number_tag})))
+    (call $number_from_i32
+      (i32.sub (i32.const 0) (call $number_to_i32 (local.get $a)))))
 "#,
-            number_shift = ValueTag::NUMBER_SHIFT,
-            number_tag = ValueTag::NUMBER,
-        ));
+        );
     }
 
     pub(super) fn emit_less(&self, wat: &mut String) {
@@ -2039,7 +2188,7 @@ impl WatEmitter<'_> {
     (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
       (then (unreachable)))
     (if (result i32)
-      (i32.lt_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+      (i32.lt_s (call $number_to_i32 (local.get $a)) (call $number_to_i32 (local.get $b)))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
 "#,
@@ -2149,7 +2298,7 @@ impl WatEmitter<'_> {
     (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
       (then (unreachable)))
     (if (result i32)
-      (i32.le_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+      (i32.le_s (call $number_to_i32 (local.get $a)) (call $number_to_i32 (local.get $b)))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
 "#,
@@ -2259,7 +2408,7 @@ impl WatEmitter<'_> {
     (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
       (then (unreachable)))
     (if (result i32)
-      (i32.gt_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
+      (i32.gt_s (call $number_to_i32 (local.get $a)) (call $number_to_i32 (local.get $b)))
       (then (i32.const {true_tag}))
       (else (i32.const {false_tag}))))
 "#,

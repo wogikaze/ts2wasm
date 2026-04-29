@@ -45,10 +45,20 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         match expr {
-            LoweredExpr::Number(value) => wat.push_str(&format!(
-                "{pad}(i32.const {})\n",
-                ValueTag::encode_number(*value)
-            )),
+            LoweredExpr::Number(value) => {
+                if ValueTag::can_encode_number(*value) {
+                    wat.push_str(&format!(
+                        "{pad}(i32.const {})\n",
+                        ValueTag::encode_number(*value)
+                    ));
+                } else {
+                    wat.push_str(&format!("{pad}(i32.const {value})\n"));
+                    wat.push_str(&format!(
+                        "{pad}(call {})\n",
+                        RuntimeFn::NumberFromI32.symbol()
+                    ));
+                }
+            }
             LoweredExpr::String(value) => {
                 wat.push_str(&format!("{pad}(i32.const {})\n", self.string_value(value)))
             }
@@ -1796,8 +1806,8 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
             value,
         } => expr_may_collect(object) || expr_may_collect(index) || expr_may_collect(value),
         LoweredExpr::MethodCall { object, .. } => expr_may_collect(object),
-        LoweredExpr::Number(_)
-        | LoweredExpr::String(_)
+        LoweredExpr::Number(value) => !ValueTag::can_encode_number(*value),
+        LoweredExpr::String(_)
         | LoweredExpr::Bool(_)
         | LoweredExpr::Null
         | LoweredExpr::Undefined

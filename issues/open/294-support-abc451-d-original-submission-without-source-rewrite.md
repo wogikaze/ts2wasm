@@ -83,6 +83,15 @@ After that first parser gap, the same source also requires:
 - `Array.prototype.sort((a, b) => a - b)`
 - number semantics beyond the current tagged small-int range, because expected outputs include values such as `819264512`
 
+2026-04-30 update from issue 300: the rewritten
+`fixtures/atcoder/abc451-d-concat-power2.ts` now builds past the previous
+`NumberOutOfRange` diagnostic for `1000000000`, and a reduced integer-only
+large-number fixture matches Node/iwasm for `536870912` and `819264512`.
+However, the ABC451 sample execution path still traps under `iwasm` with
+`Exception: out of bounds memory access` for inputs `10`, `69`, and `1099898`.
+That runtime trap is the next blocker before this ABC451 path can be considered
+sample-compatible.
+
 ## Desired final state
 
 The original Bun submission builds through the normal frontend/resolver/lowering/backend pipeline, without source-text special casing, and runs under `iwasm` with Node/Bun-equivalent stdout for the official samples:

@@ -8,7 +8,6 @@ use super::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
 use ts2wasm_frontend::{
     BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, OBJECT_SPREAD_SENTINEL, Span, UnaryOp,
 };
-use ts2wasm_runtime_abi::ValueTag;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct LocalId(pub usize);

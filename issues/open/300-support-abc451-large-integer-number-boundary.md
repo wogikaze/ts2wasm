@@ -154,6 +154,36 @@ equivalent guard for unsupported values. The close condition is observable
 Node-compatible behavior for the large integer subset, not merely accepting the
 literal.
 
+## Progress evidence
+
+2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c`:
+
+- Implemented a narrow integer-only heap-number path for ordinary `number`
+  values outside the tagged small-int payload range.
+- Added `fixtures/core-semantics/large-integer-number-boundary.ts` covering
+  `2 ** i <= 1000000000`, `String`/unary-plus round trip through large integer
+  strings, `Set<number>` duplicate handling, and numeric sort values including
+  `819264512`.
+- Verified the reduced regression manually with Node/iwasm matching output:
+
+```text
+536870912
+536870912
+819264512
+```
+
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` now builds past the
+  previous `NumberOutOfRange` diagnostic:
+
+```sh
+cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-large-number-child.wasm --host-deny
+```
+
+- The ABC451 sample execution is not yet done: all three issue validation
+  inputs currently trap under `iwasm` with `Exception: out of bounds memory
+  access`. The issue remains open until the official sample path is safe and
+  Node-compatible.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
