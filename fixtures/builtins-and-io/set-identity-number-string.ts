@@ -1,0 +1,11 @@
+let s = new Set();
+s.add(1);
+s.add("1");
+s.add(1);
+console.log(s.has(1));
+console.log(s.has("1"));
+console.log(s.size);
+console.log(s.delete(1));
+console.log(s.has(1));
+console.log(s.has("1"));
+console.log(s.size);
