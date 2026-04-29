@@ -186,6 +186,26 @@ mod tests {
     }
 
     #[test]
+    fn parses_bigint_literals_as_explicit_ast_nodes() {
+        let program =
+            parse_program("let dec = 1n; let bin = 0b101n; let oct = 0o77n; let hex = 0xFFn;")
+                .unwrap();
+
+        let raw_literals: Vec<&str> = program
+            .iter()
+            .map(|stmt| match stmt {
+                Stmt::Let {
+                    expr: Expr::BigInt { raw, .. },
+                    ..
+                } => raw.as_str(),
+                other => panic!("expected BigInt let initializer, got {other:?}"),
+            })
+            .collect();
+
+        assert_eq!(raw_literals, ["1n", "0b101n", "0o77n", "0xFFn"]);
+    }
+
+    #[test]
     fn parses_template_literal_interpolation_as_add_chain() {
         let program = parse_program("let message = `Hello, ${name}!`;").unwrap();
         match &program[0] {
