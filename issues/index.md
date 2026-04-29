@@ -13,6 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 5 | 1 | 4 |
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
+| coverage | 1 | 1 | 0 |
 | docs | 2 | 0 | 2 |
 | frontend | 191 | 126 | 65 |
 | ir | 7 | 0 | 7 |
@@ -24,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 291 | 139 | 152 |
+| total | 292 | 140 | 152 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,6 +47,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | implementation-ready | P2 | 259 | BigInt cannot share the current primitive equality/comparison helpers because Number/BigInt and String/BigInt coercio... |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | implementation-ready | P2 | 259 | After BigInt values exist, builtin and conversion behavior still needs explicit runtime helpers and diagnostics so `B... |
+| 267 | Implement interactive web UI for test results | feature | coverage | implementation-ready | P1 |  | No interactive web UI for test results, coverage visualization, and historical comparison. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
