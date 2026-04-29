@@ -55,6 +55,7 @@ pub enum HirExpr {
     ConstNull,
     ConstBool(bool),
     ConstNumber(i32),
+    ConstBigInt(String),
     ConstString(String),
     LoadLocal(HirLocalId),
     LoadBuiltin(String),
@@ -275,6 +276,7 @@ fn validate_expr(expr: &HirExpr, context: ValidationContext<'_>, errors: &mut Ve
         | HirExpr::ConstNull
         | HirExpr::ConstBool(_)
         | HirExpr::ConstNumber(_)
+        | HirExpr::ConstBigInt(_)
         | HirExpr::ConstString(_) => {}
     }
 }
@@ -406,6 +408,9 @@ impl<'a> HirLowerer<'a> {
     fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<HirExpr, Diagnostic> {
         match expr {
             ResolvedExpr::Number(value) => Ok(HirExpr::ConstNumber(*value)),
+            ResolvedExpr::BigIntLiteral { decimal, .. } => {
+                Ok(HirExpr::ConstBigInt(decimal.clone()))
+            }
             ResolvedExpr::String(value) => Ok(HirExpr::ConstString(value.clone())),
             ResolvedExpr::Bool(value) => Ok(HirExpr::ConstBool(*value)),
             ResolvedExpr::Null => Ok(HirExpr::ConstNull),

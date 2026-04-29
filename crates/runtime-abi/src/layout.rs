@@ -104,6 +104,22 @@ impl Layout {
     pub const GC_KIND_ARRAY: u32 = 2 << Self::GC_KIND_SHIFT;
     /// Object heap kind.
     pub const GC_KIND_OBJECT: u32 = 3 << Self::GC_KIND_SHIFT;
+    /// BigInt heap kind.
+    pub const GC_KIND_BIGINT: u32 = 4 << Self::GC_KIND_SHIFT;
+    /// Mask for heap kind bits in the 017a GC header flags/type field.
+    pub const GC_KIND_MASK: u32 = 0x7 << Self::GC_KIND_SHIFT;
+    /// BigInt payload offset: sign (-1, 0, or 1).
+    pub const BIGINT_SIGN_OFFSET: u32 = 0;
+    /// BigInt payload offset: limb count for the canonical magnitude prefix.
+    pub const BIGINT_LIMB_COUNT_OFFSET: u32 = 4;
+    /// BigInt payload offset: low 32 bits of the first limb for the literal slice.
+    pub const BIGINT_LIMB0_LOW_OFFSET: u32 = 8;
+    /// BigInt payload offset: high 32 bits of the first limb for the literal slice.
+    pub const BIGINT_LIMB0_HIGH_OFFSET: u32 = 12;
+    /// BigInt payload offset: byte length of the cached decimal spelling.
+    pub const BIGINT_DECIMAL_LEN_OFFSET: u32 = 16;
+    /// BigInt payload offset: cached decimal UTF-8 bytes without an `n` suffix.
+    pub const BIGINT_DECIMAL_DATA_OFFSET: u32 = 20;
     /// Bit mask for object type in type_tag field.
     pub const OBJECT_TYPE_MASK: u32 = 0x7F;
     /// Mark bit for GC mark phase.
@@ -181,6 +197,14 @@ mod tests {
         assert_eq!(
             Layout::GC_KIND_OBJECT & (Layout::GC_MARK_FLAG | Layout::GC_FINALIZABLE_FLAG),
             0
+        );
+        assert_eq!(
+            Layout::GC_KIND_BIGINT & (Layout::GC_MARK_FLAG | Layout::GC_FINALIZABLE_FLAG),
+            0
+        );
+        assert_eq!(
+            Layout::GC_KIND_BIGINT & Layout::GC_KIND_MASK,
+            Layout::GC_KIND_BIGINT
         );
     }
 

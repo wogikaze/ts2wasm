@@ -452,6 +452,9 @@ impl RuntimeLinkPlan {
             | LoweredExpr::This
             | LoweredExpr::Local(_)
             | LoweredExpr::ArrowFn { .. } => {}
+            LoweredExpr::BigIntLiteral { .. } => {
+                self.add_required_runtime(RuntimeFn::MakeBigIntLiteral);
+            }
             LoweredExpr::ArrayNew { elements, .. } => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
                 for elem in elements {

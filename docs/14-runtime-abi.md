@@ -92,7 +92,7 @@ BigInt は **heap object representation** を採用する。現行 `RawValue` �
 - `RawValue` の tag 空間を拡張すると既存 array/string/object wire encoding と backend helper 全体に波及する
 - GC heap object に統一すると literal / arithmetic / boxed builtin boundary / future Wasm GC backend の差し替えを同じ論理 ABI で扱える
 
-BigInt object payload は canonical little-endian limb sequence とする。
+BigInt object payload は canonical little-endian limb sequence とする。Issue 259 implements the literal runtime slice for values that fit the current first-limb backend constructor path and stores a cached decimal representation after the canonical prefix for observable literal printing and `String(<literal>)`; broader arbitrary-precision operations remain owned by issues 260-262.
 
 ```text
 BigInt payload:
@@ -100,6 +100,8 @@ BigInt payload:
   +0: i32 sign        ; -1 negative, 0 zero, 1 positive
   +4: i32 limb_count  ; canonical zero は sign=0, limb_count=0
   +8: u64 limbs[limb_count] little-endian magnitude limbs
+  +16: i32 decimal_len            ; issue 259 literal cache
+  +20: u8 decimal[decimal_len]    ; no "n" suffix
 ```
 
 Canonicalization rules:
@@ -123,8 +125,8 @@ BigInt を扱う runtime helper は論理 `jsval` を入出力に使う。現行
 
 | Logical helper | Signature | First implementation owner | Notes |
 |---|---|---|---|
-| `make_bigint_literal` | `(ptr digits, len, radix, negative) -> jsval` | issue 259 | Source literal digits を runtime が canonical limb に変換する |
-| `bigint_to_string` | `(jsval) -> jsval` | issue 262 | decimal string。`n` suffix は含めない |
+| `make_bigint_literal` | `(sign, limb_count, limb_low, limb_high, ptr decimal, len) -> jsval` | issue 259 | Lowered literal decimal cache and canonical prefix を heap BigInt object に配置する |
+| `bigint_to_string` | `(jsval) -> jsval` | issue 259/262 | issue 259 は literal-only `String(<BigInt literal>)` 用。broader builtin/coercion boundary は issue 262 |
 | `bigint_to_boolean` | `(jsval) -> bool` | issue 259 | `0n` は false、それ以外は true |
 | `bigint_strict_equal` | `(jsval, jsval) -> bool` | issue 261 | BigInt 同士は mathematical value 比較。Number とは常に false |
 | `bigint_abstract_equal` | `(jsval, jsval) -> bool` | issue 261 | Number/String/Boolean との ECMA-262 coercion 境界を実装する |
@@ -141,7 +143,7 @@ IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
 Unsupported boundary:
 
-- literal runtime values until issue 259: `unsupported-bigint-runtime` / issue 259
+- literal runtime values: implemented by issue 259 for decimal/binary/octal/hex literal construction, `console.log`, `typeof`, literal `String(...)`, and truthiness
 - BigInt arithmetic and unary operators until issue 260: `unsupported-bigint-arithmetic` / issue 260
 - BigInt equality, relational comparison, and coercion until issue 261: `unsupported-bigint-comparison` / issue 261
 - BigInt builtin functions and string conversion until issue 262: `unsupported-bigint-builtin` / issue 262

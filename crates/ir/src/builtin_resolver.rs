@@ -357,13 +357,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
 fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         Expr::Number { value, .. } => Ok(ResolvedExpr::Number(*value)),
-        Expr::BigInt { raw, span } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-244: BigInt literal `{raw}` is parsed, but runtime BigInt values are not implemented"
-            ),
-            span: Some(*span),
-        }),
+        Expr::BigInt { raw, span } => parse_bigint_literal(raw, *span),
         Expr::String { value, .. } => Ok(ResolvedExpr::String(value.clone())),
         Expr::Bool { value, .. } => Ok(ResolvedExpr::Bool(*value)),
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
@@ -382,17 +376,64 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             message: "ternary operator not yet supported".to_owned(),
             span: Some(*span),
         }),
-        Expr::Unary { op, expr, .. } => Ok(ResolvedExpr::Unary {
-            op: *op,
-            expr: Box::new(resolve_expr(expr)?),
-        }),
+        Expr::Unary { op, expr, span } => {
+            if expr_contains_bigint(expr) && bigint_unary_op_issue(*op).is_some() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: bigint_unary_op_issue(*op).unwrap().to_owned(),
+                    span: Some(*span),
+                });
+            }
+            Ok(ResolvedExpr::Unary {
+                op: *op,
+                expr: Box::new(resolve_expr(expr)?),
+            })
+        }
         Expr::Binary {
-            left, op, right, ..
-        } => Ok(ResolvedExpr::Binary {
-            left: Box::new(resolve_expr(left)?),
-            op: *op,
-            right: Box::new(resolve_expr(right)?),
-        }),
+            left,
+            op,
+            right,
+            span,
+        } => {
+            if expr_contains_bigint(left) || expr_contains_bigint(right) {
+                let issue = match op {
+                    BinaryOp::Add
+                    | BinaryOp::Subtract
+                    | BinaryOp::Multiply
+                    | BinaryOp::Divide
+                    | BinaryOp::Modulo
+                    | BinaryOp::Power
+                    | BinaryOp::BitwiseAnd
+                    | BinaryOp::BitwiseOr
+                    | BinaryOp::BitwiseXor
+                    | BinaryOp::LeftShift
+                    | BinaryOp::RightShift
+                    | BinaryOp::UnsignedRightShift => "issue-260: BigInt arithmetic and bitwise operators are tracked separately from literal runtime values",
+                    BinaryOp::Less
+                    | BinaryOp::LessEqual
+                    | BinaryOp::Greater
+                    | BinaryOp::GreaterEqual
+                    | BinaryOp::StrictEqual
+                    | BinaryOp::EqualEqual
+                    | BinaryOp::BangEqual
+                    | BinaryOp::StrictNotEqual => "issue-261: BigInt equality and comparison are tracked separately from literal runtime values",
+                    BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => "",
+                    BinaryOp::InstanceOf | BinaryOp::In => "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values",
+                };
+                if !issue.is_empty() {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: issue.to_owned(),
+                        span: Some(*span),
+                    });
+                }
+            }
+            Ok(ResolvedExpr::Binary {
+                left: Box::new(resolve_expr(left)?),
+                op: *op,
+                right: Box::new(resolve_expr(right)?),
+            })
+        }
         Expr::Call { callee, args, .. } if is_require_call(callee, args) => {
             if let [
                 Expr::String {
@@ -632,6 +673,176 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op: UnaryOp::TypeOf,
             expr: Box::new(resolve_expr(expr)?),
         }),
+    }
+}
+
+fn parse_bigint_literal(raw: &str, span: Span) -> Result<ResolvedExpr, Diagnostic> {
+    let Some(body) = raw.strip_suffix('n') else {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("issue-259: invalid BigInt literal `{raw}` reached runtime lowering"),
+            span: Some(span),
+        });
+    };
+    let (radix, digits) =
+        if let Some(digits) = body.strip_prefix("0b").or_else(|| body.strip_prefix("0B")) {
+            (2_u32, digits)
+        } else if let Some(digits) = body.strip_prefix("0o").or_else(|| body.strip_prefix("0O")) {
+            (8_u32, digits)
+        } else if let Some(digits) = body.strip_prefix("0x").or_else(|| body.strip_prefix("0X")) {
+            (16_u32, digits)
+        } else {
+            (10_u32, body)
+        };
+
+    let mut decimal_digits = vec![0_u8];
+    let mut magnitude: u64 = 0;
+    let mut magnitude_overflowed = false;
+    for ch in digits.chars() {
+        let Some(digit) = ch.to_digit(radix) else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("issue-259: invalid BigInt literal digit in `{raw}`"),
+                span: Some(span),
+            });
+        };
+        decimal_mul_add(&mut decimal_digits, radix as u8, digit as u8);
+        if !magnitude_overflowed {
+            if let Some(next) = magnitude
+                .checked_mul(radix as u64)
+                .and_then(|value| value.checked_add(digit as u64))
+            {
+                magnitude = next;
+            } else {
+                magnitude_overflowed = true;
+            }
+        }
+    }
+
+    trim_decimal_zeroes(&mut decimal_digits);
+    let decimal = decimal_digits
+        .iter()
+        .map(|digit| char::from(b'0' + *digit))
+        .collect::<String>();
+    let sign = if decimal == "0" { 0 } else { 1 };
+    let (limb_low, limb_high) = if magnitude_overflowed {
+        (0, 0)
+    } else {
+        (magnitude as u32, (magnitude >> 32) as u32)
+    };
+
+    Ok(ResolvedExpr::BigIntLiteral {
+        decimal,
+        sign,
+        limb_low,
+        limb_high,
+    })
+}
+
+fn decimal_mul_add(digits: &mut Vec<u8>, radix: u8, add: u8) {
+    let mut carry = add as u16;
+    for digit in digits.iter_mut().rev() {
+        let value = (*digit as u16) * (radix as u16) + carry;
+        *digit = (value % 10) as u8;
+        carry = value / 10;
+    }
+    while carry > 0 {
+        digits.insert(0, (carry % 10) as u8);
+        carry /= 10;
+    }
+}
+
+fn trim_decimal_zeroes(digits: &mut Vec<u8>) {
+    while digits.len() > 1 && digits.first() == Some(&0) {
+        digits.remove(0);
+    }
+}
+
+fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
+    match op {
+        UnaryOp::Negate
+        | UnaryOp::BitwiseNot
+        | UnaryOp::Increment
+        | UnaryOp::Decrement
+        | UnaryOp::PreIncrement
+        | UnaryOp::PreDecrement => Some(
+            "issue-260: BigInt unary arithmetic and bitwise operators are tracked separately from literal runtime values",
+        ),
+        UnaryOp::Not | UnaryOp::TypeOf | UnaryOp::Delete | UnaryOp::Void => None,
+    }
+}
+
+fn expr_contains_bigint(expr: &Expr) -> bool {
+    match expr {
+        Expr::BigInt { .. } => true,
+        Expr::Unary { expr, .. } | Expr::TypeOf { expr, .. } | Expr::Spread { expr, .. } => {
+            expr_contains_bigint(expr)
+        }
+        Expr::Binary { left, right, .. }
+        | Expr::InstanceOf {
+            expr: left,
+            type_expr: right,
+            ..
+        }
+        | Expr::Index {
+            object: left,
+            index: right,
+            ..
+        } => expr_contains_bigint(left) || expr_contains_bigint(right),
+        Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
+            expr_contains_bigint(callee) || args.iter().any(expr_contains_bigint)
+        }
+        Expr::Member { object, .. } | Expr::OptionalMember { object, .. } => {
+            expr_contains_bigint(object)
+        }
+        Expr::OptionalIndex { object, index, .. } => {
+            expr_contains_bigint(object) || expr_contains_bigint(index)
+        }
+        Expr::Assign { expr, .. } | Expr::LogicalAssign { expr, .. } => expr_contains_bigint(expr),
+        Expr::LogicalPropertyAssign {
+            object_expr,
+            computed_key,
+            expr,
+            ..
+        } => {
+            object_expr.as_deref().is_some_and(expr_contains_bigint)
+                || computed_key.as_deref().is_some_and(expr_contains_bigint)
+                || expr_contains_bigint(expr)
+        }
+        Expr::Array { elements, .. } => elements.iter().any(expr_contains_bigint),
+        Expr::Object { props, .. } => props.iter().any(|(_, value)| expr_contains_bigint(value)),
+        Expr::New { args, .. } => args.iter().any(expr_contains_bigint),
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_bigint(condition)
+                || expr_contains_bigint(then_expr)
+                || expr_contains_bigint(else_expr)
+        }
+        Expr::ArrowFn { body, .. } => expr_contains_bigint(body),
+        Expr::PropertyAssign { object, value, .. } => {
+            expr_contains_bigint(object) || expr_contains_bigint(value)
+        }
+        Expr::IndexAssign {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            expr_contains_bigint(object)
+                || expr_contains_bigint(index)
+                || expr_contains_bigint(value)
+        }
+        Expr::Number { .. }
+        | Expr::String { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::This { .. }
+        | Expr::Undefined { .. }
+        | Expr::Ident { .. } => false,
     }
 }
 
