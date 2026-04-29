@@ -1,7 +1,118 @@
-import { useState } from 'react'
-import { Play, CheckCircle, XCircle, AlertCircle, SkipForward, BarChart3, History, Download, Search, Filter } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { Play, CheckCircle, XCircle, AlertCircle, AlertTriangle, SkipForward, BarChart3, History, Download, Search, Filter } from 'lucide-react'
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts'
 import { useTestData, useCoverageData, useHistoricalData } from './hooks/useData'
+import type { HistoricalData } from './types'
 import './index.css'
+
+const PERF_REGRESSION_THRESHOLD = 0.2
+
+const coverageColors = ['#22c55e', '#ef4444', '#eab308']
+const priorityColors = {
+  P0: '#ef4444',
+  P1: '#f97316',
+  P2: '#eab308',
+  P3: '#3b82f6',
+  Future: '#6b7280',
+}
+
+interface RunDeltas {
+  passed: number | null
+  failed: number | null
+  skipped: number | null
+  compile_time: number | null
+  runtime: number | null
+}
+
+interface TrendRun extends HistoricalData {
+  displayTime: string
+  trendLabel: string
+  deltas: RunDeltas
+  regressionReasons: string[]
+}
+
+function formatPercent(value: number) {
+  if (!Number.isFinite(value)) return '0.0%'
+  return `${value.toFixed(1)}%`
+}
+
+function chartNumber(value: unknown) {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) ? numeric : 0
+}
+
+function formatDelta(value: number | null, unit = '') {
+  if (value === null) return '-'
+  if (value === 0) return '0'
+  const prefix = value > 0 ? '+' : ''
+  return `${prefix}${value}${unit}`
+}
+
+function formatDurationDelta(value: number | null) {
+  if (value === null) return '-'
+  if (value === 0) return '0s'
+  const prefix = value > 0 ? '+' : ''
+  return `${prefix}${value.toFixed(2)}s`
+}
+
+function worsenedByThreshold(current: number, previous: number) {
+  return previous > 0 && (current - previous) / previous > PERF_REGRESSION_THRESHOLD
+}
+
+function buildTrendRuns(history: HistoricalData[]): TrendRun[] {
+  const chronological = [...history].sort((a, b) => {
+    const timeDelta = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    return timeDelta || a.run_id.localeCompare(b.run_id)
+  })
+
+  return chronological.map((run, index) => {
+    const previous = chronological[index - 1]
+    const deltas: RunDeltas = previous
+      ? {
+          passed: run.passed - previous.passed,
+          failed: run.failed - previous.failed,
+          skipped: run.skipped - previous.skipped,
+          compile_time: run.compile_time - previous.compile_time,
+          runtime: run.runtime - previous.runtime,
+        }
+      : {
+          passed: null,
+          failed: null,
+          skipped: null,
+          compile_time: null,
+          runtime: null,
+        }
+
+    const regressionReasons = [
+      previous && run.failed > previous.failed ? 'failed increased' : null,
+      previous && run.passed < previous.passed ? 'passed dropped' : null,
+      previous && worsenedByThreshold(run.compile_time, previous.compile_time) ? 'compile time +20%' : null,
+      previous && worsenedByThreshold(run.runtime, previous.runtime) ? 'runtime +20%' : null,
+    ].filter((reason): reason is string => Boolean(reason))
+
+    return {
+      ...run,
+      displayTime: new Date(run.timestamp).toLocaleString(),
+      trendLabel: `${run.run_id}`,
+      deltas,
+      regressionReasons,
+    }
+  })
+}
 
 function App() {
   const [activeTab, setActiveTab] = useState<'tests' | 'coverage' | 'history'>('tests')
@@ -19,6 +130,37 @@ function App() {
     const matchesStatus = statusFilter === 'all' || test.status === statusFilter
     return matchesSearch && matchesStatus
   })
+
+  const coverageStatusData = useMemo(() => [
+    { name: 'Implemented', value: coverage.implemented },
+    { name: 'Unimplemented', value: coverage.unimplemented },
+    { name: 'Future', value: coverage.future },
+  ].filter(item => item.value > 0), [coverage])
+
+  const priorityData = useMemo(() => [
+    { name: 'P0', value: coverage.byPriority.p0, fill: priorityColors.P0 },
+    { name: 'P1', value: coverage.byPriority.p1, fill: priorityColors.P1 },
+    { name: 'P2', value: coverage.byPriority.p2, fill: priorityColors.P2 },
+    { name: 'P3', value: coverage.byPriority.p3, fill: priorityColors.P3 },
+    { name: 'Future', value: coverage.byPriority.future, fill: priorityColors.Future },
+  ], [coverage])
+
+  const suiteCoverageData = useMemo(() => (coverage.suites || []).map(suite => ({
+    suite: suite.suite,
+    executed: suite.executed,
+    build_pass: suite.build_pass,
+    semantic_pass: suite.semantic_pass,
+    failed: suite.fail,
+    blocked: suite.blocked,
+    unsupported: suite.unsupported,
+    denominator: suite.denominator,
+    buildRate: suite.denominator > 0 ? (suite.build_pass / suite.denominator) * 100 : 0,
+    semanticRate: suite.denominator > 0 ? (suite.semantic_pass / suite.denominator) * 100 : 0,
+  })), [coverage])
+
+  const trendRuns = useMemo(() => buildTrendRuns(history), [history])
+  const historyRows = useMemo(() => [...trendRuns].reverse(), [trendRuns])
+  const latestTrend = trendRuns[trendRuns.length - 1]
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -293,6 +435,68 @@ function App() {
                 </div>
               </div>
             </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 xl:col-span-1">
+                <h3 className="text-lg font-semibold mb-4">Coverage Mix</h3>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={coverageStatusData}
+                        dataKey="value"
+                        nameKey="name"
+                        innerRadius={58}
+                        outerRadius={92}
+                        paddingAngle={2}
+                      >
+                        {coverageStatusData.map((entry, index) => (
+                          <Cell key={entry.name} fill={coverageColors[index % coverageColors.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip formatter={(value) => [chartNumber(value).toLocaleString(), 'cases']} />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 xl:col-span-2">
+                <h3 className="text-lg font-semibold mb-4">Suite Coverage</h3>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={suiteCoverageData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis dataKey="suite" stroke="#9ca3af" />
+                      <YAxis stroke="#9ca3af" tickFormatter={(value) => `${value}%`} />
+                      <Tooltip formatter={(value) => [formatPercent(chartNumber(value)), 'coverage']} />
+                      <Legend />
+                      <Bar dataKey="buildRate" name="Build" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="semanticRate" name="Semantic" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+              <h3 className="text-lg font-semibold mb-4">Priority Chart</h3>
+              <div className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={priorityData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis dataKey="name" stroke="#9ca3af" />
+                    <YAxis stroke="#9ca3af" />
+                    <Tooltip formatter={(value) => [chartNumber(value).toLocaleString(), 'items']} />
+                    <Bar dataKey="value" name="Open items" radius={[4, 4, 0, 0]}>
+                      {priorityData.map((entry) => (
+                        <Cell key={entry.name} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
             </>
             )}
           </div>
@@ -310,6 +514,69 @@ function App() {
               </div>
             ) : (
               <>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div className="text-sm text-gray-400 mb-1">Latest Run</div>
+                <div className="text-xl font-semibold">{latestTrend?.run_id ?? '-'}</div>
+              </div>
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div className="text-sm text-gray-400 mb-1">Pass Delta</div>
+                <div className={latestTrend?.deltas.passed !== null && latestTrend?.deltas.passed !== undefined && latestTrend.deltas.passed < 0 ? 'text-xl font-semibold text-red-500' : 'text-xl font-semibold text-green-500'}>
+                  {formatDelta(latestTrend?.deltas.passed ?? null)}
+                </div>
+              </div>
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div className="text-sm text-gray-400 mb-1">Regression Flags</div>
+                <div className={latestTrend?.regressionReasons.length ? 'flex items-center gap-2 text-red-400' : 'text-green-500'}>
+                  {latestTrend?.regressionReasons.length ? (
+                    <>
+                      <AlertTriangle className="w-5 h-5 shrink-0" />
+                      <span>{latestTrend.regressionReasons.join(', ')}</span>
+                    </>
+                  ) : (
+                    'none'
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 className="text-lg font-semibold mb-4">Result Trend</h3>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trendRuns}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis dataKey="trendLabel" stroke="#9ca3af" />
+                      <YAxis stroke="#9ca3af" />
+                      <Tooltip />
+                      <Legend />
+                      <Line type="monotone" dataKey="passed" name="Passed" stroke="#22c55e" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="failed" name="Failed" stroke="#ef4444" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="skipped" name="Skipped" stroke="#eab308" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
+                <div className="h-72">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trendRuns}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                      <XAxis dataKey="trendLabel" stroke="#9ca3af" />
+                      <YAxis stroke="#9ca3af" />
+                      <Tooltip formatter={(value) => [`${chartNumber(value)}s`, 'duration']} />
+                      <Legend />
+                      <Line type="monotone" dataKey="compile_time" name="Compile" stroke="#3b82f6" strokeWidth={2} dot={false} />
+                      <Line type="monotone" dataKey="runtime" name="Runtime" stroke="#f97316" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
             <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-800/50">
@@ -321,18 +588,43 @@ function App() {
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Skipped</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Compile Time</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Runtime</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Delta</th>
+                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Regression</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
-                  {history.map((run) => (
+                  {historyRows.map((run) => (
                     <tr key={run.run_id} className="hover:bg-gray-700/50 transition-colors">
                       <td className="px-4 py-3 font-medium">{run.run_id}</td>
-                      <td className="px-4 py-3 text-gray-400">{new Date(run.timestamp).toLocaleString()}</td>
+                      <td className="px-4 py-3 text-gray-400">{run.displayTime}</td>
                       <td className="px-4 py-3 text-green-500">{run.passed}</td>
                       <td className="px-4 py-3 text-red-500">{run.failed}</td>
                       <td className="px-4 py-3 text-yellow-500">{run.skipped}</td>
                       <td className="px-4 py-3 text-gray-400">{run.compile_time}s</td>
                       <td className="px-4 py-3 text-gray-400">{run.runtime}s</td>
+                      <td className="px-4 py-3 text-gray-400">
+                        <div className="flex flex-wrap gap-2 text-xs">
+                          <span className={run.deltas.passed !== null && run.deltas.passed < 0 ? 'text-red-400' : 'text-green-400'}>
+                            pass {formatDelta(run.deltas.passed)}
+                          </span>
+                          <span className={run.deltas.failed !== null && run.deltas.failed > 0 ? 'text-red-400' : 'text-green-400'}>
+                            fail {formatDelta(run.deltas.failed)}
+                          </span>
+                          <span>skip {formatDelta(run.deltas.skipped)}</span>
+                          <span>compile {formatDurationDelta(run.deltas.compile_time)}</span>
+                          <span>runtime {formatDurationDelta(run.deltas.runtime)}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        {run.regressionReasons.length ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-red-500/20 bg-red-500/10 text-xs text-red-400">
+                            <AlertTriangle className="w-3 h-3" />
+                            {run.regressionReasons.join(', ')}
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 rounded border border-green-500/20 bg-green-500/10 text-xs text-green-400">stable</span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
