@@ -7,8 +7,10 @@ class: implementation-ready
 priority: P2
 depends_on: ["247"]
 blocks: []
+status: done
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -44,7 +46,7 @@ In scope:
 - [x] Resolve names introduced by supported array/object binding patterns.
 - [x] Lower declaration patterns for the supported dense-array and object-property subset.
 - [x] Lower ordinary function and arrow parameter patterns for the supported call subset.
-- [ ] Implement defaults, nested patterns, elisions, and rest binding where runtime support is available.
+- [x] Implement defaults, nested patterns, elisions, and rest binding where runtime support is available.
 - [x] Emit issue-linked diagnostics for unsupported iterator/property semantics that remain outside the runtime subset.
 
 Out of scope:
@@ -123,19 +125,39 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- branch HEAD for issue 251 close-review
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(destructuring) or test(node_diff)'
+result: pass (16 passed)
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass (510 passed, 4 skipped)
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass
+date: 2026-04-29
+
+command: mise run check issues
+result: pass
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Dynamic-source and parameter object rest, non-literal default initializers, broad iterator/property enumeration semantics, destructuring assignment expressions, and `for-in` / `for-of` destructuring heads remain out of scope for issue 251. The in-scope unsupported forms continue to emit source-spanned issue-251 diagnostics instead of compiling to incorrect bindings.
 
 ## Progress evidence
 
