@@ -688,7 +688,7 @@ impl<'a> Resolver<'a> {
                     let value = if let (
                         ResolvedExpr::Object(props),
                         Some(replacer_keys),
-                    ) = (&args[0], json_stringify_replacer_keys(args))
+                    ) = (&args[0], json_stringify_replacer_keys(args, self.function_ids))
                     {
                         let mut lowered_props = Vec::new();
                         for allowed_key in replacer_keys {

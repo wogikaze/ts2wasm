@@ -819,11 +819,10 @@ fn validate_json_stringify_args(
                 ));
             }
             ResolvedExpr::Array(elements)
-                if matches!(args.first(), Some(ResolvedExpr::Object(_)))
-                    && is_supported_json_stringify_replacer_array(elements) => {}
+                if is_supported_json_stringify_replacer_array(elements, function_ids) => {}
             ResolvedExpr::Array(_) => {
                 return Err(json_stringify_replacer_diagnostic(
-                    "array replacer property lists outside the string/numeric literal or boxed Number/String object subset",
+                    "array replacer property lists outside the supported static String/Number property-name and ignored-entry subset",
                     span,
                 ));
             }
@@ -903,29 +902,71 @@ fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool {
     )
 }
 
-fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool {
+fn is_supported_json_stringify_replacer_array(
+    elements: &[ResolvedExpr],
+    function_ids: &HashMap<String, FuncId>,
+) -> bool {
     elements
         .iter()
-        .all(|element| json_stringify_replacer_key(element).is_some())
+        .all(|element| json_stringify_replacer_entry(element, function_ids).is_some())
 }
 
-fn json_stringify_replacer_key(element: &ResolvedExpr) -> Option<String> {
+enum JsonStringifyReplacerEntry {
+    Key(String),
+    Ignored,
+}
+
+fn json_stringify_replacer_entry(
+    element: &ResolvedExpr,
+    function_ids: &HashMap<String, FuncId>,
+) -> Option<JsonStringifyReplacerEntry> {
     match element {
-        ResolvedExpr::String(key) => Some(key.clone()),
-        ResolvedExpr::Number(_) | ResolvedExpr::Unary { .. } => json_stringify_number_key(element),
+        ResolvedExpr::String(key) => Some(JsonStringifyReplacerEntry::Key(key.clone())),
+        ResolvedExpr::Number(_) | ResolvedExpr::Unary { .. } => {
+            json_stringify_number_key(element).map(JsonStringifyReplacerEntry::Key)
+        }
+        ResolvedExpr::Bool(_) | ResolvedExpr::Null | ResolvedExpr::Undefined => {
+            Some(JsonStringifyReplacerEntry::Ignored)
+        }
+        ResolvedExpr::Object(props)
+            if props
+                .iter()
+                .all(|(_, value)| is_json_stringify_side_effect_free_static_value(value)) =>
+        {
+            Some(JsonStringifyReplacerEntry::Ignored)
+        }
+        ResolvedExpr::ArrowFn { .. } => Some(JsonStringifyReplacerEntry::Ignored),
+        ResolvedExpr::Ident(name)
+            if function_ids.contains_key(name) || is_ignored_json_stringify_replacer_ident(name) =>
+        {
+            Some(JsonStringifyReplacerEntry::Ignored)
+        }
+        ResolvedExpr::Call { callee, args, .. }
+            if is_ignored_json_stringify_replacer_call(callee, args) =>
+        {
+            Some(JsonStringifyReplacerEntry::Ignored)
+        }
         ResolvedExpr::New {
             class_name, args, ..
-        } => json_stringify_boxed_replacer_key(class_name, args),
+        } => json_stringify_boxed_replacer_entry(class_name, args),
         _ => None,
     }
 }
 
-fn json_stringify_boxed_replacer_key(class_name: &str, args: &[ResolvedExpr]) -> Option<String> {
+fn json_stringify_boxed_replacer_entry(
+    class_name: &str,
+    args: &[ResolvedExpr],
+) -> Option<JsonStringifyReplacerEntry> {
     match (class_name, args) {
-        ("String", []) => Some(String::new()),
-        ("String", [ResolvedExpr::String(key)]) => Some(key.clone()),
-        ("Number", []) => Some("0".to_owned()),
-        ("Number", [arg]) => json_stringify_number_key(arg),
+        ("String", []) => Some(JsonStringifyReplacerEntry::Key(String::new())),
+        ("String", [ResolvedExpr::String(key)]) => Some(JsonStringifyReplacerEntry::Key(key.clone())),
+        ("Number", []) => Some(JsonStringifyReplacerEntry::Key("0".to_owned())),
+        ("Number", [arg]) => json_stringify_number_key(arg).map(JsonStringifyReplacerEntry::Key),
+        ("Boolean", []) => Some(JsonStringifyReplacerEntry::Ignored),
+        ("Boolean", [arg]) if is_json_stringify_primitive_space_arg(arg) => {
+            Some(JsonStringifyReplacerEntry::Ignored)
+        }
+        ("Object", []) => Some(JsonStringifyReplacerEntry::Ignored),
         _ => None,
     }
 }
@@ -946,13 +987,52 @@ fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String> {
     }
 }
 
-fn json_stringify_replacer_keys(args: &[ResolvedExpr]) -> Option<Vec<String>> {
+fn json_stringify_replacer_keys(
+    args: &[ResolvedExpr],
+    function_ids: &HashMap<String, FuncId>,
+) -> Option<Vec<String>> {
     match args.get(1) {
         Some(ResolvedExpr::Array(elements)) => {
-            elements.iter().map(json_stringify_replacer_key).collect()
+            let mut keys = Vec::new();
+            for element in elements {
+                match json_stringify_replacer_entry(element, function_ids)? {
+                    JsonStringifyReplacerEntry::Key(key) => keys.push(key),
+                    JsonStringifyReplacerEntry::Ignored => {}
+                }
+            }
+            Some(keys)
         }
         _ => None,
     }
+}
+
+fn is_json_stringify_side_effect_free_static_value(value: &ResolvedExpr) -> bool {
+    match value {
+        ResolvedExpr::Number(_)
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined => true,
+        ResolvedExpr::Unary { op, expr } if *op == UnaryOp::Negate => {
+            matches!(expr.as_ref(), ResolvedExpr::Number(_))
+        }
+        ResolvedExpr::Object(props) => props
+            .iter()
+            .all(|(_, value)| is_json_stringify_side_effect_free_static_value(value)),
+        ResolvedExpr::Array(elements) => elements
+            .iter()
+            .all(is_json_stringify_side_effect_free_static_value),
+        _ => false,
+    }
+}
+
+fn is_ignored_json_stringify_replacer_ident(name: &str) -> bool {
+    matches!(name, "Symbol" | "Number" | "String" | "Boolean" | "Object")
+}
+
+fn is_ignored_json_stringify_replacer_call(callee: &ResolvedExpr, args: &[ResolvedExpr]) -> bool {
+    matches!(callee, ResolvedExpr::Ident(name) if name == "Symbol")
+        && args.iter().all(is_json_stringify_primitive_space_arg)
 }
 
 fn should_ignore_json_stringify_space(
