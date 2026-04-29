@@ -180,7 +180,7 @@ result: pass
 
 Remaining scope: class-method lexical capture environments are still not implemented, so the issue remains open as PROGRESS rather than DONE.
 
-### Progress note: 2026-04-30 child-019dda15 issue-289
+### Progress note: 2026-04-29 child-019dda15 issue-289
 
 Implemented the smallest validated class-method lexical capture slice: class
 methods that read immutable outer locals now carry those locals as hidden
