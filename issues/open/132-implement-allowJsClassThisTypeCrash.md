@@ -206,8 +206,8 @@ Duplicate candidates:
     "reason": "same feature label, title overlap"
   },
   {
-    "state": "open",
-    "path": "issues/open/062e-function-closures.md",
+    "state": "done",
+    "path": "issues/done/062e-function-closures.md",
     "title": "Implement function closures",
     "reason": "same feature label, title overlap"
   },

@@ -14,17 +14,17 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
-| frontend | 191 | 129 | 62 |
+| frontend | 191 | 128 | 63 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 62 | 12 | 50 |
+| runtime | 62 | 11 | 51 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 289 | 144 | 145 |
+| total | 289 | 142 | 147 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -40,7 +40,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 251 | Implement destructuring binding runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Parsed destructuring binding patterns are accepted for AST/dump coverage, but name resolution, lowering, and runtime ... |
 | 253 | Implement optional chaining runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Issue 246 classifies `obj?.x`, `obj?.[key]`, and `fn?.()` in the frontend parser, but name resolution currently repor... |
@@ -62,7 +61,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics |
 | 062 | Implement function support | feature | frontend/semantics | class: blocked | Implement function support |
-| 062g | Define and implement heap closure object ABI and rooting | feature | runtime/abi | class: blocked | Define and implement heap closure object ABI and rooting |
 | 064 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
 | 066 | Implement RegExp literal support | spike | runtime/builtins | class: triage-needed | Implement RegExp literal support |
 | 067 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
@@ -277,7 +275,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | see `issues/done/062b-dynamic-function-constructor-diagnostics.md` |
 | 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | see `issues/done/062c-ordinary-function-declarations-and-calls.md` |
 | 062d | Implement function this and arguments semantics | feature | frontend/semantics | see `issues/done/062d-function-this-and-arguments.md` |
+| 062e | Implement function closures | feature | frontend/semantics | see `issues/done/062e-function-closures.md` |
 | 062f | Implement function object metadata | feature | frontend/semantics | see `issues/done/062f-function-object-metadata.md` |
+| 062g | Define and implement heap closure object ABI and rooting | feature | runtime/abi | see `issues/done/062g-heap-closure-object-abi-and-rooting.md` |
 | 063 | Implement function resolution | feature | frontend/resolver | see `issues/done/063-implement-function-resolution.md` |
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
 | 065 | Implement parser syntax extensions | feature | frontend/syntax | see `issues/done/065-implement-parser-syntax.md` |
