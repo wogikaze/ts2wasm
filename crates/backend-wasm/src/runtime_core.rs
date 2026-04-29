@@ -12,6 +12,8 @@ const CLOSURE_SENTINEL: i32 = -2;
 const CLOSURE_CAPTURE_COUNT_OFFSET: u32 = 8;
 const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
+const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
+const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
 
 impl WatEmitter<'_> {
     pub(super) fn emit_read_stdin_bytes(&self, wat: &mut String) {
@@ -1647,6 +1649,7 @@ impl WatEmitter<'_> {
     (local $i i32)
     (local $entry_ptr i32)
     (local $proto i32)
+    (local $private_count i32)
     (local.set $count (i32.load (local.get $payload)))
     (if (i32.eq (local.get $count) (i32.const {closure_sentinel}))
       (then
@@ -1686,7 +1689,25 @@ impl WatEmitter<'_> {
         (call $gc_mark_value
           (i32.load (i32.add (local.get $entry_ptr) (i32.const {object_value_offset}))))
         (local.set $i (i32.add (local.get $i) (i32.const 1)))
-        (br $scan))))
+        (br $scan)))
+    (local.set $private_count
+      (i32.load
+        (i32.add
+          (i32.sub (local.get $payload) (i32.const {gc_header_size}))
+          (i32.const {gc_reserved_offset}))))
+    (local.set $i (i32.const 0))
+    (block $private_done
+      (loop $private_scan
+        (br_if $private_done (i32.ge_u (local.get $i) (local.get $private_count)))
+        (call $gc_mark_value
+          (i32.load
+            (i32.add
+              (local.get $payload)
+              (i32.add
+                (i32.const {private_slots_offset})
+                (i32.mul (local.get $i) (i32.const {private_slot_size}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $private_scan))))
 
   (func $gc_sweep
     (local $cursor i32)
@@ -1782,6 +1803,9 @@ impl WatEmitter<'_> {
             object_entries_offset = Layout::OBJECT_ENTRIES_OFFSET,
             object_entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             object_value_offset = Layout::OBJECT_VALUE_OFFSET,
+            private_slots_offset = Layout::OBJECT_HEADER_SIZE
+                + (CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * Layout::OBJECT_ENTRY_SIZE),
+            private_slot_size = PRIVATE_FIELD_SLOT_SIZE,
             heap_number_sentinel = -1,
             closure_sentinel = CLOSURE_SENTINEL,
             closure_capture_count_offset = CLOSURE_CAPTURE_COUNT_OFFSET,
