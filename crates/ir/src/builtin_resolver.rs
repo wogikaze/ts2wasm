@@ -1299,22 +1299,61 @@ fn bigint_from_i64(value: i64) -> BigIntConst {
 
 fn bigint_from_string_builtin(value: &str, span: Span) -> Result<BigIntConst, Diagnostic> {
     let trimmed = value.trim();
-    let (sign, digits) = if let Some(digits) = trimmed.strip_prefix('-') {
-        (-1, digits)
-    } else if let Some(digits) = trimmed.strip_prefix('+') {
-        (1, digits)
-    } else {
-        (1, trimmed)
-    };
-    if digits.is_empty() || !digits.bytes().all(|byte| byte.is_ascii_digit()) {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-262: BigInt(string) currently supports decimal integer string literals"
-                .to_owned(),
-            span: Some(span),
-        });
+    if trimmed.is_empty() {
+        return Ok(BigIntConst::zero());
     }
-    Ok(BigIntConst::from_decimal(sign, digits))
+    let (sign, explicit_sign, digits) = if let Some(digits) = trimmed.strip_prefix('-') {
+        (-1, true, digits)
+    } else if let Some(digits) = trimmed.strip_prefix('+') {
+        (1, true, digits)
+    } else {
+        (1, false, trimmed)
+    };
+
+    let (radix, digits) = if let Some(digits) = digits
+        .strip_prefix("0b")
+        .or_else(|| digits.strip_prefix("0B"))
+    {
+        (2_u32, digits)
+    } else if let Some(digits) = digits
+        .strip_prefix("0o")
+        .or_else(|| digits.strip_prefix("0O"))
+    {
+        (8_u32, digits)
+    } else if let Some(digits) = digits
+        .strip_prefix("0x")
+        .or_else(|| digits.strip_prefix("0X"))
+    {
+        (16_u32, digits)
+    } else {
+        (10_u32, digits)
+    };
+
+    if (explicit_sign && radix != 10) || digits.is_empty() {
+        return Err(bigint_string_diagnostic(span));
+    }
+    let mut decimal_digits = vec![0_u8];
+    for ch in digits.chars() {
+        let Some(digit) = ch.to_digit(radix) else {
+            return Err(bigint_string_diagnostic(span));
+        };
+        decimal_mul_add(&mut decimal_digits, radix as u8, digit as u8);
+    }
+    trim_decimal_zeroes(&mut decimal_digits);
+    let decimal = decimal_digits
+        .iter()
+        .map(|digit| char::from(b'0' + *digit))
+        .collect::<String>();
+    Ok(BigIntConst::from_decimal(sign, &decimal))
+}
+
+fn bigint_string_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-262: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals"
+            .to_owned(),
+        span: Some(span),
+    }
 }
 
 fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {

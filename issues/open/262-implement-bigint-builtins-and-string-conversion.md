@@ -35,10 +35,10 @@ Supported BigInt builtins are resolved by `BuiltinResolver`, lowered through exp
 
 In scope:
 
-- [ ] Implement `BigInt(value)` for supported string, boolean, integer number, and BigInt inputs.
-- [ ] Implement `String(bigint)` / runtime `ToString` for BigInt without `n` suffix.
-- [ ] Implement `BigInt.asIntN` and `BigInt.asUintN` for supported integer bit widths, or split them into narrower follow-up issues if needed.
-- [ ] Add issue-linked diagnostics for unsupported BigInt builtin/coercion forms.
+- [x] Implement `BigInt(value)` for supported string, boolean, integer number, and BigInt inputs.
+- [x] Implement `String(bigint)` / runtime `ToString` for BigInt without `n` suffix.
+- [x] Implement `BigInt.asIntN` and `BigInt.asUintN` for supported integer bit widths, or split them into narrower follow-up issues if needed.
+- [x] Add issue-linked diagnostics for unsupported BigInt builtin/coercion forms.
 
 Out of scope:
 
@@ -155,7 +155,26 @@ mise run check issues
 Remaining issue-262 work at that point:
 
 - Implement `BigInt.asIntN` / `BigInt.asUintN` semantics.
-- Broaden `BigInt(string)` beyond the current decimal integer string subset if full ECMAScript string-to-BigInt parsing is required.
+- Broaden `BigInt(string)` beyond the current literal-safe StringToBigInt subset if full ECMAScript string parsing is required.
+
+2026-04-29 progress slice for `BigInt(string)` radix forms:
+
+- Broadened resolver-side `BigInt("<string>")` folding from decimal-only strings to unsigned binary (`0b`/`0B`), octal (`0o`/`0O`), and hexadecimal (`0x`/`0X`) integer string literals.
+- Matched Node for empty/whitespace-only string inputs by folding them to `0n`.
+- Kept explicit signs decimal-only so `BigInt("-0x10")` and other invalid signed non-decimal strings stay on issue-262 diagnostics instead of being silently accepted.
+- Extended `fixtures/core-semantics/bigint-builtins-string-conversion.ts` with binary/octal/hex/empty string cases, and split invalid string coverage so malformed decimal and signed non-decimal strings both report issue-262.
+
+Validation recorded in the child branch:
+
+```sh
+cargo nextest run -E 'test(bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm) or test(bigint_builtin_unsupported_forms_report_issue_262)'
+PASS
+```
+
+Remaining issue-262 work after this slice:
+
+- Runtime/helper support for nonliteral `BigInt.asIntN` / `BigInt.asUintN` inputs if required beyond the current literal-safe subset.
+- Broader StringToBigInt compatibility edge cases outside the current literal-safe subset.
 
 2026-04-29 progress slice for `BigInt.asIntN` / `BigInt.asUintN`:
 

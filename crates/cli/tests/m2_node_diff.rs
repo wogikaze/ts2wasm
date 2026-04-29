@@ -229,6 +229,7 @@ fn bigint_builtin_unsupported_forms_report_issue_262() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts",
+        "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts",
         "fixtures/core-semantics/bigint-new-unsupported.ts",
     ] {
