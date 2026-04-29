@@ -14,7 +14,7 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
-| frontend | 188 | 133 | 55 |
+| frontend | 190 | 134 | 56 |
 | ir | 6 | 0 | 6 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -24,7 +24,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 277 | 145 | 132 |
+| total | 279 | 146 | 133 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,10 +45,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 062g | Define and implement heap closure object ABI and rooting | feature | runtime/abi | design-ready | P1 |  | Returned closures cannot be represented by the current devirtualized |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 246 | Implement optional chaining parser support | feature | frontend/syntax | implementation-ready | P2 |  | The lexer recognizes `?.`, but the parser does not accept optional member access, so `obj?.x` reports `parser-syntax`. |
-| 247 | Implement destructuring binding pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Array and object binding patterns in declarations are rejected before AST construction, so destructuring syntax repor... |
 | 248 | Implement private class element parser support | feature | frontend/syntax | implementation-ready | P2 |  | The lexer rejects `#` before the class parser can classify private fields or methods, so private class syntax reports... |
 | 249 | Implement class static block parser support | feature | frontend/syntax | implementation-ready | P2 |  | Class body parsing does not model `static { ... }` as `ClassStaticBlock`, so static initialization blocks are not rep... |
 | 250 | Design BigInt runtime value support | feature | runtime/semantics | design-ready | P2 |  | BigInt literals now parse as explicit AST nodes, but runtime representation, operations, equality, and builtin behavi... |
+| 251 | Implement destructuring binding runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Parsed destructuring binding patterns are accepted for AST/dump coverage, but name resolution, lowering, and runtime ... |
+| 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Issue 247 intentionally covers binding patterns only; assignment targets such as `({ x } = obj)` and `[a] = arr` stil... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -332,6 +333,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 243 | Implement numeric literal separator parser support | feature | frontend/syntax | see `issues/done/243-implement-numeric-literal-separator-parser.md` |
 | 244 | Implement BigInt literal parser classification | feature | frontend/syntax | see `issues/done/244-implement-bigint-literal-parser-classification.md` |
 | 245 | Implement nullish coalescing frontend support | feature | frontend/semantics | see `issues/done/245-implement-nullish-coalescing-frontend.md` |
+| 247 | Implement destructuring binding pattern parser support | feature | frontend/syntax | see `issues/done/247-implement-destructuring-binding-pattern-parser.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
