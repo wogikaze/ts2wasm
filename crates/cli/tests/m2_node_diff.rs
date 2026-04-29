@@ -135,6 +135,11 @@ fn bigint_runtime_add_sub_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_runtime_mul_div_rem_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-mul-div-rem.ts");
+}
+
+#[test]
 fn bigint_runtime_large_add_reports_issue_260() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-runtime-large-unsupported.ts",
@@ -147,6 +152,30 @@ fn bigint_runtime_large_sub_reports_issue_260() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-runtime-large-sub-unsupported.ts",
         "issue-260: dynamic BigInt runtime arithmetic is limited to signed-i64-backed first-limb values in this slice",
+    );
+}
+
+#[test]
+fn bigint_runtime_large_mul_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-large-mul-unsupported.ts",
+        "issue-260: dynamic BigInt runtime arithmetic is limited to signed-i64-backed first-limb values in this slice",
+    );
+}
+
+#[test]
+fn bigint_runtime_div_zero_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-div-zero-unsupported.ts",
+        "issue-260: BigInt division by zero runtime throw is not implemented",
+    );
+}
+
+#[test]
+fn bigint_runtime_rem_zero_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-rem-zero-unsupported.ts",
+        "issue-260: BigInt division by zero runtime throw is not implemented",
     );
 }
 

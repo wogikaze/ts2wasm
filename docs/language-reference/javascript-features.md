@@ -137,7 +137,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `array` | ES1 | heap object | 実装済み (dense) | - | - |
 | `function` | ES1 | closure object | 実装済み (basic) | - | - |
 | `symbol` | ES6 | interned value | 未実装 | P2 | - |
-| `bigint` | ES2020 | heap object | literal runtime values 実装済み（decimal/binary/octal/hex, `console.log`, `typeof`, literal `String`, truthiness）。literal arithmetic は compile-time folding 対応。dynamic unary minus と `+` / `-` は proven-safe signed-i64-backed runtime slice のみ対応し、out-of-slice dynamic 値は issue-260 diagnostic。dynamic `*` / `/` / `%` と full multi-limb arithmetic 260 / comparison 261 / broader builtin 262 は未実装 | P2 | 260-262 |
+| `bigint` | ES2020 | heap object | literal runtime values 実装済み（decimal/binary/octal/hex, `console.log`, `typeof`, literal `String`, truthiness）。literal arithmetic は compile-time folding 対応。dynamic unary minus と `+` / `-` / `*` / `/` / `%` は proven-safe signed-i64-backed runtime slice のみ対応し、out-of-slice dynamic 値と division/remainder by zero は issue-260 diagnostic。full multi-limb arithmetic 260 / comparison 261 / broader builtin 262 は未実装 | P2 | 260-262 |
 
 ## 式と演算子
 
