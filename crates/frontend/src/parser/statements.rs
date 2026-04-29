@@ -798,12 +798,12 @@ impl Parser {
         self.expect(TokenKind::LeftParen)?;
         let condition = self.expression()?;
         self.expect(TokenKind::RightParen)?;
-        let then_body = self.block()?;
+        let then_body = self.statement_body()?;
         let else_body = if self.consume(TokenKind::Else) {
             if matches!(self.peek(), Some(Token::If)) {
                 vec![self.if_statement()?]
             } else {
-                self.block()?
+                self.statement_body()?
             }
         } else {
             Vec::new()
@@ -1806,5 +1806,13 @@ impl Parser {
             statements.push(self.statement()?);
         }
         Ok(statements)
+    }
+
+    fn statement_body(&mut self) -> Result<Vec<Stmt>, Diagnostic> {
+        if matches!(self.peek(), Some(Token::LeftBrace)) {
+            self.block()
+        } else {
+            Ok(vec![self.statement()?])
+        }
     }
 }
