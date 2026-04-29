@@ -1392,19 +1392,24 @@ impl<'a> Lexer<'a> {
 
     fn number(&mut self) -> Result<SpannedToken, Diagnostic> {
         let start = self.cursor;
-        while matches!(self.peek_char(), Some('0'..='9')) {
-            self.advance_char();
-        }
-        let value = self.source[start..self.cursor]
-            .parse::<i32>()
-            .map_err(|error| Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!("invalid number literal: {error}"),
-                span: Some(Span {
-                    start,
-                    end: self.cursor,
-                }),
-            })?;
+        let (digits, radix) = if self.peek_char() == Some('0') {
+            match self.peek_next_char() {
+                Some('b' | 'B') => self.radix_number_digits(start, 2, "binary")?,
+                Some('o' | 'O') => self.radix_number_digits(start, 8, "octal")?,
+                Some('x' | 'X') => self.radix_number_digits(start, 16, "hexadecimal")?,
+                _ => self.decimal_number_digits(start)?,
+            }
+        } else {
+            self.decimal_number_digits(start)?
+        };
+        let value = i32::from_str_radix(&digits, radix).map_err(|error| Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("invalid number literal: {error}"),
+            span: Some(Span {
+                start,
+                end: self.cursor,
+            }),
+        })?;
         Ok(SpannedToken {
             kind: Token::Number(value),
             span: Span {
@@ -1412,6 +1417,123 @@ impl<'a> Lexer<'a> {
                 end: self.cursor,
             },
         })
+    }
+
+    fn decimal_number_digits(&mut self, start: usize) -> Result<(String, u32), Diagnostic> {
+        let mut digits = String::new();
+        let mut previous_was_separator = false;
+        let mut saw_separator = false;
+
+        while let Some(ch) = self.peek_char() {
+            match ch {
+                '0'..='9' => {
+                    digits.push(ch);
+                    previous_was_separator = false;
+                    self.advance_char();
+                }
+                '_' => {
+                    if digits == "0" {
+                        self.advance_char();
+                        return Err(self.invalid_numeric_separator(
+                            start,
+                            "numeric separator can not be used after leading 0",
+                        ));
+                    }
+                    if previous_was_separator {
+                        self.advance_char();
+                        return Err(self.invalid_numeric_separator(
+                            start,
+                            "only one underscore is allowed as numeric separator",
+                        ));
+                    }
+                    previous_was_separator = true;
+                    saw_separator = true;
+                    self.advance_char();
+                }
+                _ => break,
+            }
+        }
+
+        if saw_separator && previous_was_separator {
+            return Err(self.invalid_numeric_separator(
+                start,
+                "numeric separators are not allowed at the end of numeric literals",
+            ));
+        }
+
+        Ok((digits, 10))
+    }
+
+    fn radix_number_digits(
+        &mut self,
+        start: usize,
+        radix: u32,
+        label: &str,
+    ) -> Result<(String, u32), Diagnostic> {
+        self.advance_char();
+        self.advance_char();
+
+        let mut digits = String::new();
+        let mut previous_was_separator = false;
+        let mut saw_digit = false;
+        while let Some(ch) = self.peek_char() {
+            if ch == '_' {
+                if !saw_digit {
+                    self.advance_char();
+                    return Err(self.invalid_numeric_separator(
+                        start,
+                        "numeric separators are not allowed after numeric literal prefixes",
+                    ));
+                }
+                if previous_was_separator {
+                    self.advance_char();
+                    return Err(self.invalid_numeric_separator(
+                        start,
+                        "only one underscore is allowed as numeric separator",
+                    ));
+                }
+                previous_was_separator = true;
+                self.advance_char();
+            } else if ch.is_digit(radix) {
+                digits.push(ch);
+                saw_digit = true;
+                previous_was_separator = false;
+                self.advance_char();
+            } else {
+                break;
+            }
+        }
+
+        if !saw_digit {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("invalid {label} number literal: expected digit after prefix"),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+            });
+        }
+
+        if previous_was_separator {
+            return Err(self.invalid_numeric_separator(
+                start,
+                "numeric separators are not allowed at the end of numeric literals",
+            ));
+        }
+
+        Ok((digits, radix))
+    }
+
+    fn invalid_numeric_separator(&self, start: usize, message: &str) -> Diagnostic {
+        Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("invalid numeric separator: {message}"),
+            span: Some(Span {
+                start,
+                end: self.cursor,
+            }),
+        }
     }
 
     fn string(&mut self) -> Result<SpannedToken, Diagnostic> {

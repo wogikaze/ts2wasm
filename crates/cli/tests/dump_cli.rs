@@ -37,6 +37,24 @@ fn run_dump(args: &[&str], source: &str) -> String {
     String::from_utf8(output.stdout).expect("dump output should be valid UTF-8")
 }
 
+fn run_dump_error(args: &[&str], source: &str) -> String {
+    let path = write_temp_source("cli-error", source);
+    let output = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("dump")
+        .args(args)
+        .arg(&path)
+        .output()
+        .expect("ts2wasm dump should execute");
+
+    assert!(
+        !output.status.success(),
+        "dump unexpectedly succeeded:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+
+    String::from_utf8(output.stderr).expect("dump stderr should be valid UTF-8")
+}
+
 fn fixture_path(fixture: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -73,6 +91,27 @@ fn dump_ast_unparse_emits_pseudo_source() {
     let output = run_dump(&["--ast", "--unparse"], "let x = 1 + 2;");
 
     assert_eq!(output, "let x = (1 + 2);\n");
+}
+
+#[test]
+fn dump_ast_unparse_normalizes_numeric_literal_separators() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let decimal = 1_000; let binary = 0b1010_0101; let octal = 0o7_7; let hex = 0xF_F;",
+    );
+
+    assert_eq!(
+        output,
+        "let decimal = 1000;\nlet binary = 165;\nlet octal = 63;\nlet hex = 255;\n"
+    );
+}
+
+#[test]
+fn dump_ast_reports_invalid_numeric_literal_separator() {
+    let stderr = run_dump_error(&["--ast", "--unparse"], "let value = 1__0;");
+
+    assert!(stderr.contains("[UnsupportedSyntax]"), "{stderr}");
+    assert!(stderr.contains("numeric separator"), "{stderr}");
 }
 
 #[test]
