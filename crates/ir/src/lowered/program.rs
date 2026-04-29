@@ -1017,6 +1017,7 @@ fn collection_method_runtime_fn(class_name: &str, method: &str) -> Option<&'stat
         ("Set", "add") => Some("SetAdd"),
         ("Set", "has") => Some("SetHas"),
         ("Set", "delete") => Some("SetDelete"),
+        ("Set", "clear") => Some("SetClear"),
         ("RegExp", "test") => Some("RegExpTest"),
         ("RegExp", "exec") => Some("RegExpMatch"),
         _ => None,

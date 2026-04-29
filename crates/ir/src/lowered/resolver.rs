@@ -830,6 +830,19 @@ impl<'a> Resolver<'a> {
                 {
                     return self.lower_function_metadata_property(name, key, *span);
                 }
+                if key == "size"
+                    && let ResolvedExpr::Ident(receiver_name) = object.as_ref()
+                    && let Ok(obj_local) = self.resolve_local(receiver_name)
+                    && self
+                        .local_classes
+                        .get(&obj_local)
+                        .is_some_and(|class_name| class_name == "Set")
+                {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "SetSize".to_owned(),
+                        args: vec![LoweredExpr::Local(obj_local)],
+                    });
+                }
                 Ok(LoweredExpr::PropertyGet {
                     obj: Box::new(self.lower_expr(object)?),
                     key: key.clone(),
