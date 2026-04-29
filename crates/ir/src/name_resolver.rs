@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt};
+use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
 
 use crate::binding_pattern::{is_binding_pattern_text, parse_binding_pattern};
 
@@ -923,19 +923,35 @@ impl NameResolver {
         } else {
             None
         }?;
-        let Expr::Ident { name, .. } = other else {
-            return None;
-        };
-        if !matches!(name.as_str(), "NaN" | "Infinity") || self.is_user_declared(name) {
-            return None;
-        }
+        let model_value = self.bigint_number_model_gap_value(other)?;
         Some(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!(
-                "issue-281: BigInt/Number comparison with `{name}` requires broader number-model support"
+                "issue-281: BigInt/Number comparison with `{model_value}` requires broader number-model support"
             ),
             span: Some(span),
         })
+    }
+
+    fn bigint_number_model_gap_value(&self, expr: &Expr) -> Option<String> {
+        match expr {
+            Expr::Ident { name, .. }
+                if matches!(name.as_str(), "NaN" | "Infinity") && !self.is_user_declared(name) =>
+            {
+                Some(name.clone())
+            }
+            Expr::Unary { op, expr, .. } if matches!(op, UnaryOp::Plus | UnaryOp::Negate) => {
+                let Expr::Ident { name, .. } = expr.as_ref() else {
+                    return None;
+                };
+                if !matches!(name.as_str(), "NaN" | "Infinity") || self.is_user_declared(name) {
+                    return None;
+                }
+                let sign = if *op == UnaryOp::Negate { "-" } else { "+" };
+                Some(format!("{sign}{name}"))
+            }
+            _ => None,
+        }
     }
 
     fn is_unshadowed_test262_ishtmldda_member(&self, object: &Expr, property: &str) -> bool {
