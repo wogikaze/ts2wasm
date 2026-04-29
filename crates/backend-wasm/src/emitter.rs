@@ -488,6 +488,9 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::ArrowFn { .. } => {}
             LoweredExpr::Unary { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::Assign { expr, .. } => self.collect_expr_strings(expr),
+            LoweredExpr::EnvCellNew(expr) => self.collect_expr_strings(expr),
+            LoweredExpr::EnvCellGet(_) => {}
+            LoweredExpr::EnvCellSet { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::LogicalAssign { expr, .. } => self.collect_expr_strings(expr),
             LoweredExpr::LogicalPropertyAssign { key, expr, .. } => {
                 self.intern_string(key);
@@ -1000,6 +1003,13 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::Assign { expr, .. } => {
                 Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
+            LoweredExpr::EnvCellNew(expr) => {
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
+            }
+            LoweredExpr::EnvCellGet(_) => {}
+            LoweredExpr::EnvCellSet { expr, .. } => {
+                Self::collect_class_prototypes_from_expr(expr, prototypes);
+            }
             LoweredExpr::LogicalAssign { expr, .. } => {
                 Self::collect_class_prototypes_from_expr(expr, prototypes);
             }
@@ -1115,10 +1125,13 @@ impl<'a> WatEmitter<'a> {
                 }
             }
             LoweredExpr::Assign { expr, .. }
+            | LoweredExpr::EnvCellNew(expr)
+            | LoweredExpr::EnvCellSet { expr, .. }
             | LoweredExpr::LogicalAssign { expr, .. }
             | LoweredExpr::LogicalPropertyAssign { expr, .. } => {
                 Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
             }
+            LoweredExpr::EnvCellGet(_) => {}
             LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
                 Self::collect_builtin_error_prototypes_from_expr(object, prototypes);
                 Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);

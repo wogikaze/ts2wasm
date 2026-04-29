@@ -292,6 +292,14 @@ impl RuntimeLinkPlan {
             LoweredExpr::Assign { expr, .. } => {
                 self.collect_required_runtime_expr(expr);
             }
+            LoweredExpr::EnvCellNew(expr) => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+                self.collect_required_runtime_expr(expr);
+            }
+            LoweredExpr::EnvCellGet(_) => {}
+            LoweredExpr::EnvCellSet { expr, .. } => {
+                self.collect_required_runtime_expr(expr);
+            }
             LoweredExpr::LogicalAssign { op, expr, .. } => {
                 self.collect_required_runtime_expr(expr);
                 if matches!(op, LoweredLogicalAssignOp::And | LoweredLogicalAssignOp::Or) {

@@ -955,6 +955,7 @@ fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/this-receiver-method.ts",
         "fixtures/core-semantics/this-receiver-nested-method-boundary.ts",
         "fixtures/core-semantics/class-method-immutable-outer-capture.ts",
+        "fixtures/core-semantics/class-method-mutable-outer-capture.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

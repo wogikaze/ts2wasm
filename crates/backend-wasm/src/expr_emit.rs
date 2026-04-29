@@ -116,6 +116,39 @@ impl WatEmitter<'_> {
             LoweredExpr::Local(local_id) => {
                 wat.push_str(&format!("{pad}(local.get {})\n", local_index(*local_id)))
             }
+            LoweredExpr::EnvCellNew(expr) => {
+                self.emit_expr(wat, expr, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
+                wat.push_str(&format!(
+                    "{pad}(local.set {} (call {} (i32.const 4)))\n",
+                    frame.heap_base_tmp(),
+                    RuntimeFn::AllocHeap.symbol(),
+                ));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+                wat.push_str(&format!(
+                    "{pad}(i32.store (local.get {}) (local.get {}))\n",
+                    frame.heap_base_tmp(),
+                    frame.heap_value_tmp(),
+                ));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
+            }
+            LoweredExpr::EnvCellGet(cell) => {
+                wat.push_str(&format!(
+                    "{pad}(i32.load (local.get {}))\n",
+                    local_index(*cell)
+                ));
+            }
+            LoweredExpr::EnvCellSet { cell, expr } => {
+                self.emit_expr(wat, expr, indent, frame);
+                wat.push_str(&format!("{pad}(local.tee {})\n", frame.heap_value_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
+                wat.push_str(&format!(
+                    "{pad}(i32.store (local.get {}) (local.get {}))\n",
+                    local_index(*cell),
+                    frame.heap_value_tmp(),
+                ));
+            }
             LoweredExpr::PropertyDelete { object, key } => {
                 self.emit_expr(wat, object, indent, frame);
                 let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
@@ -1867,8 +1900,11 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         LoweredExpr::Unary { expr, .. }
         | LoweredExpr::GetLength(expr)
         | LoweredExpr::Assign { expr, .. }
+        | LoweredExpr::EnvCellNew(expr)
+        | LoweredExpr::EnvCellSet { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_may_collect(expr),
+        LoweredExpr::EnvCellGet(_) => false,
         LoweredExpr::LogicalMemberAssign { object, expr, .. } => {
             expr_may_collect(object) || expr_may_collect(expr)
         }
@@ -1947,8 +1983,11 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         LoweredExpr::Unary { expr, .. }
         | LoweredExpr::GetLength(expr)
         | LoweredExpr::Assign { expr, .. }
+        | LoweredExpr::EnvCellSet { expr, .. }
         | LoweredExpr::LogicalAssign { expr, .. }
         | LoweredExpr::LogicalPropertyAssign { expr, .. } => expr_uses_caller_backend_tmp(expr),
+        LoweredExpr::EnvCellNew(_) => true,
+        LoweredExpr::EnvCellGet(_) => false,
         LoweredExpr::LogicalMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedMemberAssign { .. } => true,
         LoweredExpr::LogicalComputedPropertyAssign { .. } => true,

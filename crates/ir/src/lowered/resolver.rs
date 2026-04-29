@@ -2,6 +2,9 @@ struct Resolver<'a> {
     function_ids: &'a HashMap<String, FuncId>,
     function_signatures: &'a HashMap<FuncId, FunctionSignature>,
     class_method_captures: &'a HashMap<FuncId, Vec<String>>,
+    class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
+    env_cell_names: HashSet<String>,
+    env_cell_locals: HashSet<LocalId>,
     scopes: Vec<HashMap<String, LocalId>>,
     next_local_id: usize,
     locals: Vec<LocalId>,
@@ -48,6 +51,8 @@ impl<'a> Resolver<'a> {
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         class_method_captures: &'a HashMap<FuncId, Vec<String>>,
+        class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
+        env_cell_names: &HashSet<String>,
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
         next_func_id: usize,
@@ -58,6 +63,9 @@ impl<'a> Resolver<'a> {
             function_ids,
             function_signatures,
             class_method_captures,
+            class_method_mutable_captures,
+            env_cell_names: env_cell_names.clone(),
+            env_cell_locals: HashSet::new(),
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -88,6 +96,8 @@ impl<'a> Resolver<'a> {
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         class_method_captures: &'a HashMap<FuncId, Vec<String>>,
+        class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
+        env_cell_names: &HashSet<String>,
         params: &[String],
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
@@ -101,6 +111,9 @@ impl<'a> Resolver<'a> {
             function_ids,
             function_signatures,
             class_method_captures,
+            class_method_mutable_captures,
+            env_cell_names: env_cell_names.clone(),
+            env_cell_locals: HashSet::new(),
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -144,6 +157,9 @@ impl<'a> Resolver<'a> {
                 .last_mut()
                 .expect("function scope must exist")
                 .insert(param.clone(), local_id);
+            if resolver.env_cell_names.contains(param) {
+                resolver.env_cell_locals.insert(local_id);
+            }
             if let Some(current_class) = current_class
                 && param == "this"
             {
@@ -238,6 +254,12 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.lower_expr(expr)?
                 };
+                let lowered = if self.env_cell_names.contains(name) {
+                    self.env_cell_locals.insert(local_id);
+                    LoweredExpr::EnvCellNew(Box::new(lowered))
+                } else {
+                    lowered
+                };
                 if let LoweredExpr::ArrowFn {
                     func_id, captures, ..
                 } = &lowered
@@ -306,7 +328,14 @@ impl<'a> Resolver<'a> {
                     self.local_classes.remove(&local_id);
                 }
                 self.update_regexp_literal_local(local_id, expr);
-                Ok(LoweredStmt::Assign(local_id, lowered))
+                if self.env_cell_locals.contains(&local_id) {
+                    Ok(LoweredStmt::Expr(LoweredExpr::EnvCellSet {
+                        cell: local_id,
+                        expr: Box::new(lowered),
+                    }))
+                } else {
+                    Ok(LoweredStmt::Assign(local_id, lowered))
+                }
             }
             ResolvedStmt::Expr(expr) => {
                 if let Some(lowered) = self.lower_direct_iife_stmt(expr)? {
@@ -529,6 +558,7 @@ impl<'a> Resolver<'a> {
                 }),
             },
             ResolvedExpr::Ident(name) => match self.resolve_local(name) {
+                Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local)),
                 Ok(local) => Ok(LoweredExpr::Local(local)),
                 Err(_) if name == "arguments" => Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
@@ -653,10 +683,12 @@ impl<'a> Resolver<'a> {
             }
             ResolvedExpr::Assign { name, expr } => {
                 let local = self.resolve_local(name)?;
-                Ok(LoweredExpr::Assign {
-                    local,
-                    expr: Box::new(self.lower_expr(expr)?),
-                })
+                let expr = Box::new(self.lower_expr(expr)?);
+                if self.env_cell_locals.contains(&local) {
+                    Ok(LoweredExpr::EnvCellSet { cell: local, expr })
+                } else {
+                    Ok(LoweredExpr::Assign { local, expr })
+                }
             }
             ResolvedExpr::LogicalAssign { name, op, expr } => {
                 let local = self.resolve_local(name)?;
@@ -2326,6 +2358,11 @@ impl<'a> Resolver<'a> {
         let Some(captures) = self.class_method_captures.get(&method_id) else {
             return Ok(());
         };
+        let mutable_captures = self
+            .class_method_mutable_captures
+            .get(&method_id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
 
         for capture in captures {
             let local = self.resolve_local(capture).map_err(|_| Diagnostic {
@@ -2335,6 +2372,15 @@ impl<'a> Resolver<'a> {
                 ),
                 span: None,
             })?;
+            if mutable_captures.contains(capture) && !self.env_cell_locals.contains(&local) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-301: mutable class method capture `{capture}` is not available as an environment cell at this call site"
+                    ),
+                    span: None,
+                });
+            }
             lowered_args.push(LoweredExpr::Local(local));
         }
 
@@ -2517,6 +2563,8 @@ impl<'a> Resolver<'a> {
             self.function_ids,
             self.function_signatures,
             self.class_method_captures,
+            self.class_method_mutable_captures,
+            &self.env_cell_names,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             LowerFunctionOptions {
@@ -2610,6 +2658,8 @@ impl<'a> Resolver<'a> {
             self.function_ids,
             self.function_signatures,
             self.class_method_captures,
+            self.class_method_mutable_captures,
+            &self.env_cell_names,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             LowerFunctionOptions {
