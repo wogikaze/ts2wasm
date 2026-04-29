@@ -176,10 +176,7 @@ impl WatEmitter<'_> {
               (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset}))
               (local.get $ptr)
               (local.get $len))
-            (i32.store8
-              (i32.add (local.get $ptr) (local.get $len))
-              (i32.const {ascii_n}))
-            (return (i32.add (local.get $len) (i32.const {one})))))
+            (return (local.get $len))))
         (if (i32.eq (i32.load (local.get $obj)) (i32.const {heap_number_sentinel}))
           (then
             (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len_offset}))))
@@ -247,7 +244,6 @@ impl WatEmitter<'_> {
             false_len = RuntimeString::FALSE.len() as i32,
             true_len = RuntimeString::TRUE.len() as i32,
             ascii_zero = RuntimeConst::ASCII_ZERO,
-            ascii_n = b'n',
             ascii_minus = RuntimeConst::ASCII_MINUS,
             ten = RuntimeConst::TEN,
             one = RuntimeConst::ONE,
@@ -341,14 +337,39 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $log (param $v i32)
+    (local $obj i32)
     (local $len i32)
     (local.set $len (call $value_to_string_into (local.get $v) (i32.const {scratch})))
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then
+            (i32.store8
+              (i32.add (i32.const {scratch}) (local.get $len))
+              (i32.const {ascii_n}))
+            (local.set $len (i32.add (local.get $len) (i32.const {one})))))))
     (call $write (i32.const {scratch}) (local.get $len))
     (call $write (i32.const {newline}) (i32.const {one})))
   "#,
             scratch = Layout::SCRATCH_OFFSET,
             newline = newline,
             one = RuntimeConst::ONE,
+            ascii_n = b'n',
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
         ));
     }
 

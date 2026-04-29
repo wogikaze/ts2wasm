@@ -217,6 +217,23 @@ fn bigint_equality_comparison_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-builtins-string-conversion.ts");
+}
+
+#[test]
+fn bigint_builtin_unsupported_forms_report_issue_262() {
+    for fixture in [
+        "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
+        "fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts",
+        "fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts",
+        "fixtures/core-semantics/bigint-new-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, "issue-262:");
+    }
+}
+
+#[test]
 fn bigint_mixed_abstract_equality_reports_issue_261() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-mixed-abstract-equality-unsupported.ts",

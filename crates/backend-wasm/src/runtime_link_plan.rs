@@ -753,4 +753,37 @@ mod tests {
                 .contains(&RuntimeFn::BigIntCompare)
         );
     }
+
+    #[test]
+    fn bigint_builtin_string_conversion_selects_helper_deps_without_imports() {
+        let program = LoweredProgram {
+            top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                runtime_fn: "BigIntToString".to_owned(),
+                args: vec![LoweredExpr::BigIntLiteral {
+                    decimal: "10".to_owned(),
+                    sign: 1,
+                    limb_low: 10,
+                    limb_high: 0,
+                }],
+            })],
+            top_level_locals: vec![],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let plan = RuntimeLinkPlan::from_program(&program);
+
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntToString)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::MakeBigIntLiteral)
+        );
+        assert!(
+            plan.required_imports().is_empty(),
+            "BigInt string conversion must remain standalone"
+        );
+    }
 }
