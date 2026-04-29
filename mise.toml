@@ -204,3 +204,15 @@ run = "python scripts/gen-site.py && cd site && npm run build"
 [tasks."serve-site"]
 description = "Serve documentation site locally for development"
 run = "cd site && npm run dev"
+
+[tasks."gen-web-ui-data"]
+description = "Generate web UI data from test results and coverage"
+run = "python scripts/gen/web-ui-data.py"
+
+[tasks."build-web-ui"]
+description = "Build web UI for production"
+run = "cd web-ui && npm run build"
+
+[tasks."serve-web-ui"]
+description = "Serve web UI locally for development"
+run = "cd web-ui && npm run dev"
