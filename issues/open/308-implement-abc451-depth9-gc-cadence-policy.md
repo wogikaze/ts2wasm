@@ -422,6 +422,43 @@ date: 2026-04-29
 
 Issue 308 remains open. Issue 300 remains open.
 
+2026-04-29 child `019ddb50-4583-76c3-9d06-971b14a1dab1` progress:
+
+- Committed a pre-cap-exhaustion last-chance GC policy in `$alloc_heap`: when
+  the bump allocation result would exceed `MEMORY_MAX_PAGES * WASM_PAGE_SIZE`,
+  allocation now runs GC before the free-list scan and before the explicit
+  remaining-page OOM guard. This keeps `MEMORY_MAX_PAGES=185` unchanged and
+  preserves the explicit OOM trap when no reclaimed block or tail trim can
+  satisfy the allocation.
+- Added backend WAT contract coverage for the committed max-cap byte-address
+  collection condition.
+- Required depth-8 and OOM regressions still pass, but the depth-9 reducer
+  remains blocked under the committed 185-page cap:
+
+```text
+command: node /tmp/abc451-depth9-live-set-308.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-depth9-live-set-308.ts -o /tmp/abc451-depth9-live-set-308-precap.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-depth9-live-set-308-precap.wasm
+result: trapped with Exception: unreachable after 11.43s under committed 185-page policy
+date: 2026-04-29
+
+command: WASMTIME_BACKTRACE_DETAILS=1 /usr/bin/time -f 'elapsed:%e' timeout 90s wasmtime run /tmp/abc451-depth9-live-set-308-precap.wasm
+result: trapped at wasm function 24 (`$alloc_heap`) offset 0x1264 after 9.72s
+date: 2026-04-29
+
+command: wasm-objdump -d /tmp/abc451-depth9-live-set-308-precap.wasm | sed -n '/func\[24\]/,/func\[25\]/p' | rg -n "unreachable|memory.grow|i32.gt_u|i32.const 12124160|i32.sub"
+result: max-cap byte-address check appears at offset 0x10e5; trap remains the explicit remaining-page unreachable at offset 0x1264, with memory.grow following at 0x1268
+date: 2026-04-29
+```
+
+Issue 308 remains open. Issue 300 remains open.
+
 ## Completion evidence
 
 Commits:

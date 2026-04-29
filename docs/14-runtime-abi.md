@@ -314,6 +314,8 @@ allocation pressure and after the declaring function's activation has returned.
 - 現在の `memory.size` が `MEMORY_MAX_PAGES` に達しており、bump allocation
   result が現在の memory に収まらない場合は、free-list scan の前に last-chance
   GC を実行する
+- bump allocation result が `MEMORY_MAX_PAGES * WASM_PAGE_SIZE` を超える場合は、
+  free-list scan と明示 OOM trap の前に last-chance GC を実行する
 - 現在の memory に収まらない場合は bounded `memory.grow` を試みる
 
 Pseudo flow:
@@ -388,7 +390,8 @@ string alloc 時は以下の手順で行う。
 割り当てが現在のメモリサイズを超える場合、bounded `memory.grow` を試みる。
 小さい growth は `MEMORY_MAX_PAGES` に収まる範囲で最低 16 pages ずつ要求し、
 GC の直後に小刻みな `memory.grow` と sweep を繰り返す状態を避ける。
-現在の `memory.size` がすでに `MEMORY_MAX_PAGES` の場合は、`memory.grow` が
+現在の `memory.size` がすでに `MEMORY_MAX_PAGES` の場合、または bump allocation
+result が `MEMORY_MAX_PAGES * WASM_PAGE_SIZE` を超える場合は、`memory.grow` が
 失敗して trap する前に last-chance GC を実行し、直後の free-list scan で
 回収済み block を再利用できるようにする。
 Sweep が heap 末尾まで続く unmarked range を回収する場合は、free-list 登録ではなく
@@ -451,8 +454,9 @@ GC は以下のタイミングで実行:
    - threshold は GC 後に動的に調整可能
 
 2. **Max-cap last chance**: `memory.size == MEMORY_MAX_PAGES` かつ bump allocation
-   result が現在の memory に収まらない場合。これは free-list scan と OOM trap の
-   前に行い、回収可能 block を再利用できるか確認する。
+   result が現在の memory に収まらない場合、または bump allocation result が
+   `MEMORY_MAX_PAGES * WASM_PAGE_SIZE` を超える場合。これは free-list scan と
+   OOM trap の前に行い、回収可能 block を再利用できるか確認する。
 
 3. **Explicit collection**: 将来的に `gc()` API を追加可能
 
