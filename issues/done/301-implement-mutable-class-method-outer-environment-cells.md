@@ -3,12 +3,14 @@ id: 301
 title: "Implement mutable class-method outer environment cells"
 type: feature
 area: frontend/ir/runtime
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: ["289", "292"]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -50,10 +52,10 @@ does not rely on stale by-value capture semantics.
 
 In scope:
 
-- [ ] Define the mutable environment cell representation for class-method outer locals.
-- [ ] Lower outer local reads and writes through the shared cell when a class method mutates that local.
-- [ ] Preserve existing immutable hidden-parameter class-method captures.
-- [ ] Add a Node/iwasm fixture for `callCount`-style mutation.
+- [x] Define the mutable environment cell representation for class-method outer locals.
+- [x] Lower outer local reads and writes through the shared cell when a class method mutates that local.
+- [x] Preserve existing immutable hidden-parameter class-method captures.
+- [x] Add a Node/iwasm fixture for `callCount`-style mutation.
 
 Out of scope:
 
@@ -77,10 +79,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused fixture equivalent to the reduced `callCount` class method mutation prints `1` under Node and iwasm.
-- [ ] The issue-289 mutable capture diagnostic is removed or narrowed to forms still outside the implemented cell representation.
-- [ ] Existing immutable class-method capture fixture remains Node/iwasm matching.
-- [ ] Reference coverage for `language/expressions/class/dstr/meth-ary-name-iter-val.js` no longer stops on `callCount` environment mutation when earlier prerequisites are satisfied.
+- [x] A focused fixture equivalent to the reduced `callCount` class method mutation prints `1` under Node and iwasm.
+- [x] The issue-289 mutable capture diagnostic is removed or narrowed to forms still outside the implemented cell representation.
+- [x] Existing immutable class-method capture fixture remains Node/iwasm matching.
+- [x] Reference coverage for `language/expressions/class/dstr/meth-ary-name-iter-val.js` no longer stops on `callCount` environment mutation when earlier prerequisites are satisfied.
 
 ## Validation
 
@@ -107,18 +109,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
+- [x] updated: n/a
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: n/a
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
+- [x] created/updated: n/a
 
 ## Notes
 
@@ -154,16 +156,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `f4ac5ec7` (`agent/301-class-env-close-20260429T193520Z`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+
+command: cargo nextest run -p ts2wasm-cli -E 'test(class_method) or test(this_receiver_method_fixtures_match_node_output_under_iwasm)'
+result: pass, 5 tests passed
+
+command: cargo test -p ts2wasm-backend-wasm env_cells_are_tagged_array_payloads_for_gc_tracing -- --nocapture
+result: pass, proves env cells are emitted as tagged one-slot array payloads and traced by existing array GC marking
+
+command: focused Node/iwasm fixture diff for fixtures/core-semantics/class-method-mutable-outer-capture.ts
+result: pass, Node stdout `1`, iwasm stdout `1`, diff empty; saved under reports/runs/20260429T192041Z-301-class-env-close/
+
+command: mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-name-iter-val.js --detail
+result: unsupported remains `UnsupportedSyntax: class`; the previous callCount mutable environment-cell diagnostic is no longer the stopping point
+
+command: cargo nextest run --no-fail-fast
+result: 581 passed, 2 unrelated failures, 4 skipped. Unrelated failures: `ts2wasm-backend-wasm tests::alloc_heap_emits_gc_header_and_trigger_contract` expects stale memory max `(memory ... 2 16)` while current Layout::MEMORY_MAX_PAGES is 185; `ts2wasm-cli::m2_node_diff function_arguments_fixture_matches_node_output_under_iwasm` fails on `fixtures/core-semantics/arguments-object-property-call.ts`, which has no class-method or EnvCell lowering.
 ```
 
 Remaining risks:
 
-- none
+- Full-suite baseline still has the two unrelated failures listed above; issue 301 scoped validation passes.
