@@ -53,9 +53,9 @@ true
 
 In scope:
 
-- [ ] Represent enough of `Set.prototype.add` for assignment and retrieval to be observable.
-- [ ] Make `new Set(values)` call the resolved add method once per supported dense-array element.
-- [ ] Add Node/iwasm differential coverage based on `set-iterable-calls-add.js`.
+- [x] Represent enough of `Set.prototype.add` for assignment and retrieval to be observable.
+- [x] Make `new Set(values)` call the resolved add method once per supported dense-array element.
+- [x] Add Node/iwasm differential coverage based on `set-iterable-calls-add.js`.
 
 Out of scope:
 
@@ -79,9 +79,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The fixture proves `Set.prototype.add` replacement increments a counter once per supported array element during `new Set(values)`.
-- [ ] The constructed Set still contains each provided value.
-- [ ] Node and iwasm stdout match for the fixture.
+- [x] The fixture proves `Set.prototype.add` replacement increments a counter once per supported array element during `new Set(values)`.
+- [x] The constructed Set still contains each provided value.
+- [x] Node and iwasm stdout match for the fixture.
 
 ## Validation
 
@@ -106,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -126,14 +126,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `f2d8a762` issue-279: dispatch Set constructor add observably
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli set
+result: PASS; 8 tests run, 8 passed, 338 skipped
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli set_constructor_array_fixture_matches_node_output_under_iwasm
+result: PASS; 1 test run, 1 passed, 345 skipped
+date: 2026-04-29
+
+command: cargo nextest run
+result: PASS; 533 tests run, 533 passed, 4 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:
