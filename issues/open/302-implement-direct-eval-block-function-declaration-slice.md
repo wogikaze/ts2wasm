@@ -166,6 +166,23 @@ the first block-function declaration behavior.
   for the introduced function binding to resolve without treating broader
   dynamic eval as supported.
 
+2026-04-30 child progress:
+
+- Expanded the static direct-eval block-function parser slice from a single
+  block source to selected prefix/block and block/suffix forms. Prefix-only
+  selected sources now introduce a caller-scope `undefined` binding before
+  lowered assignments, while block/suffix selected sources expose the function
+  declaration before suffix statements.
+- Added focused Node/iwasm fixtures for the `func-init` binding initialization
+  shape and a block/suffix function-call shape, keeping shadowed eval guarded
+  and leaving broader dynamic eval unsupported.
+- The exact upstream `func-block-decl-eval-func-block-scoping.js` behavior still
+  needs a later slice for function-valued local calls / mutable closure
+  environment effects from the IIFE test body.
+- Required reference coverage remained blocked in this child worktree because
+  `reference/test262` is missing. `mise run check issues` is also blocked by
+  pre-existing missing coverage-result artifact references outside this issue.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

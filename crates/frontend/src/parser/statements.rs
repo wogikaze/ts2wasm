@@ -682,8 +682,9 @@ impl Parser {
         {
             return Err(self.invalid_optional_chain_target(expr.span()));
         }
-        if let Some(function) = self.direct_eval_static_block_function(&expr)? {
-            return Ok(function);
+        if let Some(mut statements) = self.direct_eval_static_block_function_statements(&expr)? {
+            self.pending_statements.extend(statements.drain(1..));
+            return Ok(statements.remove(0));
         }
         let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::Expr {
@@ -695,7 +696,10 @@ impl Parser {
         })
     }
 
-    fn direct_eval_static_block_function(&self, expr: &Expr) -> Result<Option<Stmt>, Diagnostic> {
+    fn direct_eval_static_block_function_statements(
+        &self,
+        expr: &Expr,
+    ) -> Result<Option<Vec<Stmt>>, Diagnostic> {
         let Expr::Call { callee, args, span } = expr else {
             return Ok(None);
         };
@@ -703,9 +707,6 @@ impl Parser {
             return Ok(None);
         }
         let [Expr::String { value: source, .. }] = args.as_slice() else {
-            return Ok(None);
-        };
-        let Some(inner_source) = Self::single_block_source(source) else {
             return Ok(None);
         };
         if self.possible_eval_shadowing {
@@ -716,15 +717,68 @@ impl Parser {
             });
         }
 
+        let Some(expansion) = self.static_block_function_eval_expansion(source, *span)? else {
+            return Ok(None);
+        };
+        Ok(Some(expansion))
+    }
+
+    fn static_block_function_eval_expansion(
+        &self,
+        source: &str,
+        eval_span: Span,
+    ) -> Result<Option<Vec<Stmt>>, Diagnostic> {
+        if let Some(inner_source) = Self::single_block_source(source) {
+            let Some(function) = self.parse_static_eval_function(inner_source, eval_span)? else {
+                return Ok(None);
+            };
+            return Ok(Some(vec![function]));
+        }
+
+        let Some(block) = Self::find_static_eval_function_block(source, self.strict_mode)? else {
+            return Ok(None);
+        };
+        let Some(function) = self.parse_static_eval_function(block.inner_source, eval_span)? else {
+            return Ok(None);
+        };
+        let Stmt::Function { name, .. } = &function else {
+            return Ok(None);
+        };
+
+        let prefix = self.parse_static_eval_fragment(block.prefix, eval_span)?;
+        let suffix = self.parse_static_eval_fragment(block.suffix, eval_span)?;
+        if prefix.is_empty() {
+            let mut statements = vec![function];
+            statements.extend(suffix);
+            return Ok(Some(statements));
+        }
+        if suffix.is_empty() {
+            let mut statements = vec![Stmt::Let {
+                name: name.clone(),
+                expr: Expr::Undefined { span: eval_span },
+                span: eval_span,
+            }];
+            statements.extend(prefix);
+            return Ok(Some(statements));
+        }
+
+        Ok(None)
+    }
+
+    fn parse_static_eval_function(
+        &self,
+        inner_source: &str,
+        eval_span: Span,
+    ) -> Result<Option<Stmt>, Diagnostic> {
         let tokens = crate::Lexer::new_with_strict_mode(inner_source, self.strict_mode)
             .tokenize()
             .map_err(|mut diagnostic| {
-                diagnostic.span = Some(*span);
+                diagnostic.span = Some(eval_span);
                 diagnostic
             })?;
         let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode);
         let mut statements = parser.parse_program().map_err(|mut diagnostic| {
-            diagnostic.span = Some(*span);
+            diagnostic.span = Some(eval_span);
             diagnostic
         })?;
         if statements.len() != 1 {
@@ -738,10 +792,31 @@ impl Parser {
                 name,
                 params,
                 body,
-                span: *span,
+                span: eval_span,
             })),
             _ => Ok(None),
         }
+    }
+
+    fn parse_static_eval_fragment(
+        &self,
+        source: &str,
+        eval_span: Span,
+    ) -> Result<Vec<Stmt>, Diagnostic> {
+        if source.trim().is_empty() {
+            return Ok(Vec::new());
+        }
+        let tokens = crate::Lexer::new_with_strict_mode(source, self.strict_mode)
+            .tokenize()
+            .map_err(|mut diagnostic| {
+                diagnostic.span = Some(eval_span);
+                diagnostic
+            })?;
+        let mut parser = Parser::new_with_strict_mode(tokens, self.strict_mode);
+        parser.parse_program().map_err(|mut diagnostic| {
+            diagnostic.span = Some(eval_span);
+            diagnostic
+        })
     }
 
     fn single_block_source(source: &str) -> Option<&str> {
@@ -752,6 +827,54 @@ impl Parser {
         } else {
             None
         }
+    }
+
+    fn find_static_eval_function_block(
+        source: &str,
+        strict_mode: bool,
+    ) -> Result<Option<StaticEvalFunctionBlock<'_>>, Diagnostic> {
+        let tokens = crate::Lexer::new_with_strict_mode(source, strict_mode).tokenize()?;
+        for (index, token) in tokens.iter().enumerate() {
+            if !matches!(token.kind, Token::LeftBrace) {
+                continue;
+            }
+            if !matches!(
+                tokens.get(index + 1).map(|token| &token.kind),
+                Some(Token::Function)
+            ) {
+                continue;
+            }
+
+            let Some(end_index) = Self::matching_brace_token_index(&tokens, index) else {
+                return Ok(None);
+            };
+            let prefix = &source[..token.span.start];
+            let suffix = &source[tokens[end_index].span.end..];
+            let inner_source = &source[token.span.end..tokens[end_index].span.start];
+            return Ok(Some(StaticEvalFunctionBlock {
+                prefix,
+                inner_source,
+                suffix,
+            }));
+        }
+        Ok(None)
+    }
+
+    fn matching_brace_token_index(tokens: &[SpannedToken], start_index: usize) -> Option<usize> {
+        let mut depth = 0usize;
+        for (index, token) in tokens.iter().enumerate().skip(start_index) {
+            match token.kind {
+                Token::LeftBrace => depth += 1,
+                Token::RightBrace => {
+                    depth = depth.checked_sub(1)?;
+                    if depth == 0 {
+                        return Some(index);
+                    }
+                }
+                _ => {}
+            }
+        }
+        None
     }
 
     fn statement_terminator_end(&mut self, fallback_end: usize) -> Result<usize, Diagnostic> {

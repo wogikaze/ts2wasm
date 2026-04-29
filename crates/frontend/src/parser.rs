@@ -32,6 +32,12 @@ struct ParsedBindingPattern {
     is_identifier: bool,
 }
 
+struct StaticEvalFunctionBlock<'a> {
+    prefix: &'a str,
+    inner_source: &'a str,
+    suffix: &'a str,
+}
+
 include!("parser/statements.rs");
 include!("parser/expressions.rs");
 include!("parser/tokens.rs");
