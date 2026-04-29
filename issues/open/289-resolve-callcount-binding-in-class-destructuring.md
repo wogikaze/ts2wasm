@@ -152,6 +152,34 @@ reaches the `callCount` lowering path. However, the attempted narrow diagnostic 
 
 Current close requirement: implement a span-preserving class-method outer-local capture path, or otherwise produce a source diagnostic with a real span. Do not close this issue on an unspanned source diagnostic. In this worktree, the raw representative reference command still stops earlier at unresolved `assert`, so exact `callCount` bucket movement must be verified either after the issue-288/assert prerequisite lands or with an accepted reduced, source-span-backed representative.
 
+### Progress note: 2026-04-29 child-019dd968 issue-289
+
+Implemented a narrow source-span-preserving `issue-289` diagnostic for class methods that reference lexical outer locals, so the reduced `callCount` method case no longer falls through to the later unspanned `UnresolvedName` path. The diagnostic deliberately excludes the declaring class name, preserving existing supported static private method calls such as `C.#m()`.
+
+Validation:
+
+```text
+cargo fmt --all --check
+result: pass
+
+cargo nextest run -E 'test(class) or test(destructuring) or test(node_diff)'
+result: pass, 51 passed
+
+mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-name-iter-val.js
+result: pass, executed=1, unsupported=1, unsupported_diagcodes=UnsupportedSyntax:1, unsupported_features=class:1
+
+mise run update-issue-index -- --check
+result: pass
+
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run test262 -- --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-name-iter-val.js --jobs 1
+result: pass, Total=1, Unsupported=1, generated ignored artifacts/coverage/results/test262-results.jsonl for issue-health path checks
+
+mise run check issues
+result: pass
+```
+
+Remaining scope: class-method lexical capture environments are still not implemented, so the issue remains open as PROGRESS rather than DONE.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

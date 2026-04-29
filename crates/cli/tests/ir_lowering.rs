@@ -6,6 +6,55 @@ fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::Resolved
 }
 
 #[test]
+fn class_method_outer_local_capture_reports_spanned_issue_289() {
+    let ast = ts2wasm_cli::parse_program(
+        r#"
+        var callCount = 0;
+        var C = class {
+          method([x, y, z]) {
+            callCount = callCount + 1;
+          }
+        };
+        "#,
+    )
+    .unwrap();
+
+    let err = ts2wasm_ir::builtin_resolver::resolve_builtins(&ast).unwrap_err();
+
+    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+    assert!(err.message.contains("issue-289"));
+    assert!(err.message.contains("callCount"));
+    assert!(err.span.is_some(), "{err:?}");
+}
+
+#[test]
+fn class_method_declaring_class_reference_is_not_issue_289_capture() {
+    parse_and_resolve(
+        r#"
+        class C {
+          static #m() { return 3; }
+          static readByName() { return C.#m(); }
+        }
+        "#,
+    );
+}
+
+#[test]
+fn class_method_shadowed_outer_name_is_not_issue_289_capture() {
+    parse_and_resolve(
+        r#"
+        var callCount = 0;
+        var C = class {
+          method() {
+            let callCount = 1;
+            return callCount;
+          }
+        };
+        "#,
+    );
+}
+
+#[test]
 fn lowering_splits_functions_and_resolves_ids() {
     let program = parse_and_resolve(
         "function add(a, b) { return a + b; } let x = 1; console.log(add(x, 2));",
