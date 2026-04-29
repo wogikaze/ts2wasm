@@ -161,11 +161,7 @@ impl WatEmitter<'_> {
     (local $gap i32)
     (local $gap_ptr i32)
     (local $space_base i32)
-    (if
-      (i32.and
-        (i32.ne (local.get $replacer) (i32.const {undefined}))
-        (i32.ne (local.get $replacer) (i32.const {null_tag})))
-      (then (return (i32.const {undefined}))))
+    (local $root_holder i32)
     (if (i32.eq (i32.and (local.get $space) (i32.const {tag_mask})) (i32.const {number_tag}))
       (then
         (local.set $gap (i32.shr_s (local.get $space) (i32.const {number_shift})))
@@ -180,6 +176,19 @@ impl WatEmitter<'_> {
         (if (i32.gt_u (local.get $gap) (i32.const {max_gap}))
           (then (local.set $gap (i32.const {max_gap}))))
         (local.set $gap_ptr (i32.add (local.get $space_base) (i32.const {header})))))
+    (local.set $root_holder (call $alloc_heap (i32.const {root_holder_size})))
+    (i32.store (local.get $root_holder) (i32.const {one}))
+    (i32.store
+      (i32.add (local.get $root_holder) (i32.const {object_proto}))
+      (i32.const {zero}))
+    (i32.store
+      (i32.add (local.get $root_holder) (i32.const {obj_entries}))
+      (i32.const {empty_string}))
+    (i32.store
+      (i32.add
+        (i32.add (local.get $root_holder) (i32.const {obj_entries}))
+        (i32.const {value_off}))
+      (local.get $v))
     (local.set $result_ptr (call $alloc_heap (i32.const {stringify_alloc_size})))
     (local.set $len
       (call $json_stringify_into
@@ -187,7 +196,11 @@ impl WatEmitter<'_> {
         (i32.add (local.get $result_ptr) (i32.const {header}))
         (local.get $gap)
         (local.get $gap_ptr)
-        (i32.const {zero})))
+        (i32.const {zero})
+        (local.get $replacer)
+        (i32.const {empty_string})
+        (i32.or (local.get $root_holder) (i32.const {object_tag}))
+        (i32.const {one})))
     (if (i32.lt_s (local.get $len) (i32.const {zero}))
       (then (return (i32.const {undefined}))))
     (i32.store (local.get $result_ptr) (local.get $len))
@@ -309,7 +322,34 @@ impl WatEmitter<'_> {
     (i32.add (local.get $out) (i32.const {one}))
   )
 
-  (func $json_stringify_into (param $v i32) (param $ptr i32) (param $gap i32) (param $gap_ptr i32) (param $depth i32) (result i32)
+  (func $json_array_index_key (param $i i32) (result i32)
+    (local $result_ptr i32)
+    (local $len i32)
+    (local.set $result_ptr (call $alloc_heap (i32.const {index_key_alloc_size})))
+    (local.set $len
+      (call $value_to_string_into
+        (i32.or
+          (i32.shl (local.get $i) (i32.const {number_shift}))
+          (i32.const {number_tag}))
+        (i32.add (local.get $result_ptr) (i32.const {header}))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+
+  (func $json_apply_replacer (param $replacer i32) (param $holder i32) (param $key i32) (param $value i32) (result i32)
+    (if
+      (i32.and
+        (i32.ne (local.get $replacer) (i32.const {undefined}))
+        (i32.ne (local.get $replacer) (i32.const {null_tag})))
+      (then
+        (return
+          (call $json_replacer_call
+            (local.get $replacer)
+            (local.get $holder)
+            (local.get $key)
+            (local.get $value)))))
+    (local.get $value))
+
+  (func $json_stringify_into (param $v i32) (param $ptr i32) (param $gap i32) (param $gap_ptr i32) (param $depth i32) (param $replacer i32) (param $key i32) (param $holder i32) (param $apply_current i32) (result i32)
     (local $tag i32)
     (local $base i32)
     (local $len i32)
@@ -317,7 +357,17 @@ impl WatEmitter<'_> {
     (local $i i32)
     (local $entry_base i32)
     (local $key_raw i32)
+    (local $child_value i32)
     (local $child_len i32)
+    (local $emitted_count i32)
+    (if (local.get $apply_current)
+      (then
+        (local.set $v
+          (call $json_apply_replacer
+            (local.get $replacer)
+            (local.get $holder)
+            (local.get $key)
+            (local.get $v)))))
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     (if (i32.eq (local.get $v) (i32.const {undefined}))
       (then (return (i32.const {unsupported}))))
@@ -387,7 +437,11 @@ impl WatEmitter<'_> {
                 (i32.add (local.get $ptr) (local.get $out))
                 (local.get $gap)
                 (local.get $gap_ptr)
-                (i32.add (local.get $depth) (i32.const {one}))))
+                (i32.add (local.get $depth) (i32.const {one}))
+                (local.get $replacer)
+                (call $json_array_index_key (local.get $i))
+                (local.get $v)
+                (i32.const {one})))
             (if (i32.lt_s (local.get $child_len) (i32.const {zero}))
               (then
                 (local.set $child_len
@@ -421,19 +475,7 @@ impl WatEmitter<'_> {
         (i32.store8 (local.get $ptr) (i32.const {lbrace}))
         (local.set $out (i32.const {one}))
         (local.set $i (i32.const {zero}))
-        (if
-          (i32.and
-            (i32.gt_u (local.get $len) (i32.const {zero}))
-            (i32.gt_u (local.get $gap) (i32.const {zero})))
-          (then
-            (local.set $out
-              (i32.add
-                (local.get $out)
-                (call $json_write_newline_indent
-                  (i32.add (local.get $ptr) (local.get $out))
-                  (local.get $gap)
-                  (local.get $gap_ptr)
-                  (i32.add (local.get $depth) (i32.const {one})))))))
+        (local.set $emitted_count (i32.const {zero}))
         (block $object_done
           (loop $object_loop
             (br_if $object_done (i32.ge_u (local.get $i) (local.get $len)))
@@ -444,22 +486,48 @@ impl WatEmitter<'_> {
                   (i32.const {obj_entries})
                   (i32.shl (local.get $i) (i32.const {entry_shift})))))
             (local.set $key_raw (i32.load (local.get $entry_base)))
-            (if (i32.gt_u (local.get $i) (i32.const {zero}))
+            (local.set $child_value
+              (call $json_apply_replacer
+                (local.get $replacer)
+                (local.get $v)
+                (local.get $key_raw)
+                (i32.load (i32.add (local.get $entry_base) (i32.const {value_off})))))
+            (if (i32.eq (local.get $child_value) (i32.const {undefined}))
+              (then
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $object_loop)))
+            (if (i32.gt_u (local.get $emitted_count) (i32.const {zero}))
               (then
                 (i32.store8
                   (i32.add (local.get $ptr) (local.get $out))
                   (i32.const {comma}))
-                (local.set $out (i32.add (local.get $out) (i32.const {one})))
-                (if (i32.gt_u (local.get $gap) (i32.const {zero}))
-                  (then
-                    (local.set $out
-                      (i32.add
-                        (local.get $out)
-                        (call $json_write_newline_indent
-                          (i32.add (local.get $ptr) (local.get $out))
-                          (local.get $gap)
-                          (local.get $gap_ptr)
-                          (i32.add (local.get $depth) (i32.const {one})))))))))
+                (local.set $out (i32.add (local.get $out) (i32.const {one})))))
+            (if
+              (i32.and
+                (i32.gt_u (local.get $emitted_count) (i32.const {zero}))
+                (i32.gt_u (local.get $gap) (i32.const {zero})))
+              (then
+                (local.set $out
+                  (i32.add
+                    (local.get $out)
+                    (call $json_write_newline_indent
+                      (i32.add (local.get $ptr) (local.get $out))
+                      (local.get $gap)
+                      (local.get $gap_ptr)
+                      (i32.add (local.get $depth) (i32.const {one})))))))
+            (if
+              (i32.and
+                (i32.eqz (local.get $emitted_count))
+                (i32.gt_u (local.get $gap) (i32.const {zero})))
+              (then
+                (local.set $out
+                  (i32.add
+                    (local.get $out)
+                    (call $json_write_newline_indent
+                      (i32.add (local.get $ptr) (local.get $out))
+                      (local.get $gap)
+                      (local.get $gap_ptr)
+                      (i32.add (local.get $depth) (i32.const {one})))))))
             (local.set $child_len
               (call $json_write_escaped_string
                 (local.get $key_raw)
@@ -473,19 +541,26 @@ impl WatEmitter<'_> {
                 (local.set $out (i32.add (local.get $out) (i32.const {one})))))
             (local.set $child_len
               (call $json_stringify_into
-                (i32.load (i32.add (local.get $entry_base) (i32.const {value_off})))
+                (local.get $child_value)
                 (i32.add (local.get $ptr) (local.get $out))
                 (local.get $gap)
                 (local.get $gap_ptr)
-                (i32.add (local.get $depth) (i32.const {one}))))
+                (i32.add (local.get $depth) (i32.const {one}))
+                (local.get $replacer)
+                (local.get $key_raw)
+                (local.get $v)
+                (i32.const {zero})))
             (if (i32.lt_s (local.get $child_len) (i32.const {zero}))
-              (then (return (i32.const {unsupported}))))
+              (then
+                (local.set $i (i32.add (local.get $i) (i32.const {one})))
+                (br $object_loop)))
             (local.set $out (i32.add (local.get $out) (local.get $child_len)))
+            (local.set $emitted_count (i32.add (local.get $emitted_count) (i32.const {one})))
             (local.set $i (i32.add (local.get $i) (i32.const {one})))
             (br $object_loop)))
         (if
           (i32.and
-            (i32.gt_u (local.get $len) (i32.const {zero}))
+            (i32.gt_u (local.get $emitted_count) (i32.const {zero}))
             (i32.gt_u (local.get $gap) (i32.const {zero})))
           (then
             (local.set $out
@@ -504,7 +579,10 @@ impl WatEmitter<'_> {
 "#,
             header = Layout::STRING_HEADER_SIZE,
             stringify_alloc_size = Layout::STRING_HEADER_SIZE + 1024,
+            root_holder_size = Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE,
+            index_key_alloc_size = Layout::STRING_HEADER_SIZE + 16,
             array_header = Layout::ARRAY_HEADER_SIZE,
+            object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
@@ -520,6 +598,7 @@ impl WatEmitter<'_> {
             string_tag = ValueTag::STRING,
             array_tag = ValueTag::ARRAY,
             object_tag = ValueTag::OBJECT,
+            empty_string = self.string_value(""),
             heap_number_sentinel = -1,
             unsupported = -1,
             zero = RuntimeConst::ZERO,

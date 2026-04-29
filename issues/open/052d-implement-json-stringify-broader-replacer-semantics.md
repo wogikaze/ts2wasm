@@ -5,23 +5,23 @@ type: feature
 area: runtime/builtins
 class: blocked
 priority: P1
-depends_on: [052g]
+depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
 ---
 
-Problem: `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers and unsupported property-list contents.
+Problem: `JSON.stringify` currently supports function replacer callbacks and a static object-literal array replacer subset, but broader dynamic property-list and object-coercion replacer forms remain unsupported.
 
 ## Summary
 
-Implement replacer behavior beyond the validated string/numeric-literal object-literal subset, including function callbacks and broader property-list forms when the required call/property semantics are available.
+Implement replacer behavior beyond the validated function-callback and static object-literal property-list subset, including broader property-list forms when the required object-coercion semantics are available.
 
 ## Current failure
 
-Existing issue 052 evidence records issue-linked diagnostics for function replacer callbacks and unsupported array replacer contents/forms.
+Existing issue 052 evidence records issue-linked diagnostics for unsupported array replacer contents/forms.
 
-Progress note (2026-04-29): the static array property-list slice now supports broader ignored entries and keeps precise diagnostics for dynamic/object-coercion entries. Function replacer callback execution remains split to `052g` because it requires JSON traversal-time callback invocation with root/property key-value arguments and callback return filtering.
+Progress note (2026-04-29): the static array property-list slice now supports broader ignored entries and keeps precise diagnostics for dynamic/object-coercion entries. Function replacer callback execution was split to `052g` and is now closed for the currently supported runtime value subset.
 
 ## Desired final state
 
@@ -31,7 +31,7 @@ Progress note (2026-04-29): the static array property-list slice now supports br
 
 In scope:
 
-- [x] Explicitly gate function replacer callbacks with a narrower follow-up (`052g`).
+- [x] Function replacer callbacks are covered by closed child issue `052g`.
 - [x] Expand static array replacer property lists beyond literal string/number entries.
 - [x] Preserve property-list ordering and duplicate suppression for supported static keys.
 - [x] Add Node differential or diagnostic coverage for every newly supported or intentionally unsupported form in the progress slice.
@@ -58,7 +58,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A function replacer fixture either matches Node or reports a precise issue-linked unsupported diagnostic with a narrower follow-up.
+- [x] Function replacer fixtures match Node for the currently supported runtime subset.
 - [x] Array replacer contents beyond string/numeric literals are implemented or diagnosed with precise coverage.
 - [ ] Existing string/numeric-literal replacer fixtures still match Node.
 - [x] Unsupported diagnostics do not mask forms that this issue claims to support.
@@ -78,7 +78,7 @@ mise run check issues
 Impacted commands:
 
 ```sh
-cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts -o /tmp/ts2wasm-json-replacer-function.wasm
+cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-function-keep.ts -o /tmp/ts2wasm-json-replacer-function.wasm
 cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm
 ```
 
@@ -98,7 +98,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/052g-implement-json-stringify-function-replacer-callbacks.md`
+- [x] created and closed: `issues/done/052g-implement-json-stringify-function-replacer-callbacks.md`
 - [x] update `issues/open/052-implement-json.md`
 
 ## Progress evidence
@@ -117,7 +117,7 @@ Follow-up issues:
 - Updated unsupported diagnostics to cover remaining dynamic/static-coercion gaps:
   - `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts` covers a dynamic identifier property-list entry (`[key]`), which Node would evaluate as `"a"` but the current compile-time property-list lowering cannot safely fold.
   - `fixtures/builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts` covers `new Object(2)`, which requires broader object coercion to become the property name `"2"`.
-  - `fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts` still reports the precise issue-052 function callback diagnostic and is split to `052g`.
+  - Function replacer callbacks remained split to `052g` in this historical slice; `052g` later replaced that diagnostic fixture with Node differential coverage.
 
 Validation result:
 
@@ -130,8 +130,8 @@ command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stri
 result: pass; printed {"b":2} and {"a":1}
 date: 2026-04-29
 
-command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts -o /tmp/ts2wasm-json-replacer-function.wasm
-result: expected failure; reports issue-052 function replacer callbacks diagnostic at 59..89
+command: historical function-replacer unsupported fixture build
+result: historical expected failure superseded by issue 052g; replacement fixture is `fixtures/builtins-and-io/json-stringify-replacer-function-keep.ts`
 date: 2026-04-29
 
 command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array-unsupported.wasm

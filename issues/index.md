@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 57 | 11 | 46 |
+| runtime | 57 | 10 | 47 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 282 | 145 | 137 |
+| total | 282 | 144 | 138 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -40,7 +40,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 052g | Implement JSON.stringify function replacer callbacks | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` still reports issue-052 diagnostics for function replacer callbacks instead of invoking the callback... |
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 062g | Define and implement heap closure object ABI and rooting | feature | runtime/abi | design-ready | P1 |  | Returned closures cannot be represented by the current devirtualized |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
@@ -261,6 +260,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 052c | Implement JSON UTF-16 and surrogate string handling | feature | runtime/builtins | see `issues/done/052c-implement-json-utf16-surrogate-strings.md` |
 | 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | see `issues/done/052e-complete-json-stringify-boxed-argument-edge-cases.md` |
 | 052f | Implement JSON.parse throw-compatible diagnostics | feature | runtime/builtins | see `issues/done/052f-implement-json-parse-throw-compatible-diagnostics.md` |
+| 052g | Implement JSON.stringify function replacer callbacks | feature | runtime/builtins | see `issues/done/052g-implement-json-stringify-function-replacer-callbacks.md` |
 | 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 | 054 | Implement Error types | feature | runtime/builtins | see `issues/done/054-implement-error-types.md` |
 | 055 | Umbrella: implement import and export | feature | frontend/semantics | see `issues/done/055-implement-import-export.md` |

@@ -165,6 +165,13 @@ impl<'a> WatEmitter<'a> {
         self.emit_builtin_error_prototype_globals(&mut wat);
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
+        if self
+            .link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::JsonStringify)
+        {
+            self.emit_json_replacer_dispatcher(&mut wat);
+        }
         self.emit_functions(&mut wat);
         self.emit_module_initializers(&mut wat);
         self.emit_start(&mut wat);
@@ -1119,6 +1126,44 @@ impl<'a> WatEmitter<'a> {
             wat.push_str(&format!("    (i32.const {})\n", ValueTag::UNDEFINED));
             wat.push_str("  )\n");
         }
+    }
+
+    fn emit_json_replacer_dispatcher(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            "  (func $json_replacer_call (param $callback i32) (param $holder i32) (param $key i32) (param $value i32) (result i32)\n    (local $id i32)\n    (if (i32.ne (i32.and (local.get $callback) (i32.const {})) (i32.const {}))\n      (then (return (local.get $value))))\n    (local.set $id (i32.shr_s (local.get $callback) (i32.const {})))\n",
+            ValueTag::TAG_MASK,
+            ValueTag::NUMBER,
+            ValueTag::NUMBER_SHIFT,
+        ));
+
+        for function in &self.program.functions {
+            wat.push_str(&format!(
+                "    (if (i32.eq (local.get $id) (i32.const {}))\n      (then\n",
+                function.id.0
+            ));
+            let mut supplied = 0usize;
+            if function.uses_receiver {
+                wat.push_str("        (local.get $holder)\n");
+                supplied += 1;
+            }
+            if supplied < function.params.len() {
+                wat.push_str("        (local.get $key)\n");
+                supplied += 1;
+            }
+            if supplied < function.params.len() {
+                wat.push_str("        (local.get $value)\n");
+                supplied += 1;
+            }
+            for _ in supplied..function.params.len() {
+                wat.push_str(&format!("        (i32.const {})\n", ValueTag::UNDEFINED));
+            }
+            wat.push_str(&format!(
+                "        (return (call ${}))))\n",
+                function_symbol(function.id)
+            ));
+        }
+
+        wat.push_str("    (local.get $value))\n");
     }
 
     fn emit_module_initializers(&self, wat: &mut String) {

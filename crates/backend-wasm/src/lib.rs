@@ -217,6 +217,7 @@ mod tests {
             functions: vec![LoweredFunction {
                 id: FuncId(0),
                 params: vec![],
+                uses_receiver: false,
                 min_required_params: 0,
                 rest_param_index: None,
                 locals: vec![],
@@ -340,6 +341,7 @@ mod tests {
             functions: vec![LoweredFunction {
                 id: FuncId(0),
                 params: vec![],
+                uses_receiver: false,
                 min_required_params: 0,
                 rest_param_index: None,
                 locals: vec![LocalId(0)],
@@ -542,6 +544,7 @@ mod tests {
             functions: vec![LoweredFunction {
                 id: FuncId(0),
                 params: vec![],
+                uses_receiver: false,
                 min_required_params: 0,
                 rest_param_index: None,
                 locals: vec![],

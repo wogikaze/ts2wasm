@@ -706,7 +706,12 @@ impl<'a> Resolver<'a> {
                 span,
             } => {
                 if is_json_static_call(object, method) {
-                    validate_json_stringify_args(args, *span, self.function_ids)?;
+                    validate_json_stringify_args(
+                        args,
+                        *span,
+                        self.function_ids,
+                        self.function_signatures,
+                    )?;
                     let mut lowered_args = Vec::with_capacity(3);
                     let value = if let (
                         ResolvedExpr::Object(props),
@@ -737,7 +742,15 @@ impl<'a> Resolver<'a> {
                     lowered_args.push(value);
                     lowered_args.push(match args.get(1) {
                         Some(ResolvedExpr::Array(_)) => LoweredExpr::Null,
-                        Some(replacer) => self.lower_expr(replacer)?,
+                        Some(replacer) => {
+                            if let Some(func_id) =
+                                json_stringify_function_replacer_id(replacer, self.function_ids)
+                            {
+                                LoweredExpr::Number(func_id.0 as i32)
+                            } else {
+                                self.lower_expr(replacer)?
+                            }
+                        }
                         None => LoweredExpr::Undefined,
                     });
                     lowered_args.push(match args.get(2) {

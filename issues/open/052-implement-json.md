@@ -6,7 +6,7 @@ area: runtime/builtins
 class: blocked
 priority: P1
 depends_on: []
-blocks: [052d, 052g]
+blocks: [052d]
 created: 2026-04-26
 updated: 2026-04-29
 ---
@@ -15,13 +15,13 @@ updated: 2026-04-29
 
 Implement full JSON.parse and JSON.stringify.
 
-Problem: JSON support has a validated subset, but full ECMAScript JSON compatibility still depends on separately tracked broader replacer callback work.
+Problem: JSON support has a validated subset, but full ECMAScript JSON compatibility still depends on separately tracked broader replacer and object-coercion work.
 
 Queue design note:
 
 - This is an epic-level issue and must not be selected directly from the Ready queue.
 - The currently supported subset contract was closed by issue 052a.
-- Track remaining behavior through child issues 052d and 052g. Issues 052b, 052c, 052e, and 052f are closed for the current number, string, boxed-argument, and parse-diagnostic contracts.
+- Track remaining behavior through child issue 052d. Issues 052b, 052c, 052e, 052f, and 052g are closed for the current number, string, boxed-argument, parse-diagnostic, and function-replacer callback contracts.
 - Keep this parent issue `blocked` until that child issue closes or the final-state goal changes.
 
 ## Supported subset contract
@@ -45,12 +45,12 @@ Current validated JSON behavior is intentionally a subset, not full JSON support
 - escaping of `"`, `\`, `\b`, `\f`, `\n`, `\r`, and `\t` for string values and object keys;
 - numeric `space`, string `space`, ignored boolean/object/function/symbol `space`, selected boxed `Number`/`String`/`Boolean`/`Object` `space` forms covered by fixtures, and issue-052e diagnostics for broader object-coercion `space` forms outside the supported runtime object model;
 - object-literal array replacer property lists containing string/numeric literal entries, boxed `Number`/`String` entries, and selected static ignored entries such as boolean/null/undefined literals, function identifiers/literals, Symbol/global constructor entries, side-effect-free object literals, `new Boolean(...)`, and `new Object()`, preserving property-list order and duplicate suppression in the validated subset;
-- issue-linked diagnostics for unsupported function replacers and unsupported array replacer property-list contents/forms outside the validated subset, including dynamic property-list entries and boxed entries that would require broader object coercion.
+- function replacer callbacks for declared functions and inline arrows over the currently supported runtime value subset, including root key `""`, property/index keys, callback return filtering/transformation, and supported holder/receiver behavior;
+- issue-linked diagnostics for unsupported array replacer property-list contents/forms outside the validated subset, including dynamic property-list entries and boxed entries that would require broader object coercion.
 
 Remaining full-spec work is not part of this parent issue's Ready queue surface:
 
-- 052d: broader static `JSON.stringify` array replacer property-list semantics, currently blocked on callback child issue 052g.
-- 052g: `JSON.stringify` function replacer callback execution.
+- 052d: broader `JSON.stringify` replacer semantics outside the validated callback and static property-list subset.
 
 Close decision: issue 052 remains open as a blocked parent epic for full JSON compatibility. The closeable subset milestone is issue 052a; implementation workers should select child issues instead of this parent.
 
@@ -429,10 +429,10 @@ abcdefghij1
   - array replacer property lists.
 - Preserved accepted null/undefined replacer behavior and numeric/string `space` handling through the existing JSON fixture set.
 - Added diagnostic fixtures:
-  - `fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts`
+  - historical function-replacer unsupported diagnostic fixture, later replaced by `fixtures/builtins-and-io/json-stringify-replacer-function-keep.ts`
   - `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts`
 - Direct build evidence:
-  - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts -o /tmp/ts2wasm-json-replacer-function.wasm` rejects with `[UnsupportedSyntax] issue-052: JSON.stringify function replacer callbacks are not supported yet ... at 59..89`.
+  - historical build evidence rejected the function-replacer diagnostic fixture with `[UnsupportedSyntax] issue-052: JSON.stringify function replacer callbacks are not supported yet ... at 59..89`; the fixture was later replaced by Node differential coverage.
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/ts2wasm-json-replacer-array.wasm` rejects with `[UnsupportedSyntax] issue-052: JSON.stringify array replacer property lists are not supported yet ... at 12..49`.
 - Validation passed:
   - `cargo fmt --all --check`
@@ -534,7 +534,7 @@ abcdefghij1
   - `mise run check issues`
   - `mise run check agent-state`
   - `cargo nextest run`
-- Full validation report for run `052-json-array-object-20260428T074900Z` is recorded under `reports/runs/052-json-array-object-20260428T074900Z/`.
+- Full validation report was recorded for run `052-json-array-object-20260428T074900Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:
@@ -573,7 +573,7 @@ abcdefghij1
   - `mise run check issues`
   - `mise run check agent-state`
   - `cargo nextest run`
-- Full validation report for run `052-json-stringify-nested-20260428T080100Z` is recorded under `reports/runs/052-json-stringify-nested-20260428T080100Z/`.
+- Full validation report was recorded for run `052-json-stringify-nested-20260428T080100Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, full replacer semantics, and broader throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:
@@ -608,7 +608,7 @@ abcdefghij1
 {"a":1}
 ```
 
-- Preserved unsupported diagnostics for function replacers and array replacer contents/forms outside this slice by keeping `fixtures/builtins-and-io/json-stringify-replacer-function-unsupported.ts` and changing `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts` to cover a non-string property-list entry.
+- Preserved unsupported diagnostics for function replacers and array replacer contents/forms outside this slice by keeping the historical function-replacer unsupported diagnostic fixture, later replaced by Node differential coverage, and changing `fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts` to cover a non-string property-list entry.
 - Pre-change reproduction of the former guarded array fixture showed ts2wasm rejected `JSON.stringify({ a: 1, b: 2 }, ["a"])` with `issue-052: JSON.stringify array replacer property lists are not supported yet`, while Node printed `{"a":1}`.
 - Validation passed:
   - `cargo fmt --all --check`
@@ -621,7 +621,7 @@ abcdefghij1
   - `mise run check issues`
   - `mise run check agent-state`
   - `cargo nextest run`
-- Full validation report for run `052-json-replacer-array-20260428T083349Z` is recorded under `reports/runs/052-json-replacer-array-20260428T083349Z/`.
+- Full validation report was recorded for run `052-json-replacer-array-20260428T083349Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the single string-literal object-literal subset, and broader throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:
@@ -670,7 +670,7 @@ abcdefghij1
   - `node fixtures/builtins-and-io/json-stringify-escaped-string.ts`
   - `cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-escaped-string.ts -o /tmp/ts2wasm-052-json-continuation.wasm`
   - `iwasm /tmp/ts2wasm-052-json-continuation.wasm`
-- Remaining final checks for this child run are recorded in `reports/runs/052-json-number-space-20260428T094954Z/`.
+- Remaining final checks were recorded for run `052-json-number-space-20260428T094954Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, non-stringify `space` ignored-value parity requiring IR validation work, and broader throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:
@@ -774,7 +774,7 @@ abcdefghij1
   - `mise run check issues`
   - `mise run check agent-state`
   - `cargo nextest run`
-- Full validation report for run `052-json-close-slice-20260428T133852Z` is recorded under `reports/runs/052-json-close-slice-20260428T133852Z/`.
+- Full validation report was recorded for run `052-json-close-slice-20260428T133852Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:
@@ -794,7 +794,7 @@ abcdefghij1
   - `cargo fmt --all --check`
   - `cargo nextest run -E 'test(json)'`
   - `cargo nextest run -p ts2wasm-cli json`
-- Remaining final checks for this child run are recorded in `reports/runs/052-json-replacer-next-20260428T135136Z/`.
+- Remaining final checks were recorded for run `052-json-replacer-next-20260428T135136Z`.
 - Remaining gaps before close: arbitrary non-integer JSON number representation, full UTF-16/non-ASCII string representation, full surrogate-pair support, broader replacer semantics beyond the string/numeric-literal object-literal subset, boxed `space` forms beyond the narrow Number/String/Boolean literals covered here, and broader throw-compatible parse diagnostics remain outside this slice.
 
 2026-04-28:

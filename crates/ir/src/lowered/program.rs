@@ -639,6 +639,7 @@ fn lower_function(
         function: LoweredFunction {
             id,
             params: param_ids,
+            uses_receiver: signature.needs_receiver,
             min_required_params: min_required,
             rest_param_index,
             locals: resolver.locals,
@@ -792,6 +793,7 @@ fn validate_json_stringify_args(
     args: &[ResolvedExpr],
     span: Span,
     function_ids: &HashMap<String, FuncId>,
+    function_signatures: &HashMap<FuncId, FunctionSignature>,
 ) -> Result<(), Diagnostic> {
     if args.is_empty() || args.len() > 3 {
         return Err(Diagnostic {
@@ -807,15 +809,17 @@ fn validate_json_stringify_args(
     if let Some(replacer) = args.get(1) {
         match replacer {
             ResolvedExpr::Null | ResolvedExpr::Undefined => {}
-            ResolvedExpr::ArrowFn { .. } => {
-                return Err(json_stringify_replacer_diagnostic(
-                    "function replacer callbacks",
-                    span,
-                ));
-            }
+            ResolvedExpr::ArrowFn { .. } => {}
+            ResolvedExpr::Ident(name)
+                if function_ids
+                    .get(name)
+                    .and_then(|id| function_signatures.get(id))
+                    .is_some_and(|signature| {
+                        !signature.has_rest && !signature.needs_arguments
+                    }) => {}
             ResolvedExpr::Ident(name) if function_ids.contains_key(name) => {
                 return Err(json_stringify_replacer_diagnostic(
-                    "function replacer callbacks",
+                    "function replacer callbacks with rest parameters or `arguments`",
                     span,
                 ));
             }
@@ -1003,6 +1007,16 @@ fn json_stringify_replacer_keys(
             }
             Some(keys)
         }
+        _ => None,
+    }
+}
+
+fn json_stringify_function_replacer_id(
+    replacer: &ResolvedExpr,
+    function_ids: &HashMap<String, FuncId>,
+) -> Option<FuncId> {
+    match replacer {
+        ResolvedExpr::Ident(name) => function_ids.get(name).copied(),
         _ => None,
     }
 }

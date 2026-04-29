@@ -447,6 +447,7 @@ fn validate_rejects_arity_mismatch() {
     let func = LoweredFunction {
         id: FuncId(0),
         params: vec![LocalId(0), LocalId(1)],
+        uses_receiver: false,
         min_required_params: 2,
         rest_param_index: None,
         locals: vec![],

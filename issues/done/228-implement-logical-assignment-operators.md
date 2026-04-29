@@ -134,7 +134,7 @@ TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path
 result: pass; 3 files executed; unsupported_features=name-resolution:3
 ```
 
-Final close validation is recorded in `reports/runs/228-logical-assignment-audit-20260428T100229Z/cycle_report.md`.
+Final close validation was recorded for run `228-logical-assignment-audit-20260428T100229Z`.
 
 Commits:
 

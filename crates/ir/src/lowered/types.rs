@@ -67,6 +67,7 @@ pub struct LoweredProgram {
 pub struct LoweredFunction {
     pub id: FuncId,
     pub params: Vec<LocalId>,
+    pub uses_receiver: bool,
     pub min_required_params: usize,
     pub rest_param_index: Option<usize>,
     pub locals: Vec<LocalId>,
