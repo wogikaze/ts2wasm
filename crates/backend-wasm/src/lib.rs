@@ -236,6 +236,9 @@ mod tests {
         assert!(wat.contains("(global $alloc_bytes_since_last_gc (mut i32) (i32.const 0))"));
         assert!(wat.contains("(global $gc_free_list (mut i32) (i32.const 0))"));
         assert!(wat.contains("(global $gc_free_list_max_body_size (mut i32) (i32.const 0))"));
+        assert!(
+            wat.contains("(global $gc_free_list_second_max_body_size (mut i32) (i32.const 0))")
+        );
         assert!(wat.contains("(func $gc_collect"));
         assert!(wat.contains("(local $header_base i32)"));
         assert!(wat.contains("(local $payload_base i32)"));
@@ -273,8 +276,19 @@ mod tests {
         assert!(wat.contains("(global.get $gc_free_list)"));
         assert!(wat.contains("(global.set $gc_free_list (i32.const 0))"));
         assert!(wat.contains("(global.set $gc_free_list_max_body_size (i32.const 0))"));
+        assert!(wat.contains("(global.set $gc_free_list_second_max_body_size (i32.const 0))"));
         assert!(wat.contains("(global.get $gc_free_list_max_body_size)"));
+        assert!(wat.contains("(global.get $gc_free_list_second_max_body_size)"));
         assert!(wat.contains("(global.set $gc_free_list_max_body_size (local.get $body_size))"));
+        assert!(wat.contains(
+            "(global.set $gc_free_list_second_max_body_size\n                  (global.get $gc_free_list_max_body_size))"
+        ));
+        assert!(
+            wat.contains("(global.set $gc_free_list_second_max_body_size (local.get $body_size))")
+        );
+        assert!(wat.contains(
+            "(global.set $gc_free_list_max_body_size\n                          (global.get $gc_free_list_second_max_body_size))"
+        ));
         assert!(wat.contains("(local $next_body_size i32)"));
         assert!(wat.contains("(loop $coalesce"));
         assert!(wat.contains("(i32.add (i32.const 16) (local.get $next_body_size))"));

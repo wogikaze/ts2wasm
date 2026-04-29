@@ -498,9 +498,12 @@ sweep():
 Committed runtime also keeps `$gc_free_list_max_body_size` as a conservative
 upper bound for free-list reuse. Sweep resets it and raises it while adding
 free blocks; allocation uses it only to skip scans when the requested aligned
-payload is larger than every block discovered by the last sweep. If later
-free-list reuse makes the value stale, it may overestimate and allow an
-unnecessary scan, but it must not underestimate and skip a reusable block.
+payload is larger than every block discovered by the last sweep. Sweep also
+tracks `$gc_free_list_second_max_body_size` so allocation can tighten the
+summary after consuming or splitting a block whose original body size matched
+the maximum. If later free-list reuse makes either value stale, it may
+overestimate and allow an unnecessary scan, but it must not underestimate and
+skip a reusable block.
 When a coalesced unmarked range reaches the current `$heap` end, sweep lowers
 `$heap` to the start of that range and exits instead of linking the tail into
 the free list. This keeps the high-water bump pointer from staying pinned by

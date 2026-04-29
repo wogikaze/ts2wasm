@@ -328,6 +328,25 @@ This improves the previous committed telemetry from `gc_collect_count=790` and
 `gc_sweep_block_visits=192697486`, but it does not complete the depth-9
 reducer. Issue 308 remains open. Issue 300 remains open.
 
+2026-04-29 child `308-next-gc-20260429T210037Z` progress:
+
+- Committed a tighter free-list max summary: `$gc_sweep` now records both the
+  largest and second-largest swept free block body sizes, and `$alloc_heap`
+  lowers `$gc_free_list_max_body_size` after consuming or splitting a block
+  whose original size matched the previous maximum.
+- This preserves the conservative skip-scan invariant: stale summary values may
+  still cause an extra scan, but must not skip a reusable free block.
+- Required depth-8 and OOM regressions still pass, but the depth-9 reducer
+  remains blocked under the committed 185-page cap:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-secondmax.wasm
+result: trapped with Exception: unreachable after 10.06s under committed 185-page policy
+date: 2026-04-29
+```
+
+Issue 308 remains open. Issue 300 remains open.
+
 ## Completion evidence
 
 Commits:
@@ -463,6 +482,18 @@ date: 2026-04-29
 
 command: /usr/bin/time -f 'elapsed:%e' timeout 60s iwasm /tmp/abc451-search-depth-9-tailtrim-telemetry-cap1024.wasm
 result: diagnostic abort after 1,000,000 allocations; GC collections 729; sweep block visits 171,324,221; freed sweep blocks 18,531,756; heap high-water 20,430,896 bytes; tail trims 9; tail-trimmed bytes 49,712; elapsed 16.47s
+date: 2026-04-29
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 tests passed including second-max free-list summary WAT contract
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; 1 test passed
 date: 2026-04-29
 ```
 
