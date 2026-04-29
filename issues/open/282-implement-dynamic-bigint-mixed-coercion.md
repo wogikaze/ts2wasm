@@ -136,6 +136,18 @@ Progress on 2026-04-29:
   `ToPrimitive`, and unsupported string grammar outside the current small-int
   runtime boundary.
 
+Progress on 2026-04-29:
+
+- Added Node/iwasm differential coverage for object-carried dynamic
+  BigInt/String relational comparison over `<`, `<=`, `>`, and `>=`, including
+  symmetric string-left cases, whitespace/empty strings, unsigned radix
+  prefixes, and invalid string inputs that compare false.
+- Implemented the matching runtime helper path by reusing the current
+  `string_to_number_for_equality` small-int StringToBigInt-compatible parsing
+  boundary before `bigint_compare_small_int`.
+- Remaining issue-282 work: object `ToPrimitive` and unsupported string
+  grammar or magnitude outside the current small-int runtime boundary.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

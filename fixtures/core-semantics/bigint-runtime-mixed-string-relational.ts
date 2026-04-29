@@ -1,0 +1,37 @@
+let one = { x: 1n };
+let zero = { x: 0n };
+let neg = { x: -3n };
+
+let two = "2";
+two = two + "";
+let same = "1";
+same = same + "";
+let zeroString = "0";
+zeroString = zeroString + "";
+let minusTwo = "-2";
+minusTwo = minusTwo + "";
+let empty = "";
+empty = empty + "";
+let spaces = "   ";
+spaces = spaces + "";
+let hex = "0x10";
+hex = hex + "";
+let invalid = "abc";
+invalid = invalid + "";
+let fractional = "1.0";
+fractional = fractional + "";
+let negativeHex = "-0x10";
+negativeHex = negativeHex + "";
+
+console.log(one.x < two);
+console.log(one.x <= same);
+console.log(one.x > zeroString);
+console.log(one.x >= same);
+console.log(zero.x >= empty);
+console.log(spaces <= zero.x);
+console.log(hex > one.x);
+console.log(neg.x < minusTwo);
+console.log(invalid < one.x);
+console.log(one.x >= invalid);
+console.log(fractional <= one.x);
+console.log(negativeHex >= zero.x);

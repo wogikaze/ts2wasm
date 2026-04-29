@@ -583,13 +583,13 @@ const SUB_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Sub];
 const MUL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mul];
 const DIV_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Div];
 const MOD_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Mod];
-const LESS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
+const LESS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
 const LESS_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Less];
-const LESS_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
+const LESS_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
 const LESS_EQUAL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::LessEqual];
-const GREATER_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
+const GREATER_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
 const GREATER_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::Greater];
-const GREATER_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare];
+const GREATER_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntCompare, RuntimeFn::EqualEqual];
 const GREATER_EQUAL_FAST_DEPS: &[RuntimeFn] = &[RuntimeFn::GreaterEqual];
 const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
