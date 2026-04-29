@@ -466,6 +466,9 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::String(value) => {
                 self.intern_string(value);
             }
+            LoweredExpr::BigIntLiteral { decimal, .. } => {
+                self.intern_string(decimal);
+            }
             LoweredExpr::Number(_)
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null
@@ -983,6 +986,7 @@ impl<'a> WatEmitter<'a> {
             }
             LoweredExpr::Number(_)
             | LoweredExpr::String(_)
+            | LoweredExpr::BigIntLiteral { .. }
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null
             | LoweredExpr::Undefined
@@ -1089,6 +1093,7 @@ impl<'a> WatEmitter<'a> {
             }
             LoweredExpr::Number(_)
             | LoweredExpr::String(_)
+            | LoweredExpr::BigIntLiteral { .. }
             | LoweredExpr::Bool(_)
             | LoweredExpr::Null
             | LoweredExpr::Undefined

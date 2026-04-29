@@ -373,6 +373,17 @@ impl<'a> Resolver<'a> {
     fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
         match expr {
             ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value)),
+            ResolvedExpr::BigIntLiteral {
+                decimal,
+                sign,
+                limb_low,
+                limb_high,
+            } => Ok(LoweredExpr::BigIntLiteral {
+                decimal: decimal.clone(),
+                sign: *sign,
+                limb_low: *limb_low,
+                limb_high: *limb_high,
+            }),
             ResolvedExpr::String(value) => Ok(LoweredExpr::String(value.clone())),
             ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
             ResolvedExpr::Null => Ok(LoweredExpr::Null),
@@ -617,6 +628,24 @@ impl<'a> Resolver<'a> {
                         kind: FunctionCallKind::User(parent_ctor),
                         args: lowered_args,
                     });
+                }
+
+                if func_name == "String" {
+                    if let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice() {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "BigIntToString".to_owned(),
+                            args: vec![self.lower_expr(&args[0])?],
+                        });
+                    }
+                }
+
+                if func_name == "Boolean" {
+                    if let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice() {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "BigIntToBoolean".to_owned(),
+                            args: vec![self.lower_expr(&args[0])?],
+                        });
+                    }
                 }
 
                 let func_id = match self.resolve_func(func_name) {

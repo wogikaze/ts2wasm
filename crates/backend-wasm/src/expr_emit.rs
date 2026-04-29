@@ -41,6 +41,26 @@ impl WatEmitter<'_> {
             LoweredExpr::String(value) => {
                 wat.push_str(&format!("{pad}(i32.const {})\n", self.string_value(value)))
             }
+            LoweredExpr::BigIntLiteral {
+                decimal,
+                sign,
+                limb_low,
+                limb_high,
+            } => {
+                let decimal_src = self.string_offset(decimal) + Layout::STRING_HEADER_SIZE;
+                let decimal_len = self.string_len(decimal);
+                let limb_count = if *sign == 0 { 0 } else { 1 };
+                wat.push_str(&format!("{pad}(i32.const {sign})\n"));
+                wat.push_str(&format!("{pad}(i32.const {limb_count})\n"));
+                wat.push_str(&format!("{pad}(i32.const {})\n", *limb_low as i32));
+                wat.push_str(&format!("{pad}(i32.const {})\n", *limb_high as i32));
+                wat.push_str(&format!("{pad}(i32.const {decimal_src})\n"));
+                wat.push_str(&format!("{pad}(i32.const {decimal_len})\n"));
+                wat.push_str(&format!(
+                    "{pad}(call {})\n",
+                    RuntimeFn::MakeBigIntLiteral.symbol()
+                ));
+            }
             LoweredExpr::Bool(true) => {
                 wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::TRUE))
             }
@@ -1275,6 +1295,7 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
     match expr {
         LoweredExpr::Call { .. }
         | LoweredExpr::RuntimeCall { .. }
+        | LoweredExpr::BigIntLiteral { .. }
         | LoweredExpr::ArrayNew { .. }
         | LoweredExpr::ObjectNew { .. }
         | LoweredExpr::ErrorNew { .. }
@@ -1338,6 +1359,7 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
 fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
     match expr {
         LoweredExpr::ArrayNew { .. }
+        | LoweredExpr::BigIntLiteral { .. }
         | LoweredExpr::ObjectNew { .. }
         | LoweredExpr::ErrorNew { .. }
         | LoweredExpr::PropertyGetDynamic { .. }

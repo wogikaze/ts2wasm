@@ -108,7 +108,7 @@ Follow-up issues:
 
 ## Notes
 
-Arithmetic helpers operate on canonical BigInt heap objects and must not depend on JavaScript `number` fast paths.
+Arithmetic helpers operate on canonical BigInt heap objects and must not depend on JavaScript `number` fast paths. Issue 259 only implemented the observable literal slice using a sign/first-limb prefix plus cached decimal bytes; this issue owns full canonical multi-limb storage/operation correctness before arithmetic can be claimed compatible.
 
 ## Completion evidence
 

@@ -120,6 +120,35 @@ fn regexp_literal_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_literal_runtime_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-literal-runtime.ts");
+}
+
+#[test]
+fn bigint_arithmetic_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-arithmetic-unsupported.ts",
+        "issue-260: BigInt arithmetic and bitwise operators are tracked separately from literal runtime values",
+    );
+}
+
+#[test]
+fn bigint_unary_minus_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-unary-minus-unsupported.ts",
+        "issue-260: BigInt unary arithmetic and bitwise operators are tracked separately from literal runtime values",
+    );
+}
+
+#[test]
+fn bigint_equality_reports_issue_261() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-equality-unsupported.ts",
+        "issue-261: BigInt equality and comparison are tracked separately from literal runtime values",
+    );
+}
+
+#[test]
 fn regexp_test_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-test.ts");
 }
