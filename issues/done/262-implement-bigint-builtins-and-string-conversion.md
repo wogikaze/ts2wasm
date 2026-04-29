@@ -69,7 +69,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Node/iwasm differential fixtures cover `BigInt(...)`, `String(bigint)`, template/string interpolation involving BigInt, and selected `BigInt.asIntN` / `BigInt.asUintN` cases or a split follow-up if those are not in this slice.
-- [x] Unsupported BigInt builtin and conversion forms produce source diagnostics with issue 262 or a narrower follow-up issue ID.
+- [x] Unsupported BigInt builtin and conversion forms produce source diagnostics with issue 262 for the stable `new BigInt(...)` constructor rejection or issue 280 for residual dynamic builtin inputs.
 - [x] Runtime linker structure tests cover selected BigInt builtin helpers and avoid new host imports.
 - [x] Docs/current-state/issues state the supported builtin subset and remaining limits.
 
@@ -137,7 +137,7 @@ date: 2026-04-29
 
 Remaining risks:
 
-- The closed slice covers the documented literal-safe builtin subset. Broader dynamic `BigInt(...)`, `BigInt.asIntN`, and `BigInt.asUintN` inputs are split to issue 280.
+- The closed slice covers the documented literal-safe builtin subset and the stable `new BigInt(...)` constructor rejection. Broader dynamic `BigInt(...)`, `BigInt.asIntN`, and `BigInt.asUintN` inputs are split to issue 280.
 
 ## Progress evidence
 

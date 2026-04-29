@@ -1477,7 +1477,7 @@ fn bigint_from_bool(value: bool) -> BigIntConst {
 fn bigint_string_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-262: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals"
+        message: "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals"
             .to_owned(),
         span: Some(span),
     }
@@ -1486,7 +1486,7 @@ fn bigint_string_diagnostic(span: Span) -> Diagnostic {
 fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-262: BigInt(...) currently supports string, boolean, integer number, or BigInt literal inputs in this builtin slice".to_owned(),
+        message: "issue-280: BigInt(...) currently supports string, boolean, integer number, or BigInt literal inputs in this builtin slice".to_owned(),
         span: Some(span),
     }
 }
@@ -1515,7 +1515,7 @@ fn resolve_bigint_static_function_call(
     let bits = bigint_static_width(bits_arg, span)?;
     let value = bigint_from_resolved(value_arg).ok_or_else(|| Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-262: BigInt.asIntN/asUintN currently require a BigInt literal value input"
+        message: "issue-280: BigInt.asIntN/asUintN currently require a BigInt literal value input"
             .to_owned(),
         span: Some(span),
     })?;
@@ -1541,7 +1541,7 @@ fn bigint_static_width_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message:
-            "issue-262: BigInt.asIntN/asUintN currently support integer literal bit widths 0..64"
+            "issue-280: BigInt.asIntN/asUintN currently support integer literal bit widths 0..64"
                 .to_owned(),
         span: Some(span),
     }
@@ -2654,7 +2654,7 @@ fn resolve_builtin_call(
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-262: BigInt.asIntN/asUintN require literal bit width and BigInt value inputs in this builtin slice"
+                    "issue-280: BigInt.asIntN/asUintN require literal bit width and BigInt value inputs in this builtin slice"
                         .to_owned(),
                 span: span_of_expr(callee),
             });

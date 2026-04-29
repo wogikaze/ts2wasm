@@ -242,16 +242,23 @@ fn bigint_builtin_as_int_n_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn bigint_builtin_unsupported_forms_report_issue_262() {
+fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-as-uint-n-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts",
-        "fixtures/core-semantics/bigint-new-unsupported.ts",
     ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-262:");
+        assert_build_fails_with_unsupported_syntax(fixture, "issue-280:");
     }
+}
+
+#[test]
+fn bigint_new_constructor_reports_issue_262() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-new-unsupported.ts",
+        "issue-262: BigInt is not a constructor; use BigInt(...) without new",
+    );
 }
 
 #[test]
