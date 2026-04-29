@@ -210,6 +210,47 @@ mod tests {
     }
 
     #[test]
+    fn rejects_top_level_function_outer_mutation_with_span_for_issue_292() {
+        let program = vec![
+            Stmt::Let {
+                name: "initCount".to_string(),
+                expr: Expr::Number {
+                    value: 0,
+                    span: Span { start: 16, end: 17 },
+                },
+                span: Span { start: 0, end: 18 },
+            },
+            Stmt::Function {
+                name: "counter".to_string(),
+                params: vec![],
+                body: vec![Stmt::Assign {
+                    name: "initCount".to_string(),
+                    expr: Expr::Binary {
+                        left: Box::new(Expr::Ident {
+                            name: "initCount".to_string(),
+                            span: Span { start: 40, end: 49 },
+                        }),
+                        op: ts2wasm_frontend::BinaryOp::Add,
+                        right: Box::new(Expr::Number {
+                            value: 1,
+                            span: Span { start: 52, end: 53 },
+                        }),
+                        span: Span { start: 40, end: 53 },
+                    },
+                    span: Span { start: 28, end: 54 },
+                }],
+                span: Span { start: 19, end: 56 },
+            },
+        ];
+
+        let err = name_resolver::resolve_names(&program).unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-292"));
+        assert!(err.message.contains("initCount"));
+        assert_eq!(err.span.map(|span| (span.start, span.end)), Some((28, 54)));
+    }
+
+    #[test]
     fn rejects_global_function_constructor_call_with_issue_062_diagnostic() {
         let program = vec![Stmt::Expr {
             expr: Expr::Call {
