@@ -16,7 +16,6 @@
     "artifacts/coverage/results/test262-summary.json",
     "artifacts/coverage/results/test262.json",
     "artifacts/coverage/results/tsc.json",
-    "artifacts/coverage/results/tsgo.json",
-    "artifacts/coverage/results/test262-results.jsonl"
+    "artifacts/coverage/results/tsgo.json"
   ]
 }

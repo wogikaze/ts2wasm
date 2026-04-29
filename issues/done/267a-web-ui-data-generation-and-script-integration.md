@@ -9,6 +9,8 @@ depends_on: []
 blocks: [267]
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -36,9 +38,9 @@ Review evidence:
 
 In scope:
 
-- [ ] Add a generator for `test-results.json`, `coverage.json`, `history.json`, and `metadata.json`.
-- [ ] Wire the generator into the intended `reference-coverage` / `test262` command surface or a documented mise task.
-- [ ] Keep the generated JSON schema compatible with the existing React data loaders.
+- [x] Add a generator for `test-results.json`, `coverage.json`, `history.json`, and `metadata.json`.
+- [x] Wire the generator into the intended `reference-coverage` / `test262` command surface or a documented mise task.
+- [x] Keep the generated JSON schema compatible with the existing React data loaders.
 
 Out of scope:
 
@@ -63,12 +65,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A command generates all `web-ui/public/data/*.json` files required by the UI.
-- [ ] Generated test records include suite, case/name, target/status, duration when available, and error/reason when available.
-- [ ] Generated coverage records are derived from existing coverage artifacts rather than hard-coded sample data.
-- [ ] `mise run reference-coverage -- --web-ui` or a documented equivalent succeeds.
-- [ ] Documentation names the command and generated files.
-- [ ] Docs/current-state/issues are synchronized when status or design changes.
+- [x] A command generates all `web-ui/public/data/*.json` files required by the UI.
+- [x] Generated test records include suite, case/name, target/status, duration when available, and error/reason when available.
+- [x] Generated coverage records are derived from existing coverage artifacts rather than hard-coded sample data.
+- [x] `mise run reference-coverage -- --web-ui` or a documented equivalent succeeds.
+- [x] Documentation names the command and generated files.
+- [x] Docs/current-state/issues are synchronized when status or design changes.
 
 ## Validation
 
@@ -96,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/` web UI usage/deployment documentation
+- [x] updated: `web-ui/README.md` web UI data generation and runner integration documentation
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -131,14 +133,36 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `acace0a6` (`issue-267a: add web ui data generator`)
+- `c855f96` (`merge: issue-267a web ui command progress`)
+- close commit records final regenerated data, docs, and issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run web-ui-data
+result: pass; generated 4 files under web-ui/public/data from artifacts/coverage/results/*.json
+date: 2026-04-29
+
+command: cd web-ui && npm run build
+result: pass after `npm ci` restored lockfile dependencies; Vite production build completed
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass; issues/index.md regenerated after moving 267a to done
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md is up to date
+date: 2026-04-29
+
+command: mise run check issues
+result: pass; issue index and issue health checks passed
+date: 2026-04-29
 ```
 
 Remaining risks:
