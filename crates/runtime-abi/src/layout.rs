@@ -8,7 +8,9 @@ impl Layout {
     /// Current guarantee scope: enough for one max-size stdin allocation from HEAP_START.
     pub const MEMORY_MIN_PAGES: u32 = 2;
     /// Maximum pages the core wasm runtime may grow to before trapping allocation.
-    pub const MEMORY_MAX_PAGES: u32 = 16;
+    /// This bounded default covers the ABC451 depth-7 live-set reducer while
+    /// preserving an explicit OOM trap boundary.
+    pub const MEMORY_MAX_PAGES: u32 = 42;
     /// First byte offset used for the static string data segment table.
     pub const DATA_START: u32 = 256;
     /// Byte alignment for heap allocations and data segment entries.
