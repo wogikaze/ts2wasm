@@ -21,6 +21,7 @@ struct NameResolver {
     labels: Vec<LabelBinding>,
     loop_depth: usize,
     breakable_depth: usize,
+    function_depth: usize,
 }
 
 #[derive(Clone)]
@@ -70,6 +71,7 @@ impl NameResolver {
             labels: Vec::new(),
             loop_depth: 0,
             breakable_depth: 0,
+            function_depth: 0,
         }
     }
 
@@ -192,6 +194,7 @@ impl NameResolver {
                 // Function declarations are already collected in first pass
                 // Now resolve the function body with its own scope
                 self.enter_scope();
+                self.function_depth += 1;
                 for (param_name, default, is_rest) in params {
                     self.declare_variable(param_name, None)?;
                     if let Some(default_expr) = default {
@@ -201,6 +204,7 @@ impl NameResolver {
                     let _ = is_rest;
                 }
                 let resolved_body = self.resolve_block(body)?;
+                self.function_depth -= 1;
                 self.exit_scope();
                 Ok(Stmt::Function {
                     name: name.clone(),
@@ -465,7 +469,7 @@ impl NameResolver {
             Expr::This { span } => Ok(Expr::This { span: *span }),
             Expr::Ident { name, span } => {
                 // Check if it's a function name
-                if self.functions.contains_key(name) {
+                if self.functions.contains_key(name) || self.is_implicit_arguments(name) {
                     return Ok(Expr::Ident {
                         name: name.clone(),
                         span: *span,
@@ -484,6 +488,9 @@ impl NameResolver {
                         span: *span,
                     })
                 } else {
+                    if name == "arguments" {
+                        return Err(unsupported_arguments_outside_function(*span));
+                    }
                     Err(Diagnostic {
                         code: DiagCode::UnresolvedName,
                         message: format!("unresolved name: `{name}`"),
@@ -734,6 +741,9 @@ impl NameResolver {
         if self.allowed_globals.contains(name) {
             return true;
         }
+        if self.is_implicit_arguments(name) {
+            return true;
+        }
         // Check all scopes from innermost to outermost
         self.scopes
             .iter()
@@ -764,6 +774,9 @@ impl NameResolver {
 
     fn resolve_identifier(&mut self, name: &str, span: Span) -> Result<(), Diagnostic> {
         if !self.is_declared(name) {
+            if name == "arguments" {
+                return Err(unsupported_arguments_outside_function(span));
+            }
             Err(Diagnostic {
                 code: DiagCode::UnresolvedName,
                 message: format!("unresolved name: `{name}`"),
@@ -773,12 +786,26 @@ impl NameResolver {
             Ok(())
         }
     }
+
+    fn is_implicit_arguments(&self, name: &str) -> bool {
+        name == "arguments" && self.function_depth > 0
+    }
 }
 
 fn unsupported_function_constructor(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-062: dynamic Function constructor is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message:
+            "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
+                .to_owned(),
         span: Some(span),
     }
 }

@@ -9,6 +9,7 @@ depends_on: ["062c"]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 Problem: Function receiver binding and the `arguments` object have observable
@@ -24,10 +25,10 @@ Implement the callable slice for non-arrow function `this` binding and the
 
 In scope:
 
-- [ ] Receiver binding for supported function calls.
-- [ ] Top-level or unsupported receiver forms diagnosed when not implemented.
-- [ ] Basic `arguments.length` and indexed argument reads.
-- [ ] Node/iwasm differential fixtures for supported receiver and arguments cases.
+- [x] Receiver binding for supported function calls.
+- [x] Top-level or unsupported receiver forms diagnosed when not implemented.
+- [x] Basic `arguments.length` and indexed argument reads.
+- [x] Node/iwasm differential fixtures for supported receiver and arguments cases.
 
 Out of scope:
 
@@ -52,10 +53,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Supported function calls bind `this` consistently with Node for the selected fixtures.
-- [ ] Supported `arguments` reads match Node for zero, one, and multiple arguments.
-- [ ] Unsupported receiver/arguments forms produce issue-linked diagnostics.
-- [ ] The ordinary direct-call fixtures from issue 062c continue to pass.
+- [x] Supported function calls bind `this` consistently with Node for the selected fixtures.
+- [x] Supported `arguments` reads match Node for zero, one, and multiple arguments.
+- [x] Unsupported receiver/arguments forms produce issue-linked diagnostics.
+- [x] The ordinary direct-call fixtures from issue 062c continue to pass.
 
 ## Validation
 
@@ -79,18 +80,29 @@ Not run:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Implemented the narrow non-arrow function slice: object-literal function
+references can be called through a supported receiver object, receiver-dependent
+direct calls are diagnosed, and non-arrow functions get a basic `arguments`
+object for `.length` and indexed reads.
 
 Commits:
 
-- `...`
+- `bf80f0b` issue-062d: add function receiver and arguments coverage
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(function) or test(arguments) or test(node_diff)'
+result: passed (25 tests)
+date: 2026-04-29
+
+command: cargo nextest run
+result: passed (421 tests, 4 skipped)
+date: 2026-04-29
 ```
 
 Remaining risks:
