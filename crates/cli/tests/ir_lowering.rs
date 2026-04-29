@@ -55,6 +55,50 @@ fn class_method_shadowed_outer_name_is_not_issue_289_capture() {
 }
 
 #[test]
+fn lowering_passes_immutable_class_method_outer_local_capture() {
+    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        let suffix = "-capture";
+        class Reader {
+          read(prefix) {
+            return prefix + suffix;
+          }
+        }
+        let reader = new Reader();
+        console.log(reader.read("class"));
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let read = &lowered.functions[1];
+    assert_eq!(read.params, vec![LocalId(0), LocalId(1), LocalId(2)]);
+
+    match &lowered.top_level_statements[2] {
+        LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+            args,
+        }) => match &args[..] {
+            [
+                LoweredExpr::Call {
+                    kind: FunctionCallKind::User(_),
+                    args: method_args,
+                },
+            ] => {
+                assert!(matches!(method_args.as_slice(), [
+                    LoweredExpr::Local(LocalId(1)),
+                    LoweredExpr::String(prefix),
+                    LoweredExpr::Local(LocalId(0)),
+                ] if prefix == "class"));
+            }
+            other => panic!("unexpected console.log arg for captured class method: {other:?}"),
+        },
+        other => panic!("unexpected captured class method call statement: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_splits_functions_and_resolves_ids() {
     let program = parse_and_resolve(
         "function add(a, b) { return a + b; } let x = 1; console.log(add(x, 2));",

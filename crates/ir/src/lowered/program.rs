@@ -1,6 +1,7 @@
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
     let function_signatures = collect_function_signatures(program, &function_ids);
+    let class_method_captures = collect_class_method_captures(program, &function_ids);
     let class_parents = collect_class_parents(program);
     let class_private_fields = collect_class_private_fields(program);
     let mut next_func_id = function_ids.len();
@@ -17,6 +18,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     body,
                     &function_ids,
                     &function_signatures,
+                    &class_method_captures,
                     class_parents.clone(),
                     class_private_fields.clone(),
                     LowerFunctionOptions {
@@ -59,6 +61,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &ctor_body,
                     &function_ids,
                     &function_signatures,
+                    &class_method_captures,
                     class_parents.clone(),
                     class_private_fields.clone(),
                     LowerFunctionOptions {
@@ -75,7 +78,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
                     let method_id = function_ids[&method_key];
-                    let method_params_with_this: Vec<ResolvedParam> =
+                    let mut method_params_with_this: Vec<ResolvedParam> =
                         if method.name.starts_with("static::") {
                             method.params.clone()
                         } else {
@@ -88,12 +91,21 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             params.extend(method.params.clone());
                             params
                         };
+                    method_params_with_this.extend(method.captures.iter().map(|name| {
+                        ResolvedParam {
+                            name: name.clone(),
+                            default: None,
+                            is_rest: false,
+                            span: None,
+                        }
+                    }));
                     let lowered = lower_function(
                         method_id,
                         &method_params_with_this,
                         &method.body,
                         &function_ids,
                         &function_signatures,
+                        &class_method_captures,
                         class_parents.clone(),
                         class_private_fields.clone(),
                         LowerFunctionOptions {
@@ -115,6 +127,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let mut resolver = Resolver::new(
         &function_ids,
         &function_signatures,
+        &class_method_captures,
         class_parents.clone(),
         class_private_fields,
         next_func_id,
@@ -345,6 +358,29 @@ fn collect_function_signatures(
     }
 
     signatures
+}
+
+fn collect_class_method_captures(
+    program: &[ResolvedStmt],
+    function_ids: &HashMap<String, FuncId>,
+) -> HashMap<FuncId, Vec<String>> {
+    let mut captures = HashMap::new();
+
+    for stmt in program {
+        if let ResolvedStmt::ClassDecl { name, methods, .. } = stmt {
+            for method in methods {
+                if method.captures.is_empty() {
+                    continue;
+                }
+                let method_key = class_method_key(name, &method.name);
+                if let Some(func_id) = function_ids.get(&method_key) {
+                    captures.insert(*func_id, method.captures.clone());
+                }
+            }
+        }
+    }
+
+    captures
 }
 
 fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
@@ -903,6 +939,7 @@ fn lower_function(
     body: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
     function_signatures: &HashMap<FuncId, FunctionSignature>,
+    class_method_captures: &HashMap<FuncId, Vec<String>>,
     class_parents: HashMap<String, Option<String>>,
     class_private_fields: ClassPrivateFieldSlots,
     options: LowerFunctionOptions<'_>,
@@ -937,6 +974,7 @@ fn lower_function(
     let (mut resolver, param_ids) = Resolver::with_params(
         function_ids,
         function_signatures,
+        class_method_captures,
         lowered_params
             .iter()
             .map(|param| param.name.clone())

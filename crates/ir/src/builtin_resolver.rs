@@ -775,7 +775,7 @@ fn resolve_stmt_with_outer_bindings(
                         body: method_body,
                         span,
                     } => {
-                        reject_class_method_outer_local_references(
+                        let captures = class_method_outer_local_captures(
                             name,
                             method_name,
                             params,
@@ -804,12 +804,14 @@ fn resolve_stmt_with_outer_bindings(
                                 name: method_name.clone(),
                                 params: resolved_params,
                                 body: resolved_body,
+                                captures,
                             });
                         } else {
                             methods.push(ClassMethod {
                                 name: method_name.clone(),
                                 params: resolved_params,
                                 body: resolved_body,
+                                captures,
                             });
                         }
                     }
@@ -1080,30 +1082,84 @@ fn reject_class_method_outer_local_references(
     body: &[Stmt],
     outer_bindings: &HashSet<String>,
 ) -> Result<(), Diagnostic> {
-    if outer_bindings.is_empty() {
-        return Ok(());
+    let captures =
+        class_method_outer_local_captures(class_name, method_name, params, body, outer_bindings)?;
+    if let Some(name) = captures.first() {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-289: class constructor `{method_name}` references outer local `{name}`; class constructor lexical captures require environment support"
+            ),
+            span: first_outer_local_reference_in_stmts(
+                body,
+                outer_bindings,
+                &class_method_local_names(class_name, params, body)?,
+            )
+            .map(|(_, span)| span),
+        });
     }
 
+    Ok(())
+}
+
+fn class_method_outer_local_captures(
+    class_name: &str,
+    method_name: &str,
+    params: &[(String, Option<Expr>, bool)],
+    body: &[Stmt],
+    outer_bindings: &HashSet<String>,
+) -> Result<Vec<String>, Diagnostic> {
+    if outer_bindings.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut method_locals = class_method_local_names(class_name, params, body)?;
+    let mut assigned_names = HashSet::new();
+    collect_assigned_names_in_stmts(body, &mut assigned_names);
+
+    let mut capture_names = Vec::new();
+    while let Some((name, span)) =
+        first_outer_local_reference_in_stmts(body, outer_bindings, &method_locals)
+    {
+        if assigned_names.contains(&name) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-289: class method `{method_name}` mutates outer local `{name}`; mutable class-method lexical captures require heap environment cell support",
+                ),
+                span: Some(span),
+            });
+        }
+
+        if params.iter().any(|(_, _, is_rest)| *is_rest) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-289: class method `{method_name}` captures outer local `{name}` with a rest parameter; hidden capture parameters after rest require a broader call ABI",
+                ),
+                span: Some(span),
+            });
+        }
+
+        method_locals.insert(name.clone());
+        capture_names.push(name);
+    }
+
+    Ok(capture_names)
+}
+
+fn class_method_local_names(
+    class_name: &str,
+    params: &[(String, Option<Expr>, bool)],
+    body: &[Stmt],
+) -> Result<HashSet<String>, Diagnostic> {
     let mut method_locals = HashSet::new();
     method_locals.insert(class_name.to_owned());
     for (param, default, _) in params {
         collect_binding_names(param, default.as_ref().map(Expr::span), &mut method_locals)?;
     }
     collect_stmt_declared_bindings_in_block(body, &mut method_locals)?;
-
-    if let Some((name, span)) =
-        first_outer_local_reference_in_stmts(body, outer_bindings, &method_locals)
-    {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: format!(
-                "issue-289: class method `{method_name}` references outer local `{name}`; class-method lexical captures require environment support"
-            ),
-            span: Some(span),
-        });
-    }
-
-    Ok(())
+    Ok(method_locals)
 }
 
 fn first_outer_local_reference_in_stmts(
@@ -1998,6 +2054,7 @@ fn resolve_private_elements(
                         .iter()
                         .map(resolve_stmt)
                         .collect::<Result<Vec<_>, _>>()?,
+                    captures: Vec::new(),
                 });
             }
             ClassPrivateElement::Getter {
@@ -2035,6 +2092,7 @@ fn resolve_private_elements(
                         .iter()
                         .map(resolve_stmt)
                         .collect::<Result<Vec<_>, _>>()?,
+                    captures: Vec::new(),
                 });
             }
             ClassPrivateElement::Setter {
@@ -2086,6 +2144,7 @@ fn resolve_private_elements(
                         span: Some(*span),
                     }],
                     body: resolved_body,
+                    captures: Vec::new(),
                 });
             }
         }
