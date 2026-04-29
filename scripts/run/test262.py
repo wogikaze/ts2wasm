@@ -79,7 +79,16 @@ function $DONOTEVALUATE() {
   throw "Test262: This statement should not be evaluated.";
 }
 
-class assert {
+function assert(mustBeTrue, message) {
+  if (mustBeTrue === true) {
+    return undefined;
+  }
+
+  print("__TS2WASM_TEST262_ASSERT_FAIL__");
+  return undefined;
+}
+
+class Test262Assert {
   static _isSameValue(a, b) {
     if (a === b) {
       return a !== 0 || 1 / a === 1 / b;
