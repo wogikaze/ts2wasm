@@ -3,9 +3,9 @@ id: 308
 title: "Implement ABC451 depth-9 GC cadence policy"
 type: feature
 area: runtime/memory
-class: implementation-ready
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [309]
 blocks: [300]
 created: 2026-04-29
 updated: 2026-04-29
@@ -127,7 +127,9 @@ Current state:
 
 Follow-up issues:
 
-- [x] none; issue 308 remains open with narrowed negative evidence
+- [x] created: `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md`
+      owns the remaining allocation/live-set blocker after GC cadence and
+      free-list policy slices.
 
 ## Notes
 
@@ -346,6 +348,29 @@ date: 2026-04-29
 ```
 
 Issue 308 remains open. Issue 300 remains open.
+
+2026-04-29 child `019ddb6e-1069-7f02-9184-4955c748b93c` split blocker:
+
+- Split the remaining issue 308 blocker into issue 309 because the latest
+  evidence is no longer a GC cadence policy gap. The current depth-9
+  search-only reducer reaches the explicit remaining-page guard after
+  last-chance GC, free-list scan, tail-trim, and post-GC bump recompute.
+- Latest blocker shape remains:
+
+```text
+size=6140
+block_size=6160
+new_heap=12126520
+memory_pages=185
+needed_pages=1
+remaining_pages=0
+gc_free_list_max_body_size=3584
+```
+
+- Issue 309 now owns reducing the live allocation shape or allocation size, or
+  splitting a smaller proven blocker. Issue 308 is blocked on issue 309 and
+  remains open. Issue 300 remains open; no official ABC451 sample compatibility
+  is claimed.
 
 2026-04-29 child `308-gc-depth9-next-20260429T2133Z` progress:
 
