@@ -1841,11 +1841,26 @@ impl<'a> Resolver<'a> {
                         for elem in elements {
                             lowered_args.push(self.lower_expr(elem)?);
                         }
+                    } else if let ResolvedExpr::String(value) = spread_expr.as_ref() {
+                        if !value.is_ascii() {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message:
+                                    "issue-274: string literal call spread is currently limited to ASCII strings"
+                                        .to_owned(),
+                                span: None,
+                            });
+                        }
+                        lowered_args.extend(
+                            value
+                                .chars()
+                                .map(|ch| LoweredExpr::String(ch.to_string())),
+                        );
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message:
-                                "issue-274: spread arguments are only supported for literal arrays in this milestone"
+                                "issue-274: spread arguments are only supported for literal arrays and ASCII string literals in this milestone"
                                     .to_owned(),
                             span: None,
                         });
