@@ -184,6 +184,45 @@ cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-
   access`. The issue remains open until the official sample path is safe and
   Node-compatible.
 
+2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c`:
+
+- Isolated the first post-build runtime trap to statement-form
+  `array.push(...)` on arrays allocated from `[]`: array literals allocated
+  only the length header while the existing push runtime wrote element payload
+  past that allocation.
+- Added a narrow lowering/backend path for unused local-array `push`
+  statements. It reassigns the local to an array value that mutates in place
+  while the existing GC allocation body size has spare capacity, and reallocates
+  with doubled capacity otherwise. This preserves the existing array payload
+  header and does not expand fractional, `NaN`, `Infinity`, or `-0` semantics.
+- Added `fixtures/core-semantics/array-push-recursive-growth.ts`, a depth-3
+  ABC451 reducer that previously produced the wrong length or trapped. It now
+  matches Node under `iwasm`:
+
+```text
+114
+```
+
+- The full ABC451 fixture still builds, but the smallest official sample
+  command remains blocked by a later allocation trap:
+
+```sh
+cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-large-number-child.wasm --host-deny
+printf '10\n' | iwasm /tmp/abc451-d-large-number-child.wasm
+```
+
+Result:
+
+```text
+Exception: unreachable
+```
+
+`wasmtime` backtrace for the same wasm/input places the trap in the runtime
+allocator (`wasm function 26`, `$alloc_heap`) called from recursive search
+(`wasm function 49`). A temporary experiment with a larger memory maximum still
+ended in `$alloc_heap`, so the remaining blocker is narrower than the original
+out-of-bounds write but not yet safe to close.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

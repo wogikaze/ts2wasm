@@ -378,6 +378,13 @@ fn validate_expr(
                     span: None,
                 });
             }
+            if runtime_fn == "ArrayPushGrow" && args.len() != 2 {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "ArrayPushGrow must include an array receiver and value".to_owned(),
+                    span: None,
+                });
+            }
             if runtime_fn == "HeapClosureCall" && args.is_empty() {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,

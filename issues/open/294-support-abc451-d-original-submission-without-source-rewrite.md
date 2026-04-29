@@ -87,10 +87,13 @@ After that first parser gap, the same source also requires:
 `fixtures/atcoder/abc451-d-concat-power2.ts` now builds past the previous
 `NumberOutOfRange` diagnostic for `1000000000`, and a reduced integer-only
 large-number fixture matches Node/iwasm for `536870912` and `819264512`.
-However, the ABC451 sample execution path still traps under `iwasm` with
-`Exception: out of bounds memory access` for inputs `10`, `69`, and `1099898`.
-That runtime trap is the next blocker before this ABC451 path can be considered
-sample-compatible.
+However, the ABC451 sample execution path is not yet sample-compatible. The
+first post-build blocker was narrowed from an out-of-bounds write in
+statement-form `array.push(...)` to an allocator trap during recursive search:
+`printf '10\n' | iwasm /tmp/abc451-d-large-number-child.wasm` now reports
+`Exception: unreachable`, and `wasmtime` places the trap in `$alloc_heap`
+called from the recursive search function. Inputs `69` and `1099898` remain
+blocked behind that smaller `10` repro.
 
 ## Desired final state
 

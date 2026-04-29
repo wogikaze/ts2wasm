@@ -67,6 +67,11 @@ fn large_integer_number_boundary_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_push_recursive_growth_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-push-recursive-growth.ts");
+}
+
+#[test]
 fn prototype_chain_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/prototype.ts");
 }
