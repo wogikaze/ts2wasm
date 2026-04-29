@@ -554,6 +554,8 @@ fn private_class_field_unsupported_forms_report_issue_255() {
     for fixture in [
         "fixtures/core-semantics/private-class-field-method-unsupported.ts",
         "fixtures/core-semantics/private-class-field-external-unsupported.ts",
+        "fixtures/core-semantics/private-class-field-backing-key-unsupported.ts",
+        "fixtures/core-semantics/private-class-field-object-keys-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-255:");
     }
