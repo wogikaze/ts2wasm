@@ -87,3 +87,6 @@ cargo fmt --all --check
 - 2026-04-29: Added a dense array local spread slice:
   - array literals such as `[0, ...base, 3]` where `base` is a known dense array local lower through the existing `ArrayConcat` path and match Node/iwasm output;
   - string/custom iterable spread, sparse arrays, object spread beyond static object literals, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.
+- 2026-04-29: Added a dense array local call-spread slice:
+  - direct fixed-arity function calls such as `sum(...values)` where `values` is a known dense array local lower each formal argument through existing `ArrayGet` runtime reads and match Node/iwasm output;
+  - string/custom iterable call spread, rest/`arguments`-observing callees, sparse arrays, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.

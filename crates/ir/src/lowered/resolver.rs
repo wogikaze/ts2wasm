@@ -2363,7 +2363,20 @@ impl<'a> Resolver<'a> {
             .get(&func_id)
             .copied()
             .unwrap_or_default();
-        let explicit_args = self.lower_call_args(args)?;
+        let explicit_args = if !signature.has_rest && !signature.needs_arguments {
+            if let Some(local_id) = self.single_dense_array_local_spread_arg(args) {
+                (0..signature.explicit_params)
+                    .map(|index| LoweredExpr::ArrayGet {
+                        arr: Box::new(LoweredExpr::Local(local_id)),
+                        index: Box::new(LoweredExpr::Number(index as i32)),
+                    })
+                    .collect()
+            } else {
+                self.lower_call_args(args)?
+            }
+        } else {
+            self.lower_call_args(args)?
+        };
         let mut lowered_args = Vec::new();
 
         if signature.needs_receiver {
@@ -2386,6 +2399,21 @@ impl<'a> Resolver<'a> {
         }
 
         Ok(lowered_args)
+    }
+
+    fn single_dense_array_local_spread_arg(&self, args: &[ResolvedExpr]) -> Option<LocalId> {
+        let [ResolvedExpr::Spread(spread_expr)] = args else {
+            return None;
+        };
+        let ResolvedExpr::Ident(name) = spread_expr.as_ref() else {
+            return None;
+        };
+        let local_id = self.resolve_local(name).ok()?;
+        if self.array_locals.contains(&local_id) && !self.env_cell_locals.contains(&local_id) {
+            Some(local_id)
+        } else {
+            None
+        }
     }
 
     fn append_class_method_captures(
