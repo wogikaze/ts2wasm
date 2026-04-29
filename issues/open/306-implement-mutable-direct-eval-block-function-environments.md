@@ -165,6 +165,30 @@ This issue is split from issue 302 because the remaining behavior is mutable
 environment support, not direct eval source selection. Keep the implementation
 limited to the static block-function reference shape until issue 302 can close.
 
+2026-04-29 child progress:
+
+- Added a narrow lowered IR env-cell collection path for the static direct-eval
+  block-function IIFE shape only. The collector marks the eval block function
+  binding and its mutated observer captures as environment cells, and marks the
+  function-valued observer binding shape needed for `initialBV()`.
+- Reused existing `EnvCellNew` / `EnvCellGet` / `EnvCellSet` and heap closure
+  emission instead of adding new backend environment operations.
+- Added
+  `fixtures/core-semantics/direct-eval-block-function-mutable-env.ts`, covering
+  the selected `initialBV` / `currentBV` / `varBinding` mutation behavior with
+  Node/iwasm differential validation.
+- Validation passed: `cargo fmt --all --check`; `cargo nextest run -p
+  ts2wasm-cli direct_eval_block_function`; selected test262 path-filter
+  coverage for both `func-block-decl-eval-func-init.js` and
+  `func-block-decl-eval-func-block-scoping.js`, each reporting `build_pass=1`
+  and `semantic_pass=1`; `mise run update-issue-index -- --check`.
+- Not closed in this child cycle because `mise run check issues` is blocked by
+  pre-existing missing test262 JSONL artifact references in unrelated issue
+  files, and full `cargo nextest run` is blocked by the unrelated runtime memory
+  policy test
+  `ts2wasm-backend-wasm::tests::alloc_heap_emits_gc_header_and_trigger_contract`
+  expecting `(memory (export "memory") 2 16)`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

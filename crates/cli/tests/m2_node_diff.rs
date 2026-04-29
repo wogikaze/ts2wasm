@@ -1047,6 +1047,7 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/direct-eval-block-function-init.ts",
         "fixtures/core-semantics/direct-eval-block-function-iife-init.ts",
         "fixtures/core-semantics/direct-eval-block-function-block-scoping.ts",
+        "fixtures/core-semantics/direct-eval-block-function-mutable-env.ts",
         "fixtures/core-semantics/ordinary-function-direct-call.ts",
     ] {
         assert_fixture_matches_node(fixture);
