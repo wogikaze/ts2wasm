@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Ambientexportdefaulterrors` fails
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ambientExportDefaultErrors.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientExportDefaultErrors.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ambientExportDefaultErrors.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientExportDefaultErrors.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/ambientExportDefaultErrors.ts`
+Representative path: `reference/typescript/tests/cases/compiler/ambientExportDefaultErrors.ts`
 Feature label: `unknown-unsupported`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ambientExportDefaultErrors.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ambientExportDefaultErrors.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientExportDefaultErrors.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientExportDefaultErrors.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/ambientExportDefaultErrors.ts`
+- `reference/typescript/tests/cases/compiler/ambientExportDefaultErrors.ts`
 
 ## Duplicate detection
 

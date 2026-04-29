@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Parameterlist` fails with `parser
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ParameterList13.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ParameterList13.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ParameterList13.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ParameterList13.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/ParameterList13.ts`
+Representative path: `reference/typescript/tests/cases/compiler/ParameterList13.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ParameterList13.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ParameterList13.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ParameterList13.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ParameterList13.ts --detail
 ```
 
 Not run:
@@ -115,12 +115,12 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/ParameterList13.ts`
-- `reference/TypeScript/tests/cases/compiler/ParameterList4.ts`
-- `reference/TypeScript/tests/cases/compiler/ParameterList5.ts`
-- `reference/TypeScript/tests/cases/compiler/ParameterList6.ts`
-- `reference/TypeScript/tests/cases/compiler/ParameterList7.ts`
-- `reference/TypeScript/tests/cases/compiler/ParameterList8.ts`
+- `reference/typescript/tests/cases/compiler/ParameterList13.ts`
+- `reference/typescript/tests/cases/compiler/ParameterList4.ts`
+- `reference/typescript/tests/cases/compiler/ParameterList5.ts`
+- `reference/typescript/tests/cases/compiler/ParameterList6.ts`
+- `reference/typescript/tests/cases/compiler/ParameterList7.ts`
+- `reference/typescript/tests/cases/compiler/ParameterList8.ts`
 
 ## Duplicate detection
 

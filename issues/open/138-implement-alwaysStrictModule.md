@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Alwaysstrictmodule` fails with `p
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/alwaysStrictModule.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alwaysStrictModule.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/alwaysStrictModule.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/alwaysStrictModule.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/alwaysStrictModule.ts`
+Representative path: `reference/typescript/tests/cases/compiler/alwaysStrictModule.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/alwaysStrictModule.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/alwaysStrictModule.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/alwaysStrictModule.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/alwaysStrictModule.ts --detail
 ```
 
 Not run:
@@ -115,12 +115,12 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/alwaysStrictModule.ts`
-- `reference/TypeScript/tests/cases/compiler/alwaysStrictModule2.ts`
-- `reference/TypeScript/tests/cases/compiler/alwaysStrictModule3.ts`
-- `reference/TypeScript/tests/cases/compiler/alwaysStrictModule4.ts`
-- `reference/TypeScript/tests/cases/compiler/alwaysStrictModule5.ts`
-- `reference/TypeScript/tests/cases/compiler/alwaysStrictModule6.ts`
+- `reference/typescript/tests/cases/compiler/alwaysStrictModule.ts`
+- `reference/typescript/tests/cases/compiler/alwaysStrictModule2.ts`
+- `reference/typescript/tests/cases/compiler/alwaysStrictModule3.ts`
+- `reference/typescript/tests/cases/compiler/alwaysStrictModule4.ts`
+- `reference/typescript/tests/cases/compiler/alwaysStrictModule5.ts`
+- `reference/typescript/tests/cases/compiler/alwaysStrictModule6.ts`
 
 ## Duplicate detection
 

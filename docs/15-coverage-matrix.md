@@ -20,7 +20,7 @@ workstream の進行度ではなく、外部参照スイートに対してどこ
 基準日 (2026-04-25) に集計した分母:
 
 - test262: 53,445 files (`reference/test262/test/**/*.js`)
-- TypeScript compiler cases: 6,419 files (`reference/TypeScript/tests/cases/compiler/**/*.ts`)
+- TypeScript compiler cases: 6,419 files (`reference/typescript/tests/cases/compiler/**/*.ts`)
 - typescript-go testdata: 165 files (`reference/typescript-go/testdata/tests/**`)
 
 注記:

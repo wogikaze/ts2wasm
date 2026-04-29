@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Abstractclassinlocalscopeisabstra
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts`
+Representative path: `reference/typescript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts`
+- `reference/typescript/tests/cases/compiler/abstractClassInLocalScopeIsAbstract.ts`
 
 ## Duplicate detection
 

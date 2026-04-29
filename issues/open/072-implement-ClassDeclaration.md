@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Classdeclaration` fails with `par
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ClassDeclaration10.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ClassDeclaration10.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ClassDeclaration10.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ClassDeclaration10.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/ClassDeclaration10.ts`
+Representative path: `reference/typescript/tests/cases/compiler/ClassDeclaration10.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ClassDeclaration10.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ClassDeclaration10.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ClassDeclaration10.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ClassDeclaration10.ts --detail
 ```
 
 Not run:
@@ -115,16 +115,16 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration10.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration11.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration13.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration14.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration15.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration21.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration22.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration25.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration26.ts`
-- `reference/TypeScript/tests/cases/compiler/ClassDeclaration8.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration10.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration11.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration13.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration14.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration15.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration21.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration22.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration25.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration26.ts`
+- `reference/typescript/tests/cases/compiler/ClassDeclaration8.ts`
 - ... and 1 more files
 
 ## Duplicate detection

@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Apisample` fails with `equality-o
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/APISample_Watch.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/APISample_Watch.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/APISample_Watch.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/APISample_Watch.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/APISample_Watch.ts`
+Representative path: `reference/typescript/tests/cases/compiler/APISample_Watch.ts`
 Feature label: `equality-operator`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/APISample_Watch.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/APISample_Watch.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/APISample_Watch.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/APISample_Watch.ts --detail
 ```
 
 Not run:
@@ -115,15 +115,15 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/APISample_Watch.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_WatchWithDefaults.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_WatchWithOwnWatchHost.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_compile.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_jsdoc.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_linter.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_parseConfig.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_transform.ts`
-- `reference/TypeScript/tests/cases/compiler/APISample_watcher.ts`
+- `reference/typescript/tests/cases/compiler/APISample_Watch.ts`
+- `reference/typescript/tests/cases/compiler/APISample_WatchWithDefaults.ts`
+- `reference/typescript/tests/cases/compiler/APISample_WatchWithOwnWatchHost.ts`
+- `reference/typescript/tests/cases/compiler/APISample_compile.ts`
+- `reference/typescript/tests/cases/compiler/APISample_jsdoc.ts`
+- `reference/typescript/tests/cases/compiler/APISample_linter.ts`
+- `reference/typescript/tests/cases/compiler/APISample_parseConfig.ts`
+- `reference/typescript/tests/cases/compiler/APISample_transform.ts`
+- `reference/typescript/tests/cases/compiler/APISample_watcher.ts`
 
 ## Duplicate detection
 

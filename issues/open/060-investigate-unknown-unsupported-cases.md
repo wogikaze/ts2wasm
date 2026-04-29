@@ -148,7 +148,7 @@ TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-
 result: pass; unsupported_features=name-resolution:93,string-builtin:63,eval:51,regexp-literal:47,legacy-global-builtin:20,date:16,html-comment:8,array-builtin:1,builtin-api:1; unknown-unsupported=0
 
 TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsc --limit 150
-result: blocked; assigned reference root is missing /home/wogikaze/wgkz/ts2wasm/reference/TypeScript, so the command fails before classification.
+result: blocked; assigned reference root is missing /home/wogikaze/wgkz/ts2wasm/reference/typescript, so the command fails before classification.
 
 TS2WASM_REFERENCE_ROOT=/tmp/ts2wasm-issue060-reference mise run reference-coverage -- tsc --limit 150
 result: pass; unsupported_features=parser-syntax:50,ambient-declaration:25,type-alias:23,import-export:20,class-accessor:17,declaration-emit:3,scope-analysis:2,function:1,jsdoc:1,module-resolution:1,module-system-amd:1; unknown-unsupported=0

@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Amddependencycommentname` fails w
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/amdDependencyCommentName1.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdDependencyCommentName1.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/amdDependencyCommentName1.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdDependencyCommentName1.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/amdDependencyCommentName1.ts`
+Representative path: `reference/typescript/tests/cases/compiler/amdDependencyCommentName1.ts`
 Feature label: `unknown-unsupported`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/amdDependencyCommentName1.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/amdDependencyCommentName1.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdDependencyCommentName1.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdDependencyCommentName1.ts --detail
 ```
 
 Not run:
@@ -115,10 +115,10 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/amdDependencyCommentName1.ts`
-- `reference/TypeScript/tests/cases/compiler/amdDependencyCommentName2.ts`
-- `reference/TypeScript/tests/cases/compiler/amdDependencyCommentName3.ts`
-- `reference/TypeScript/tests/cases/compiler/amdDependencyCommentName4.ts`
+- `reference/typescript/tests/cases/compiler/amdDependencyCommentName1.ts`
+- `reference/typescript/tests/cases/compiler/amdDependencyCommentName2.ts`
+- `reference/typescript/tests/cases/compiler/amdDependencyCommentName3.ts`
+- `reference/typescript/tests/cases/compiler/amdDependencyCommentName4.ts`
 
 ## Duplicate detection
 

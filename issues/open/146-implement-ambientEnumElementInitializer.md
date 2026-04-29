@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Ambientenumelementinitializer` fa
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer1.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer1.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer1.ts`
+Representative path: `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer1.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer1.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts --detail
 ```
 
 Not run:
@@ -115,12 +115,12 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer1.ts`
-- `reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer2.ts`
-- `reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer3.ts`
-- `reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer4.ts`
-- `reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer5.ts`
-- `reference/TypeScript/tests/cases/compiler/ambientEnumElementInitializer6.ts`
+- `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts`
+- `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer2.ts`
+- `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer3.ts`
+- `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer4.ts`
+- `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer5.ts`
+- `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer6.ts`
 
 ## Duplicate detection
 

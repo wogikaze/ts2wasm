@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Accessors` fails with `parser-syn
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts`
+Representative path: `reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts --detail
 ```
 
 Not run:
@@ -115,8 +115,8 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts`
-- `reference/TypeScript/tests/cases/compiler/accessors_spec_section-4.5_inference.ts`
+- `reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_error-cases.ts`
+- `reference/typescript/tests/cases/compiler/accessors_spec_section-4.5_inference.ts`
 
 ## Duplicate detection
 

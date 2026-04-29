@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Amdmoduleconstenumusage` fails wi
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/amdModuleConstEnumUsage.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdModuleConstEnumUsage.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/amdModuleConstEnumUsage.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdModuleConstEnumUsage.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/amdModuleConstEnumUsage.ts`
+Representative path: `reference/typescript/tests/cases/compiler/amdModuleConstEnumUsage.ts`
 Feature label: `unknown-unsupported`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/amdModuleConstEnumUsage.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/amdModuleConstEnumUsage.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/amdModuleConstEnumUsage.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/amdModuleConstEnumUsage.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/amdModuleConstEnumUsage.ts`
+- `reference/typescript/tests/cases/compiler/amdModuleConstEnumUsage.ts`
 
 ## Duplicate detection
 

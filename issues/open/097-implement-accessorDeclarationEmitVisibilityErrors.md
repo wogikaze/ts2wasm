@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Accessordeclarationemitvisibility
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts`
+Representative path: `reference/typescript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts`
 Feature label: `unknown-unsupported`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts`
+- `reference/typescript/tests/cases/compiler/accessorDeclarationEmitVisibilityErrors.ts`
 
 ## Duplicate detection
 

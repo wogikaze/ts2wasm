@@ -17,7 +17,7 @@ Triage the generated reference bucket `Implement Compiler` before implementation
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `reference/TypeScript/tests/cases/compiler` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `reference/typescript/tests/cases/compiler` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
 Problem: generated reference bucket `Implement Compiler` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
 
@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Compiler` fails with `parser-synt
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/2dArrays.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/2dArrays.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/2dArrays.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/2dArrays.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/2dArrays.ts`
+Representative path: `reference/typescript/tests/cases/compiler/2dArrays.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/2dArrays.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/2dArrays.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/2dArrays.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/2dArrays.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/2dArrays.ts`
+- `reference/typescript/tests/cases/compiler/2dArrays.ts`
 
 ## Duplicate detection
 

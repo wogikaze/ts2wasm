@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Accessordeclarationemitjs` fails 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitJs.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitJs.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitJs.ts`
+Representative path: `reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts`
 Feature label: `unknown-unsupported`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitJs.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitJs.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/accessorDeclarationEmitJs.ts`
+- `reference/typescript/tests/cases/compiler/accessorDeclarationEmitJs.ts`
 
 ## Duplicate detection
 

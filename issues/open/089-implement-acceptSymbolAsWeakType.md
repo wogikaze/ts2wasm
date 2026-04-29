@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Acceptsymbolasweaktype` fails wit
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/acceptSymbolAsWeakType.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/acceptSymbolAsWeakType.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/acceptSymbolAsWeakType.ts`
+Representative path: `reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/acceptSymbolAsWeakType.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/acceptSymbolAsWeakType.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/acceptSymbolAsWeakType.ts`
+- `reference/typescript/tests/cases/compiler/acceptSymbolAsWeakType.ts`
 
 ## Duplicate detection
 

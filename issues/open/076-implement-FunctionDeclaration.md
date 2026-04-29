@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Functiondeclaration` fails with `
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/FunctionDeclaration3.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/FunctionDeclaration3.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/FunctionDeclaration3.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/FunctionDeclaration3.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/FunctionDeclaration3.ts`
+Representative path: `reference/typescript/tests/cases/compiler/FunctionDeclaration3.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/FunctionDeclaration3.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/FunctionDeclaration3.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/FunctionDeclaration3.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/FunctionDeclaration3.ts --detail
 ```
 
 Not run:
@@ -115,10 +115,10 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/FunctionDeclaration3.ts`
-- `reference/TypeScript/tests/cases/compiler/FunctionDeclaration4.ts`
-- `reference/TypeScript/tests/cases/compiler/FunctionDeclaration6.ts`
-- `reference/TypeScript/tests/cases/compiler/FunctionDeclaration7.ts`
+- `reference/typescript/tests/cases/compiler/FunctionDeclaration3.ts`
+- `reference/typescript/tests/cases/compiler/FunctionDeclaration4.ts`
+- `reference/typescript/tests/cases/compiler/FunctionDeclaration6.ts`
+- `reference/typescript/tests/cases/compiler/FunctionDeclaration7.ts`
 
 ## Duplicate detection
 
