@@ -1,0 +1,10 @@
+let obj = {};
+console.log(obj.length);
+obj.push = Array.prototype.push;
+console.log(obj.push(-1));
+console.log(obj.length);
+console.log(obj[0]);
+console.log(Array.prototype.push.call(obj, 2, 3));
+console.log(obj.length);
+console.log(obj[1]);
+console.log(obj[2]);

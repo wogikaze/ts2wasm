@@ -685,7 +685,12 @@ const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
 ];
 
 // Array method dependencies
-const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::PropertySet,
+    RuntimeFn::ValueToStringInto,
+];
 const ARRAY_POP_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
@@ -1196,7 +1201,7 @@ impl RuntimeFn {
             },
             Self::GetLength => RuntimeSpec {
                 symbol: "$get_length",
-                deps: NO_DEPS,
+                deps: &[Self::PropertyGet],
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
