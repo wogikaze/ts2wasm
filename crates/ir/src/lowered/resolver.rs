@@ -1366,6 +1366,17 @@ impl<'a> Resolver<'a> {
                         });
                     }
 
+                    if receiver_name == "Object"
+                        && method == "getOwnPropertyDescriptor"
+                        && self.resolve_local(receiver_name).is_err()
+                    {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-291: Object.getOwnPropertyDescriptor is not implemented in the current Object global binding slice".to_owned(),
+                            span: Some(*span),
+                        });
+                    }
+
                     let obj_local = self.resolve_local(receiver_name)?;
 
                     let class_name =
