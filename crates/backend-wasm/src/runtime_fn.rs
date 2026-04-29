@@ -37,6 +37,9 @@ pub(crate) enum RuntimeFn {
     TruthyBool,
     Not,
     TypeOf,
+    MakeBigIntLiteral,
+    BigIntToString,
+    BigIntToBoolean,
     StringEqual,
     Concat,
     IsString,
@@ -352,6 +355,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ErrorMessage" => Some(RuntimeFn::ErrorMessage),
         "JsonStringify" => Some(RuntimeFn::JsonStringify),
         "JsonParse" => Some(RuntimeFn::JsonParse),
+        "MakeBigIntLiteral" => Some(RuntimeFn::MakeBigIntLiteral),
+        "BigIntToString" => Some(RuntimeFn::BigIntToString),
+        "BigIntToBoolean" => Some(RuntimeFn::BigIntToBoolean),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
@@ -546,6 +552,8 @@ const BANG_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::EqualEqual];
 const STRICT_NOT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
+const MAKE_BIGINT_LITERAL_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const BIGINT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
@@ -584,6 +592,14 @@ const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::TRUE,
 ];
 const LOG_RUNTIME_STRINGS: &[&str] = &[RuntimeString::NEWLINE];
+const TYPEOF_RUNTIME_STRINGS: &[&str] = &[
+    "undefined",
+    "object",
+    "boolean",
+    "number",
+    "string",
+    "bigint",
+];
 
 // String method dependencies
 const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
@@ -751,6 +767,30 @@ impl RuntimeFn {
             },
             Self::TypeOf => RuntimeSpec {
                 symbol: "$typeof",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: TYPEOF_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::MakeBigIntLiteral => RuntimeSpec {
+                symbol: "$make_bigint_literal",
+                deps: MAKE_BIGINT_LITERAL_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntToString => RuntimeSpec {
+                symbol: "$bigint_to_string",
+                deps: BIGINT_TO_STRING_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntToBoolean => RuntimeSpec {
+                symbol: "$bigint_to_boolean",
                 deps: NO_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
@@ -1579,6 +1619,9 @@ impl RuntimeFn {
             Self::TruthyBool => "truthy_bool",
             Self::Not => "not",
             Self::TypeOf => "typeof",
+            Self::MakeBigIntLiteral => "make_bigint_literal",
+            Self::BigIntToString => "bigint_to_string",
+            Self::BigIntToBoolean => "bigint_to_boolean",
             Self::StringEqual => "string_equal",
             Self::Concat => "concat",
             Self::IsString => "is_string",
@@ -1691,6 +1734,9 @@ impl RuntimeFn {
             Self::TruthyBool,
             Self::Not,
             Self::TypeOf,
+            Self::MakeBigIntLiteral,
+            Self::BigIntToString,
+            Self::BigIntToBoolean,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,
@@ -1812,6 +1858,9 @@ impl RuntimeFn {
             Self::TruthyBool,
             Self::Not,
             Self::TypeOf,
+            Self::MakeBigIntLiteral,
+            Self::BigIntToString,
+            Self::BigIntToBoolean,
             Self::StringEqual,
             Self::Concat,
             Self::IsString,

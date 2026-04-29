@@ -356,7 +356,7 @@ fn lower_static_export_literal_expr(expr: &Expr) -> Result<lowered::LoweredExpr,
         Expr::BigInt { raw, span } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!(
-                "issue-244: BigInt literal `{raw}` is parsed, but runtime BigInt values are not implemented"
+                "issue-259: BigInt literal `{raw}` in static module exports is not implemented in the literal runtime slice"
             ),
             span: Some(*span),
         }),

@@ -947,6 +947,7 @@ fn unparse_hir_expr(expr: &HirExpr) -> String {
         HirExpr::ConstNull => "null".to_owned(),
         HirExpr::ConstBool(value) => value.to_string(),
         HirExpr::ConstNumber(value) => value.to_string(),
+        HirExpr::ConstBigInt(value) => format!("{value}n"),
         HirExpr::ConstString(value) => format!("{value:?}"),
         HirExpr::LoadLocal(local) => format!("local${}", local.0),
         HirExpr::LoadBuiltin(name) => format!("builtin::{name}"),

@@ -412,6 +412,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_this(body),
         ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
@@ -547,6 +548,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
         ResolvedExpr::This { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
@@ -856,6 +858,7 @@ fn is_supported_json_stringify_space(
 ) -> bool {
     match space {
         ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
@@ -1024,6 +1027,7 @@ fn json_stringify_function_replacer_id(
 fn is_json_stringify_side_effect_free_static_value(value: &ResolvedExpr) -> bool {
     match value {
         ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
@@ -1442,6 +1446,7 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
@@ -1750,6 +1755,7 @@ fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bool {
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
         | ResolvedExpr::Bool(_)
         | ResolvedExpr::Null
