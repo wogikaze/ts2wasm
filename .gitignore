@@ -30,5 +30,4 @@ artifacts/coverage/results/
 
 # documentation site
 site/node_modules
-site/docs/.vitepress/cache
-site/docs/.vitepress/dist
+site/docs
