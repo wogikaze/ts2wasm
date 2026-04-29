@@ -123,6 +123,16 @@ Split from stale broad issue 272 and from issue 049's recorded remaining risk.
 
 **Current implementation limitation**: The current Set implementation uses `value_to_string_into` to normalize all values to strings before storing them. This means that number `1` and string `"1"` are treated as the same key. Implementing SameValueZero identity requires a significant change to the collection infrastructure to store tagged values directly and implement proper value comparison semantics.
 
+## Progress
+
+- 2026-04-29: Added the first Set-only identity slice. Set `add`/`has`/`delete`
+  now store and compare the current tagged value directly instead of normalizing
+  through `value_to_string_into`, which distinguishes number `1` from string
+  `"1"` for supported Set operations. The regression fixture
+  `fixtures/builtins-and-io/set-identity-number-string.ts` matches Node/iwasm
+  output for duplicate suppression, `has`, `delete`, and `size`. Full
+  SameValueZero across broader heap/string/object identity remains open.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
