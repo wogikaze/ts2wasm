@@ -1354,6 +1354,314 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
     }
 }
 
+fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mut HashSet<String>) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(name, _) => {
+                names.insert(name.clone());
+            }
+            ResolvedStmt::Function { name, body, .. } => {
+                names.insert(name.clone());
+                collect_declared_names_in_stmts(body, names);
+            }
+            ResolvedStmt::If {
+                then_body,
+                else_body,
+                ..
+            } => {
+                collect_declared_names_in_stmts(then_body, names);
+                collect_declared_names_in_stmts(else_body, names);
+            }
+            ResolvedStmt::While { body, .. }
+            | ResolvedStmt::DoWhile { body, .. }
+            | ResolvedStmt::ForIn { body, .. }
+            | ResolvedStmt::ForOf { body, .. } => collect_declared_names_in_stmts(body, names),
+            ResolvedStmt::For { init, body, .. } => {
+                if let Some(init) = init {
+                    collect_declared_names_in_stmt(init, names);
+                }
+                collect_declared_names_in_stmts(body, names);
+            }
+            ResolvedStmt::TryCatch {
+                catch_param,
+                try_block,
+                catch_block,
+                finally_block,
+            } => {
+                if let Some(param) = catch_param {
+                    names.insert(param.clone());
+                }
+                collect_declared_names_in_stmts(try_block, names);
+                if let Some(block) = catch_block {
+                    collect_declared_names_in_stmts(block, names);
+                }
+                if let Some(block) = finally_block {
+                    collect_declared_names_in_stmts(block, names);
+                }
+            }
+            ResolvedStmt::Switch { cases, .. } => {
+                for (_, body) in cases {
+                    collect_declared_names_in_stmts(body, names);
+                }
+            }
+            ResolvedStmt::Labeled { body, .. } => collect_declared_names_in_stmt(body, names),
+            ResolvedStmt::ClassDecl { name, .. } => {
+                names.insert(name.clone());
+            }
+            ResolvedStmt::Assign(_, _)
+            | ResolvedStmt::Expr(_)
+            | ResolvedStmt::Return(_)
+            | ResolvedStmt::Throw(_)
+            | ResolvedStmt::Export { .. }
+            | ResolvedStmt::ModuleExportsAssign { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+        }
+    }
+}
+
+fn collect_declared_names_in_stmt(stmt: &ResolvedStmt, names: &mut HashSet<String>) {
+    collect_declared_names_in_stmts(std::slice::from_ref(stmt), names);
+}
+
+fn collect_stmt_captures(
+    stmts: &[ResolvedStmt],
+    excluded: &HashSet<String>,
+    captures: &mut Vec<String>,
+) {
+    for stmt in stmts {
+        match stmt {
+            ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::Assign(_, expr)
+            | ResolvedStmt::Expr(expr)
+            | ResolvedStmt::Return(expr)
+            | ResolvedStmt::Throw(expr) => collect_expr_captures(expr, excluded, captures),
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => {
+                collect_expr_captures(condition, excluded, captures);
+                collect_stmt_captures(then_body, excluded, captures);
+                collect_stmt_captures(else_body, excluded, captures);
+            }
+            ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+                collect_expr_captures(condition, excluded, captures);
+                collect_stmt_captures(body, excluded, captures);
+            }
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_block,
+                finally_block,
+                ..
+            } => {
+                collect_stmt_captures(try_block, excluded, captures);
+                if let Some(block) = catch_block {
+                    collect_stmt_captures(block, excluded, captures);
+                }
+                if let Some(block) = finally_block {
+                    collect_stmt_captures(block, excluded, captures);
+                }
+            }
+            ResolvedStmt::Switch { expr, cases } => {
+                collect_expr_captures(expr, excluded, captures);
+                for (case_expr, body) in cases {
+                    if let Some(case_expr) = case_expr {
+                        collect_expr_captures(case_expr, excluded, captures);
+                    }
+                    collect_stmt_captures(body, excluded, captures);
+                }
+            }
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                if let Some(init) = init {
+                    collect_stmt_captures(std::slice::from_ref(init.as_ref()), excluded, captures);
+                }
+                if let Some(condition) = condition {
+                    collect_expr_captures(condition, excluded, captures);
+                }
+                if let Some(update) = update {
+                    collect_expr_captures(update, excluded, captures);
+                }
+                collect_stmt_captures(body, excluded, captures);
+            }
+            ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+                collect_expr_captures(iter, excluded, captures);
+                collect_stmt_captures(body, excluded, captures);
+            }
+            ResolvedStmt::Labeled { body, .. } => {
+                collect_stmt_captures(std::slice::from_ref(body.as_ref()), excluded, captures);
+            }
+            ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+                collect_expr_captures(expr, excluded, captures);
+            }
+            ResolvedStmt::Function { .. }
+            | ResolvedStmt::ClassDecl { .. }
+            | ResolvedStmt::Break { .. }
+            | ResolvedStmt::Continue { .. } => {}
+        }
+    }
+}
+
+fn collect_expr_captures(
+    expr: &ResolvedExpr,
+    excluded: &HashSet<String>,
+    captures: &mut Vec<String>,
+) {
+    let mut params = excluded.iter().cloned().collect::<Vec<_>>();
+    params.sort();
+    collect_arrow_captures(expr, &params, captures);
+}
+
+fn block_assigns_any_name(stmts: &[ResolvedStmt], names: &[String]) -> bool {
+    stmts.iter().any(|stmt| stmt_assigns_any_name(stmt, names))
+}
+
+fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bool {
+    match stmt {
+        ResolvedStmt::Assign(name, expr) => {
+            names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
+        }
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr) => expr_assigns_any_name(expr, names),
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_assigns_any_name(condition, names)
+                || block_assigns_any_name(then_body, names)
+                || block_assigns_any_name(else_body, names)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+            expr_assigns_any_name(condition, names) || block_assigns_any_name(body, names)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_assigns_any_name(try_block, names)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_assigns_any_name(block, names))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_assigns_any_name(block, names))
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_assigns_any_name(expr, names)
+                || cases.iter().any(|(case_expr, body)| {
+                    case_expr
+                        .as_ref()
+                        .is_some_and(|expr| expr_assigns_any_name(expr, names))
+                        || block_assigns_any_name(body, names)
+                })
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref()
+                .is_some_and(|stmt| stmt_assigns_any_name(stmt, names))
+                || condition
+                    .as_ref()
+                    .is_some_and(|expr| expr_assigns_any_name(expr, names))
+                || update
+                    .as_ref()
+                    .is_some_and(|expr| expr_assigns_any_name(expr, names))
+                || block_assigns_any_name(body, names)
+        }
+        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            expr_assigns_any_name(iter, names) || block_assigns_any_name(body, names)
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_assigns_any_name(body, names),
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            expr_assigns_any_name(expr, names)
+        }
+        ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
+    }
+}
+
+fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bool {
+    match expr {
+        ResolvedExpr::Assign { name, expr } | ResolvedExpr::LogicalAssign { name, expr, .. } => {
+            names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
+        }
+        ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
+            expr_assigns_any_name(expr, names)
+        }
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_assigns_any_name(left, names) || expr_assigns_any_name(right, names)
+        }
+        ResolvedExpr::Call { callee, args, .. } => {
+            expr_assigns_any_name(callee, names)
+                || args.iter().any(|arg| expr_assigns_any_name(arg, names))
+        }
+        ResolvedExpr::LogicalPropertyAssign { expr, .. } => expr_assigns_any_name(expr, names),
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            expr_assigns_any_name(key, names) || expr_assigns_any_name(expr, names)
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_assigns_any_name(object, names) || expr_assigns_any_name(expr, names)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            expr_assigns_any_name(object, names)
+                || expr_assigns_any_name(key, names)
+                || expr_assigns_any_name(expr, names)
+        }
+        ResolvedExpr::Array(elements) => {
+            elements.iter().any(|expr| expr_assigns_any_name(expr, names))
+        }
+        ResolvedExpr::Object(props) => props
+            .iter()
+            .any(|(_, value)| expr_assigns_any_name(value, names)),
+        ResolvedExpr::ComputedIndex { object, index } => {
+            expr_assigns_any_name(object, names) || expr_assigns_any_name(index, names)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            args.iter().any(|arg| expr_assigns_any_name(arg, names))
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. } => expr_assigns_any_name(object, names),
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            expr_assigns_any_name(object, names)
+                || args.iter().any(|arg| expr_assigns_any_name(arg, names))
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_assigns_any_name(object, names) || expr_assigns_any_name(value, names)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_assigns_any_name(object, names)
+                || expr_assigns_any_name(key, names)
+                || expr_assigns_any_name(value, names)
+        }
+        ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined => false,
+    }
+}
+
 fn push_capture(name: &str, params: &[String], captures: &mut Vec<String>) {
     if params.iter().any(|param| param == name) || captures.iter().any(|capture| capture == name) {
         return;

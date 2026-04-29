@@ -214,14 +214,37 @@ impl<'a> Resolver<'a> {
                 condition: self.lower_expr(condition)?,
                 body: self.lower_nested_block(body)?,
             }),
-            ResolvedStmt::Return(expr) => Ok(LoweredStmt::Return(self.lower_expr(expr)?)),
-            ResolvedStmt::Function { .. } => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message:
-                    "issue-062c: nested function declarations are not supported in this milestone"
-                        .to_owned(),
-                span: None,
-            }),
+            ResolvedStmt::Return(expr) => {
+                if let ResolvedExpr::Ident(name) = expr
+                    && self
+                        .resolve_local(name)
+                        .ok()
+                        .is_some_and(|local| self.arrow_locals.contains_key(&local))
+                {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-062e: returning closure `{name}` requires heap environment/rooting support and is not supported in this slice"
+                        ),
+                        span: None,
+                    });
+                }
+                Ok(LoweredStmt::Return(self.lower_expr(expr)?))
+            }
+            ResolvedStmt::Function { name, params, body } => {
+                let local_id = self.declare_local(name)?;
+                let closure = self.lower_nested_function(name, params, body)?;
+                if let LoweredExpr::ArrowFn { func_id, captures } = &closure {
+                    self.arrow_locals.insert(
+                        local_id,
+                        ArrowClosure {
+                            func_id: *func_id,
+                            captures: captures.clone(),
+                        },
+                    );
+                }
+                Ok(LoweredStmt::Let(local_id, closure))
+            }
             ResolvedStmt::TryCatch {
                 try_block,
                 catch_param,
@@ -1288,12 +1311,101 @@ impl<'a> Resolver<'a> {
         Ok(LoweredExpr::ArrowFn { func_id, captures })
     }
 
+    fn lower_nested_function(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if params.iter().any(|(_, default, is_rest)| default.is_some() || *is_rest) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` closure parameters with defaults or rest are not supported in this slice"
+                ),
+                span: None,
+            });
+        }
+        if block_contains_this(body) || block_contains_arguments(body) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` closures with `this` or `arguments` are not supported in this slice"
+                ),
+                span: None,
+            });
+        }
+
+        let capture_names = self.nested_function_capture_names(name, params, body);
+        if block_assigns_any_name(body, &capture_names) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
+                ),
+                span: None,
+            });
+        }
+        let captures = capture_names
+            .iter()
+            .map(|capture| self.resolve_local(capture))
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut lowered_params = params.to_vec();
+        lowered_params.extend(
+            capture_names
+                .iter()
+                .map(|capture| (capture.clone(), None, false)),
+        );
+
+        let func_id = FuncId(self.next_func_id);
+        self.next_func_id += 1;
+        let lowered = lower_function(
+            func_id,
+            &lowered_params,
+            body,
+            self.function_ids,
+            self.function_signatures,
+            self.class_parents.clone(),
+            LowerFunctionOptions {
+                current_class: self.current_class.as_deref(),
+                in_constructor: false,
+                next_func_id: self.next_func_id,
+            },
+        )?;
+        self.next_func_id = lowered.next_func_id;
+        self.generated_functions.push(lowered.function);
+        self.generated_functions.extend(lowered.generated_functions);
+
+        Ok(LoweredExpr::ArrowFn { func_id, captures })
+    }
+
     fn arrow_capture_names(&self, params: &[String], body: &ResolvedExpr) -> Vec<String> {
         let mut captures = Vec::new();
         collect_arrow_captures(body, params, &mut captures);
         captures
             .into_iter()
             .filter(|name| self.resolve_local(name).is_ok())
+            .collect()
+    }
+
+    fn nested_function_capture_names(
+        &self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+    ) -> Vec<String> {
+        let mut excluded = params
+            .iter()
+            .map(|(param, _, _)| param.clone())
+            .collect::<HashSet<_>>();
+        excluded.insert(name.to_owned());
+        collect_declared_names_in_stmts(body, &mut excluded);
+
+        let mut captures = Vec::new();
+        collect_stmt_captures(body, &excluded, &mut captures);
+        captures
+            .into_iter()
+            .filter(|capture| self.resolve_local(capture).is_ok())
             .collect()
     }
 
