@@ -391,6 +391,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
+        "ArraySlice" => Some(RuntimeFn::ArraySlice),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
         "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
         "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
