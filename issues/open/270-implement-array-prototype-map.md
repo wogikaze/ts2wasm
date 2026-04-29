@@ -63,3 +63,7 @@ cargo fmt --all --check
 - Array.prototype.map is part of ES5.1 specification
 - Should handle array-like objects via call/apply
 - Consider implementing other Array prototype methods in parallel (filter, reduce, forEach, etc.)
+
+## Progress
+
+- 2026-04-29 child slice: full runtime behavior remains unsafe without callback dispatch and a new array allocation/layout contract, so direct `values.map(...)` and `Array.prototype.map.call(...)` now report an explicit `issue-270` `UnsupportedSyntax` diagnostic instead of falling through to generic method receiver errors. Regression fixtures cover both call shapes.
