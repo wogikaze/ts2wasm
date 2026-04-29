@@ -152,6 +152,17 @@ impl WatEmitter<'_> {
         (local.set $len (i32.load (local.get $obj)))
         (call $copy (i32.add (local.get $obj) (i32.const {string_header_size})) (local.get $ptr) (local.get $len))
         (return (local.get $len))))
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq (i32.load (local.get $obj)) (i32.const {heap_number_sentinel}))
+          (then
+            (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {heap_number_len_offset}))))
+            (call $copy
+              (i32.add (local.get $obj) (i32.const {heap_number_data_offset}))
+              (local.get $ptr)
+              (local.get $len))
+            (return (local.get $len))))))
     (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
     (if (i32.eq (local.get $n) (i32.const {zero}))
       (then
@@ -193,9 +204,13 @@ impl WatEmitter<'_> {
             false_tag = ValueTag::FALSE,
             true_tag = ValueTag::TRUE,
             string_tag = ValueTag::STRING,
+            object_tag = ValueTag::OBJECT,
             tag_mask = ValueTag::TAG_MASK,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
+            heap_number_sentinel = -1,
+            heap_number_len_offset = 8,
+            heap_number_data_offset = 12,
             undefined_len = RuntimeString::UNDEFINED.len() as i32,
             null_len = RuntimeString::NULL.len() as i32,
             false_len = RuntimeString::FALSE.len() as i32,
@@ -322,6 +337,10 @@ impl WatEmitter<'_> {
     (if (i32.eq (local.get $tag) (i32.const {string_tag}))
       (then (return (i32.or (i32.const {str_string}) (i32.const {string_tag})))))
     (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (if (i32.eq (i32.load (i32.and (local.get $v) (i32.const {heap_mask}))) (i32.const {heap_number_sentinel}))
+          (then (return (i32.or (i32.const {str_number}) (i32.const {string_tag})))))))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
       (then (return (i32.or (i32.const {str_object}) (i32.const {string_tag})))))
     (if (i32.eq (local.get $tag) (i32.const {array_tag}))
       (then (return (i32.or (i32.const {str_object}) (i32.const {string_tag})))))
@@ -336,6 +355,8 @@ impl WatEmitter<'_> {
             string_tag = ValueTag::STRING_TAG,
             object_tag = ValueTag::OBJECT_TAG,
             array_tag = ValueTag::ARRAY_TAG,
+            heap_mask = ValueTag::HEAP_MASK,
+            heap_number_sentinel = -1,
             str_undefined = str_undefined + Layout::STRING_HEADER_SIZE,
             str_object = str_object + Layout::STRING_HEADER_SIZE,
             str_boolean = str_boolean + Layout::STRING_HEADER_SIZE,
@@ -1301,11 +1322,13 @@ impl WatEmitter<'_> {
     (local $proto i32)
     (local.set $proto
       (i32.load (i32.add (local.get $payload) (i32.const {object_prototype_offset}))))
+    (local.set $count (i32.load (local.get $payload)))
+    (if (i32.eq (local.get $count) (i32.const {heap_number_sentinel}))
+      (then (return)))
     (if (i32.ne (local.get $proto) (i32.const 0))
       (then
         (call $gc_mark_value
           (i32.or (local.get $proto) (i32.const {object_tag})))))
-    (local.set $count (i32.load (local.get $payload)))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $count)))
@@ -1411,6 +1434,7 @@ impl WatEmitter<'_> {
             object_entries_offset = Layout::OBJECT_ENTRIES_OFFSET,
             object_entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             object_value_offset = Layout::OBJECT_VALUE_OFFSET,
+            heap_number_sentinel = -1,
             gc_roots = gc_roots,
             module_cache_marker = module_cache_marker,
         ));

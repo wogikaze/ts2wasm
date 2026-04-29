@@ -214,6 +214,9 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts",
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
         "fixtures/builtins-and-io/json-parse.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts",
         "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
         "fixtures/builtins-and-io/json-stringify-escaped-string.ts",
         "fixtures/builtins-and-io/json-stringify-nested-array-object.ts",
@@ -297,17 +300,6 @@ fn json_parse_unicode_escape_diagnostics_reject_invalid_or_unsupported_forms() {
         "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts",
-    ] {
-        assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture);
-    }
-}
-
-#[test]
-fn json_parse_noninteger_numbers_are_unsupported_under_iwasm() {
-    for fixture in [
-        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
-        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
-        "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts",
     ] {
         assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture);
     }
