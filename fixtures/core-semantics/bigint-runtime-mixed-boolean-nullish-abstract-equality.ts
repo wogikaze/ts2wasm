@@ -1,0 +1,27 @@
+let zero = { x: 0n };
+let one = { x: 1n };
+let two = { x: 2n };
+let neg = { x: -1n };
+let nil = { x: null };
+let undef = { x: undefined };
+let truthy = { x: true };
+let falsy = { x: false };
+
+console.log(zero.x == falsy.x);
+console.log(falsy.x == zero.x);
+console.log(one.x == truthy.x);
+console.log(truthy.x == one.x);
+console.log(two.x != truthy.x);
+console.log(truthy.x != two.x);
+console.log(zero.x != truthy.x);
+console.log(falsy.x != one.x);
+console.log(neg.x == truthy.x);
+console.log(neg.x != truthy.x);
+console.log(zero.x == nil.x);
+console.log(nil.x == zero.x);
+console.log(one.x == undef.x);
+console.log(undef.x == one.x);
+console.log(zero.x != nil.x);
+console.log(nil.x != zero.x);
+console.log(one.x != undef.x);
+console.log(undef.x != one.x);

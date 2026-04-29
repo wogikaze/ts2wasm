@@ -96,6 +96,11 @@ Split from issue 261 on 2026-04-29 because the existing runtime-only mixed fixtu
 - `fixtures/core-semantics/bigint-runtime-mixed-abstract-equality-trap.ts`
 - `fixtures/core-semantics/bigint-runtime-mixed-relational-trap.ts`
 
+Progress on 2026-04-29:
+
+- Runtime-only BigInt/Boolean and BigInt/nullish abstract equality now has Node/iwasm differential coverage in `fixtures/core-semantics/bigint-runtime-mixed-boolean-nullish-abstract-equality.ts`.
+- BigInt/String abstract equality and mixed BigInt relational comparison remain intentionally outside this slice; the existing runtime-only String and relational trap fixtures continue to own those blockers.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

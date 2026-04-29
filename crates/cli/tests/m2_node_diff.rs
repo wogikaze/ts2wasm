@@ -244,6 +244,13 @@ fn bigint_mixed_nullish_abstract_equality_fixture_matches_node_output_under_iwas
 }
 
 #[test]
+fn bigint_runtime_mixed_boolean_nullish_abstract_equality_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-boolean-nullish-abstract-equality.ts",
+    );
+}
+
+#[test]
 fn bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/bigint-builtins-string-conversion.ts");
 }
