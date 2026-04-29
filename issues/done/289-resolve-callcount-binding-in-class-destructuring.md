@@ -3,12 +3,14 @@ id: 289
 title: "Resolve callCount binding in class destructuring tests"
 type: bug
 area: frontend/ir
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -62,9 +64,9 @@ The representative case and related bucket members no longer produce this exact 
 
 In scope:
 
-- [ ] Triage the representative class destructuring test and identify where `callCount` leaves scope resolution.
-- [ ] Preserve or resolve the side-effect counter binding for the supported subset.
-- [ ] The representative case no longer reports unresolved name `callCount`.
+- [x] Triage the representative class destructuring test and identify where `callCount` leaves scope resolution.
+- [x] Preserve or resolve the side-effect counter binding for the supported subset.
+- [x] The representative case no longer reports unresolved name `callCount`.
 
 Out of scope:
 
@@ -86,10 +88,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative case no longer emits the exact stderr bucket shown above.
-- [ ] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
-- [ ] If behavior changes, add or update a focused fixture or regression test for the representative case.
-- [ ] Update coverage artifacts or current-state only when the validation run produces new facts.
+- [x] The representative case no longer emits the exact stderr bucket shown above.
+- [x] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
+- [x] If behavior changes, add or update a focused fixture or regression test for the representative case.
+- [x] Update coverage artifacts or current-state only when the validation run produces new facts.
 
 ## Validation
 
@@ -117,18 +119,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
+- [x] updated: n/a
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- [x] updated: n/a
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
+- [x] created/updated: n/a
 
 ## Notes
 
@@ -203,20 +205,31 @@ result: pass, 3 passed
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `cbb9a351` (`issue-289: close callcount binding bucket`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter language/expressions/class/dstr/meth-ary-name-iter-val.js --detail
+result: pass; executed=1, blocked=1. The representative no longer emits `error: [UnresolvedName] unresolved name: `callCount``.
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run test262 -- --path-filter language/expressions/class/dstr/meth-ary-name-iter-val.js --jobs 1 --verbose
+result: pass; Total=1, Unsupported=1. JSONL stderr is `error: [UnsupportedSyntax] issue-211: method `method` requires an identifier receiver at 4297..4322`; no `callCount` unresolved-name bucket remains.
+
+command: python3 aggregation over artifacts/coverage/results/test262-results.jsonl
+result: exact `error: [UnresolvedName] unresolved name: `callCount`\n` bucket count is 0; most common stderr is the issue-211 identifier-receiver diagnostic for the representative.
+
+command: cargo fmt --all --check
+result: pass
+
+command: cargo nextest run -p ts2wasm-cli -E 'test(class_method) or test(destructuring) or test(this_receiver_method_fixtures_match_node_output_under_iwasm)'
+result: pass; 17 passed
 ```
 
 Remaining risks:
 
-- none
+- The representative is still not semantically passing; it is now stopped by issue-211 receiver support rather than issue-289 `callCount` binding.
