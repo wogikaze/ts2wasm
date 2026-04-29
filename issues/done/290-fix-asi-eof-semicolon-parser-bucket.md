@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -62,9 +64,9 @@ The representative case and related bucket members no longer produce this exact 
 
 In scope:
 
-- [ ] Handle the representative automatic semicolon insertion case at EOF.
-- [ ] Keep invalid ASI cases diagnostic-backed.
-- [ ] The exact `expected Semicolon, got None` stderr bucket is reduced or removed in regenerated test262 results.
+- [x] Handle the representative automatic semicolon insertion case at EOF.
+- [x] Keep invalid ASI cases diagnostic-backed.
+- [x] The exact `expected Semicolon, got None` stderr bucket is reduced or removed in regenerated test262 results.
 
 Out of scope:
 
@@ -86,10 +88,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative case no longer emits the exact stderr bucket shown above.
-- [ ] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
-- [ ] If behavior changes, add or update a focused fixture or regression test for the representative case.
-- [ ] Update coverage artifacts or current-state only when the validation run produces new facts.
+- [x] The representative case no longer emits the exact stderr bucket shown above.
+- [x] Regenerating the representative reference coverage result shows this bucket removed for the case.
+- [x] If behavior changes, add or update a focused fixture or regression test for the representative case.
+- [x] Update coverage artifacts or current-state only when the validation run produces new facts.
 
 ## Validation
 
@@ -117,18 +119,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
+- not updated
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- not updated
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
+- not created
 
 ## Notes
 
@@ -136,18 +138,44 @@ This issue was generated from exact stderr set frequency, not directory-level gr
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `0c298194` (`issue-290: accept EOF expression semicolons`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: PASS; 83 tests run, 83 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli parser
+result: NO TESTS SELECTED; nextest exit 4 because the filter matches zero CLI tests
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli
+result: PASS; 343 tests run, 343 passed, 4 skipped
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter reference/test262/test/language/asi/S7.9_A10_T1.js --detail
+result: PASS; build_pass=1, semantic_pass=1, unsupported=0; representative file no longer reports UnsupportedSyntax/parser-syntax
+date: 2026-04-29
+
+command: cargo nextest run
+result: PASS; 536 tests run, 536 passed, 4 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS after generating the local ignored test262-results.jsonl artifact required by unrelated open issue path checks
+date: 2026-04-29
 ```
 
 Remaining risks:
