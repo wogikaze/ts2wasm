@@ -146,6 +146,7 @@ pub(crate) enum RuntimeFn {
     MathAbs,
     MathMax,
     MathMin,
+    MathPow,
     MathRandom,
     /// M10: JSON functions
     JsonStringify,
@@ -724,6 +725,7 @@ impl RuntimeFn {
             BuiltinId::PathDirname => Self::PathDirname,
             BuiltinId::CryptoRandomBytes => Self::CryptoRandomBytes,
             BuiltinId::InstanceOf => Self::InstanceOf,
+            BuiltinId::MathPow => Self::MathPow,
         }
     }
 
@@ -1529,6 +1531,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::MathPow => RuntimeSpec {
+                symbol: "$math_pow",
+                deps: MATH_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::MathRandom => RuntimeSpec {
                 symbol: "$math_random",
                 deps: MATH_RANDOM_DEPS,
@@ -1793,6 +1803,7 @@ impl RuntimeFn {
             Self::MathAbs => "math_abs",
             Self::MathMax => "math_max",
             Self::MathMin => "math_min",
+            Self::MathPow => "math_pow",
             Self::MathRandom => "math_random",
             Self::JsonStringify => "json_stringify",
             Self::JsonParse => "json_parse",
@@ -1921,6 +1932,7 @@ impl RuntimeFn {
             Self::MathAbs,
             Self::MathMax,
             Self::MathMin,
+            Self::MathPow,
             Self::MathRandom,
             // JSON functions
             Self::JsonStringify,
@@ -2052,6 +2064,7 @@ impl RuntimeFn {
             Self::MathAbs,
             Self::MathMax,
             Self::MathMin,
+            Self::MathPow,
             Self::MathRandom,
             // JSON functions
             Self::JsonStringify,

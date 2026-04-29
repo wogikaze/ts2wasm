@@ -1036,5 +1036,6 @@ fn hir_builtin_name(builtin: BuiltinId) -> &'static str {
         BuiltinId::PathDirname => "path.dirname",
         BuiltinId::CryptoRandomBytes => "crypto.randomBytes",
         BuiltinId::InstanceOf => "instanceof",
+        BuiltinId::MathPow => "Math.pow",
     }
 }
