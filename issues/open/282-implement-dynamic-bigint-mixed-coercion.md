@@ -110,6 +110,18 @@ Progress on 2026-04-29:
   StringToBigInt parsing, object `ToPrimitive`, or mixed relational runtime
   semantics.
 
+Progress on 2026-04-29:
+
+- Implemented runtime BigInt/String abstract equality for dynamic string values
+  that parse through the current integer-backed equality conversion path,
+  including decimal strings, signed decimal strings, empty/whitespace strings,
+  and unsigned `0x`/`0b`/`0o` prefixes.
+- Replaced the previous runtime trap fixture with Node/iwasm differential
+  fixtures for dynamic object-carried BigInt/String equality.
+- Remaining issue-282 work: object `ToPrimitive`, relational mixed
+  BigInt/String and BigInt/Boolean comparisons, and unsupported string grammar
+  outside the current small-int runtime boundary.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

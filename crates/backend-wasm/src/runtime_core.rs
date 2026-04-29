@@ -990,8 +990,8 @@ impl WatEmitter<'_> {
   (func $bigint_equal_small_int (param $v i32) (param $n i32) (result i32)
     (local $obj i32)
     (local $sign i32)
-    (local $len i32)
-    (local $ptr i32)
+    (local $expected_sign i32)
+    (local $abs i32)
     (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
     (local.set $sign (i32.load (i32.add (local.get $obj) (i32.const {bigint_sign_offset}))))
     (if (i32.eqz (local.get $n))
@@ -1001,16 +1001,24 @@ impl WatEmitter<'_> {
             (i32.eqz (local.get $sign))
             (then (i32.const {one}))
             (else (i32.const {zero}))))))
-    (if (i32.le_s (local.get $sign) (i32.const {zero}))
+    (local.set $expected_sign
+      (if (result i32) (i32.lt_s (local.get $n) (i32.const {zero}))
+        (then (i32.const {minus_one}))
+        (else (i32.const {one}))))
+    (if (i32.ne (local.get $sign) (local.get $expected_sign))
       (then (return (i32.const {zero}))))
-    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {bigint_decimal_len_offset}))))
-    (if (i32.ne (local.get $len) (i32.const {one}))
+    (local.set $abs
+      (if (result i32) (i32.lt_s (local.get $n) (i32.const {zero}))
+        (then (i32.sub (i32.const {zero}) (local.get $n)))
+        (else (local.get $n))))
+    (if (i32.ne
+          (i32.load (i32.add (local.get $obj) (i32.const {bigint_limb0_high_offset})))
+          (i32.const {zero}))
       (then (return (i32.const {zero}))))
-    (local.set $ptr (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset})))
     (if (result i32)
       (i32.eq
-        (i32.load8_u (local.get $ptr))
-        (i32.add (i32.const {ascii_zero}) (local.get $n)))
+        (i32.load (i32.add (local.get $obj) (i32.const {bigint_limb0_low_offset})))
+        (local.get $abs))
       (then (i32.const {one}))
       (else (i32.const {zero}))))
 "#,
@@ -1021,9 +1029,10 @@ impl WatEmitter<'_> {
             gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
             gc_kind_bigint = Layout::GC_KIND_BIGINT,
             bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            bigint_limb0_low_offset = Layout::BIGINT_LIMB0_LOW_OFFSET,
+            bigint_limb0_high_offset = Layout::BIGINT_LIMB0_HIGH_OFFSET,
             bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
             bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
-            ascii_zero = RuntimeConst::ASCII_ZERO,
             minus_one = -1,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
@@ -1096,8 +1105,10 @@ impl WatEmitter<'_> {
     (local $len i32)
     (local $i i32)
     (local $sign i32)
+    (local $radix i32)
     (local $n i32)
     (local $ch i32)
+    (local $digit i32)
     (local $saw_digit i32)
     (local.set $ptr (i32.and (local.get $v) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $ptr)))
@@ -1129,20 +1140,83 @@ impl WatEmitter<'_> {
       (else
         (if (i32.eq (local.get $ch) (i32.const {ascii_plus}))
           (then (local.set $i (i32.add (local.get $i) (i32.const {one})))))))
+    (local.set $radix (i32.const {ten}))
+    (if
+      (i32.and
+        (i32.gt_s (local.get $sign) (i32.const {zero}))
+        (i32.and
+          (i32.lt_u (i32.add (local.get $i) (i32.const {one})) (local.get $len))
+          (i32.eq
+            (i32.load8_u (i32.add (local.get $ptr) (local.get $i)))
+            (i32.const {ascii_zero}))))
+      (then
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (local.get $ptr)
+              (i32.add (local.get $i) (i32.const {one})))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_x}))
+            (i32.eq (local.get $ch) (i32.const {ascii_upper_x})))
+          (then
+            (local.set $radix (i32.const 16))
+            (local.set $i (i32.add (local.get $i) (i32.const 2)))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_b}))
+            (i32.eq (local.get $ch) (i32.const {ascii_upper_b})))
+          (then
+            (local.set $radix (i32.const 2))
+            (local.set $i (i32.add (local.get $i) (i32.const 2)))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_o}))
+            (i32.eq (local.get $ch) (i32.const {ascii_upper_o})))
+          (then
+            (local.set $radix (i32.const 8))
+            (local.set $i (i32.add (local.get $i) (i32.const 2)))))))
     (block $digits_done
       (loop $digits
         (br_if $digits_done (i32.ge_u (local.get $i) (local.get $len)))
         (local.set $ch (i32.load8_u (i32.add (local.get $ptr) (local.get $i))))
+        (local.set $digit (i32.const {minus_one}))
         (if
           (i32.and
             (i32.ge_u (local.get $ch) (i32.const {ascii_zero}))
             (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
           (then
+            (local.set $digit (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+          (else
+            (if
+              (i32.and
+                (i32.ge_u (local.get $ch) (i32.const {ascii_a}))
+                (i32.le_u (local.get $ch) (i32.const {ascii_f})))
+              (then
+                (local.set $digit
+                  (i32.add
+                    (i32.sub (local.get $ch) (i32.const {ascii_a}))
+                    (i32.const {ten}))))
+              (else
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $ch) (i32.const {ascii_upper_a}))
+                    (i32.le_u (local.get $ch) (i32.const {ascii_upper_f})))
+                  (then
+                    (local.set $digit
+                      (i32.add
+                        (i32.sub (local.get $ch) (i32.const {ascii_upper_a}))
+                        (i32.const {ten})))))))))
+        (if
+          (i32.and
+            (i32.ge_s (local.get $digit) (i32.const {zero}))
+            (i32.lt_s (local.get $digit) (local.get $radix)))
+          (then
             (local.set $saw_digit (i32.const {one}))
             (local.set $n
               (i32.add
-                (i32.mul (local.get $n) (i32.const {ten}))
-                (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+                (i32.mul (local.get $n) (local.get $radix))
+                (local.get $digit)))
             (local.set $i (i32.add (local.get $i) (i32.const {one})))
             (br $digits))
           (else (br $digits_done)))))
@@ -1223,6 +1297,18 @@ impl WatEmitter<'_> {
                 (call $bigint_equal_small_int (local.get $a) (i32.const {one}))
                 (then (i32.const {true_tag}))
                 (else (i32.const {false_tag}))))))
+        (if (i32.eq (local.get $b_tag) (i32.const {string_tag}))
+          (then
+            (local.set $n (call $string_to_number_for_equality (local.get $b)))
+            (if (i32.eq (local.get $n) (i32.const {nan_sentinel}))
+              (then (return (i32.const {false_tag}))))
+            (return
+              (if (result i32)
+                (call $bigint_equal_small_int
+                  (local.get $a)
+                  (i32.shr_s (local.get $n) (i32.const {number_shift})))
+                (then (i32.const {true_tag}))
+                (else (i32.const {false_tag}))))))
         (if (i32.eqz (call $is_bigint (local.get $b)))
           (then (unreachable)))))
     (if
@@ -1247,6 +1333,18 @@ impl WatEmitter<'_> {
             (return
               (if (result i32)
                 (call $bigint_equal_small_int (local.get $b) (i32.const {one}))
+                (then (i32.const {true_tag}))
+                (else (i32.const {false_tag}))))))
+        (if (i32.eq (local.get $a_tag) (i32.const {string_tag}))
+          (then
+            (local.set $n (call $string_to_number_for_equality (local.get $a)))
+            (if (i32.eq (local.get $n) (i32.const {nan_sentinel}))
+              (then (return (i32.const {false_tag}))))
+            (return
+              (if (result i32)
+                (call $bigint_equal_small_int
+                  (local.get $b)
+                  (i32.shr_s (local.get $n) (i32.const {number_shift})))
                 (then (i32.const {true_tag}))
                 (else (i32.const {false_tag}))))))
         (unreachable)))
@@ -1309,6 +1407,16 @@ impl WatEmitter<'_> {
             ascii_minus = RuntimeConst::ASCII_MINUS,
             ascii_zero = RuntimeConst::ASCII_ZERO,
             ascii_nine = 57,
+            ascii_a = 97,
+            ascii_b = 98,
+            ascii_f = 102,
+            ascii_o = 111,
+            ascii_x = 120,
+            ascii_upper_a = 65,
+            ascii_upper_b = 66,
+            ascii_upper_f = 70,
+            ascii_upper_o = 79,
+            ascii_upper_x = 88,
             minus_one = -1,
             ten = RuntimeConst::TEN,
             one = RuntimeConst::ONE,
