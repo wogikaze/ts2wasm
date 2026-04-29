@@ -10,6 +10,7 @@ impl Parser {
             cursor: 0,
             strict_mode,
             typescript_generic_functions: HashSet::new(),
+            parenthesized_expr_spans: HashSet::new(),
         }
     }
 

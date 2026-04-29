@@ -306,6 +306,7 @@ pub enum LoweredBinaryOp {
     StrictNotEqual,
     And,
     Or,
+    NullishCoalesce,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -370,7 +371,9 @@ impl LoweredExpr {
                 | LoweredBinaryOp::EqualEqual
                 | LoweredBinaryOp::BangEqual
                 | LoweredBinaryOp::StrictNotEqual => InferredType::Boolean,
-                LoweredBinaryOp::And | LoweredBinaryOp::Or => InferredType::Unknown,
+                LoweredBinaryOp::And
+                | LoweredBinaryOp::Or
+                | LoweredBinaryOp::NullishCoalesce => InferredType::Unknown,
             },
             Self::Assign { expr, .. } => expr.inferred_type(),
             Self::LogicalAssign { .. }
@@ -382,4 +385,3 @@ impl LoweredExpr {
         }
     }
 }
-

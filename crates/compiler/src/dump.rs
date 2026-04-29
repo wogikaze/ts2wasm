@@ -747,6 +747,7 @@ fn binary_op_text(op: BinaryOp) -> &'static str {
         BinaryOp::StrictNotEqual => "!==",
         BinaryOp::And => "&&",
         BinaryOp::Or => "||",
+        BinaryOp::NullishCoalesce => "??",
         BinaryOp::Multiply => "*",
         BinaryOp::Divide => "/",
         BinaryOp::Modulo => "%",
