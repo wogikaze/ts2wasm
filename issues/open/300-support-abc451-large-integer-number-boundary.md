@@ -630,6 +630,30 @@ date: 2026-04-29
   until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
   committed runtime policy.
 
+2026-04-29 child `019ddb50-4583-76c3-9d06-971b14a1dab1` issue 308 follow-up:
+
+- Issue 308 added a pre-cap-exhaustion last-chance GC in `$alloc_heap`: when
+  the bump allocation result would exceed `MEMORY_MAX_PAGES * WASM_PAGE_SIZE`,
+  allocation collects before the free-list scan and before the explicit
+  remaining-page OOM guard. The committed cap remains `MEMORY_MAX_PAGES=185`.
+- This still does not establish issue 300 compatibility. The depth-9
+  search-only reducer matches Node at `1404832`, but wasm still traps under the
+  committed cap:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-depth9-live-set-308-precap.wasm
+result: trapped with Exception: unreachable after 11.43s under committed 185-page policy
+date: 2026-04-29
+
+command: WASMTIME_BACKTRACE_DETAILS=1 /usr/bin/time -f 'elapsed:%e' timeout 90s wasmtime run /tmp/abc451-depth9-live-set-308-precap.wasm
+result: trapped at wasm function 24 (`$alloc_heap`) offset 0x1264 after 9.72s
+date: 2026-04-29
+```
+
+- No official ABC451 sample output parity is claimed; issue 300 remains open
+  until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

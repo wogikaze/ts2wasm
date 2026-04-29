@@ -2547,23 +2547,26 @@ impl WatEmitter<'_> {
     (local.set $new_heap (i32.add (local.get $header_base) (local.get $block_size)))
 
     ;; Trigger a collection hook once allocation pressure crosses the threshold
-    ;; and the bump pointer is close to the currently reserved memory end. When
-    ;; memory is already at the committed max, also collect before the free-list
-    ;; scan so reclaimed blocks get one last chance before the OOM trap.
+    ;; and the bump pointer is close to the currently reserved memory end. Also
+    ;; collect before the free-list scan when the bump allocation would exceed
+    ;; the committed max-cap address, so reclaimed blocks get one last chance
+    ;; before the explicit OOM trap.
     (local.set $alloc_pressure
       (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $block_size)))
     (local.set $memory_pages (memory.size))
     (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
     (if
       (i32.or
-        (i32.and
-          (i32.ge_u (local.get $alloc_pressure) (i32.const {gc_threshold}))
-          (i32.ge_u
-            (local.get $new_heap)
-            (i32.sub (local.get $memory_bytes) (i32.const {gc_headroom_bytes}))))
-        (i32.and
-          (i32.eq (local.get $memory_pages) (i32.const {memory_max_pages}))
-          (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))))
+        (i32.or
+          (i32.and
+            (i32.ge_u (local.get $alloc_pressure) (i32.const {gc_threshold}))
+            (i32.ge_u
+              (local.get $new_heap)
+              (i32.sub (local.get $memory_bytes) (i32.const {gc_headroom_bytes}))))
+          (i32.and
+            (i32.eq (local.get $memory_pages) (i32.const {memory_max_pages}))
+            (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))))
+        (i32.gt_u (local.get $new_heap) (i32.const {memory_max_bytes})))
       (then (call $gc_collect)))
     ;; A collection can tail-trim $heap. Recompute the bump cursor so the same
     ;; allocation can immediately reuse top-of-heap garbage if no free-list
@@ -3010,6 +3013,7 @@ impl WatEmitter<'_> {
             gc_headroom_bytes = Layout::GC_HEADROOM_PAGES * Layout::WASM_PAGE_SIZE,
             heap_grow_min_pages = Layout::HEAP_GROW_MIN_PAGES,
             memory_max_pages = Layout::MEMORY_MAX_PAGES,
+            memory_max_bytes = Layout::MEMORY_MAX_PAGES * Layout::WASM_PAGE_SIZE,
             gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
             gc_body_size_offset = Layout::GC_BODY_SIZE_OFFSET,
             gc_sweep_next_offset = Layout::GC_SWEEP_NEXT_OFFSET,
