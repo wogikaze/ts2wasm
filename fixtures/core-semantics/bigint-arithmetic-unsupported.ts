@@ -1,1 +1,1 @@
-console.log(1n + 2n);
+console.log(1n + 2);

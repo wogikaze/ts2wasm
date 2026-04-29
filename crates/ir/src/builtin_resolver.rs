@@ -377,11 +377,23 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             span: Some(*span),
         }),
         Expr::Unary { op, expr, span } => {
-            if expr_contains_bigint(expr) && bigint_unary_op_issue(*op).is_some() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: bigint_unary_op_issue(*op).unwrap().to_owned(),
-                    span: Some(*span),
+            if expr_contains_bigint(expr) {
+                let resolved = resolve_expr(expr)?;
+                if *op == UnaryOp::Negate {
+                    if let Some(value) = bigint_from_resolved(&resolved) {
+                        return Ok(bigint_to_resolved(value.negated()));
+                    }
+                }
+                if let Some(message) = bigint_unary_op_issue(*op) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: message.to_owned(),
+                        span: Some(*span),
+                    });
+                }
+                return Ok(ResolvedExpr::Unary {
+                    op: *op,
+                    expr: Box::new(resolved),
                 });
             }
             Ok(ResolvedExpr::Unary {
@@ -396,6 +408,17 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             span,
         } => {
             if expr_contains_bigint(left) || expr_contains_bigint(right) {
+                if bigint_arithmetic_op(*op) {
+                    let left_resolved = resolve_expr(left)?;
+                    let right_resolved = resolve_expr(right)?;
+                    if let (Some(left_value), Some(right_value)) = (
+                        bigint_from_resolved(&left_resolved),
+                        bigint_from_resolved(&right_resolved),
+                    ) {
+                        let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
+                        return Ok(bigint_to_resolved(result));
+                    }
+                }
                 let issue = match op {
                     BinaryOp::Add
                     | BinaryOp::Subtract
@@ -756,6 +779,268 @@ fn trim_decimal_zeroes(digits: &mut Vec<u8>) {
     while digits.len() > 1 && digits.first() == Some(&0) {
         digits.remove(0);
     }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct BigIntConst {
+    sign: i32,
+    digits: Vec<u8>,
+}
+
+impl BigIntConst {
+    fn zero() -> Self {
+        Self {
+            sign: 0,
+            digits: vec![0],
+        }
+    }
+
+    fn from_decimal(sign: i32, decimal: &str) -> Self {
+        let body = decimal.strip_prefix('-').unwrap_or(decimal);
+        let mut digits = body
+            .bytes()
+            .filter(|byte| byte.is_ascii_digit())
+            .map(|byte| byte - b'0')
+            .collect::<Vec<_>>();
+        if digits.is_empty() {
+            digits.push(0);
+        }
+        trim_decimal_zeroes(&mut digits);
+        let sign = if digits == [0] { 0 } else { sign.signum() };
+        Self { sign, digits }
+    }
+
+    fn negated(mut self) -> Self {
+        self.sign = -self.sign;
+        self
+    }
+
+    fn decimal_string(&self) -> String {
+        let mut out = String::new();
+        if self.sign < 0 {
+            out.push('-');
+        }
+        out.extend(self.digits.iter().map(|digit| char::from(b'0' + *digit)));
+        out
+    }
+}
+
+fn bigint_from_resolved(expr: &ResolvedExpr) -> Option<BigIntConst> {
+    match expr {
+        ResolvedExpr::BigIntLiteral { decimal, sign, .. } => {
+            Some(BigIntConst::from_decimal(*sign, decimal))
+        }
+        _ => None,
+    }
+}
+
+fn bigint_to_resolved(value: BigIntConst) -> ResolvedExpr {
+    let magnitude = decimal_digits_to_u64(&value.digits);
+    let (limb_low, limb_high) = magnitude
+        .map(|magnitude| (magnitude as u32, (magnitude >> 32) as u32))
+        .unwrap_or((0, 0));
+    ResolvedExpr::BigIntLiteral {
+        decimal: value.decimal_string(),
+        sign: value.sign,
+        limb_low,
+        limb_high,
+    }
+}
+
+fn decimal_digits_to_u64(digits: &[u8]) -> Option<u64> {
+    let mut magnitude = 0_u64;
+    for digit in digits {
+        magnitude = magnitude.checked_mul(10)?.checked_add(u64::from(*digit))?;
+    }
+    Some(magnitude)
+}
+
+fn bigint_arithmetic_op(op: BinaryOp) -> bool {
+    matches!(
+        op,
+        BinaryOp::Add
+            | BinaryOp::Subtract
+            | BinaryOp::Multiply
+            | BinaryOp::Divide
+            | BinaryOp::Modulo
+    )
+}
+
+fn fold_bigint_binary(
+    left: BigIntConst,
+    op: BinaryOp,
+    right: BigIntConst,
+    span: Span,
+) -> Result<BigIntConst, Diagnostic> {
+    match op {
+        BinaryOp::Add => Ok(bigint_add(left, right)),
+        BinaryOp::Subtract => Ok(bigint_add(left, right.negated())),
+        BinaryOp::Multiply => Ok(bigint_mul(left, right)),
+        BinaryOp::Divide | BinaryOp::Modulo if right.sign == 0 => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "issue-260: BigInt division by zero runtime throw is not implemented in this literal-folding slice"
+                    .to_owned(),
+            span: Some(span),
+        }),
+        BinaryOp::Divide => {
+            let (quotient, _) = div_rem_abs(&left.digits, &right.digits);
+            let sign = if quotient == [0] {
+                0
+            } else {
+                left.sign * right.sign
+            };
+            Ok(BigIntConst {
+                sign,
+                digits: quotient,
+            })
+        }
+        BinaryOp::Modulo => {
+            let (_, remainder) = div_rem_abs(&left.digits, &right.digits);
+            let sign = if remainder == [0] { 0 } else { left.sign };
+            Ok(BigIntConst {
+                sign,
+                digits: remainder,
+            })
+        }
+        _ => unreachable!("non-arithmetic BigInt operator reached literal fold"),
+    }
+}
+
+fn bigint_add(left: BigIntConst, right: BigIntConst) -> BigIntConst {
+    if left.sign == 0 {
+        return right;
+    }
+    if right.sign == 0 {
+        return left;
+    }
+    if left.sign == right.sign {
+        return BigIntConst {
+            sign: left.sign,
+            digits: add_abs(&left.digits, &right.digits),
+        };
+    }
+    match cmp_abs(&left.digits, &right.digits) {
+        std::cmp::Ordering::Greater => BigIntConst {
+            sign: left.sign,
+            digits: sub_abs(&left.digits, &right.digits),
+        },
+        std::cmp::Ordering::Less => BigIntConst {
+            sign: right.sign,
+            digits: sub_abs(&right.digits, &left.digits),
+        },
+        std::cmp::Ordering::Equal => BigIntConst::zero(),
+    }
+}
+
+fn bigint_mul(left: BigIntConst, right: BigIntConst) -> BigIntConst {
+    if left.sign == 0 || right.sign == 0 {
+        return BigIntConst::zero();
+    }
+    BigIntConst {
+        sign: left.sign * right.sign,
+        digits: mul_abs(&left.digits, &right.digits),
+    }
+}
+
+fn cmp_abs(left: &[u8], right: &[u8]) -> std::cmp::Ordering {
+    left.len().cmp(&right.len()).then_with(|| left.cmp(right))
+}
+
+fn add_abs(left: &[u8], right: &[u8]) -> Vec<u8> {
+    let mut out = Vec::new();
+    let mut carry = 0_u8;
+    let mut li = left.len();
+    let mut ri = right.len();
+    while li > 0 || ri > 0 || carry > 0 {
+        let ld = if li > 0 {
+            li -= 1;
+            left[li]
+        } else {
+            0
+        };
+        let rd = if ri > 0 {
+            ri -= 1;
+            right[ri]
+        } else {
+            0
+        };
+        let sum = ld + rd + carry;
+        out.push(sum % 10);
+        carry = sum / 10;
+    }
+    out.reverse();
+    out
+}
+
+fn sub_abs(left: &[u8], right: &[u8]) -> Vec<u8> {
+    let mut out = Vec::new();
+    let mut borrow = 0_i8;
+    let mut li = left.len();
+    let mut ri = right.len();
+    while li > 0 {
+        li -= 1;
+        let mut ld = left[li] as i8 - borrow;
+        let rd = if ri > 0 {
+            ri -= 1;
+            right[ri] as i8
+        } else {
+            0
+        };
+        if ld < rd {
+            ld += 10;
+            borrow = 1;
+        } else {
+            borrow = 0;
+        }
+        out.push((ld - rd) as u8);
+    }
+    out.reverse();
+    trim_decimal_zeroes(&mut out);
+    out
+}
+
+fn mul_abs(left: &[u8], right: &[u8]) -> Vec<u8> {
+    if left == [0] || right == [0] {
+        return vec![0];
+    }
+    let mut out = vec![0_u16; left.len() + right.len()];
+    for (li, ld) in left.iter().rev().enumerate() {
+        for (ri, rd) in right.iter().rev().enumerate() {
+            let idx = out.len() - 1 - li - ri;
+            out[idx] += u16::from(*ld) * u16::from(*rd);
+        }
+    }
+    for idx in (1..out.len()).rev() {
+        let carry = out[idx] / 10;
+        out[idx] %= 10;
+        out[idx - 1] += carry;
+    }
+    let mut digits = out.into_iter().map(|digit| digit as u8).collect::<Vec<_>>();
+    trim_decimal_zeroes(&mut digits);
+    digits
+}
+
+fn div_rem_abs(left: &[u8], right: &[u8]) -> (Vec<u8>, Vec<u8>) {
+    let mut quotient = Vec::with_capacity(left.len());
+    let mut remainder = vec![0_u8];
+    for digit in left {
+        if remainder == [0] {
+            remainder[0] = *digit;
+        } else {
+            remainder.push(*digit);
+        }
+        trim_decimal_zeroes(&mut remainder);
+        let mut q = 0_u8;
+        while cmp_abs(&remainder, right) != std::cmp::Ordering::Less {
+            remainder = sub_abs(&remainder, right);
+            q += 1;
+        }
+        quotient.push(q);
+    }
+    trim_decimal_zeroes(&mut quotient);
+    trim_decimal_zeroes(&mut remainder);
+    (quotient, remainder)
 }
 
 fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
