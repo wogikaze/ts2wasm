@@ -1418,6 +1418,16 @@ impl<'a> Lexer<'a> {
         };
 
         if radix == 10 && self.peek_char() == Some('n') {
+            if self.source[start..self.cursor].contains(['.', 'e', 'E']) {
+                let end = self.cursor + 1;
+                self.advance_char();
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-244: BigInt literal cannot use decimal fractions or exponents"
+                        .to_owned(),
+                    span: Some(Span { start, end }),
+                });
+            }
             self.advance_char();
             if digits.len() > 1 && self.source[start..].starts_with('0') {
                 return Err(Diagnostic {
@@ -1509,6 +1519,54 @@ impl<'a> Lexer<'a> {
                 start,
                 "numeric separators are not allowed at the end of numeric literals",
             ));
+        }
+
+        if matches!(self.peek_char(), Some('e' | 'E')) {
+            self.advance_char();
+            let negative_exponent = if matches!(self.peek_char(), Some('+' | '-')) {
+                let negative = self.peek_char() == Some('-');
+                self.advance_char();
+                negative
+            } else {
+                false
+            };
+            let exponent_start = self.cursor;
+            let mut exponent = String::new();
+            while let Some(ch @ '0'..='9') = self.peek_char() {
+                exponent.push(ch);
+                self.advance_char();
+            }
+            if exponent.is_empty() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "invalid decimal exponent numeric literal: expected exponent digits"
+                        .to_owned(),
+                    span: Some(Span {
+                        start,
+                        end: exponent_start,
+                    }),
+                });
+            }
+            if negative_exponent {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-294: negative decimal exponent numeric literals require fractional number support"
+                        .to_owned(),
+                    span: Some(Span {
+                        start,
+                        end: self.cursor,
+                    }),
+                });
+            }
+            let zeros = exponent.parse::<usize>().map_err(|error| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("invalid decimal exponent numeric literal: {error}"),
+                span: Some(Span {
+                    start,
+                    end: self.cursor,
+                }),
+            })?;
+            digits.extend(std::iter::repeat('0').take(zeros));
         }
 
         Ok((digits, 10))
@@ -2508,6 +2566,31 @@ mod tests {
             .collect();
 
         assert_eq!(literals, ["1n", "0b101n", "0o77n", "0xFFn"]);
+    }
+
+    #[test]
+    fn recognizes_positive_decimal_exponent_number_tokens() {
+        let tokens = Lexer::new("let billion = 1e9; let thousand = 1e+3;")
+            .tokenize()
+            .unwrap();
+        let numbers: Vec<i32> = tokens
+            .iter()
+            .filter_map(|token| match token.kind {
+                Token::Number(value) => Some(value),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(numbers, [1_000_000_000, 1_000]);
+    }
+
+    #[test]
+    fn rejects_negative_decimal_exponent_number_tokens() {
+        let err = Lexer::new("let value = 1e-3;").tokenize().unwrap_err();
+
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-294"), "{err:?}");
+        assert!(err.message.contains("fractional number"), "{err:?}");
     }
 
     #[test]
