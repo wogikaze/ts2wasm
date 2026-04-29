@@ -43,12 +43,12 @@ Interactive web UI with:
 
 In scope:
 
-- [ ] Web UI framework setup (Vite + React + TypeScript)
-- [ ] Test result display with filtering/search
+- [x] Web UI framework setup (Vite + React + TypeScript)
+- [x] Test result display with filtering/search
 - [x] Coverage visualization with interactive charts
 - [x] Historical comparison view
 - [x] Performance metrics dashboard
-- [ ] Real-time test run updates
+- [x] Real-time test run updates
 - [x] Export functionality (JSON, CSV, PDF)
 - [x] Responsive design
 - [x] Dark/light theme support
@@ -75,16 +75,16 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Web UI can be built and served locally
-- [ ] Test results display with pass/fail/skip status
-- [ ] Filtering by test suite, status, and search
+- [x] Web UI can be built and served locally
+- [x] Test results display with pass/fail/skip status
+- [x] Filtering by test suite, status, and search
 - [x] Coverage charts show implementation progress
 - [x] Historical comparison shows regressions
 - [x] Performance metrics displayed with trends
-- [ ] Real-time updates during test runs
+- [x] Real-time updates during test runs
 - [x] Export functionality works for all views
 - [x] Documentation covers usage and deployment
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -111,21 +111,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/` (new web UI usage documentation)
+- [x] updated: `docs/18-web-ui-reporting.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- not affected
 
 Follow-up issues:
 
-- [ ] none
 - [x] created/updated:
   - `issues/done/267a-web-ui-data-generation-and-script-integration.md`
   - `issues/done/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
-  - `issues/open/267c-web-ui-real-time-test-run-updates.md`
+  - `issues/done/267c-web-ui-real-time-test-run-updates.md`
   - `issues/done/267d-web-ui-export-theme-and-usage-docs.md`
 
 ## Notes
@@ -169,20 +166,51 @@ Close blockers found during review:
 - The documented web UI data generator, metadata output, and `--web-ui` command integration referenced by docs/issue are absent.
 - Web UI usage docs exist only in `web-ui/README.md`; no final-state `docs/` usage/deployment document exists.
 
+Close evidence added on 2026-04-29:
+
+- issue-267a added web-ui data generation and command integration.
+- issue-267b added interactive charts, historical deltas, regression flags, performance trends, and responsive visual review.
+- issue-267d added export controls, theme persistence, and final-state web UI usage/deployment docs.
+- issue-267c added local live mode with `?live=1`, summary/row refresh without reload, connection state, and static JSON fallback.
+- The Test Results tab now supports search, status filtering, and suite filtering.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `acace0a6` issue-267a data generator
+- `c855f96` issue-267a command integration
+- `4d0aa35f` issue-267b charts/trends
+- `5548af98` issue-267b responsive close
+- `15295019` issue-267d export controls
+- `ee1184ef` issue-267d theme toggle
+- `949aad8d` issue-267d docs close
+- close commit records issue-267c live mode and parent issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cd web-ui && npm run build
+result: PASS
+date: 2026-04-29
+
+command: Playwright desktop/mobile web-ui review and live-mode check
+result: PASS
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:

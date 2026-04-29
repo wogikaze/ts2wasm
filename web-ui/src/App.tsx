@@ -73,6 +73,10 @@ function formatDuration(value?: number) {
   return Number.isFinite(value) ? `${value}ms` : '-'
 }
 
+function formatLastUpdated(value: string | null) {
+  return value ? new Date(value).toLocaleTimeString() : '-'
+}
+
 function chartNumber(value: unknown) {
   const numeric = Number(value)
   return Number.isFinite(numeric) ? numeric : 0
@@ -195,10 +199,19 @@ function App() {
   const [activeTab, setActiveTab] = useState<'tests' | 'coverage' | 'history'>('tests')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'pass' | 'fail' | 'skip'>('all')
+  const [suiteFilter, setSuiteFilter] = useState('all')
   const [theme, setTheme] = useState<ThemePreference>(getInitialTheme)
 
   // Load real data
-  const { tests, summary, loading: testsLoading, error: testsError } = useTestData()
+  const {
+    tests,
+    summary,
+    loading: testsLoading,
+    error: testsError,
+    liveStatus,
+    lastUpdated,
+    liveMode,
+  } = useTestData()
   const { coverage, loading: coverageLoading, error: coverageError } = useCoverageData()
   const { history, loading: historyLoading, error: historyError } = useHistoricalData()
 
@@ -206,8 +219,13 @@ function App() {
     const matchesSearch = test.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          test.suite.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || test.status === statusFilter
-    return matchesSearch && matchesStatus
+    const matchesSuite = suiteFilter === 'all' || test.suite === suiteFilter
+    return matchesSearch && matchesStatus && matchesSuite
   })
+
+  const suiteOptions = useMemo(() => (
+    Array.from(new Set(tests.map(test => test.suite))).sort()
+  ), [tests])
 
   const coverageStatusData = useMemo(() => [
     { name: 'Implemented', value: coverage.implemented },
@@ -410,12 +428,22 @@ function App() {
               <div className="flex items-center justify-center py-12">
                 <div className="text-gray-400">Loading test results...</div>
               </div>
-            ) : testsError ? (
+            ) : testsError && (!liveMode || tests.length === 0) ? (
               <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4 text-red-500">
                 Error loading test results: {testsError}
               </div>
             ) : (
               <>
+            {liveMode ? (
+              <div className={`mb-5 rounded-lg border px-4 py-3 text-sm ${
+                liveStatus === 'error'
+                  ? 'border-red-500/30 bg-red-500/10 text-red-300'
+                  : 'border-green-500/30 bg-green-500/10 text-green-300'
+              }`}>
+                Live mode: {liveStatus}. Last refresh: {formatLastUpdated(lastUpdated)}.
+              </div>
+            ) : null}
+
             {/* Summary Cards */}
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
@@ -473,6 +501,16 @@ function App() {
                   <option value="pass">Pass</option>
                   <option value="fail">Fail</option>
                   <option value="skip">Skip</option>
+                </select>
+                <select
+                  value={suiteFilter}
+                  onChange={(e) => setSuiteFilter(e.target.value)}
+                  className="min-w-36 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="all">All Suites</option>
+                  {suiteOptions.map(suite => (
+                    <option key={suite} value={suite}>{suite}</option>
+                  ))}
                 </select>
                 <span className="text-sm text-gray-400">
                   Showing {filteredTests.length.toLocaleString()} of {tests.length.toLocaleString()}
