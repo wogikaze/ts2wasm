@@ -1035,6 +1035,11 @@ fn spread_operator_literal_array_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_array_local_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-local.ts");
+}
+
+#[test]
 fn spread_operator_set_array_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-array-set.ts");
 }
@@ -1050,7 +1055,7 @@ fn spread_operator_literal_object_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn spread_operator_unsupported_fixtures_report_issue_274() {
+fn spread_operator_unsupported_forms_report_issue_274() {
     for fixture in [
         "fixtures/core-semantics/spread-call-dynamic-unsupported.ts",
         "fixtures/core-semantics/spread-array-unsupported.ts",
