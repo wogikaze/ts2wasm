@@ -1,5 +1,6 @@
 use ts2wasm_frontend::{BinaryOp, LogicalAssignOp, Span, UnaryOp};
 
+use super::binding_pattern::BindingPattern;
 use super::builtin::{BuiltinId, BuiltinPropertyId};
 
 pub type ResolvedParam = (String, Option<ResolvedExpr>, bool);
@@ -8,6 +9,10 @@ pub type ResolvedConstructor = (Vec<ResolvedParam>, Vec<ResolvedStmt>);
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ResolvedStmt {
     Let(String, ResolvedExpr),
+    DestructureLet {
+        pattern: BindingPattern,
+        expr: ResolvedExpr,
+    },
     Assign(String, ResolvedExpr),
     Expr(ResolvedExpr),
     If {

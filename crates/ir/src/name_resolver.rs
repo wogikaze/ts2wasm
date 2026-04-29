@@ -1,5 +1,7 @@
 use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt};
 
+use crate::binding_pattern::{is_binding_pattern_text, parse_binding_pattern};
+
 /// Resolves variable and function names in lexical scope.
 /// This pass runs before builtin resolution to catch unresolved names early.
 /// It validates names but does not transform the AST - that's done by builtin_resolver.
@@ -130,7 +132,7 @@ impl NameResolver {
                 Err(unsupported_module_decl(*span, "default export"))
             }
             Stmt::Let { name, expr, span } => {
-                self.declare_variable(name, Some(*span))?;
+                self.declare_binding(name, Some(*span))?;
                 Ok(Stmt::Let {
                     name: name.clone(),
                     expr: self.resolve_expr(expr)?,
@@ -196,7 +198,15 @@ impl NameResolver {
                 self.enter_scope();
                 self.function_depth += 1;
                 for (param_name, default, is_rest) in params {
-                    self.declare_variable(param_name, None)?;
+                    if *is_rest && is_binding_pattern_text(param_name) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-251: rest parameter binding patterns are not supported"
+                                .to_owned(),
+                            span: None,
+                        });
+                    }
+                    self.declare_binding(param_name, None)?;
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
@@ -715,7 +725,7 @@ impl NameResolver {
             Expr::ArrowFn { params, body, span } => {
                 self.enter_scope();
                 for param in params {
-                    self.declare_variable(param, None)?;
+                    self.declare_binding(param, None)?;
                 }
                 let resolved_body = self.resolve_expr(body)?;
                 self.exit_scope();
@@ -754,6 +764,17 @@ impl NameResolver {
 
     fn exit_scope(&mut self) {
         self.scopes.pop();
+    }
+
+    fn declare_binding(&mut self, binding: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+        if let Some(pattern) = parse_binding_pattern(binding, span)? {
+            for name in pattern.names() {
+                self.declare_variable(name, span)?;
+            }
+            Ok(())
+        } else {
+            self.declare_variable(binding, span)
+        }
     }
 
     fn declare_variable(&mut self, name: &str, span: Option<Span>) -> Result<(), Diagnostic> {

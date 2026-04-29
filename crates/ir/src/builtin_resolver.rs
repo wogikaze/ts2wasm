@@ -5,6 +5,7 @@ use ts2wasm_frontend::{
     UnaryOp,
 };
 
+use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
 use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
@@ -32,7 +33,16 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
             message: "issue-055: static module declarations parse in the frontend but module resolution and loading are not implemented".to_owned(),
             span: Some(*span),
         }),
-        Stmt::Let { name, expr, .. } => Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?)),
+        Stmt::Let { name, expr, span } => {
+            if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
+                Ok(ResolvedStmt::DestructureLet {
+                    pattern,
+                    expr: resolve_expr(expr)?,
+                })
+            } else {
+                Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?))
+            }
+        }
         Stmt::Assign { name, expr, .. } => {
             Ok(ResolvedStmt::Assign(name.clone(), resolve_expr(expr)?))
         }

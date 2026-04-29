@@ -1,3 +1,4 @@
+pub mod binding_pattern;
 pub mod builtin;
 pub mod builtin_resolved;
 pub mod builtin_resolver;
