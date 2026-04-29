@@ -233,6 +233,18 @@ fn bigint_mixed_relational_reports_issue_261() {
 }
 
 #[test]
+fn bigint_runtime_mixed_abstract_equality_traps_instead_of_false() {
+    assert_fixture_iwasm_traps(
+        "fixtures/core-semantics/bigint-runtime-mixed-abstract-equality-trap.ts",
+    );
+}
+
+#[test]
+fn bigint_runtime_mixed_relational_traps_instead_of_false() {
+    assert_fixture_iwasm_traps("fixtures/core-semantics/bigint-runtime-mixed-relational-trap.ts");
+}
+
+#[test]
 fn regexp_test_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-test.ts");
 }
@@ -850,6 +862,52 @@ fn assert_fixture_matches_node(fixture: &str) {
         String::from_utf8_lossy(&iwasm.output.stdout),
         String::from_utf8_lossy(&node.stdout),
         "stdout mismatch for {fixture}"
+    );
+}
+
+fn assert_fixture_iwasm_traps(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        !iwasm.output.status.success(),
+        "expected iwasm trap for {fixture}, got success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    let output_text = format!(
+        "{}{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    )
+    .to_ascii_lowercase();
+    assert!(
+        output_text.contains("unreachable"),
+        "expected unreachable trap for {fixture}, got:\n{output_text}"
     );
 }
 

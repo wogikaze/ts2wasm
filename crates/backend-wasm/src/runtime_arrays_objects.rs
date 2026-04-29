@@ -438,7 +438,7 @@ impl WatEmitter<'_> {
           (then (return (i32.const {true_tag}))))
         (return (i32.const {false_tag}))))
     (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
-      (then (return (i32.const {false_tag}))))
+      (then (unreachable)))
     (if (result i32)
       (i32.ge_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
       (then (i32.const {true_tag}))
