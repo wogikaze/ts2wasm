@@ -14,6 +14,7 @@ pub struct Parser {
     typescript_generic_functions: HashSet<String>,
     parenthesized_expr_spans: HashSet<(usize, usize)>,
     pending_statements: Vec<Stmt>,
+    possible_eval_shadowing: bool,
 }
 
 struct ParsedParam {

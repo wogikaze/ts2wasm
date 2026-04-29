@@ -145,6 +145,15 @@ the first block-function declaration behavior.
 - Required `reference-coverage` commands were blocked locally because
   `reference/test262` is missing in the assigned worktree.
 
+2026-04-30 child follow-up:
+
+- Parent review identified that the parser-level transform could not prove
+  unshadowed direct eval. Added a conservative guard: the static block-function
+  lowering only runs when the source has a single `eval` identifier mention;
+  possible shadowing reports issue-302 instead of silently transforming.
+- Added `direct-eval-block-function-shadowed-unsupported.ts` to prove local
+  `eval` shadowing is rejected.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

@@ -5,6 +5,11 @@ impl Parser {
     }
 
     pub fn new_with_strict_mode(tokens: Vec<SpannedToken>, strict_mode: bool) -> Self {
+        let possible_eval_shadowing = tokens
+            .iter()
+            .filter(|token| matches!(&token.kind, Token::Ident(name) if name == "eval"))
+            .count()
+            > 1;
         Self {
             tokens,
             cursor: 0,
@@ -12,6 +17,7 @@ impl Parser {
             typescript_generic_functions: HashSet::new(),
             parenthesized_expr_spans: HashSet::new(),
             pending_statements: Vec::new(),
+            possible_eval_shadowing,
         }
     }
 
@@ -702,6 +708,13 @@ impl Parser {
         let Some(inner_source) = Self::single_block_source(source) else {
             return Ok(None);
         };
+        if self.possible_eval_shadowing {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-302: static direct eval block-function lowering requires a provably unshadowed eval binding".to_owned(),
+                span: Some(*span),
+            });
+        }
 
         let tokens = crate::Lexer::new_with_strict_mode(inner_source, self.strict_mode)
             .tokenize()

@@ -1033,6 +1033,14 @@ fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn direct_eval_block_function_shadowed_eval_reports_issue_302() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/direct-eval-block-function-shadowed-unsupported.ts",
+        "issue-302: static direct eval block-function lowering requires a provably unshadowed eval binding",
+    );
+}
+
+#[test]
 fn function_object_metadata_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/function-object-metadata.ts");
 }
