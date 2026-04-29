@@ -328,6 +328,7 @@ pub enum LoweredBinaryOp {
     Add,
     Subtract,
     Multiply,
+    Power,
     Divide,
     Modulo,
     Less,
@@ -392,6 +393,7 @@ impl LoweredExpr {
                 },
                 LoweredBinaryOp::Subtract
                 | LoweredBinaryOp::Multiply
+                | LoweredBinaryOp::Power
                 | LoweredBinaryOp::Divide
                 | LoweredBinaryOp::Modulo => {
                     if left.inferred_type() == InferredType::Number

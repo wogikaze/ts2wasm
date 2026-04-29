@@ -57,6 +57,11 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn small_int_exponentiation_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/small-int-exponentiation.ts");
+}
+
+#[test]
 fn prototype_chain_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/prototype.ts");
 }
@@ -346,6 +351,14 @@ fn bigint_new_constructor_reports_issue_262() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-new-unsupported.ts",
         "issue-262: BigInt is not a constructor; use BigInt(...) without new",
+    );
+}
+
+#[test]
+fn bigint_exponentiation_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-exponentiation-unsupported.ts",
+        "issue-260: BigInt arithmetic and bitwise operators are tracked separately from literal runtime values",
     );
 }
 
