@@ -14,7 +14,7 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
-| frontend | 188 | 136 | 52 |
+| frontend | 190 | 138 | 52 |
 | ir | 6 | 0 | 6 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -24,7 +24,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 276 | 147 | 129 |
+| total | 278 | 149 | 129 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,6 +51,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 247 | Implement destructuring binding pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Array and object binding patterns in declarations are rejected before AST construction, so destructuring syntax repor... |
 | 248 | Implement private class element parser support | feature | frontend/syntax | implementation-ready | P2 |  | The lexer rejects `#` before the class parser can classify private fields or methods, so private class syntax reports... |
 | 249 | Implement class static block parser support | feature | frontend/syntax | implementation-ready | P2 |  | Class body parsing does not model `static { ... }` as `ClassStaticBlock`, so static initialization blocks are not rep... |
+| 250 | Implement destructuring binding runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Parsed destructuring binding patterns are accepted for AST/dump coverage, but name resolution, lowering, and runtime ... |
+| 251 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Issue 247 intentionally covers binding patterns only; assignment targets such as `({ x } = obj)` and `[a] = arr` stil... |
 <!-- generated:ready:end -->
 
 ## Blocked queue

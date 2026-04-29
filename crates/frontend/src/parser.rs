@@ -21,6 +21,13 @@ struct ParsedParam {
     span: Span,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ParsedBindingPattern {
+    text: String,
+    span: Span,
+    is_identifier: bool,
+}
+
 include!("parser/statements.rs");
 include!("parser/expressions.rs");
 include!("parser/tokens.rs");
