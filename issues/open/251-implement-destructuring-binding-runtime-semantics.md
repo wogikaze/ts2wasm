@@ -111,7 +111,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] split: `issues/open/252-implement-destructuring-assignment-pattern-parser.md`
+- [x] split: `issues/done/252-implement-destructuring-assignment-pattern-parser.md`
 
 ## Notes
 
