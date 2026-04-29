@@ -23,7 +23,8 @@ Queue design note:
 - Use child slices for deterministic Date behavior, host time policy, timezone formatting policy, and Annex B legacy methods.
 - Keep live host time work out of implementation slices until a capability policy child is complete.
 - Current child slices:
-  - issue 239: live-time capability policy for `new Date()` / `Date.now()`
+  - issue 239: live-time capability policy for `new Date()` / `Date.now()` (policy prerequisite)
+  - issue 242: implement live-time Date entry points after issue 239
   - issue 240: timezone-aware `Date.prototype.toString()` policy/implementation
   - issue 241: Annex B legacy `getYear` / `setYear` / `toGMTString`
 
@@ -113,6 +114,17 @@ Follow-up issues:
 - Keep those legacy Annex B methods as child Date work rather than a competing parent
   issue. The existing deterministic Date slices below remain the implemented evidence;
   this merge note is issue-queue deduplication only.
+
+2026-04-29 live-time policy note:
+
+- Issue 239 selected WASI Preview 1 realtime clock as the default live-time capability
+  for `Date.now()` and no-argument `new Date()`.
+- Future implementation must emit `wasi.clock.realtime: true`,
+  `capability_reasons["wasi.clock.realtime"]` with `Date.now` or `new Date()`,
+  and the matching `wasi_snapshot_preview1.clock_time_get` import.
+- The existing unsupported diagnostics for `Date.now()` and no-argument `new Date()`
+  remain correct until issue 242 consumes that policy and adds manifest/import and
+  host-deny coverage.
 
 2026-04-28 progress evidence:
 

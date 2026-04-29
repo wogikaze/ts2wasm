@@ -26,6 +26,7 @@ Node.js 併用 API は、WASI 単体では扱いにくいものを対象にす�
 | process |            部分対応 |           併用 | `argv` / `env` は WASI 優先、完全互換は host fallback |
 | Buffer  |      runtime 実装 |     必要に応じて併用 | `Uint8Array` との関係を明確化                     |
 | crypto  |             難しい |           併用 | WASI random と Node crypto を分離             |
+| Date live time | 対応 | 不要 | WASI realtime clock を明示 capability として要求 |
 | timer   |             難しい |           併用 | event loop 設計後に対応                         |
 | network |       WASI 対応可能 |           併用 | WAMR socket API で WASI 経由実行可能          |
 
@@ -40,6 +41,7 @@ Node.js 併用 API は、WASI 単体では扱いにくいものを対象にす�
 | `fs.existsSync`, `statSync`        | WASI filesystem API に対応可能                  |             条件付き |
 | `path.join`                        | WASM runtime builtin                       |               不要 |
 | `Buffer.from`                      | WASM runtime builtin                       |               不要 |
+| `Date.now()` / `new Date()`        | WASI `clock_time_get` realtime clock       |               不要 |
 | `setTimeout`                       | WASI だけでは不足                                |  Node host などが必要 |
 | network                            | WASI Preview 1 では不足                        |         host が必要 |
 
@@ -119,6 +121,7 @@ manifest の schema、filesystem の粒度、Node host import の表記は `docs
 | `process.argv`               | `wasi.args`                         |        yes |
 | `process.env`                | `wasi.env`                          |        yes |
 | `fs.readFileSync(path)`      | `wasi.filesystem.read`              |       条件付き |
+| `Date.now` / `new Date()`    | `wasi.clock.realtime`               |        yes |
 | `setTimeout`                 | `host.timer`                        |         no |
 | `crypto.randomBytes`         | `host.crypto` or `wasi.random`      |       条件付き |
 | `fetch`                      | `host.http`                         |         no |
@@ -159,6 +162,27 @@ manifest の schema、filesystem の粒度、Node host import の表記は `docs
 standalone WASI では、起動時の environ snapshot から通常の JS object 風 facade を作る。読み取り、列挙、runtime-local mutation はこの facade に対する操作として実行する。OS 側の環境変数を書き換えること、親プロセスへ反映すること、Node.js と同じ descriptor や exotic object 挙動を再現することは standalone WASI の保証対象外である。
 
 manifest は `docs/11-shared-definitions.md` の schema に従い、fallback 理由は `capability_reasons` に記録する。
+
+## 追加設計: Date live time の扱い
+
+`new Date()` と `Date.now()` は観測可能な host wall-clock time を読むため、決定的な `new Date(<epoch-ms integer>)` とは別の外部 capability として扱う。`wasm32-wasi` では WASI Preview 1 の realtime clock を標準方針とし、Node host time import は通常の Date live-time 実装には使わない。
+
+| API | capability | import | standalone |
+|---|---|---|---:|
+| `Date.now()` | `wasi.clock.realtime` | `wasi_snapshot_preview1.clock_time_get` | yes |
+| `new Date()` | `wasi.clock.realtime` | `wasi_snapshot_preview1.clock_time_get` | yes |
+| future non-WASI target time | `host.time.now_ms` | `host.time.now_ms` | no |
+
+manifest は `docs/11-shared-definitions.md` の schema に従い、`wasi.clock.realtime: true` と `capability_reasons["wasi.clock.realtime"]` を必ず出力する。reason string は source API 名に固定する。
+
+- `Date.now`
+- `new Date()`
+
+`wasi.clock.realtime` は standalone WASI capability なので、これだけを理由に `standalone: false` や `node_host.required: true` にしてはいけない。Node host を使う場合は future non-WASI target や event-loop/timer 互換などの別設計として扱い、`host.time.now_ms` のような関数単位 import と理由を manifest に記録する。
+
+host-deny test は live time を外部 capability として扱う。決定的または no-host を主張する fixture では `wasi.clock.realtime` と `clock_time_get` import が存在したら失敗とする。live-time fixture では、manifest reason と実際の wasm import が一致することを確認する。
+
+テストは host clock の正確な値に依存しない。決定的な Date coverage は `new Date(0).getTime()` のような明示 epoch millisecond 入力を使う。live-time coverage は `Date.now()` と no-argument `new Date()` が epoch millisecond の number を返すこと、値が実行前後の host clock window に入ること、manifest/import が明示されることだけを確認する。Node differential は exact timestamp equality ではなく、型・範囲・manifest の構造を比較する。
 
 ## Capability manifest checks
 
