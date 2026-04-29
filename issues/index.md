@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 6 | 2 | 4 |
-| runtime | 86 | 13 | 73 |
+| runtime | 87 | 13 | 74 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 335 | 148 | 187 |
+| total | 336 | 148 | 188 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,8 +51,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
 | 301 | Implement mutable class-method outer environment cells | feature | frontend/ir/runtime | implementation-ready | P2 |  | `callCount = callCount + 1` inside a class method needs a shared |
-| 305 | Support ABC451 depth-9 search budget | feature | runtime/memory | implementation-ready | P1 |  | The official ABC451 rewritten fixture still traps in `$alloc_heap` |
 | 306 | Implement mutable direct eval block-function environments | feature | frontend/ir/runtime | implementation-ready | P3 |  | `func-block-decl-eval-func-block-scoping.js` now gets past the static |
+| 307 | Investigate ABC451 depth-9 allocation performance | spike | runtime/performance | implementation-ready | P1 |  | The depth-9 reducer prints `1404832` under Node. Under the committed |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -391,6 +391,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 299 | Support Array.sort numeric comparator slice | feature | runtime/builtins | see `issues/done/299-support-array-sort-numeric-comparator.md` |
 | 303 | Define runtime memory limit policy for large live sets | feature | runtime/memory | see `issues/done/303-define-runtime-memory-limit-policy-for-large-live-sets.md` |
 | 304 | Support ABC451 depth-8 live-set after memory policy | feature | runtime/memory | see `issues/done/304-support-abc451-depth8-live-set-after-memory-policy.md` |
+| 305 | Support ABC451 depth-9 search budget | feature | runtime/memory | see `issues/done/305-support-abc451-depth9-search-budget.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
