@@ -102,3 +102,6 @@ cargo fmt --all --check
 - 2026-04-29: Added an ASCII static-concat string spread slice:
   - call and array spreads over locals derived from statically known string `+` concatenation, such as `let letters = "a" + "b"; join(...letters)` and `[...letters]`, lower to one-character string values and match Node/iwasm output;
   - runtime-computed string locals, non-ASCII string iterator parity, custom iterable spread, sparse arrays, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.
+- 2026-04-29: Added a known object-literal local spread slice:
+  - object literals such as `{ z: 0, ...base, b: 3 }`, where `base` is a local initialized from static primitive object-literal properties and has no intervening assignment/property write, lower by flattening the tracked properties and match Node/iwasm output;
+  - mutated object locals, dynamic property values, object property enumeration, and general dynamic object spread remain guarded by `issue-274` diagnostics.
