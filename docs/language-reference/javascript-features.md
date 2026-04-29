@@ -131,12 +131,13 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `null` | ES1 | immediate tag | 実装済み | - | - |
 | `boolean` | ES1 | immediate tag | 実装済み | - | - |
 | `number` (IEEE 754 double) | ES1 | `i64` tagged value / fast path 候補 | 実装済み | - | - |
+| numeric separators `1_000` | ES2021 | parser normalizes separator syntax | 未実装 | P2 | 243 |
 | `string` | ES1 | heap object (UTF-8) | 実装済み (ASCII only) | - | - |
 | `object` | ES1 | heap object | 実装済み (basic) | - | - |
 | `array` | ES1 | heap object | 実装済み (dense) | - | - |
 | `function` | ES1 | closure object | 実装済み (basic) | - | - |
 | `symbol` | ES6 | interned value | 未実装 | P2 | - |
-| `bigint` | ES2020 | heap object | 未実装 | P2 | - |
+| `bigint` | ES2020 | heap object | 未実装 | P2 | 244 |
 
 ## 式と演算子
 
@@ -150,8 +151,8 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `-`, `*`, `/`, `%` | ES1 | arithmetic | 実装済み | - | - |
 | `++`, `--` | ES1 | arithmetic with assignment | 実装済み | - | - |
 | `&&`, `\|\|`, `!` | ES1 | logical operators | 実装済み | - | - |
-| `??` (nullish coalescing) | ES2020 | lowering candidate | 未実装 | P2 | - |
-| `?.` (optional chaining) | ES2020 | lowering candidate | 未実装 | P2 | - |
+| `??` (nullish coalescing) | ES2020 | lowering candidate | 未実装 | P2 | 245 |
+| `?.` (optional chaining) | ES2020 | lowering candidate | 未実装 | P2 | 246 |
 | `typeof` | ES1 | type tag check | 実装済み (basic) | - | 029 |
 | `instanceof` | ES1 | prototype chain check | 実装済み（ordinary class constructor / prototype-chain traversal; `Symbol.hasInstance` は対象外） | - | 207 |
 | `in` | ES1 | property existence check | 実装済み (basic) | - | 031 |
@@ -187,7 +188,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | rest parameters | ES6 | variadic parameters | 実装済み (argument collection) | - | 212 |
 | spread arguments | ES6 | argument spreading | 実装済み (basic) | - | 039 |
 | default parameters | ES6 | parameter defaults | 実装済み (basic) | - | 040 |
-| destructuring parameters | ES6 | pattern matching | 未実装 | P2 | - |
+| destructuring parameters | ES6 | pattern matching | 未実装 | P2 | 247 |
 
 ## オブジェクト
 
@@ -211,7 +212,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `arr.length` | ES1 | length property | 実装済み | - | - |
 | array holes `[1, , 3]` | ES1 | sparse array | 未実装 | P2 | - |
 | spread elements `[...arr]` | ES6 | array spreading | 未実装 | P2 | - |
-| destructuring `[a, b] = arr` | ES6 | pattern matching | 未実装 | P2 | - |
+| destructuring `[a, b] = arr` | ES6 | pattern matching | 未実装 | P2 | 247 |
 
 ## クラスとプロトタイプ
 
@@ -223,7 +224,8 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `constructor` | ES6 | class constructor | 未実装 | P1 | - |
 | `super` | ES6 | parent class access | 未実装 | P1 | - |
 | static methods/fields | ES6 | class static members | 未実装 | P2 | - |
-| private fields `#x` | ES2022 | private class fields | 未実装 | P2 | - |
+| static initialization blocks | ES2022 | class static block parser/semantics | 未実装 | P2 | 249 |
+| private fields `#x` | ES2022 | private class fields | 未実装 | P2 | 248 |
 | prototype chain | ES1 | `__proto__` / inheritance | 実装済み (basic `Object.getPrototypeOf` / `Object.setPrototypeOf` / class prototype links) | - | 048, 207 |
 
 ## 文字列

@@ -105,6 +105,16 @@ Follow-up issues:
 
 Start with basic TypeScript type annotations before adding advanced features.
 
+2026-04-29 frontend/parser wave child issues:
+
+- Issue 243 tracks ECMA-262 numeric literal separator parser support.
+- Issue 244 tracks BigInt literal parser classification and unsupported/runtime boundary.
+- Issue 245 tracks nullish coalescing parser and frontend semantics.
+- Issue 246 tracks optional chaining parser support and semantic handoff.
+- Issue 247 tracks destructuring binding pattern parser support.
+- Issue 248 tracks private class element parser support.
+- Issue 249 tracks class static block parser support.
+
 2026-04-29 superseded-reference merge note:
 
 - Duplicate issue 065 has been closed as superseded by this parser syntax epic.

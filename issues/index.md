@@ -14,7 +14,7 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
-| frontend | 181 | 129 | 52 |
+| frontend | 188 | 136 | 52 |
 | ir | 6 | 0 | 6 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -24,7 +24,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 267 | 138 | 129 |
+| total | 274 | 145 | 129 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -43,6 +43,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
+| 243 | Implement numeric literal separator parser support | feature | frontend/syntax | implementation-ready | P2 |  | Numeric literals such as `1_000` are tokenized as a number followed by an identifier suffix, so the parser reports `p... |
+| 244 | Implement BigInt literal parser classification | feature | frontend/syntax | implementation-ready | P2 |  | BigInt literals such as `1n` are tokenized as a numeric literal followed by identifier `n`, so the parser reports `pa... |
+| 245 | Implement nullish coalescing frontend support | feature | frontend/semantics | implementation-ready | P2 |  | The lexer recognizes `??`, but the parser does not accept it in expression grammar, so `a ?? b` reports `parser-syntax`. |
+| 246 | Implement optional chaining parser support | feature | frontend/syntax | implementation-ready | P2 |  | The lexer recognizes `?.`, but the parser does not accept optional member access, so `obj?.x` reports `parser-syntax`. |
+| 247 | Implement destructuring binding pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Array and object binding patterns in declarations are rejected before AST construction, so destructuring syntax repor... |
+| 248 | Implement private class element parser support | feature | frontend/syntax | implementation-ready | P2 |  | The lexer rejects `#` before the class parser can classify private fields or methods, so private class syntax reports... |
+| 249 | Implement class static block parser support | feature | frontend/syntax | implementation-ready | P2 |  | Class body parsing does not model `static { ... }` as `ClassStaticBlock`, so static initialization blocks are not rep... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
