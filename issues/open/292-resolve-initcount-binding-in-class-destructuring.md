@@ -164,6 +164,20 @@ This issue was generated from exact stderr set frequency, not directory-level gr
   - `mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-ptrn-elem-id-init-skipped.js` passed with `executed=1`, `unsupported=1`, `unsupported_diagcodes=UnsupportedSyntax:1`, `unsupported_features=class:1`.
   - `cargo nextest run -E 'test(class_method_outer_local_capture_reports_spanned_issue_289) or test(rejects_top_level_function_outer_mutation_with_span_for_issue_292)'` passed with 2 tests.
 
+2026-04-29:
+
+- Added `fixtures/core-semantics/class-dstr-initcount-unsupported.ts` and a CLI regression test that preserves the representative class destructuring default shape while asserting the source-spanned issue-292 diagnostic instead of a raw `UnresolvedName`.
+- Parent coverage artifact aggregation now reports count `0` for `error: [UnresolvedName] unresolved name: \`initCount\`\n`; the remaining`initCount` entry is `error: [UnsupportedSyntax] issue-292: top-level function mutation of outer binding \`initCount\` requires mutable outer environment lowering at 3745..3760\n`.
+- Validation evidence:
+  - `cargo nextest run -p ts2wasm-cli class_destructuring_initcount_default_reports_issue_292_with_span` passed.
+  - `cargo nextest run -E 'test(class_destructuring_initcount_default_reports_issue_292_with_span) or test(rejects_top_level_function_outer_mutation_with_span_for_issue_292) or test(lowering_passes_mutable_class_method_outer_local_capture) or test(lowering_passes_immutable_class_method_outer_local_capture)'` passed with 4 tests.
+  - `cargo fmt --all --check` passed.
+  - `mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-ptrn-elem-id-init-skipped.js --detail` passed with `executed=1`, `unsupported=1`, `blocked=0`, `unsupported_diagcodes=UnsupportedSyntax:1`, `unsupported_features=class:1`.
+  - `mise run update-issue-index -- --check` passed.
+  - `mise run check issues` passed after copying the parent `artifacts/coverage/results/test262-results.jsonl` into this worktree as instructed by the assignment.
+  - `cargo nextest run` did not complete: the pre-existing `ts2wasm-cli::m2_node_diff function_arguments_fixture_matches_node_output_under_iwasm` test failed on `fixtures/core-semantics/arguments-object-property-call.ts` with Node stdout `2\ntrue\n` vs iwasm stdout empty. The isolated same test also failed. This is outside the allowed issue-292 files and unrelated to the new class destructuring diagnostic regression.
+- Not closed: full-suite close evidence is blocked by the unrelated arguments-object fixture failure.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
