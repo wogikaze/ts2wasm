@@ -3,7 +3,7 @@ id: 295
 title: "Support Array.map arrow callbacks and chained receivers"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [294]
@@ -69,12 +69,12 @@ source-text rewriting.
 
 In scope:
 
-- [ ] Lower `.map(arrow)` over dense arrays to a wasm-side loop that allocates a
+- [x] Lower `.map(arrow)` over dense arrays to a wasm-side loop that allocates a
   new dense result array.
-- [ ] Accept receiver expressions that produce arrays, not only identifier
+- [x] Accept receiver expressions that produce arrays, not only identifier
   receivers.
-- [ ] Cover `row => row.split(" ")`, `n => String(n)`, and `n => +n`.
-- [ ] Keep `Array.prototype.map.call(...)` unsupported unless the design is
+- [x] Cover `row => row.split(" ")`, `n => String(n)`, and `n => +n`.
+- [x] Keep `Array.prototype.map.call(...)` unsupported unless the design is
   intentionally expanded.
 
 Out of scope:
@@ -103,14 +103,14 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused fixture with `["a b"].map(row => row.split(" "))` builds and
+- [x] A focused fixture with `["a b"].map(row => row.split(" "))` builds and
   matches Node output under `iwasm`.
-- [ ] Focused fixtures for `values.map(n => String(n))` and
+- [x] Focused fixtures for `values.map(n => String(n))` and
   `values.map(n => +n)` build and match Node output under `iwasm`.
-- [ ] The original ABC451 D repro advances past all `.map(...)` calls.
-- [ ] Existing `Array.prototype.map.call(...)` unsupported diagnostics remain
+- [x] The original ABC451 D repro advances past all `.map(...)` calls.
+- [x] Existing `Array.prototype.map.call(...)` unsupported diagnostics remain
   source-spanned.
-- [ ] No code path detects the ABC451 source text or substitutes another
+- [x] No code path detects the ABC451 source text or substitutes another
   program.
 
 ## Validation
@@ -137,18 +137,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
+- [x] not affected
+- not updated: `docs/05-compatibility-and-semantics.md`
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- not updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- none: false; issue 294 was updated with the next blocker.
+- [x] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 ## Notes
 
@@ -190,25 +190,42 @@ Progress on 2026-04-29:
   `strings.map(n => +n)`, covered by parser test
   `preserves_unary_plus_in_arrow_callback_body` and Node/iwasm differential
   fixture `fixtures/core-semantics/array-map-arrow-unary-plus.ts`.
-- Remaining issue-295 work: verify the original ABC451 D repro against the
-  current parent state before closing issue 295.
+- Parent verification confirmed the original ABC451 D repro advances past the
+  issue-295 map callbacks and reaches the next blocker:
+  `error: [UnsupportedSyntax] binary operator Power not yet supported`.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `50d34a68` / `36c99558`: inline dense array arrow split slice.
+- `cd4d7a26`: identity map expression receiver slice.
+- `8b8e71be`: split-map expression receiver slice.
+- `0a445ae3` / `1e2594ac`: `String(n)` map callback slice.
+- `3a199a6c` / `81dc26d2`: chained `trim().split(...).map(...)` fixture and ABC451 blocker update.
+- `296588b` / `11c6705b`: unary plus map callback slice.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli array_map_arrow_unary_plus_fixture_matches_node_output_under_iwasm array_map_arrow_chained_trim_split_fixture_matches_node_output_under_iwasm array_map_arrow_string_constructor_fixture_matches_node_output_under_iwasm array_map_fixtures_report_issue_270
+result: pass, 4 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend preserves_unary_plus_in_arrow_callback_body
+result: pass, 1 passed
+date: 2026-04-29
+
+command: cargo fmt --all --check && mise run update-issue-index -- --check && mise run check issues
+result: pass
+date: 2026-04-29
+
+command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-parent-295.wasm --host-deny
+result: reached next blocker after map callbacks: error: [UnsupportedSyntax] binary operator Power not yet supported
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Full sparse-array semantics, `thisArg`, async callbacks, `Array.prototype.map.call(...)`,
+  and full generic callback allocation remain out of scope for this issue.
