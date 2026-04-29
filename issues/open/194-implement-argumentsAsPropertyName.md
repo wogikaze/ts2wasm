@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Argumentsaspropertyname` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage argumentsAsPropertyName across 2 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `argumentsAsPropertyName` with diagnostics: parser-syntax, unknown-unsupported. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `argumentsAsPropertyName` with diagnostics: arguments-object. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Argumentsaspropertyname` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
+Problem: argumentsAsPropertyName has 2 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts`
-Feature label: `parser-syntax`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts
 ```
 
 Not run:
@@ -120,7 +116,387 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage arguments object: argumentsAsPropertyName
+
+- Issue class: `triage-needed`
+- Feature label: `arguments-object`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 389,
+  "lines": 17,
+  "extension": ".ts",
+  "first_code_line": "type MyType = {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected RightParen, got Some(Increment) at 208..210",
+  "span_start": 208,
+  "span_end": 210,
+  "line": 12,
+  "column": 5,
+  "feature_label": "arguments-object",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+ 9 |
+10 | function myFunction(myType: MyType) {
+11 |     for (let i = 0; i < 10; i++) {
+12 |         use(myType.arguments[i]);
+13 |         // create closure so that tsc will turn loop body into function
+14 |         const x = 5;
+15 |         [1, 2, 3].forEach(function(j) { use(x); })
+```
+
+Visible symbols before failure:
+
+```json
+[
+  {
+    "kind": "function",
+    "name": "use",
+    "line": 8,
+    "column": 9,
+    "params": "s: any"
+  },
+  {
+    "kind": "function",
+    "name": "myFunction",
+    "line": 10,
+    "column": 1,
+    "params": "myType: MyType"
+  },
+  {
+    "kind": "binding",
+    "name": "i",
+    "line": 11,
+    "column": 10,
+    "initializer": "0"
+  }
+]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/194-implement-argumentsAsPropertyName.md",
+    "title": "Implement Argumentsaspropertyname",
+    "reason": "same reference path, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Ident(
+            "type",
+        ),
+        span: Span {
+            start: 55,
+            end: 59,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "MyType",
+        ),
+        span: Span {
+            start: 60,
+            end: 66,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 67,
+            end: 68,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 69,
+            end: 70,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "arguments",
+        ),
+        span: Span {
+            start: 76,
+            end: 85,
+        },
+    },
+    SpannedToken {
+        kind: Colon,
+        span: Span {
+            start: 85,
+            end: 86,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "Array",
+        ),
+        span: Span {
+            start: 87,
+            end: 92,
+        },
+    },
+    SpannedToken {
+        kind: Less,
+        span: Span {
+            start: 92,
+            end: 93,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "string",
+        ),
+        span: Span {
+            start: 93,
+            end: 99,
+        },
+    },
+    SpannedToken {
+        kind: Greater,
+        span: Span {
+            start: 99,
+            end: 100,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 102,
+            end: 103,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "declare",
+        ),
+        span: Span {
+            start: 107,
+            end: 114,
+        },
+    },
+    SpannedToken {
+        kind: Function,
+        span: Span {
+            start: 115,
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected RightParen, got Some(Increment) at 208..210
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected RightParen, got Some(Increment) at 208..210
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": true,
+    "diagnostics": [],
+    "hints": [
+      {
+        "kind": "function",
+        "typeText": "any",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts",
+        "start": 124,
+        "length": 3,
+        "line": 8,
+        "character": 18,
+        "name": "use"
+      },
+      {
+        "kind": "parameter",
+        "typeText": "any",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts",
+        "start": 128,
+        "length": 1,
+        "line": 8,
+        "character": 22,
+        "name": "s"
+      },
+      {
+        "kind": "function",
+        "typeText": "void",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts",
+        "start": 149,
+        "length": 10,
+        "line": 10,
+        "character": 10,
+        "name": "myFunction"
+      },
+      {
+        "kind": "parameter",
+        "typeText": "MyType",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts",
+        "start": 160,
+        "length": 6,
+        "line": 10,
+        "character": 21,
+        "name": "myType"
+      },
+      {
+        "kind": "binding",
+        "typeText": "number",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts",
+        "start": 192,
+        "length": 1,
+        "line": 11,
+        "character": 14,
+        "name": "i"
+      },
+      {
+        "kind": "binding",
+        "typeText": "5",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts",
+        "start": 337,
+        "length": 1,
+        "line": 14,
+        "character": 15,
+        "name": "x"
+      },
+      {
+        "kind": "parameter",
+        "typeText": "number",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/argumentsAsPropertyName.ts",
+        "start": 380,
+        "length": 1,
+        "line": 15,
+        "character": 36,
+        "name": "j"
+      }
+    ],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "TypeAliasDeclaration",
+        "text": "type MyType = {\r\n    arguments: Array<string>\r\n}",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "FunctionDeclaration",
+        "text": "declare function use(s: any);",
+        "line": 8,
+        "character": 1
+      },
+      {
+        "kind": "FunctionDeclaration",
+        "text": "function myFunction(myType: MyType) {\r\n    for (let i = 0; i < 10; i++) {\r\n        use(myType.arguments[i]);\r\n        //",
+        "line": 10,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "type MyType = {\r\n    arguments: Array<string>\r\n}\r\n\r\ndeclare function use(s: any);\r\n\r\nfunction myFunction(myType: MyType)",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "FunctionDeclaration",
+        "text": "function myFunction(myType: MyType) {\r\n    for (let i = 0; i < 10; i++) {\r\n        use(myType.arguments[i]);\r\n        //",
+        "line": 10,
+        "character": 1
+      },
+      {
+        "kind": "Block",
+        "text": "{\r\n    for (let i = 0; i < 10; i++) {\r\n        use(myType.arguments[i]);\r\n        // create closure so that tsc will tur",
+        "line": 10,
+        "character": 37
+      },
+      {
+        "kind": "ForStatement",
+        "text": "for (let i = 0; i < 10; i++) {\r\n        use(myType.arguments[i]);\r\n        // create closure so that tsc will turn loop ",
+        "line": 11,
+        "character": 5
+      },
+      {
+        "kind": "PostfixUnaryExpression",
+        "text": "i++",
+        "line": 11,
+        "character": 29
+      },
+      {
+        "kind": "Identifier",
+        "text": "i",
+        "line": 11,
+        "character": 29
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] expected RightParen, got Some(Increment) at 208..210
+```
 
 ## Completion evidence
 

@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Ambientmodulewithclassdeclarationwithextends` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage ambientModuleWithClassDeclarationWithExtends across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `ambientModuleWithClassDeclarationWithExtends` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `ambientModuleWithClassDeclarationWithExtends` with diagnostics: ambient-declaration. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Ambientmodulewithclassdeclarationwithextends` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
+Problem: ambientModuleWithClassDeclarationWithExtends has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts`
-Feature label: `parser-syntax`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts
 ```
 
 Not run:
@@ -119,7 +115,257 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage ambient declaration: ambientModuleWithClassDeclarationWithExtends
+
+- Issue class: `triage-needed`
+- Feature label: `ambient-declaration`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientModuleWithClassDeclarationWithExtends.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 86,
+  "lines": 5,
+  "extension": ".ts",
+  "first_code_line": "declare namespace foo {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Ident(\"namespace\")) at 28..37",
+  "span_start": 28,
+  "span_end": 37,
+  "line": 2,
+  "column": 10,
+  "feature_label": "ambient-declaration",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+1 | // @target: es2015
+2 | declare namespace foo {
+3 |     class A { }
+4 |     class B extends A { }
+5 | }
+```
+
+Visible symbols before failure:
+
+```json
+[]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/158-implement-ambientModuleWithClassDeclarationWithExtends.md",
+    "title": "Implement Ambientmodulewithclassdeclarationwithextends",
+    "reason": "same reference path, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Ident(
+            "declare",
+        ),
+        span: Span {
+            start: 20,
+            end: 27,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "namespace",
+        ),
+        span: Span {
+            start: 28,
+            end: 37,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "foo",
+        ),
+        span: Span {
+            start: 38,
+            end: 41,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 42,
+            end: 43,
+        },
+    },
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 49,
+            end: 54,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "A",
+        ),
+        span: Span {
+            start: 55,
+            end: 56,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 57,
+            end: 58,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 59,
+            end: 60,
+        },
+    },
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 66,
+            end: 71,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "B",
+        ),
+        span: Span {
+            start: 72,
+            end: 73,
+        },
+    },
+    SpannedToken {
+        kind: Extends,
+        span: Span {
+            start: 74,
+            end: 81,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "A",
+        ),
+        span: Span {
+            start: 82,
+            end: 83,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 84,
+            end: 85,
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("namespace")) at 28..37
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("namespace")) at 28..37
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": true,
+    "diagnostics": [],
+    "hints": [],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "ModuleDeclaration",
+        "text": "declare namespace foo {\r\n    class A { }\r\n    class B extends A { }\r\n}",
+        "line": 2,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "declare namespace foo {\r\n    class A { }\r\n    class B extends A { }\r\n}",
+        "line": 2,
+        "character": 1
+      },
+      {
+        "kind": "ModuleDeclaration",
+        "text": "declare namespace foo {\r\n    class A { }\r\n    class B extends A { }\r\n}",
+        "line": 2,
+        "character": 1
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("namespace")) at 28..37
+```
 
 ## Completion evidence
 

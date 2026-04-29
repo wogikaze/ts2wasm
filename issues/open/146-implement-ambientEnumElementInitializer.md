@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Ambientenumelementinitializer` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage ambientEnumElementInitializer across 6 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 6 cases fail in directory `ambientEnumElementInitializer` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 6 cases fail in directory `ambientEnumElementInitializer` with diagnostics: ambient-declaration. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Ambientenumelementinitializer` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
+Problem: ambientEnumElementInitializer has 6 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts`
-Feature label: `parser-syntax`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts
 ```
 
 Not run:
@@ -124,7 +120,222 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage ambient declaration: ambientEnumElementInitializer1
+
+- Issue class: `triage-needed`
+- Feature label: `ambient-declaration`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientEnumElementInitializer1.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 44,
+  "lines": 4,
+  "extension": ".ts",
+  "first_code_line": "declare enum E {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "expected Semicolon, got Some(Ident(\"enum\")) at 28..32",
+  "span_start": 28,
+  "span_end": 32,
+  "line": 2,
+  "column": 10,
+  "feature_label": "ambient-declaration",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+1 | // @target: es2015
+2 | declare enum E {
+3 |  e = 3
+4 | }
+```
+
+Visible symbols before failure:
+
+```json
+[]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/146-implement-ambientEnumElementInitializer.md",
+    "title": "Implement Ambientenumelementinitializer",
+    "reason": "same reference path"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `False`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Ident(
+            "declare",
+        ),
+        span: Span {
+            start: 20,
+            end: 27,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "enum",
+        ),
+        span: Span {
+            start: 28,
+            end: 32,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "E",
+        ),
+        span: Span {
+            start: 33,
+            end: 34,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 35,
+            end: 36,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "e",
+        ),
+        span: Span {
+            start: 39,
+            end: 40,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 41,
+            end: 42,
+        },
+    },
+    SpannedToken {
+        kind: Number(
+            3,
+        ),
+        span: Span {
+            start: 43,
+            end: 44,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 46,
+            end: 47,
+        },
+    },
+]
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("enum")) at 28..32
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("enum")) at 28..32
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": true,
+    "diagnostics": [],
+    "hints": [],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "EnumDeclaration",
+        "text": "declare enum E {\r\n e = 3\r\n}",
+        "line": 2,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "declare enum E {\r\n e = 3\r\n}",
+        "line": 2,
+        "character": 1
+      },
+      {
+        "kind": "EnumDeclaration",
+        "text": "declare enum E {\r\n e = 3\r\n}",
+        "line": 2,
+        "character": 1
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] expected Semicolon, got Some(Ident("enum")) at 28..32
+```
 
 ## Completion evidence
 

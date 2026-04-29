@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Aliasusageinaccessorsofclass` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage aliasUsageInAccessorsOfClass across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `aliasUsageInAccessorsOfClass` with diagnostics: unknown-unsupported. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `aliasUsageInAccessorsOfClass` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Aliasusageinaccessorsofclass` fails with `unknown-unsupported` and needs smart-triage evidence before implementation starts.
+Problem: aliasUsageInAccessorsOfClass has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts`
-Feature label: `unknown-unsupported`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts
 ```
 
 Not run:
@@ -119,7 +115,406 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage class accessor: aliasUsageInAccessorsOfClass
+
+- Issue class: `triage-needed`
+- Feature label: `class-accessor`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 666,
+  "lines": 28,
+  "extension": ".ts",
+  "first_code_line": "export class Model {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "issue-055: unsupported class export; module resolution and loading are not implemented at 86..92",
+  "span_start": 86,
+  "span_end": 92,
+  "line": 4,
+  "column": 4,
+  "feature_label": "class-accessor",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+1 | // @module: commonjs
+2 | // @target: ES5, ES2015
+3 | // @Filename: aliasUsage1_backbone.ts
+4 | export class Model {
+5 |     public someData: string;
+6 | }
+7 |
+```
+
+Visible symbols before failure:
+
+```json
+[]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/119-implement-aliasUsageInAccessorsOfClass.md",
+    "title": "Implement Aliasusageinaccessorsofclass",
+    "reason": "same reference path, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Automatic repair sketch:
+
+```rust
+// Rough sketch only: make class syntax observable before lowering full semantics.
+// Candidate source class: Model
+#[derive(Debug, Clone, PartialEq)]
+pub struct ClassDecl {
+    pub name: String,
+    pub constructor: Option<FunctionDecl>,
+    pub methods: Vec<MethodDecl>,
+    pub span: Span,
+}
+
+fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
+    let span = self.expect(TokenKind::Class)?;
+    let name = self.expect_ident()?;
+    self.expect(TokenKind::LeftBrace)?;
+    let mut methods = Vec::new();
+    while !self.consume(TokenKind::RightBrace) {
+        methods.push(self.class_method()?);
+    }
+    Ok(Stmt::ClassDecl(ClassDecl { name, constructor: None, methods, span }))
+}
+```
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 86,
+            end: 92,
+        },
+    },
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 93,
+            end: 98,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "Model",
+        ),
+        span: Span {
+            start: 99,
+            end: 104,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 105,
+            end: 106,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "public",
+        ),
+        span: Span {
+            start: 112,
+            end: 118,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "someData",
+        ),
+        span: Span {
+            start: 119,
+            end: 127,
+        },
+    },
+    SpannedToken {
+        kind: Colon,
+        span: Span {
+            start: 127,
+            end: 128,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "string",
+        ),
+        span: Span {
+            start: 129,
+            end: 135,
+        },
+    },
+    SpannedToken {
+        kind: Semicolon,
+        span: Span {
+            start: 135,
+            end: 136,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 138,
+            end: 139,
+        },
+    },
+    SpannedToken {
+        kind: Import,
+        span: Span {
+            start: 181,
+            end: 187,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "Backbone",
+        ),
+        span: Span {
+            start: 188,
+            end: 196,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 197,
+            end: 198,
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": false,
+    "diagnostics": [
+      {
+        "code": 2564,
+        "category": "Error",
+        "message": "Property 'someData' has no initializer and is not definitely assigned in the constructor.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 119,
+        "length": 8,
+        "line": 5,
+        "character": 12
+      },
+      {
+        "code": 2300,
+        "category": "Error",
+        "message": "Duplicate identifier 'Backbone'.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 188,
+        "length": 8,
+        "line": 9,
+        "character": 8
+      },
+      {
+        "code": 2307,
+        "category": "Error",
+        "message": "Cannot find module './aliasUsage1_backbone' or its corresponding type declarations.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 207,
+        "length": 24,
+        "line": 9,
+        "character": 27
+      },
+      {
+        "code": 2300,
+        "category": "Error",
+        "message": "Duplicate identifier 'Backbone'.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 371,
+        "length": 8,
+        "line": 15,
+        "character": 8
+      },
+      {
+        "code": 2307,
+        "category": "Error",
+        "message": "Cannot find module './aliasUsage1_backbone' or its corresponding type declarations.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 390,
+        "length": 24,
+        "line": 15,
+        "character": 27
+      },
+      {
+        "code": 2307,
+        "category": "Error",
+        "message": "Cannot find module './aliasUsage1_moduleA' or its corresponding type declarations.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 443,
+        "length": 23,
+        "line": 16,
+        "character": 26
+      },
+      {
+        "code": 2564,
+        "category": "Error",
+        "message": "Property 'x' has no initializer and is not definitely assigned in the constructor.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 573,
+        "length": 1,
+        "line": 21,
+        "character": 5
+      }
+    ],
+    "hints": [
+      {
+        "kind": "parameter",
+        "typeText": "IHasVisualizationModel",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts",
+        "start": 657,
+        "length": 1,
+        "line": 25,
+        "character": 11,
+        "name": "x"
+      }
+    ],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class Model {\r\n    public someData: string;\r\n}",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "ImportEqualsDeclaration",
+        "text": "import Backbone = require(\"./aliasUsage1_backbone\");",
+        "line": 9,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class VisualizationModel extends Backbone.Model {\r\n    // interesting stuff here\r\n}",
+        "line": 10,
+        "character": 1
+      },
+      {
+        "kind": "ImportEqualsDeclaration",
+        "text": "import Backbone = require(\"./aliasUsage1_backbone\");",
+        "line": 15,
+        "character": 1
+      },
+      {
+        "kind": "ImportEqualsDeclaration",
+        "text": "import moduleA = require(\"./aliasUsage1_moduleA\");",
+        "line": 16,
+        "character": 1
+      },
+      {
+        "kind": "InterfaceDeclaration",
+        "text": "interface IHasVisualizationModel {\r\n    VisualizationModel: typeof Backbone.Model;\r\n}",
+        "line": 17,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "class C2 {\r\n    x: IHasVisualizationModel;\r\n    get A() {\r\n        return this.x;\r\n    }\r\n    set A(x) {\r\n        x = mo",
+        "line": 20,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "export class Model {\r\n    public someData: string;\r\n}\r\n\r\n// @Filename: aliasUsage1_moduleA.ts\r\nimport Backbone = require",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "export class Model {\r\n    public someData: string;\r\n}",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "ExportKeyword",
+        "text": "export",
+        "line": 4,
+        "character": 1
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
+```
 
 ## Completion evidence
 

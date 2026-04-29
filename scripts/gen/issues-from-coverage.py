@@ -223,6 +223,7 @@ def generate_issue_content(
     # Build validation command
     validation_cmd = f"mise run reference-coverage -- {suite} --limit {count * 2}"
     exact_triage_cmd = f"mise run reference-triage -- {suite} {sample_files[0][0]}" if sample_files else ""
+    exact_coverage_cmd = f"mise run reference-coverage -- {suite} --path-filter {sample_files[0][0]} --detail" if sample_files else validation_cmd
     
     # Adjust description based on suite
     if suite in ["test262", "tsgo"]:
@@ -275,7 +276,7 @@ Representative reproduction:
 Coverage window:
 
 ```sh
-{validation_cmd} --detail
+{exact_coverage_cmd}
 ```
 
 ## Desired final state
@@ -329,6 +330,7 @@ Impacted commands:
 
 ```sh
 {validation_cmd}
+{exact_coverage_cmd}
 {exact_triage_cmd}
 ```
 

@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Accessorinferredreturntypeerrorinreturnstatement` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage accessorInferredReturnTypeErrorInReturnStatement across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorInferredReturnTypeErrorInReturnStatement` with diagnostics: unknown-unsupported. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `accessorInferredReturnTypeErrorInReturnStatement` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Accessorinferredreturntypeerrorinreturnstatement` fails with `unknown-unsupported` and needs smart-triage evidence before implementation starts.
+Problem: accessorInferredReturnTypeErrorInReturnStatement has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts`
-Feature label: `unknown-unsupported`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts
 ```
 
 Not run:
@@ -119,7 +115,321 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage class accessor: accessorInferredReturnTypeErrorInReturnStatement
+
+- Issue class: `triage-needed`
+- Feature label: `class-accessor`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 211,
+  "lines": 11,
+  "extension": ".ts",
+  "first_code_line": "export var basePrototype = {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "issue-055: unsupported variable export; module resolution and loading are not implemented at 80..86",
+  "span_start": 80,
+  "span_end": 86,
+  "line": 6,
+  "column": 1,
+  "feature_label": "class-accessor",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+3 | // @strict: true
+4 | // @declaration: true
+5 |
+6 | export var basePrototype = {
+7 |   get primaryPath() {
+8 |     var _this = this;
+9 |     return _this.collection.schema.primaryPath;
+```
+
+Visible symbols before failure:
+
+```json
+[]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md",
+    "title": "Implement Accessorinferredreturntypeerrorinreturnstatement",
+    "reason": "same reference path, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Automatic repair sketch:
+
+```rust
+// Rough sketch only: make class syntax observable before lowering full semantics.
+// Candidate source class: Example
+#[derive(Debug, Clone, PartialEq)]
+pub struct ClassDecl {
+    pub name: String,
+    pub constructor: Option<FunctionDecl>,
+    pub methods: Vec<MethodDecl>,
+    pub span: Span,
+}
+
+fn class_statement(&mut self) -> Result<Stmt, Diagnostic> {
+    let span = self.expect(TokenKind::Class)?;
+    let name = self.expect_ident()?;
+    self.expect(TokenKind::LeftBrace)?;
+    let mut methods = Vec::new();
+    while !self.consume(TokenKind::RightBrace) {
+        methods.push(self.class_method()?);
+    }
+    Ok(Stmt::ClassDecl(ClassDecl { name, constructor: None, methods, span }))
+}
+```
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 80,
+            end: 86,
+        },
+    },
+    SpannedToken {
+        kind: Var,
+        span: Span {
+            start: 87,
+            end: 90,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "basePrototype",
+        ),
+        span: Span {
+            start: 91,
+            end: 104,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 105,
+            end: 106,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 107,
+            end: 108,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "get",
+        ),
+        span: Span {
+            start: 111,
+            end: 114,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "primaryPath",
+        ),
+        span: Span {
+            start: 115,
+            end: 126,
+        },
+    },
+    SpannedToken {
+        kind: LeftParen,
+        span: Span {
+            start: 126,
+            end: 127,
+        },
+    },
+    SpannedToken {
+        kind: RightParen,
+        span: Span {
+            start: 127,
+            end: 128,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 129,
+            end: 130,
+        },
+    },
+    SpannedToken {
+        kind: Var,
+        span: Span {
+            start: 135,
+            end: 138,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "_this",
+        ),
+        span: Span {
+            start: 139,
+            end: 144,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 145,
+            end: 146,
+        },
+    },
+    Spanned
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported variable export; module resolution and loading are not implemented at 80..86
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported variable export; module resolution and loading are not implemented at 80..86
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": false,
+    "diagnostics": [
+      {
+        "code": 2339,
+        "category": "Error",
+        "message": "Property 'collection' does not exist on type '{ readonly primaryPath: any; }'.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts",
+        "start": 170,
+        "length": 10,
+        "line": 9,
+        "character": 18
+      }
+    ],
+    "hints": [
+      {
+        "kind": "binding",
+        "typeText": "{ readonly primaryPath: any; }",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts",
+        "start": 91,
+        "length": 13,
+        "line": 6,
+        "character": 12,
+        "name": "basePrototype"
+      },
+      {
+        "kind": "binding",
+        "typeText": "{ readonly primaryPath: any; }",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/accessorInferredReturnTypeErrorInReturnStatement.ts",
+        "start": 139,
+        "length": 5,
+        "line": 8,
+        "character": 9,
+        "name": "_this"
+      }
+    ],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "FirstStatement",
+        "text": "export var basePrototype = {\n  get primaryPath() {\n    var _this = this;\n    return _this.collection.schema.primaryPath;",
+        "line": 6,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "export var basePrototype = {\n  get primaryPath() {\n    var _this = this;\n    return _this.collection.schema.primaryPath;",
+        "line": 6,
+        "character": 1
+      },
+      {
+        "kind": "FirstStatement",
+        "text": "export var basePrototype = {\n  get primaryPath() {\n    var _this = this;\n    return _this.collection.schema.primaryPath;",
+        "line": 6,
+        "character": 1
+      },
+      {
+        "kind": "ExportKeyword",
+        "text": "export",
+        "line": 6,
+        "character": 1
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported variable export; module resolution and loading are not implemented at 80..86
+```
 
 ## Completion evidence
 

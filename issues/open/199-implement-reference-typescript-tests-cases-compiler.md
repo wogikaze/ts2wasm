@@ -1,6 +1,6 @@
 ---
-id: 072
-title: "Implement Classdeclaration"
+id: 199
+title: "Implement Compiler"
 type: spike
 area: reference
 class: triage-needed
@@ -13,26 +13,26 @@ updated: 2026-04-29
 
 ## Summary
 
-Triage ClassDeclaration across 11 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage reference/typescript/tests/cases/compiler across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 11 cases fail in directory `ClassDeclaration` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `reference/typescript/tests/cases/compiler` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: ClassDeclaration has 11 reference failures and needs smart-triage evidence before implementation starts.
+Problem: reference/typescript/tests/cases/compiler has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ClassDeclaration10.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/2dArrays.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ClassDeclaration10.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/2dArrays.ts --detail
 ```
 
 ## Desired final state
@@ -85,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ClassDeclaration10.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ClassDeclaration10.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/2dArrays.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/2dArrays.ts
 ```
 
 Not run:
@@ -111,37 +111,34 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/ClassDeclaration10.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration11.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration13.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration14.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration15.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration21.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration22.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration25.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration26.ts`
-- `reference/typescript/tests/cases/compiler/ClassDeclaration8.ts`
-- ... and 1 more files
+- `reference/typescript/tests/cases/compiler/2dArrays.ts`
 
 ## Duplicate detection
 
+- `issues/open/069-implement-APILibCheck.md` - Implement Apilibcheck (same feature label, same group key, title overlap)
+- `issues/open/070-implement-APISample.md` - Implement Apisample (same feature label, same group key, title overlap)
+- `issues/open/071-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
+- `issues/open/072-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
 - `issues/open/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` - Implement Classdeclarationwithinvalidconstonpropertydeclaration (same feature label, same group key, title overlap)
-- `issues/open/140-implement-ambientClassDeclarationWithExtends.md` - Implement Ambientclassdeclarationwithextends (same feature label, same group key, title overlap)
-- `issues/open/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same feature label, same group key, title overlap)
+- `issues/open/074-implement-DeclarationErrorsNoEmitOnError.md` - Implement Declarationerrorsnoemitonerror (same feature label, same group key, title overlap)
+- `issues/open/076-implement-FunctionDeclaration.md` - Implement Functiondeclaration (same feature label, same group key, title overlap)
+- `issues/done/077-implement-InterfaceDeclaration.md` - Implement Interfacedeclaration (same feature label, same group key, title overlap)
+- `issues/open/078-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same feature label, same group key, title overlap)
+- `issues/open/079-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
 
 ## Smart triage
 
-### Smart triage: Triage parser syntax: ClassDeclaration10
+### Smart triage: Triage parser syntax: 2dArrays
 
 - Issue class: `triage-needed`
 - Feature label: `parser-syntax`
 - Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
-- Path: `reference/typescript/tests/cases/compiler/ClassDeclaration10.ts`
+- Path: `reference/typescript/tests/cases/compiler/2dArrays.ts`
 
 Reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ClassDeclaration10.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/2dArrays.ts
 ```
 
 Source overview:
@@ -149,10 +146,10 @@ Source overview:
 ```json
 {
   "suite": "tsc",
-  "bytes": 76,
-  "lines": 6,
+  "bytes": 255,
+  "lines": 16,
   "extension": ".ts",
-  "first_code_line": "class C {"
+  "first_code_line": "class Cell {"
 }
 ```
 
@@ -161,11 +158,11 @@ Failure location:
 ```json
 {
   "code": "UnsupportedSyntax",
-  "message": "expected LeftBrace, got Some(Semicolon) at 66..67",
-  "span_start": 66,
-  "span_end": 67,
-  "line": 5,
-  "column": 2,
+  "message": "expected LeftParen, got Some(Colon) at 58..59",
+  "span_start": 58,
+  "span_end": 59,
+  "line": 6,
+  "column": 11,
   "feature_label": "parser-syntax",
   "error_type": "parser-or-frontend-unsupported"
 }
@@ -174,11 +171,13 @@ Failure location:
 Source context:
 
 ```text
-2 | // @strict: false
-3 | class C {
-4 |    constructor();
-5 |    foo();
-6 | }
+3 | }
+4 | 
+5 | class Ship {
+6 |     isSunk: boolean = false;
+7 | }
+8 | 
+9 | class Board {
 ```
 
 Visible symbols before failure:
@@ -187,8 +186,14 @@ Visible symbols before failure:
 [
   {
     "kind": "class",
-    "name": "C",
-    "line": 3,
+    "name": "Cell",
+    "line": 2,
+    "column": 1
+  },
+  {
+    "kind": "class",
+    "name": "Ship",
+    "line": 5,
     "column": 1
   }
 ]
@@ -206,8 +211,8 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/072-implement-ClassDeclaration.md",
-    "title": "Implement Classdeclaration",
+    "path": "issues/open/199-implement-reference-TypeScript-tests-cases-compiler.md",
+    "title": "Implement Compiler",
     "reason": "same reference path, same feature label"
   },
   {
@@ -241,7 +246,7 @@ Compiler dumps:
 #### tokens
 
 - ok: `True`
-- truncated: `False`
+- truncated: `True`
 
 ```text
 == tokens ==
@@ -249,94 +254,104 @@ Compiler dumps:
     SpannedToken {
         kind: Class,
         span: Span {
-            start: 39,
-            end: 44,
+            start: 19,
+            end: 24,
         },
     },
     SpannedToken {
         kind: Ident(
-            "C",
+            "Cell",
         ),
         span: Span {
-            start: 45,
-            end: 46,
+            start: 25,
+            end: 29,
         },
     },
     SpannedToken {
         kind: LeftBrace,
         span: Span {
-            start: 47,
-            end: 48,
+            start: 30,
+            end: 31,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 32,
+            end: 33,
+        },
+    },
+    SpannedToken {
+        kind: Class,
+        span: Span {
+            start: 35,
+            end: 40,
         },
     },
     SpannedToken {
         kind: Ident(
-            "constructor",
+            "Ship",
         ),
         span: Span {
-            start: 53,
-            end: 64,
+            start: 41,
+            end: 45,
         },
     },
     SpannedToken {
-        kind: LeftParen,
+        kind: LeftBrace,
         span: Span {
-            start: 64,
-            end: 65,
+            start: 46,
+            end: 47,
         },
     },
     SpannedToken {
-        kind: RightParen,
+        kind: Ident(
+            "isSunk",
+        ),
         span: Span {
-            start: 65,
-            end: 66,
+            start: 52,
+            end: 58,
         },
     },
     SpannedToken {
-        kind: Semicolon,
+        kind: Colon,
         span: Span {
-            start: 66,
+            start: 58,
+            end: 59,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "boolean",
+        ),
+        span: Span {
+            start: 60,
             end: 67,
         },
     },
     SpannedToken {
-        kind: Ident(
-            "foo",
-        ),
+        kind: Equal,
         span: Span {
-            start: 72,
+            start: 68,
+            end: 69,
+        },
+    },
+    SpannedToken {
+        kind: False,
+        span: Span {
+            start: 70,
             end: 75,
         },
     },
     SpannedToken {
-        kind: LeftParen,
+        kind: Semicolon,
         span: Span {
             start: 75,
             end: 76,
         },
     },
     SpannedToken {
-        kind: RightParen,
-        span: Span {
-            start: 76,
-            end: 77,
-        },
-    },
-    SpannedToken {
-        kind: Semicolon,
-        span: Span {
-            start: 77,
-            end: 78,
-        },
-    },
-    SpannedToken {
-        kind: RightBrace,
-        span: Span {
-            start: 80,
-            end: 81,
-        },
-    },
-]
+        kind: RightBr
 ```
 
 #### ast
@@ -345,7 +360,7 @@ Compiler dumps:
 - truncated: `False`
 
 ```text
-error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 66..67
+error: [UnsupportedSyntax] expected LeftParen, got Some(Colon) at 58..59
 ```
 
 #### resolved
@@ -354,7 +369,7 @@ error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 66..67
 - truncated: `False`
 
 ```text
-error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 66..67
+error: [UnsupportedSyntax] expected LeftParen, got Some(Colon) at 58..59
 ```
 
 TypeScript/JavaScript oracle:
@@ -364,59 +379,67 @@ TypeScript/JavaScript oracle:
   "ok": true,
   "returncode": 0,
   "typescript": {
-    "ok": false,
-    "diagnostics": [
+    "ok": true,
+    "diagnostics": [],
+    "hints": [
       {
-        "code": 2390,
-        "category": "Error",
-        "message": "Constructor implementation is missing.",
-        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/ClassDeclaration10.ts",
-        "start": 53,
-        "length": 11,
-        "line": 4,
-        "character": 4
-      },
-      {
-        "code": 2391,
-        "category": "Error",
-        "message": "Function implementation is missing or not immediately following the declaration.",
-        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/ClassDeclaration10.ts",
-        "start": 72,
+        "kind": "parameter",
+        "typeText": "Ship",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/2dArrays.ts",
+        "start": 214,
         "length": 3,
-        "line": 5,
-        "character": 4
+        "line": 14,
+        "character": 43,
+        "name": "val"
       }
     ],
-    "hints": [],
     "typescriptVersion": "6.0.3"
   },
   "ast": {
     "topLevel": [
       {
         "kind": "ClassDeclaration",
-        "text": "class C {\r\n   constructor();\r\n   foo();\r\n}",
-        "line": 3,
+        "text": "class Cell {\n}",
+        "line": 2,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "class Ship {\n    isSunk: boolean = false;\n}",
+        "line": 5,
+        "character": 1
+      },
+      {
+        "kind": "ClassDeclaration",
+        "text": "class Board {\n    ships: Ship[] = [];\n    cells: Cell[] = [];\n\n    private allShipsSunk() {\n        return this.ships.ev",
+        "line": 9,
         "character": 1
       }
     ],
     "pathToPosition": [
       {
         "kind": "SourceFile",
-        "text": "class C {\r\n   constructor();\r\n   foo();\r\n}",
-        "line": 3,
+        "text": "class Cell {\n}\n\nclass Ship {\n    isSunk: boolean = false;\n}\n\nclass Board {\n    ships: Ship[] = [];\n    cells: Cell[] = [",
+        "line": 2,
         "character": 1
       },
       {
         "kind": "ClassDeclaration",
-        "text": "class C {\r\n   constructor();\r\n   foo();\r\n}",
-        "line": 3,
+        "text": "class Ship {\n    isSunk: boolean = false;\n}",
+        "line": 5,
         "character": 1
       },
       {
-        "kind": "Constructor",
-        "text": "constructor();",
-        "line": 4,
-        "character": 4
+        "kind": "PropertyDeclaration",
+        "text": "isSunk: boolean = false;",
+        "line": 6,
+        "character": 5
+      },
+      {
+        "kind": "Identifier",
+        "text": "isSunk",
+        "line": 6,
+        "character": 5
       }
     ]
   }
@@ -426,7 +449,7 @@ TypeScript/JavaScript oracle:
 Stack trace:
 
 ```text
-error: [UnsupportedSyntax] expected LeftBrace, got Some(Semicolon) at 66..67
+error: [UnsupportedSyntax] expected LeftParen, got Some(Colon) at 58..59
 ```
 
 ## Completion evidence

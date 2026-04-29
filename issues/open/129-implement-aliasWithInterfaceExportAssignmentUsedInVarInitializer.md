@@ -7,19 +7,19 @@ class: triage-needed
 priority: P1
 depends_on: []
 blocks: []
-created: 2026-04-26
+created: 2026-04-29
 updated: 2026-04-29
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement Aliaswithinterfaceexportassignmentusedinvarinitializer` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+Triage aliasWithInterfaceExportAssignmentUsedInVarInitializer across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `aliasWithInterfaceExportAssignmentUsedInVarInitializer` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `aliasWithInterfaceExportAssignmentUsedInVarInitializer` with diagnostics: type-alias. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: generated reference bucket `Implement Aliaswithinterfaceexportassignmentusedinvarinitializer` fails with `parser-syntax` and needs smart-triage evidence before implementation starts.
+Problem: aliasWithInterfaceExportAssignmentUsedInVarInitializer has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -29,52 +29,48 @@ Representative reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts
 ```
 
-Narrow coverage reproduction:
+Coverage window:
 
 ```sh
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts --detail
 ```
 
-Representative path: `reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts`
-Feature label: `parser-syntax`
-
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This generated bucket is either split into implementation-ready child issues or superseded by an existing open/done issue with matching evidence. Do not implement directly from this bucket.
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
 - Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Broad multi-feature fixes without child issue split
 
 ## Affected paths
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
 - [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
 - [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
@@ -89,8 +85,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts
 ```
 
 Not run:
@@ -119,7 +115,307 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- none found by path/title/feature scan
+## Smart triage
+
+### Smart triage: Triage type alias: aliasWithInterfaceExportAssignmentUsedInVarInitializer
+
+- Issue class: `triage-needed`
+- Feature label: `type-alias`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
+- Path: `reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts`
+
+Reproduction:
+
+```sh
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts
+```
+
+Source overview:
+
+```json
+{
+  "suite": "tsc",
+  "bytes": 334,
+  "lines": 11,
+  "extension": ".ts",
+  "first_code_line": "interface c {"
+}
+```
+
+Failure location:
+
+```json
+{
+  "code": "UnsupportedSyntax",
+  "message": "issue-055: unsupported static export; module resolution and loading are not implemented at 152..158",
+  "span_start": 152,
+  "span_end": 158,
+  "line": 7,
+  "column": 7,
+  "feature_label": "type-alias",
+  "error_type": "parser-or-frontend-unsupported"
+}
+```
+
+Source context:
+
+```text
+ 4 | interface c {
+ 5 |     q3: number;
+ 6 | }
+ 7 | export = c;
+ 8 |
+ 9 | // @Filename: aliasWithInterfaceExportAssignmentUsedInVarInitializer_1.ts
+10 | import moduleA = require("./aliasWithInterfaceExportAssignmentUsedInVarInitializer_0");
+```
+
+Visible symbols before failure:
+
+```json
+[]
+```
+
+Duplicate candidates:
+
+```json
+[
+  {
+    "state": "open",
+    "path": "issues/open/129-implement-aliasWithInterfaceExportAssignmentUsedInVarInitializer.md",
+    "title": "Implement Aliaswithinterfaceexportassignmentusedinvarinitializer",
+    "reason": "same reference path, title overlap"
+  }
+]
+```
+
+Error-specific suggestions:
+
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
+
+Compiler dumps:
+
+#### tokens
+
+- ok: `True`
+- truncated: `True`
+
+```text
+== tokens ==
+[
+    SpannedToken {
+        kind: Ident(
+            "interface",
+        ),
+        span: Span {
+            start: 117,
+            end: 126,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "c",
+        ),
+        span: Span {
+            start: 127,
+            end: 128,
+        },
+    },
+    SpannedToken {
+        kind: LeftBrace,
+        span: Span {
+            start: 129,
+            end: 130,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "q3",
+        ),
+        span: Span {
+            start: 136,
+            end: 138,
+        },
+    },
+    SpannedToken {
+        kind: Colon,
+        span: Span {
+            start: 138,
+            end: 139,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "number",
+        ),
+        span: Span {
+            start: 140,
+            end: 146,
+        },
+    },
+    SpannedToken {
+        kind: Semicolon,
+        span: Span {
+            start: 146,
+            end: 147,
+        },
+    },
+    SpannedToken {
+        kind: RightBrace,
+        span: Span {
+            start: 149,
+            end: 150,
+        },
+    },
+    SpannedToken {
+        kind: Export,
+        span: Span {
+            start: 152,
+            end: 158,
+        },
+    },
+    SpannedToken {
+        kind: Equal,
+        span: Span {
+            start: 159,
+            end: 160,
+        },
+    },
+    SpannedToken {
+        kind: Ident(
+            "c",
+        ),
+        span: Span {
+            start: 161,
+            end: 162,
+        },
+    },
+    SpannedToken {
+        kind: Semicolon,
+        span: Span {
+            start: 162,
+            end: 163,
+        },
+    },
+    SpannedToken {
+        kind: Import,
+        span: Span {
+            start: 242,
+            end: 248,
+```
+
+#### ast
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported static export; module resolution and loading are not implemented at 152..158
+```
+
+#### resolved
+
+- ok: `False`
+- truncated: `False`
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported static export; module resolution and loading are not implemented at 152..158
+```
+
+TypeScript/JavaScript oracle:
+
+```json
+{
+  "ok": true,
+  "returncode": 0,
+  "typescript": {
+    "ok": false,
+    "diagnostics": [
+      {
+        "code": 2307,
+        "category": "Error",
+        "message": "Cannot find module './aliasWithInterfaceExportAssignmentUsedInVarInitializer_0' or its corresponding type declarations.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts",
+        "start": 267,
+        "length": 60,
+        "line": 10,
+        "character": 26
+      },
+      {
+        "code": 2304,
+        "category": "Error",
+        "message": "Cannot find name 'b'.",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts",
+        "start": 339,
+        "length": 1,
+        "line": 11,
+        "character": 9
+      }
+    ],
+    "hints": [
+      {
+        "kind": "binding",
+        "typeText": "any",
+        "file": "/home/wogikaze/wgkz/ts2wasm/reference/typescript/tests/cases/compiler/aliasWithInterfaceExportAssignmentUsedInVarInitializer.ts",
+        "start": 335,
+        "length": 1,
+        "line": 11,
+        "character": 5,
+        "name": "d"
+      }
+    ],
+    "typescriptVersion": "6.0.3"
+  },
+  "ast": {
+    "topLevel": [
+      {
+        "kind": "InterfaceDeclaration",
+        "text": "interface c {\r\n    q3: number;\r\n}",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "ExportAssignment",
+        "text": "export = c;",
+        "line": 7,
+        "character": 1
+      },
+      {
+        "kind": "ImportEqualsDeclaration",
+        "text": "import moduleA = require(\"./aliasWithInterfaceExportAssignmentUsedInVarInitializer_0\");",
+        "line": 10,
+        "character": 1
+      },
+      {
+        "kind": "FirstStatement",
+        "text": "var d = b.q3;",
+        "line": 11,
+        "character": 1
+      }
+    ],
+    "pathToPosition": [
+      {
+        "kind": "SourceFile",
+        "text": "interface c {\r\n    q3: number;\r\n}\r\nexport = c;\r\n\r\n// @Filename: aliasWithInterfaceExportAssignmentUsedInVarInitializer_1",
+        "line": 4,
+        "character": 1
+      },
+      {
+        "kind": "ExportAssignment",
+        "text": "export = c;",
+        "line": 7,
+        "character": 1
+      }
+    ]
+  }
+}
+```
+
+Stack trace:
+
+```text
+error: [UnsupportedSyntax] issue-055: unsupported static export; module resolution and loading are not implemented at 152..158
+```
 
 ## Completion evidence
 
