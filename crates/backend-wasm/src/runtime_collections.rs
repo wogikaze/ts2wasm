@@ -597,5 +597,47 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_set_from_array(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_from_array (param $values i32) (result i32)
+    (local $tag i32)
+    (local $array_base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $set i32)
+    (local $value i32)
+    (local.set $tag (i32.and (local.get $values) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $array_base (i32.and (local.get $values) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $array_base)))
+    (local.set $set (call $set_new))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $values
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $value
+          (i32.load
+            (i32.add
+              (local.get $array_base)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (drop (call $set_add (local.get $set) (local.get $value)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $values)))
+    (local.get $set))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // String methods (M10)
 }

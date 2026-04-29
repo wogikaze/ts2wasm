@@ -1454,18 +1454,30 @@ impl<'a> Resolver<'a> {
                     });
                 }
                 if class_name == "Map" || class_name == "Set" {
-                    if !args.is_empty() {
+                    if args.is_empty() {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: format!("{class_name}New"),
+                            args: Vec::new(),
+                        });
+                    }
+                    if class_name == "Set" && args.len() == 1 && self.is_known_array_expr(&args[0])
+                    {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "SetFromArray".to_owned(),
+                            args: vec![self.lower_expr(&args[0])?],
+                        });
+                    }
+                    if class_name == "Set" {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "issue-049: new {class_name}(iterable) is not supported yet"
-                            ),
+                            message: "issue-276: new Set(iterable) currently supports only known dense array inputs".to_owned(),
                             span: None,
                         });
                     }
-                    return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: format!("{class_name}New"),
-                        args: Vec::new(),
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("issue-049: new {class_name}(iterable) is not supported yet"),
+                        span: None,
                     });
                 }
                 if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
