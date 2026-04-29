@@ -133,6 +133,14 @@ fn bigint_arithmetic_reports_issue_260() {
 }
 
 #[test]
+fn bigint_unary_minus_reports_issue_260() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-unary-minus-unsupported.ts",
+        "issue-260: BigInt unary arithmetic and bitwise operators are tracked separately from literal runtime values",
+    );
+}
+
+#[test]
 fn bigint_equality_reports_issue_261() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-equality-unsupported.ts",

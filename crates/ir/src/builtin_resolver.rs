@@ -376,10 +376,19 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             message: "ternary operator not yet supported".to_owned(),
             span: Some(*span),
         }),
-        Expr::Unary { op, expr, .. } => Ok(ResolvedExpr::Unary {
-            op: *op,
-            expr: Box::new(resolve_expr(expr)?),
-        }),
+        Expr::Unary { op, expr, span } => {
+            if expr_contains_bigint(expr) && bigint_unary_op_issue(*op).is_some() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: bigint_unary_op_issue(*op).unwrap().to_owned(),
+                    span: Some(*span),
+                });
+            }
+            Ok(ResolvedExpr::Unary {
+                op: *op,
+                expr: Box::new(resolve_expr(expr)?),
+            })
+        }
         Expr::Binary {
             left,
             op,
@@ -746,6 +755,20 @@ fn decimal_mul_add(digits: &mut Vec<u8>, radix: u8, add: u8) {
 fn trim_decimal_zeroes(digits: &mut Vec<u8>) {
     while digits.len() > 1 && digits.first() == Some(&0) {
         digits.remove(0);
+    }
+}
+
+fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
+    match op {
+        UnaryOp::Negate
+        | UnaryOp::BitwiseNot
+        | UnaryOp::Increment
+        | UnaryOp::Decrement
+        | UnaryOp::PreIncrement
+        | UnaryOp::PreDecrement => Some(
+            "issue-260: BigInt unary arithmetic and bitwise operators are tracked separately from literal runtime values",
+        ),
+        UnaryOp::Not | UnaryOp::TypeOf | UnaryOp::Delete | UnaryOp::Void => None,
     }
 }
 
