@@ -164,6 +164,9 @@ impl RuntimeLinkPlan {
     fn collect_required_runtime_stmts(&mut self, statements: &[LoweredStmt]) {
         for statement in statements {
             match statement {
+                LoweredStmt::Block(statements) => {
+                    self.collect_required_runtime_stmts(statements);
+                }
                 LoweredStmt::Let(_, expr)
                 | LoweredStmt::Assign(_, expr)
                 | LoweredStmt::Expr(expr)

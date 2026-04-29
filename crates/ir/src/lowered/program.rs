@@ -389,6 +389,7 @@ fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<S
                 collect_declared_function_names(std::slice::from_ref(body.as_ref()), names);
             }
             ResolvedStmt::Let(_, _)
+            | ResolvedStmt::DestructureLet { .. }
             | ResolvedStmt::Assign(_, _)
             | ResolvedStmt::Expr(_)
             | ResolvedStmt::Return(_)
@@ -443,6 +444,7 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
         ResolvedStmt::Labeled { body, .. } => stmt_returns_any_name(body, names),
         ResolvedStmt::Function { .. }
         | ResolvedStmt::Let(_, _)
+        | ResolvedStmt::DestructureLet { .. }
         | ResolvedStmt::Assign(_, _)
         | ResolvedStmt::Expr(_)
         | ResolvedStmt::Return(_)
@@ -458,6 +460,7 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
 fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
         | ResolvedStmt::Assign(_, expr)
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
@@ -587,6 +590,7 @@ fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
 fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
         | ResolvedStmt::Assign(_, expr)
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
@@ -778,6 +782,33 @@ fn lower_function(
     // Insert default parameter assignments at the start of the body.
     let mut body_with_defaults = Vec::new();
     for (param_name, default_expr, is_rest) in params {
+        if let Some(pattern) = parse_binding_pattern(param_name, None)? {
+            if *is_rest {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-251: rest parameter binding patterns are not supported"
+                        .to_owned(),
+                    span: None,
+                });
+            }
+            if default_expr.is_some() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-251: defaulted parameter binding patterns are not supported in this runtime slice"
+                            .to_owned(),
+                    span: None,
+                });
+            }
+            let param_local = resolver.resolve_local(param_name)?;
+            body_with_defaults.extend(
+                resolver.lower_binding_pattern_declarations(
+                    &pattern,
+                    LoweredExpr::Local(param_local),
+                )?,
+            );
+            continue;
+        }
         if *is_rest {
             // Rest parameters are populated by call lowering/emission.
             continue;
@@ -1638,6 +1669,11 @@ fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mut HashSet<S
             ResolvedStmt::Let(name, _) => {
                 names.insert(name.clone());
             }
+            ResolvedStmt::DestructureLet { pattern, .. } => {
+                for name in pattern.names() {
+                    names.insert(name.to_owned());
+                }
+            }
             ResolvedStmt::Function { name, body, .. } => {
                 names.insert(name.clone());
                 collect_declared_names_in_stmts(body, names);
@@ -1710,6 +1746,7 @@ fn collect_stmt_captures(
     for stmt in stmts {
         match stmt {
             ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::DestructureLet { expr, .. }
             | ResolvedStmt::Assign(_, expr)
             | ResolvedStmt::Expr(expr)
             | ResolvedStmt::Return(expr)
@@ -1805,6 +1842,7 @@ fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bool {
             names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
         }
         ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr) => expr_assigns_any_name(expr, names),

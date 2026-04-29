@@ -120,6 +120,9 @@ fn validate_stmt(
     errors: &mut Vec<Diagnostic>,
 ) {
     match stmt {
+        LoweredStmt::Block(stmts) => {
+            validate_stmts(stmts, local_count, num_funcs, program, errors);
+        }
         LoweredStmt::Let(id, expr) | LoweredStmt::Assign(id, expr) => {
             check_local_id(*id, local_count, errors);
             validate_expr(expr, local_count, num_funcs, program, errors, true);
