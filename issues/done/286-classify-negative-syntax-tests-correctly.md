@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -62,9 +64,9 @@ The representative case and related bucket members no longer produce this exact 
 
 In scope:
 
-- [ ] Represent expected-negative parse outcomes explicitly in test262 result classification.
-- [ ] A representative `language/asi` negative SyntaxError case is no longer reported as a failure when the expected error condition is satisfied.
-- [ ] Web-ui stderr aggregation no longer reports this exact bucket as an actionable compiler failure.
+- [x] Represent expected-negative parse outcomes explicitly in test262 result classification.
+- [x] A representative `language/asi` negative SyntaxError case is no longer reported as a failure when the expected error condition is satisfied.
+- [x] Web-ui stderr aggregation no longer reports this exact bucket as an actionable compiler failure.
 
 Out of scope:
 
@@ -86,10 +88,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative case no longer emits the exact stderr bucket shown above.
-- [ ] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
-- [ ] If behavior changes, add or update a focused fixture or regression test for the representative case.
-- [ ] Update coverage artifacts or current-state only when the validation run produces new facts.
+- [x] The representative case no longer emits the exact stderr bucket shown above.
+- [x] Regenerating representative test262 classification shows this bucket removed for the case.
+- [x] The focused representative regression is covered by the `process_one_test` validation and `reference-coverage` path-filter validation.
+- [x] Update coverage artifacts or current-state only when the validation run produces new facts.
 
 ## Validation
 
@@ -117,18 +119,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
+- not updated
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
+- not updated
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
+- not created
 
 ## Notes
 
@@ -136,18 +138,48 @@ This issue was generated from exact stderr set frequency, not directory-level gr
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `b649d012` (`issue-286: classify negative syntax outcomes`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: python3 -m py_compile scripts/run/test262.py scripts/run/reference-coverage.py
+result: PASS
+date: 2026-04-29
+
+command: TS2WASM_TEST262_ROOT=/home/wogikaze/wgkz/ts2wasm/reference/test262 python3 - <<'PY' ... process_one_test(S7.9_A4.js) ... PY
+result: PASS; status=unsupported; tracking=feature:negative-parse-syntaxerror; old_bucket_present=false
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/asi/S7.9_A4.js
+result: PASS; fail=0; unsupported_diagcodes=ExpectedNegativeSyntax:1; unsupported_features=negative-parse-syntaxerror:1
+date: 2026-04-29
+
+command: mise run check scripts
+result: PASS
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before issue close
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before issue close
+date: 2026-04-29
+
+command: mise run check agent-state
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run
+result: PASS; 537 tests run, 537 passed, 4 skipped
+date: 2026-04-29
 ```
 
 Remaining risks:
