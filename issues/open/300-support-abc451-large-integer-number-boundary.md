@@ -243,6 +243,18 @@ out-of-bounds write but not yet safe to close.
   live result set requires an accepted memory-limit policy change or a further
   GC/representation fix.
 
+2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c` reducer follow-up:
+
+- Created implementation-ready issue 303 for the memory-limit policy decision.
+- Reduced the remaining `$alloc_heap` trap to an ABC451 depth-7 live-set
+  reducer. Under committed `MEMORY_MAX_PAGES=16`, depth 6 prints `12711` and
+  depth 7 traps with `Exception: unreachable`. With only a temporary
+  `MEMORY_MAX_PAGES=512` change, the same depth-7 reducer prints Node-matching
+  `61002`.
+- This points to a runtime memory-cap policy blocker rather than a remaining
+  allocator free-list corruption bug. Issue 300 remains open until issue 303 is
+  resolved and the three ABC451 official samples are verified.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

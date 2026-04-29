@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 6 | 2 | 4 |
-| runtime | 83 | 12 | 71 |
+| runtime | 84 | 13 | 71 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 331 | 146 | 185 |
+| total | 332 | 147 | 185 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -53,6 +53,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 300 | Support ABC451 large integer number boundary | feature | runtime | implementation-ready | P1 |  | `fixtures/atcoder/abc451-d-concat-power2.ts` now reaches a large |
 | 301 | Implement mutable class-method outer environment cells | feature | frontend/ir/runtime | implementation-ready | P2 |  | `callCount = callCount + 1` inside a class method needs a shared |
 | 302 | Implement direct eval block function declaration slice | feature | frontend/semantics | implementation-ready | P3 |  | Direct eval block-function reference cases still report unsupported |
+| 303 | Define runtime memory limit policy for large live sets | feature | runtime/memory | implementation-ready | P1 |  | Current wasm modules declare a hard maximum of 16 pages (1 MiB), which |
 <!-- generated:ready:end -->
 
 ## Blocked queue
