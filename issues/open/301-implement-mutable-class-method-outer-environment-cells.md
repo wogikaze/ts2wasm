@@ -127,6 +127,27 @@ parameters at known call sites. Reusing that by-value path for mutable captures
 would silently leave the outer binding unchanged, so this issue must introduce a
 shared cell or an equivalently correct mutable environment representation.
 
+### Progress note: 2026-04-29 child worker
+
+Implemented a narrow mutable class-method outer-local environment cell path for
+the reduced numeric `callCount = callCount + 1` case. Mutably captured class
+method locals now lower to `EnvCellNew` / `EnvCellGet` / `EnvCellSet`, while
+existing immutable hidden-parameter captures remain on the by-value path.
+
+Evidence:
+
+- `cargo fmt --all --check` passed.
+- `cargo nextest run -p ts2wasm-cli -E 'test(class_method) or test(this_receiver_method_fixtures_match_node_output_under_iwasm)'` passed 5 tests.
+- Focused Node/iwasm diff for `fixtures/core-semantics/class-method-mutable-outer-capture.ts` matched and printed `1`.
+- `mise run update-issue-index -- --check` passed.
+- `mise run check issues` passed after restoring the ignored local reference-coverage result artifact.
+
+Remaining before close:
+
+- Prove or harden GC marking for heap values stored inside environment cells.
+- Run broader validation, including full `cargo nextest run`, before moving this
+  issue to `done`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

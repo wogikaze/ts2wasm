@@ -2,6 +2,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let function_ids = collect_function_ids(program)?;
     let function_signatures = collect_function_signatures(program, &function_ids);
     let class_method_captures = collect_class_method_captures(program, &function_ids);
+    let class_method_mutable_captures =
+        collect_class_method_mutable_captures(program, &function_ids);
+    let mutable_class_capture_names = collect_mutable_class_capture_names(program);
     let class_parents = collect_class_parents(program);
     let class_private_fields = collect_class_private_fields(program);
     let mut next_func_id = function_ids.len();
@@ -19,6 +22,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &function_ids,
                     &function_signatures,
                     &class_method_captures,
+                    &class_method_mutable_captures,
+                    &HashSet::new(),
                     class_parents.clone(),
                     class_private_fields.clone(),
                     LowerFunctionOptions {
@@ -62,6 +67,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &function_ids,
                     &function_signatures,
                     &class_method_captures,
+                    &class_method_mutable_captures,
+                    &HashSet::new(),
                     class_parents.clone(),
                     class_private_fields.clone(),
                     LowerFunctionOptions {
@@ -99,6 +106,10 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                             span: None,
                         }
                     }));
+                    let method_env_cell_names = class_method_mutable_captures
+                        .get(&method_id)
+                        .map(|names| names.iter().cloned().collect::<HashSet<_>>())
+                        .unwrap_or_default();
                     let lowered = lower_function(
                         method_id,
                         &method_params_with_this,
@@ -106,6 +117,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         &function_ids,
                         &function_signatures,
                         &class_method_captures,
+                        &class_method_mutable_captures,
+                        &method_env_cell_names,
                         class_parents.clone(),
                         class_private_fields.clone(),
                         LowerFunctionOptions {
@@ -128,6 +141,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         &function_ids,
         &function_signatures,
         &class_method_captures,
+        &class_method_mutable_captures,
+        &mutable_class_capture_names,
         class_parents.clone(),
         class_private_fields,
         next_func_id,
@@ -381,6 +396,51 @@ fn collect_class_method_captures(
     }
 
     captures
+}
+
+fn collect_class_method_mutable_captures(
+    program: &[ResolvedStmt],
+    function_ids: &HashMap<String, FuncId>,
+) -> HashMap<FuncId, Vec<String>> {
+    let mut captures = HashMap::new();
+
+    for stmt in program {
+        if let ResolvedStmt::ClassDecl { name, methods, .. } = stmt {
+            for method in methods {
+                let mut mutable = Vec::new();
+                for capture in &method.captures {
+                    if block_assigns_any_name(&method.body, std::slice::from_ref(capture)) {
+                        mutable.push(capture.clone());
+                    }
+                }
+                if mutable.is_empty() {
+                    continue;
+                }
+                let method_key = class_method_key(name, &method.name);
+                if let Some(func_id) = function_ids.get(&method_key) {
+                    captures.insert(*func_id, mutable);
+                }
+            }
+        }
+    }
+
+    captures
+}
+
+fn collect_mutable_class_capture_names(program: &[ResolvedStmt]) -> HashSet<String> {
+    let mut names = HashSet::new();
+    for stmt in program {
+        if let ResolvedStmt::ClassDecl { methods, .. } = stmt {
+            for method in methods {
+                for capture in &method.captures {
+                    if block_assigns_any_name(&method.body, std::slice::from_ref(capture)) {
+                        names.insert(capture.clone());
+                    }
+                }
+            }
+        }
+    }
+    names
 }
 
 fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
@@ -1000,6 +1060,8 @@ fn lower_function(
     function_ids: &HashMap<String, FuncId>,
     function_signatures: &HashMap<FuncId, FunctionSignature>,
     class_method_captures: &HashMap<FuncId, Vec<String>>,
+    class_method_mutable_captures: &HashMap<FuncId, Vec<String>>,
+    env_cell_names: &HashSet<String>,
     class_parents: HashMap<String, Option<String>>,
     class_private_fields: ClassPrivateFieldSlots,
     options: LowerFunctionOptions<'_>,
@@ -1035,6 +1097,8 @@ fn lower_function(
         function_ids,
         function_signatures,
         class_method_captures,
+        class_method_mutable_captures,
+        env_cell_names,
         lowered_params
             .iter()
             .map(|param| param.name.clone())

@@ -1117,23 +1117,11 @@ fn class_method_outer_local_captures(
     }
 
     let mut method_locals = class_method_local_names(class_name, params, body)?;
-    let mut assigned_names = HashSet::new();
-    collect_assigned_names_in_stmts(body, &mut assigned_names);
 
     let mut capture_names = Vec::new();
     while let Some((name, span)) =
         first_outer_local_reference_in_stmts(body, outer_bindings, &method_locals)
     {
-        if assigned_names.contains(&name) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-289: class method `{method_name}` mutates outer local `{name}`; mutable class-method lexical captures require heap environment cell support",
-                ),
-                span: Some(span),
-            });
-        }
-
         if params.iter().any(|(_, _, is_rest)| *is_rest) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,

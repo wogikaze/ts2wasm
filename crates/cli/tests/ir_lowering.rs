@@ -6,25 +6,45 @@ fn parse_and_resolve(source: &str) -> Vec<ts2wasm_ir::builtin_resolved::Resolved
 }
 
 #[test]
-fn class_method_outer_local_capture_reports_spanned_issue_289() {
-    let ast = ts2wasm_cli::parse_program(
+fn lowering_passes_mutable_class_method_outer_local_capture() {
+    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
         r#"
         var callCount = 0;
-        var C = class {
-          method([x, y, z]) {
+        class C {
+          method() {
             callCount = callCount + 1;
           }
-        };
+        }
+        let c = new C();
+        c.method();
+        console.log(callCount);
         "#,
-    )
-    .unwrap();
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
-    let err = ts2wasm_ir::builtin_resolver::resolve_builtins(&ast).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-289"));
-    assert!(err.message.contains("callCount"));
-    assert!(err.span.is_some(), "{err:?}");
+    assert!(matches!(
+        lowered.top_level_statements.first(),
+        Some(LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::EnvCellNew(initial)
+        )) if matches!(initial.as_ref(), LoweredExpr::Number(0))
+    ));
+    assert!(matches!(
+        lowered.top_level_statements.last(),
+        Some(LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+            args,
+        })) if matches!(args.as_slice(), [LoweredExpr::EnvCellGet(LocalId(0))])
+    ));
+    assert!(matches!(
+        lowered.functions[1].body.as_slice(),
+        [LoweredStmt::Expr(LoweredExpr::EnvCellSet {
+            cell: LocalId(1),
+            ..
+        })]
+    ));
 }
 
 #[test]

@@ -256,6 +256,12 @@ fn validate_expr(
         LoweredExpr::Number(_) => {}
         LoweredExpr::BigIntLiteral { .. } => {}
         LoweredExpr::Local(id) => check_local_id(*id, local_count, errors),
+        LoweredExpr::EnvCellNew(expr) => validate_expr(expr, local_count, num_funcs, program, errors, true),
+        LoweredExpr::EnvCellGet(cell) => check_local_id(*cell, local_count, errors),
+        LoweredExpr::EnvCellSet { cell, expr } => {
+            check_local_id(*cell, local_count, errors);
+            validate_expr(expr, local_count, num_funcs, program, errors, true);
+        }
         LoweredExpr::Unary { expr, .. } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }

@@ -183,6 +183,12 @@ pub enum LoweredExpr {
     Null,
     Undefined,
     Local(LocalId),
+    EnvCellNew(Box<LoweredExpr>),
+    EnvCellGet(LocalId),
+    EnvCellSet {
+        cell: LocalId,
+        expr: Box<LoweredExpr>,
+    },
     Unary {
         op: LoweredUnaryOp,
         expr: Box<LoweredExpr>,
