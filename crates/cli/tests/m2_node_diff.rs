@@ -432,6 +432,21 @@ fn for_await_of_unsupported_reports_issue_230() {
 }
 
 #[test]
+fn for_loop_post_increment_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/for-loop-post-increment.ts");
+}
+
+#[test]
+fn for_loop_increment_out_of_scope_forms_report_issue_268() {
+    for fixture in [
+        "fixtures/core-semantics/for-loop-decrement-unsupported.ts",
+        "fixtures/core-semantics/for-loop-preincrement-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(fixture, "issue-268:");
+    }
+}
+
+#[test]
 fn string_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/string-trim.ts",

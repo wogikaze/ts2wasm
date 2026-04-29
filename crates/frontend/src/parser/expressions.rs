@@ -952,7 +952,29 @@ impl Parser {
     }
 
     fn unary(&mut self) -> Result<Expr, Diagnostic> {
-        if let Some(bang_span) = self.consume_span(TokenKind::Bang) {
+        if let Some(inc_span) = self.consume_span(TokenKind::Increment) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Unary {
+                op: UnaryOp::PreIncrement,
+                expr: Box::new(expr),
+                span: Span {
+                    start: inc_span.start,
+                    end,
+                },
+            })
+        } else if let Some(dec_span) = self.consume_span(TokenKind::Decrement) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Unary {
+                op: UnaryOp::PreDecrement,
+                expr: Box::new(expr),
+                span: Span {
+                    start: dec_span.start,
+                    end,
+                },
+            })
+        } else if let Some(bang_span) = self.consume_span(TokenKind::Bang) {
             let expr = self.unary()?;
             let end = expr.span().end;
             Ok(Expr::Unary {
@@ -1056,6 +1078,34 @@ impl Parser {
             self.consume_typescript_expression_type_erasure_keyword()
         {
             self.skip_typescript_expression_type(keyword_span, keyword)?;
+        }
+
+        if let Some(op_span) = self.consume_span(TokenKind::Increment) {
+            if self.is_optional_chain_expr(&expr) {
+                return Err(self.invalid_optional_chain_target(expr.span()));
+            }
+            let start = expr.span().start;
+            expr = Expr::Unary {
+                op: UnaryOp::Increment,
+                expr: Box::new(expr),
+                span: Span {
+                    start,
+                    end: op_span.end,
+                },
+            };
+        } else if let Some(op_span) = self.consume_span(TokenKind::Decrement) {
+            if self.is_optional_chain_expr(&expr) {
+                return Err(self.invalid_optional_chain_target(expr.span()));
+            }
+            let start = expr.span().start;
+            expr = Expr::Unary {
+                op: UnaryOp::Decrement,
+                expr: Box::new(expr),
+                span: Span {
+                    start,
+                    end: op_span.end,
+                },
+            };
         }
 
         // Handle instanceof
