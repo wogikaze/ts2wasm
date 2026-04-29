@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 76 | 19 | 57 |
+| runtime | 76 | 18 | 58 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 311 | 148 | 163 |
+| total | 311 | 147 | 164 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -44,7 +44,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
-| 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | implementation-ready | P2 | 259 | BigInt cannot share the current primitive equality/comparison helpers because Number/BigInt and String/BigInt coercio... |
 | 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
 | 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
 | 273 | Implement recursive function calls | feature | runtime/semantics | implementation-ready | P2 |  | Implement recursive function calls |
@@ -54,6 +53,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 278 | Implement Set iteration | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 deliberately left Map/Set iteration out of scope, and issue 272's broad "Test262 Set tests pass" criterion ... |
 | 279 | Implement observable Set constructor add dispatch | feature | runtime/builtins | implementation-ready | P2 |  | issue 276 added a narrow dense-array constructor path through the current direct `$set_add` runtime helper, but the r... |
 | 280 | Implement dynamic BigInt builtin inputs | feature | runtime/builtins | implementation-ready | P2 | 259, 262 | `BigInt(...)`, `BigInt.asIntN(...)`, and `BigInt.asUintN(...)` currently work for documented static inputs, but dynam... |
+| 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 folds representable tagged-int number literals such as `1n == 1`, but the current number model does not yet... |
+| 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -194,8 +195,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
-| 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | 259, 261 | Implement BigInt/Number edge equality and comparison |
-| 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | 259, 261 | Implement dynamic BigInt mixed coercion |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -355,6 +354,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 257 | Emit heap closure allocation and dispatch | feature | backend | see `issues/done/257-emit-heap-closure-allocation-and-dispatch.md` |
 | 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | see `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md` |
 | 259 | Implement BigInt literal runtime values | feature | runtime/semantics | see `issues/done/259-implement-bigint-literal-runtime-values.md` |
+| 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | see `issues/done/261-implement-bigint-equality-comparison-coercion.md` |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | see `issues/done/262-implement-bigint-builtins-and-string-conversion.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
 | 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
