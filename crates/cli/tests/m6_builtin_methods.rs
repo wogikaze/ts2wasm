@@ -84,6 +84,12 @@ fn build_smoke_math_min_method() {
 }
 
 #[test]
+fn build_smoke_math_pow_method() {
+    let result = run_fixture("builtins-and-io/math-pow.ts");
+    assert!(result.is_ok(), "Math.pow should build: {:?}", result.err());
+}
+
+#[test]
 fn build_smoke_object_keys_method() {
     let result = run_fixture("builtins-and-io/object-keys.ts");
     assert!(
