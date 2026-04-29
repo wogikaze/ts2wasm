@@ -572,8 +572,8 @@ impl<'a> Lexer<'a> {
                     let token = self.string()?;
                     self.add_token(&mut tokens, token);
                 }
-                'a'..='z' | 'A'..='Z' | '_' | '$' => {
-                    let token = self.ident_or_keyword();
+                'a'..='z' | 'A'..='Z' | '_' | '$' | '\\' if self.starts_identifier() => {
+                    let token = self.ident_or_keyword()?;
                     self.add_token(&mut tokens, token);
                 }
                 '#' => {
@@ -1890,64 +1890,219 @@ impl<'a> Lexer<'a> {
         })
     }
 
-    fn ident_or_keyword(&mut self) -> SpannedToken {
+    fn ident_or_keyword(&mut self) -> Result<SpannedToken, Diagnostic> {
         let start = self.cursor;
-        while matches!(
-            self.peek_char(),
-            Some('a'..='z' | 'A'..='Z' | '0'..='9' | '_' | '$')
-        ) {
+        let mut ident = String::new();
+        let mut escaped = false;
+
+        if self.peek_char() == Some('\\') {
+            let ch = self.unicode_identifier_escape(start)?;
+            if !is_identifier_start_escape_char(ch) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("invalid unicode identifier start escape: {ch:?}"),
+                    span: Some(Span {
+                        start,
+                        end: self.cursor,
+                    }),
+                });
+            }
+            ident.push(ch);
+            escaped = true;
+        } else if let Some(ch) = self.peek_char() {
+            debug_assert!(is_ascii_identifier_start(ch));
             self.advance_char();
+            ident.push(ch);
         }
-        let kind = match &self.source[start..self.cursor] {
-            "let" => Token::Let,
-            "const" => Token::Const,
-            "var" => Token::Var,
-            "function" => Token::Function,
-            "return" => Token::Return,
-            "if" => Token::If,
-            "else" => Token::Else,
-            "while" => Token::While,
-            "true" => Token::True,
-            "false" => Token::False,
-            "null" => Token::Null,
-            "undefined" => Token::Undefined,
-            // New keywords
-            "this" => Token::This,
-            "class" => Token::Class,
-            "try" => Token::Try,
-            "catch" => Token::Catch,
-            "throw" => Token::Throw,
-            "finally" => Token::Finally,
-            "extends" => Token::Extends,
-            "super" => Token::Super,
-            "static" => Token::Static,
-            "async" => Token::Async,
-            "await" => Token::Await,
-            "import" => Token::Import,
-            "export" => Token::Export,
-            "default" => Token::Default,
-            "case" => Token::Case,
-            "do" => Token::Do,
-            "for" => Token::For,
-            "in" => Token::In,
-            "of" => Token::Of,
-            "new" => Token::New,
-            "typeof" => Token::TypeOf,
-            "instanceof" => Token::InstanceOf,
-            "void" => Token::Void,
-            "delete" => Token::Delete,
-            "switch" => Token::Switch,
-            "break" => Token::Break,
-            "continue" => Token::Continue,
-            ident => Token::Ident(ident.to_owned()),
+
+        loop {
+            match self.peek_char() {
+                Some(ch) if is_ascii_identifier_part(ch) => {
+                    self.advance_char();
+                    ident.push(ch);
+                }
+                Some('\\') if self.starts_with("\\u") => {
+                    let escape_start = self.cursor;
+                    let ch = self.unicode_identifier_escape(start)?;
+                    if !is_identifier_part_escape_char(ch) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!("invalid unicode identifier part escape: {ch:?}"),
+                            span: Some(Span {
+                                start: escape_start,
+                                end: self.cursor,
+                            }),
+                        });
+                    }
+                    ident.push(ch);
+                    escaped = true;
+                }
+                _ => break,
+            }
+        }
+
+        let kind = if escaped {
+            Token::Ident(ident)
+        } else {
+            match ident.as_str() {
+                "let" => Token::Let,
+                "const" => Token::Const,
+                "var" => Token::Var,
+                "function" => Token::Function,
+                "return" => Token::Return,
+                "if" => Token::If,
+                "else" => Token::Else,
+                "while" => Token::While,
+                "true" => Token::True,
+                "false" => Token::False,
+                "null" => Token::Null,
+                "undefined" => Token::Undefined,
+                // New keywords
+                "this" => Token::This,
+                "class" => Token::Class,
+                "try" => Token::Try,
+                "catch" => Token::Catch,
+                "throw" => Token::Throw,
+                "finally" => Token::Finally,
+                "extends" => Token::Extends,
+                "super" => Token::Super,
+                "static" => Token::Static,
+                "async" => Token::Async,
+                "await" => Token::Await,
+                "import" => Token::Import,
+                "export" => Token::Export,
+                "default" => Token::Default,
+                "case" => Token::Case,
+                "do" => Token::Do,
+                "for" => Token::For,
+                "in" => Token::In,
+                "of" => Token::Of,
+                "new" => Token::New,
+                "typeof" => Token::TypeOf,
+                "instanceof" => Token::InstanceOf,
+                "void" => Token::Void,
+                "delete" => Token::Delete,
+                "switch" => Token::Switch,
+                "break" => Token::Break,
+                "continue" => Token::Continue,
+                ident => Token::Ident(ident.to_owned()),
+            }
         };
-        SpannedToken {
+        Ok(SpannedToken {
             kind,
             span: Span {
                 start,
                 end: self.cursor,
             },
+        })
+    }
+
+    fn starts_identifier(&self) -> bool {
+        match self.peek_char() {
+            Some(ch) if is_ascii_identifier_start(ch) => true,
+            Some('\\') => self.source[self.cursor..].starts_with("\\u"),
+            _ => false,
         }
+    }
+
+    fn unicode_identifier_escape(&mut self, identifier_start: usize) -> Result<char, Diagnostic> {
+        let escape_start = self.cursor;
+        self.advance_char();
+        if self.advance_char() != Some('u') {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "invalid unicode identifier escape sequence".to_owned(),
+                span: Some(Span {
+                    start: escape_start,
+                    end: self.cursor,
+                }),
+            });
+        }
+
+        if self.peek_char() == Some('{') {
+            self.advance_char();
+            let mut value = 0u32;
+            let mut digit_count = 0usize;
+            loop {
+                let Some(ch) = self.advance_char() else {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "unterminated unicode identifier escape sequence".to_owned(),
+                        span: Some(Span {
+                            start: identifier_start,
+                            end: self.cursor,
+                        }),
+                    });
+                };
+                if ch == '}' {
+                    if digit_count == 0 {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "invalid unicode identifier escape sequence".to_owned(),
+                            span: Some(Span {
+                                start: escape_start,
+                                end: self.cursor,
+                            }),
+                        });
+                    }
+                    break;
+                }
+                let Some(digit) = ch.to_digit(16) else {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "invalid unicode identifier escape sequence".to_owned(),
+                        span: Some(Span {
+                            start: escape_start,
+                            end: self.cursor,
+                        }),
+                    });
+                };
+                digit_count += 1;
+                value = value.saturating_mul(16).saturating_add(digit);
+            }
+            return char::from_u32(value).ok_or(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "invalid unicode identifier escape scalar value".to_owned(),
+                span: Some(Span {
+                    start: escape_start,
+                    end: self.cursor,
+                }),
+            });
+        }
+
+        let mut value = 0u32;
+        for _ in 0..4 {
+            let Some(ch) = self.advance_char() else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "unterminated unicode identifier escape sequence".to_owned(),
+                    span: Some(Span {
+                        start: identifier_start,
+                        end: self.cursor,
+                    }),
+                });
+            };
+            let Some(digit) = ch.to_digit(16) else {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "invalid unicode identifier escape sequence".to_owned(),
+                    span: Some(Span {
+                        start: escape_start,
+                        end: self.cursor,
+                    }),
+                });
+            };
+            value = (value << 4) | digit;
+        }
+
+        char::from_u32(value).ok_or(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "invalid unicode identifier escape scalar value".to_owned(),
+            span: Some(Span {
+                start: escape_start,
+                end: self.cursor,
+            }),
+        })
     }
 
     fn private_identifier(&mut self, start: usize) -> Result<SpannedToken, Diagnostic> {
@@ -2003,6 +2158,82 @@ impl<'a> Lexer<'a> {
         self.cursor += ch.len_utf8();
         Some(ch)
     }
+}
+
+fn is_ascii_identifier_start(ch: char) -> bool {
+    matches!(ch, 'a'..='z' | 'A'..='Z' | '_' | '$')
+}
+
+fn is_ascii_identifier_part(ch: char) -> bool {
+    is_ascii_identifier_start(ch) || ch.is_ascii_digit()
+}
+
+fn is_identifier_start_escape_char(ch: char) -> bool {
+    is_ascii_identifier_start(ch) || (ch != '\u{200c}' && ch != '\u{200d}' && ch.is_alphabetic())
+}
+
+fn is_identifier_part_escape_char(ch: char) -> bool {
+    is_identifier_start_escape_char(ch)
+        || ch.is_ascii_digit()
+        || ch.is_numeric()
+        || ch == '\u{200c}'
+        || ch == '\u{200d}'
+        || is_unicode_5_2_identifier_part_mark(ch)
+}
+
+fn is_unicode_5_2_identifier_part_mark(ch: char) -> bool {
+    matches!(
+        ch as u32,
+        0x0300..=0x036f
+            | 0x0483..=0x0487
+            | 0x0591..=0x05bd
+            | 0x05bf
+            | 0x05c1..=0x05c2
+            | 0x05c4..=0x05c5
+            | 0x05c7
+            | 0x0610..=0x061a
+            | 0x064b..=0x065f
+            | 0x0670
+            | 0x06d6..=0x06dc
+            | 0x06df..=0x06e4
+            | 0x06e7..=0x06e8
+            | 0x06ea..=0x06ed
+            | 0x0711
+            | 0x0730..=0x074a
+            | 0x07a6..=0x07b0
+            | 0x0816..=0x082d
+            | 0x0900
+            | 0x094e
+            | 0x0955
+            | 0x109a..=0x109d
+            | 0x135d..=0x135f
+            | 0x1712..=0x1714
+            | 0x1732..=0x1734
+            | 0x1752..=0x1753
+            | 0x1772..=0x1773
+            | 0x17b4..=0x17d3
+            | 0x17dd
+            | 0x180b..=0x180d
+            | 0x19da
+            | 0x1a55..=0x1a7f
+            | 0x1a80..=0x1a99
+            | 0x1ab0..=0x1aff
+            | 0x1cd0..=0x1cf2
+            | 0x1dc0..=0x1dff
+            | 0x20d0..=0x20ff
+            | 0x2cef..=0x2cf1
+            | 0xa6f0..=0xa6f1
+            | 0xa8e0..=0xa8f1
+            | 0xa980..=0xa9c0
+            | 0xa9d0..=0xa9d9
+            | 0xaa7b
+            | 0xaab0..=0xaac1
+            | 0xabe3..=0xabed
+            | 0xabf0..=0xabf9
+            | 0xfe00..=0xfe0f
+            | 0xfe20..=0xfe2f
+            | 0x11080..=0x110ba
+    )
 }
 
 fn is_line_terminator(ch: char) -> bool {
@@ -2227,6 +2458,39 @@ mod tests {
                 .iter()
                 .any(|token| matches!(&token.kind, Token::String(value) if value == "\u{0007}"))
         );
+    }
+
+    #[test]
+    fn cooks_unicode_identifier_escapes() {
+        let tokens = Lexer::new(r"let a\u0062 = 1; let _\u0816\u{11080} = ab;")
+            .tokenize()
+            .unwrap();
+        let idents: Vec<&str> = tokens
+            .iter()
+            .filter_map(|token| match &token.kind {
+                Token::Ident(name) => Some(name.as_str()),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(idents, ["ab", "_\u{0816}\u{11080}", "ab"]);
+    }
+
+    #[test]
+    fn rejects_invalid_unicode_identifier_escapes() {
+        for source in [
+            r"let \u0030bad = 1;",
+            r"let a\u002d = 1;",
+            r"let a\u{} = 1;",
+        ] {
+            let err = Lexer::new(source).tokenize().unwrap_err();
+
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(
+                err.message.contains("unicode identifier"),
+                "{source}: {err:?}"
+            );
+        }
     }
 
     #[test]
