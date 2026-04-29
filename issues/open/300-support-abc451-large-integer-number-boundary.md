@@ -534,6 +534,32 @@ result: Exception: unreachable; elapsed 10.09
 date: 2026-04-29
 ```
 
+2026-04-29 child `308-next-blocker-20260429T204403Z` issue 308 follow-up:
+
+- Issue 308 added sweep tail trimming for unmarked ranges that reach the
+  current heap end. This further lowers bounded depth-9 WAT-only telemetry at
+  the 1,000,000-allocation diagnostic abort from the previous committed
+  `gc_collect_count=790` / `gc_sweep_block_visits=192697486` to:
+
+```text
+gc_collect_count: 729
+gc_sweep_block_visits: 171324221
+gc_sweep_freed_blocks: 18531756
+heap_high_water_bytes: 20430896
+gc_tail_trim_count: 9
+gc_tail_trim_bytes: 49712
+```
+
+- This does not establish issue 300 compatibility. The depth-9 search-only
+  reducer still traps under the committed 185-page cap after Node confirms
+  `1404832`, and the smallest official ABC451 sample still traps:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-tailtrim.wasm"
+result: Exception: unreachable; elapsed 10.85
+date: 2026-04-29
+```
+
 - No official ABC451 sample output parity is claimed; issue 300 remains open
   until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
   committed runtime policy.

@@ -2935,6 +2935,11 @@ impl WatEmitter<'_> {
                     (local.get $next)
                     (i32.add (i32.const {gc_header_size}) (local.get $next_body_size))))
                 (br $coalesce)))
+            (if
+              (i32.eq (local.get $next) (local.get $heap_end))
+              (then
+                (global.set $heap (local.get $cursor))
+                (br $done)))
             (i32.store
               (i32.add (local.get $cursor) (i32.const {gc_body_size_offset}))
               (local.get $body_size))
