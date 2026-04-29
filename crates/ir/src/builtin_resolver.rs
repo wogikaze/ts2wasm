@@ -8,7 +8,7 @@ use ts2wasm_frontend::{
 use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
-use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
+use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedParam, ResolvedStmt};
 
 pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     BigIntRuntimeGuard::default().visit_stmts(program)?;
@@ -97,16 +97,20 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         }),
         Stmt::Return { expr, .. } => Ok(ResolvedStmt::Return(resolve_expr(expr)?)),
         Stmt::Function {
-            name, params, body, ..
+            name,
+            params,
+            body,
+            span,
         } => {
             let resolved_params = params
                 .iter()
                 .map(|(param_name, default, is_rest)| {
-                    Ok((
-                        param_name.clone(),
-                        default.as_ref().map(resolve_expr).transpose()?,
-                        *is_rest,
-                    ))
+                    Ok(ResolvedParam {
+                        name: param_name.clone(),
+                        default: default.as_ref().map(resolve_expr).transpose()?,
+                        is_rest: *is_rest,
+                        span: Some(*span),
+                    })
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(ResolvedStmt::Function {
@@ -157,7 +161,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         name: method_name,
                         params,
                         body: method_body,
-                        ..
+                        span,
                     } if method_name == "constructor" => {
                         if constructor.is_some() {
                             return Err(Diagnostic {
@@ -169,11 +173,12 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         let resolved_params = params
                             .iter()
                             .map(|(param_name, default, is_rest)| {
-                                Ok((
-                                    param_name.clone(),
-                                    default.as_ref().map(resolve_expr).transpose()?,
-                                    *is_rest,
-                                ))
+                                Ok(ResolvedParam {
+                                    name: param_name.clone(),
+                                    default: default.as_ref().map(resolve_expr).transpose()?,
+                                    is_rest: *is_rest,
+                                    span: Some(*span),
+                                })
                             })
                             .collect::<Result<Vec<_>, _>>()?;
                         let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<
@@ -194,16 +199,17 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         name: method_name,
                         params,
                         body: method_body,
-                        ..
+                        span,
                     } => {
                         let resolved_params = params
                             .iter()
                             .map(|(param_name, default, is_rest)| {
-                                Ok((
-                                    param_name.clone(),
-                                    default.as_ref().map(resolve_expr).transpose()?,
-                                    *is_rest,
-                                ))
+                                Ok(ResolvedParam {
+                                    name: param_name.clone(),
+                                    default: default.as_ref().map(resolve_expr).transpose()?,
+                                    is_rest: *is_rest,
+                                    span: Some(*span),
+                                })
                             })
                             .collect::<Result<Vec<_>, _>>()?;
                         let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<

@@ -288,6 +288,14 @@ fn destructuring_binding_unsupported_forms_report_issue_251() {
         "fixtures/core-semantics/destructuring-binding-unsupported.ts",
         "issue-251:",
     );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/destructuring-binding-param-default-unsupported.ts",
+        "issue-251:",
+    );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/destructuring-binding-param-rest-unsupported.ts",
+        "issue-251:",
+    );
 }
 
 #[test]

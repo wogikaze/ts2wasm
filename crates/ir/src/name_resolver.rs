@@ -203,10 +203,19 @@ impl NameResolver {
                             code: DiagCode::UnsupportedSyntax,
                             message: "issue-251: rest parameter binding patterns are not supported"
                                 .to_owned(),
-                            span: None,
+                            span: Some(*span),
                         });
                     }
-                    self.declare_binding(param_name, None)?;
+                    if default.is_some() && is_binding_pattern_text(param_name) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message:
+                                "issue-251: defaulted parameter binding patterns are not supported in this runtime slice"
+                                    .to_owned(),
+                            span: Some(*span),
+                        });
+                    }
+                    self.declare_binding(param_name, Some(*span))?;
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
@@ -725,7 +734,17 @@ impl NameResolver {
             Expr::ArrowFn { params, body, span } => {
                 self.enter_scope();
                 for param in params {
-                    self.declare_binding(param, None)?;
+                    if let Some(rest_binding) = param.strip_prefix("...")
+                        && is_binding_pattern_text(rest_binding)
+                    {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-251: rest parameter binding patterns are not supported"
+                                .to_owned(),
+                            span: Some(*span),
+                        });
+                    }
+                    self.declare_binding(param, Some(*span))?;
                 }
                 let resolved_body = self.resolve_expr(body)?;
                 self.exit_scope();
