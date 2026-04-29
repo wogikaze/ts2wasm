@@ -81,3 +81,6 @@ cargo fmt --all --check
 - 2026-04-29: Added a Set-to-array spread slice:
   - array literal spread over a known `Set` local, such as `let copy = [...set]`, lowers through the existing `SetValuesArray` runtime helper and preserves insertion order under Node/iwasm differential coverage;
   - mixed array literals such as `[0, ...set]`, dynamic iterable spread, Map/custom iterable spread, and general iterator protocol semantics remain out of scope.
+- 2026-04-29: Extended the Set-to-array spread slice to mixed dense array literals:
+  - literals such as `[0, ...set, 4]` lower as dense array segments concatenated with `SetValuesArray(set)`, preserving Set insertion order under Node/iwasm differential coverage;
+  - Map/custom iterator/general iterator protocol, object spread beyond the existing static object-literal slice, and dynamic non-Set iterable spread remain guarded by `issue-274` diagnostics.
