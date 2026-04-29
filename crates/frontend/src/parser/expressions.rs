@@ -1572,6 +1572,14 @@ impl Parser {
                     },
                 })
             }
+            Some(SpannedToken {
+                kind: Token::Function,
+                span,
+            }) => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-273: named function expressions are not supported in this recursive function slice; use a function declaration for recursive calls".to_owned(),
+                span: Some(span),
+            }),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unsupported expression: {other:?}"),
