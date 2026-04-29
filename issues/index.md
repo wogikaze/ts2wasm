@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 197 | 130 | 67 |
+| frontend | 197 | 129 | 68 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 322 | 152 | 170 |
+| total | 322 | 151 | 171 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -56,7 +56,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 287 | Fix arguments-object arity mismatch bucket | bug | runtime/semantics | implementation-ready | P1 |  | Arguments-object coverage hits a repeated arity mismatch where generated calls provide fewer arguments than the lower... |
 | 288 | Provide test262 assert harness binding | feature | reference/runtime | implementation-ready | P1 |  | Many admitted test262 cases fail before semantic comparison because the test262 `assert` harness function is unresolved. |
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
-| 290 | Fix ASI EOF semicolon parser bucket | bug | frontend | implementation-ready | P2 |  | ASI coverage repeatedly reports EOF where the parser still expects an explicit semicolon. |
 | 291 | Provide Object global binding for test262 cases | feature | runtime/semantics | implementation-ready | P2 |  | Several test262 cases fail before semantic comparison because the global `Object` binding is unresolved. |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
 | 293 | Parse Unicode escaped identifier parts | feature | frontend | implementation-ready | P2 |  | Identifier coverage repeatedly rejects backslash escapes inside Unicode identifier parts. |
@@ -378,6 +377,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 278 | Implement Set iteration | feature | runtime/builtins | see `issues/done/278-implement-set-iteration.md` |
 | 279 | Implement observable Set constructor add dispatch | feature | runtime/builtins | see `issues/done/279-implement-observable-set-constructor-add-dispatch.md` |
 | 283 | Implement assigned arrow recursion | feature | runtime/semantics | see `issues/done/283-implement-assigned-arrow-recursion.md` |
+| 290 | Fix ASI EOF semicolon parser bucket | bug | frontend | see `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
