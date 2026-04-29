@@ -48,7 +48,7 @@ The built files will be in `dist/`
 Generate web UI data from test results:
 
 ```bash
-python scripts/gen/web-ui-data.py
+mise run web-ui-data
 ```
 
 This creates JSON files in `web-ui/public/data/`:
@@ -57,17 +57,25 @@ This creates JSON files in `web-ui/public/data/`:
 - `history.json`: Historical test run data
 - `metadata.json`: Generation metadata
 
+By default the generator reads checked-in coverage artifacts from
+`artifacts/coverage/results/*.json`. It can include per-case test records from a
+JSONL file produced by the test runner:
+
+```bash
+mise run web-ui-data -- --test-jsonl reports/runs/<run-id>/test262-results.jsonl
+```
+
 ## Usage
 
 ### Local Development
 
-1. Generate data: `python scripts/gen/web-ui-data.py`
+1. Generate data: `mise run web-ui-data`
 2. Start dev server: `cd web-ui && npm run dev`
 3. Open browser to `http://localhost:5173`
 
 ### Production Deployment
 
-1. Generate data: `python scripts/gen/web-ui-data.py`
+1. Generate data: `mise run web-ui-data`
 2. Build: `cd web-ui && npm run build`
 3. Deploy `dist/` directory to your web server
 

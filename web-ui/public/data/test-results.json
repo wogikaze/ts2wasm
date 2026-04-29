@@ -1,68 +1,100 @@
 {
+  "summary": {
+    "failed": 0,
+    "passed": 51,
+    "skipped": 18289,
+    "total": 18340
+  },
   "tests": [
     {
+      "case": "semantic-pass",
+      "count": 3,
       "id": "1",
-      "name": "array-nonnumber-index",
+      "name": "semantic-pass",
+      "reason": "Node/iwasm semantic match",
       "status": "pass",
-      "suite": "arrays-objects",
-      "duration": 120
+      "suite": "test262",
+      "target": "reference-coverage"
     },
     {
+      "case": "build-pass",
+      "count": 5,
       "id": "2",
-      "name": "array-oob",
+      "name": "build-pass",
+      "reason": "wasm build success",
       "status": "pass",
-      "suite": "arrays-objects",
-      "duration": 85
+      "suite": "test262",
+      "target": "reference-coverage"
     },
     {
+      "case": "unsupported",
+      "count": 17995,
       "id": "3",
-      "name": "json-parse",
-      "status": "fail",
-      "suite": "builtins-and-io",
-      "duration": 200,
-      "error": "Unexpected token"
-    },
-    {
-      "id": "4",
-      "name": "math-random",
-      "status": "pass",
-      "suite": "builtins-and-io",
-      "duration": 45
-    },
-    {
-      "id": "5",
-      "name": "arrow-basic",
+      "name": "unsupported",
+      "reason": "unsupported by current compiler slice",
       "status": "skip",
-      "suite": "arrow-functions",
-      "duration": 0
+      "suite": "test262",
+      "target": "reference-coverage"
     },
     {
+      "case": "semantic-pass",
+      "count": 10,
+      "id": "4",
+      "name": "semantic-pass",
+      "reason": "Node/iwasm semantic match",
+      "status": "pass",
+      "suite": "tsc",
+      "target": "reference-coverage"
+    },
+    {
+      "case": "build-pass",
+      "count": 17,
+      "id": "5",
+      "name": "build-pass",
+      "reason": "wasm build success",
+      "status": "pass",
+      "suite": "tsc",
+      "target": "reference-coverage"
+    },
+    {
+      "case": "unsupported",
+      "count": 183,
       "id": "6",
-      "name": "string-index-of",
-      "status": "pass",
-      "suite": "builtins-and-io",
-      "duration": 32
+      "name": "unsupported",
+      "reason": "unsupported by current compiler slice",
+      "status": "skip",
+      "suite": "tsc",
+      "target": "reference-coverage"
     },
     {
+      "case": "semantic-pass",
+      "count": 7,
       "id": "7",
-      "name": "object-keys",
+      "name": "semantic-pass",
+      "reason": "Node/iwasm semantic match",
       "status": "pass",
-      "suite": "builtins-and-io",
-      "duration": 28
+      "suite": "tsgo",
+      "target": "reference-coverage"
     },
     {
+      "case": "build-pass",
+      "count": 9,
       "id": "8",
-      "name": "array-concat",
-      "status": "fail",
-      "suite": "builtins-and-io",
-      "duration": 150,
-      "error": "Array method not implemented"
+      "name": "build-pass",
+      "reason": "wasm build success",
+      "status": "pass",
+      "suite": "tsgo",
+      "target": "reference-coverage"
+    },
+    {
+      "case": "unsupported",
+      "count": 111,
+      "id": "9",
+      "name": "unsupported",
+      "reason": "unsupported by current compiler slice",
+      "status": "skip",
+      "suite": "tsgo",
+      "target": "reference-coverage"
     }
-  ],
-  "summary": {
-    "total": 8,
-    "passed": 5,
-    "failed": 2,
-    "skipped": 1
-  }
+  ]
 }

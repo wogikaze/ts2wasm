@@ -110,6 +110,15 @@ Follow-up issues:
 
 Start from the existing `web-ui/src/hooks/useData.ts` shapes and avoid changing the UI contract unless the generator cannot represent required repository data.
 
+## Progress evidence
+
+2026-04-29:
+
+- Added `mise run web-ui-data`, dispatched through `scripts/manager.py`, to generate `web-ui/public/data/test-results.json`, `coverage.json`, `history.json`, and `metadata.json`.
+- Added `scripts/gen/web-ui-data.py`; it reads coverage totals from `artifacts/coverage/results/test262.json`, `artifacts/coverage/results/tsc.json`, and `artifacts/coverage/results/tsgo.json`, and can merge per-case JSONL test records with `--test-jsonl`.
+- Verified `mise run web-ui-data` succeeds and refreshes all required web UI data files from existing artifacts.
+- Remaining integration: `mise run reference-coverage -- --web-ui` and `mise run test262 -- --web-ui` are not wired in this slice; use the documented equivalent `mise run web-ui-data`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
