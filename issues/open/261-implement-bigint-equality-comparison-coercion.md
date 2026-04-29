@@ -1,11 +1,11 @@
 ---
-id: 258
+id: 261
 title: "Implement BigInt equality comparison and coercion boundaries"
 type: feature
 area: runtime/semantics
 class: implementation-ready
 priority: P2
-depends_on: [256]
+depends_on: [259]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -20,16 +20,16 @@ Problem: BigInt cannot share the current primitive equality/comparison helpers b
 ## Current failure
 
 ```sh
-tmp=/tmp/ts2wasm-258-bigint-comparison.ts
+tmp=/tmp/ts2wasm-261-bigint-comparison.ts
 printf 'console.log(1n === 1n); console.log(1n === 1); console.log(1n == "1"); console.log(2n > 1);\n' > "$tmp"
-cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-258-bigint-comparison.wasm
+cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-261-bigint-comparison.wasm
 ```
 
 Current result: unsupported BigInt runtime/operator diagnostics.
 
 ## Desired final state
 
-BigInt equality and relational comparison match Node for supported primitive values. Mixed arithmetic remains issue 257, but equality/comparison use the ECMA-262 coercion rules rather than treating BigInt as a generic object pointer.
+BigInt equality and relational comparison match Node for supported primitive values. Mixed arithmetic remains issue 260, but equality/comparison use the ECMA-262 coercion rules rather than treating BigInt as a generic object pointer.
 
 ## Scope
 
@@ -42,10 +42,10 @@ In scope:
 
 Out of scope:
 
-- BigInt literal allocation; issue 256.
-- BigInt arithmetic; issue 257.
+- BigInt literal allocation; issue 259.
+- BigInt arithmetic; issue 260.
 - Object `ToPrimitive` beyond the current object model.
-- BigInt builtins; issue 259.
+- BigInt builtins; issue 262.
 
 ## Affected paths
 

@@ -1,5 +1,5 @@
 ---
-id: 256
+id: 259
 title: "Implement BigInt literal runtime values"
 type: feature
 area: runtime/semantics
@@ -20,9 +20,9 @@ Problem: BigInt literals parse as explicit AST nodes, but build/runtime phases s
 ## Current failure
 
 ```sh
-tmp=/tmp/ts2wasm-256-bigint-literal.ts
+tmp=/tmp/ts2wasm-259-bigint-literal.ts
 printf 'console.log(1n);\nconsole.log(0x10n);\nconsole.log(Boolean(0n));\n' > "$tmp"
-cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-256-bigint-literal.wasm
+cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-259-bigint-literal.wasm
 ```
 
 Current result: issue-linked unsupported BigInt runtime diagnostic.
@@ -43,9 +43,9 @@ In scope:
 Out of scope:
 
 - Numeric separator syntax; tracked by issue 243.
-- BigInt arithmetic operators; tracked by issue 257.
-- BigInt equality/comparison/coercion; tracked by issue 258.
-- Broader BigInt builtins such as `BigInt.asIntN`; tracked by issue 259.
+- BigInt arithmetic operators; tracked by issue 260.
+- BigInt equality/comparison/coercion; tracked by issue 261.
+- Broader BigInt builtins such as `BigInt.asIntN`; tracked by issue 262.
 
 ## Affected paths
 

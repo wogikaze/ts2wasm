@@ -1,11 +1,11 @@
 ---
-id: 257
+id: 260
 title: "Implement BigInt arithmetic operators"
 type: feature
 area: runtime/semantics
 class: implementation-ready
 priority: P2
-depends_on: [256]
+depends_on: [259]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -20,9 +20,9 @@ Problem: Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime h
 ## Current failure
 
 ```sh
-tmp=/tmp/ts2wasm-257-bigint-arithmetic.ts
+tmp=/tmp/ts2wasm-260-bigint-arithmetic.ts
 printf 'console.log(1n + 2n); console.log(5n / 2n); console.log(-0n);\n' > "$tmp"
-cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-257-bigint-arithmetic.wasm
+cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-260-bigint-arithmetic.wasm
 ```
 
 Current result: unsupported BigInt runtime/operator diagnostics.
@@ -42,9 +42,9 @@ In scope:
 
 Out of scope:
 
-- BigInt literal allocation; issue 256.
-- Equality/relational comparison/coercion; issue 258.
-- BigInt builtins; issue 259.
+- BigInt literal allocation; issue 259.
+- Equality/relational comparison/coercion; issue 261.
+- BigInt builtins; issue 262.
 - Bitwise and exponentiation operators unless explicitly split from this issue.
 
 ## Affected paths

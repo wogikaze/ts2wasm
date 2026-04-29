@@ -6,7 +6,7 @@ area: runtime/semantics
 class: design-ready
 priority: P2
 depends_on: []
-blocks: [256, 257, 258, 259]
+blocks: [259, 260, 261, 262]
 created: 2026-04-29
 updated: 2026-04-29
 completed: 2026-04-29
@@ -147,4 +147,4 @@ date: 2026-04-29
 
 Remaining risks:
 
-- Implementation remains split across issues 256-259.
+- Implementation remains split across issues 259-262.
