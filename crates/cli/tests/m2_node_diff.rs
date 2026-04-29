@@ -615,6 +615,11 @@ fn set_constructor_array_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn set_identity_number_string_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/set-identity-number-string.ts");
+}
+
+#[test]
 fn date_epoch_get_time_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-epoch-get-time.ts");
 }
