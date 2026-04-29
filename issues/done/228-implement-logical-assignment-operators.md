@@ -71,7 +71,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 750
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 750
 ```
 
 Not run:
@@ -127,10 +127,10 @@ result: pass; stdout exercised skipped and evaluated static member ||= behavior
 node fixtures/core-semantics/logical-assignment-index.ts
 result: pass; stdout exercised string-literal computed ||=, ??=, and &&= behavior
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 750
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 750
 result: pass; unsupported_features=eval:461,name-resolution:128,string-builtin:63,regexp-literal:44,legacy-global-builtin:16,parser-syntax:16,date:13,function:6,builtin-api:1,object-literal:1; no logical-assignment label
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail
 result: pass; 3 files executed; unsupported_features=name-resolution:3
 ```
 

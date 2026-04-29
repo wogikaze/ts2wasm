@@ -49,7 +49,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] The close boundary is explicit: suite `test262`, limit `17000`, command `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --detail`, expected `unknown-unsupported=0`.
+- [x] The close boundary is explicit: suite `test262`, limit `17000`, command `TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 17000 --detail`, expected `unknown-unsupported=0`.
 - [x] Any incomplete tsc/tsgo external-reference condition is recorded as residual risk or follow-up.
 - [x] Future unknown-unsupported work has a separate issue pattern: create a dedicated ramp issue with explicit suite, limit, command, and expected `unknown-unsupported` count.
 
@@ -67,7 +67,7 @@ mise run check issues
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 17000 --detail
 ```
 
 Not run:
@@ -83,7 +83,7 @@ Commits:
 Validation result:
 
 ```text
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --detail
+command: TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 17000 --detail
 result: pass; executed=17000; build_pass=5; semantic_pass=3; unsupported=16994; blocked=1; unknown-unsupported=0
 date: 2026-04-29
 
@@ -94,5 +94,5 @@ date: 2026-04-29
 
 Remaining risks:
 
-- The assigned `/home/wogikaze/wgkz/ts2wasm/reference` root lacks `TypeScript`, so exact tsc validation from that root remains a residual external-reference risk. Existing issue-060 tsc evidence used `/tmp/ts2wasm-issue060-reference`.
+- The assigned `./reference` root lacks `TypeScript`, so exact tsc validation from that root remains a residual external-reference risk. Existing issue-060 tsc evidence used `/tmp/ts2wasm-issue060-reference`.
 - Future unknown-unsupported expansion should not reopen this parent spike; file fixed-window ramp issues instead.

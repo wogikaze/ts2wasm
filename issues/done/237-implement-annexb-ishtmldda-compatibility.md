@@ -72,7 +72,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail
 ```
 
 Not run:
@@ -100,7 +100,7 @@ Split from issue 228 close audit after the reference files stopped reporting the
 2026-04-28 progress:
 
 - Policy slice selected: unsupported host/browser compatibility form. The unshadowed test262 host hook `$262.IsHTMLDDA` now reports `UnsupportedSyntax` with `issue-237` instead of falling through to generic `UnresolvedName` on `$262`.
-- Reference classification evidence: `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail` executes the three logical-assignment emulates-undefined cases and reports `unsupported=3`, `unsupported_diagcodes=UnsupportedSyntax:3`, `unsupported_features=logical-assignment:3`; per-file details cover `emulates-undefined-and.js`, `emulates-undefined-coalesce.js`, and `emulates-undefined-or.js`.
+- Reference classification evidence: `TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail` executes the three logical-assignment emulates-undefined cases and reports `unsupported=3`, `unsupported_diagcodes=UnsupportedSyntax:3`, `unsupported_features=logical-assignment:3`; per-file details cover `emulates-undefined-and.js`, `emulates-undefined-coalesce.js`, and `emulates-undefined-or.js`.
 - Direct diagnostic evidence: building `reference/test262/test/annexB/language/expressions/logical-assignment/emulates-undefined-or.js` reports `[UnsupportedSyntax] issue-237: Annex B [[IsHTMLDDA]] test262 host hook`$262.IsHTMLDDA`is not modeled; document.all compatibility semantics are unsupported`.
 - Regression fixture evidence: `fixtures/core-semantics/annexb-ishtmldda-unsupported.ts` plus `annexb_ishtmldda_host_hook_reports_issue_237` verifies the issue-linked diagnostic through the CLI.
 - This is progress only. Full `[[IsHTMLDDA]]` truthiness/nullish/equality semantics, `reference/test262/test/annexB/built-ins/Object/is/emulates-undefined.js`, and full `cargo nextest run` close evidence remain open.
@@ -109,8 +109,8 @@ Split from issue 228 close audit after the reference files stopped reporting the
 
 - Policy selected: reject Annex B `[[IsHTMLDDA]]` host/browser compatibility forms as unsupported rather than modeling or shimming `document.all` semantics.
 - Commit `4a60707` adds focused unsupported fixtures for equality, `if` truthiness, `typeof`, and `&&=` / `||=` / `??=` RHS forms, all verified by `annexb_ishtmldda_host_hook_reports_issue_237`.
-- Reference classification evidence: `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail` reports `unsupported=3`, `unsupported_diagcodes=UnsupportedSyntax:3`, and `unsupported_features=annexb-ishtmldda:3` for the `emulates-undefined-and.js`, `emulates-undefined-coalesce.js`, and `emulates-undefined-or.js` cases.
-- Reference classification evidence: `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/expressions/typeof/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail` reports `unsupported=3`, `unsupported_diagcodes=UnsupportedSyntax:3`, and `unsupported_features=annexb-ishtmldda:3`.
+- Reference classification evidence: `TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail` reports `unsupported=3`, `unsupported_diagcodes=UnsupportedSyntax:3`, and `unsupported_features=annexb-ishtmldda:3` for the `emulates-undefined-and.js`, `emulates-undefined-coalesce.js`, and `emulates-undefined-or.js` cases.
+- Reference classification evidence: `TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/expressions/typeof/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail` reports `unsupported=3`, `unsupported_diagcodes=UnsupportedSyntax:3`, and `unsupported_features=annexb-ishtmldda:3`.
 - Direct diagnostic evidence: building `reference/test262/test/annexB/built-ins/Object/is/emulates-undefined.js` reports `[UnsupportedSyntax] issue-237: Annex B [[IsHTMLDDA]] test262 host hook`$262.IsHTMLDDA`is not modeled; document.all compatibility semantics are unsupported`.
 
 ## Completion evidence
@@ -130,11 +130,11 @@ command: cargo nextest run -p ts2wasm-cli annexb_ishtmldda
 result: pass; 1 passed, 234 skipped
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail
+command: TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/logical-assignment/ --detail
 result: pass; unsupported=3; unsupported_diagcodes=UnsupportedSyntax:3; unsupported_features=annexb-ishtmldda:3
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/expressions/typeof/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail
+command: TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/expressions/typeof/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail
 result: pass; unsupported=3; unsupported_diagcodes=UnsupportedSyntax:3; unsupported_features=annexb-ishtmldda:3
 date: 2026-04-28
 

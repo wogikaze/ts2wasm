@@ -69,7 +69,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 750
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 750
 ```
 
 Not run:
@@ -111,7 +111,7 @@ Reference-backed affected files in the limit-750 window:
 - Filtered reference evidence:
 
 ```text
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter legacy-octal-escape-sequence --limit 750 --detail
+command: TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter legacy-octal-escape-sequence --limit 750 --detail
 result: PASS; unsupported_features no longer includes legacy-octal-escape. The two Annex B template legacy-octal cases now classify as name-resolution after escape handling.
 date: 2026-04-28
 ```
@@ -140,7 +140,7 @@ command: cargo test -p ts2wasm-cli --test m2_node_diff template_literal -- --noc
 result: passed; 3 passed, including the existing interpolation fixture, non-strict legacy octal differential fixture, and strict issue-229 diagnostic fixture.
 date: 2026-04-28
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter legacy-octal-escape-sequence --limit 750 --detail
+command: TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter legacy-octal-escape-sequence --limit 750 --detail
 result: passed; unsupported_features were name-resolution:4, template-literal:3, function:1, with no legacy-octal-escape label. The two Annex B template legacy-octal cases classified as name-resolution.
 date: 2026-04-28
 

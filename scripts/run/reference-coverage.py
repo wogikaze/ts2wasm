@@ -48,8 +48,8 @@ SUITE_METADATA = {
     },
     "tsc": {
         "name": "TypeScript compiler cases",
-        "repo_path": REFERENCE_ROOT / "TypeScript",
-        "path": REFERENCE_ROOT / "TypeScript" / "tests" / "cases" / "compiler",
+        "repo_path": REFERENCE_ROOT / "typescript",
+        "path": REFERENCE_ROOT / "typescript" / "tests" / "cases" / "compiler",
         "pattern": "reference/typescript/tests/cases/compiler/**/*.ts",
         "clone_cmd": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/typescript",
         "clone_hint": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/typescript",
@@ -526,6 +526,7 @@ def main():
             if not file_path.is_file():
                 continue
             executed += 1
+            detail_path = repo_relative(file_path)
             
             out_wasm = tmp_dir / "out.wasm"
             err_file = tmp_dir / "err.txt"
@@ -561,13 +562,13 @@ def main():
                         semantic_pass_count += 1
                 
                 if detail_output:
-                    file_details.append(f"{file_path}: build_pass")
+                    file_details.append(f"{detail_path}: build_pass")
                 continue
             
             if result.returncode == 124:  # timeout
                 blocked_count += 1
                 if detail_output:
-                    file_details.append(f"{file_path}: blocked")
+                    file_details.append(f"{detail_path}: blocked")
                 continue
             
             # Extract diagnostic code
@@ -578,18 +579,18 @@ def main():
             if diag_code == "BackendIo":
                 blocked_count += 1
                 if detail_output:
-                    file_details.append(f"{file_path}: blocked")
+                    file_details.append(f"{detail_path}: blocked")
             elif diag_code == "InvariantViolation":
                 fail_count += 1
                 if detail_output:
-                    file_details.append(f"{file_path}: fail: InvariantViolation")
+                    file_details.append(f"{detail_path}: fail: InvariantViolation")
             else:
                 unsupported_count += 1
                 feature_label_result = feature_label(diag_code, err_content, str(file_path))
                 unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
                 unsupported_feature_counts[feature_label_result] = unsupported_feature_counts.get(feature_label_result, 0) + 1
                 if detail_output:
-                    file_details.append(f"{file_path}: {diag_code}: {feature_label_result}")
+                    file_details.append(f"{detail_path}: {diag_code}: {feature_label_result}")
     
     # Build unsupported diagcodes string
     unsupported_diagcodes = ",".join(
