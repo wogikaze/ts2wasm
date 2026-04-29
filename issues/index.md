@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 197 | 129 | 68 |
+| frontend | 197 | 128 | 69 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 322 | 148 | 174 |
+| total | 322 | 147 | 175 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -55,7 +55,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 291 | Provide Object global binding for test262 cases | feature | runtime/semantics | implementation-ready | P2 |  | Several test262 cases fail before semantic comparison because the global `Object` binding is unresolved. |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
-| 293 | Parse Unicode escaped identifier parts | feature | frontend | implementation-ready | P2 |  | Identifier coverage repeatedly rejects backslash escapes inside Unicode identifier parts. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -378,6 +377,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 286 | Classify expected negative SyntaxError tests correctly | bug | reference/tests | see `issues/done/286-classify-negative-syntax-tests-correctly.md` |
 | 287 | Fix arguments-object arity mismatch bucket | bug | runtime/semantics | see `issues/done/287-fix-arguments-object-arity-mismatch.md` |
 | 290 | Fix ASI EOF semicolon parser bucket | bug | frontend | see `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` |
+| 293 | Parse Unicode escaped identifier parts | feature | frontend | see `issues/done/293-parse-unicode-escaped-identifier-parts.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
