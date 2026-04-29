@@ -537,7 +537,8 @@ fn validate_stmt(
         Stmt::Expr { .. } => Ok(()),
         Stmt::Function { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message: "nested function declarations are not supported in this milestone".to_owned(),
+            message: "issue-062c: nested function declarations are not supported in this milestone"
+                .to_owned(),
             span: Some(*span),
         }),
         Stmt::Throw { .. } => Ok(()),
@@ -737,6 +738,7 @@ mod tests {
         let program = parse_program("if (true) { function f() { return 1; } }").unwrap();
         let err = validate_ast(&program).unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-062c"));
     }
 
     #[test]
