@@ -47,6 +47,7 @@ impl NameResolver {
             "String",
             "Number",
             "Boolean",
+            "BigInt",
             "Math",
             "Date",
             "RegExp",

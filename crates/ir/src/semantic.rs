@@ -444,6 +444,10 @@ impl<'a> HirLowerer<'a> {
                 index: Box::new(self.lower_expr(index)?),
             }),
             ResolvedExpr::Call { callee, args, .. } => match callee.as_ref() {
+                ResolvedExpr::Ident(name) if name == "String" => {
+                    let _ = args;
+                    Err(unsupported("String(...) calls in initial HIR slice"))
+                }
                 ResolvedExpr::Ident(name) => {
                     let function =
                         self.function_ids
