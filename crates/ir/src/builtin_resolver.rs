@@ -1998,6 +1998,14 @@ fn fold_bigint_static_abstract_equality(
     } else if let (ResolvedExpr::Number(value), Some(bigint)) = (left, bigint_from_resolved(right))
     {
         Some((bigint, Some(bigint_from_i32(*value))))
+    } else if bigint_from_resolved(left).is_some()
+        && matches!(right, ResolvedExpr::Null | ResolvedExpr::Undefined)
+    {
+        Some((BigIntConst::zero(), None))
+    } else if matches!(left, ResolvedExpr::Null | ResolvedExpr::Undefined)
+        && bigint_from_resolved(right).is_some()
+    {
+        Some((BigIntConst::zero(), None))
     } else {
         None
     };
@@ -2409,12 +2417,21 @@ impl BigIntRuntimeGuard {
                                 right,
                                 right_info.as_ref(),
                             );
+                        let static_bigint_nullish_equality =
+                            is_static_bigint_nullish_abstract_equality(
+                                left,
+                                left_info.as_ref(),
+                                *op,
+                                right,
+                                right_info.as_ref(),
+                            );
                         if both_bigint || strict_equality {
                             return Ok(None);
                         }
                         if static_bigint_string_equality
                             || static_bigint_boolean_equality
                             || static_bigint_number_equality
+                            || static_bigint_nullish_equality
                         {
                             return Ok(None);
                         }
@@ -2684,6 +2701,25 @@ fn is_static_bigint_number_abstract_equality(
     let right_static_bigint = right_info.is_some_and(|info| {
         !info.runtime_needed && info.value.is_some() && matches!(left, Expr::Number { .. })
     });
+    left_static_bigint || right_static_bigint
+}
+
+fn is_static_bigint_nullish_abstract_equality(
+    left: &Expr,
+    left_info: Option<&BigIntStaticInfo>,
+    op: BinaryOp,
+    right: &Expr,
+    right_info: Option<&BigIntStaticInfo>,
+) -> bool {
+    if !matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual) {
+        return false;
+    }
+    let right_nullish = matches!(right, Expr::Null { .. } | Expr::Undefined { .. });
+    let left_nullish = matches!(left, Expr::Null { .. } | Expr::Undefined { .. });
+    let left_static_bigint =
+        left_info.is_some_and(|info| !info.runtime_needed && info.value.is_some() && right_nullish);
+    let right_static_bigint =
+        right_info.is_some_and(|info| !info.runtime_needed && info.value.is_some() && left_nullish);
     left_static_bigint || right_static_bigint
 }
 

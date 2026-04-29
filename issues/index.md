@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 74 | 17 | 57 |
+| runtime | 76 | 19 | 57 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 309 | 151 | 158 |
+| total | 311 | 153 | 158 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -199,6 +199,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
+| 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | 259, 261 | Implement BigInt/Number edge equality and comparison |
+| 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | 259, 261 | Implement dynamic BigInt mixed coercion |
 <!-- generated:blocked:end -->
 
 ## Done queue
