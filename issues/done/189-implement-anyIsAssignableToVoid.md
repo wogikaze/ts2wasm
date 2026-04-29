@@ -2,7 +2,7 @@
 id: 189
 title: "Implement Anyisassignabletovoid"
 type: spike
-area: reference
+area: frontend/syntax
 class: docs-ready
 priority: P1
 depends_on: []

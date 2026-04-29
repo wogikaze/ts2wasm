@@ -2,7 +2,7 @@
 id: 090
 title: "Implement Acceptablealias"
 type: spike
-area: reference
+area: frontend/syntax
 class: triage-needed
 priority: P1
 depends_on: []
@@ -64,7 +64,7 @@ Expected:
 
 Do not touch:
 
-- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
+- unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
 
 ## Acceptance criteria
 

@@ -25,6 +25,7 @@ from issue_common import (
     render_blocked_table,
     render_done_table,
     render_ready_table,
+    render_summary_table,
     replace_generated_block,
     truncate,
     version_key,
@@ -46,6 +47,12 @@ def render_index(index_content: str, issues: list[Issue]) -> str:
 
     next_content = replace_generated_block(
         index_content,
+        "<!-- generated:summary:start -->",
+        "<!-- generated:summary:end -->",
+        render_summary_table(issues),
+    )
+    next_content = replace_generated_block(
+        next_content,
         "<!-- generated:ready:start -->",
         "<!-- generated:ready:end -->",
         render_ready_table(open_issues, open_ids, blocked_ids),

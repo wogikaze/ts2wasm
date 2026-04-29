@@ -2,7 +2,7 @@
 id: 066
 title: "Implement RegExp literal support"
 type: spike
-area: reference
+area: runtime/builtins
 class: triage-needed
 priority: P1
 depends_on: []
@@ -60,15 +60,15 @@ Out of scope:
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
-- `crates/frontend/src/`
+- `crates/backend-wasm/src/`
+- `crates/runtime-abi/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- parser/resolver code unless `reference-triage` proves the failure happens before runtime lowering
 
 ## Acceptance criteria
 

@@ -2,7 +2,7 @@
 id: 068
 title: "Implement unsupported expression types"
 type: spike
-area: reference
+area: frontend/semantics
 class: triage-needed
 priority: P1
 depends_on: []
@@ -60,15 +60,14 @@ Out of scope:
 
 Expected:
 
-- `issues/open/`
-- `scripts/run/reference-triage.py`
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
 
 ## Acceptance criteria
 

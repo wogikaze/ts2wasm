@@ -4,6 +4,29 @@ This file is the human entrypoint for the issue queue.
 
 Issue files are the source of truth for work items. The generated section below may be replaced by a script or pasted manually from a generated report.
 
+## Summary
+
+<!-- generated:summary:start -->
+| Area | Total | Open | Resolved |
+|---|---:|---:|---:|
+| abi | 2 | 0 | 2 |
+| backend | 4 | 1 | 3 |
+| cli | 3 | 0 | 3 |
+| compiler | 1 | 0 | 1 |
+| docs | 2 | 0 | 2 |
+| frontend | 181 | 132 | 49 |
+| ir | 6 | 0 | 6 |
+| issues | 4 | 0 | 4 |
+| parser | 1 | 0 | 1 |
+| reference | 2 | 2 | 0 |
+| runtime | 52 | 11 | 41 |
+| scripts | 2 | 0 | 2 |
+| security | 1 | 0 | 1 |
+| tests | 5 | 0 | 5 |
+| wasi | 1 | 0 | 1 |
+| total | 267 | 146 | 121 |
+<!-- generated:summary:end -->
+
 ## Reading rules
 
 - Start with `Ready queue`.
@@ -40,135 +63,135 @@ Issue files are the source of truth for work items. The generated section below 
 | 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS |
-| 062 | Implement function support | feature | frontend | class: blocked | Implement function support |
-| 064 | Implement name resolution | spike | reference | class: triage-needed | Implement name resolution |
-| 066 | Implement RegExp literal support | spike | reference | class: triage-needed | Implement RegExp literal support |
-| 067 | Investigate and classify unknown-unsupported cases | spike | reference | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 068 | Implement unsupported expression types | spike | reference | class: triage-needed | Implement unsupported expression types |
-| 069 | Implement Apilibcheck | spike | reference | class: triage-needed | Implement Apilibcheck |
-| 070 | Implement Apisample | spike | reference | class: triage-needed | Implement Apisample |
-| 071 | Implement Arrowfunctionexpression | spike | reference | class: triage-needed | Implement Arrowfunctionexpression |
-| 072 | Implement Classdeclaration | spike | reference | class: triage-needed | Implement Classdeclaration |
-| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | reference | class: triage-needed | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
-| 074 | Implement Declarationerrorsnoemitonerror | spike | reference | class: triage-needed | Implement Declarationerrorsnoemitonerror |
-| 075 | Implement Exportassignment | spike | reference | class: triage-needed | Implement Exportassignment |
-| 076 | Implement Functiondeclaration | spike | reference | class: triage-needed | Implement Functiondeclaration |
-| 078 | Implement Memberaccessordeclaration | spike | reference | class: triage-needed | Implement Memberaccessordeclaration |
-| 079 | Implement Parameterlist | spike | reference | class: triage-needed | Implement Parameterlist |
-| 080 | Implement Systemmoduleforstatementnoinitializer | spike | reference | class: triage-needed | Implement Systemmoduleforstatementnoinitializer |
-| 081 | Implement Transportstream | spike | reference | class: triage-needed | Implement Transportstream |
-| 082 | Implement Abstractclassinlocalscope | spike | reference | class: triage-needed | Implement Abstractclassinlocalscope |
-| 083 | Implement Abstractclassinlocalscopeisabstract | spike | reference | class: triage-needed | Implement Abstractclassinlocalscopeisabstract |
-| 084 | Implement Abstractclassunioninstantiation | spike | reference | class: triage-needed | Implement Abstractclassunioninstantiation |
-| 086 | Implement Abstractpropertybasics | spike | reference | class: triage-needed | Implement Abstractpropertybasics |
-| 087 | Implement Abstractpropertyinconstructor | spike | reference | class: triage-needed | Implement Abstractpropertyinconstructor |
-| 088 | Implement Abstractpropertynegative | spike | reference | class: triage-needed | Implement Abstractpropertynegative |
-| 089 | Implement Acceptsymbolasweaktype | spike | reference | class: triage-needed | Implement Acceptsymbolasweaktype |
-| 090 | Implement Acceptablealias | spike | reference | class: triage-needed | Implement Acceptablealias |
-| 091 | Implement Accessinstancememberfromstaticmethod | spike | reference | class: triage-needed | Implement Accessinstancememberfromstaticmethod |
-| 092 | Implement Accessoverriddenbaseclassmember | spike | reference | class: triage-needed | Implement Accessoverriddenbaseclassmember |
-| 093 | Implement Accessstaticmemberfrominstancemethod | spike | reference | class: triage-needed | Implement Accessstaticmemberfrominstancemethod |
-| 094 | Implement Accessoraccidentalcalldiagnostic | spike | reference | class: triage-needed | Implement Accessoraccidentalcalldiagnostic |
-| 096 | Implement Accessordeclarationemitjs | spike | reference | class: triage-needed | Implement Accessordeclarationemitjs |
-| 097 | Implement Accessordeclarationemitvisibilityerrors | spike | reference | class: triage-needed | Implement Accessordeclarationemitvisibilityerrors |
-| 098 | Implement Accessordeclarationorder | spike | reference | class: triage-needed | Implement Accessordeclarationorder |
-| 099 | Implement Accessorinambientcontextes | spike | reference | class: triage-needed | Implement Accessorinambientcontextes |
-| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | reference | class: triage-needed | Implement Accessorinferredreturntypeerrorinreturnstatement |
-| 101 | Implement Accessorparameteraccessibilitymodifier | spike | reference | class: triage-needed | Implement Accessorparameteraccessibilitymodifier |
-| 102 | Implement Accessorwithinitializer | spike | reference | class: triage-needed | Implement Accessorwithinitializer |
-| 103 | Implement Accessorwithlineterminator | spike | reference | class: triage-needed | Implement Accessorwithlineterminator |
-| 104 | Implement Accessorwithrestparam | spike | reference | class: triage-needed | Implement Accessorwithrestparam |
-| 105 | Implement Accessorwithoutbody | spike | reference | class: triage-needed | Implement Accessorwithoutbody |
-| 106 | Implement Accessors | spike | reference | class: triage-needed | Implement Accessors |
-| 107 | Implement Accessorsemit | spike | reference | class: triage-needed | Implement Accessorsemit |
-| 108 | Implement Accessorsinambientcontext | spike | reference | class: triage-needed | Implement Accessorsinambientcontext |
-| 109 | Implement Addmorecallsignaturestobasesignature | spike | reference | class: triage-needed | Implement Addmorecallsignaturestobasesignature |
-| 111 | Implement Aliasassignments | spike | reference | class: triage-needed | Implement Aliasassignments |
-| 112 | Implement Aliasbug | spike | reference | class: triage-needed | Implement Aliasbug |
-| 113 | Implement Aliasdoesnotduplicatesignatures | spike | reference | class: triage-needed | Implement Aliasdoesnotduplicatesignatures |
-| 114 | Implement Aliaserrors | spike | reference | class: triage-needed | Implement Aliaserrors |
-| 115 | Implement Aliasinaccessiblemodule | spike | reference | class: triage-needed | Implement Aliasinaccessiblemodule |
-| 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | reference | class: triage-needed | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
-| 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | reference | class: triage-needed | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
-| 118 | Implement Aliasonmergedmoduleinterface | spike | reference | class: triage-needed | Implement Aliasonmergedmoduleinterface |
-| 119 | Implement Aliasusageinaccessorsofclass | spike | reference | class: triage-needed | Implement Aliasusageinaccessorsofclass |
-| 120 | Implement Aliasusageinarray | spike | reference | class: triage-needed | Implement Aliasusageinarray |
-| 121 | Implement Aliasusageinfunctionexpression | spike | reference | class: triage-needed | Implement Aliasusageinfunctionexpression |
-| 122 | Implement Aliasusageingenericfunction | spike | reference | class: triage-needed | Implement Aliasusageingenericfunction |
-| 123 | Implement Aliasusageinindexerofclass | spike | reference | class: triage-needed | Implement Aliasusageinindexerofclass |
-| 124 | Implement Aliasusageinobjectliteral | spike | reference | class: triage-needed | Implement Aliasusageinobjectliteral |
-| 125 | Implement Aliasusageinorexpression | spike | reference | class: triage-needed | Implement Aliasusageinorexpression |
-| 126 | Implement Aliasusageintypeargumentofextendsclause | spike | reference | class: triage-needed | Implement Aliasusageintypeargumentofextendsclause |
-| 127 | Implement Aliasusageinvarassignment | spike | reference | class: triage-needed | Implement Aliasusageinvarassignment |
-| 128 | Implement Aliasusedasnamevalue | spike | reference | class: triage-needed | Implement Aliasusedasnamevalue |
-| 129 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer | spike | reference | class: triage-needed | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer |
-| 130 | Implement Aliasesinsystemmodule | spike | reference | class: triage-needed | Implement Aliasesinsystemmodule |
-| 131 | Implement Allowimportclausestomergewithtypes | spike | reference | class: triage-needed | Implement Allowimportclausestomergewithtypes |
-| 132 | Implement Allowjsclassthistypecrash | spike | reference | class: triage-needed | Implement Allowjsclassthistypecrash |
-| 133 | Implement Allowjscrossmonorepopackage | spike | reference | class: triage-needed | Implement Allowjscrossmonorepopackage |
-| 134 | Implement Allowjscheckjstypeparameternocrash | spike | reference | class: triage-needed | Implement Allowjscheckjstypeparameternocrash |
-| 135 | Implement Allowsyntheticdefaultimports | spike | reference | class: triage-needed | Implement Allowsyntheticdefaultimports |
-| 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | reference | class: triage-needed | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
-| 137 | Implement Alwaysstrictalreadyusestrict | spike | reference | class: triage-needed | Implement Alwaysstrictalreadyusestrict |
-| 138 | Implement Alwaysstrictmodule | spike | reference | class: triage-needed | Implement Alwaysstrictmodule |
-| 139 | Implement Alwaysstrictnoimplicitusestrict | spike | reference | class: triage-needed | Implement Alwaysstrictnoimplicitusestrict |
-| 140 | Implement Ambientclassdeclarationwithextends | spike | reference | class: triage-needed | Implement Ambientclassdeclarationwithextends |
-| 141 | Implement Ambientclassdeclaredbeforebase | spike | reference | class: triage-needed | Implement Ambientclassdeclaredbeforebase |
-| 142 | Implement Ambientclassmergesoverloadswithinterface | spike | reference | class: triage-needed | Implement Ambientclassmergesoverloadswithinterface |
-| 143 | Implement Ambientclassoverloadforfunction | spike | reference | class: triage-needed | Implement Ambientclassoverloadforfunction |
-| 144 | Implement Ambientconstliterals | spike | reference | class: triage-needed | Implement Ambientconstliterals |
-| 145 | Implement Ambientenum | spike | reference | class: triage-needed | Implement Ambientenum |
-| 146 | Implement Ambientenumelementinitializer | spike | reference | class: triage-needed | Implement Ambientenumelementinitializer |
-| 147 | Implement Ambienterrors | spike | reference | class: triage-needed | Implement Ambienterrors |
-| 148 | Implement Ambientexportdefaulterrors | spike | reference | class: triage-needed | Implement Ambientexportdefaulterrors |
-| 149 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | reference | class: triage-needed | Implement Ambientexternalmoduleinanotherexternalmodule |
-| 150 | Implement Ambientexternalmodulereopen | spike | reference | class: triage-needed | Implement Ambientexternalmodulereopen |
-| 151 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | reference | class: triage-needed | Implement Ambientexternalmodulewithinternalimportdeclaration |
-| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | reference | class: triage-needed | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration |
-| 153 | Implement Ambientexternalmodulewithrelativemodulename | spike | reference | class: triage-needed | Implement Ambientexternalmodulewithrelativemodulename |
-| 154 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | reference | class: triage-needed | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
-| 155 | Implement Ambientfundule | spike | reference | class: triage-needed | Implement Ambientfundule |
-| 156 | Implement Ambientgetters | spike | reference | class: triage-needed | Implement Ambientgetters |
-| 157 | Implement Ambientmoduleexports | spike | reference | class: triage-needed | Implement Ambientmoduleexports |
-| 158 | Implement Ambientmodulewithclassdeclarationwithextends | spike | reference | class: triage-needed | Implement Ambientmodulewithclassdeclarationwithextends |
-| 159 | Implement Ambientmodulewithtemplateliterals | spike | reference | class: triage-needed | Implement Ambientmodulewithtemplateliterals |
-| 160 | Implement Ambientmodules | spike | reference | class: triage-needed | Implement Ambientmodules |
-| 161 | Implement Ambientnamerestrictions | spike | reference | class: triage-needed | Implement Ambientnamerestrictions |
-| 162 | Implement Ambientpropertydeclarationinjs | spike | reference | class: triage-needed | Implement Ambientpropertydeclarationinjs |
-| 163 | Implement Ambientrequirefunction | spike | reference | class: triage-needed | Implement Ambientrequirefunction |
-| 164 | Implement Ambientstatement | spike | reference | class: triage-needed | Implement Ambientstatement |
-| 165 | Implement Ambientwithstatements | spike | reference | class: triage-needed | Implement Ambientwithstatements |
-| 166 | Implement Ambiguouscallswherereturntypesagree | spike | reference | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
-| 167 | Implement Ambiguousgenericassertion | spike | reference | class: triage-needed | Implement Ambiguousgenericassertion |
-| 168 | Implement Ambiguousoverload | spike | reference | class: triage-needed | Implement Ambiguousoverload |
-| 169 | Implement Ambiguousoverloadresolution | spike | reference | class: triage-needed | Implement Ambiguousoverloadresolution |
-| 170 | Implement Amddeclarationemitnoextradeclare | spike | reference | class: triage-needed | Implement Amddeclarationemitnoextradeclare |
-| 171 | Implement Amddependencycomment | spike | reference | class: triage-needed | Implement Amddependencycomment |
-| 172 | Implement Amddependencycommentname | spike | reference | class: triage-needed | Implement Amddependencycommentname |
-| 173 | Implement Amdlikeinputdeclarationemit | spike | reference | class: triage-needed | Implement Amdlikeinputdeclarationemit |
-| 174 | Implement Amdmodulebundlenoduplicatedeclarationemitcomments | spike | reference | class: triage-needed | Implement Amdmodulebundlenoduplicatedeclarationemitcomments |
-| 175 | Implement Amdmoduleconstenumusage | spike | reference | class: triage-needed | Implement Amdmoduleconstenumusage |
-| 176 | Implement Amdmodulename | spike | reference | class: triage-needed | Implement Amdmodulename |
-| 177 | Implement Anonclassdeclarationemitisanon | spike | reference | class: triage-needed | Implement Anonclassdeclarationemitisanon |
-| 178 | Implement Anonterface | spike | reference | class: triage-needed | Implement Anonterface |
-| 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | reference | class: triage-needed | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
-| 180 | Implement Anonymousclassexpression | spike | reference | class: triage-needed | Implement Anonymousclassexpression |
-| 181 | Implement Anonymousmodules | spike | reference | class: triage-needed | Implement Anonymousmodules |
-| 182 | Implement Anyandunknownhavefalsycomponents | spike | reference | class: triage-needed | Implement Anyandunknownhavefalsycomponents |
-| 183 | Implement Anyasreturntypefornewoncall | spike | reference | class: triage-needed | Implement Anyasreturntypefornewoncall |
-| 184 | Implement Anydeclare | spike | reference | class: triage-needed | Implement Anydeclare |
-| 185 | Implement Anyidenticaltoitself | spike | reference | class: triage-needed | Implement Anyidenticaltoitself |
-| 187 | Implement Anyinferenceanonymousfunctions | spike | reference | class: triage-needed | Implement Anyinferenceanonymousfunctions |
-| 192 | Implement Argsinscope | spike | reference | class: triage-needed | Implement Argsinscope |
-| 193 | Implement Arguments | spike | reference | class: triage-needed | Implement Arguments |
-| 194 | Implement Argumentsaspropertyname | spike | reference | class: triage-needed | Implement Argumentsaspropertyname |
-| 195 | Implement Argumentsbindstofunctionscopeargumentlist | spike | reference | class: triage-needed | Implement Argumentsbindstofunctionscopeargumentlist |
-| 196 | Implement Argumentsobjectcreatesrestforjs | spike | reference | class: triage-needed | Implement Argumentsobjectcreatesrestforjs |
-| 197 | Implement Argumentsobjectiterator | spike | reference | class: triage-needed | Implement Argumentsobjectiterator |
-| 198 | Implement Argumentspropertynameinjsmode | spike | reference | class: triage-needed | Implement Argumentspropertynameinjsmode |
-| 199 | Implement Compiler | spike | reference | class: triage-needed | Implement Compiler |
-| 200 | Implement parser syntax extensions | spike | reference | class: triage-needed | Implement parser syntax extensions |
-| 201 | Investigate and classify unknown-unsupported cases | spike | reference | class: triage-needed | Investigate and classify unknown-unsupported cases |
+| 062 | Implement function support | feature | frontend/semantics | class: blocked | Implement function support |
+| 064 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
+| 066 | Implement RegExp literal support | spike | runtime/builtins | class: triage-needed | Implement RegExp literal support |
+| 067 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
+| 068 | Implement unsupported expression types | spike | frontend/semantics | class: triage-needed | Implement unsupported expression types |
+| 069 | Implement Apilibcheck | spike | frontend/syntax | class: triage-needed | Implement Apilibcheck |
+| 070 | Implement Apisample | spike | frontend/syntax | class: triage-needed | Implement Apisample |
+| 071 | Implement Arrowfunctionexpression | spike | frontend/syntax | class: triage-needed | Implement Arrowfunctionexpression |
+| 072 | Implement Classdeclaration | spike | frontend/syntax | class: triage-needed | Implement Classdeclaration |
+| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | class: triage-needed | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
+| 074 | Implement Declarationerrorsnoemitonerror | spike | frontend/syntax | class: triage-needed | Implement Declarationerrorsnoemitonerror |
+| 075 | Implement Exportassignment | spike | frontend/syntax | class: triage-needed | Implement Exportassignment |
+| 076 | Implement Functiondeclaration | spike | frontend/syntax | class: triage-needed | Implement Functiondeclaration |
+| 078 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: triage-needed | Implement Memberaccessordeclaration |
+| 079 | Implement Parameterlist | spike | frontend/syntax | class: triage-needed | Implement Parameterlist |
+| 080 | Implement Systemmoduleforstatementnoinitializer | spike | frontend/syntax | class: triage-needed | Implement Systemmoduleforstatementnoinitializer |
+| 081 | Implement Transportstream | spike | frontend/syntax | class: triage-needed | Implement Transportstream |
+| 082 | Implement Abstractclassinlocalscope | spike | frontend/resolver | class: triage-needed | Implement Abstractclassinlocalscope |
+| 083 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/resolver | class: triage-needed | Implement Abstractclassinlocalscopeisabstract |
+| 084 | Implement Abstractclassunioninstantiation | spike | frontend/syntax | class: triage-needed | Implement Abstractclassunioninstantiation |
+| 086 | Implement Abstractpropertybasics | spike | frontend/syntax | class: triage-needed | Implement Abstractpropertybasics |
+| 087 | Implement Abstractpropertyinconstructor | spike | frontend/syntax | class: triage-needed | Implement Abstractpropertyinconstructor |
+| 088 | Implement Abstractpropertynegative | spike | frontend/syntax | class: triage-needed | Implement Abstractpropertynegative |
+| 089 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | class: triage-needed | Implement Acceptsymbolasweaktype |
+| 090 | Implement Acceptablealias | spike | frontend/syntax | class: triage-needed | Implement Acceptablealias |
+| 091 | Implement Accessinstancememberfromstaticmethod | spike | frontend/syntax | class: triage-needed | Implement Accessinstancememberfromstaticmethod |
+| 092 | Implement Accessoverriddenbaseclassmember | spike | frontend/syntax | class: triage-needed | Implement Accessoverriddenbaseclassmember |
+| 093 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/syntax | class: triage-needed | Implement Accessstaticmemberfrominstancemethod |
+| 094 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/syntax | class: triage-needed | Implement Accessoraccidentalcalldiagnostic |
+| 096 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: triage-needed | Implement Accessordeclarationemitjs |
+| 097 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: triage-needed | Implement Accessordeclarationemitvisibilityerrors |
+| 098 | Implement Accessordeclarationorder | spike | frontend/syntax | class: triage-needed | Implement Accessordeclarationorder |
+| 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | class: triage-needed | Implement Accessorinambientcontextes |
+| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: triage-needed | Implement Accessorinferredreturntypeerrorinreturnstatement |
+| 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | class: triage-needed | Implement Accessorparameteraccessibilitymodifier |
+| 102 | Implement Accessorwithinitializer | spike | frontend/syntax | class: triage-needed | Implement Accessorwithinitializer |
+| 103 | Implement Accessorwithlineterminator | spike | frontend/syntax | class: triage-needed | Implement Accessorwithlineterminator |
+| 104 | Implement Accessorwithrestparam | spike | frontend/syntax | class: triage-needed | Implement Accessorwithrestparam |
+| 105 | Implement Accessorwithoutbody | spike | frontend/syntax | class: triage-needed | Implement Accessorwithoutbody |
+| 106 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
+| 107 | Implement Accessorsemit | spike | frontend/syntax | class: triage-needed | Implement Accessorsemit |
+| 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | class: triage-needed | Implement Accessorsinambientcontext |
+| 109 | Implement Addmorecallsignaturestobasesignature | spike | frontend/resolver | class: triage-needed | Implement Addmorecallsignaturestobasesignature |
+| 111 | Implement Aliasassignments | spike | frontend/syntax | class: triage-needed | Implement Aliasassignments |
+| 112 | Implement Aliasbug | spike | frontend/syntax | class: triage-needed | Implement Aliasbug |
+| 113 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: triage-needed | Implement Aliasdoesnotduplicatesignatures |
+| 114 | Implement Aliaserrors | spike | frontend/syntax | class: triage-needed | Implement Aliaserrors |
+| 115 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | class: triage-needed | Implement Aliasinaccessiblemodule |
+| 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: triage-needed | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
+| 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: triage-needed | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
+| 118 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: triage-needed | Implement Aliasonmergedmoduleinterface |
+| 119 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: triage-needed | Implement Aliasusageinaccessorsofclass |
+| 120 | Implement Aliasusageinarray | spike | frontend/syntax | class: triage-needed | Implement Aliasusageinarray |
+| 121 | Implement Aliasusageinfunctionexpression | spike | frontend/syntax | class: triage-needed | Implement Aliasusageinfunctionexpression |
+| 122 | Implement Aliasusageingenericfunction | spike | frontend/syntax | class: triage-needed | Implement Aliasusageingenericfunction |
+| 123 | Implement Aliasusageinindexerofclass | spike | frontend/syntax | class: triage-needed | Implement Aliasusageinindexerofclass |
+| 124 | Implement Aliasusageinobjectliteral | spike | frontend/syntax | class: triage-needed | Implement Aliasusageinobjectliteral |
+| 125 | Implement Aliasusageinorexpression | spike | frontend/syntax | class: triage-needed | Implement Aliasusageinorexpression |
+| 126 | Implement Aliasusageintypeargumentofextendsclause | spike | frontend/syntax | class: triage-needed | Implement Aliasusageintypeargumentofextendsclause |
+| 127 | Implement Aliasusageinvarassignment | spike | frontend/syntax | class: triage-needed | Implement Aliasusageinvarassignment |
+| 128 | Implement Aliasusedasnamevalue | spike | frontend/syntax | class: triage-needed | Implement Aliasusedasnamevalue |
+| 129 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer | spike | frontend/syntax | class: triage-needed | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer |
+| 130 | Implement Aliasesinsystemmodule | spike | frontend/syntax | class: triage-needed | Implement Aliasesinsystemmodule |
+| 131 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | class: triage-needed | Implement Allowimportclausestomergewithtypes |
+| 132 | Implement Allowjsclassthistypecrash | spike | frontend/semantics | class: triage-needed | Implement Allowjsclassthistypecrash |
+| 133 | Implement Allowjscrossmonorepopackage | spike | frontend/resolver | class: triage-needed | Implement Allowjscrossmonorepopackage |
+| 134 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: triage-needed | Implement Allowjscheckjstypeparameternocrash |
+| 135 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: triage-needed | Implement Allowsyntheticdefaultimports |
+| 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: triage-needed | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
+| 137 | Implement Alwaysstrictalreadyusestrict | spike | frontend/syntax | class: triage-needed | Implement Alwaysstrictalreadyusestrict |
+| 138 | Implement Alwaysstrictmodule | spike | frontend/syntax | class: triage-needed | Implement Alwaysstrictmodule |
+| 139 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | class: triage-needed | Implement Alwaysstrictnoimplicitusestrict |
+| 140 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | class: triage-needed | Implement Ambientclassdeclarationwithextends |
+| 141 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: triage-needed | Implement Ambientclassdeclaredbeforebase |
+| 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | class: triage-needed | Implement Ambientclassmergesoverloadswithinterface |
+| 143 | Implement Ambientclassoverloadforfunction | spike | frontend/syntax | class: triage-needed | Implement Ambientclassoverloadforfunction |
+| 144 | Implement Ambientconstliterals | spike | frontend/syntax | class: triage-needed | Implement Ambientconstliterals |
+| 145 | Implement Ambientenum | spike | frontend/syntax | class: triage-needed | Implement Ambientenum |
+| 146 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: triage-needed | Implement Ambientenumelementinitializer |
+| 147 | Implement Ambienterrors | spike | frontend/syntax | class: triage-needed | Implement Ambienterrors |
+| 148 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: triage-needed | Implement Ambientexportdefaulterrors |
+| 149 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: triage-needed | Implement Ambientexternalmoduleinanotherexternalmodule |
+| 150 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | class: triage-needed | Implement Ambientexternalmodulereopen |
+| 151 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: triage-needed | Implement Ambientexternalmodulewithinternalimportdeclaration |
+| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | class: triage-needed | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration |
+| 153 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | class: triage-needed | Implement Ambientexternalmodulewithrelativemodulename |
+| 154 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | frontend/syntax | class: triage-needed | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
+| 155 | Implement Ambientfundule | spike | frontend/syntax | class: triage-needed | Implement Ambientfundule |
+| 156 | Implement Ambientgetters | spike | frontend/syntax | class: triage-needed | Implement Ambientgetters |
+| 157 | Implement Ambientmoduleexports | spike | frontend/syntax | class: triage-needed | Implement Ambientmoduleexports |
+| 158 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | class: triage-needed | Implement Ambientmodulewithclassdeclarationwithextends |
+| 159 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: triage-needed | Implement Ambientmodulewithtemplateliterals |
+| 160 | Implement Ambientmodules | spike | frontend/syntax | class: triage-needed | Implement Ambientmodules |
+| 161 | Implement Ambientnamerestrictions | spike | frontend/syntax | class: triage-needed | Implement Ambientnamerestrictions |
+| 162 | Implement Ambientpropertydeclarationinjs | spike | frontend/syntax | class: triage-needed | Implement Ambientpropertydeclarationinjs |
+| 163 | Implement Ambientrequirefunction | spike | frontend/syntax | class: triage-needed | Implement Ambientrequirefunction |
+| 164 | Implement Ambientstatement | spike | frontend/syntax | class: triage-needed | Implement Ambientstatement |
+| 165 | Implement Ambientwithstatements | spike | frontend/syntax | class: triage-needed | Implement Ambientwithstatements |
+| 166 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: triage-needed | Implement Ambiguouscallswherereturntypesagree |
+| 167 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: triage-needed | Implement Ambiguousgenericassertion |
+| 168 | Implement Ambiguousoverload | spike | frontend/syntax | class: triage-needed | Implement Ambiguousoverload |
+| 169 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: triage-needed | Implement Ambiguousoverloadresolution |
+| 170 | Implement Amddeclarationemitnoextradeclare | spike | frontend/syntax | class: triage-needed | Implement Amddeclarationemitnoextradeclare |
+| 171 | Implement Amddependencycomment | spike | frontend/syntax | class: triage-needed | Implement Amddependencycomment |
+| 172 | Implement Amddependencycommentname | spike | frontend/syntax | class: triage-needed | Implement Amddependencycommentname |
+| 173 | Implement Amdlikeinputdeclarationemit | spike | frontend/syntax | class: triage-needed | Implement Amdlikeinputdeclarationemit |
+| 174 | Implement Amdmodulebundlenoduplicatedeclarationemitcomments | spike | frontend/syntax | class: triage-needed | Implement Amdmodulebundlenoduplicatedeclarationemitcomments |
+| 175 | Implement Amdmoduleconstenumusage | spike | frontend/syntax | class: triage-needed | Implement Amdmoduleconstenumusage |
+| 176 | Implement Amdmodulename | spike | frontend/syntax | class: triage-needed | Implement Amdmodulename |
+| 177 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: triage-needed | Implement Anonclassdeclarationemitisanon |
+| 178 | Implement Anonterface | spike | frontend/syntax | class: triage-needed | Implement Anonterface |
+| 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: triage-needed | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
+| 180 | Implement Anonymousclassexpression | spike | frontend/syntax | class: triage-needed | Implement Anonymousclassexpression |
+| 181 | Implement Anonymousmodules | spike | frontend/syntax | class: triage-needed | Implement Anonymousmodules |
+| 182 | Implement Anyandunknownhavefalsycomponents | spike | frontend/syntax | class: triage-needed | Implement Anyandunknownhavefalsycomponents |
+| 183 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: triage-needed | Implement Anyasreturntypefornewoncall |
+| 184 | Implement Anydeclare | spike | frontend/syntax | class: triage-needed | Implement Anydeclare |
+| 185 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: triage-needed | Implement Anyidenticaltoitself |
+| 187 | Implement Anyinferenceanonymousfunctions | spike | frontend/syntax | class: triage-needed | Implement Anyinferenceanonymousfunctions |
+| 192 | Implement Argsinscope | spike | frontend/resolver | class: triage-needed | Implement Argsinscope |
+| 193 | Implement Arguments | spike | frontend/resolver | class: triage-needed | Implement Arguments |
+| 194 | Implement Argumentsaspropertyname | spike | frontend/semantics | class: triage-needed | Implement Argumentsaspropertyname |
+| 195 | Implement Argumentsbindstofunctionscopeargumentlist | spike | frontend/resolver | class: triage-needed | Implement Argumentsbindstofunctionscopeargumentlist |
+| 196 | Implement Argumentsobjectcreatesrestforjs | spike | frontend/resolver | class: triage-needed | Implement Argumentsobjectcreatesrestforjs |
+| 197 | Implement Argumentsobjectiterator | spike | frontend/semantics | class: triage-needed | Implement Argumentsobjectiterator |
+| 198 | Implement Argumentspropertynameinjsmode | spike | frontend/semantics | class: triage-needed | Implement Argumentspropertynameinjsmode |
+| 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
+| 200 | Implement parser syntax extensions | spike | frontend/syntax | class: triage-needed | Implement parser syntax extensions |
+| 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
 <!-- generated:blocked:end -->
 
@@ -245,23 +268,23 @@ Issue files are the source of truth for work items. The generated section below 
 | 059a | Implement TypeScript satisfies and const assertion erasure | feature | frontend | see `issues/done/059a-implement-typescript-satisfies-and-const-assertion-erasure.md` |
 | 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | see `issues/done/060-investigate-unknown-unsupported-cases.md` |
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | see `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` |
-| 061 | Implement Date object support | feature | frontend | see `issues/done/061-implement-date.md` |
+| 061 | Implement Date object support | feature | runtime/builtins | see `issues/done/061-implement-date.md` |
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |
 | 062a | Split function epic into callable child issues | cleanup | issues | see `issues/done/062a-split-function-epic-into-callable-child-issues.md` |
 | 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | see `issues/done/062b-dynamic-function-constructor-diagnostics.md` |
-| 063 | Implement function resolution | feature | frontend | see `issues/done/063-implement-function-resolution.md` |
+| 063 | Implement function resolution | feature | frontend/resolver | see `issues/done/063-implement-function-resolution.md` |
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
-| 065 | Implement parser syntax extensions | feature | frontend | see `issues/done/065-implement-parser-syntax.md` |
+| 065 | Implement parser syntax extensions | feature | frontend/syntax | see `issues/done/065-implement-parser-syntax.md` |
 | 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | see `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` |
-| 077 | Implement Interfacedeclaration | spike | reference | see `issues/done/077-implement-InterfaceDeclaration.md` |
-| 085 | Implement Abstractinterfaceidentifiername | spike | reference | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
-| 095 | Implement Accessorbodyintypecontext | spike | reference | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
-| 110 | Implement Addmoreoverloadstobasesignature | spike | reference | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
-| 186 | Implement Anyindexedaccessarraynoexception | spike | reference | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
-| 188 | Implement Anyisassignabletoobject | spike | reference | see `issues/done/188-implement-anyIsAssignableToObject.md` |
-| 189 | Implement Anyisassignabletovoid | spike | reference | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
-| 190 | Implement Anymappedtypeserror | spike | reference | see `issues/done/190-implement-anyMappedTypesError.md` |
-| 191 | Implement Anyplusany | spike | reference | see `issues/done/191-implement-anyPlusAny.md` |
+| 077 | Implement Interfacedeclaration | spike | frontend/syntax | see `issues/done/077-implement-InterfaceDeclaration.md` |
+| 085 | Implement Abstractinterfaceidentifiername | spike | frontend/syntax | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
+| 095 | Implement Accessorbodyintypecontext | spike | frontend/syntax | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
+| 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
+| 186 | Implement Anyindexedaccessarraynoexception | spike | frontend/syntax | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
+| 188 | Implement Anyisassignabletoobject | spike | frontend/syntax | see `issues/done/188-implement-anyIsAssignableToObject.md` |
+| 189 | Implement Anyisassignabletovoid | spike | frontend/syntax | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
+| 190 | Implement Anymappedtypeserror | spike | frontend/syntax | see `issues/done/190-implement-anyMappedTypesError.md` |
+| 191 | Implement Anyplusany | spike | frontend/syntax | see `issues/done/191-implement-anyPlusAny.md` |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | see `issues/done/202-implement-regexp-literal-support.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 | 204 | Add typed IR dump command | feature | cli | see `issues/done/204-add-typed-ir-dump.md` |

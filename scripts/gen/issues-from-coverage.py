@@ -66,7 +66,23 @@ def parse_detail_output(lines: List[str], suite: str) -> Dict[str, List[Tuple[st
             
             groups[group_key].append((file_path, diag_code, feature_label))
     
-    return groups
+    return split_mixed_feature_groups(groups)
+
+
+def split_mixed_feature_groups(
+    groups: Dict[str, List[Tuple[str, str, str]]]
+) -> Dict[str, List[Tuple[str, str, str]]]:
+    """Split generated buckets that mix unrelated feature labels."""
+    split_groups = defaultdict(list)
+    for group_key, files in groups.items():
+        feature_labels = sorted(set(feature for _, _, feature in files))
+        if len(feature_labels) <= 1:
+            split_groups[group_key].extend(files)
+            continue
+
+        for file_path, diag_code, feature_label in files:
+            split_groups[f"{group_key}-{feature_label}"].append((file_path, diag_code, feature_label))
+    return split_groups
 
 
 def group_key_to_title(group_key: str, files: List[Tuple[str, str, str]], suite: str) -> str:
@@ -115,6 +131,101 @@ def group_key_to_title(group_key: str, files: List[Tuple[str, str, str]], suite:
         last_part = group_key.split("/")[-1]
         title = last_part.replace("-", " ").replace("_", " ").title()
         return f"Implement {title}"
+
+
+def area_for_feature_labels(feature_labels: List[str]) -> str:
+    if len(set(feature_labels)) > 1:
+        return "reference/triage"
+
+    feature = feature_labels[0] if feature_labels else "unknown-unsupported"
+    frontend_syntax = {
+        "ambient-declaration",
+        "class",
+        "class-accessor",
+        "declaration-emit",
+        "decorator",
+        "destructuring",
+        "enum",
+        "import-export",
+        "jsx",
+        "module-system-amd",
+        "parser-syntax",
+        "parameter-property",
+        "type-alias",
+        "type-annotation",
+        "type-assertion",
+        "type-directive-resolution",
+        "type-system",
+    }
+    frontend_resolver = {
+        "function-resolution",
+        "module-resolution",
+        "name-resolution",
+        "scope-analysis",
+    }
+    frontend_semantics = {
+        "arguments-object",
+        "async",
+        "async-iteration",
+        "call-expression",
+        "function",
+        "html-comment",
+        "logical-assignment",
+        "object-literal",
+        "switch",
+        "unsupported-expression",
+    }
+    runtime_builtins = {
+        "array-builtin",
+        "builtin-api",
+        "date",
+        "function-object",
+        "legacy-global-builtin",
+        "regexp-literal",
+        "string-builtin",
+    }
+
+    if feature in frontend_syntax:
+        return "frontend/syntax"
+    if feature in frontend_resolver:
+        return "frontend/resolver"
+    if feature in frontend_semantics:
+        return "frontend/semantics"
+    if feature in runtime_builtins:
+        return "runtime/builtins"
+    return "reference/triage"
+
+
+def affected_paths_for_area(area: str) -> tuple[List[str], str]:
+    if area.startswith("frontend/"):
+        return (
+            [
+                "crates/frontend/src/",
+                "crates/cli/src/",
+                "fixtures/",
+                "scripts/run/reference-triage.py",
+            ],
+            "unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned",
+        )
+    if area.startswith("runtime/"):
+        return (
+            [
+                "crates/backend-wasm/src/",
+                "crates/runtime-abi/src/",
+                "crates/cli/src/",
+                "fixtures/",
+                "scripts/run/reference-triage.py",
+            ],
+            "parser/resolver code unless `reference-triage` proves the failure happens before runtime lowering",
+        )
+    return (
+        [
+            "issues/open/",
+            "scripts/run/reference-triage.py",
+            "fixtures/",
+        ],
+        "implementation code until the triage report assigns a concrete frontend/runtime/backend owner",
+    )
 
 
 def rel_issue_path(path: Path) -> str:
@@ -211,6 +322,8 @@ def generate_issue_content(
     # Get unique feature labels
     feature_labels = sorted(set(f[2] for f in files))
     feature_str = ", ".join(feature_labels)
+    area = area_for_feature_labels(feature_labels)
+    expected_paths, do_not_touch = affected_paths_for_area(area)
     
     # Sample files (first 10)
     sample_files = files[:10]
@@ -246,7 +359,7 @@ def generate_issue_content(
 id: {issue_id}
 title: "{title}"
 type: spike
-area: reference
+area: {area}
 class: triage-needed
 priority: P1
 depends_on: []
@@ -301,14 +414,11 @@ Out of scope:
 
 Expected:
 
-- `crates/frontend/src/`
-- `crates/cli/src/`
-- `fixtures/`
-- `scripts/run/reference-triage.py`
+{chr(10).join(f"- `{path}`" for path in expected_paths)}
 
 Do not touch:
 
-- unrelated runtime/backend code unless the triage report proves the failure is not parser/frontend
+- {do_not_touch}
 
 ## Acceptance criteria
 

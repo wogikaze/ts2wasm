@@ -2,7 +2,7 @@
 id: 191
 title: "Implement Anyplusany"
 type: spike
-area: reference
+area: frontend/syntax
 class: docs-ready
 priority: P1
 depends_on: []

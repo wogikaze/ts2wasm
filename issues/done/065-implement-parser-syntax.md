@@ -2,7 +2,7 @@
 id: 065
 title: "Implement parser syntax extensions"
 type: feature
-area: frontend
+area: frontend/syntax
 class: blocked
 priority: P1
 depends_on: []
