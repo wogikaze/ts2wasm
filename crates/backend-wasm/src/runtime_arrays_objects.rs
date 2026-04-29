@@ -538,9 +538,40 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $greater_equal (param $a i32) (param $b i32) (result i32)
+    (local $n i32)
     (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
       (then
         (if (i32.ge_s (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if
+      (i32.and
+        (call $is_bigint (local.get $a))
+        (i32.eq (i32.and (local.get $b) (i32.const {tag_mask})) (i32.const {string_tag})))
+      (then
+        (local.set $n (call $string_to_number_for_equality (local.get $b)))
+        (if (i32.eq (local.get $n) (i32.const {nan_sentinel}))
+          (then (return (i32.const {false_tag}))))
+        (if (i32.ge_s
+              (call $bigint_compare_small_int
+                (local.get $a)
+                (i32.shr_s (local.get $n) (i32.const {number_shift})))
+              (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if
+      (i32.and
+        (i32.eq (i32.and (local.get $a) (i32.const {tag_mask})) (i32.const {string_tag}))
+        (call $is_bigint (local.get $b)))
+      (then
+        (local.set $n (call $string_to_number_for_equality (local.get $a)))
+        (if (i32.eq (local.get $n) (i32.const {nan_sentinel}))
+          (then (return (i32.const {false_tag}))))
+        (if (i32.le_s
+              (call $bigint_compare_small_int
+                (local.get $b)
+                (i32.shr_s (local.get $n) (i32.const {number_shift})))
+              (i32.const {zero}))
           (then (return (i32.const {true_tag}))))
         (return (i32.const {false_tag}))))
     (if
@@ -579,8 +610,11 @@ impl WatEmitter<'_> {
       (else (i32.const {false_tag}))))
 "#,
             number_shift = ValueTag::NUMBER_SHIFT,
+            tag_mask = ValueTag::TAG_MASK,
+            string_tag = ValueTag::STRING,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            nan_sentinel = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
         ));
     }
