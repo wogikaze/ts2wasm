@@ -100,6 +100,11 @@ fn array_map_arrow_expression_split_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_map_arrow_chained_trim_split_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-map-arrow-chained-trim-split.ts");
+}
+
+#[test]
 fn array_map_arrow_string_constructor_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/array-map-arrow-string-constructor.ts");
 }
