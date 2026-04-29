@@ -810,7 +810,7 @@ fn validate_json_stringify_args(
                     && is_supported_json_stringify_replacer_array(elements) => {}
             ResolvedExpr::Array(_) => {
                 return Err(json_stringify_replacer_diagnostic(
-                    "array replacer property lists outside the string/numeric-literal object subset",
+                    "array replacer property lists outside the string/numeric literal or boxed Number/String object subset",
                     span,
                 ));
             }
@@ -825,9 +825,7 @@ fn validate_json_stringify_args(
     {
         return Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message:
-                "JSON.stringify space currently supports numeric/string values and ignored object/function values"
-                    .to_owned(),
+            message: "issue-052e: JSON.stringify space currently supports numeric/string primitives, selected boxed Number/String literals, and ignored object/function values; broader object coercion is not supported yet".to_owned(),
             span: Some(span),
         });
     }
@@ -901,6 +899,26 @@ fn is_supported_json_stringify_replacer_array(elements: &[ResolvedExpr]) -> bool
 fn json_stringify_replacer_key(element: &ResolvedExpr) -> Option<String> {
     match element {
         ResolvedExpr::String(key) => Some(key.clone()),
+        ResolvedExpr::Number(_) | ResolvedExpr::Unary { .. } => json_stringify_number_key(element),
+        ResolvedExpr::New {
+            class_name, args, ..
+        } => json_stringify_boxed_replacer_key(class_name, args),
+        _ => None,
+    }
+}
+
+fn json_stringify_boxed_replacer_key(class_name: &str, args: &[ResolvedExpr]) -> Option<String> {
+    match (class_name, args) {
+        ("String", []) => Some(String::new()),
+        ("String", [ResolvedExpr::String(key)]) => Some(key.clone()),
+        ("Number", []) => Some("0".to_owned()),
+        ("Number", [arg]) => json_stringify_number_key(arg),
+        _ => None,
+    }
+}
+
+fn json_stringify_number_key(element: &ResolvedExpr) -> Option<String> {
+    match element {
         ResolvedExpr::Number(value) => Some(value.to_string()),
         ResolvedExpr::Unary { op, expr }
             if *op == UnaryOp::Negate && matches!(expr.as_ref(), ResolvedExpr::Number(_)) =>
