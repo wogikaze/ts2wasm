@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created `issues/open/254-implement-class-static-block-runtime-semantics.md`
+- [x] created `issues/done/254-implement-class-static-block-runtime-semantics.md`
 
 ## Notes
 
@@ -150,4 +150,4 @@ date: 2026-04-29
 
 Remaining risks:
 
-- Runtime static block execution semantics are not implemented; tracked by issue 254.
+- Runtime static block execution semantics were completed in issue 254.
