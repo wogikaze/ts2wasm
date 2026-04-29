@@ -715,6 +715,18 @@ impl<'a> Resolver<'a> {
                     key: key.clone(),
                 })
             },
+            ResolvedExpr::OptionalPropertyAccess { object, key, .. } => {
+                Ok(LoweredExpr::OptionalPropertyGet {
+                    obj: Box::new(self.lower_expr(object)?),
+                    key: key.clone(),
+                })
+            }
+            ResolvedExpr::OptionalComputedIndex { object, index, .. } => {
+                Ok(LoweredExpr::OptionalIndex {
+                    object: Box::new(self.lower_expr(object)?),
+                    index: Box::new(self.lower_expr(index)?),
+                })
+            }
             ResolvedExpr::ComputedIndex { object, index } => {
                 // Lower the object first to determine its type
                 let lowered_object = self.lower_expr(object)?;

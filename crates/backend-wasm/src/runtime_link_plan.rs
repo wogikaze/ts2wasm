@@ -494,10 +494,19 @@ impl RuntimeLinkPlan {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
             }
+            LoweredExpr::OptionalPropertyGet { obj, .. } => {
+                self.add_required_runtime(RuntimeFn::PropertyGet);
+                self.collect_required_runtime_expr(obj);
+            }
             LoweredExpr::PropertyGetDynamic { obj, key } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
                 self.collect_required_runtime_expr(obj);
                 self.collect_required_runtime_expr(key);
+            }
+            LoweredExpr::OptionalIndex { object, index } => {
+                self.add_required_runtime(RuntimeFn::Index);
+                self.collect_required_runtime_expr(object);
+                self.collect_required_runtime_expr(index);
             }
             LoweredExpr::PropertySet { object, value, .. } => {
                 self.add_required_runtime(RuntimeFn::PropertySet);

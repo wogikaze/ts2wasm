@@ -541,6 +541,9 @@ impl WatEmitter<'_> {
                     RuntimeFn::PropertyGet.symbol()
                 ));
             }
+            LoweredExpr::OptionalPropertyGet { obj, key } => {
+                self.emit_optional_property_get(wat, obj, key, indent, frame);
+            }
             LoweredExpr::PropertyGetDynamic { obj, key } => {
                 // For dynamic keys, the key is a runtime string value
                 // We need to extract the string pointer and length from the key value
@@ -570,6 +573,9 @@ impl WatEmitter<'_> {
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyGet.symbol()
                 ));
+            }
+            LoweredExpr::OptionalIndex { object, index } => {
+                self.emit_optional_index(wat, object, index, indent, frame);
             }
             LoweredExpr::MethodCall {
                 object: _,
@@ -1095,6 +1101,76 @@ impl WatEmitter<'_> {
         self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
     }
 
+    fn emit_optional_property_get(
+        &self,
+        wat: &mut String,
+        object_expr: &LoweredExpr,
+        key: &str,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let object = frame.heap_base_tmp();
+        let key_ptr = self.string_offset(key) + Layout::STRING_HEADER_SIZE;
+        let key_len = self.string_len(key);
+
+        self.emit_expr(wat, object_expr, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
+        self.emit_nullish_check(wat, object, indent);
+        wat.push_str(&format!("{pad}(if (result i32)\n"));
+        wat.push_str(&format!("{pad}  (then\n"));
+        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
+        wat.push_str(&format!("{pad}  )\n"));
+        wat.push_str(&format!("{pad}  (else\n"));
+        wat.push_str(&format!("{pad}    (local.get {object})\n"));
+        wat.push_str(&format!("{pad}    (i32.const {key_ptr})\n"));
+        wat.push_str(&format!("{pad}    (i32.const {key_len})\n"));
+        wat.push_str(&format!(
+            "{pad}    (call {})\n",
+            RuntimeFn::PropertyGet.symbol()
+        ));
+        wat.push_str(&format!("{pad}  )\n"));
+        wat.push_str(&format!("{pad})\n"));
+    }
+
+    fn emit_optional_index(
+        &self,
+        wat: &mut String,
+        object_expr: &LoweredExpr,
+        index_expr: &LoweredExpr,
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let object = frame.heap_base_tmp();
+        let child_frame = frame.child_temp_frame();
+
+        self.emit_expr(wat, object_expr, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {object})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, object, frame);
+        self.emit_nullish_check(wat, object, indent);
+        wat.push_str(&format!("{pad}(if (result i32)\n"));
+        wat.push_str(&format!("{pad}  (then\n"));
+        wat.push_str(&format!("{pad}    (i32.const {})\n", ValueTag::UNDEFINED));
+        wat.push_str(&format!("{pad}  )\n"));
+        wat.push_str(&format!("{pad}  (else\n"));
+        wat.push_str(&format!("{pad}    (local.get {object})\n"));
+        self.emit_expr(wat, index_expr, indent + 4, &child_frame);
+        wat.push_str(&format!("{pad}    (call {})\n", RuntimeFn::Index.symbol()));
+        wat.push_str(&format!("{pad}  )\n"));
+        wat.push_str(&format!("{pad})\n"));
+    }
+
+    fn emit_nullish_check(&self, wat: &mut String, local: usize, indent: usize) {
+        let pad = " ".repeat(indent);
+        wat.push_str(&format!(
+            "{pad}(i32.or\n{pad}  (i32.eq (local.get {local}) (i32.const {}))\n{pad}  (i32.eq (local.get {local}) (i32.const {})))\n",
+            ValueTag::NULL,
+            ValueTag::UNDEFINED
+        ));
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn emit_logical_member_assign(
         &self,
@@ -1477,6 +1553,7 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
             expr_may_collect(key) || expr_may_collect(expr)
         }
         LoweredExpr::PropertyGet { obj, .. }
+        | LoweredExpr::OptionalPropertyGet { obj, .. }
         | LoweredExpr::PropertyIn { obj, .. }
         | LoweredExpr::PropertyDelete { object: obj, .. } => expr_may_collect(obj),
         LoweredExpr::PropertyGetDynamic { obj, key }
@@ -1487,6 +1564,10 @@ fn expr_may_collect(expr: &LoweredExpr) -> bool {
         }
         | LoweredExpr::ArrayGet {
             arr: obj,
+            index: key,
+        }
+        | LoweredExpr::OptionalIndex {
+            object: obj,
             index: key,
         }
         | LoweredExpr::PropertyDeleteDynamic { object: obj, key } => {
@@ -1527,6 +1608,8 @@ fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         | LoweredExpr::PropertyInDynamic { .. }
         | LoweredExpr::PropertyDeleteDynamic { .. }
         | LoweredExpr::PropertySetDynamic { .. }
+        | LoweredExpr::OptionalPropertyGet { .. }
+        | LoweredExpr::OptionalIndex { .. }
         | LoweredExpr::New { .. } => true,
         LoweredExpr::Binary { left, right, .. } => {
             expr_uses_caller_backend_tmp(left) || expr_uses_caller_backend_tmp(right)
