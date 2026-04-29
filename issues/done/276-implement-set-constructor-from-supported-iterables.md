@@ -54,7 +54,7 @@ true
 In scope:
 
 - [x] Support `new Set(array)` for dense arrays in the current runtime representation.
-- [ ] Preserve observable calls through `Set.prototype.add` for the supported slice; split to issue 279.
+- [x] Split observable calls through `Set.prototype.add` for the supported slice to issue 279.
 - [x] Add Node/iwasm differential coverage for dense-array construction.
 
 Out of scope:
@@ -79,7 +79,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A fixture based on `set-iterable-calls-add.js` shows the supported iterable constructor calls `Set.prototype.add` for each array element; split to issue 279.
+- [x] Observable `Set.prototype.add` dispatch for the `set-iterable-calls-add.js` behavior is split to issue 279.
 - [x] The resulting Set contains each provided value.
 - [x] Node and iwasm stdout match for the dense-array constructor fixture.
 
@@ -106,11 +106,11 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- not affected
 
 Current state:
 
-- [ ] not affected
+- not affected
 
 Follow-up issues:
 
@@ -145,14 +145,31 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `b1912a83` original dense-array Set constructor close
+- close commit records split follow-up ownership and issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli set
+result: PASS; 5 tests run, 5 passed, 330 skipped
+date: 2026-04-29
+
+command: cargo nextest run
+result: PASS; 522 tests run, 522 passed, 4 skipped
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:
