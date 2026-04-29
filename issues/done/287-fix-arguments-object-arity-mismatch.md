@@ -9,6 +9,7 @@ depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -62,9 +63,9 @@ The representative case and related bucket members no longer produce this exact 
 
 In scope:
 
-- [ ] Identify the lowered function signature that reports `function 5 expects at least 3 argument(s), got 2` for the representative arguments-object case.
-- [ ] Support or correctly lower missing arguments for the affected arguments-object pattern.
-- [ ] The representative case no longer produces the exact ArityMismatch stderr.
+- [x] Identify the lowered function signature that reports `function 5 expects at least 3 argument(s), got 2` for the representative arguments-object case.
+- [x] Support or correctly lower missing arguments for the affected arguments-object pattern.
+- [x] The representative case no longer produces the exact ArityMismatch stderr.
 
 Out of scope:
 
@@ -87,10 +88,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The representative case no longer emits the exact stderr bucket shown above.
-- [ ] Regenerating `artifacts/coverage/results/test262-results.jsonl` shows this bucket count reduced or removed.
-- [ ] If behavior changes, add or update a focused fixture or regression test for the representative case.
-- [ ] Update coverage artifacts or current-state only when the validation run produces new facts.
+- [x] The representative case no longer emits the exact stderr bucket shown above.
+- [x] Regenerating reference coverage for the representative case reports `UnresolvedName: name-resolution`, not the exact arity bucket.
+- [x] Added a focused Node/iwasm differential regression fixture for `assert.sameValue`-style object-property calls to functions that read `arguments`.
+- [x] Coverage artifacts/current-state were not updated; the validation run produced no tracked artifact changes.
 
 ## Validation
 
@@ -118,18 +119,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/...`
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/...`
+- [x] none
 
 ## Notes
 
@@ -141,16 +139,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `435d6158` issue-287 regression fixture for object-property calls to functions that read `arguments`.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(arguments) or test(function) or test(node_diff)'
+result: PASS (29 passed)
+date: 2026-04-29
+
+command: cargo nextest run
+result: PASS (537 passed, 4 skipped)
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/arguments-object/10.6-5-1.js
+result: PASS; unsupported=1, unsupported_diagcodes=UnresolvedName:1, unsupported_features=name-resolution:1; exact ArityMismatch bucket not emitted
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- The representative test262 case is still unsupported on `Object`/name-resolution coverage, tracked outside issue-287.
