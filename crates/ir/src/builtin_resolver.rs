@@ -3145,6 +3145,8 @@ impl BigIntRuntimeGuard {
                         {
                             return Ok(None);
                         }
+                        self.guard_bigint_mixed_runtime_string(left, left_info.as_ref(), *span)?;
+                        self.guard_bigint_mixed_runtime_string(right, right_info.as_ref(), *span)?;
                         return Err(bigint_comparison_runtime_diagnostic(*span));
                     }
                     return Ok(None);
@@ -3377,6 +3379,49 @@ impl BigIntRuntimeGuard {
             | Expr::Undefined { .. }
             | Expr::This { .. } => Ok(None),
         }
+    }
+
+    fn guard_bigint_mixed_runtime_string(
+        &self,
+        expr: &Expr,
+        bigint_info: Option<&BigIntStaticInfo>,
+        span: Span,
+    ) -> Result<(), Diagnostic> {
+        if bigint_info.is_some()
+            || !self.expr_is_definitely_string(expr)
+            || matches!(expr, Expr::String { .. })
+        {
+            return Ok(());
+        }
+        let Some(value) = self.expr_static_string_value(expr) else {
+            return Ok(());
+        };
+        let parsed = match bigint_from_string_builtin(&value, span) {
+            Ok(parsed) => parsed,
+            Err(_) => return Ok(()),
+        };
+        if !bigint_fits_runtime_mixed_string(&parsed) {
+            return Err(bigint_comparison_string_boundary_diagnostic(span));
+        }
+        Ok(())
+    }
+}
+
+fn bigint_fits_runtime_mixed_string(value: &BigIntConst) -> bool {
+    match value.sign.cmp(&0) {
+        std::cmp::Ordering::Less => decimal_digits_to_u64(&value.digits)
+            .is_some_and(|magnitude| magnitude <= i32::MAX as u64 + 1),
+        std::cmp::Ordering::Equal => true,
+        std::cmp::Ordering::Greater => decimal_digits_to_u64(&value.digits)
+            .is_some_and(|magnitude| magnitude <= i32::MAX as u64),
+    }
+}
+
+fn bigint_comparison_string_boundary_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice".to_owned(),
+        span: Some(span),
     }
 }
 
