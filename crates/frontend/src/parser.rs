@@ -13,6 +13,7 @@ pub struct Parser {
     strict_mode: bool,
     typescript_generic_functions: HashSet<String>,
     parenthesized_expr_spans: HashSet<(usize, usize)>,
+    pending_statements: Vec<Stmt>,
 }
 
 struct ParsedParam {
