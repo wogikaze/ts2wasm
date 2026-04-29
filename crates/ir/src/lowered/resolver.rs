@@ -373,9 +373,23 @@ impl<'a> Resolver<'a> {
             }
             ResolvedStmt::ForOf { var, iter, body } => {
                 let var_id = self.declare_local(var)?;
+                let lowered_iter = if let ResolvedExpr::Ident(name) = iter
+                    && let Ok(local_id) = self.resolve_local(name)
+                    && self
+                        .local_classes
+                        .get(&local_id)
+                        .is_some_and(|class_name| class_name == "Set")
+                {
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "SetValuesArray".to_owned(),
+                        args: vec![LoweredExpr::Local(local_id)],
+                    }
+                } else {
+                    self.lower_expr(iter)?
+                };
                 Ok(LoweredStmt::ForOf {
                     var: var_id,
-                    iter: self.lower_expr(iter)?,
+                    iter: lowered_iter,
                     iter_local: self.alloc_temp(),
                     index_local: self.alloc_temp(),
                     len_local: self.alloc_temp(),
