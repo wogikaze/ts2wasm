@@ -236,6 +236,8 @@ This issue is intentionally blocked because the fixture crosses several existing
 - Current first failure is now:
   `error: [UnsupportedSyntax] binary operator Power not yet supported`, at the
   `2 ** i` condition/value expressions in the powers-of-two loop.
+- Split issue 296 for the small-int exponentiation slice so issue 294 can stay
+  blocked as an umbrella while the next concrete blocker is worked independently.
 
 ## Completion evidence
 
