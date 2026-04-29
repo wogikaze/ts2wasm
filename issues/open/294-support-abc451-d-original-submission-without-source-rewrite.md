@@ -185,6 +185,21 @@ Follow-up issues:
 
 This issue is intentionally blocked because the fixture crosses several existing feature boundaries. It should be split into implementation-ready child issues before execution unless the number model and iterable/callback semantics are already being handled in a broader milestone.
 
+2026-04-29 progress:
+
+- Added parser/lexer support for positive decimal exponent numeric literals in
+  the current integer-backed number model, covering the ABC451 source fragment
+  `1e9`.
+- Negative decimal exponents such as `1e-3` remain source-spanned issue-294
+  diagnostics because they require fractional number support.
+- Decimal BigInt literals with exponents, such as `1e2n`, still report the
+  existing issue-244 diagnostic and are not reclassified as number literals.
+- The original ABC451 repro now advances past `1e9` and reaches the next
+  unsupported boundary near the empty export / top-level await tail.
+- This does not close issue 294; top-level `await`, Bun stdin, `Array.map`,
+  unary plus, `String(value)`, Set spread, `Array.sort`, and broader number
+  representation work remain.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
