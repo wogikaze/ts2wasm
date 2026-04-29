@@ -1,4 +1,5 @@
-let values = "345";
+let values = [3, 4, 5];
+
 function sum(a, b, c) {
   return a + b + c;
 }
