@@ -14,7 +14,7 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
-| frontend | 191 | 127 | 64 |
+| frontend | 191 | 126 | 65 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -24,7 +24,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 291 | 140 | 151 |
+| total | 291 | 139 | 152 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -58,7 +58,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics |
-| 062 | Implement function support | feature | frontend/semantics | class: blocked | Implement function support |
 | 064 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
 | 066 | Implement RegExp literal support | spike | runtime/builtins | class: triage-needed | Implement RegExp literal support |
 | 067 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
@@ -269,6 +268,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 060a | Close unknown-unsupported fixed-window spike | spike | frontend | see `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` |
 | 061 | Implement Date object support | feature | runtime/builtins | see `issues/done/061-implement-date.md` |
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |
+| 062 | Implement function support | feature | frontend/semantics | see `issues/done/062-implement-function.md` |
 | 062a | Split function epic into callable child issues | cleanup | issues | see `issues/done/062a-split-function-epic-into-callable-child-issues.md` |
 | 062b | Own dynamic Function constructor diagnostics | feature | frontend/semantics | see `issues/done/062b-dynamic-function-constructor-diagnostics.md` |
 | 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | see `issues/done/062c-ordinary-function-declarations-and-calls.md` |
