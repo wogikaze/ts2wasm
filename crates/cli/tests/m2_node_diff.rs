@@ -220,6 +220,11 @@ fn bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_builtin_as_int_n_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-builtin-as-int-n.ts");
+}
+
+#[test]
 fn bigint_builtin_unsupported_forms_report_issue_262() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
