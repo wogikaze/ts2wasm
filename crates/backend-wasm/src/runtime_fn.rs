@@ -632,7 +632,13 @@ const JSON_STRINGIFY_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
 ];
-const JSON_PARSE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const JSON_PARSE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::IsString,
+    RuntimeFn::Write,
+];
+const JSON_PARSE_RUNTIME_STRINGS: &[&str] = &[RuntimeString::JSON_PARSE_SYNTAX_ERROR];
 
 impl RuntimeFn {
     pub(crate) const fn from_builtin(builtin: BuiltinId) -> Self {
@@ -1373,7 +1379,7 @@ impl RuntimeFn {
                 deps: JSON_PARSE_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: JSON_PARSE_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::ModuleRequire => RuntimeSpec {
