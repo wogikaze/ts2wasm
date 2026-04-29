@@ -67,3 +67,12 @@ cargo fmt --all --check
 ## Progress
 
 - 2026-04-29 child slice: full runtime behavior remains unsafe without callback dispatch and a new array allocation/layout contract, so direct `values.map(...)` and `Array.prototype.map.call(...)` now report an explicit `issue-270` `UnsupportedSyntax` diagnostic instead of falling through to generic method receiver errors. Regression fixtures cover both call shapes.
+
+**Current implementation limitation**: Array.prototype.map requires:
+1. Callback function dispatch infrastructure
+2. New array allocation/layout contract
+3. Proper handling of (value, index, array) arguments
+4. thisArg parameter support
+5. Sparse array handling
+
+This requires substantial changes to the function call and array infrastructure. The current implementation explicitly reports UnsupportedSyntax for map operations to prevent unsafe behavior.
