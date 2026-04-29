@@ -1,2 +1,3 @@
-JSON.parse('{"s":"\\ud800"}');
-console.log("accepted");
+let obj = JSON.parse('{"s":"\\u00e9"}');
+console.log(obj.s);
+console.log(JSON.stringify(obj));

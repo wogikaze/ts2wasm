@@ -219,10 +219,16 @@ fn json_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/json-parse-number-decimal-exponent.ts",
         "fixtures/builtins-and-io/json-parse-object-nested.ts",
         "fixtures/builtins-and-io/json-parse.ts",
+        "fixtures/builtins-and-io/json-parse-surrogate-pair-object-array.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts",
+        "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-array.ts",
         "fixtures/builtins-and-io/json-parse-unsupported-noninteger-number-object.ts",
         "fixtures/builtins-and-io/json-parse-unicode-escape.ts",
+        "fixtures/builtins-and-io/json-parse-unicode-nonascii.ts",
         "fixtures/builtins-and-io/json-stringify-escaped-string.ts",
         "fixtures/builtins-and-io/json-stringify-nested-array-object.ts",
         "fixtures/builtins-and-io/json-stringify-nested-object.ts",
@@ -295,19 +301,10 @@ fn json_parse_invalid_incomplete_numbers_rejected_under_node_and_iwasm() {
 }
 
 #[test]
-fn json_parse_unicode_escape_diagnostics_reject_invalid_or_unsupported_forms() {
+fn json_parse_invalid_unicode_escape_rejected_under_node_and_iwasm() {
     assert_fixture_rejected_by_node_and_iwasm(
         "fixtures/builtins-and-io/json-parse-invalid-unicode-escape.ts",
     );
-
-    for fixture in [
-        "fixtures/builtins-and-io/json-parse-unsupported-unicode-array.ts",
-        "fixtures/builtins-and-io/json-parse-unsupported-unicode-object.ts",
-        "fixtures/builtins-and-io/json-parse-unsupported-surrogate-low.ts",
-        "fixtures/builtins-and-io/json-parse-unsupported-surrogate-pair.ts",
-    ] {
-        assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture);
-    }
 }
 
 #[test]
@@ -682,60 +679,6 @@ fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
     assert!(
         iwasm_output.contains("unreachable"),
         "expected iwasm trap for {fixture}, got:\n{iwasm_output}"
-    );
-}
-
-fn assert_fixture_accepted_by_node_and_rejected_by_iwasm(fixture: &str) {
-    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join(fixture);
-    let output = temp_wasm_path(fixture);
-
-    let node = Command::new("node").arg(&fixture_path).output().unwrap();
-    assert!(
-        node.status.success(),
-        "node unexpectedly rejected {fixture}\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&node.stdout),
-        String::from_utf8_lossy(&node.stderr)
-    );
-
-    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
-        .arg("build")
-        .arg(&fixture_path)
-        .arg("-o")
-        .arg(&output)
-        .output()
-        .unwrap();
-    assert!(
-        build.status.success(),
-        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&build.stdout),
-        String::from_utf8_lossy(&build.stderr)
-    );
-
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
-        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
-    assert!(
-        !iwasm.timed_out,
-        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&iwasm.output.stdout),
-        String::from_utf8_lossy(&iwasm.output.stderr)
-    );
-    assert!(
-        !iwasm.output.status.success(),
-        "iwasm unexpectedly accepted unsupported fixture {fixture}\nstdout:\n{}\nstderr:\n{}",
-        String::from_utf8_lossy(&iwasm.output.stdout),
-        String::from_utf8_lossy(&iwasm.output.stderr)
-    );
-    let iwasm_output = format!(
-        "{}{}",
-        String::from_utf8_lossy(&iwasm.output.stdout),
-        String::from_utf8_lossy(&iwasm.output.stderr)
-    )
-    .to_ascii_lowercase();
-    assert!(
-        iwasm_output.contains("unreachable"),
-        "expected iwasm trap for unsupported fixture {fixture}, got:\n{iwasm_output}"
     );
 }
 
