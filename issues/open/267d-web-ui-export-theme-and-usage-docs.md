@@ -121,6 +121,13 @@ Keep export behavior local/static-host friendly; issue 267 explicitly excludes a
 - Updated `web-ui/README.md` to document the export controls and current chart/trend status.
 - Remaining scope before close: dark/light theme toggle, persisted theme preference, and final-state `docs/` usage/deployment documentation.
 
+2026-04-29 theme slice:
+
+- Added a dark/light theme toggle in the header.
+- Persisted the selected theme in `localStorage` and restored it on reload, falling back to host `prefers-color-scheme`.
+- Updated `web-ui/README.md` to document the theme control.
+- Remaining scope before close: final-state `docs/` usage/deployment documentation and final close validation.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
