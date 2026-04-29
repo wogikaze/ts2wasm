@@ -440,7 +440,7 @@ impl<'a> Resolver<'a> {
             },
             ResolvedExpr::Spread(_) => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "spread expressions are only supported in call arguments".to_owned(),
+                message: "issue-274: spread expressions are only supported in call arguments over literal arrays in this milestone".to_owned(),
                 span: None,
             }),
             ResolvedExpr::Unary { op, expr } => {
@@ -887,6 +887,16 @@ impl<'a> Resolver<'a> {
                 }
             }
             ResolvedExpr::Array(elements) => {
+                if elements
+                    .iter()
+                    .any(|element| matches!(element, ResolvedExpr::Spread(_)))
+                {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-274: array literal spread requires iterator-aware array construction, which is not supported in this milestone".to_owned(),
+                        span: None,
+                    });
+                }
                 let lowered = elements
                     .iter()
                     .map(|e| self.lower_expr(e))
@@ -896,6 +906,13 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Object(props) => {
                 let mut lowered = Vec::new();
                 for (key, value) in props {
+                    if key == OBJECT_SPREAD_SENTINEL {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-274: object literal spread requires property enumeration semantics, which are not supported in this milestone".to_owned(),
+                            span: None,
+                        });
+                    }
                     if self.is_function_identifier(value) {
                         continue;
                     }
@@ -1487,7 +1504,7 @@ impl<'a> Resolver<'a> {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message:
-                                "spread arguments are only supported for literal arrays in this milestone"
+                                "issue-274: spread arguments are only supported for literal arrays in this milestone"
                                     .to_owned(),
                             span: None,
                         });

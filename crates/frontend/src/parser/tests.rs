@@ -163,6 +163,32 @@ mod tests {
     }
 
     #[test]
+    fn parses_spread_in_array_and_object_literals() {
+        let program = parse_program("let array = [0, ...items, 3]; let object = { a: 1, ...rest };")
+            .unwrap();
+        assert_eq!(program.len(), 2);
+
+        let Stmt::Let {
+            expr: Expr::Array { elements, .. },
+            ..
+        } = &program[0]
+        else {
+            panic!("expected array literal let statement");
+        };
+        assert!(matches!(elements[1], Expr::Spread { .. }));
+
+        let Stmt::Let {
+            expr: Expr::Object { props, .. },
+            ..
+        } = &program[1]
+        else {
+            panic!("expected object literal let statement");
+        };
+        assert_eq!(props[1].0, OBJECT_SPREAD_SENTINEL);
+        assert!(matches!(props[1].1, Expr::Ident { .. }));
+    }
+
+    #[test]
     fn parses_typescript_const_assertions_as_erased_syntax() {
         let source = r#"
             let value = { x: 3 } as const;

@@ -1744,10 +1744,13 @@ impl Parser {
                 "{{{}}}",
                 props
                     .iter()
-                    .map(|(key, value)| format!(
-                        "{key}: {}",
-                        self.binding_default_expr_text(value)
-                    ))
+                    .map(|(key, value)| {
+                        if key == OBJECT_SPREAD_SENTINEL {
+                            format!("...{}", self.binding_default_expr_text(value))
+                        } else {
+                            format!("{key}: {}", self.binding_default_expr_text(value))
+                        }
+                    })
                     .collect::<Vec<_>>()
                     .join(", ")
             ),
