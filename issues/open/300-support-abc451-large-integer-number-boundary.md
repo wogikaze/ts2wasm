@@ -3,9 +3,9 @@ id: 300
 title: "Support ABC451 large integer number boundary"
 type: feature
 area: runtime
-class: implementation-ready
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [304]
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
@@ -283,6 +283,33 @@ Exception: unreachable
 - A 64-page trial also trapped on the smallest official sample input, so the
   remaining ABC451 sample blocker is still in the runtime allocation/GC path
   rather than the issue 303 depth-7 reducer cap itself. Issue 300 remains open.
+
+2026-04-29 child `019dda5d-b728-7c33-8729-2b0edbbb94e9` post-memory triage:
+
+- Reproduced the current official sample blocker after issue 303:
+
+```sh
+cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-post-memory-child.wasm --host-deny
+printf '10\n' | iwasm /tmp/abc451-d-post-memory-child.wasm
+```
+
+Result:
+
+```text
+Exception: unreachable
+```
+
+`wasmtime run` places the trap in wasm function 26 (`$alloc_heap`) called from
+recursive `search` (wasm function 49), before the later Set/spread/sort path.
+
+- Split the next smaller implementation-ready reducer into issue 304. The
+  depth-8 ABC451 search reducer prints Node `292743`; committed iwasm with
+  `MEMORY_MAX_PAGES=42` traps in `$alloc_heap`, cap 128 also traps, and a
+  temporary 256-page cap prints Node-matching `292743`.
+- Depth 9, matching the official fixture search depth, prints Node `1404832`.
+  Temporary 512/1024-page iwasm trials did not finish within 90 seconds during
+  this triage, so issue 304 intentionally owns only depth 8. Issue 300 is
+  blocked on issue 304 before official sample compatibility can be rechecked.
 
 ## Completion evidence
 
