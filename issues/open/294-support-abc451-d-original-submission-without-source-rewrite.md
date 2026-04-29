@@ -289,6 +289,13 @@ This issue is intentionally blocked because the fixture crosses several existing
 - The remaining blocker is the broader number representation / large integer
   lowering needed by ABC451; issue 299 does not widen the runtime number model.
 
+2026-04-29 progress:
+
+- Split issue 300 for the current `NumberOutOfRange` blocker at the
+  `1000000000` loop bound in `fixtures/atcoder/abc451-d-concat-power2.ts`.
+- Issue 300 owns the narrow large integer number boundary needed for ABC451 and
+  must not silently weaken the tagged small-int validator.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
