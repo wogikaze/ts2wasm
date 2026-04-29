@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -50,9 +52,9 @@ false
 
 In scope:
 
-- [ ] Add lowering/runtime support for `Set.prototype.size`.
-- [ ] Add lowering/runtime support for `Set.prototype.clear`.
-- [ ] Add Node/iwasm differential fixture coverage for size, duplicate add, clear, and post-clear `has`.
+- [x] Add lowering/runtime support for `Set.prototype.size`.
+- [x] Add lowering/runtime support for `Set.prototype.clear`.
+- [x] Add Node/iwasm differential fixture coverage for size, duplicate add, clear, and post-clear `has`.
 
 Out of scope:
 
@@ -75,10 +77,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A fixture proves `new Set().size` starts at `0`.
-- [ ] The fixture proves duplicate `add` calls do not increase `size`.
-- [ ] The fixture proves `clear()` empties the Set and subsequent `has` returns `false`.
-- [ ] Node and iwasm stdout match for the fixture.
+- [x] A fixture proves `new Set().size` starts at `0`.
+- [x] The fixture proves duplicate `add` calls do not increase `size`.
+- [x] The fixture proves `clear()` empties the Set and subsequent `has` returns `false`.
+- [x] Node and iwasm stdout match for the fixture.
 
 ## Validation
 
@@ -103,15 +105,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -123,14 +125,42 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `d27a1f8` (`Implement Set size and clear`)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli set_size_clear_fixture_matches_node_output_under_iwasm map_set_collection_fixture_matches_node_output_under_iwasm
+result: pass; 2 tests run, 2 passed, 332 skipped
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli set
+result: pass; 4 tests run, 4 passed, 330 skipped
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli map_set_collection_fixture_matches_node_output_under_iwasm
+result: pass; 1 test run, 1 passed, 333 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass; issues/index.md regenerated
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK (up to date)
+date: 2026-04-29
+
+command: mise run check issues
+result: pass; issues/index.md queue OK; check_issue_health: OK
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass; 521 tests run, 521 passed, 4 skipped
+date: 2026-04-29
 ```
 
 Remaining risks:

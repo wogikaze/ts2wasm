@@ -103,6 +103,8 @@ pub(crate) enum RuntimeFn {
     SetAdd,
     SetHas,
     SetDelete,
+    SetSize,
+    SetClear,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -405,6 +407,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetAdd" => Some(RuntimeFn::SetAdd),
         "SetHas" => Some(RuntimeFn::SetHas),
         "SetDelete" => Some(RuntimeFn::SetDelete),
+        "SetSize" => Some(RuntimeFn::SetSize),
+        "SetClear" => Some(RuntimeFn::SetClear),
         "DateNew" => Some(RuntimeFn::DateNew),
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
@@ -684,6 +688,8 @@ const SET_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];
 const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
 const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
+const SET_SIZE_DEPS: &[RuntimeFn] = &[];
+const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
 const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, RuntimeFn::DateNew];
@@ -1251,6 +1257,22 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::SetSize => RuntimeSpec {
+                symbol: "$set_size",
+                deps: SET_SIZE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SetClear => RuntimeSpec {
+                symbol: "$set_clear",
+                deps: SET_CLEAR_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateNew => RuntimeSpec {
                 symbol: "$date_new",
                 deps: DATE_NEW_DEPS,
@@ -1769,6 +1791,8 @@ impl RuntimeFn {
             Self::SetAdd => "set_add",
             Self::SetHas => "set_has",
             Self::SetDelete => "set_delete",
+            Self::SetSize => "set_size",
+            Self::SetClear => "set_clear",
             Self::DateNew => "date_new",
             Self::DateNewLive => "date_new_live",
             Self::DateNow => "date_now",
@@ -1892,6 +1916,8 @@ impl RuntimeFn {
             Self::SetAdd,
             Self::SetHas,
             Self::SetDelete,
+            Self::SetSize,
+            Self::SetClear,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
@@ -2024,6 +2050,8 @@ impl RuntimeFn {
             Self::SetAdd,
             Self::SetHas,
             Self::SetDelete,
+            Self::SetSize,
+            Self::SetClear,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,

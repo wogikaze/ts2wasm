@@ -555,5 +555,47 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_set_size(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_size (param $set i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (i32.or
+      (i32.shl (i32.load (local.get $base)) (i32.const {number_shift}))
+      (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    pub(super) fn emit_set_clear(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $set_clear (param $set i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (i32.store (local.get $base) (i32.const {zero}))
+    (i32.const {undefined}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            zero = RuntimeConst::ZERO,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // String methods (M10)
 }

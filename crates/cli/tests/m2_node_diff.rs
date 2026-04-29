@@ -605,6 +605,11 @@ fn map_set_collection_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn set_size_clear_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/set-size-clear.ts");
+}
+
+#[test]
 fn date_epoch_get_time_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/date-epoch-get-time.ts");
 }
