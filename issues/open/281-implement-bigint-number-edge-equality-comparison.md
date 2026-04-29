@@ -122,6 +122,25 @@ Split from issue 261 on 2026-04-29 because issue 261 already implemented BigInt/
   resolution under the current parser/number-model boundary, and compatible
   `NaN` / `Infinity` runtime comparison semantics remain unimplemented.
 
+2026-04-29:
+
+- Added a parser-side source-spanned issue-281 diagnostic boundary for
+  statically visible fractional number token sequences in BigInt/Number
+  equality and relational comparisons, covering both `1n == 1.5` and
+  `1.5 < 2n` before they fall through to member-property parse diagnostics.
+- Added unsupported regression fixtures for both BigInt-left and
+  fractional-left forms.
+- Validation passed: `cargo test -p ts2wasm-cli bigint`;
+  `cargo fmt --all --check`; `cargo nextest run -E 'test(bigint) or
+  test(node_diff)'` (45 passed, 551 skipped); `mise run
+  update-issue-index -- --check`.
+- Validation not green: `mise run check issues` fails before issue-281-specific
+  checks on pre-existing missing test262 coverage-result artifact references
+  in issue 308 and several done issues.
+- Remaining scope: compatible fractional / `NaN` / `Infinity` runtime
+  comparison semantics still require the broader number model and are not
+  closed by this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

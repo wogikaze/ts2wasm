@@ -141,6 +141,8 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 
 ## 式と演算子
 
+BigInt/Number comparison の number-model diagnostic boundary: `NaN` / `Infinity` とその signed unary forms に加え、statically visible fractional number token sequences（例: `1n == 1.5`, `1.5 < 2n`）は issue-281 diagnostic として扱う。互換 runtime semantics は broader number model work が所有する。
+
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
 | `===` (strict equality) | ES3 | primitive fast path | 実装済み（BigInt/BigInt mathematical value 比較を含む） | - | - |
