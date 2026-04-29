@@ -89,7 +89,7 @@ Issue 272 is closed as a stale broad duplicate of issue 049 for the already impl
 
 Commits:
 
-- close commit created after validation
+- `9d72ae8` (`issue-272: split stale set work`)
 
 Validation result:
 
