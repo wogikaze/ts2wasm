@@ -448,6 +448,14 @@ fn bigint_runtime_mixed_relational_traps_instead_of_false() {
 }
 
 #[test]
+fn bigint_runtime_mixed_string_out_of_range_reports_issue_282() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-runtime-mixed-string-out-of-range-unsupported.ts",
+        "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice",
+    );
+}
+
+#[test]
 fn regexp_test_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-test.ts");
 }

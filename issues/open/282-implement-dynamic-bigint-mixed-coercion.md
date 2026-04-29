@@ -148,6 +148,19 @@ Progress on 2026-04-29:
 - Remaining issue-282 work: object `ToPrimitive` and unsupported string
   grammar or magnitude outside the current small-int runtime boundary.
 
+Progress on 2026-04-29:
+
+- Added a source diagnostic regression for literal-derived dynamic
+  BigInt/String comparison strings outside the current signed-i32
+  `StringToBigInt` comparison helper boundary:
+  `fixtures/core-semantics/bigint-runtime-mixed-string-out-of-range-unsupported.ts`.
+- `crates/cli/tests/m2_node_diff.rs` now asserts the diagnostic remains owned
+  by issue 282 instead of allowing the runtime helper to overflow and return a
+  silently wrong boolean for the statically-known dynamic string case.
+- Remaining issue-282 work: object `ToPrimitive` and unknown object-carried
+  dynamic strings outside the current signed-i32 boundary still require broader
+  runtime/helper work or a separate source-backed split.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
