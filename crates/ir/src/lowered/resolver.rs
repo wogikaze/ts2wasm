@@ -7,6 +7,7 @@ struct Resolver<'a> {
     next_func_id: usize,
     generated_functions: Vec<LoweredFunction>,
     arrow_locals: HashMap<LocalId, ArrowClosure>,
+    heap_closure_locals: HashSet<LocalId>,
     module_ids: HashMap<String, usize>,
     modules: Vec<ModuleInfo>,
     class_constructor_ids: HashMap<String, FuncId>,
@@ -54,6 +55,7 @@ impl<'a> Resolver<'a> {
             next_func_id,
             generated_functions: Vec::new(),
             arrow_locals: HashMap::new(),
+            heap_closure_locals: HashSet::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -88,6 +90,7 @@ impl<'a> Resolver<'a> {
             next_func_id,
             generated_functions: Vec::new(),
             arrow_locals: HashMap::new(),
+            heap_closure_locals: HashSet::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -170,6 +173,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.arrow_locals.remove(&local_id);
                 }
+                self.update_heap_closure_local(local_id, expr, &lowered);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -202,6 +206,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.arrow_locals.remove(&local_id);
                 }
+                self.update_heap_closure_local(local_id, expr, &lowered);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -551,6 +556,17 @@ impl<'a> Resolver<'a> {
                     lowered_args.extend(closure.captures.iter().copied().map(LoweredExpr::Local));
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(closure.func_id),
+                        args: lowered_args,
+                    });
+                }
+
+                if let Ok(local_id) = self.resolve_local(func_name)
+                    && self.heap_closure_locals.contains(&local_id)
+                {
+                    let mut lowered_args = vec![LoweredExpr::Local(local_id)];
+                    lowered_args.extend(self.lower_call_args(args)?);
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "HeapClosureCall".to_owned(),
                         args: lowered_args,
                     });
                 }
@@ -1557,6 +1573,45 @@ impl<'a> Resolver<'a> {
             self.regexp_literal_locals.insert(local_id);
         } else {
             self.regexp_literal_locals.remove(&local_id);
+        }
+    }
+
+    fn update_heap_closure_local(
+        &mut self,
+        local_id: LocalId,
+        expr: &ResolvedExpr,
+        lowered: &LoweredExpr,
+    ) {
+        if self.expr_is_known_heap_closure(expr)
+            || matches!(
+                lowered,
+                LoweredExpr::ArrowFn {
+                    representation: ClosureRepresentation::HeapObject,
+                    ..
+                }
+            )
+        {
+            self.heap_closure_locals.insert(local_id);
+        } else {
+            self.heap_closure_locals.remove(&local_id);
+        }
+    }
+
+    fn expr_is_known_heap_closure(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Call { callee, .. } => match callee.as_ref() {
+                ResolvedExpr::Ident(name) => self
+                    .resolve_func(name)
+                    .ok()
+                    .and_then(|func_id| self.function_signatures.get(&func_id))
+                    .is_some_and(|signature| signature.returns_heap_closure),
+                _ => false,
+            },
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local_id| self.heap_closure_locals.contains(&local_id)),
+            _ => false,
         }
     }
 
