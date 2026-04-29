@@ -1,0 +1,10 @@
+console.log(1n == 1);
+console.log(1 == 1n);
+console.log(0n == 0);
+console.log(0 == 0n);
+console.log(2n != 1);
+console.log(1 != 2n);
+console.log(2n == 1);
+console.log(0 == 1n);
+console.log(0n != 0);
+console.log(18446744073709551616n != 1);
