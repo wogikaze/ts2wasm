@@ -5,12 +5,16 @@ use std::hash::Hasher;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::process::Stdio;
+use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 #[path = "common/iwasm_runtime.rs"]
 mod iwasm_runtime;
 
-use iwasm_runtime::{IwasmRunResult, run_iwasm_child_with_timeout, run_iwasm_with_timeout};
+use iwasm_runtime::{
+    IwasmRunResult, run_iwasm_child_with_timeout, run_iwasm_with_timeout,
+    run_iwasm_with_timeout_duration,
+};
 
 use ts2wasm_shared::{TestRecord, TestStatus};
 
@@ -69,6 +73,14 @@ fn large_integer_number_boundary_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn array_push_recursive_growth_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/array-push-recursive-growth.ts");
+}
+
+#[test]
+fn abc451_depth8_live_set_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node_with_iwasm_timeout(
+        "fixtures/core-semantics/abc451-depth8-live-set.ts",
+        Duration::from_secs(30),
+    );
 }
 
 #[test]
@@ -1223,6 +1235,10 @@ fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
 }
 
 fn assert_fixture_matches_node(fixture: &str) {
+    assert_fixture_matches_node_with_iwasm_timeout(fixture, iwasm_runtime::IWASM_TIMEOUT);
+}
+
+fn assert_fixture_matches_node_with_iwasm_timeout(fixture: &str, iwasm_timeout: Duration) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -1251,7 +1267,7 @@ fn assert_fixture_matches_node(fixture: &str) {
     );
     assert_no_precomputed_stdout(fixture, &output, &node.stdout);
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout_duration(Command::new("iwasm").arg(&output), iwasm_timeout)
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,

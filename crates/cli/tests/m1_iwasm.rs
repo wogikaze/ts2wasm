@@ -1,17 +1,10 @@
 use std::fs;
-use std::path::Path;
 use std::process::Command;
 
 #[path = "common/iwasm_runtime.rs"]
 mod iwasm_runtime;
 
 use iwasm_runtime::run_iwasm_with_timeout;
-
-fn fixture_path(fixture: &str) -> std::path::PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../../fixtures")
-        .join(fixture)
-}
 
 #[test]
 fn builds_console_log_hi_and_runs_with_iwasm() {
@@ -56,11 +49,23 @@ fn builds_console_log_hi_and_runs_with_iwasm() {
 
 #[test]
 fn oom_alloc_check_must_fail_iwasm() {
-    let input = fixture_path("basics-oom/oom-test.ts");
-    assert!(input.exists(), "missing fixture: {:?}", input);
+    let temp = std::env::temp_dir().join(format!("ts2wasm-m1-oom-check-{}", std::process::id()));
+    fs::create_dir_all(&temp).unwrap();
 
-    let output =
-        std::env::temp_dir().join(format!("ts2wasm-m1-oom-check-{}.wasm", std::process::id()));
+    let input = temp.join("oom-fast.ts");
+    let output = temp.join("oom-fast.wasm");
+    fs::write(
+        &input,
+        r#"let s = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+let i = 0;
+while (i < 25) {
+    s = s + s;
+    i = i + 1;
+}
+console.log(s.length);
+"#,
+    )
+    .unwrap();
 
     let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
