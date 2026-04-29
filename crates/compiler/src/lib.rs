@@ -535,12 +535,7 @@ fn validate_stmt(
         }
         Stmt::ClassDecl { body, .. } => validate_class_body(body),
         Stmt::Expr { .. } => Ok(()),
-        Stmt::Function { span, .. } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-062c: nested function declarations are not supported in this milestone"
-                .to_owned(),
-            span: Some(*span),
-        }),
+        Stmt::Function { body, .. } => validate_block(body),
         Stmt::Throw { .. } => Ok(()),
         Stmt::Labeled { body, .. } => validate_stmt(body, in_top_level, scope, top_functions),
         Stmt::Break { .. } => Ok(()),
@@ -734,11 +729,9 @@ mod tests {
     }
 
     #[test]
-    fn rejects_nested_function_in_ast_validation() {
+    fn permits_nested_function_in_ast_validation() {
         let program = parse_program("if (true) { function f() { return 1; } }").unwrap();
-        let err = validate_ast(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-062c"));
+        validate_ast(&program).expect("nested function lowering handles support diagnostics");
     }
 
     #[test]
