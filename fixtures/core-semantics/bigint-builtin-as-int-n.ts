@@ -1,0 +1,10 @@
+console.log(BigInt.asIntN(8, 255n));
+console.log(BigInt.asIntN(8, 128n));
+console.log(BigInt.asIntN(8, 127n));
+console.log(BigInt.asIntN(8, -129n));
+console.log(BigInt.asUintN(8, 255n));
+console.log(BigInt.asUintN(8, -1n));
+console.log(BigInt.asUintN(0, 123n));
+console.log(String(BigInt.asUintN(8, -1n)));
+console.log(BigInt.asIntN(64, 9223372036854775808n));
+console.log(BigInt.asUintN(64, -1n));
