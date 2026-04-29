@@ -1,49 +1,9 @@
 {
   "suite": "test262",
-  "suite_name": "test262",
-  "denominator": 53445,
-  "executed": 18000,
-  "build_coverage_percent": "0.01",
-  "semantic_coverage_percent": "0.01",
-  "build_pass": 5,
-  "semantic_pass": 3,
-  "fail": 0,
-  "unsupported": 17995,
-  "blocked": 0,
-  "skip_with_reason": 0,
-  "unsupported_diagcodes": {
-    "UnsupportedSyntax": 12436,
-    "UnresolvedName": 5513,
-    "DuplicateLocal": 45,
-    "UnresolvedFunction": 1
-  },
-  "unsupported_features": {
-    "array-builtin": 2121,
-    "name-resolution": 5513,
-    "date": 405,
-    "function": 595,
-    "object-builtin": 2058,
-    "regexp-literal": 1476,
-    "string-builtin": 715,
-    "builtin-api": 4434,
-    "legacy-global-builtin": 16,
-    "eval": 460,
-    "object-literal": 2,
-    "parser-syntax": 131,
-    "annexb-ishtmldda": 12,
-    "arguments-object": 1,
-    "switch": 1,
-    "class": 2,
-    "async-iteration": 1,
-    "destructuring": 2,
-    "declaration-emit": 4,
-    "duplicate-local": 45,
-    "function-resolution": 1
-  },
-  "status": "in-progress",
-  "selection": {
-    "paths_file": null,
-    "path_filters": []
-  },
-  "evidence": "mise run reference-coverage -- test262 --limit 18000"
+  "passed": 2498,
+  "failed": 98,
+  "unsupported": 10879,
+  "blocked": 2,
+  "total": 13477,
+  "timestamp": "2026-04-29T19:16:44.785338"
 }
