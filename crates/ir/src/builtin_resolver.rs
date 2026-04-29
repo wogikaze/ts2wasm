@@ -2886,6 +2886,8 @@ struct BigIntRuntimeGuard {
     locals: HashMap<String, BigIntStaticInfo>,
     string_locals: HashSet<String>,
     string_values: HashMap<String, String>,
+    object_string_values: HashMap<String, HashMap<String, String>>,
+    object_bigint_props: HashMap<String, HashSet<String>>,
     nullish_locals: HashSet<String>,
     object_toprimitive_locals: HashSet<String>,
 }
@@ -2917,6 +2919,16 @@ impl BigIntRuntimeGuard {
                 } else {
                     self.string_locals.remove(name);
                     self.string_values.remove(name);
+                }
+                if let Some(props) = self.expr_static_object_string_values(expr) {
+                    self.object_string_values.insert(name.clone(), props);
+                } else {
+                    self.object_string_values.remove(name);
+                }
+                if let Some(props) = self.expr_static_object_bigint_props(expr) {
+                    self.object_bigint_props.insert(name.clone(), props);
+                } else {
+                    self.object_bigint_props.remove(name);
                 }
                 if self.expr_is_definitely_nullish(expr) {
                     self.nullish_locals.insert(name.clone());
@@ -3032,10 +3044,14 @@ impl BigIntRuntimeGuard {
                 self.expr_bigint_info(iter)?;
                 let mut body_guard = self.fork();
                 body_guard.locals.remove(var);
+                body_guard.object_string_values.remove(var);
+                body_guard.object_bigint_props.remove(var);
                 body_guard.nullish_locals.remove(var);
                 body_guard.object_toprimitive_locals.remove(var);
                 body_guard.visit_stmts(body)?;
                 self.locals.remove(var);
+                self.object_string_values.remove(var);
+                self.object_bigint_props.remove(var);
                 self.nullish_locals.remove(var);
                 self.object_toprimitive_locals.remove(var);
                 self.invalidate_assigned_in_stmts(body);
@@ -3064,6 +3080,8 @@ impl BigIntRuntimeGuard {
             locals: self.locals.clone(),
             string_locals: self.string_locals.clone(),
             string_values: self.string_values.clone(),
+            object_string_values: self.object_string_values.clone(),
+            object_bigint_props: self.object_bigint_props.clone(),
             nullish_locals: self.nullish_locals.clone(),
             object_toprimitive_locals: self.object_toprimitive_locals.clone(),
         }
@@ -3074,6 +3092,8 @@ impl BigIntRuntimeGuard {
             self.locals.remove(&name);
             self.string_locals.remove(&name);
             self.string_values.remove(&name);
+            self.object_string_values.remove(&name);
+            self.object_bigint_props.remove(&name);
             self.nullish_locals.remove(&name);
             self.object_toprimitive_locals.remove(&name);
         }
@@ -3084,6 +3104,8 @@ impl BigIntRuntimeGuard {
             self.locals.remove(&name);
             self.string_locals.remove(&name);
             self.string_values.remove(&name);
+            self.object_string_values.remove(&name);
+            self.object_bigint_props.remove(&name);
             self.nullish_locals.remove(&name);
             self.object_toprimitive_locals.remove(&name);
         }
@@ -3118,6 +3140,97 @@ impl BigIntRuntimeGuard {
                 Some(value)
             }
             _ => None,
+        }
+    }
+
+    fn expr_static_object_string_values(&self, expr: &Expr) -> Option<HashMap<String, String>> {
+        let Expr::Object { props, .. } = expr else {
+            return None;
+        };
+        let values = props
+            .iter()
+            .filter_map(|(key, value)| {
+                self.expr_static_string_value(value)
+                    .map(|value| (key.clone(), value))
+            })
+            .collect::<HashMap<_, _>>();
+        (!values.is_empty()).then_some(values)
+    }
+
+    fn expr_static_object_bigint_props(&self, expr: &Expr) -> Option<HashSet<String>> {
+        let Expr::Object { props, .. } = expr else {
+            return None;
+        };
+        let values = props
+            .iter()
+            .filter_map(|(key, value)| {
+                self.expr_is_tracked_bigint_value(value)
+                    .then(|| key.clone())
+            })
+            .collect::<HashSet<_>>();
+        (!values.is_empty()).then_some(values)
+    }
+
+    fn expr_is_tracked_bigint_value(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::BigInt { .. } => true,
+            Expr::Ident { name, .. } => self.locals.contains_key(name),
+            Expr::Unary { op, expr, .. } => {
+                *op == UnaryOp::Negate && self.expr_is_tracked_bigint_value(expr)
+            }
+            _ => false,
+        }
+    }
+
+    fn expr_static_object_member_string_value(
+        &self,
+        object: &Expr,
+        property: &str,
+    ) -> Option<String> {
+        match object {
+            Expr::Ident { name, .. } => self
+                .object_string_values
+                .get(name)
+                .and_then(|props| props.get(property))
+                .cloned(),
+            Expr::Object { props, .. } => props
+                .iter()
+                .find(|(key, _)| key == property)
+                .and_then(|(_, value)| self.expr_static_string_value(value)),
+            _ => None,
+        }
+    }
+
+    fn expr_literal_derived_string_value(&self, expr: &Expr) -> Option<String> {
+        match expr {
+            Expr::Member {
+                object, property, ..
+            }
+            | Expr::OptionalMember {
+                object, property, ..
+            } => self.expr_static_object_member_string_value(object, property),
+            _ => self.expr_static_string_value(expr),
+        }
+    }
+
+    fn expr_is_object_carried_bigint(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Member {
+                object, property, ..
+            }
+            | Expr::OptionalMember {
+                object, property, ..
+            } => match object.as_ref() {
+                Expr::Ident { name, .. } => self
+                    .object_bigint_props
+                    .get(name)
+                    .is_some_and(|props| props.contains(property)),
+                Expr::Object { props, .. } => props.iter().any(|(key, value)| {
+                    key == property && self.expr_is_tracked_bigint_value(value)
+                }),
+                _ => false,
+            },
+            _ => false,
         }
     }
 
@@ -3178,6 +3291,9 @@ impl BigIntRuntimeGuard {
                 let left_info = self.expr_bigint_info(left)?;
                 let right_info = self.expr_bigint_info(right)?;
                 if left_info.is_none() && right_info.is_none() {
+                    if bigint_equality_or_comparison_op(*op) {
+                        self.guard_object_carried_bigint_mixed_string(left, right, *span)?;
+                    }
                     return Ok(None);
                 }
                 if !bigint_arithmetic_or_bitwise_op(*op) {
@@ -3382,6 +3498,16 @@ impl BigIntRuntimeGuard {
                     self.string_locals.remove(name);
                     self.string_values.remove(name);
                 }
+                if let Some(props) = self.expr_static_object_string_values(expr) {
+                    self.object_string_values.insert(name.clone(), props);
+                } else {
+                    self.object_string_values.remove(name);
+                }
+                if let Some(props) = self.expr_static_object_bigint_props(expr) {
+                    self.object_bigint_props.insert(name.clone(), props);
+                } else {
+                    self.object_bigint_props.remove(name);
+                }
                 if self.expr_is_object_toprimitive_boundary(expr) {
                     self.object_toprimitive_locals.insert(name.clone());
                 } else {
@@ -3390,6 +3516,7 @@ impl BigIntRuntimeGuard {
                 Ok(info)
             }
             Expr::LogicalPropertyAssign {
+                object,
                 object_expr,
                 computed_key,
                 expr,
@@ -3402,6 +3529,8 @@ impl BigIntRuntimeGuard {
                     self.expr_bigint_info(computed_key)?;
                 }
                 self.expr_bigint_info(expr)?;
+                self.object_string_values.remove(object);
+                self.object_bigint_props.remove(object);
                 Ok(None)
             }
             Expr::Array { elements, .. } => {
@@ -3449,6 +3578,7 @@ impl BigIntRuntimeGuard {
             Expr::PropertyAssign { object, value, .. } => {
                 self.expr_bigint_info(object)?;
                 self.expr_bigint_info(value)?;
+                self.invalidate_static_object_props_for_object(object);
                 Ok(None)
             }
             Expr::IndexAssign {
@@ -3460,6 +3590,7 @@ impl BigIntRuntimeGuard {
                 self.expr_bigint_info(object)?;
                 self.expr_bigint_info(index)?;
                 self.expr_bigint_info(value)?;
+                self.invalidate_static_object_props_for_object(object);
                 Ok(None)
             }
             Expr::ArrowFn { body, .. } => BigIntRuntimeGuard::default().expr_bigint_info(body),
@@ -3482,13 +3613,10 @@ impl BigIntRuntimeGuard {
         bigint_info: Option<&BigIntStaticInfo>,
         span: Span,
     ) -> Result<(), Diagnostic> {
-        if bigint_info.is_some()
-            || !self.expr_is_definitely_string(expr)
-            || matches!(expr, Expr::String { .. })
-        {
+        if bigint_info.is_some() || matches!(expr, Expr::String { .. }) {
             return Ok(());
         }
-        let Some(value) = self.expr_static_string_value(expr) else {
+        let Some(value) = self.expr_literal_derived_string_value(expr) else {
             return Ok(());
         };
         let parsed = match bigint_from_string_builtin(&value, span) {
@@ -3499,6 +3627,28 @@ impl BigIntRuntimeGuard {
             return Err(bigint_comparison_string_boundary_diagnostic(span));
         }
         Ok(())
+    }
+
+    fn guard_object_carried_bigint_mixed_string(
+        &self,
+        left: &Expr,
+        right: &Expr,
+        span: Span,
+    ) -> Result<(), Diagnostic> {
+        if self.expr_is_object_carried_bigint(left) {
+            self.guard_bigint_mixed_runtime_string(right, None, span)?;
+        }
+        if self.expr_is_object_carried_bigint(right) {
+            self.guard_bigint_mixed_runtime_string(left, None, span)?;
+        }
+        Ok(())
+    }
+
+    fn invalidate_static_object_props_for_object(&mut self, object: &Expr) {
+        if let Expr::Ident { name, .. } = object {
+            self.object_string_values.remove(name);
+            self.object_bigint_props.remove(name);
+        }
     }
 }
 
