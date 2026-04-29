@@ -3,6 +3,32 @@
 // Note: Integration tests in tests/ directory cannot directly access private parse_program function
 // Instead, we test lexer/parser through CLI integration tests or internal unit tests in lib.rs
 
+use ts2wasm_frontend::{Expr, Lexer, Parser, Stmt};
+
+#[test]
+fn parser_accepts_unicode_identifier_escapes() {
+    let tokens = Lexer::new(r"let a\u0062 = 1; let _\u0816\u{11080} = ab;")
+        .tokenize()
+        .unwrap();
+    let program = Parser::new(tokens).parse_program().unwrap();
+
+    assert!(matches!(
+        program.as_slice(),
+        [
+            Stmt::Let {
+                name,
+                expr: Expr::Number { value: 1, .. },
+                ..
+            },
+            Stmt::Let {
+                name: second,
+                expr: Expr::Ident { name: reference, .. },
+                ..
+            },
+        ] if name == "ab" && second == "_\u{0816}\u{11080}" && reference == "ab"
+    ));
+}
+
 #[test]
 fn lexer_recognizes_new_keywords() {
     // This is a placeholder for keyword recognition tests.
