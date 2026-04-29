@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 52 | 8 | 44 |
+| runtime | 52 | 7 | 45 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 267 | 142 | 125 |
+| total | 267 | 141 | 126 |
 <!-- generated:summary:end -->
 
 ## Reading rules
