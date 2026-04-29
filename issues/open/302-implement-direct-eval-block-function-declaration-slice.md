@@ -133,7 +133,7 @@ This is split from issue 225 because the parent covers multiple direct-eval
 families and existing-binding/early-error variants. Keep this slice limited to
 the first block-function declaration behavior.
 
-2026-04-30 child progress:
+2026-04-29 child progress:
 
 - Added a narrow static direct eval parser slice for source that is exactly one
   block containing one function declaration, plus Node/iwasm differential
@@ -145,7 +145,7 @@ the first block-function declaration behavior.
 - Required `reference-coverage` commands were blocked locally because
   `reference/test262` is missing in the assigned worktree.
 
-2026-04-30 child follow-up:
+2026-04-29 child follow-up:
 
 - Parent review identified that the parser-level transform could not prove
   unshadowed direct eval. Added a conservative guard: the static block-function
