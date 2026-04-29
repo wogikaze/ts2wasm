@@ -129,6 +129,7 @@ Fill only when moving to `done/`.
 Commits:
 
 - `4f913980c01e374793088134f5d1222dee459359`
+- `80842da68bf616d1f18417b0b77928f626315f7d`
 
 Validation result:
 
@@ -141,8 +142,12 @@ command: cargo nextest run -p ts2wasm-cli -E 'test(lowering_represents_returned_
 result: pass; 2 tests run, 2 passed
 date: 2026-04-29
 
+command: cargo nextest run -p ts2wasm-cli -E 'test(lowering_represents_known_heap_closure_local_call_explicitly) or test(validate_rejects_heap_closure_creation_until_issue_257_backend_support) or test(unsupported_returned_ordinary_function_closure_reports_issue_257)'
+result: pass; 3 tests run, 3 passed
+date: 2026-04-29
+
 command: cargo nextest run -E 'test(closure) or test(function) or test(node_diff)'
-result: pass; 30 tests run, 30 passed
+result: pass; 31 tests run, 31 passed
 date: 2026-04-29
 
 command: cargo nextest run -p ts2wasm-ir
@@ -150,7 +155,7 @@ result: pass; 21 tests run, 21 passed
 date: 2026-04-29
 
 command: cargo nextest run
-result: pass; 463 tests run, 463 passed, 4 skipped
+result: pass; 464 tests run, 464 passed, 4 skipped
 date: 2026-04-29
 
 command: mise run update-issue-index -- --check
