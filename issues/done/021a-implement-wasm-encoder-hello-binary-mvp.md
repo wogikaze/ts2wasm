@@ -88,7 +88,7 @@ Completed on 2026-04-29 by child-021a.
 Commits:
 
 - `09af1cf` issue-021a: add hello wasm binary MVP
-- `47412e6` issue-021a: close wasm binary MVP
+- `f09a37b` issue-021a: close wasm binary MVP
 
 Validation result:
 
