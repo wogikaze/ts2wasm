@@ -3,7 +3,7 @@
 
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
-      [--paths-file PATH] [--path-filter TEXT]
+      [--paths-file PATH] [--path-filter TEXT] [--web-ui]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -21,6 +21,7 @@ Notes:
   - --detail: output per-file details (file-path: diag-code: feature-label)
   - --paths-file: run a deterministic subset listed as repo-relative or suite-relative paths
   - --path-filter: run only files whose repo-relative path contains TEXT (repeatable)
+  - --web-ui: refresh web-ui/public/data after writing this suite coverage result
   - TS2WASM_REFERENCE_ROOT may point at an external reference/ directory for
     validation from isolated git worktrees.
 """
@@ -36,6 +37,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
+COVERAGE_RESULTS_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
 
 SUITE_METADATA = {
     "test262": {
@@ -104,7 +106,7 @@ def resolve_suite_paths(suite):
 def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
-    print("      [--paths-file PATH] [--path-filter TEXT]")
+    print("      [--paths-file PATH] [--path-filter TEXT] [--web-ui]")
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
@@ -199,6 +201,28 @@ def evidence_command(suite, limit, paths_file, path_filters):
     for path_filter in path_filters:
         parts.extend(["--path-filter", path_filter])
     return " ".join(parts)
+
+def refresh_web_ui_data():
+    """Regenerate web UI data without changing this command's stdout contract."""
+    result = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if result.stdout:
+        print(result.stdout, end="", file=sys.stderr)
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+    if result.returncode != 0:
+        sys.exit(result.returncode)
+
+def write_coverage_result(summary):
+    COVERAGE_RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    output_path = COVERAGE_RESULTS_DIR / f"{summary['suite']}.json"
+    with output_path.open("w", encoding="utf-8") as handle:
+        json.dump(summary, handle, indent=2, sort_keys=False)
+        handle.write("\n")
 
 def feature_label(diag_code, err_file, file_path):
     """Generate feature label from diagnostic code and error output."""
@@ -403,6 +427,7 @@ def main():
     detail_output = False
     paths_file = None
     path_filters = []
+    web_ui = False
     
     i = 0
     while i < len(args):
@@ -437,6 +462,9 @@ def main():
                 sys.exit(1)
             path_filters.append(args[i + 1])
             i += 2
+        elif args[i] == "--web-ui":
+            web_ui = True
+            i += 1
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -455,29 +483,33 @@ def main():
     evidence = evidence_command(suite, limit, paths_file, path_filters)
     
     if limit == 0:
+        summary = {
+            "suite": suite,
+            "suite_name": suite,
+            "denominator": 0,
+            "executed": 0,
+            "build_coverage_percent": "0.00",
+            "semantic_coverage_percent": "0.00",
+            "build_pass": 0,
+            "semantic_pass": 0,
+            "fail": 0,
+            "unsupported": 0,
+            "blocked": 0,
+            "skip_with_reason": 0,
+            "unsupported_diagcodes": {},
+            "unsupported_features": {},
+            "status": "in-progress",
+            "selection": {
+                "paths_file": paths_file,
+                "path_filters": path_filters,
+            },
+            "evidence": evidence,
+        }
+        if web_ui:
+            write_coverage_result(summary)
+            refresh_web_ui_data()
         if json_output:
-            print(json.dumps({
-                "suite": suite,
-                "suite_name": suite,
-                "denominator": 0,
-                "executed": 0,
-                "build_coverage_percent": "0.00",
-                "semantic_coverage_percent": "0.00",
-                "build_pass": 0,
-                "semantic_pass": 0,
-                "fail": 0,
-                "unsupported": 0,
-                "blocked": 0,
-                "skip_with_reason": 0,
-                "unsupported_diagcodes": {},
-                "unsupported_features": {},
-                "status": "in-progress",
-                "selection": {
-                    "paths_file": paths_file,
-                    "path_filters": path_filters,
-                },
-                "evidence": evidence
-            }, indent=2))
+            print(json.dumps(summary, indent=2))
         else:
             print(f"suite={suite}")
             print("denominator=0")
@@ -611,30 +643,36 @@ def main():
     semantic_coverage_percent = "0.00"
     if denominator > 0:
         semantic_coverage_percent = f"{(semantic_pass_count / denominator) * 100:.2f}"
-    
+
+    summary = {
+        "suite": suite,
+        "suite_name": suite,
+        "denominator": denominator,
+        "executed": executed,
+        "build_coverage_percent": coverage_percent,
+        "semantic_coverage_percent": semantic_coverage_percent,
+        "build_pass": build_pass_count,
+        "semantic_pass": semantic_pass_count,
+        "fail": fail_count,
+        "unsupported": unsupported_count,
+        "blocked": blocked_count,
+        "skip_with_reason": skip_count,
+        "unsupported_diagcodes": unsupported_diag_counts,
+        "unsupported_features": unsupported_feature_counts,
+        "status": "in-progress",
+        "selection": {
+            "paths_file": paths_file,
+            "path_filters": path_filters,
+        },
+        "evidence": evidence,
+    }
+
+    if web_ui:
+        write_coverage_result(summary)
+        refresh_web_ui_data()
+
     if json_output:
-        print(json.dumps({
-            "suite": suite,
-            "suite_name": suite,
-            "denominator": denominator,
-            "executed": executed,
-            "build_coverage_percent": coverage_percent,
-            "semantic_coverage_percent": semantic_coverage_percent,
-            "build_pass": build_pass_count,
-            "semantic_pass": semantic_pass_count,
-            "fail": fail_count,
-            "unsupported": unsupported_count,
-            "blocked": blocked_count,
-            "skip_with_reason": skip_count,
-            "unsupported_diagcodes": unsupported_diag_counts,
-            "unsupported_features": unsupported_feature_counts,
-            "status": "in-progress",
-            "selection": {
-                "paths_file": paths_file,
-                "path_filters": path_filters,
-            },
-            "evidence": evidence
-        }, indent=2))
+        print(json.dumps(summary, indent=2))
     else:
         print(f"suite={suite}")
         print(f"denominator={denominator}")

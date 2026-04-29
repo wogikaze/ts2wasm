@@ -119,6 +119,12 @@ Start from the existing `web-ui/src/hooks/useData.ts` shapes and avoid changing 
 - Verified `mise run web-ui-data` succeeds and refreshes all required web UI data files from existing artifacts.
 - Remaining integration: `mise run reference-coverage -- --web-ui` and `mise run test262 -- --web-ui` are not wired in this slice; use the documented equivalent `mise run web-ui-data`.
 
+2026-04-29 command-integration slice:
+
+- Added `--web-ui` support to `mise run reference-coverage -- <suite> ...`; the command writes the selected suite summary under `artifacts/coverage/results/` and refreshes `web-ui/public/data/` while preserving the command's stdout contract.
+- Added `--web-ui` support to `mise run test262 -- ...`; the command refreshes `web-ui/public/data/` from the run JSONL stored in the coverage results directory while keeping JSONL stdout unchanged.
+- The narrow command validation is run in a throwaway worktree because these commands intentionally refresh tracked coverage/data artifacts for the selected sample.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

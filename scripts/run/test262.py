@@ -2,7 +2,7 @@
 """Stream G: Test262 Runner with differential comparison
 
 Usage:
-  python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose] > test262-results.jsonl
+  python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose] [--web-ui] > test262-results.jsonl
 
 Compiles each test262 file, runs with iwasm, and compares output against Node.js reference.
 Outputs one TestRecord per line in JSON Lines format to stdout (use --verbose for console output).
@@ -135,13 +135,14 @@ class Test262Metadata:
         return self.negative_phase is not None
 
 def usage():
-    print("Usage: python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose]")
+    print("Usage: python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose] [--web-ui]")
     print()
     print("Options:")
     print("  --sample N          Run up to N files per extracted category.")
     print("  --category PATTERN  Regex matched against extracted category.")
     print("  --jobs N            Number of parallel workers (default: TEST262_JOBS or os.cpu_count or 4).")
     print("  --verbose           Show detailed per-test processing information.")
+    print("  --web-ui            Refresh web-ui/public/data using this run's JSONL results.")
     print("  -h, --help          Show this help.")
 
 def escape_json(s):
@@ -477,6 +478,26 @@ def process_one_test(test_file, tmp_dir, verbose=False):
     
     return "", "fail"
 
+def refresh_web_ui_data(jsonl_file):
+    """Regenerate web UI data without changing the runner's stdout contract."""
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(REPO_ROOT / "scripts/gen/web-ui-data.py"),
+            "--test-jsonl",
+            str(jsonl_file),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+    )
+    if result.stdout:
+        print(result.stdout, end="", file=sys.stderr)
+    if result.stderr:
+        print(result.stderr, end="", file=sys.stderr)
+    if result.returncode != 0:
+        sys.exit(result.returncode)
+
 def main():
     args = sys.argv[1:]
     
@@ -484,6 +505,7 @@ def main():
     category_pattern = "."
     jobs = int(os.environ.get("TEST262_JOBS", "")) if os.environ.get("TEST262_JOBS") else None
     verbose = False
+    web_ui = False
     
     i = 0
     while i < len(args):
@@ -516,6 +538,9 @@ def main():
         elif args[i] == "--verbose":
             verbose = True
             i += 1
+        elif args[i] == "--web-ui":
+            web_ui = True
+            i += 1
         elif args[i] in ("-h", "--help"):
             usage()
             sys.exit(0)
@@ -544,6 +569,12 @@ def main():
         print("Unsupported: 0", file=sys.stderr)
         print("Blocked: 0", file=sys.stderr)
         print("Total: 0", file=sys.stderr)
+        if web_ui:
+            results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
+            results_dir.mkdir(parents=True, exist_ok=True)
+            jsonl_file = results_dir / "test262-results.jsonl"
+            jsonl_file.write_text("", encoding="utf-8")
+            refresh_web_ui_data(jsonl_file)
         sys.exit(0)
     
     print("Starting test262 runner...", file=sys.stderr)
@@ -668,6 +699,9 @@ def main():
     if gen_site_script.exists():
         subprocess.run([sys.executable, str(gen_site_script)], cwd=REPO_ROOT)
         print("Site generation complete. Run 'mise run build-site' to build the site.", file=sys.stderr)
+
+    if web_ui:
+        refresh_web_ui_data(jsonl_file)
 
 if __name__ == "__main__":
     main()
