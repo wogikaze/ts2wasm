@@ -1,1 +1,1 @@
-console.log(BigInt("1.5"));
+console.log(BigInt("-0x10"));
