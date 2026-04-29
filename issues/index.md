@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 200 | 130 | 70 |
+| frontend | 200 | 129 | 71 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 329 | 145 | 184 |
+| total | 329 | 144 | 185 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
-| 297 | Track pushed dense array locals for map callbacks | feature | frontend/runtime | implementation-ready | P1 |  | after issue 296, `fixtures/atcoder/abc451-d-concat-power2.ts` |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | implementation-ready | P1 |  | `fixtures/atcoder/abc451-d-concat-power2.ts` now reaches a large |
 <!-- generated:ready:end -->
 
@@ -383,6 +382,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 293 | Parse Unicode escaped identifier parts | feature | frontend | see `issues/done/293-parse-unicode-escaped-identifier-parts.md` |
 | 295 | Support Array.map arrow callbacks and chained receivers | feature | runtime/builtins | see `issues/done/295-support-array-map-arrow-and-chained-receivers.md` |
 | 296 | Support small-int exponentiation operator | feature | runtime/semantics | see `issues/done/296-support-small-int-exponentiation-operator.md` |
+| 297 | Track pushed dense array locals for map callbacks | feature | frontend/runtime | see `issues/done/297-track-pushed-dense-array-locals-for-map.md` |
 | 298 | Allow reused for-loop local names in separate loop scopes | bug | frontend/ir | see `issues/done/298-allow-reused-for-loop-local-names.md` |
 | 299 | Support Array.sort numeric comparator slice | feature | runtime/builtins | see `issues/done/299-support-array-sort-numeric-comparator.md` |
 <!-- generated:done:end -->
