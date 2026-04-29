@@ -173,6 +173,7 @@ impl<'a> Resolver<'a> {
                     self.lower_binding_pattern_declarations(
                         pattern,
                         LoweredExpr::Local(value_local),
+                        Some(expr),
                     )?,
                 );
                 Ok(LoweredStmt::Block(statements))
@@ -1465,6 +1466,7 @@ impl<'a> Resolver<'a> {
         &mut self,
         pattern: &BindingPattern,
         value: LoweredExpr,
+        source: Option<&ResolvedExpr>,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         match pattern {
             BindingPattern::Array(bindings) => {
@@ -1477,7 +1479,9 @@ impl<'a> Resolver<'a> {
             BindingPattern::Object(bindings) => {
                 let mut statements = Vec::new();
                 for binding in bindings {
-                    statements.extend(self.lower_object_binding_declaration(binding, &value)?);
+                    statements.extend(self.lower_object_binding_declaration(
+                        binding, bindings, &value, source,
+                    )?);
                 }
                 Ok(statements)
             }
@@ -1506,7 +1510,7 @@ impl<'a> Resolver<'a> {
         };
         let Some(name) = binding.target.identifier() else {
             if let Some(pattern) = binding.target.pattern() {
-                return self.lower_binding_pattern_declarations(pattern, element_value);
+                return self.lower_binding_pattern_declarations(pattern, element_value, None);
             }
             unreachable!("binding target must be identifier or pattern");
         };
@@ -1524,12 +1528,23 @@ impl<'a> Resolver<'a> {
     fn lower_object_binding_declaration(
         &mut self,
         binding: &ObjectBinding,
+        siblings: &[ObjectBinding],
         value: &LoweredExpr,
+        source: Option<&ResolvedExpr>,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let Some(name) = binding.target.identifier() else {
             unreachable!("object binding parser rejects nested targets");
         };
         let local_id = self.declare_local(name)?;
+        if binding.is_rest {
+            return self.lower_object_rest_binding_declaration(
+                local_id,
+                siblings,
+                value,
+                source,
+                binding.span,
+            );
+        }
         self.lower_binding_declaration_with_default(
             local_id,
             LoweredExpr::PropertyGet {
@@ -1538,6 +1553,45 @@ impl<'a> Resolver<'a> {
             },
             binding.default.as_ref(),
         )
+    }
+
+    fn lower_object_rest_binding_declaration(
+        &mut self,
+        local_id: LocalId,
+        siblings: &[ObjectBinding],
+        value: &LoweredExpr,
+        source: Option<&ResolvedExpr>,
+        span: Option<Span>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let Some(ResolvedExpr::Object(props)) = source else {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-251: object rest binding currently requires a static object literal source in this runtime slice".to_owned(),
+                span,
+            });
+        };
+        let excluded_keys = siblings
+            .iter()
+            .filter(|binding| !binding.is_rest)
+            .map(|binding| binding.key.as_str())
+            .collect::<HashSet<_>>();
+        let rest_props = props
+            .iter()
+            .filter(|(key, _)| !excluded_keys.contains(key.as_str()))
+            .map(|(key, _)| {
+                (
+                    key.clone(),
+                    LoweredExpr::PropertyGet {
+                        obj: Box::new(value.clone()),
+                        key: key.clone(),
+                    },
+                )
+            })
+            .collect();
+        Ok(vec![LoweredStmt::Let(
+            local_id,
+            LoweredExpr::ObjectNew { props: rest_props },
+        )])
     }
 
     fn lower_binding_declaration_with_default(

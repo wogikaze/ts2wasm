@@ -13,6 +13,8 @@ pub struct ObjectBinding {
     pub key: String,
     pub target: BindingTarget,
     pub default: Option<BindingDefault>,
+    pub is_rest: bool,
+    pub span: Option<Span>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -164,6 +166,29 @@ fn parse_object_binding_pattern(
                 span,
             ));
         }
+        if let Some(rest_target) = part.strip_prefix("...") {
+            let target = rest_target.trim();
+            if target.contains('=') {
+                return Err(issue_251(
+                    "object rest binding default initializers are not supported in this runtime slice",
+                    span,
+                ));
+            }
+            if !is_identifier(target) {
+                return Err(issue_251(
+                    "object rest binding targets must be identifiers in this runtime slice",
+                    span,
+                ));
+            }
+            bindings.push(ObjectBinding {
+                key: String::new(),
+                target: BindingTarget::Identifier(target.to_owned()),
+                default: None,
+                is_rest: true,
+                span,
+            });
+            continue;
+        }
         let (target_part, default) = split_binding_default(part, span)?;
         reject_unsupported_target(target_part, span)?;
 
@@ -200,6 +225,8 @@ fn parse_object_binding_pattern(
             key,
             target,
             default,
+            is_rest: false,
+            span,
         });
     }
     Ok(BindingPattern::Object(bindings))
