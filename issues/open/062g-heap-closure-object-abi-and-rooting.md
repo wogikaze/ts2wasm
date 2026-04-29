@@ -5,8 +5,8 @@ type: feature
 area: runtime/abi
 class: blocked
 priority: P1
-depends_on: []
-blocks: ["062e", "256", "257", "258"]
+depends_on: ["256", "257", "258"]
+blocks: ["062e"]
 created: 2026-04-29
 updated: 2026-04-29
 ---
