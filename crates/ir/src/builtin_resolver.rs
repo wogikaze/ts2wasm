@@ -495,6 +495,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     | BinaryOp::EqualEqual
                     | BinaryOp::BangEqual
                     | BinaryOp::StrictNotEqual => {
+                        if let Some(folded) = fold_bigint_string_abstract_equality(
+                            &left_resolved,
+                            *op,
+                            &right_resolved,
+                            *span,
+                        )? {
+                            return Ok(folded);
+                        }
                         return Ok(ResolvedExpr::Binary {
                             left: Box::new(left_resolved),
                             op: *op,
@@ -1345,6 +1353,38 @@ fn bigint_from_string_builtin(value: &str, span: Span) -> Result<BigIntConst, Di
     Ok(BigIntConst::from_decimal(sign, &decimal))
 }
 
+fn fold_bigint_string_abstract_equality(
+    left: &ResolvedExpr,
+    op: BinaryOp,
+    right: &ResolvedExpr,
+    span: Span,
+) -> Result<Option<ResolvedExpr>, Diagnostic> {
+    if !matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual) {
+        return Ok(None);
+    }
+
+    let compare = if let (Some(bigint), ResolvedExpr::String(value)) =
+        (bigint_from_resolved(left), right)
+    {
+        Some((bigint, bigint_from_string_builtin(value, span).ok()))
+    } else if let (ResolvedExpr::String(value), Some(bigint)) = (left, bigint_from_resolved(right))
+    {
+        Some((bigint, bigint_from_string_builtin(value, span).ok()))
+    } else {
+        None
+    };
+
+    let Some((bigint, parsed_string)) = compare else {
+        return Ok(None);
+    };
+    let equal = parsed_string.is_some_and(|string_bigint| string_bigint == bigint);
+    Ok(Some(ResolvedExpr::Bool(if op == BinaryOp::BangEqual {
+        !equal
+    } else {
+        equal
+    })))
+}
+
 fn bigint_string_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
@@ -1709,7 +1749,18 @@ impl BigIntRuntimeGuard {
                         let both_bigint = left_info.is_some() && right_info.is_some();
                         let strict_equality =
                             matches!(op, BinaryOp::StrictEqual | BinaryOp::StrictNotEqual);
+                        let static_bigint_string_equality =
+                            is_static_bigint_string_abstract_equality(
+                                left,
+                                left_info.as_ref(),
+                                *op,
+                                right,
+                                right_info.as_ref(),
+                            );
                         if both_bigint || strict_equality {
+                            return Ok(None);
+                        }
+                        if static_bigint_string_equality {
                             return Ok(None);
                         }
                         return Err(bigint_comparison_runtime_diagnostic(*span));
@@ -1918,6 +1969,25 @@ fn bigint_equality_or_comparison_op(op: BinaryOp) -> bool {
             | BinaryOp::BangEqual
             | BinaryOp::StrictNotEqual
     )
+}
+
+fn is_static_bigint_string_abstract_equality(
+    left: &Expr,
+    left_info: Option<&BigIntStaticInfo>,
+    op: BinaryOp,
+    right: &Expr,
+    right_info: Option<&BigIntStaticInfo>,
+) -> bool {
+    if !matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual) {
+        return false;
+    }
+    let left_static_bigint = left_info.is_some_and(|info| {
+        !info.runtime_needed && info.value.is_some() && matches!(right, Expr::String { .. })
+    });
+    let right_static_bigint = right_info.is_some_and(|info| {
+        !info.runtime_needed && info.value.is_some() && matches!(left, Expr::String { .. })
+    });
+    left_static_bigint || right_static_bigint
 }
 
 fn assigned_names_in_stmts(stmts: &[Stmt]) -> HashSet<String> {
