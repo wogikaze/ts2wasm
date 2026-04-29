@@ -60,6 +60,19 @@ function formatPercent(value: number) {
   return `${value.toFixed(1)}%`
 }
 
+function clampPercent(value: number) {
+  if (!Number.isFinite(value)) return 0
+  return Math.max(0, Math.min(100, value))
+}
+
+function percentOf(value: number, total: number) {
+  return total > 0 ? clampPercent((value / total) * 100) : 0
+}
+
+function formatDuration(value?: number) {
+  return Number.isFinite(value) ? `${value}ms` : '-'
+}
+
 function chartNumber(value: unknown) {
   const numeric = Number(value)
   return Number.isFinite(numeric) ? numeric : 0
@@ -210,6 +223,9 @@ function App() {
     { name: 'Future', value: coverage.byPriority.future, fill: priorityColors.Future },
   ], [coverage])
 
+  const coverageTotalMismatch = coverage.total > 0 &&
+    coverage.implemented + coverage.unimplemented + coverage.future !== coverage.total
+
   const suiteCoverageData = useMemo(() => (coverage.suites || []).map(suite => ({
     suite: suite.suite,
     executed: suite.executed,
@@ -219,8 +235,8 @@ function App() {
     blocked: suite.blocked,
     unsupported: suite.unsupported,
     denominator: suite.denominator,
-    buildRate: suite.denominator > 0 ? (suite.build_pass / suite.denominator) * 100 : 0,
-    semanticRate: suite.denominator > 0 ? (suite.semantic_pass / suite.denominator) * 100 : 0,
+    buildRate: suite.denominator > 0 ? clampPercent((suite.build_pass / suite.denominator) * 100) : 0,
+    semanticRate: suite.denominator > 0 ? clampPercent((suite.semantic_pass / suite.denominator) * 100) : 0,
   })), [coverage])
 
   const trendRuns = useMemo(() => buildTrendRuns(history), [history])
@@ -299,11 +315,11 @@ function App() {
     <div className={`theme-${theme} min-h-screen bg-gray-900 text-gray-100`}>
       {/* Header */}
       <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Play className="w-8 h-8 text-purple-500" />
-              <h1 className="text-2xl font-bold">ts2wasm Test Reporter</h1>
+        <div className="max-w-[1680px] mx-auto px-4 sm:px-6 py-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3 min-w-0">
+              <Play className="w-8 h-8 text-purple-500 shrink-0" />
+              <h1 className="text-xl sm:text-2xl font-bold truncate">ts2wasm Test Reporter</h1>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
               <button
@@ -344,7 +360,7 @@ function App() {
 
       {/* Navigation */}
       <nav className="border-b border-gray-800 bg-gray-900">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-[1680px] mx-auto px-4 sm:px-6">
           <div className="flex gap-1">
             <button
               onClick={() => setActiveTab('tests')}
@@ -387,7 +403,7 @@ function App() {
       </nav>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-6">
+      <main className="max-w-[1680px] mx-auto px-4 sm:px-6 py-6">
         {activeTab === 'tests' && (
           <div>
             {testsLoading ? (
@@ -401,15 +417,15 @@ function App() {
             ) : (
               <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Total</span>
                   <span className="text-2xl font-bold">{summary.total}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Passed</span>
                   <span className="text-2xl font-bold text-green-500">
                     {summary.passed}
@@ -417,7 +433,7 @@ function App() {
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Failed</span>
                   <span className="text-2xl font-bold text-red-500">
                     {summary.failed}
@@ -425,7 +441,7 @@ function App() {
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Skipped</span>
                   <span className="text-2xl font-bold text-yellow-500">
                     {summary.skipped}
@@ -435,7 +451,7 @@ function App() {
             </div>
 
             {/* Filters */}
-            <div className="flex gap-4 mb-6">
+            <div className="flex flex-col xl:flex-row gap-3 mb-5">
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -446,34 +462,44 @@ function App() {
                   className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-400" />
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
-                  className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pass' | 'fail' | 'skip')}
+                  className="min-w-36 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="all">All Status</option>
                   <option value="pass">Pass</option>
                   <option value="fail">Fail</option>
                   <option value="skip">Skip</option>
                 </select>
+                <span className="text-sm text-gray-400">
+                  Showing {filteredTests.length.toLocaleString()} of {tests.length.toLocaleString()}
+                </span>
               </div>
             </div>
 
             {/* Test List */}
             <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[840px]">
                 <thead className="bg-gray-800/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
+                    <th className="w-40 px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Test Name</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Suite</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Duration</th>
+                    <th className="w-40 px-4 py-3 text-left text-sm font-medium text-gray-400">Suite</th>
+                    <th className="w-28 px-4 py-3 text-right text-sm font-medium text-gray-400">Duration</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
-                  {filteredTests.map((test) => (
+                  {filteredTests.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-10 text-center text-gray-400">
+                        No tests match the current filters.
+                      </td>
+                    </tr>
+                  ) : filteredTests.map((test) => (
                     <tr key={test.id} className="hover:bg-gray-700/50 transition-colors">
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
@@ -483,13 +509,17 @@ function App() {
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 font-medium">{test.name}</td>
+                      <td className="px-4 py-3 font-medium">
+                        <div className="max-w-[760px] truncate" title={test.name}>{test.name}</div>
+                        {test.error ? <div className="mt-1 max-w-[760px] truncate text-xs text-red-400" title={test.error}>{test.error}</div> : null}
+                      </td>
                       <td className="px-4 py-3 text-gray-400">{test.suite}</td>
-                      <td className="px-4 py-3 text-gray-400">{test.duration}ms</td>
+                      <td className="px-4 py-3 text-right text-gray-400">{formatDuration(test.duration)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
             </>
             )}
@@ -508,43 +538,55 @@ function App() {
               </div>
             ) : (
               <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)] gap-5 mb-5">
               <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-                <h3 className="text-lg font-semibold mb-4">Implementation Status</h3>
+                <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-lg font-semibold">Implementation Status</h3>
+                    {coverageTotalMismatch ? (
+                      <p className="mt-1 text-sm text-yellow-500">
+                        Category totals exceed the denominator; bars are capped at 100%.
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="text-right text-sm text-gray-400">
+                    Total <span className="font-semibold text-gray-100">{coverage.total.toLocaleString()}</span>
+                  </div>
+                </div>
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-400">Implemented</span>
-                      <span className="font-medium">{coverage.implemented}/{coverage.total}</span>
+                      <span className="font-medium">{coverage.implemented.toLocaleString()}/{coverage.total.toLocaleString()} ({formatPercent(percentOf(coverage.implemented, coverage.total))})</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div
                         className="bg-green-500 h-2 rounded-full transition-all"
-                        style={{ width: `${coverage.total > 0 ? (coverage.implemented / coverage.total) * 100 : 0}%` }}
+                        style={{ width: `${percentOf(coverage.implemented, coverage.total)}%` }}
                       />
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-400">Unimplemented</span>
-                      <span className="font-medium">{coverage.unimplemented}/{coverage.total}</span>
+                      <span className="font-medium">{coverage.unimplemented.toLocaleString()}/{coverage.total.toLocaleString()} ({formatPercent(percentOf(coverage.unimplemented, coverage.total))})</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div
                         className="bg-red-500 h-2 rounded-full transition-all"
-                        style={{ width: `${coverage.total > 0 ? (coverage.unimplemented / coverage.total) * 100 : 0}%` }}
+                        style={{ width: `${percentOf(coverage.unimplemented, coverage.total)}%` }}
                       />
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-gray-400">Future</span>
-                      <span className="font-medium">{coverage.future}/{coverage.total}</span>
+                      <span className="font-medium">{coverage.future.toLocaleString()}/{coverage.total.toLocaleString()} ({formatPercent(percentOf(coverage.future, coverage.total))})</span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div
                         className="bg-yellow-500 h-2 rounded-full transition-all"
-                        style={{ width: `${coverage.total > 0 ? (coverage.future / coverage.total) * 100 : 0}%` }}
+                        style={{ width: `${percentOf(coverage.future, coverage.total)}%` }}
                       />
                     </div>
                   </div>
@@ -578,7 +620,7 @@ function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-5 mb-5">
               <div className="bg-gray-800 rounded-lg p-6 border border-gray-700 xl:col-span-1">
                 <h3 className="text-lg font-semibold mb-4">Coverage Mix</h3>
                 <div className="h-72">
@@ -607,10 +649,10 @@ function App() {
                 <h3 className="text-lg font-semibold mb-4">Suite Coverage</h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={suiteCoverageData}>
+                    <BarChart data={suiteCoverageData} margin={{ top: 8, right: 16, bottom: 8, left: 0 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="suite" stroke="#9ca3af" />
-                      <YAxis stroke="#9ca3af" tickFormatter={(value) => `${value}%`} />
+                      <YAxis stroke="#9ca3af" domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
                       <Tooltip formatter={(value) => [formatPercent(chartNumber(value)), 'coverage']} />
                       <Legend />
                       <Bar dataKey="buildRate" name="Build" fill="#3b82f6" radius={[4, 4, 0, 0]} />
@@ -625,7 +667,7 @@ function App() {
               <h3 className="text-lg font-semibold mb-4">Priority Chart</h3>
               <div className="h-72">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={priorityData}>
+                  <BarChart data={priorityData} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="name" stroke="#9ca3af" />
                     <YAxis stroke="#9ca3af" />
@@ -656,10 +698,10 @@ function App() {
               </div>
             ) : (
               <>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="text-sm text-gray-400 mb-1">Latest Run</div>
-                <div className="text-xl font-semibold">{latestTrend?.run_id ?? '-'}</div>
+                <div className="truncate text-xl font-semibold" title={latestTrend?.run_id}>{latestTrend?.run_id ?? '-'}</div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="text-sm text-gray-400 mb-1">Pass Delta</div>
@@ -682,12 +724,12 @@ function App() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mb-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 mb-5">
               <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h3 className="text-lg font-semibold mb-4">Result Trend</h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trendRuns}>
+                    <LineChart data={trendRuns} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="trendLabel" stroke="#9ca3af" />
                       <YAxis stroke="#9ca3af" />
@@ -705,7 +747,7 @@ function App() {
                 <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trendRuns}>
+                    <LineChart data={trendRuns} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="trendLabel" stroke="#9ca3af" />
                       <YAxis stroke="#9ca3af" />
@@ -720,30 +762,33 @@ function App() {
             </div>
 
             <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
-              <table className="w-full">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[1120px]">
                 <thead className="bg-gray-800/50">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Run ID</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Timestamp</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Passed</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Failed</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Skipped</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Compile Time</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Runtime</th>
+                    <th className="w-44 px-4 py-3 text-left text-sm font-medium text-gray-400">Run ID</th>
+                    <th className="w-44 px-4 py-3 text-left text-sm font-medium text-gray-400">Timestamp</th>
+                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Passed</th>
+                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Failed</th>
+                    <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Skipped</th>
+                    <th className="w-28 px-4 py-3 text-right text-sm font-medium text-gray-400">Compile</th>
+                    <th className="w-28 px-4 py-3 text-right text-sm font-medium text-gray-400">Runtime</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Delta</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Regression</th>
+                    <th className="w-64 px-4 py-3 text-left text-sm font-medium text-gray-400">Regression</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-700">
                   {historyRows.map((run) => (
-                    <tr key={run.run_id} className="hover:bg-gray-700/50 transition-colors">
-                      <td className="px-4 py-3 font-medium">{run.run_id}</td>
+                    <tr key={`${run.run_id}-${run.timestamp}`} className="hover:bg-gray-700/50 transition-colors">
+                      <td className="px-4 py-3 font-medium">
+                        <div className="max-w-40 truncate" title={run.run_id}>{run.run_id}</div>
+                      </td>
                       <td className="px-4 py-3 text-gray-400">{run.displayTime}</td>
-                      <td className="px-4 py-3 text-green-500">{run.passed}</td>
-                      <td className="px-4 py-3 text-red-500">{run.failed}</td>
-                      <td className="px-4 py-3 text-yellow-500">{run.skipped}</td>
-                      <td className="px-4 py-3 text-gray-400">{run.compile_time}s</td>
-                      <td className="px-4 py-3 text-gray-400">{run.runtime}s</td>
+                      <td className="px-4 py-3 text-right text-green-500">{run.passed.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-red-500">{run.failed.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-yellow-500">{run.skipped.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right text-gray-400">{run.compile_time}s</td>
+                      <td className="px-4 py-3 text-right text-gray-400">{run.runtime}s</td>
                       <td className="px-4 py-3 text-gray-400">
                         <div className="flex flex-wrap gap-2 text-xs">
                           <span className={run.deltas.passed !== null && run.deltas.passed < 0 ? 'text-red-400' : 'text-green-400'}>
@@ -759,9 +804,11 @@ function App() {
                       </td>
                       <td className="px-4 py-3">
                         {run.regressionReasons.length ? (
-                          <span className="inline-flex items-center gap-1 px-2 py-1 rounded border border-red-500/20 bg-red-500/10 text-xs text-red-400">
-                            <AlertTriangle className="w-3 h-3" />
-                            {run.regressionReasons.join(', ')}
+                          <span className="inline-flex max-w-60 items-center gap-1 rounded border border-red-500/20 bg-red-500/10 px-2 py-1 text-xs text-red-400">
+                            <AlertTriangle className="w-3 h-3 shrink-0" />
+                            <span className="truncate" title={run.regressionReasons.join(', ')}>
+                              {run.regressionReasons.join(', ')}
+                            </span>
                           </span>
                         ) : (
                           <span className="px-2 py-1 rounded border border-green-500/20 bg-green-500/10 text-xs text-green-400">stable</span>
@@ -771,6 +818,7 @@ function App() {
                   ))}
                 </tbody>
               </table>
+              </div>
             </div>
             </>
             )}
