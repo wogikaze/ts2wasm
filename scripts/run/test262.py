@@ -2,7 +2,7 @@
 """Stream G: Test262 Runner with differential comparison
 
 Usage:
-  python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose] [--web-ui] > test262-results.jsonl
+  python scripts/manager.py test262 [--sample N] [--category PATTERN] [--path-filter TEXT] [--jobs N] [--verbose] [--web-ui] > test262-results.jsonl
 
 Compiles each test262 file, runs with iwasm, and compares output against Node.js reference.
 Outputs one TestRecord per line in JSON Lines format to stdout (use --verbose for console output).
@@ -24,7 +24,7 @@ TEST262_ROOT = Path(os.environ.get("TS2WASM_TEST262_ROOT", REFERENCE_ROOT / "tes
 HARNESS_DIR = TEST262_ROOT / "harness"
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
-UNSUPPORTED_FLAGS = ("module", "IsHTMLDDA")
+UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
 TEST262_HOST_PRELUDE = r"""
@@ -140,11 +140,12 @@ class Test262Metadata:
         return self.negative_phase == "parse" and self.negative_type == "SyntaxError"
 
 def usage():
-    print("Usage: python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose] [--web-ui]")
+    print("Usage: python scripts/manager.py test262 [--sample N] [--category PATTERN] [--path-filter TEXT] [--jobs N] [--verbose] [--web-ui]")
     print()
     print("Options:")
     print("  --sample N          Run up to N files per extracted category.")
     print("  --category PATTERN  Regex matched against extracted category.")
+    print("  --path-filter TEXT  Run only files whose stable path contains TEXT (repeatable).")
     print("  --jobs N            Number of parallel workers (default: TEST262_JOBS or os.cpu_count or 4).")
     print("  --verbose           Show detailed per-test processing information.")
     print("  --web-ui            Refresh web-ui/public/data using this run's JSONL results.")
@@ -160,6 +161,30 @@ def extract_category(path):
     """Extract category from test262 file path."""
     match = re.search(r'test/language/([^/]+)/', str(path))
     return match.group(1) if match else "unknown"
+
+def stable_test_path(path):
+    """Return a stable path for filtering and records."""
+    try:
+        return path.resolve().relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        pass
+
+    try:
+        reference_relative = path.resolve().relative_to(REFERENCE_ROOT).as_posix()
+        return f"reference/{reference_relative}"
+    except ValueError:
+        return path.as_posix()
+
+def matches_path_filter(path, path_filter):
+    stable_path = stable_test_path(path)
+    if path_filter in stable_path:
+        return True
+    if path_filter.startswith("/"):
+        try:
+            return Path(path_filter).resolve() == path.resolve()
+        except OSError:
+            return False
+    return False
 
 def _parse_yaml_list(value):
     value = value.strip()
@@ -523,6 +548,7 @@ def main():
     
     sample = None
     category_pattern = "."
+    path_filters = []
     jobs = int(os.environ.get("TEST262_JOBS", "")) if os.environ.get("TEST262_JOBS") else None
     verbose = False
     web_ui = False
@@ -544,6 +570,15 @@ def main():
                 print("ERROR: --category requires a value", file=sys.stderr)
                 sys.exit(1)
             category_pattern = args[i + 1]
+            i += 2
+        elif args[i] == "--path-filter":
+            if i + 1 >= len(args):
+                print("ERROR: --path-filter requires a value", file=sys.stderr)
+                sys.exit(1)
+            if args[i + 1] == "":
+                print("ERROR: --path-filter requires a non-empty value", file=sys.stderr)
+                sys.exit(1)
+            path_filters.append(args[i + 1])
             i += 2
         elif args[i] == "--jobs":
             if i + 1 >= len(args):
@@ -599,6 +634,8 @@ def main():
     
     print("Starting test262 runner...", file=sys.stderr)
     print(f"Category filter: {category_pattern}", file=sys.stderr)
+    if path_filters:
+        print(f"Path filters: {', '.join(path_filters)}", file=sys.stderr)
     print(f"Parallel jobs: {jobs}", file=sys.stderr)
     if sample:
         print(f"Sample mode: first {sample} files per category", file=sys.stderr)
@@ -619,6 +656,9 @@ def main():
         except re.error:
             print(f"ERROR: Invalid category pattern: {category_pattern}", file=sys.stderr)
             sys.exit(1)
+
+        if path_filters and not any(matches_path_filter(test_file, path_filter) for path_filter in path_filters):
+            continue
         
         if sample:
             seen = category_seen.get(category, 0)
@@ -627,6 +667,11 @@ def main():
             category_seen[category] = seen + 1
         
         selected_files.append(test_file)
+
+    if path_filters and not selected_files:
+        filters = ", ".join(path_filters)
+        print(f"ERROR: --path-filter selected no files: {filters}", file=sys.stderr)
+        sys.exit(1)
     
     print(f"Selected files: {len(selected_files)}", file=sys.stderr)
     
