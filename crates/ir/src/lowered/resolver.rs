@@ -27,6 +27,7 @@ struct Resolver<'a> {
     bigint_locals: HashSet<LocalId>,
     array_locals: HashSet<LocalId>,
     static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
+    static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
     string_literal_locals: HashMap<LocalId, String>,
     native_set_add_locals: HashSet<LocalId>,
     current_class: Option<String>,
@@ -92,6 +93,7 @@ impl<'a> Resolver<'a> {
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
+            static_object_literal_alias_sources: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: None,
@@ -144,6 +146,7 @@ impl<'a> Resolver<'a> {
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
+            static_object_literal_alias_sources: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
@@ -3284,34 +3287,71 @@ impl<'a> Resolver<'a> {
     ) {
         if let Some(props) = self.static_copy_safe_object_literal_props(expr) {
             self.static_object_literal_locals.insert(local_id, props);
+            self.update_static_object_literal_alias_sources(local_id, expr);
         } else {
             self.static_object_literal_locals.remove(&local_id);
+            self.static_object_literal_alias_sources.remove(&local_id);
         }
     }
 
     fn invalidate_static_object_literal_local(&mut self, local_id: LocalId) {
         self.static_object_literal_locals.remove(&local_id);
+        self.static_object_literal_alias_sources.remove(&local_id);
+        let dependent_aliases = self
+            .static_object_literal_alias_sources
+            .iter()
+            .filter_map(|(alias, sources)| sources.contains(&local_id).then_some(*alias))
+            .collect::<Vec<_>>();
+        for alias in dependent_aliases {
+            self.static_object_literal_locals.remove(&alias);
+            self.static_object_literal_alias_sources.remove(&alias);
+        }
     }
 
     fn static_copy_safe_object_literal_props(
         &self,
         expr: &ResolvedExpr,
     ) -> Option<Vec<(String, ResolvedExpr)>> {
-        let ResolvedExpr::Object(props) = expr else {
-            return None;
-        };
-        let mut flattened = Vec::new();
-        for (key, value) in props {
-            if key == OBJECT_SPREAD_SENTINEL {
-                flattened.extend(self.static_copy_safe_object_literal_props(value)?);
-                continue;
+        match expr {
+            ResolvedExpr::Object(props) => {
+                let mut flattened = Vec::new();
+                for (key, value) in props {
+                    if key == OBJECT_SPREAD_SENTINEL {
+                        flattened.extend(self.static_copy_safe_object_literal_props(value)?);
+                        continue;
+                    }
+                    if !is_static_copy_safe_object_prop_value(value) {
+                        return None;
+                    }
+                    flattened.push((key.clone(), value.clone()));
+                }
+                Some(flattened)
             }
-            if !is_static_copy_safe_object_prop_value(value) {
-                return None;
+            ResolvedExpr::Ident(name) => {
+                let local_id = self.resolve_local(name).ok()?;
+                if self.env_cell_locals.contains(&local_id) {
+                    return None;
+                }
+                self.static_object_literal_locals.get(&local_id).cloned()
             }
-            flattened.push((key.clone(), value.clone()));
+            _ => None,
         }
-        Some(flattened)
+    }
+
+    fn update_static_object_literal_alias_sources(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        self.static_object_literal_alias_sources.remove(&local_id);
+        if let ResolvedExpr::Ident(name) = expr
+            && let Ok(source_id) = self.resolve_local(name)
+        {
+            let mut sources = self
+                .static_object_literal_alias_sources
+                .get(&source_id)
+                .cloned()
+                .unwrap_or_default();
+            sources.insert(source_id);
+            self.static_object_literal_alias_sources
+                .insert(local_id, sources);
+        }
     }
 
     fn update_string_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
@@ -3344,6 +3384,9 @@ impl<'a> Resolver<'a> {
     fn resolved_expr_produces_dense_array(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::Array(_) => true,
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.array_locals.contains(&local_id) && !self.env_cell_locals.contains(&local_id)
+            }),
             ResolvedExpr::MethodCall { object, method, args, .. } if method == "map" => {
                 self.is_known_array_expr(object)
                     && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
