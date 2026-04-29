@@ -156,6 +156,18 @@ Prefer a general dense-array lowering path. If implementation needs a smaller
 first slice, preserve issue-270's named-callback behavior and add arrow callback
 support without widening to sparse arrays.
 
+Progress on 2026-04-29:
+
+- Added a focused inline dense array literal receiver slice for
+  `["a b"].map(row => row.split(" "))`, covered by Node/iwasm differential
+  fixture `fixtures/core-semantics/array-map-arrow-split.ts`.
+- Added a focused expression receiver identity slice for
+  `"a b".split(" ").map(part => part)`, covered by Node/iwasm differential
+  fixture `fixtures/core-semantics/array-map-arrow-expression-receiver.ts`.
+- Remaining issue-295 work: non-identity expression receiver callbacks such as
+  `inputText.trim().split("\n").map(row => row.split(" "))`, plus `String(n)`
+  and unary plus callbacks.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

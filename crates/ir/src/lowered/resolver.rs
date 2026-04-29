@@ -1268,6 +1268,13 @@ impl<'a> Resolver<'a> {
                         return self.lower_array_literal_map_arrow(elements, args, *span);
                     }
 
+                    if method == "map"
+                        && is_string_split_result_expr(object)
+                        && is_identity_arrow_callback(args)
+                    {
+                        return self.lower_expr(object);
+                    }
+
                     if (method == "map" && self.is_known_array_expr(object))
                         || is_array_prototype_map_call_receiver(object, method)
                     {
@@ -3054,4 +3061,21 @@ fn matches_array_prototype_property(expr: &ResolvedExpr) -> bool {
             object.as_ref(),
             ResolvedExpr::Ident(name) if name == "Array"
         )
+}
+
+fn is_string_split_result_expr(expr: &ResolvedExpr) -> bool {
+    matches!(
+        expr,
+        ResolvedExpr::MethodCall { method, .. } if method == "split"
+    )
+}
+
+fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
+    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+        return false;
+    };
+    let [param] = params.as_slice() else {
+        return false;
+    };
+    matches!(body.as_ref(), ResolvedExpr::Ident(name) if name == param)
 }
