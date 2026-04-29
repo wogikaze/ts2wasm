@@ -5,7 +5,7 @@ type: feature
 area: runtime
 class: blocked
 priority: P1
-depends_on: [308]
+depends_on: [308, 309]
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
@@ -430,6 +430,27 @@ heap_high_water_bytes: 20258192
   Node under committed runtime policy.
 - Issue 308 owns the next implementation slice for GC cadence / sweep scan
   policy based on this telemetry.
+
+2026-04-29 child `019ddb6e-1069-7f02-9184-4955c748b93c` issue 308 split:
+
+- Issue 308's committed GC cadence/free-list slices narrowed the current
+  depth-9 search-only failure to an allocation/live-set shape at the explicit
+  remaining-page guard:
+
+```text
+size=6140
+block_size=6160
+new_heap=12126520
+memory_pages=185
+needed_pages=1
+remaining_pages=0
+gc_free_list_max_body_size=3584
+```
+
+- Created issue 309 for the next concrete blocker: reduce the depth-9 live
+  allocation shape or allocation size without raising `MEMORY_MAX_PAGES`
+  absent official sample completion evidence.
+- Issue 300 remains open. No official ABC451 sample compatibility is claimed.
 
 2026-04-29 child `308-gc-cadence-20260429T195300Z` GC cadence attempt:
 
