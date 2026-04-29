@@ -944,11 +944,7 @@ impl<'a> Resolver<'a> {
                 }
             }
             ResolvedExpr::Array(elements) => {
-                if let Some(lowered_set_spread) = self.lower_single_set_spread_array(elements)? {
-                    return Ok(lowered_set_spread);
-                }
-                let lowered = self.lower_array_literal_elements(elements)?;
-                Ok(LoweredExpr::ArrayNew { elements: lowered })
+                self.lower_array_literal(elements)
             }
             ResolvedExpr::Object(props) => {
                 let lowered = self.lower_object_literal_props(props)?;
@@ -1649,6 +1645,65 @@ impl<'a> Resolver<'a> {
         Ok(lowered_args)
     }
 
+    fn lower_array_literal(
+        &mut self,
+        elements: &[ResolvedExpr],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if !elements.iter().any(|element| {
+            matches!(
+                element,
+                ResolvedExpr::Spread(spread_expr)
+                    if self.is_known_set_local_spread_operand(spread_expr.as_ref())
+            )
+        }) {
+            let lowered = self.lower_array_literal_elements(elements)?;
+            return Ok(LoweredExpr::ArrayNew { elements: lowered });
+        }
+
+        let mut segments = Vec::new();
+        let mut pending_dense = Vec::new();
+
+        for element in elements {
+            match element {
+                ResolvedExpr::Spread(spread_expr) => {
+                    if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
+                        pending_dense.extend(self.lower_array_literal_elements(spread_elements)?);
+                        continue;
+                    }
+
+                    if let Some(set_array) = self.lower_set_spread_operand(spread_expr.as_ref())? {
+                        Self::flush_array_segment(&mut segments, &mut pending_dense);
+                        segments.push(set_array);
+                        continue;
+                    }
+
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-274: array literal spread is only supported for literal arrays and known Set locals in this milestone"
+                                .to_owned(),
+                        span: None,
+                    });
+                }
+                _ => pending_dense.push(self.lower_expr(element)?),
+            }
+        }
+
+        Self::flush_array_segment(&mut segments, &mut pending_dense);
+
+        let mut iter = segments.into_iter();
+        let Some(mut combined) = iter.next() else {
+            return Ok(LoweredExpr::ArrayNew { elements: vec![] });
+        };
+        for segment in iter {
+            combined = LoweredExpr::RuntimeCall {
+                runtime_fn: "ArrayConcat".to_owned(),
+                args: vec![combined, segment],
+            };
+        }
+        Ok(combined)
+    }
+
     fn lower_array_literal_elements(
         &mut self,
         elements: &[ResolvedExpr],
@@ -1674,14 +1729,20 @@ impl<'a> Resolver<'a> {
         Ok(lowered)
     }
 
-    fn lower_single_set_spread_array(
+    fn flush_array_segment(segments: &mut Vec<LoweredExpr>, pending_dense: &mut Vec<LoweredExpr>) {
+        if pending_dense.is_empty() {
+            return;
+        }
+        segments.push(LoweredExpr::ArrayNew {
+            elements: std::mem::take(pending_dense),
+        });
+    }
+
+    fn lower_set_spread_operand(
         &mut self,
-        elements: &[ResolvedExpr],
+        spread_expr: &ResolvedExpr,
     ) -> Result<Option<LoweredExpr>, Diagnostic> {
-        let [ResolvedExpr::Spread(spread_expr)] = elements else {
-            return Ok(None);
-        };
-        let ResolvedExpr::Ident(name) = spread_expr.as_ref() else {
+        let ResolvedExpr::Ident(name) = spread_expr else {
             return Ok(None);
         };
         let Ok(local_id) = self.resolve_local(name) else {
@@ -1698,6 +1759,18 @@ impl<'a> Resolver<'a> {
             }));
         }
         Ok(None)
+    }
+
+    fn is_known_set_local_spread_operand(&self, spread_expr: &ResolvedExpr) -> bool {
+        let ResolvedExpr::Ident(name) = spread_expr else {
+            return false;
+        };
+        let Ok(local_id) = self.resolve_local(name) else {
+            return false;
+        };
+        self.local_classes
+            .get(&local_id)
+            .is_some_and(|class_name| class_name == "Set")
     }
 
     fn lower_object_literal_props(
