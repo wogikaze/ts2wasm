@@ -164,9 +164,11 @@ Progress on 2026-04-29:
 - Added a focused expression receiver identity slice for
   `"a b".split(" ").map(part => part)`, covered by Node/iwasm differential
   fixture `fixtures/core-semantics/array-map-arrow-expression-receiver.ts`.
-- Remaining issue-295 work: non-identity expression receiver callbacks such as
-  `inputText.trim().split("\n").map(row => row.split(" "))`, plus `String(n)`
-  and unary plus callbacks.
+- Added a focused expression receiver split-map slice for
+  `"a b\nc d".split("\n").map(row => row.split(" "))`, covered by
+  `fixtures/core-semantics/array-map-arrow-expression-split.ts`.
+- Remaining issue-295 work: chained `trim().split(...).map(...)` receiver,
+  plus `String(n)` and unary plus callbacks.
 
 ## Completion evidence
 

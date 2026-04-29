@@ -1275,6 +1275,16 @@ impl<'a> Resolver<'a> {
                         return self.lower_expr(object);
                     }
 
+                    if method == "map"
+                        && is_string_split_result_expr(object)
+                        && let Some(separator) = string_split_arrow_separator(args)
+                    {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayMapStringSplit".to_owned(),
+                            args: vec![self.lower_expr(object)?, self.lower_expr(separator)?],
+                        });
+                    }
+
                     if (method == "map" && self.is_known_array_expr(object))
                         || is_array_prototype_map_call_receiver(object, method)
                     {
@@ -3078,4 +3088,35 @@ fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
         return false;
     };
     matches!(body.as_ref(), ResolvedExpr::Ident(name) if name == param)
+}
+
+fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> {
+    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+        return None;
+    };
+    let [param] = params.as_slice() else {
+        return None;
+    };
+    let ResolvedExpr::MethodCall {
+        object,
+        method,
+        args,
+        ..
+    } = body.as_ref()
+    else {
+        return None;
+    };
+    if method != "split" {
+        return None;
+    }
+    let ResolvedExpr::Ident(name) = object.as_ref() else {
+        return None;
+    };
+    if name != param {
+        return None;
+    }
+    let [separator] = args.as_slice() else {
+        return None;
+    };
+    Some(separator)
 }

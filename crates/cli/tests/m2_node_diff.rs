@@ -95,6 +95,11 @@ fn array_map_arrow_expression_receiver_fixture_matches_node_output_under_iwasm()
 }
 
 #[test]
+fn array_map_arrow_expression_split_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-map-arrow-expression-split.ts");
+}
+
+#[test]
 fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         // tag-check safety: out-of-bounds array access → undefined
