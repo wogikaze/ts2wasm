@@ -132,7 +132,7 @@ BigInt を扱う runtime helper は論理 `jsval` を入出力に使う。現行
 | `bigint_abstract_equal` | `(jsval, jsval) -> bool` | issue 261 | Number/String/Boolean との ECMA-262 coercion 境界を実装する |
 | `bigint_compare` | `(op, jsval, jsval) -> jsval` | issue 261 | `< <= > >=`。成功時 bool `jsval`、例外時 pending exception |
 | `bigint_add` / `sub` | `(jsval, jsval) -> jsval` | issue 260 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction. Number 混在は TypeError boundary; statically visible and dynamically tracked mixes are issue-linked diagnostics today |
-| `bigint_mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260/263 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction. Division/remainder by zero currently diagnose as issue 260 instead of throwing the final runtime RangeError path |
+| `bigint_mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260/263 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction, including known-local/literal operand pairs. Division/remainder by zero lower to the helper slice and currently trap instead of throwing the final runtime RangeError path |
 | `bigint_unary_minus` | `(jsval) -> jsval` | issue 260 | Progress slice implemented through signed-i64-backed first-limb reconstruction. `-0n` は `0n` |
 
 IR は BigInt literal と BigInt operations を phase-specific に扱う。

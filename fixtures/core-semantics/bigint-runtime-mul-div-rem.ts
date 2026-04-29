@@ -15,3 +15,10 @@ let z = 0n;
 console.log(z * b);
 console.log(z / b);
 console.log(z % b);
+
+console.log(a * 2n);
+console.log(a / 2n);
+console.log(a % 4n);
+console.log(12n * b);
+console.log(12n / b);
+console.log(12n % b);
