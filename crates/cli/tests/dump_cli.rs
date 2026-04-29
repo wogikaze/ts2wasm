@@ -37,6 +37,24 @@ fn run_dump(args: &[&str], source: &str) -> String {
     String::from_utf8(output.stdout).expect("dump output should be valid UTF-8")
 }
 
+fn run_dump_failure(args: &[&str], source: &str) -> String {
+    let path = write_temp_source("cli-fail", source);
+    let output = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("dump")
+        .args(args)
+        .arg(&path)
+        .output()
+        .expect("ts2wasm dump should execute");
+
+    assert!(
+        !output.status.success(),
+        "dump unexpectedly succeeded:\n{}",
+        String::from_utf8_lossy(&output.stdout)
+    );
+
+    String::from_utf8(output.stderr).expect("dump stderr should be valid UTF-8")
+}
+
 fn fixture_path(fixture: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../fixtures")
@@ -85,6 +103,30 @@ fn dump_ast_unparse_erases_typescript_type_annotations() {
     assert_eq!(
         output,
         "let value = undefined;\nfunction add(a, b) {\n  return (a + b);\n}\n"
+    );
+}
+
+#[test]
+fn dump_ast_unparse_accepts_destructuring_binding_patterns() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let arr = [1, 2];\nlet [a, b] = arr;\nlet { x } = obj;\nfunction f([c], { y }) {}\nlet g = ([d]) => d;\n",
+    );
+
+    assert_eq!(
+        output,
+        "let arr = [1, 2];\nlet [a, b] = arr;\nlet {x} = obj;\nfunction f([c], {y}) {\n}\nlet g = ([d]) => d;\n"
+    );
+}
+
+#[test]
+fn dump_ast_reports_explicit_invalid_destructuring_rest() {
+    let stderr = run_dump_failure(&["--ast", "--unparse"], "let [...a, b] = arr;");
+
+    assert!(stderr.contains("issue-247"), "{stderr}");
+    assert!(
+        stderr.contains("rest binding must be the final element"),
+        "{stderr}"
     );
 }
 
