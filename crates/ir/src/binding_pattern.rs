@@ -79,10 +79,7 @@ fn parse_array_binding_pattern(
     for (index, raw_part) in inner.split(',').enumerate() {
         let part = raw_part.trim();
         if part.is_empty() {
-            return Err(issue_251(
-                "array binding elisions are not supported in this runtime slice",
-                span,
-            ));
+            continue;
         }
         let (target, default) = split_binding_default(part, span)?;
         reject_unsupported_target(target, span)?;

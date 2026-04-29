@@ -188,7 +188,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | rest parameters | ES6 | variadic parameters | 実装済み (argument collection) | - | 212 |
 | spread arguments | ES6 | argument spreading | 実装済み (basic) | - | 039 |
 | default parameters | ES6 | parameter defaults | 実装済み (basic) | - | 040 |
-| destructuring parameters | ES6 | pattern matching | Parser accepts array/object binding patterns; simple identifier-only array/object parameter runtime bindings are supported for the covered subset, including literal element defaults and ordinary function whole-pattern defaults; rest/nesting remain issue-linked unsupported | P2 | 247, 251 |
+| destructuring parameters | ES6 | pattern matching | Parser accepts array/object binding patterns; simple identifier-only array/object parameter runtime bindings are supported for the covered subset, including array elisions, literal element defaults, and ordinary function whole-pattern defaults; rest/nesting remain issue-linked unsupported | P2 | 247, 251 |
 
 ## オブジェクト
 
@@ -212,7 +212,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `arr.length` | ES1 | length property | 実装済み | - | - |
 | array holes `[1, , 3]` | ES1 | sparse array | 未実装 | P2 | - |
 | spread elements `[...arr]` | ES6 | array spreading | 未実装 | P2 | - |
-| destructuring binding patterns `let [a, b] = arr` | ES6 | pattern matching | Parser accepts declarations/parameters; simple identifier-only array/object declaration bindings are runtime-supported for the covered dense-array/object-property subset, including literal default initializers; rest/nesting remain issue-linked unsupported | P2 | 247, 251 |
+| destructuring binding patterns `let [a, b] = arr` | ES6 | pattern matching | Parser accepts declarations/parameters; simple identifier-only array/object declaration bindings are runtime-supported for the covered dense-array/object-property subset, including array elisions and literal default initializers; rest/nesting remain issue-linked unsupported | P2 | 247, 251 |
 | destructuring assignment `[a, b] = arr` | ES6 | pattern matching | Parser accepts array/object assignment patterns; runtime assignment semantics are 未実装 | P2 | 252 |
 
 ## クラスとプロトタイプ
