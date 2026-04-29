@@ -559,6 +559,14 @@ impl<'a> Resolver<'a> {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     })
+                } else if *op == BinaryOp::Power
+                    && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
+                {
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-260: BigInt exponentiation is not implemented in the current BigInt arithmetic policy".to_owned(),
+                        span: None,
+                    })
                 } else {
                     Ok(LoweredExpr::Binary {
                         left: Box::new(self.lower_expr(left)?),
@@ -2893,6 +2901,7 @@ impl<'a> Resolver<'a> {
                     BinaryOp::Add
                         | BinaryOp::Subtract
                         | BinaryOp::Multiply
+                        | BinaryOp::Power
                         | BinaryOp::Divide
                         | BinaryOp::Modulo
                 )

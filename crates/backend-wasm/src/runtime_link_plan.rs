@@ -373,6 +373,7 @@ impl RuntimeLinkPlan {
                             self.add_required_runtime(RuntimeFn::Mul);
                         }
                     }
+                    LoweredBinaryOp::Power => self.add_required_runtime(RuntimeFn::MathPow),
                     LoweredBinaryOp::Divide => {
                         if left.inferred_type() == ts2wasm_ir::lowered::InferredType::Number
                             && right.inferred_type() == ts2wasm_ir::lowered::InferredType::Number

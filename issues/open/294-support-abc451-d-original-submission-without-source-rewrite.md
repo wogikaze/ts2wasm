@@ -239,6 +239,17 @@ This issue is intentionally blocked because the fixture crosses several existing
 - Split issue 296 for the small-int exponentiation slice so issue 294 can stay
   blocked as an umbrella while the next concrete blocker is worked independently.
 
+2026-04-30 progress:
+
+- Added the issue-296 small-int exponentiation slice for non-negative tagged
+  integer operands such as `2 ** i`.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` advances past
+  `binary operator Power not yet supported`.
+- Current first failure is now:
+  `error: [UnsupportedSyntax] issue-211: unknown receiver class for method
+  map at 970..996`, on the next dense-array map path after constructing
+  `powersOfTwo`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
