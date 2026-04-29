@@ -16,6 +16,7 @@ import tempfile
 import os
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 
@@ -305,6 +306,30 @@ def main():
     print(f"Unsupported: {unsupported}", file=sys.stderr)
     print(f"Blocked: {blocked}", file=sys.stderr)
     print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
+    
+    # Save test results for site generation
+    results = {
+        "suite": "test262",
+        "passed": passed,
+        "failed": failed,
+        "unsupported": unsupported,
+        "blocked": blocked,
+        "total": passed + failed + unsupported + blocked,
+        "timestamp": datetime.now().isoformat()
+    }
+    
+    results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
+    results_dir.mkdir(parents=True, exist_ok=True)
+    results_file = results_dir / "test262.json"
+    results_file.write_text(json.dumps(results, indent=2), encoding="utf-8")
+    print(f"Results saved to {results_file}", file=sys.stderr)
+    
+    # Auto-generate site after test completion
+    print("Generating documentation site...", file=sys.stderr)
+    gen_site_script = REPO_ROOT / "scripts" / "gen-site.py"
+    if gen_site_script.exists():
+        subprocess.run([sys.executable, str(gen_site_script)], cwd=REPO_ROOT)
+        print("Site generation complete. Run 'mise run build-site' to build the site.", file=sys.stderr)
 
 if __name__ == "__main__":
     main()

@@ -48,6 +48,7 @@ COMMANDS = {
     "test262": ("python", "scripts/run/test262.py"),
     "test-differential-reporter": ("python", "scripts/report/differential.py"),
     "test-regression-gate": ("python", "scripts/gate/regression.py"),
+    "gen-site": ("python", "scripts/gen-site.py"),
     "gen-issues-from-coverage": ("python", "scripts/gen/issues-from-coverage.py"),
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
     "discord-report": ("python", "scripts/report/discord-report.py"),

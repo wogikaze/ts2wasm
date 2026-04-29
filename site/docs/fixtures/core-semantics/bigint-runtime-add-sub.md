@@ -1,0 +1,19 @@
+# bigint-runtime-add-sub
+
+```typescript
+let a = 10n;
+let b = 3n;
+console.log(a + b);
+console.log(a - b);
+console.log(b - a);
+console.log(-a);
+let c = -a;
+console.log(c + b);
+let z = 0n;
+console.log(-z);
+a = a + 2n;
+console.log(a);
+
+```
+
+**Path:** `fixtures/core-semantics/bigint-runtime-add-sub.ts`

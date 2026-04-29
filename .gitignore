@@ -19,6 +19,7 @@ __pycache__
 tmp/
 reports/
 .discord-report-sent.json
+artifacts/coverage/results/
 
 # instant-grep index
 .ig/
@@ -26,3 +27,8 @@ reports/
 .env
 
 **/out.txt
+
+# documentation site
+site/node_modules
+site/docs/.vitepress/cache
+site/docs/.vitepress/dist
