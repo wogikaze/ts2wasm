@@ -944,6 +944,9 @@ impl<'a> Resolver<'a> {
                 }
             }
             ResolvedExpr::Array(elements) => {
+                if let Some(lowered_set_spread) = self.lower_single_set_spread_array(elements)? {
+                    return Ok(lowered_set_spread);
+                }
                 let lowered = self.lower_array_literal_elements(elements)?;
                 Ok(LoweredExpr::ArrayNew { elements: lowered })
             }
@@ -1669,6 +1672,32 @@ impl<'a> Resolver<'a> {
             }
         }
         Ok(lowered)
+    }
+
+    fn lower_single_set_spread_array(
+        &mut self,
+        elements: &[ResolvedExpr],
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let [ResolvedExpr::Spread(spread_expr)] = elements else {
+            return Ok(None);
+        };
+        let ResolvedExpr::Ident(name) = spread_expr.as_ref() else {
+            return Ok(None);
+        };
+        let Ok(local_id) = self.resolve_local(name) else {
+            return Ok(None);
+        };
+        if self
+            .local_classes
+            .get(&local_id)
+            .is_some_and(|class_name| class_name == "Set")
+        {
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                runtime_fn: "SetValuesArray".to_owned(),
+                args: vec![LoweredExpr::Local(local_id)],
+            }));
+        }
+        Ok(None)
     }
 
     fn lower_object_literal_props(

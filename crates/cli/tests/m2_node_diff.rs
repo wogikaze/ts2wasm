@@ -995,6 +995,11 @@ fn spread_operator_literal_array_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_set_array_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-set.ts");
+}
+
+#[test]
 fn spread_operator_literal_object_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-object-literal.ts");
 }
