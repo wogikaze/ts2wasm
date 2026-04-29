@@ -244,6 +244,11 @@ fn optional_chaining_member_index_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn optional_chaining_call_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/optional-chaining-call.ts");
+}
+
+#[test]
 fn annexb_ishtmldda_host_hook_reports_issue_237() {
     for fixture in [
         "fixtures/core-semantics/annexb-ishtmldda-unsupported.ts",

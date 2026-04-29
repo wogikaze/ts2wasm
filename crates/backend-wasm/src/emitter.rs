@@ -573,6 +573,10 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(object);
                 self.collect_expr_strings(index);
             }
+            LoweredExpr::OptionalCall { callee, call } => {
+                self.collect_expr_strings(callee);
+                self.collect_expr_strings(call);
+            }
             LoweredExpr::MethodCall { object, .. } => {
                 self.collect_expr_strings(object);
             }
@@ -945,6 +949,10 @@ impl<'a> WatEmitter<'a> {
                 Self::collect_class_prototypes_from_expr(obj, prototypes);
                 Self::collect_class_prototypes_from_expr(key, prototypes);
             }
+            LoweredExpr::OptionalCall { callee, call } => {
+                Self::collect_class_prototypes_from_expr(callee, prototypes);
+                Self::collect_class_prototypes_from_expr(call, prototypes);
+            }
             LoweredExpr::Call { args, .. } | LoweredExpr::RuntimeCall { args, .. } => {
                 for arg in args {
                     Self::collect_class_prototypes_from_expr(arg, prototypes);
@@ -1060,6 +1068,10 @@ impl<'a> WatEmitter<'a> {
             } => {
                 Self::collect_builtin_error_prototypes_from_expr(left, prototypes);
                 Self::collect_builtin_error_prototypes_from_expr(right, prototypes);
+            }
+            LoweredExpr::OptionalCall { callee, call } => {
+                Self::collect_builtin_error_prototypes_from_expr(callee, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(call, prototypes);
             }
             LoweredExpr::PropertySet { object, value, .. }
             | LoweredExpr::PropertySetDynamic { object, value, .. } => {

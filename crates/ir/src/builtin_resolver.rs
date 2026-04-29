@@ -646,11 +646,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             index: Box::new(resolve_expr(index)?),
             span: *span,
         }),
-        Expr::OptionalCall { span, .. } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-253: optional call runtime semantics are not implemented in this slice"
-                .to_owned(),
-            span: Some(*span),
+        Expr::OptionalCall { callee, args, span } => Ok(ResolvedExpr::OptionalCall {
+            callee: Box::new(resolve_expr(callee)?),
+            args: args
+                .iter()
+                .map(resolve_expr)
+                .collect::<Result<Vec<_>, _>>()?,
+            span: *span,
         }),
         Expr::Array { elements, .. } => Ok(ResolvedExpr::Array(
             elements
