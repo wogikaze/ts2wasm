@@ -1,1 +1,1 @@
-console.log(-1n);
+console.log(~1n);
