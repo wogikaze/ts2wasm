@@ -190,26 +190,39 @@ fn parse_object_binding_pattern(
             continue;
         }
         let (target_part, default) = split_binding_default(part, span)?;
-        reject_unsupported_target(target_part, span)?;
 
         let (key, target) = if let Some((key, target)) = split_top_level_once(target_part, ':') {
             let key = key.trim();
             let target = target.trim();
-            if target.starts_with('[') || target.starts_with('{') {
+            let nested_target = target.starts_with('{');
+            reject_unsupported_target(target, span)?;
+            if !is_identifier(key) {
                 return Err(issue_251(
-                    "nested object binding aliases are not supported in this runtime slice",
+                    "object binding aliases must use identifier keys in this runtime slice",
                     span,
                 ));
             }
-            reject_unsupported_target(target, span)?;
-            if !is_identifier(key) || !is_identifier(target) {
+            if nested_target {
+                if default.is_some() {
+                    return Err(issue_251(
+                        "nested binding defaults are not supported in this runtime slice",
+                        span,
+                    ));
+                }
+                (
+                    key.to_owned(),
+                    BindingTarget::Pattern(Box::new(parse_object_binding_pattern(target, span)?)),
+                )
+            } else if !is_identifier(target) {
                 return Err(issue_251(
                     "object binding aliases must use identifier keys and targets in this runtime slice",
                     span,
                 ));
+            } else {
+                (key.to_owned(), BindingTarget::Identifier(target.to_owned()))
             }
-            (key.to_owned(), BindingTarget::Identifier(target.to_owned()))
         } else {
+            reject_unsupported_target(target_part, span)?;
             if !is_identifier(target_part) {
                 return Err(issue_251(
                     "object binding properties must be identifier shorthands in this runtime slice",
