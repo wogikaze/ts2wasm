@@ -817,16 +817,19 @@ fn lower_function(
                     span: param.span,
                 });
             }
-            if param.default.is_some() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-251: defaulted parameter binding patterns are not supported in this runtime slice"
-                            .to_owned(),
-                    span: param.span,
+            let param_local = resolver.resolve_local(&param.name)?;
+            if let Some(default) = &param.default {
+                let lowered_default = resolver.lower_expr(default)?;
+                body_with_defaults.push(LoweredStmt::If {
+                    condition: LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(param_local)),
+                        op: LoweredBinaryOp::StrictEqual,
+                        right: Box::new(LoweredExpr::Undefined),
+                    },
+                    then_body: vec![LoweredStmt::Assign(param_local, lowered_default)],
+                    else_body: vec![],
                 });
             }
-            let param_local = resolver.resolve_local(&param.name)?;
             body_with_defaults.extend(
                 resolver.lower_binding_pattern_declarations(
                     &pattern,

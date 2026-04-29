@@ -1,6 +1,8 @@
 use std::collections::{HashMap, HashSet};
 
-use super::binding_pattern::{ArrayBinding, BindingPattern, ObjectBinding, parse_binding_pattern};
+use super::binding_pattern::{
+    ArrayBinding, BindingDefault, BindingPattern, ObjectBinding, parse_binding_pattern,
+};
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
 use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, Span, UnaryOp};

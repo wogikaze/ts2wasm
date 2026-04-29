@@ -206,15 +206,6 @@ impl NameResolver {
                             span: Some(*span),
                         });
                     }
-                    if default.is_some() && is_binding_pattern_text(param_name) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message:
-                                "issue-251: defaulted parameter binding patterns are not supported in this runtime slice"
-                                    .to_owned(),
-                            span: Some(*span),
-                        });
-                    }
                     self.declare_binding(param_name, Some(*span))?;
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
