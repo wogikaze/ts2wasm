@@ -782,9 +782,179 @@ impl WatEmitter<'_> {
       (then (i32.const {one}))
       (else (i32.const {zero}))))
 
+  (func $bigint_from_string (param $v i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $start i32)
+    (local $end i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $next i32)
+    (local $sign i32)
+    (local $explicit_sign i32)
+    (local $radix i32)
+    (local $digit i32)
+    (local $magnitude i64)
+    (local $limit i64)
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $end (local.get $len))
+    (local.set $sign (i32.const 1))
+    (local.set $radix (i32.const 10))
+    (block $leading_done
+      (loop $leading
+        (br_if $leading_done (i32.ge_u (local.get $start) (local.get $end)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (local.get $start))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $start (i32.add (local.get $start) (i32.const 1)))
+            (br $leading))
+          (else (br $leading_done)))))
+    (block $trailing_done
+      (loop $trailing
+        (br_if $trailing_done (i32.le_u (local.get $end) (local.get $start)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (i32.sub (local.get $end) (i32.const 1)))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $end (i32.sub (local.get $end) (i32.const 1)))
+            (br $trailing))
+          (else (br $trailing_done)))))
+    (if (i32.ge_u (local.get $start) (local.get $end))
+      (then (return (call $bigint_from_signed_i64 (i64.const 0)))))
+    (local.set $ch
+      (i32.load8_u
+        (i32.add
+          (i32.add (local.get $obj) (i32.const {string_header_size}))
+          (local.get $start))))
+    (if (i32.eq (local.get $ch) (i32.const {ascii_minus}))
+      (then
+        (local.set $sign (i32.const -1))
+        (local.set $explicit_sign (i32.const 1))
+        (local.set $start (i32.add (local.get $start) (i32.const 1))))
+      (else
+        (if (i32.eq (local.get $ch) (i32.const {ascii_plus}))
+          (then
+            (local.set $explicit_sign (i32.const 1))
+            (local.set $start (i32.add (local.get $start) (i32.const 1)))))))
+    (if (i32.ge_u (local.get $start) (local.get $end))
+      (then (unreachable)))
+    (if (i32.lt_u (i32.add (local.get $start) (i32.const 1)) (local.get $end))
+      (then
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (local.get $start))))
+        (local.set $next
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (i32.add (local.get $start) (i32.const 1)))))
+        (if (i32.eq (local.get $ch) (i32.const {ascii_zero}))
+          (then
+            (if (i32.or (i32.eq (local.get $next) (i32.const {ascii_x})) (i32.eq (local.get $next) (i32.const {ascii_X})))
+              (then
+                (local.set $radix (i32.const 16))
+                (local.set $start (i32.add (local.get $start) (i32.const 2)))))
+            (if (i32.or (i32.eq (local.get $next) (i32.const {ascii_b})) (i32.eq (local.get $next) (i32.const {ascii_B})))
+              (then
+                (local.set $radix (i32.const 2))
+                (local.set $start (i32.add (local.get $start) (i32.const 2)))))
+            (if (i32.or (i32.eq (local.get $next) (i32.const {ascii_o})) (i32.eq (local.get $next) (i32.const {ascii_O})))
+              (then
+                (local.set $radix (i32.const 8))
+                (local.set $start (i32.add (local.get $start) (i32.const 2)))))))))
+    (if
+      (i32.and
+        (local.get $explicit_sign)
+        (i32.ne (local.get $radix) (i32.const 10)))
+      (then (unreachable)))
+    (if (i32.ge_u (local.get $start) (local.get $end))
+      (then (unreachable)))
+    (local.set $i (local.get $start))
+    (block $parse_done
+      (loop $parse
+        (br_if $parse_done (i32.ge_u (local.get $i) (local.get $end)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {string_header_size}))
+              (local.get $i))))
+        (if
+          (i32.and
+            (i32.ge_u (local.get $ch) (i32.const {ascii_zero}))
+            (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+          (then
+            (local.set $digit (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+          (else
+            (if
+              (i32.and
+                (i32.ge_u (local.get $ch) (i32.const {ascii_A}))
+                (i32.le_u (local.get $ch) (i32.const {ascii_F})))
+              (then
+                (local.set $digit
+                  (i32.add
+                    (i32.sub (local.get $ch) (i32.const {ascii_A}))
+                    (i32.const 10))))
+              (else
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $ch) (i32.const {ascii_a}))
+                    (i32.le_u (local.get $ch) (i32.const {ascii_f})))
+                  (then
+                    (local.set $digit
+                      (i32.add
+                        (i32.sub (local.get $ch) (i32.const {ascii_a}))
+                        (i32.const 10))))
+                  (else (unreachable)))))))
+        (if (i32.ge_u (local.get $digit) (local.get $radix))
+          (then (unreachable)))
+        (local.set $limit
+          (i64.div_u
+            (i64.sub (i64.const -1) (i64.extend_i32_u (local.get $digit)))
+            (i64.extend_i32_u (local.get $radix))))
+        (if (i64.gt_u (local.get $magnitude) (local.get $limit))
+          (then (unreachable)))
+        (local.set $magnitude
+          (i64.add
+            (i64.mul
+              (local.get $magnitude)
+              (i64.extend_i32_u (local.get $radix)))
+            (i64.extend_i32_u (local.get $digit))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $parse)))
+    (if (i32.lt_s (local.get $sign) (i32.const 0))
+      (then
+        (if (i64.gt_u (local.get $magnitude) (i64.const {i64_max}))
+          (then (unreachable)))
+        (return
+          (call $bigint_from_signed_i64
+            (i64.sub (i64.const 0) (local.get $magnitude))))))
+    (call $bigint_from_unsigned_i64 (local.get $magnitude)))
+
   (func $bigint_from_value (param $v i32) (result i32)
     (if (call $bigint_value_is_bigint (local.get $v))
       (then (return (local.get $v))))
+    (if (call $is_string (local.get $v))
+      (then (return (call $bigint_from_string (local.get $v)))))
     (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {number_tag}))
       (then
         (return
@@ -807,6 +977,25 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            string_header_size = Layout::STRING_HEADER_SIZE,
+            ascii_tab = 9,
+            ascii_cr = 13,
+            ascii_space = 32,
+            ascii_plus = 43,
+            ascii_minus = 45,
+            ascii_zero = 48,
+            ascii_nine = 57,
+            ascii_A = 65,
+            ascii_F = 70,
+            ascii_B = 66,
+            ascii_O = 79,
+            ascii_X = 88,
+            ascii_a = 97,
+            ascii_f = 102,
+            ascii_b = 98,
+            ascii_o = 111,
+            ascii_x = 120,
+            i64_max = i64::MAX,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
         ));
