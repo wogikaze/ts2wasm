@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 68 | 14 | 54 |
+| runtime | 72 | 17 | 55 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 299 | 145 | 154 |
+| total | 303 | 148 | 155 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,9 +50,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 268 | Implement for loop increment operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement for loop increment operator |
 | 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
 | 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
-| 272 | Implement Set | feature | runtime/builtins | implementation-ready | P2 |  | Implement Set |
 | 273 | Implement recursive function calls | feature | runtime/semantics | implementation-ready | P2 |  | Implement recursive function calls |
 | 274 | Implement spread operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement spread operator |
+| 275 | Implement Set size and clear | feature | runtime/builtins | implementation-ready | P2 |  | `new Set()` currently has validated constructor/add/has/delete coverage, but `Set.prototype.size` and `Set.prototype.... |
+| 276 | Implement Set constructor from supported iterables | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 validates only the zero-argument Set constructor; the broad issue 272 cited `reference/test262/test/built-i... |
+| 277 | Implement Set SameValueZero identity | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 explicitly closed basic Set operations while recording that Map/Set keys are currently normalized through `... |
+| 278 | Implement Set iteration | feature | runtime/builtins | implementation-ready | P2 |  | issue 049 deliberately left Map/Set iteration out of scope, and issue 272's broad "Test262 Set tests pass" criterion ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -355,6 +358,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
 | 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
 | 269 | Implement Math.pow | feature | runtime/builtins | see file |
+| 272 | Implement Set | feature | runtime/builtins | see `issues/done/272-implement-set.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
