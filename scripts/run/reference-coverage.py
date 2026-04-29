@@ -35,6 +35,8 @@ import shutil
 import os
 from pathlib import Path
 
+import test262 as test262_runner
+
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
 COVERAGE_RESULTS_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
@@ -349,6 +351,33 @@ def write_coverage_result(summary):
     with output_path.open("w", encoding="utf-8") as handle:
         json.dump(summary, handle, indent=2, sort_keys=False)
         handle.write("\n")
+
+def test262_harness_dir_for(file_path):
+    parts = file_path.resolve().parts
+    for index, part in enumerate(parts):
+        if part == "test262":
+            return Path(*parts[: index + 1]) / "harness"
+    return test262_runner.HARNESS_DIR
+
+def prepare_build_inputs(suite, file_path, tmp_dir):
+    """Return source paths for wasm and Node execution."""
+    if suite != "test262":
+        return file_path, file_path
+
+    source_code = file_path.read_text(encoding="utf-8")
+    metadata = test262_runner.parse_test262_metadata(source_code)
+    test262_runner.HARNESS_DIR = test262_harness_dir_for(file_path)
+    wasm_source = tmp_dir / "test262-wasm-input.js"
+    node_source = tmp_dir / "test262-node-input.js"
+    wasm_source.write_text(
+        test262_runner.build_test262_source(file_path, source_code, metadata, target="wasm"),
+        encoding="utf-8",
+    )
+    node_source.write_text(
+        test262_runner.build_test262_source(file_path, source_code, metadata, target="node"),
+        encoding="utf-8",
+    )
+    return wasm_source, node_source
 
 def feature_label(diag_code, err_file, file_path):
     """Generate feature label from diagnostic code and error output."""
@@ -696,11 +725,12 @@ def main():
             
             out_wasm = tmp_dir / "out.wasm"
             err_file = tmp_dir / "err.txt"
+            build_input, node_input = prepare_build_inputs(suite, file_path, tmp_dir)
             
             # Build with ts2wasm
             result = subprocess.run(
                 ["timeout", "8s", "cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", 
-                 str(file_path), "-o", str(out_wasm)],
+                 str(build_input), "-o", str(out_wasm)],
                 capture_output=True,
                 cwd=REPO_ROOT
             )
@@ -713,7 +743,7 @@ def main():
                     wasm_out = tmp_dir / "wasm.out"
                     
                     node_result = subprocess.run(
-                        ["timeout", "8s", "node", str(file_path)],
+                        ["timeout", "8s", "node", str(node_input)],
                         capture_output=True,
                         cwd=REPO_ROOT
                     )
