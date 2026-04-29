@@ -380,12 +380,11 @@ fn validate_expr(
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);
             }
-            if runtime_fn == "HeapClosureCall" {
+            if runtime_fn == "HeapClosureCall" && args.is_empty() {
                 errors.push(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-257: heap closure call dispatch is not implemented by the backend yet"
-                            .to_owned(),
+                    code: DiagCode::InvariantViolation,
+                    message: "HeapClosureCall must include a closure receiver argument"
+                        .to_owned(),
                     span: None,
                 });
             }
@@ -474,21 +473,11 @@ fn validate_expr(
         LoweredExpr::ArrowFn {
             func_id,
             captures,
-            representation,
+            representation: _,
         } => {
             check_func_id(*func_id, num_funcs, errors);
             for capture in captures {
                 check_local_id(*capture, local_count, errors);
-            }
-            if matches!(representation, ClosureRepresentation::HeapObject) {
-                errors.push(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-257: heap closure `{}` allocation/dispatch is not implemented by the backend yet",
-                        func_id.0
-                    ),
-                    span: None,
-                });
             }
         }
         _ => {}
