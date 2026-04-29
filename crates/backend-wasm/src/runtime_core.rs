@@ -2546,18 +2546,24 @@ impl WatEmitter<'_> {
     (local.set $new_heap (i32.add (local.get $header_base) (local.get $block_size)))
 
     ;; Trigger a collection hook once allocation pressure crosses the threshold
-    ;; and the bump pointer is close to the currently reserved memory end.
+    ;; and the bump pointer is close to the currently reserved memory end. When
+    ;; memory is already at the committed max, also collect before the free-list
+    ;; scan so reclaimed blocks get one last chance before the OOM trap.
     (local.set $alloc_pressure
       (i32.add (global.get $alloc_bytes_since_last_gc) (local.get $block_size)))
-    (if (i32.ge_u (local.get $alloc_pressure) (i32.const {gc_threshold}))
-      (then
-        (local.set $memory_pages (memory.size))
-        (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
-        (if
+    (local.set $memory_pages (memory.size))
+    (local.set $memory_bytes (i32.mul (local.get $memory_pages) (i32.const {page_size})))
+    (if
+      (i32.or
+        (i32.and
+          (i32.ge_u (local.get $alloc_pressure) (i32.const {gc_threshold}))
           (i32.ge_u
             (local.get $new_heap)
-            (i32.sub (local.get $memory_bytes) (i32.const {gc_headroom_bytes})))
-          (then (call $gc_collect)))))
+            (i32.sub (local.get $memory_bytes) (i32.const {gc_headroom_bytes}))))
+        (i32.and
+          (i32.eq (local.get $memory_pages) (i32.const {memory_max_pages}))
+          (i32.gt_u (local.get $new_heap) (local.get $memory_bytes))))
+      (then (call $gc_collect)))
 
     ;; Reuse a swept block when one is large enough for this payload.
     ;; Skip the linear free-list scan when sweep proved no free block is large

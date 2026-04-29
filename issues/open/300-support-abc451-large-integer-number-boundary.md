@@ -518,6 +518,26 @@ result: Exception: unreachable; elapsed 7.60
 
 - Issue 300 remains open. No official ABC451 sample compatibility is claimed.
 
+2026-04-29 child `308-alloc-pattern-20260429T203035Z` issue 308 follow-up:
+
+- Issue 308 added a conservative max-cap last-chance GC in `$alloc_heap`.
+  When the committed `MEMORY_MAX_PAGES=185` cap is already reached and the
+  bump allocation would exceed current memory, allocation now runs GC before
+  the free-list scan and before the existing OOM trap.
+- This does not establish issue 300 compatibility. The depth-9 search-only
+  reducer still traps under the committed policy after Node confirms
+  `1404832`, and the smallest official ABC451 sample still traps:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-308-lastchance.wasm"
+result: Exception: unreachable; elapsed 10.09
+date: 2026-04-29
+```
+
+- No official ABC451 sample output parity is claimed; issue 300 remains open
+  until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

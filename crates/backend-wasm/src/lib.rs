@@ -245,6 +245,9 @@ mod tests {
             "(i32.const {})",
             Layout::GC_HEADROOM_PAGES * Layout::WASM_PAGE_SIZE
         )));
+        assert!(wat.contains(&format!("(i32.const {})", Layout::MEMORY_MAX_PAGES)));
+        assert!(wat.contains("(i32.eq (local.get $memory_pages)"));
+        assert!(wat.contains("(i32.gt_u (local.get $new_heap) (local.get $memory_bytes))"));
         assert!(wat.contains(&format!("(i32.const {})", Layout::HEAP_GROW_MIN_PAGES)));
         assert!(wat.contains("(local $needed_pages i32)"));
         assert!(wat.contains("(memory.grow (local.get $needed_pages))"));

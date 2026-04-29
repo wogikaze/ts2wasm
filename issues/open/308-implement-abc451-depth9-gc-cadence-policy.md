@@ -115,11 +115,15 @@ Final-state docs:
       `alloc_bytes_since_last_gc + requested_block_size` threshold contract
 - [x] updated: `docs/14-runtime-abi.md` to state the committed 12-page GC
       headroom and 16-page minimum memory growth policy
+- [x] updated: `docs/14-runtime-abi.md` to state max-cap last-chance GC before
+      free-list scan and OOM trap
 
 Current state:
 
 - [x] updated: `current-state.md` records the committed headroom-aware GC
       cadence slice and residual depth-9 blocker
+- [x] updated: `current-state.md` records the max-cap last-chance GC slice and
+      residual depth-9 / official sample blocker
 
 Follow-up issues:
 
@@ -233,6 +237,44 @@ date: 2026-04-29
 
 command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-free-list-scan.wasm
 result: trapped with Exception: unreachable after 7.60s under committed 185-page policy
+date: 2026-04-29
+```
+
+- Issue 300 remains open. No official ABC451 sample compatibility is claimed.
+
+2026-04-29 child `308-alloc-pattern-20260429T203035Z` progress:
+
+- Committed a max-cap last-chance GC policy in `$alloc_heap`: when
+  `memory.size == MEMORY_MAX_PAGES` and the bump allocation would exceed the
+  currently reserved memory, allocation now runs GC before the free-list scan
+  and before the existing OOM trap. This is separate from the rejected
+  free-list-first candidates; it only applies once the committed memory cap is
+  already reached, and the explicit OOM trap remains if no reusable swept block
+  can satisfy the request.
+- Added backend WAT contract coverage for the max-page condition and
+  bump-exceeds-memory guard.
+- Required depth-8 and OOM regressions still pass, but this does not complete
+  issue 308:
+
+```text
+command: node /tmp/abc451-search-depth-9-308-lastchance.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-search-depth-9-308-lastchance.ts -o /tmp/abc451-search-depth-9-308-lastchance.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-lastchance.wasm
+result: trapped with Exception: unreachable after 8.41s under committed 185-page policy
+date: 2026-04-29
+```
+
+- The official smallest ABC451 sample also remains blocked:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-308-lastchance.wasm"
+result: trapped with Exception: unreachable after 10.09s under committed 185-page policy
 date: 2026-04-29
 ```
 
