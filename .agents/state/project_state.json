@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "fsm": "CHILD_SUPERVISE",
+  "fsm": "WORKTREE_ASSIGN",
   "active_task_id": null,
-  "updated_at": "2026-04-29T12:45:13Z",
+  "updated_at": "2026-04-29T13:03:06Z",
   "verify_fast_streak_fails": 0
 }
