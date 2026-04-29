@@ -148,7 +148,7 @@ Fill only when moving to `done/`.
 Commits:
 
 - `c1db1469 issue-291: classify Object descriptor gap`
-- close commit: filled by child-291-object-global close commit
+- `890408f315c4654b37290cb23d00750a20bb52a2 issue-291: close Object global binding slice`
 
 Validation result:
 
