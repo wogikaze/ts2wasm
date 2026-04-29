@@ -787,6 +787,32 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
+                    if let Some(getter_id) = self.current_private_getter_id(key) {
+                        if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-255: private getter `{key}` access is currently supported only as `this.{key}` inside the declaring class"
+                                ),
+                                span: Some(*span),
+                            });
+                        }
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(getter_id),
+                            args: vec![LoweredExpr::Local(self.resolve_local("this")?)],
+                        });
+                    }
+                    if let Some(class_name) = self.infer_class_for_expr(object)
+                        && self.private_getter_id_for_class(&class_name, key).is_some()
+                    {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: private getter `{key}` external access is not supported in this private accessor runtime slice"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
                     let slot = self.private_field_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateFieldGet".to_owned(),
@@ -1904,6 +1930,18 @@ impl<'a> Resolver<'a> {
         let class_name = self.current_class.as_ref()?;
         self.class_method_ids
             .get(&(class_name.clone(), method.to_owned()))
+            .copied()
+    }
+
+    fn current_private_getter_id(&self, key: &str) -> Option<FuncId> {
+        let class_name = self.current_class.as_ref()?;
+        self.private_getter_id_for_class(class_name, key)
+    }
+
+    fn private_getter_id_for_class(&self, class_name: &str, key: &str) -> Option<FuncId> {
+        let getter_name = key.strip_prefix('#')?;
+        self.class_method_ids
+            .get(&(class_name.to_owned(), format!("#get::{getter_name}")))
             .copied()
     }
 

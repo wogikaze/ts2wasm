@@ -913,9 +913,46 @@ fn resolve_private_elements(
                         .collect::<Result<Vec<_>, _>>()?,
                 });
             }
-            ClassPrivateElement::Getter { span, .. } | ClassPrivateElement::Setter { span, .. } => {
+            ClassPrivateElement::Getter {
+                name,
+                body,
+                is_static,
+                span,
+                ..
+            } => {
+                if *is_static {
+                    return Err(unsupported_private_element(
+                        "static private accessors are not supported in this private accessor runtime slice",
+                        *span,
+                    ));
+                }
+                if extends_name.is_some() {
+                    return Err(unsupported_private_element(
+                        "private accessors on derived classes require full private brand semantics",
+                        *span,
+                    ));
+                }
+                if !seen.insert(name.clone()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-255: duplicate private element `#{name}` in class `{class_name}`"
+                        ),
+                        span: Some(*span),
+                    });
+                }
+                methods.push(ClassMethod {
+                    name: private_getter_method_name(name),
+                    params: Vec::new(),
+                    body: body
+                        .iter()
+                        .map(resolve_stmt)
+                        .collect::<Result<Vec<_>, _>>()?,
+                });
+            }
+            ClassPrivateElement::Setter { span, .. } => {
                 return Err(unsupported_private_element(
-                    "private accessors are not supported in this private field runtime slice",
+                    "private setters are not supported in this private accessor runtime slice",
                     *span,
                 ));
             }
@@ -947,6 +984,10 @@ fn unsupported_private_element(detail: &str, span: Span) -> Diagnostic {
 
 fn is_private_member_key(key: &str) -> bool {
     key.starts_with('#')
+}
+
+fn private_getter_method_name(name: &str) -> String {
+    format!("#get::{name}")
 }
 
 fn parse_bigint_literal(raw: &str, span: Span) -> Result<ResolvedExpr, Diagnostic> {

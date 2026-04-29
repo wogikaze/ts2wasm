@@ -694,6 +694,33 @@ fn lowering_represents_direct_private_method_call_as_same_class_user_call() {
 }
 
 #[test]
+fn lowering_represents_direct_private_getter_access_as_same_class_user_call() {
+    use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class C {
+          get #x() { return 3; }
+          read() { return this.#x; }
+        }
+
+        let c = new C();
+        console.log(c.read());
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(2)),
+            args,
+        }) => assert!(matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0))])),
+        other => panic!("unexpected private getter access lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn builtin_console_log_contract_is_effect_only() {
     use ts2wasm_ir::builtin::{BuiltinId, BuiltinResult};
     assert_eq!(BuiltinId::ConsoleLog.expected_arity(), 1);
