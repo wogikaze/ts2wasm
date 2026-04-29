@@ -5,9 +5,10 @@ use ts2wasm_frontend::{
     UnaryOp,
 };
 
+use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
-use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedStmt};
+use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedParam, ResolvedStmt};
 
 pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     BigIntRuntimeGuard::default().visit_stmts(program)?;
@@ -32,7 +33,16 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
             message: "issue-055: static module declarations parse in the frontend but module resolution and loading are not implemented".to_owned(),
             span: Some(*span),
         }),
-        Stmt::Let { name, expr, .. } => Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?)),
+        Stmt::Let { name, expr, span } => {
+            if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
+                Ok(ResolvedStmt::DestructureLet {
+                    pattern,
+                    expr: resolve_expr(expr)?,
+                })
+            } else {
+                Ok(ResolvedStmt::Let(name.clone(), resolve_expr(expr)?))
+            }
+        }
         Stmt::Assign { name, expr, .. } => {
             Ok(ResolvedStmt::Assign(name.clone(), resolve_expr(expr)?))
         }
@@ -87,16 +97,20 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
         }),
         Stmt::Return { expr, .. } => Ok(ResolvedStmt::Return(resolve_expr(expr)?)),
         Stmt::Function {
-            name, params, body, ..
+            name,
+            params,
+            body,
+            span,
         } => {
             let resolved_params = params
                 .iter()
                 .map(|(param_name, default, is_rest)| {
-                    Ok((
-                        param_name.clone(),
-                        default.as_ref().map(resolve_expr).transpose()?,
-                        *is_rest,
-                    ))
+                    Ok(ResolvedParam {
+                        name: param_name.clone(),
+                        default: default.as_ref().map(resolve_expr).transpose()?,
+                        is_rest: *is_rest,
+                        span: Some(*span),
+                    })
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(ResolvedStmt::Function {
@@ -147,7 +161,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         name: method_name,
                         params,
                         body: method_body,
-                        ..
+                        span,
                     } if method_name == "constructor" => {
                         if constructor.is_some() {
                             return Err(Diagnostic {
@@ -159,11 +173,12 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         let resolved_params = params
                             .iter()
                             .map(|(param_name, default, is_rest)| {
-                                Ok((
-                                    param_name.clone(),
-                                    default.as_ref().map(resolve_expr).transpose()?,
-                                    *is_rest,
-                                ))
+                                Ok(ResolvedParam {
+                                    name: param_name.clone(),
+                                    default: default.as_ref().map(resolve_expr).transpose()?,
+                                    is_rest: *is_rest,
+                                    span: Some(*span),
+                                })
                             })
                             .collect::<Result<Vec<_>, _>>()?;
                         let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<
@@ -184,16 +199,17 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                         name: method_name,
                         params,
                         body: method_body,
-                        ..
+                        span,
                     } => {
                         let resolved_params = params
                             .iter()
                             .map(|(param_name, default, is_rest)| {
-                                Ok((
-                                    param_name.clone(),
-                                    default.as_ref().map(resolve_expr).transpose()?,
-                                    *is_rest,
-                                ))
+                                Ok(ResolvedParam {
+                                    name: param_name.clone(),
+                                    default: default.as_ref().map(resolve_expr).transpose()?,
+                                    is_rest: *is_rest,
+                                    span: Some(*span),
+                                })
                             })
                             .collect::<Result<Vec<_>, _>>()?;
                         let resolved_body = method_body.iter().map(resolve_stmt).collect::<Result<

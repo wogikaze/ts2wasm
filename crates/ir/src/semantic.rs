@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, UnaryOp};
 
 use crate::builtin::{BuiltinId, BuiltinPropertyId};
-use crate::builtin_resolved::{ResolvedExpr, ResolvedStmt};
+use crate::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct HirLocalId(pub usize);
@@ -316,14 +316,14 @@ fn collect_function_ids(
 
 fn lower_function(
     id: HirFunctionId,
-    params: &[(String, Option<ResolvedExpr>, bool)],
+    params: &[ResolvedParam],
     body: &[ResolvedStmt],
     function_ids: &HashMap<String, HirFunctionId>,
 ) -> Result<HirFunction, Diagnostic> {
     let mut lowerer = HirLowerer::new(function_ids);
     let mut param_ids = Vec::new();
-    for (name, _, _) in params {
-        param_ids.push(lowerer.declare_local(name)?);
+    for param in params {
+        param_ids.push(lowerer.declare_local(&param.name)?);
     }
     let body = lowerer.lower_block(body)?;
     Ok(HirFunction {

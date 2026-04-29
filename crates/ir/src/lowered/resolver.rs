@@ -166,6 +166,17 @@ impl<'a> Resolver<'a> {
 
     fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
         match stmt {
+            ResolvedStmt::DestructureLet { pattern, expr } => {
+                let value_local = self.alloc_temp();
+                let mut statements = vec![LoweredStmt::Let(value_local, self.lower_expr(expr)?)];
+                statements.extend(
+                    self.lower_binding_pattern_declarations(
+                        pattern,
+                        LoweredExpr::Local(value_local),
+                    )?,
+                );
+                Ok(LoweredStmt::Block(statements))
+            }
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
@@ -1349,6 +1360,53 @@ impl<'a> Resolver<'a> {
         Ok(lowered_args)
     }
 
+    fn lower_binding_pattern_declarations(
+        &mut self,
+        pattern: &BindingPattern,
+        value: LoweredExpr,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        match pattern {
+            BindingPattern::Array(bindings) => bindings
+                .iter()
+                .map(|binding| self.lower_array_binding_declaration(binding, &value))
+                .collect(),
+            BindingPattern::Object(bindings) => bindings
+                .iter()
+                .map(|binding| self.lower_object_binding_declaration(binding, &value))
+                .collect(),
+        }
+    }
+
+    fn lower_array_binding_declaration(
+        &mut self,
+        binding: &ArrayBinding,
+        value: &LoweredExpr,
+    ) -> Result<LoweredStmt, Diagnostic> {
+        let local_id = self.declare_local(&binding.name)?;
+        Ok(LoweredStmt::Let(
+            local_id,
+            LoweredExpr::Index {
+                object: Box::new(value.clone()),
+                index: Box::new(LoweredExpr::Number(binding.index as i32)),
+            },
+        ))
+    }
+
+    fn lower_object_binding_declaration(
+        &mut self,
+        binding: &ObjectBinding,
+        value: &LoweredExpr,
+    ) -> Result<LoweredStmt, Diagnostic> {
+        let local_id = self.declare_local(&binding.name)?;
+        Ok(LoweredStmt::Let(
+            local_id,
+            LoweredExpr::PropertyGet {
+                obj: Box::new(value.clone()),
+                key: binding.key.clone(),
+            },
+        ))
+    }
+
     fn lower_optional_call(
         &mut self,
         callee: &ResolvedExpr,
@@ -1535,9 +1593,19 @@ impl<'a> Resolver<'a> {
             .collect::<Result<Vec<_>, _>>()?;
         let mut lowered_params = params
             .iter()
-            .map(|name| (name.clone(), None, false))
+            .map(|name| ResolvedParam {
+                name: name.clone(),
+                default: None,
+                is_rest: false,
+                span: None,
+            })
             .collect::<Vec<_>>();
-        lowered_params.extend(capture_names.iter().map(|name| (name.clone(), None, false)));
+        lowered_params.extend(capture_names.iter().map(|name| ResolvedParam {
+            name: name.clone(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }));
 
         let func_id = FuncId(self.next_func_id);
         self.next_func_id += 1;
@@ -1573,7 +1641,10 @@ impl<'a> Resolver<'a> {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params.iter().any(|(_, default, is_rest)| default.is_some() || *is_rest) {
+        if params
+            .iter()
+            .any(|param| param.default.is_some() || param.is_rest)
+        {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
@@ -1610,7 +1681,12 @@ impl<'a> Resolver<'a> {
         lowered_params.extend(
             capture_names
                 .iter()
-                .map(|capture| (capture.clone(), None, false)),
+                .map(|capture| ResolvedParam {
+                    name: capture.clone(),
+                    default: None,
+                    is_rest: false,
+                    span: None,
+                }),
         );
 
         let func_id = FuncId(self.next_func_id);
@@ -1657,7 +1733,7 @@ impl<'a> Resolver<'a> {
     ) -> Vec<String> {
         let mut excluded = params
             .iter()
-            .map(|(param, _, _)| param.clone())
+            .map(|param| param.name.clone())
             .collect::<HashSet<_>>();
         excluded.insert(name.to_owned());
         collect_declared_names_in_stmts(body, &mut excluded);
