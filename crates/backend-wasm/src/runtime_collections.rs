@@ -513,19 +513,45 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $set_add (param $set i32) (param $value i32) (result i32)
-    (local $key_len i32)
-    (local.set $key_len
-      (call $value_to_string_into (local.get $value) (i32.const {scratch_offset})))
-    (drop
-      (call $property_set
-        (local.get $set)
-        (i32.const {scratch_offset})
-        (local.get $key_len)
-        (i32.const {true_value})))
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {undefined}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $append
+      (loop $scan
+        (br_if $append (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq (i32.load (local.get $entry_base)) (local.get $value))
+          (then (return (local.get $set))))
+        (br $scan)))
+    (local.set $entry_base
+      (i32.add (local.get $base)
+        (i32.add (i32.const {obj_header}) (i32.shl (local.get $count) (i32.const {entry_shift})))))
+    (i32.store (local.get $entry_base) (local.get $value))
+    (i32.store (i32.add (local.get $entry_base) (i32.const {value_off})) (i32.const {true_value}))
+    (i32.store (local.get $base) (i32.add (local.get $count) (i32.const {one})))
     (local.get $set))
 "#,
-            scratch_offset = Layout::SCRATCH_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
             true_value = ValueTag::TRUE,
+            undefined = ValueTag::UNDEFINED,
         ));
     }
 
@@ -533,12 +559,38 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $set_has (param $set i32) (param $value i32) (result i32)
-    (local $key_len i32)
-    (local.set $key_len
-      (call $value_to_string_into (local.get $value) (i32.const {scratch_offset})))
-    (call $property_has (local.get $set) (i32.const {scratch_offset}) (local.get $key_len)))
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq (i32.load (local.get $entry_base)) (local.get $value))
+          (then (return (i32.const {true}))))
+        (br $scan)))
+    (i32.const {false}))
 "#,
-            scratch_offset = Layout::SCRATCH_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
         ));
     }
 
@@ -546,12 +598,56 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $set_delete (param $set i32) (param $value i32) (result i32)
-    (local $key_len i32)
-    (local.set $key_len
-      (call $value_to_string_into (local.get $value) (i32.const {scratch_offset})))
-    (call $property_delete (local.get $set) (i32.const {scratch_offset}) (local.get $key_len)))
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $last_entry_base i32)
+    (local $last_index i32)
+    (local.set $tag (i32.and (local.get $set) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {object_tag})) (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $set) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (local.set $i (local.get $count))
+    (block $not_found
+      (loop $scan
+        (br_if $not_found (i32.eq (local.get $i) (i32.const {zero})))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (if (i32.eq (i32.load (local.get $entry_base)) (local.get $value))
+          (then
+            (local.set $last_index (i32.sub (local.get $count) (i32.const {one})))
+            (local.set $last_entry_base
+              (i32.add (local.get $base)
+                (i32.add (i32.const {obj_header})
+                  (i32.shl (local.get $last_index) (i32.const {entry_shift})))))
+            (if (i32.ne (local.get $i) (local.get $last_index))
+              (then
+                (i32.store (local.get $entry_base) (i32.load (local.get $last_entry_base)))
+                (i32.store
+                  (i32.add (local.get $entry_base) (i32.const {value_off}))
+                  (i32.load (i32.add (local.get $last_entry_base) (i32.const {value_off}))))))
+            (i32.store (local.get $last_entry_base) (i32.const {zero}))
+            (i32.store (i32.add (local.get $last_entry_base) (i32.const {value_off})) (i32.const {zero}))
+            (i32.store (local.get $base) (local.get $last_index))
+            (return (i32.const {true}))))
+        (br $scan)))
+    (i32.const {false}))
 "#,
-            scratch_offset = Layout::SCRATCH_OFFSET,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
         ));
     }
 
