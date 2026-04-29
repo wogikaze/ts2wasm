@@ -585,7 +585,9 @@ impl NameResolver {
                 })
             }
             Expr::Call { callee, args, span } => {
-                if self.is_test262_assert_reference_error_probe(callee, args) {
+                if self.is_test262_assert_reference_error_probe(callee, args)
+                    || self.is_test262_assert_comparison_probe(callee, args)
+                {
                     return Ok(Expr::Call {
                         callee: callee.clone(),
                         args: args.clone(),
@@ -980,8 +982,20 @@ impl NameResolver {
                             expr: Expr::Ident { .. },
                             ..
                         }]
-                    )
+                )
         )
+    }
+
+    fn is_test262_assert_comparison_probe(&self, callee: &Expr, args: &[Expr]) -> bool {
+        let Expr::Member {
+            object, property, ..
+        } = callee
+        else {
+            return false;
+        };
+        matches!(object.as_ref(), Expr::Ident { name, .. } if name == "assert")
+            && matches!(property.as_str(), "sameValue" | "notSameValue")
+            && matches!(args.len(), 2 | 3)
     }
 
     fn is_user_declared(&self, name: &str) -> bool {

@@ -146,6 +146,37 @@ mod tests {
     }
 
     #[test]
+    fn allows_test262_assert_same_value_for_later_harness_lowering() {
+        let program = vec![Stmt::Expr {
+            expr: Expr::Call {
+                callee: Box::new(Expr::Member {
+                    object: Box::new(Expr::Ident {
+                        name: "assert".to_string(),
+                        span: Span { start: 0, end: 6 },
+                    }),
+                    property: "sameValue".to_string(),
+                    span: Span { start: 0, end: 16 },
+                }),
+                args: vec![
+                    Expr::Number {
+                        value: 1,
+                        span: Span { start: 17, end: 18 },
+                    },
+                    Expr::Number {
+                        value: 1,
+                        span: Span { start: 20, end: 21 },
+                    },
+                ],
+                span: Span { start: 0, end: 22 },
+            },
+            span: Span { start: 0, end: 23 },
+        }];
+
+        let result = name_resolver::resolve_names(&program);
+        assert!(result.is_ok());
+    }
+
+    #[test]
     fn test_duplicate_local_error() {
         let program = vec![
             Stmt::Let {

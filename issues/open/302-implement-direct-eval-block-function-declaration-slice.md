@@ -5,7 +5,7 @@ type: feature
 area: frontend/semantics
 class: implementation-ready
 priority: P3
-depends_on: []
+depends_on: [306]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -216,6 +216,22 @@ the first block-function declaration behavior.
   and `mise run check issues` passed. A local negative assertion smoke changed
   the selected init reference's expected `changed` value from `123` to `124` and
   confirmed iwasm emits `__TS2WASM_TEST262_ASSERT_FAIL__`.
+
+2026-04-29 child progress:
+
+- Added a narrow name-resolver passthrough for statement-form test262
+  `assert.sameValue` / `assert.notSameValue` calls so the existing harness
+  lowering can run after name resolution. This preserves the selected
+  `func-init` reference as `build_pass` / `semantic_pass=1`.
+- Re-ran smart triage for
+  `func-block-decl-eval-func-block-scoping.js`: after the assertion passthrough,
+  the next failure is `UnresolvedName: initialBV` from the assertion call
+  `initialBV()`. The eval-created function mutates outer observer bindings and
+  the local block function binding across calls, which requires mutable closure
+  environment support rather than broader dynamic eval support.
+- Split that concrete blocker to issue 306 and made issue 302 depend on it.
+  Keep issue 302 open until the blocker is implemented and both selected
+  references pass.
 
 ## Completion evidence
 
