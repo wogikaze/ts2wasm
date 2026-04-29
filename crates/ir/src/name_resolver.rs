@@ -562,12 +562,19 @@ impl NameResolver {
                 op,
                 right,
                 span,
-            } => Ok(Expr::Binary {
-                left: Box::new(self.resolve_expr(left)?),
-                op: *op,
-                right: Box::new(self.resolve_expr(right)?),
-                span: *span,
-            }),
+            } => {
+                if let Some(diagnostic) =
+                    self.bigint_number_model_gap(left.as_ref(), right.as_ref(), *span)
+                {
+                    return Err(diagnostic);
+                }
+                Ok(Expr::Binary {
+                    left: Box::new(self.resolve_expr(left)?),
+                    op: *op,
+                    right: Box::new(self.resolve_expr(right)?),
+                    span: *span,
+                })
+            }
             Expr::Call { callee, args, span } => {
                 if self.is_unshadowed_function_constructor(callee) {
                     return Err(unsupported_function_constructor(*span));
@@ -890,6 +897,29 @@ impl NameResolver {
             && !self.is_user_declared("Function")
     }
 
+    fn bigint_number_model_gap(&self, left: &Expr, right: &Expr, span: Span) -> Option<Diagnostic> {
+        let other = if expr_contains_bigint_literal(left) {
+            Some(right)
+        } else if expr_contains_bigint_literal(right) {
+            Some(left)
+        } else {
+            None
+        }?;
+        let Expr::Ident { name, .. } = other else {
+            return None;
+        };
+        if !matches!(name.as_str(), "NaN" | "Infinity") || self.is_user_declared(name) {
+            return None;
+        }
+        Some(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-281: BigInt/Number comparison with `{name}` requires broader number-model support"
+            ),
+            span: Some(span),
+        })
+    }
+
     fn is_unshadowed_test262_ishtmldda_member(&self, object: &Expr, property: &str) -> bool {
         matches!(object, Expr::Ident { name, .. } if name == "$262")
             && property == "IsHTMLDDA"
@@ -981,4 +1011,89 @@ fn is_loop_stmt(stmt: &Stmt) -> bool {
             | Stmt::ForIn { .. }
             | Stmt::ForOf { .. }
     )
+}
+
+fn expr_contains_bigint_literal(expr: &Expr) -> bool {
+    match expr {
+        Expr::BigInt { .. } => true,
+        Expr::Unary { expr, .. } | Expr::TypeOf { expr, .. } | Expr::Spread { expr, .. } => {
+            expr_contains_bigint_literal(expr)
+        }
+        Expr::Binary { left, right, .. }
+        | Expr::InstanceOf {
+            expr: left,
+            type_expr: right,
+            ..
+        }
+        | Expr::Index {
+            object: left,
+            index: right,
+            ..
+        }
+        | Expr::OptionalIndex {
+            object: left,
+            index: right,
+            ..
+        } => expr_contains_bigint_literal(left) || expr_contains_bigint_literal(right),
+        Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
+            expr_contains_bigint_literal(callee) || args.iter().any(expr_contains_bigint_literal)
+        }
+        Expr::Member { object, .. } | Expr::OptionalMember { object, .. } => {
+            expr_contains_bigint_literal(object)
+        }
+        Expr::Assign { expr, .. } | Expr::LogicalAssign { expr, .. } => {
+            expr_contains_bigint_literal(expr)
+        }
+        Expr::LogicalPropertyAssign {
+            object_expr,
+            computed_key,
+            expr,
+            ..
+        } => {
+            object_expr
+                .as_deref()
+                .is_some_and(expr_contains_bigint_literal)
+                || computed_key
+                    .as_deref()
+                    .is_some_and(expr_contains_bigint_literal)
+                || expr_contains_bigint_literal(expr)
+        }
+        Expr::Array { elements, .. } => elements.iter().any(expr_contains_bigint_literal),
+        Expr::Object { props, .. } => props
+            .iter()
+            .any(|(_, value)| expr_contains_bigint_literal(value)),
+        Expr::New { args, .. } => args.iter().any(expr_contains_bigint_literal),
+        Expr::Ternary {
+            condition,
+            then_expr,
+            else_expr,
+            ..
+        } => {
+            expr_contains_bigint_literal(condition)
+                || expr_contains_bigint_literal(then_expr)
+                || expr_contains_bigint_literal(else_expr)
+        }
+        Expr::ArrowFn { body, .. } => expr_contains_bigint_literal(body),
+        Expr::PropertyAssign { object, value, .. } => {
+            expr_contains_bigint_literal(object) || expr_contains_bigint_literal(value)
+        }
+        Expr::IndexAssign {
+            object,
+            index,
+            value,
+            ..
+        } => {
+            expr_contains_bigint_literal(object)
+                || expr_contains_bigint_literal(index)
+                || expr_contains_bigint_literal(value)
+        }
+        Expr::FunctionExpr { .. }
+        | Expr::Number { .. }
+        | Expr::String { .. }
+        | Expr::Bool { .. }
+        | Expr::Null { .. }
+        | Expr::Undefined { .. }
+        | Expr::This { .. }
+        | Expr::Ident { .. } => false,
+    }
 }

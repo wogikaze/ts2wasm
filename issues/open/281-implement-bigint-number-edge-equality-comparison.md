@@ -100,6 +100,17 @@ Split from issue 261 on 2026-04-29 because issue 261 already implemented BigInt/
 - Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(bigint) or test(node_diff)'` (37 passed, 495 skipped).
 - Remaining scope: fractional, `NaN`, `Infinity`, and broader number-model-sensitive cases are not closed by this slice.
 
+2026-04-29:
+
+- Added source-spanned issue-281 diagnostics for statically visible
+  BigInt/Number comparisons against `NaN` and `Infinity`, preventing those
+  cases from falling through to generic unresolved-name diagnostics while the
+  broader number model remains out of scope.
+- Added unsupported regression fixtures for `1n == NaN` and `1n < Infinity`.
+- Remaining scope: implementing compatible `NaN` / `Infinity` / fractional
+  number comparison semantics requires the broader number model and is not
+  closed by this slice.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
