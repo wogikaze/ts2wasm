@@ -51,6 +51,9 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
                     .or_default()
                     .push("Math.random".to_owned());
             }
+            Capability::WasiClockRealtime => {
+                manifest.wasi.clock.realtime = true;
+            }
             Capability::HostFsReadFileSync
             | Capability::HostFsWriteFileSync
             | Capability::HostFsAppendFileSync => {
