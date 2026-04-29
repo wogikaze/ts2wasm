@@ -886,6 +886,11 @@ fn spread_operator_literal_call_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_literal_array_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-literal.ts");
+}
+
+#[test]
 fn spread_operator_unsupported_fixtures_report_issue_274() {
     for fixture in [
         "fixtures/core-semantics/spread-call-dynamic-unsupported.ts",

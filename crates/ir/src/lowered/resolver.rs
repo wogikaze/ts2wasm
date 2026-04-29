@@ -900,20 +900,7 @@ impl<'a> Resolver<'a> {
                 }
             }
             ResolvedExpr::Array(elements) => {
-                if elements
-                    .iter()
-                    .any(|element| matches!(element, ResolvedExpr::Spread(_)))
-                {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-274: array literal spread requires iterator-aware array construction, which is not supported in this milestone".to_owned(),
-                        span: None,
-                    });
-                }
-                let lowered = elements
-                    .iter()
-                    .map(|e| self.lower_expr(e))
-                    .collect::<Result<Vec<_>, _>>()?;
+                let lowered = self.lower_array_literal_elements(elements)?;
                 Ok(LoweredExpr::ArrayNew { elements: lowered })
             }
             ResolvedExpr::Object(props) => {
@@ -1530,6 +1517,31 @@ impl<'a> Resolver<'a> {
             }
         }
         Ok(lowered_args)
+    }
+
+    fn lower_array_literal_elements(
+        &mut self,
+        elements: &[ResolvedExpr],
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let mut lowered = Vec::new();
+        for element in elements {
+            match element {
+                ResolvedExpr::Spread(spread_expr) => {
+                    let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message:
+                                "issue-274: array literal spread is only supported for literal arrays in this milestone"
+                                    .to_owned(),
+                            span: None,
+                        });
+                    };
+                    lowered.extend(self.lower_array_literal_elements(spread_elements)?);
+                }
+                _ => lowered.push(self.lower_expr(element)?),
+            }
+        }
+        Ok(lowered)
     }
 
     fn lower_binding_pattern_declarations(
