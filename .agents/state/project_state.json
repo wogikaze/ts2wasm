@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "fsm": "SYNC",
+  "fsm": "WORKTREE_ASSIGN",
   "active_task_id": null,
-  "updated_at": "2026-04-27T01:10:00Z",
+  "updated_at": "2026-04-29T21:32:00Z",
   "verify_fast_streak_fails": 0
 }
