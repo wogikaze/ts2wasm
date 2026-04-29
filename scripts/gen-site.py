@@ -248,50 +248,101 @@ This section shows test coverage results across different test suites.
                                 for i, test in enumerate(failed_tests[:50]):  # Limit to first 50
                                     case_path = test.get('case', 'unknown')
                                     reason = test.get('reason', 'No reason')
+                                    if reason:
+                                        # Unescape the reason
+                                        reason = reason.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
                                     actual = test.get('actual', '')
+                                    if actual:
+                                        # Unescape the actual
+                                        actual = actual.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
                                     expected = test.get('expected', '')
+                                    if expected:
+                                        # Unescape the expected
+                                        expected = expected.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
+                                    error_line = test.get('error_line')
+                                    stderr = test.get('stderr', '')
+                                    if stderr:
+                                        # Unescape the stderr
+                                        stderr = stderr.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
                                     
-                                    # Try to read the test source code
-                                    test_source = ""
-                                    test_file_path = REFERENCE_DIR / suite_name / case_path
-                                    if test_file_path.exists():
-                                        try:
-                                            test_source = test_file_path.read_text(encoding="utf-8")
-                                        except:
-                                            pass
+                                    # Get source code from JSONL or file
+                                    test_source = test.get('source_code', '')
+                                    if test_source:
+                                        # Unescape the source code
+                                        test_source = test_source.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
+                                    
+                                    if not test_source:
+                                        test_file_path = REFERENCE_DIR / suite_name / case_path
+                                        if test_file_path.exists():
+                                            try:
+                                                test_source = test_file_path.read_text(encoding="utf-8")
+                                            except:
+                                                pass
                                     
                                     # Create individual test page
                                     test_id = case_path.replace('/', '-').replace('.', '-')
                                     test_page = suite_output / f"failed-{test_id}.md"
+                                    
+                                    # Add line number to source code if available
+                                    source_with_lines = ""
+                                    if test_source and error_line:
+                                        lines = test_source.split('\n')
+                                        for idx, line in enumerate(lines, 1):
+                                            marker = ">>> " if idx == error_line else "    "
+                                            source_with_lines += f"{marker}{idx}: {line}\n"
+                                    else:
+                                        source_with_lines = test_source
+                                    
                                     test_content = f"""# Failed Test: {case_path}
 
 **Status:** Failed  
 **Reason:** {reason}
-
+"""
+                                    if error_line:
+                                        test_content += f"**Error Line:** {error_line}\n"
+                                    
+                                    test_content += f"""
 ## Test Source Code
 
 ```javascript
-{test_source}
+{source_with_lines}
 ```
 
-## Expected Output
+"""
+                                    if stderr:
+                                        test_content += f"""## Compiler/Runtime Error
+
+```
+{stderr}
+```
+
+"""
+                                    
+                                    if expected:
+                                        test_content += f"""## Expected Output
 
 ```
 {expected}
 ```
 
-## Actual Output
+"""
+                                    
+                                    if actual:
+                                        test_content += f"""## Actual Output
 
 ```
 {actual}
 ```
 
-**Path:** `{case_path}`
+"""
+                                    
+                                    test_content += f"""**Path:** `{case_path}`
 """
                                     test_page.parent.mkdir(parents=True, exist_ok=True)
                                     test_page.write_text(test_content, encoding="utf-8")
                                     
-                                    suite_content += f"- [{case_path}](./failed-{test_id}.html) - {reason}\n"
+                                    line_info = f" (line {error_line})" if error_line else ""
+                                    suite_content += f"- [{case_path}](./failed-{test_id}.html) - {reason}{line_info}\n"
                                 
                                 if len(failed_tests) > 50:
                                     suite_content += f"\n*... and {len(failed_tests) - 50} more failed tests*\n"
@@ -303,8 +354,75 @@ This section shows test coverage results across different test suites.
                                 for i, test in enumerate(unsupported_tests[:50]):  # Limit to first 50
                                     case_path = test.get('case', 'unknown')
                                     reason = test.get('reason', 'No reason')
+                                    if reason:
+                                        # Unescape the reason
+                                        reason = reason.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
+                                    error_line = test.get('error_line')
+                                    stderr = test.get('stderr', '')
+                                    if stderr:
+                                        # Unescape the stderr
+                                        stderr = stderr.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
                                     
-                                    suite_content += f"- {case_path} - {reason}\n"
+                                    # Get source code from JSONL or file
+                                    test_source = test.get('source_code', '')
+                                    if test_source:
+                                        # Unescape the source code
+                                        test_source = test_source.replace('\\n', '\n').replace('\\t', '\t').replace('\\"', '"').replace('\\\\', '\\')
+                                    
+                                    if not test_source:
+                                        test_file_path = REFERENCE_DIR / suite_name / case_path
+                                        if test_file_path.exists():
+                                            try:
+                                                test_source = test_file_path.read_text(encoding="utf-8")
+                                            except:
+                                                pass
+                                    
+                                    # Create individual test page for unsupported tests
+                                    test_id = case_path.replace('/', '-').replace('.', '-')
+                                    test_page = suite_output / f"unsupported-{test_id}.md"
+                                    
+                                    # Add line number to source code if available
+                                    source_with_lines = ""
+                                    if test_source and error_line:
+                                        lines = test_source.split('\n')
+                                        for idx, line in enumerate(lines, 1):
+                                            marker = ">>> " if idx == error_line else "    "
+                                            source_with_lines += f"{marker}{idx}: {line}\n"
+                                    else:
+                                        source_with_lines = test_source
+                                    
+                                    test_content = f"""# Unsupported Test: {case_path}
+
+**Status:** Unsupported  
+**Reason:** {reason}
+"""
+                                    if error_line:
+                                        test_content += f"**Error Line:** {error_line}\n"
+                                    
+                                    test_content += f"""
+## Test Source Code
+
+```javascript
+{source_with_lines}
+```
+
+"""
+                                    if stderr:
+                                        test_content += f"""## Compiler Error
+
+```
+{stderr}
+```
+
+"""
+                                    
+                                    test_content += f"""**Path:** `{case_path}`
+"""
+                                    test_page.parent.mkdir(parents=True, exist_ok=True)
+                                    test_page.write_text(test_content, encoding="utf-8")
+                                    
+                                    line_info = f" (line {error_line})" if error_line else ""
+                                    suite_content += f"- [{case_path}](./unsupported-{test_id}.html) - {reason}{line_info}\n"
                                 
                                 if len(unsupported_tests) > 50:
                                     suite_content += f"\n*... and {len(unsupported_tests) - 50} more unsupported tests*\n"

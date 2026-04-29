@@ -40,7 +40,7 @@ def extract_category(path):
     match = re.search(r'test/language/([^/]+)/', str(path))
     return match.group(1) if match else "unknown"
 
-def create_test_record(suite, case_path, target, status, expected=None, actual=None, reason=None, tracking=None):
+def create_test_record(suite, case_path, target, status, expected=None, actual=None, reason=None, tracking=None, source_code=None, error_line=None, stderr=None):
     """Create a TestRecord JSON object."""
     record = {
         "suite": suite,
@@ -57,6 +57,12 @@ def create_test_record(suite, case_path, target, status, expected=None, actual=N
         record["reason"] = escape_json(reason)
     if tracking:
         record["tracking"] = tracking
+    if source_code:
+        record["source_code"] = escape_json(source_code)
+    if error_line is not None:
+        record["error_line"] = error_line
+    if stderr:
+        record["stderr"] = escape_json(stderr)
     
     return json.dumps(record)
 
@@ -86,6 +92,15 @@ def compile_and_run_test(test_file, tmp_dir):
     result_feature = ""
     result_reason = ""
     result_actual = ""
+    result_error_line = None
+    result_stderr_full = ""
+    
+    # Read source code first (needed for line number extraction)
+    source_code = ""
+    try:
+        source_code = test_file.read_text(encoding="utf-8")
+    except:
+        pass
     
     # Compile with ts2wasm
     result = subprocess.run(
@@ -98,13 +113,31 @@ def compile_and_run_test(test_file, tmp_dir):
     if result.returncode != 0:
         result_status = "unsupported"
         stderr_content = result.stderr
+        result_stderr_full = stderr_content
         diag_match = re.search(r'(UnsupportedSyntax|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError)', stderr_content)
         result_diag = diag_match.group(1) if diag_match else "CompilationError"
+        
+        # Try to extract line number from error message
+        # Look for patterns like "at line X" or ":X:" where X is a line number
+        line_match = re.search(r'(?:at line |:)(\d+)(?::|$)', stderr_content)
+        result_error_line = int(line_match.group(1)) if line_match else None
+        
+        # If no line number found, try to extract byte position and convert to line
+        if not result_error_line and source_code:
+            pos_match = re.search(r'at (\d+)\.\.(\d+)', stderr_content)
+            if pos_match:
+                try:
+                    byte_pos = int(pos_match.group(1))
+                    # Convert byte position to line number
+                    lines_before = source_code[:byte_pos].count('\n')
+                    result_error_line = lines_before + 1
+                except:
+                    pass
         
         reason_match = re.search(re.escape(f"[{result_diag}]"), stderr_content)
         result_reason = reason_match.group(0) if reason_match else stderr_content.split('\n')[0] if stderr_content else ""
         result_feature = feature_label(result_diag, stderr_content, str(test_file))
-        return result_status, result_diag, result_feature, result_reason, result_actual
+        return result_status, result_diag, result_feature, result_reason, result_actual, source_code, result_error_line, result_stderr_full
     
     # Run with iwasm
     result = subprocess.run(
@@ -123,9 +156,14 @@ def compile_and_run_test(test_file, tmp_dir):
         result_status = "fail"
         result_diag = f"RuntimeError:{result.returncode}"
         result_reason = result.stderr[:200] if result.stderr else ""
+        result_stderr_full = result.stderr
         result_actual = result.stdout if result.stdout else ""
+        
+        # Try to extract line number from runtime error
+        line_match = re.search(r'(?:at line |:)(\d+)(?::|$)', result.stderr)
+        result_error_line = int(line_match.group(1)) if line_match else None
     
-    return result_status, result_diag, result_feature, result_reason, result_actual
+    return result_status, result_diag, result_feature, result_reason, result_actual, source_code, result_error_line, result_stderr_full
 
 def get_node_reference(test_file, tmp_dir):
     """Get Node.js reference output."""
@@ -147,30 +185,30 @@ def process_one_test(test_file, tmp_dir):
     """Process a single test file and return JSON record and status."""
     print(f"Processing: {test_file}", file=sys.stderr)
     
-    result_status, result_diag, result_feature, result_reason, result_actual = compile_and_run_test(test_file, tmp_dir)
+    result_status, result_diag, result_feature, result_reason, result_actual, source_code, error_line, stderr_full = compile_and_run_test(test_file, tmp_dir)
     
     if result_status == "pass":
         expected, node_ok = get_node_reference(test_file, tmp_dir)
         
         if node_ok and result_actual == expected:
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_actual)
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_actual, source_code=source_code)
             return record, "pass"
         elif node_ok:
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "fail", expected, result_actual, "output mismatch")
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "fail", expected, result_actual, "output mismatch", source_code=source_code, stderr=stderr_full)
             return record, "fail"
         else:
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", expected, result_actual, "node execution failed")
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", expected, result_actual, "node execution failed", source_code=source_code)
             return record, "blocked"
     
     elif result_status == "unsupported":
         tracking_key = f"feature:{result_feature}"
         reason = f"{result_diag}/{result_feature}: {result_reason}"
-        record = create_test_record("test262", str(test_file), "wasm-iwasm", "unsupported", None, None, reason, tracking_key)
+        record = create_test_record("test262", str(test_file), "wasm-iwasm", "unsupported", None, None, reason, tracking_key, source_code, error_line, stderr_full)
         return record, "unsupported"
     
     elif result_status == "fail":
         reason = f"{result_diag}: {result_reason}"
-        record = create_test_record("test262", str(test_file), "wasm-iwasm", "fail", None, result_actual, reason)
+        record = create_test_record("test262", str(test_file), "wasm-iwasm", "fail", None, result_actual, reason, source_code=source_code, error_line=error_line, stderr=stderr_full)
         return record, "fail"
     
     return "", "fail"
