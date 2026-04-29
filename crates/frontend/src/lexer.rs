@@ -4,6 +4,7 @@ use crate::{DiagCode, Diagnostic, Span};
 pub enum Token {
     Ident(String),
     Number(i32),
+    BigIntLiteral(String),
     String(String),
     TemplateLiteral(String),
     RegExp {
@@ -203,6 +204,7 @@ pub enum TokenKind {
     Semicolon,
     TemplateLiteral,
     RegExp,
+    BigIntLiteral,
 }
 
 impl TokenKind {
@@ -297,6 +299,7 @@ impl TokenKind {
                 | (Self::Semicolon, Token::Semicolon)
                 | (Self::TemplateLiteral, Token::TemplateLiteral(_))
                 | (Self::RegExp, Token::RegExp { .. })
+                | (Self::BigIntLiteral, Token::BigIntLiteral(_))
         )
     }
 }
@@ -1392,6 +1395,10 @@ impl<'a> Lexer<'a> {
 
     fn number(&mut self) -> Result<SpannedToken, Diagnostic> {
         let start = self.cursor;
+        if let Some(token) = self.prefixed_bigint_literal(start)? {
+            return Ok(token);
+        }
+
         let (digits, radix) = if self.peek_char() == Some('0') {
             match self.peek_next_char() {
                 Some('b' | 'B') => self.radix_number_digits(start, 2, "binary")?,
@@ -1402,6 +1409,42 @@ impl<'a> Lexer<'a> {
         } else {
             self.decimal_number_digits(start)?
         };
+
+        if radix == 10 && self.peek_char() == Some('n') {
+            self.advance_char();
+            if digits.len() > 1 && self.source[start..].starts_with('0') {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-244: decimal BigInt literal cannot have a leading zero"
+                        .to_owned(),
+                    span: Some(Span {
+                        start,
+                        end: self.cursor,
+                    }),
+                });
+            }
+            if self.source[start..self.cursor - 1].contains('_') {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-244: BigInt literal numeric separators are not supported yet"
+                        .to_owned(),
+                    span: Some(Span {
+                        start,
+                        end: self.cursor,
+                    }),
+                });
+            }
+            return Ok(SpannedToken {
+                kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
+                span: Span {
+                    start,
+                    end: self.cursor,
+                },
+            });
+        }
+
+        self.reject_invalid_decimal_bigint_suffix(start)?;
+
         let value = i32::from_str_radix(&digits, radix).map_err(|error| Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("invalid number literal: {error}"),
@@ -1534,6 +1577,143 @@ impl<'a> Lexer<'a> {
                 end: self.cursor,
             }),
         }
+    }
+
+    fn prefixed_bigint_literal(
+        &mut self,
+        start: usize,
+    ) -> Result<Option<SpannedToken>, Diagnostic> {
+        let Some((prefix_len, radix_name)) = self.bigint_radix_prefix(start) else {
+            return Ok(None);
+        };
+        let digit_start = start + prefix_len;
+        let mut cursor = digit_start;
+        while let Some(ch) = self.char_at(cursor) {
+            if !is_digit_for_radix(ch, radix_name) {
+                break;
+            }
+            cursor += ch.len_utf8();
+        }
+
+        if cursor == digit_start {
+            if self.char_at(cursor) == Some('n') {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("issue-244: invalid {radix_name} BigInt literal"),
+                    span: Some(Span {
+                        start,
+                        end: cursor + 1,
+                    }),
+                });
+            }
+            if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("issue-244: invalid {radix_name} BigInt literal"),
+                    span: Some(Span { start, end }),
+                });
+            }
+            return Ok(None);
+        }
+
+        if self.char_at(cursor) != Some('n') {
+            if let Some(end) = self.invalid_prefixed_bigint_end(cursor) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!("issue-244: invalid {radix_name} BigInt literal"),
+                    span: Some(Span { start, end }),
+                });
+            }
+            return Ok(None);
+        }
+
+        self.cursor = cursor + 1;
+        Ok(Some(SpannedToken {
+            kind: Token::BigIntLiteral(self.source[start..self.cursor].to_owned()),
+            span: Span {
+                start,
+                end: self.cursor,
+            },
+        }))
+    }
+
+    fn bigint_radix_prefix(&self, start: usize) -> Option<(usize, &'static str)> {
+        let rest = &self.source[start..];
+        if rest.starts_with("0x") || rest.starts_with("0X") {
+            Some((2, "hexadecimal"))
+        } else if rest.starts_with("0b") || rest.starts_with("0B") {
+            Some((2, "binary"))
+        } else if rest.starts_with("0o") || rest.starts_with("0O") {
+            Some((2, "octal"))
+        } else {
+            None
+        }
+    }
+
+    fn invalid_prefixed_bigint_end(&self, cursor: usize) -> Option<usize> {
+        let mut scan = cursor;
+        let mut saw_body = false;
+        while let Some(ch) = self.char_at(scan) {
+            if ch == 'n' && saw_body {
+                return Some(scan + 1);
+            }
+            if !ch.is_ascii_alphanumeric() {
+                return None;
+            }
+            saw_body = true;
+            scan += ch.len_utf8();
+        }
+        None
+    }
+
+    fn reject_invalid_decimal_bigint_suffix(&self, start: usize) -> Result<(), Diagnostic> {
+        let mut cursor = self.cursor;
+        let mut saw_fraction_or_exponent = false;
+
+        if self.char_at(cursor) == Some('.') {
+            let dot = cursor;
+            cursor += 1;
+            let fraction_start = cursor;
+            while matches!(self.char_at(cursor), Some('0'..='9')) {
+                cursor += 1;
+            }
+            if cursor > fraction_start {
+                saw_fraction_or_exponent = true;
+            } else {
+                cursor = dot;
+            }
+        }
+
+        if matches!(self.char_at(cursor), Some('e' | 'E')) {
+            let exponent_start = cursor;
+            cursor += 1;
+            if matches!(self.char_at(cursor), Some('+' | '-')) {
+                cursor += 1;
+            }
+            let digit_start = cursor;
+            while matches!(self.char_at(cursor), Some('0'..='9')) {
+                cursor += 1;
+            }
+            if cursor > digit_start {
+                saw_fraction_or_exponent = true;
+            } else {
+                cursor = exponent_start;
+            }
+        }
+
+        if saw_fraction_or_exponent && self.char_at(cursor) == Some('n') {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-244: BigInt literal cannot use decimal fractions or exponents"
+                    .to_owned(),
+                span: Some(Span {
+                    start,
+                    end: cursor + 1,
+                }),
+            });
+        }
+
+        Ok(())
     }
 
     fn string(&mut self) -> Result<SpannedToken, Diagnostic> {
@@ -1767,6 +1947,10 @@ impl<'a> Lexer<'a> {
         self.source[self.cursor..].chars().next()
     }
 
+    fn char_at(&self, cursor: usize) -> Option<char> {
+        self.source.get(cursor..)?.chars().next()
+    }
+
     fn starts_with(&self, pattern: &str) -> bool {
         self.source[self.cursor..].starts_with(pattern)
     }
@@ -1786,6 +1970,15 @@ impl<'a> Lexer<'a> {
 
 fn is_line_terminator(ch: char) -> bool {
     matches!(ch, '\n' | '\r' | '\u{2028}' | '\u{2029}')
+}
+
+fn is_digit_for_radix(ch: char, radix_name: &str) -> bool {
+    match radix_name {
+        "binary" => matches!(ch, '0' | '1'),
+        "octal" => matches!(ch, '0'..='7'),
+        "hexadecimal" => ch.is_ascii_hexdigit(),
+        _ => false,
+    }
 }
 
 fn source_has_use_strict_directive(source: &str) -> bool {
@@ -1997,6 +2190,53 @@ mod tests {
                 .iter()
                 .any(|token| matches!(&token.kind, Token::String(value) if value == "\u{0007}"))
         );
+    }
+
+    #[test]
+    fn recognizes_bigint_literal_tokens() {
+        let tokens =
+            Lexer::new("let dec = 1n; let bin = 0b101n; let oct = 0o77n; let hex = 0xFFn;")
+                .tokenize()
+                .unwrap();
+        let literals: Vec<&str> = tokens
+            .iter()
+            .filter_map(|token| match &token.kind {
+                Token::BigIntLiteral(raw) => Some(raw.as_str()),
+                _ => None,
+            })
+            .collect();
+
+        assert_eq!(literals, ["1n", "0b101n", "0o77n", "0xFFn"]);
+    }
+
+    #[test]
+    fn rejects_fractional_and_exponent_bigint_literals() {
+        for source in ["let value = 1.0n;", "let value = 1e2n;"] {
+            let err = Lexer::new(source).tokenize().unwrap_err();
+
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(err.message.contains("issue-244"), "{source}: {err:?}");
+            assert!(
+                err.message.contains("fractions or exponents"),
+                "{source}: {err:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn rejects_invalid_prefixed_and_leading_zero_bigint_literals() {
+        for source in [
+            "let value = 0b2n;",
+            "let value = 0o8n;",
+            "let value = 0xGn;",
+            "let value = 01n;",
+            "let value = 09n;",
+        ] {
+            let err = Lexer::new(source).tokenize().unwrap_err();
+
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(err.message.contains("issue-244"), "{source}: {err:?}");
+        }
     }
 
     #[test]
