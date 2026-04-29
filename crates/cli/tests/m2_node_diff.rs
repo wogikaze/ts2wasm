@@ -572,6 +572,21 @@ fn for_loop_increment_update_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn reused_for_loop_local_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/reused-for-loop-local.ts");
+}
+
+#[test]
+fn same_scope_duplicate_local_still_reports_duplicate_local() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/duplicate-local-same-scope-unsupported.ts",
+        "[DuplicateLocal]",
+        "duplicate local",
+        true,
+    );
+}
+
+#[test]
 fn for_loop_non_identifier_increment_update_reports_issue_268() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/for-loop-nonidentifier-update-unsupported.ts",
@@ -1540,6 +1555,15 @@ fn assert_build_fails_with_unsupported_syntax_impl(
     expected: &str,
     require_span: bool,
 ) {
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax]", expected, require_span);
+}
+
+fn assert_build_fails_with_diagnostic(
+    fixture: &str,
+    expected_code: &str,
+    expected: &str,
+    require_span: bool,
+) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -1559,8 +1583,8 @@ fn assert_build_fails_with_unsupported_syntax_impl(
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains("[UnsupportedSyntax]"),
-        "expected UnsupportedSyntax diagnostic for {fixture}, got:\n{stderr}"
+        stderr.contains(expected_code),
+        "expected {expected_code} diagnostic for {fixture}, got:\n{stderr}"
     );
     assert!(
         stderr.contains(expected),
@@ -1568,16 +1592,16 @@ fn assert_build_fails_with_unsupported_syntax_impl(
     );
     if require_span {
         assert!(
-            stderr_has_source_span(&stderr),
+            stderr_has_source_span(&stderr, expected_code),
             "expected diagnostic with source span for {fixture}, got:\n{stderr}"
         );
     }
 }
 
-fn stderr_has_source_span(stderr: &str) -> bool {
+fn stderr_has_source_span(stderr: &str, expected_code: &str) -> bool {
     stderr
         .lines()
-        .filter(|line| line.contains("[UnsupportedSyntax]"))
+        .filter(|line| line.contains(expected_code))
         .any(|line| {
             let Some((_, span)) = line.rsplit_once(" at ") else {
                 return false;
