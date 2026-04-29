@@ -356,6 +356,13 @@ fn destructuring_binding_nested_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn destructuring_binding_nested_object_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/destructuring-binding-nested-object-runtime.ts",
+    );
+}
+
+#[test]
 fn destructuring_binding_object_rest_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-semantics/destructuring-binding-object-rest-runtime.ts",
@@ -378,10 +385,6 @@ fn destructuring_binding_unsupported_forms_report_issue_251() {
     );
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/destructuring-binding-object-rest-unsupported.ts",
-        "issue-251:",
-    );
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/destructuring-binding-nested-object-unsupported.ts",
         "issue-251:",
     );
 }
