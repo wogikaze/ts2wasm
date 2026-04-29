@@ -904,20 +904,7 @@ impl<'a> Resolver<'a> {
                 Ok(LoweredExpr::ArrayNew { elements: lowered })
             }
             ResolvedExpr::Object(props) => {
-                let mut lowered = Vec::new();
-                for (key, value) in props {
-                    if key == OBJECT_SPREAD_SENTINEL {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-274: object literal spread requires property enumeration semantics, which are not supported in this milestone".to_owned(),
-                            span: None,
-                        });
-                    }
-                    if self.is_function_identifier(value) {
-                        continue;
-                    }
-                    lowered.push((key.clone(), self.lower_expr(value)?));
-                }
+                let lowered = self.lower_object_literal_props(props)?;
                 Ok(LoweredExpr::ObjectNew { props: lowered })
             }
             ResolvedExpr::MethodCall {
@@ -1552,6 +1539,33 @@ impl<'a> Resolver<'a> {
                 }
                 _ => lowered.push(self.lower_expr(element)?),
             }
+        }
+        Ok(lowered)
+    }
+
+    fn lower_object_literal_props(
+        &mut self,
+        props: &[(String, ResolvedExpr)],
+    ) -> Result<Vec<(String, LoweredExpr)>, Diagnostic> {
+        let mut lowered = Vec::new();
+        for (key, value) in props {
+            if key == OBJECT_SPREAD_SENTINEL {
+                let ResolvedExpr::Object(spread_props) = value else {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-274: object literal spread is only supported for object literals in this milestone"
+                                .to_owned(),
+                        span: None,
+                    });
+                };
+                lowered.extend(self.lower_object_literal_props(spread_props)?);
+                continue;
+            }
+            if self.is_function_identifier(value) {
+                continue;
+            }
+            lowered.push((key.clone(), self.lower_expr(value)?));
         }
         Ok(lowered)
     }
