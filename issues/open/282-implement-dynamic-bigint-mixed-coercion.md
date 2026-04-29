@@ -161,6 +161,18 @@ Progress on 2026-04-29:
   dynamic strings outside the current signed-i32 boundary still require broader
   runtime/helper work or a separate source-backed split.
 
+Progress on 2026-04-29:
+
+- Added a source-spanned issue-282 diagnostic for mixed BigInt comparisons that
+  would require object `ToPrimitive` on an object literal/local with
+  `valueOf`/`toString`, covered by
+  `fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts`.
+- This keeps object coercion unsupported instead of lowering to a runtime trap
+  or generic mixed coercion diagnostic.
+- Remaining issue-282 work: implementing compatible object `ToPrimitive`
+  coercion and handling unknown object-carried dynamic strings outside the
+  current signed-i32 boundary.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
