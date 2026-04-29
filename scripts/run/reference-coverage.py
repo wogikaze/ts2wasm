@@ -66,6 +66,59 @@ SUITE_METADATA = {
     },
 }
 
+def suite_metadata_for_root(suite_key, reference_root):
+    if suite_key == "test262":
+        return {
+            "name": "test262",
+            "repo_path": reference_root / "test262",
+            "path": reference_root / "test262" / "test",
+            "pattern": "reference/test262/test/**/*.js",
+            "clone_cmd": "git clone https://github.com/tc39/test262.git reference/test262",
+            "clone_hint": "git clone https://github.com/tc39/test262.git reference/test262",
+        }
+    if suite_key == "tsc":
+        return {
+            "name": "TypeScript compiler cases",
+            "repo_path": reference_root / "typescript",
+            "path": reference_root / "typescript" / "tests" / "cases" / "compiler",
+            "pattern": "reference/typescript/tests/cases/compiler/**/*.ts",
+            "clone_cmd": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/typescript",
+            "clone_hint": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/typescript",
+        }
+    if suite_key == "tsgo":
+        return {
+            "name": "typescript-go testdata",
+            "repo_path": reference_root / "typescript-go",
+            "path": reference_root / "typescript-go" / "testdata" / "tests",
+            "pattern": "reference/typescript-go/testdata/tests/**/*",
+            "clone_cmd": "git clone --depth 1 https://github.com/microsoft/typescript-go.git reference/typescript-go",
+            "clone_hint": "git clone --depth 1 https://github.com/microsoft/typescript-go.git reference/typescript-go",
+        }
+    return None
+
+def reference_root_from_absolute_filters(suite_key, path_filters):
+    suite_dirs = {
+        "test262": "test262",
+        "tsc": "typescript",
+        "tsgo": "typescript-go",
+    }
+    suite_dir = suite_dirs.get(suite_key)
+    if suite_dir is None:
+        return None
+
+    for path_filter in path_filters:
+        if not path_filter.startswith("/"):
+            continue
+        candidate = Path(path_filter).resolve()
+        if not candidate.exists():
+            continue
+
+        parts = candidate.parts
+        for index, part in enumerate(parts):
+            if part == suite_dir:
+                return Path(*parts[:index])
+    return None
+
 def missing_reference_hint(suite_key, config):
     """Emit clear instructions for restoring missing reference sources."""
     repo_path = config["repo_path"]
@@ -79,15 +132,25 @@ def missing_reference_hint(suite_key, config):
     print(f"  git -C {repo_path} fetch --depth 1 && git -C {repo_path} pull --ff-only", file=sys.stderr)
     print("After checkout/pull, rerun this command.", file=sys.stderr)
 
-def resolve_suite_paths(suite):
+def resolve_suite_paths(suite, path_filters=None):
     """Resolve suite metadata and files, and validate repository presence."""
     if suite not in SUITE_METADATA:
         return None, None
 
+    path_filters = path_filters or []
     config = SUITE_METADATA[suite]
     if not config["repo_path"].exists() or not config["path"].exists():
-        missing_reference_hint(suite, config)
-        return None, None
+        inferred_root = reference_root_from_absolute_filters(suite, path_filters)
+        inferred_config = suite_metadata_for_root(suite, inferred_root) if inferred_root else None
+        if (
+            inferred_config is not None
+            and inferred_config["repo_path"].exists()
+            and inferred_config["path"].exists()
+        ):
+            config = inferred_config
+        else:
+            missing_reference_hint(suite, config)
+            return None, None
 
     if suite == "test262":
         files = sorted(config["path"].glob("**/*.js"))
@@ -180,9 +243,20 @@ def apply_path_filters(files, path_filters):
     if not path_filters:
         return files
 
+    def matches_filter(path, path_filter):
+        stable_path = repo_relative(path)
+        if path_filter in stable_path:
+            return True
+        if path_filter.startswith("/"):
+            try:
+                return Path(path_filter).resolve() == path.resolve()
+            except OSError:
+                return False
+        return False
+
     selected = [
         path for path in files
-        if any(path_filter in repo_relative(path) for path_filter in path_filters)
+        if any(matches_filter(path, path_filter) for path_filter in path_filters)
     ]
     if not selected:
         filters = ", ".join(path_filters)
@@ -478,7 +552,7 @@ def main():
         usage()
         sys.exit(1)
 
-    suite_config, files = resolve_suite_paths(suite)
+    suite_config, files = resolve_suite_paths(suite, path_filters)
     if files is None:
         sys.exit(1)
     
