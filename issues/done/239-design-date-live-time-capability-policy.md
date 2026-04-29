@@ -9,6 +9,8 @@ depends_on: []
 blocks: ["050"]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -29,11 +31,11 @@ The repository has a concrete policy for live host time use, including capabilit
 
 In scope:
 
-- [ ] Define whether live time is WASI, Node host, or another explicit host capability.
-- [ ] Define manifest fields and audit reason strings for live time.
-- [ ] Define host-deny behavior for programs that request live time.
-- [ ] Define deterministic testing strategy for `new Date()` and `Date.now()`.
-- [ ] Update issue 050 with the selected policy and next implementation child.
+- [x] Define whether live time is WASI, Node host, or another explicit host capability.
+- [x] Define manifest fields and audit reason strings for live time.
+- [x] Define host-deny behavior for programs that request live time.
+- [x] Define deterministic testing strategy for `new Date()` and `Date.now()`.
+- [x] Update issue 050 with the selected policy and next implementation child.
 
 Out of scope:
 
@@ -56,9 +58,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Live time has an explicit capability and manifest policy.
-- [ ] `new Date()` and `Date.now()` remain unsupported until an implementation child consumes this policy.
-- [ ] Issue 050 remains blocked as the Date epic and links this child as the policy prerequisite.
+- [x] Live time has an explicit capability and manifest policy.
+- [x] `new Date()` and `Date.now()` remain unsupported until an implementation child consumes this policy.
+- [x] Issue 050 remains blocked as the Date epic and links this child as the policy prerequisite.
 
 ## Validation
 
@@ -84,15 +86,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated if the selected policy belongs in numbered docs
+- [x] updated: `docs/03-api-and-host-capability.md`, `docs/11-shared-definitions.md`
 
 Current state:
 
-- [ ] updated if current support facts change
+- [x] not affected; implementation support facts did not change
 
 Follow-up issues:
 
-- [ ] created/updated for live-time implementation if policy is accepted
+- [x] created: `issues/open/242-implement-date-live-time-wasi-clock.md`
 
 ## Notes
 
@@ -104,14 +106,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `c1be503` issue-239: define date live-time policy
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run fmt
+result: pass
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass; issues/index.md regenerated
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK (up to date)
+date: 2026-04-29
+
+command: mise run check manifest
+result: pass; check_manifest_imports OK for fixtures/basics-hello/hello.ts
+date: 2026-04-29
+
+command: mise run check-agent-state
+result: pass; agent state files validated
+date: 2026-04-29
+
+command: mise run check issues
+result: pass after restoring gitignored local report placeholders for pre-existing issue-health path references in issues 052 and 228
+date: 2026-04-29
 ```
 
 Remaining risks:
