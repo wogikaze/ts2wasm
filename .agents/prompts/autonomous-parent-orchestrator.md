@@ -418,3 +418,5 @@ ORCHESTRATOR_STATUS: FAILED_RECOVERABLE
 ```
 
 Prefer `CONTINUE` unless a clean stop condition or explicit unsafe state is reached.
+
+If a parent cycle ends with `ORCHESTRATOR_STATUS: CONTINUE`, do not treat the parent cycle report as a stopping point. Immediately start the next cycle from `QUEUE_SCAN` unless the user explicitly asked to pause or a `CLEAN_STOP`, `NEED_HUMAN_REVIEW`, or `FAILED_RECOVERABLE` condition is reached.
