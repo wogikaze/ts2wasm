@@ -456,10 +456,24 @@ fn validate_expr(
                 span: None,
             });
         }
-        LoweredExpr::ArrowFn { func_id, captures } => {
+        LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation,
+        } => {
             check_func_id(*func_id, num_funcs, errors);
             for capture in captures {
                 check_local_id(*capture, local_count, errors);
+            }
+            if matches!(representation, ClosureRepresentation::HeapObject) {
+                errors.push(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-257: heap closure `{}` allocation/dispatch is not implemented by the backend yet",
+                        func_id.0
+                    ),
+                    span: None,
+                });
             }
         }
         _ => {}

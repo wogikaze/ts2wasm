@@ -157,6 +157,12 @@ pub enum FunctionCallKind {
     Builtin(BuiltinId),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ClosureRepresentation {
+    DirectLocalToken,
+    HeapObject,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoweredExpr {
     Number(i32),
@@ -287,6 +293,7 @@ pub enum LoweredExpr {
     ArrowFn {
         func_id: FuncId,
         captures: Vec<LocalId>,
+        representation: ClosureRepresentation,
     },
 }
 
