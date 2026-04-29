@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 6 | 2 | 4 |
-| runtime | 80 | 12 | 68 |
+| runtime | 80 | 11 | 69 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 324 | 144 | 180 |
+| total | 324 | 143 | 181 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,7 +50,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
-| 295 | Support Array.map arrow callbacks and chained receivers | feature | runtime/builtins | implementation-ready | P1 |  | `inputText.trim().split("\n").map(row => row.split(" "))` fails before |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -380,6 +379,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 290 | Fix ASI EOF semicolon parser bucket | bug | frontend | see `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` |
 | 291 | Provide Object global binding for test262 cases | feature | runtime/semantics | see `issues/done/291-provide-object-global-binding-for-test262.md` |
 | 293 | Parse Unicode escaped identifier parts | feature | frontend | see `issues/done/293-parse-unicode-escaped-identifier-parts.md` |
+| 295 | Support Array.map arrow callbacks and chained receivers | feature | runtime/builtins | see `issues/done/295-support-array-map-arrow-and-chained-receivers.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
