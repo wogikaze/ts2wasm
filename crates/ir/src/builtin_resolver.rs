@@ -337,7 +337,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 None
             };
             let resolved_update = if let Some(upd) = update {
-                Some(resolve_expr(upd)?)
+                Some(resolve_for_update_expr(upd)?)
             } else {
                 None
             };
@@ -407,6 +407,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             span: Some(*span),
         }),
         Expr::Unary { op, expr, span } => {
+            if matches!(
+                op,
+                UnaryOp::Increment
+                    | UnaryOp::Decrement
+                    | UnaryOp::PreIncrement
+                    | UnaryOp::PreDecrement
+            ) {
+                return Err(increment_update_diagnostic(*span));
+            }
             if expr_contains_bigint(expr) {
                 let resolved = resolve_expr(expr)?;
                 if *op == UnaryOp::Negate {
@@ -824,6 +833,42 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op: UnaryOp::TypeOf,
             expr: Box::new(resolve_expr(expr)?),
         }),
+    }
+}
+
+fn resolve_for_update_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
+    match expr {
+        Expr::Unary {
+            op: UnaryOp::Increment,
+            expr,
+            span,
+        } => {
+            let Expr::Ident { name, .. } = expr.as_ref() else {
+                return Err(increment_update_diagnostic(*span));
+            };
+            Ok(ResolvedExpr::Assign {
+                name: name.clone(),
+                expr: Box::new(ResolvedExpr::Binary {
+                    left: Box::new(ResolvedExpr::Ident(name.clone())),
+                    op: BinaryOp::Add,
+                    right: Box::new(ResolvedExpr::Number(1)),
+                }),
+            })
+        }
+        Expr::Unary {
+            op: UnaryOp::Decrement | UnaryOp::PreIncrement | UnaryOp::PreDecrement,
+            span,
+            ..
+        } => Err(increment_update_diagnostic(*span)),
+        _ => resolve_expr(expr),
+    }
+}
+
+fn increment_update_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-268: only postfix identifier increment (`i++`) is supported in `for` loop updates in this slice".to_owned(),
+        span: Some(span),
     }
 }
 
