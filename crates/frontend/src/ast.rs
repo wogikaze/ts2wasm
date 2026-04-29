@@ -105,6 +105,46 @@ pub struct ReExportNamespaceSpecifier {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ClassStaticBlock {
+    pub body: Vec<Stmt>,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ClassPrivateElement {
+    Field {
+        name: String,
+        name_span: Span,
+        value: Option<Expr>,
+        is_static: bool,
+        span: Span,
+    },
+    Method {
+        name: String,
+        name_span: Span,
+        params: Vec<(String, Option<Expr>, bool)>,
+        body: Vec<Stmt>,
+        is_static: bool,
+        span: Span,
+    },
+    Getter {
+        name: String,
+        name_span: Span,
+        body: Vec<Stmt>,
+        is_static: bool,
+        span: Span,
+    },
+    Setter {
+        name: String,
+        name_span: Span,
+        param: String,
+        body: Vec<Stmt>,
+        is_static: bool,
+        span: Span,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Stmt {
     ImportSideEffect {
         specifier: ModuleSpecifier,
@@ -205,6 +245,8 @@ pub enum Stmt {
         name: String,
         extends: Option<Box<Expr>>,
         body: Vec<Stmt>,
+        static_blocks: Vec<ClassStaticBlock>,
+        private_elements: Vec<ClassPrivateElement>,
         span: Span,
     },
     TryCatch {
@@ -306,7 +348,17 @@ pub enum Expr {
         property: String,
         span: Span,
     },
+    OptionalMember {
+        object: Box<Expr>,
+        property: String,
+        span: Span,
+    },
     Call {
+        callee: Box<Expr>,
+        args: Vec<Expr>,
+        span: Span,
+    },
+    OptionalCall {
         callee: Box<Expr>,
         args: Vec<Expr>,
         span: Span,
@@ -340,6 +392,11 @@ pub enum Expr {
         span: Span,
     },
     Index {
+        object: Box<Expr>,
+        index: Box<Expr>,
+        span: Span,
+    },
+    OptionalIndex {
         object: Box<Expr>,
         index: Box<Expr>,
         span: Span,
@@ -440,13 +497,16 @@ impl Expr {
             | Self::Unary { span, .. }
             | Self::Binary { span, .. }
             | Self::Member { span, .. }
+            | Self::OptionalMember { span, .. }
             | Self::Call { span, .. }
+            | Self::OptionalCall { span, .. }
             | Self::Assign { span, .. }
             | Self::LogicalAssign { span, .. }
             | Self::LogicalPropertyAssign { span, .. }
             | Self::Array { span, .. }
             | Self::Object { span, .. }
             | Self::Index { span, .. }
+            | Self::OptionalIndex { span, .. }
             | Self::New { span, .. }
             | Self::TypeOf { span, .. }
             | Self::InstanceOf { span, .. }

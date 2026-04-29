@@ -152,7 +152,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `++`, `--` | ES1 | arithmetic with assignment | 実装済み | - | - |
 | `&&`, `\|\|`, `!` | ES1 | logical operators | 実装済み | - | - |
 | `??` (nullish coalescing) | ES2020 | null/undefined check with short-circuit RHS evaluation | 実装済み (primitive/local expression subset; direct unparenthesized mixing with `&&` / `\|\|` is rejected) | - | 245 |
-| `?.` (optional chaining) | ES2020 | lowering candidate | 未実装 | P2 | 246 |
+| `?.` (optional chaining) | ES2020 | parser classification; lowering candidate | Parser accepts property / element / call forms; runtime semantics are 未実装 | P2 | 246, 253 |
 | `typeof` | ES1 | type tag check | 実装済み (basic) | - | 029 |
 | `instanceof` | ES1 | prototype chain check | 実装済み（ordinary class constructor / prototype-chain traversal; `Symbol.hasInstance` は対象外） | - | 207 |
 | `in` | ES1 | property existence check | 実装済み (basic) | - | 031 |
@@ -213,7 +213,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | array holes `[1, , 3]` | ES1 | sparse array | 未実装 | P2 | - |
 | spread elements `[...arr]` | ES6 | array spreading | 未実装 | P2 | - |
 | destructuring binding patterns `let [a, b] = arr` | ES6 | pattern matching | Parser accepts declarations/parameters; runtime binding semantics are 未実装 | P2 | 247 |
-| destructuring assignment `[a, b] = arr` | ES6 | pattern matching | 未実装 | P2 | 251 |
+| destructuring assignment `[a, b] = arr` | ES6 | pattern matching | 未実装 | P2 | 252 |
 
 ## クラスとプロトタイプ
 
@@ -225,8 +225,8 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `constructor` | ES6 | class constructor | 未実装 | P1 | - |
 | `super` | ES6 | parent class access | 未実装 | P1 | - |
 | static methods/fields | ES6 | class static members | 未実装 | P2 | - |
-| static initialization blocks | ES2022 | class static block parser/semantics | 未実装 | P2 | 249 |
-| private fields `#x` | ES2022 | private class fields | 未実装 | P2 | 248 |
+| static initialization blocks | ES2022 | class static block parser/semantics | Parser accepts static blocks; runtime execution order/semantics are 未実装 | P2 | 249, 254 |
+| private fields `#x` | ES2022 | private class fields | Lexer/parser accept private fields/methods/accessors; runtime storage/access semantics are 未実装 | P2 | 248, 255 |
 | prototype chain | ES1 | `__proto__` / inheritance | 実装済み (basic `Object.getPrototypeOf` / `Object.setPrototypeOf` / class prototype links) | - | 048, 207 |
 
 ## 文字列

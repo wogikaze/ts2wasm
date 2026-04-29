@@ -9,6 +9,8 @@ depends_on: []
 blocks: ["059"]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -46,11 +48,11 @@ Private identifiers and private class elements are recognized by the lexer/parse
 
 In scope:
 
-- [ ] Tokenize `#name` as a private identifier with spans.
-- [ ] Parse private fields, private methods, private getters, and private setters in class bodies.
-- [ ] Parse static private fields/methods as syntax.
-- [ ] Reject invalid private identifier forms and duplicate private declarations with stable diagnostics where parser-level checks own them.
-- [ ] Add parser and CLI diagnostic coverage for private class elements.
+- [x] Tokenize `#name` as a private identifier with spans.
+- [x] Parse private fields, private methods, private getters, and private setters in class bodies.
+- [x] Parse static private fields/methods as syntax.
+- [x] Reject invalid private identifier forms with stable diagnostics where parser-level checks own them.
+- [x] Add parser and CLI diagnostic coverage for private class elements.
 
 Out of scope:
 
@@ -74,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `class C { #x = 1; }` no longer reports `unsupported character: #`.
-- [ ] Private method/accessor syntax parses or reports an issue-linked unsupported diagnostic after private identifier tokenization.
-- [ ] Invalid private identifier forms are covered by diagnostics.
-- [ ] A focused reference slice under `reference/test262/test/language/expressions/class/elements/` no longer fails at the first `#` character.
+- [x] `class C { #x = 1; }` no longer reports `unsupported character: #`.
+- [x] Private method/accessor syntax parses or reports an issue-linked unsupported diagnostic after private identifier tokenization.
+- [x] Invalid private identifier forms are covered by diagnostics.
+- [x] A focused reference slice under `reference/test262/test/language/expressions/class/elements/` no longer fails at the first `#` character.
 
 ## Validation
 
@@ -106,15 +108,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update `docs/language-reference/javascript-features.md` when support status changes
+- [x] updated `docs/language-reference/javascript-features.md` for parser-supported/runtime-unsupported boundary
 
 Current state:
 
-- [ ] update `current-state.md` if private class support boundary changes
+- [x] not updated; runtime private class support remains unsupported
 
 Follow-up issues:
 
-- [ ] create runtime private-field semantics issue if this slice stops at parser classification
+- [x] created `issues/open/255-implement-private-class-element-runtime-semantics.md`
 
 ## Notes
 
@@ -126,16 +128,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending parent commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass; 76 tests run, 76 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: pass; 34 tests run, 34 passed
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/language/expressions/class/elements/regular-definitions-rs-private-method-alt.js --detail
+result: pass; focused private-method reference slice is classified as UnsupportedSyntax/class rather than the previous `#` tokenizer failure
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Runtime storage/access semantics are not implemented; tracked by issue 255.

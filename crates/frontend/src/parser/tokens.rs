@@ -13,6 +13,20 @@ impl Parser {
         }
     }
 
+    fn expect_private_ident(&mut self) -> Result<(String, Span), Diagnostic> {
+        match self.advance() {
+            Some(SpannedToken {
+                kind: Token::PrivateIdentifier(name),
+                span,
+            }) => Ok((name, span)),
+            other => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!("issue-248: expected private identifier, got {other:?}"),
+                span: self.peek_span(),
+            }),
+        }
+    }
+
     fn expect_contextual_keyword(&mut self, keyword: &str) -> Result<Span, Diagnostic> {
         if self.peek_contextual_keyword(keyword) {
             let span = self.peek_span().expect("peeked token must have a span");

@@ -1,4 +1,6 @@
-use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
+use ts2wasm_frontend::{
+    BinaryOp, ClassPrivateElement, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp,
+};
 
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
@@ -106,8 +108,28 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
             name,
             extends,
             body,
+            static_blocks,
+            private_elements,
             ..
         } => {
+            if let Some(static_block) = static_blocks.first() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-249: class static blocks parse, but runtime execution semantics are not implemented"
+                            .to_owned(),
+                    span: Some(static_block.span),
+                });
+            }
+            if let Some(private_element) = private_elements.first() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-248: private class elements parse, but runtime storage/access semantics are not implemented"
+                            .to_owned(),
+                    span: Some(private_element_span(private_element)),
+                });
+            }
             // Parse extends (must be an identifier for now)
             let extends_name = match extends {
                 Some(ext_expr) => match ext_expr.as_ref() {
@@ -505,6 +527,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 })
             }
         }
+        Expr::OptionalMember { span, .. }
+        | Expr::OptionalIndex { span, .. }
+        | Expr::OptionalCall { span, .. } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "issue-246: optional chaining parses, but lowering/runtime semantics are not implemented"
+                    .to_owned(),
+            span: Some(*span),
+        }),
         Expr::Array { elements, .. } => Ok(ResolvedExpr::Array(
             elements
                 .iter()
@@ -783,13 +814,16 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Unary { span, .. }
         | Expr::Binary { span, .. }
         | Expr::Member { span, .. }
+        | Expr::OptionalMember { span, .. }
         | Expr::Call { span, .. }
+        | Expr::OptionalCall { span, .. }
         | Expr::Assign { span, .. }
         | Expr::LogicalAssign { span, .. }
         | Expr::LogicalPropertyAssign { span, .. }
         | Expr::Array { span, .. }
         | Expr::Object { span, .. }
         | Expr::Index { span, .. }
+        | Expr::OptionalIndex { span, .. }
         | Expr::New { span, .. }
         | Expr::TypeOf { span, .. }
         | Expr::InstanceOf { span, .. }
@@ -798,5 +832,14 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Spread { span, .. }
         | Expr::PropertyAssign { span, .. }
         | Expr::IndexAssign { span, .. } => Some(*span),
+    }
+}
+
+fn private_element_span(element: &ClassPrivateElement) -> Span {
+    match element {
+        ClassPrivateElement::Field { span, .. }
+        | ClassPrivateElement::Method { span, .. }
+        | ClassPrivateElement::Getter { span, .. }
+        | ClassPrivateElement::Setter { span, .. } => *span,
     }
 }
