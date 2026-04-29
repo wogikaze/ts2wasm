@@ -3,12 +3,14 @@ use crate::runtime_fn::HostImportSpec;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub(super) enum WatValueType {
     I32,
+    I64,
 }
 
 impl WatValueType {
     fn as_str(self) -> &'static str {
         match self {
             Self::I32 => "i32",
+            Self::I64 => "i64",
         }
     }
 }
@@ -103,6 +105,7 @@ fn parse_type_list(raw: &str, kind: &str) -> Vec<WatValueType> {
         .skip(1)
         .filter_map(|value| match *value {
             "i32" => Some(WatValueType::I32),
+            "i64" => Some(WatValueType::I64),
             _ => None,
         })
         .collect()

@@ -44,6 +44,19 @@ impl CapabilityManifest {
             return Err("wasi.random capability reason requires wasi.random=true".to_owned());
         }
 
+        if self.wasi.clock.realtime && !self.capability_reasons.contains_key("wasi.clock.realtime")
+        {
+            return Err("wasi.clock.realtime requires an auditable capability reason".to_owned());
+        }
+
+        if !self.wasi.clock.realtime && self.capability_reasons.contains_key("wasi.clock.realtime")
+        {
+            return Err(
+                "wasi.clock.realtime capability reason requires wasi.clock.realtime=true"
+                    .to_owned(),
+            );
+        }
+
         for import in &self.node_host.imports {
             if !import.starts_with("host.") {
                 return Err(format!("node host import must start with host.: {import}"));
@@ -65,6 +78,14 @@ impl CapabilityManifest {
         self.wasi.random = true;
         self.capability_reasons
             .entry("wasi.random".to_owned())
+            .or_default()
+            .push(reason.into());
+    }
+
+    pub fn require_wasi_clock_realtime(&mut self, reason: impl Into<String>) {
+        self.wasi.clock.realtime = true;
+        self.capability_reasons
+            .entry("wasi.clock.realtime".to_owned())
             .or_default()
             .push(reason.into());
     }
@@ -96,8 +117,14 @@ pub struct WasiCapabilities {
     pub stderr: bool,
     pub args: bool,
     pub env: bool,
+    pub clock: ClockCapabilities,
     pub filesystem: FilesystemCapabilities,
     pub random: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
+pub struct ClockCapabilities {
+    pub realtime: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize)]
@@ -158,6 +185,20 @@ mod tests {
 
         manifest.require_wasi_random("Math.random");
 
+        assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn wasi_clock_realtime_requires_a_reason() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.wasi.clock.realtime = true;
+
+        assert!(manifest.validate().is_err());
+
+        manifest.require_wasi_clock_realtime("Date.now");
+
+        assert!(manifest.standalone);
+        assert!(!manifest.node_host.required);
         assert!(manifest.validate().is_ok());
     }
 }

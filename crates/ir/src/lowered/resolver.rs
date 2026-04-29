@@ -678,7 +678,10 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     })
                 } else if is_date_now_live_time_call(object, method) {
-                    Err(unsupported_live_time_diagnostic("Date.now()", Some(*span)))
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateNow".to_owned(),
+                        args: vec![],
+                    })
                 } else if self.is_unsupported_regexp_compile_receiver(object, method) {
                     Err(unsupported_regexp_compile_diagnostic(Some(*span)))
                 } else if let Some(regexp_args) = regexp_test_runtime(object, method, args, *span)?
@@ -952,17 +955,17 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::New {
                 class_name,
                 args,
-                span,
+                span: _,
             } => {
                 if class_name == "RegExp" {
                     return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
                 }
                 if class_name == "Date" {
                     if args.is_empty() {
-                        return Err(unsupported_live_time_diagnostic(
-                            "new Date()",
-                            Some(*span),
-                        ));
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "DateNewLive".to_owned(),
+                            args: vec![],
+                        });
                     }
                     if args.len() != 1 {
                         return Err(Diagnostic {

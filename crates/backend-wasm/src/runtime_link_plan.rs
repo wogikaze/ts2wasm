@@ -118,11 +118,27 @@ impl RuntimeLinkPlan {
             for capability in runtime_fn.spec().capability {
                 self.required_capabilities.insert(*capability);
                 // Collect capability reason based on the runtime function
-                let reason = format!(
-                    "required by runtime function: {}",
-                    runtime_fn.manifest_name()
-                );
-                capability_reasons_to_add.push((capability.manifest_name().to_owned(), reason));
+                match (*capability, *runtime_fn) {
+                    (Capability::WasiClockRealtime, RuntimeFn::DateNow) => {
+                        capability_reasons_to_add
+                            .push((capability.manifest_name().to_owned(), "Date.now".to_owned()));
+                    }
+                    (Capability::WasiClockRealtime, RuntimeFn::DateNewLive) => {
+                        capability_reasons_to_add.push((
+                            capability.manifest_name().to_owned(),
+                            "new Date()".to_owned(),
+                        ));
+                    }
+                    (Capability::WasiClockRealtime, _) => {}
+                    _ => {
+                        let reason = format!(
+                            "required by runtime function: {}",
+                            runtime_fn.manifest_name()
+                        );
+                        capability_reasons_to_add
+                            .push((capability.manifest_name().to_owned(), reason));
+                    }
+                }
             }
             for value in runtime_fn.spec().runtime_strings {
                 self.required_runtime_strings.insert(*value);

@@ -93,8 +93,11 @@ pub(crate) enum RuntimeFn {
     SetAdd,
     SetHas,
     SetDelete,
-    /// Issue 050: deterministic Date epoch slice.
+    /// Issue 050: Date epoch slices.
     DateNew,
+    DateNewLive,
+    DateNow,
+    DateEpochMsNowNumber,
     DateGetTime,
     /// M10: String methods
     StringCharAt,
@@ -171,6 +174,7 @@ pub(crate) enum RuntimeFn {
 pub(crate) enum HostImport {
     FdRead,
     FdWrite,
+    ClockTimeGet,
     RandomGet,
     FsReadFileSync,
     FsWriteFileSync,
@@ -203,6 +207,14 @@ impl HostImport {
                 wat_symbol: "$fd_write",
                 abi: HostAbi::WasiPreview1,
                 params: "param i32 i32 i32 i32",
+                result: "result i32",
+            },
+            Self::ClockTimeGet => HostImportSpec {
+                module: "wasi_snapshot_preview1",
+                name: "clock_time_get",
+                wat_symbol: "$clock_time_get",
+                abi: HostAbi::WasiPreview1,
+                params: "param i32 i64 i32",
                 result: "result i32",
             },
             Self::RandomGet => HostImportSpec {
@@ -311,6 +323,7 @@ impl HostImport {
         match self {
             Self::FdRead => "wasi_snapshot_preview1.fd_read",
             Self::FdWrite => "wasi_snapshot_preview1.fd_write",
+            Self::ClockTimeGet => "wasi_snapshot_preview1.clock_time_get",
             Self::RandomGet => "wasi_snapshot_preview1.random_get",
             Self::FsReadFileSync => "host.fs.readFileSync",
             Self::FsWriteFileSync => "host.fs.writeFileSync",
@@ -372,6 +385,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetHas" => Some(RuntimeFn::SetHas),
         "SetDelete" => Some(RuntimeFn::SetDelete),
         "DateNew" => Some(RuntimeFn::DateNew),
+        "DateNewLive" => Some(RuntimeFn::DateNewLive),
+        "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
         _ => None,
     }
@@ -381,6 +396,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
 pub(crate) enum Capability {
     StdinRead,
     StdoutWrite,
+    WasiClockRealtime,
     WasiRandom,
     HostFsReadFileSync,
     HostFsWriteFileSync,
@@ -401,6 +417,7 @@ impl Capability {
         match self {
             Self::StdinRead => "stdin.read",
             Self::StdoutWrite => "stdout.write",
+            Self::WasiClockRealtime => "wasi.clock.realtime",
             Self::WasiRandom => "wasi.random",
             Self::HostFsReadFileSync => "host.fs.readFileSync",
             Self::HostFsWriteFileSync => "host.fs.writeFileSync",
@@ -532,6 +549,7 @@ const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 
 const IMPORT_FD_READ: &[HostImport] = &[HostImport::FdRead];
 const IMPORT_FD_WRITE: &[HostImport] = &[HostImport::FdWrite];
+const IMPORT_CLOCK_TIME_GET: &[HostImport] = &[HostImport::ClockTimeGet];
 const IMPORT_RANDOM_GET: &[HostImport] = &[HostImport::RandomGet];
 const IMPORT_FS_READ_FILE_SYNC: &[HostImport] = &[HostImport::FsReadFileSync];
 const IMPORT_FS_WRITE_FILE_SYNC: &[HostImport] = &[HostImport::FsWriteFileSync];
@@ -546,6 +564,7 @@ const IMPORT_PATH_DIRNAME: &[HostImport] = &[HostImport::PathDirname];
 const IMPORT_CRYPTO_RANDOM_BYTES: &[HostImport] = &[HostImport::CryptoRandomBytes];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
+const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
 const CAP_WASI_RANDOM: &[Capability] = &[Capability::WasiRandom];
 const CAP_HOST_FS_READ_FILE_SYNC: &[Capability] = &[Capability::HostFsReadFileSync];
 const CAP_HOST_FS_WRITE_FILE_SYNC: &[Capability] = &[Capability::HostFsWriteFileSync];
@@ -621,6 +640,9 @@ const SET_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::Pr
 const SET_HAS_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
 const SET_DELETE_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyDelete];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
+const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, RuntimeFn::DateNew];
+const DATE_EPOCH_MS_NOW_NUMBER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 
 // Math function dependencies (no deps)
 const MATH_DEPS: &[RuntimeFn] = &[];
@@ -1110,6 +1132,30 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::DateNewLive => RuntimeSpec {
+                symbol: "$date_new_live",
+                deps: DATE_NEW_LIVE_DEPS,
+                imports: IMPORT_CLOCK_TIME_GET,
+                capability: CAP_WASI_CLOCK_REALTIME,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DateNow => RuntimeSpec {
+                symbol: "$date_now",
+                deps: DATE_NOW_DEPS,
+                imports: IMPORT_CLOCK_TIME_GET,
+                capability: CAP_WASI_CLOCK_REALTIME,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DateEpochMsNowNumber => RuntimeSpec {
+                symbol: "$date_epoch_ms_now_number",
+                deps: DATE_EPOCH_MS_NOW_NUMBER_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateGetTime => RuntimeSpec {
                 symbol: "$date_get_time",
                 deps: NO_DEPS,
@@ -1579,6 +1625,9 @@ impl RuntimeFn {
             Self::SetHas => "set_has",
             Self::SetDelete => "set_delete",
             Self::DateNew => "date_new",
+            Self::DateNewLive => "date_new_live",
+            Self::DateNow => "date_now",
+            Self::DateEpochMsNowNumber => "date_epoch_ms_now_number",
             Self::DateGetTime => "date_get_time",
             Self::StringCharAt => "string_char_at",
             Self::StringSubstring => "string_substring",
@@ -1688,6 +1737,9 @@ impl RuntimeFn {
             Self::SetHas,
             Self::SetDelete,
             Self::DateNew,
+            Self::DateEpochMsNowNumber,
+            Self::DateNewLive,
+            Self::DateNow,
             Self::DateGetTime,
             // String methods
             Self::StringCharAt,
@@ -1806,6 +1858,9 @@ impl RuntimeFn {
             Self::SetHas,
             Self::SetDelete,
             Self::DateNew,
+            Self::DateEpochMsNowNumber,
+            Self::DateNewLive,
+            Self::DateNow,
             Self::DateGetTime,
             // String methods
             Self::StringCharAt,
