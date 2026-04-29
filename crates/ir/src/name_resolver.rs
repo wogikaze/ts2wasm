@@ -116,6 +116,10 @@ impl NameResolver {
                 *span,
                 "default import with namespace import",
             )),
+            Stmt::ExportNamed { specifiers, span } if specifiers.is_empty() => Ok(Stmt::Expr {
+                expr: Expr::Undefined { span: *span },
+                span: *span,
+            }),
             Stmt::ExportNamed { span, .. } => Err(unsupported_module_decl(*span, "named export")),
             Stmt::ExportNamedFrom { span, .. } => {
                 Err(unsupported_module_decl(*span, "named re-export"))

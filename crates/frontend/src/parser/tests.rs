@@ -1103,6 +1103,20 @@ mod tests {
     }
 
     #[test]
+    fn parses_empty_export_as_module_marker() {
+        let program = parse_program("export { };").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportNamed { specifiers, span } => {
+                assert!(specifiers.is_empty());
+                assert_eq!(*span, Span { start: 0, end: 11 });
+            }
+            other => panic!("unexpected export statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_const_declaration_export_with_exported_local_span() {
         let program = parse_program("export const value = 1;").unwrap();
         assert_eq!(program.len(), 1);
