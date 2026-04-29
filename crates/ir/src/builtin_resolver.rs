@@ -2846,6 +2846,7 @@ struct BigIntRuntimeGuard {
     string_locals: HashSet<String>,
     string_values: HashMap<String, String>,
     nullish_locals: HashSet<String>,
+    object_toprimitive_locals: HashSet<String>,
 }
 
 impl BigIntRuntimeGuard {
@@ -2880,6 +2881,11 @@ impl BigIntRuntimeGuard {
                     self.nullish_locals.insert(name.clone());
                 } else {
                     self.nullish_locals.remove(name);
+                }
+                if self.expr_is_object_toprimitive_boundary(expr) {
+                    self.object_toprimitive_locals.insert(name.clone());
+                } else {
+                    self.object_toprimitive_locals.remove(name);
                 }
                 Ok(())
             }
@@ -2986,9 +2992,11 @@ impl BigIntRuntimeGuard {
                 let mut body_guard = self.fork();
                 body_guard.locals.remove(var);
                 body_guard.nullish_locals.remove(var);
+                body_guard.object_toprimitive_locals.remove(var);
                 body_guard.visit_stmts(body)?;
                 self.locals.remove(var);
                 self.nullish_locals.remove(var);
+                self.object_toprimitive_locals.remove(var);
                 self.invalidate_assigned_in_stmts(body);
                 Ok(())
             }
@@ -3016,6 +3024,7 @@ impl BigIntRuntimeGuard {
             string_locals: self.string_locals.clone(),
             string_values: self.string_values.clone(),
             nullish_locals: self.nullish_locals.clone(),
+            object_toprimitive_locals: self.object_toprimitive_locals.clone(),
         }
     }
 
@@ -3025,6 +3034,7 @@ impl BigIntRuntimeGuard {
             self.string_locals.remove(&name);
             self.string_values.remove(&name);
             self.nullish_locals.remove(&name);
+            self.object_toprimitive_locals.remove(&name);
         }
     }
 
@@ -3034,6 +3044,7 @@ impl BigIntRuntimeGuard {
             self.string_locals.remove(&name);
             self.string_values.remove(&name);
             self.nullish_locals.remove(&name);
+            self.object_toprimitive_locals.remove(&name);
         }
     }
 
@@ -3073,6 +3084,16 @@ impl BigIntRuntimeGuard {
         match expr {
             Expr::Null { .. } | Expr::Undefined { .. } => true,
             Expr::Ident { name, .. } => self.nullish_locals.contains(name),
+            _ => false,
+        }
+    }
+
+    fn expr_is_object_toprimitive_boundary(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Ident { name, .. } => self.object_toprimitive_locals.contains(name),
+            Expr::Object { props, .. } => props
+                .iter()
+                .any(|(key, _)| matches!(key.as_str(), "valueOf" | "toString")),
             _ => false,
         }
     }
@@ -3163,6 +3184,12 @@ impl BigIntRuntimeGuard {
                             || static_bigint_nullish_equality
                         {
                             return Ok(None);
+                        }
+                        if (left_info.is_some() && self.expr_is_object_toprimitive_boundary(right))
+                            || (right_info.is_some()
+                                && self.expr_is_object_toprimitive_boundary(left))
+                        {
+                            return Err(bigint_object_toprimitive_diagnostic(*span));
                         }
                         self.guard_bigint_mixed_runtime_string(left, left_info.as_ref(), *span)?;
                         self.guard_bigint_mixed_runtime_string(right, right_info.as_ref(), *span)?;
@@ -3314,6 +3341,11 @@ impl BigIntRuntimeGuard {
                     self.string_locals.remove(name);
                     self.string_values.remove(name);
                 }
+                if self.expr_is_object_toprimitive_boundary(expr) {
+                    self.object_toprimitive_locals.insert(name.clone());
+                } else {
+                    self.object_toprimitive_locals.remove(name);
+                }
                 Ok(info)
             }
             Expr::LogicalPropertyAssign {
@@ -3443,6 +3475,14 @@ fn bigint_comparison_string_boundary_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-282: dynamic BigInt/String comparison is limited to signed-i32 StringToBigInt values in this runtime coercion slice".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn bigint_object_toprimitive_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-282: object ToPrimitive for mixed BigInt comparison is not implemented in this runtime coercion slice".to_owned(),
         span: Some(span),
     }
 }
