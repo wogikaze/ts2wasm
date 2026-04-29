@@ -396,6 +396,23 @@ mod tests {
     }
 
     #[test]
+    fn heap_closure_allocation_and_dispatch_emit_abi_payload_and_roots() {
+        let program =
+            lower_fixture("../../fixtures/core-semantics/ordinary-function-closure-make-adder.ts");
+
+        let wat = emit_wat(&program).expect("returned closure fixture should emit WAT");
+
+        assert!(wat.contains("(i32.const -2)"));
+        assert!(wat.contains("(i32.const 20)"));
+        assert!(wat.contains("(i32.const 16)"));
+        assert!(wat.contains("(block $heap_closure_dispatch_done (result i32)"));
+        assert!(wat.contains("(call $func_1)"));
+        assert!(wat.contains(
+            "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 8)) (local.get 0))"
+        ));
+    }
+
+    #[test]
     fn gc_mark_helpers_visit_heap_graph_payloads() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::ObjectNew {
