@@ -25,7 +25,7 @@ printf 'console.log(1n === 1n); console.log(1n === 1); console.log(1n == "1"); c
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-261-bigint-comparison.wasm
 ```
 
-Current result: BigInt/BigInt `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` now match Node for the current heap BigInt representation, including negative values, canonical zero, and a large literal that exceeds the first-limb payload. Statically visible mixed BigInt abstract equality and relational comparison emit issue-261 diagnostics; runtime-only mixed BigInt abstract equality and relational comparison trap instead of silently returning a normal wrong boolean.
+Current result: BigInt/BigInt `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` now match Node for the current heap BigInt representation, including negative values, canonical zero, and a large literal that exceeds the first-limb payload. Statically visible BigInt/String literal abstract equality folds supported StringToBigInt forms and invalid string inputs to Node-compatible booleans. Other statically visible mixed BigInt abstract equality and relational comparison emit issue-261 diagnostics; runtime-only mixed BigInt abstract equality and relational comparison trap instead of silently returning a normal wrong boolean.
 
 ## Desired final state
 
@@ -70,7 +70,7 @@ Do not touch:
 
 - [x] Node/iwasm differential fixtures cover `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` for BigInt operands.
 - [ ] Mixed BigInt/Number equality and comparison are tested for integral, fractional, `NaN`, `Infinity`, and `-0` cases where the current number model can represent them; unrepresentable number cases remain explicitly tracked.
-- [ ] BigInt/String abstract equality uses StringToBigInt-compatible parsing for supported string inputs.
+- [ ] BigInt/String abstract equality uses StringToBigInt-compatible parsing for supported string inputs. Literal BigInt/String pairs are implemented; dynamic string values remain issue-261 unsupported.
 - [x] Docs/current-state/issues state the remaining object `ToPrimitive` and number-model limits.
 
 ## Validation
@@ -113,6 +113,36 @@ Follow-up issues:
 Do not claim full equality parity if broader `number` support still cannot represent the Node comparison case.
 
 2026-04-29 progress slice: strict equality now compares BigInt mathematical values instead of object pointer identity, strict BigInt/non-BigInt equality returns false/true for `===`/`!==`, BigInt/BigInt abstract equality reuses the strict BigInt comparison path, and BigInt/BigInt relational operators compare sign plus cached decimal magnitude. Mixed BigInt abstract equality and relational comparison are still rejected with spanned issue-261 diagnostics when statically visible, and runtime-only mixed BigInt cases trap rather than returning false until StringToBigInt parsing and BigInt/Number comparison limits are implemented.
+
+2026-04-29 progress slice: statically folded BigInt/String literal abstract equality now uses the same supported StringToBigInt parser as `BigInt(string)` for decimal, binary, octal, hexadecimal, empty/whitespace-to-zero, and signed decimal string literals. Invalid string inputs fold to `false` for `==` and `true` for `!=`, matching Node for the covered literal subset. Dynamic string values and relational BigInt/String comparisons remain issue-261 diagnostics/traps rather than silently widening runtime behavior.
+
+Validation for this progress slice:
+
+```text
+command: cargo nextest run -E 'test(bigint_mixed_string_abstract_equality_fixture_matches_node_output_under_iwasm) or test(bigint_mixed_abstract_equality_reports_issue_261) or test(bigint_runtime_mixed_abstract_equality_traps_instead_of_false)'
+result: passed (3 passed, 508 skipped)
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(bigint) or test(node_diff)'
+result: passed (32 passed, 479 skipped)
+date: 2026-04-29
+
+command: cargo test -p ts2wasm-cli bigint
+result: passed (25 passed across filtered CLI tests)
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: passed
+date: 2026-04-29
+
+command: mise run check issues
+result: passed
+date: 2026-04-29
+```
 
 ## Completion evidence
 
