@@ -217,6 +217,18 @@ This issue is intentionally blocked because the fixture crosses several existing
   reaches the next unsupported boundary at top-level `await
   Bun.file("/dev/stdin").text()`.
 
+2026-04-29 progress:
+
+- Added an `Await` expression AST node instead of erasing `await` at parse time.
+- Lowered the Bun-compatible stdin idiom `await
+  Bun.file("/dev/stdin").text()` to the existing standalone WASI stdin
+  runtime path (`ReadStdinUtf8`) under `--host-deny`.
+- Added a differential stdin fixture comparing the Bun idiom against the
+  existing Node `fs.readFileSync(0, "utf8")` baseline.
+- The original ABC451 repro now advances beyond top-level Bun stdin and reaches
+  the next unsupported boundary at chained `Array.prototype.map` on
+  `inputText.trim().split("\n")`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

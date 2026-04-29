@@ -461,6 +461,10 @@ impl BigIntStaticBuiltinFolder {
                 expr: Box::new(self.fold_expr(expr)),
                 span: *span,
             },
+            Expr::Await { expr, span } => Expr::Await {
+                expr: Box::new(self.fold_expr(expr)),
+                span: *span,
+            },
             Expr::InstanceOf {
                 expr,
                 type_expr,
@@ -1239,7 +1243,10 @@ fn first_outer_local_reference_in_expr(
         Expr::Ident { name, span } => {
             reference_if_outer(name, *span, outer_bindings, method_locals)
         }
-        Expr::Unary { expr, .. } | Expr::TypeOf { expr, .. } | Expr::Spread { expr, .. } => {
+        Expr::Unary { expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Await { expr, .. }
+        | Expr::Spread { expr, .. } => {
             first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
         }
         Expr::Binary { left, right, .. } => {
@@ -1363,6 +1370,24 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
         Expr::Undefined { .. } => Ok(ResolvedExpr::Undefined),
         Expr::This { span } => Ok(ResolvedExpr::This { span: *span }),
+        Expr::Await { expr, span } => {
+            let resolved = resolve_expr(expr)?;
+            if matches!(
+                resolved,
+                ResolvedExpr::BuiltinCall {
+                    builtin: BuiltinId::ReadStdinUtf8,
+                    ..
+                }
+            ) {
+                Ok(resolved)
+            } else {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-294: await is only supported for Bun.file(\"/dev/stdin\").text() stdin lowering in this slice".to_owned(),
+                    span: Some(*span),
+                })
+            }
+        }
         Expr::Ident { name, .. } => Ok(ResolvedExpr::Ident(name.clone())),
         Expr::InstanceOf {
             expr, type_expr, ..
@@ -3156,6 +3181,7 @@ impl BigIntRuntimeGuard {
             Expr::Member { object, .. }
             | Expr::OptionalMember { object, .. }
             | Expr::TypeOf { expr: object, .. }
+            | Expr::Await { expr: object, .. }
             | Expr::Spread { expr: object, .. } => {
                 self.expr_bigint_info(object)?;
                 Ok(None)
@@ -3549,6 +3575,7 @@ fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<String>) {
         | Expr::Member { object: expr, .. }
         | Expr::OptionalMember { object: expr, .. }
         | Expr::TypeOf { expr, .. }
+        | Expr::Await { expr, .. }
         | Expr::Spread { expr, .. } => collect_assigned_names_in_expr(expr, names),
         Expr::Call { callee, args, .. } | Expr::OptionalCall { callee, args, .. } => {
             collect_assigned_names_in_expr(callee, names);
@@ -3817,9 +3844,10 @@ fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
 fn expr_contains_bigint(expr: &Expr) -> bool {
     match expr {
         Expr::BigInt { .. } => true,
-        Expr::Unary { expr, .. } | Expr::TypeOf { expr, .. } | Expr::Spread { expr, .. } => {
-            expr_contains_bigint(expr)
-        }
+        Expr::Unary { expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Await { expr, .. }
+        | Expr::Spread { expr, .. } => expr_contains_bigint(expr),
         Expr::Binary { left, right, .. }
         | Expr::InstanceOf {
             expr: left,
@@ -3951,8 +3979,73 @@ fn resolve_builtin_call(
     if let Some(builtin) = resolve_require_module_builtin(object.as_ref(), property, call_args)? {
         return Ok(Some(builtin));
     }
+    if let Some(builtin) = resolve_bun_file_text_builtin(object.as_ref(), property, call_args)? {
+        return Ok(Some(builtin));
+    }
 
     Ok(None)
+}
+
+fn resolve_bun_file_text_builtin(
+    object: &Expr,
+    property: &str,
+    call_args: &[Expr],
+) -> Result<Option<BuiltinId>, Diagnostic> {
+    if property != "text" {
+        return Ok(None);
+    }
+    if !call_args.is_empty() {
+        return Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "Bun.file(\"/dev/stdin\").text expects 0 arguments in this milestone, got {}",
+                call_args.len()
+            ),
+            span: span_of_expr(object),
+        });
+    }
+    let Expr::Call {
+        callee: file_callee,
+        args: file_args,
+        ..
+    } = object
+    else {
+        return Ok(None);
+    };
+    let Expr::Member {
+        object: bun_object,
+        property: file_property,
+        ..
+    } = file_callee.as_ref()
+    else {
+        return Ok(None);
+    };
+    let Expr::Ident {
+        name: object_name, ..
+    } = bun_object.as_ref()
+    else {
+        return Ok(None);
+    };
+    if object_name != "Bun" || file_property != "file" {
+        return Ok(None);
+    }
+    match file_args.as_slice() {
+        [Expr::String { value, .. }] if value == "/dev/stdin" => Ok(Some(BuiltinId::ReadStdinUtf8)),
+        [arg] => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "Bun.file(...).text() currently supports only \"/dev/stdin\" stdin lowering"
+                .to_owned(),
+            span: span_of_expr(arg),
+        }),
+        _ => Err(Diagnostic {
+            code: DiagCode::ArityMismatch,
+            message: format!(
+                "Bun.file expects 1 argument in this milestone, got {}",
+                file_args.len()
+            ),
+            span: span_of_expr(object),
+        }),
+    }
 }
 
 fn resolve_require_module_builtin(
@@ -4076,6 +4169,7 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Null { span }
         | Expr::This { span }
         | Expr::Undefined { span }
+        | Expr::Await { span, .. }
         | Expr::Ident { span, .. }
         | Expr::Unary { span, .. }
         | Expr::Binary { span, .. }
@@ -4248,6 +4342,7 @@ fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> {
         Expr::Unary { expr, .. }
         | Expr::TypeOf { expr, .. }
         | Expr::Assign { expr, .. }
+        | Expr::Await { expr, .. }
         | Expr::Spread { expr, .. } => validate_static_block_expr(expr),
         Expr::Binary {
             left: expr_left,

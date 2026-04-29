@@ -55,6 +55,7 @@ impl NameResolver {
             "Error",
             "Map",
             "Set",
+            "Bun",
             "Promise",
             "Symbol",
             "TypeError",
@@ -488,6 +489,10 @@ impl NameResolver {
             }),
             Expr::Null { span } => Ok(Expr::Null { span: *span }),
             Expr::Undefined { span } => Ok(Expr::Undefined { span: *span }),
+            Expr::Await { expr, span } => Ok(Expr::Await {
+                expr: Box::new(self.resolve_expr(expr)?),
+                span: *span,
+            }),
             Expr::This { span } => Ok(Expr::This { span: *span }),
             Expr::FunctionExpr {
                 name,
@@ -1020,9 +1025,10 @@ fn is_loop_stmt(stmt: &Stmt) -> bool {
 fn expr_contains_bigint_literal(expr: &Expr) -> bool {
     match expr {
         Expr::BigInt { .. } => true,
-        Expr::Unary { expr, .. } | Expr::TypeOf { expr, .. } | Expr::Spread { expr, .. } => {
-            expr_contains_bigint_literal(expr)
-        }
+        Expr::Unary { expr, .. }
+        | Expr::TypeOf { expr, .. }
+        | Expr::Await { expr, .. }
+        | Expr::Spread { expr, .. } => expr_contains_bigint_literal(expr),
         Expr::Binary { left, right, .. }
         | Expr::InstanceOf {
             expr: left,

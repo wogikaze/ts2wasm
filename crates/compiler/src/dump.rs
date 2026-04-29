@@ -701,6 +701,7 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::Bool { value, .. } => value.to_string(),
         Expr::Null { .. } => "null".to_owned(),
         Expr::Undefined { .. } => "undefined".to_owned(),
+        Expr::Await { expr, .. } => format!("await {}", unparse_expr(expr)),
         Expr::Ident { name, .. } => name.clone(),
         Expr::Unary { op, expr, .. } => match op {
             UnaryOp::Not => format!("!{}", unparse_expr(expr)),

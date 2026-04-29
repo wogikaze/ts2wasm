@@ -1117,6 +1117,20 @@ mod tests {
     }
 
     #[test]
+    fn parses_await_expression() {
+        let program = parse_program(r#"let text = await Bun.file("/dev/stdin").text();"#).unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::Let { expr, .. } => {
+                assert!(matches!(expr, Expr::Await { .. }));
+                assert_eq!(expr.span(), Span { start: 11, end: 46 });
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_const_declaration_export_with_exported_local_span() {
         let program = parse_program("export const value = 1;").unwrap();
         assert_eq!(program.len(), 1);

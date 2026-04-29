@@ -330,6 +330,10 @@ pub enum Expr {
     Undefined {
         span: Span,
     },
+    Await {
+        expr: Box<Expr>,
+        span: Span,
+    },
     Ident {
         name: String,
         span: Span,
@@ -501,6 +505,7 @@ impl Expr {
             | Self::Bool { span, .. }
             | Self::Null { span }
             | Self::Undefined { span }
+            | Self::Await { span, .. }
             | Self::Ident { span, .. }
             | Self::Unary { span, .. }
             | Self::Binary { span, .. }

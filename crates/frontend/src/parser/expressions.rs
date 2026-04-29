@@ -1044,6 +1044,16 @@ impl Parser {
             })
         } else if self.consume_typescript_const_angle_assertion() {
             self.unary()
+        } else if let Some(await_span) = self.consume_span(TokenKind::Await) {
+            let expr = self.unary()?;
+            let end = expr.span().end;
+            Ok(Expr::Await {
+                expr: Box::new(expr),
+                span: Span {
+                    start: await_span.start,
+                    end,
+                },
+            })
         } else if let Some(new_span) = self.consume_span(TokenKind::New) {
             let expr = self.call_member_no_call()?;
             self.try_consume_typescript_new_type_arguments(&expr)?;
