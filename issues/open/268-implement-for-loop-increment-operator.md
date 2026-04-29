@@ -43,6 +43,13 @@ lowering path. The regression fixture `fixtures/core-semantics/for-loop-post-inc
 matches Node output under iwasm. Prefix increment and decrement forms remain out of scope
 for this slice and are covered by source-spanned issue-268 diagnostics.
 
+2026-04-29 progress: the next update-operator slice extends the same `for` update-slot
+lowering to identifier-only postfix decrement and prefix increment/decrement (`i--`,
+`++i`, `--i`). Because the update expression value is unused, these forms lower to the
+same assignment semantics as `i = i +/- 1`. Node/iwasm fixtures cover postfix decrement
+and prefix increment/decrement, while non-identifier update targets remain guarded by
+an issue-268 diagnostic.
+
 ## Acceptance criteria
 
 1. Parser accepts for loop with increment operator in update expression

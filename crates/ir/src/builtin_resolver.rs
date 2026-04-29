@@ -839,27 +839,31 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
 fn resolve_for_update_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         Expr::Unary {
-            op: UnaryOp::Increment,
+            op:
+                op @ (UnaryOp::Increment
+                | UnaryOp::Decrement
+                | UnaryOp::PreIncrement
+                | UnaryOp::PreDecrement),
             expr,
             span,
         } => {
             let Expr::Ident { name, .. } = expr.as_ref() else {
                 return Err(increment_update_diagnostic(*span));
             };
+            let binary_op = match op {
+                UnaryOp::Increment | UnaryOp::PreIncrement => BinaryOp::Add,
+                UnaryOp::Decrement | UnaryOp::PreDecrement => BinaryOp::Subtract,
+                _ => unreachable!("matched for-loop update increment/decrement operator"),
+            };
             Ok(ResolvedExpr::Assign {
                 name: name.clone(),
                 expr: Box::new(ResolvedExpr::Binary {
                     left: Box::new(ResolvedExpr::Ident(name.clone())),
-                    op: BinaryOp::Add,
+                    op: binary_op,
                     right: Box::new(ResolvedExpr::Number(1)),
                 }),
             })
         }
-        Expr::Unary {
-            op: UnaryOp::Decrement | UnaryOp::PreIncrement | UnaryOp::PreDecrement,
-            span,
-            ..
-        } => Err(increment_update_diagnostic(*span)),
         _ => resolve_expr(expr),
     }
 }
@@ -867,7 +871,9 @@ fn resolve_for_update_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
 fn increment_update_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-268: only postfix identifier increment (`i++`) is supported in `for` loop updates in this slice".to_owned(),
+        message:
+            "issue-268: for-loop increment/decrement updates currently require an identifier target"
+                .to_owned(),
         span: Some(span),
     }
 }
