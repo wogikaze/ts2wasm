@@ -3,9 +3,9 @@ id: 309
 title: "Reduce ABC451 depth-9 live allocation shape"
 type: feature
 area: runtime/memory
-class: implementation-ready
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [310]
 blocks: [308, 300]
 created: 2026-04-29
 updated: 2026-04-29
@@ -169,6 +169,54 @@ Issue 308 already committed GC cadence, free-list scan, last-chance GC,
 tail-trim, post-GC bump recompute, and remaining-page guard slices. Do not
 repeat those policy experiments unless new reducer evidence explains why the
 previous depth-8/OOM validation result no longer applies.
+
+2026-04-29 child `309-depth9-live-allocation-20260429T2312Z` blocker evidence:
+
+- Tested a backend root-liveness reduction for function activation frames:
+  clearing direct block-scoped `let` locals declared in `for` bodies after each
+  iteration body, with a narrower variant that only cleared direct `let` locals
+  initialized from user-call results. This was not committed because both
+  variants regressed required validation
+  `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` with
+  `Exception: unreachable`.
+- The broad root-clearing experiment did advance the depth-9 search-only
+  reducer beyond the previous remaining-page guard shape, but still trapped
+  under the committed 185-page cap. WAT-only instrumentation at the explicit
+  remaining-page guard reported:
+
+```text
+size=3068
+block_size=3088
+new_heap=12126704
+memory_pages=185
+needed_pages=1
+remaining_pages=0
+gc_free_list_max_body_size=1592
+```
+
+Previous issue-309 start shape was:
+
+```text
+size=6140
+block_size=6160
+new_heap=12126520
+memory_pages=185
+needed_pages=1
+remaining_pages=0
+gc_free_list_max_body_size=3584
+```
+
+- Rejected allocation-capacity experiments:
+  exact-fit large-array growth advanced past the old guard window but timed out
+  at 90s under `iwasm`; a 9/8 large-array growth factor regressed to an earlier
+  remaining-page guard with `size=874592`, `block_size=874608`,
+  `new_heap=12751744`, `memory_pages=182`, `needed_pages=13`,
+  `remaining_pages=3`, and `gc_free_list_max_body_size=269336`.
+- No runtime implementation from these experiments was left in the tree.
+- Created issue 310 for the next executable slice: make activation-frame root
+  liveness narrowing safe for the depth-8 fixture before retrying this
+  depth-9 allocation-shape reduction.
+- Issue 300 remains open. No official ABC451 sample compatibility is claimed.
 
 ## Completion evidence
 

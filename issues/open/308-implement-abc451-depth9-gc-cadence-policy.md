@@ -5,7 +5,7 @@ type: feature
 area: runtime/memory
 class: blocked
 priority: P1
-depends_on: [309]
+depends_on: [309, 310]
 blocks: [300]
 created: 2026-04-29
 updated: 2026-04-29
@@ -483,6 +483,21 @@ date: 2026-04-29
 ```
 
 Issue 308 remains open. Issue 300 remains open.
+
+2026-04-29 child `309-depth9-live-allocation-20260429T2312Z` dependency
+blocker evidence:
+
+- Issue 309 tested stale function activation-frame root clearing for direct
+  block-scoped `let` locals in `for` bodies. The broad variant moved the
+  depth-9 remaining-page guard from the issue-309 starting request
+  `size=6140`, `block_size=6160`, `gc_free_list_max_body_size=3584` to
+  `size=3068`, `block_size=3088`, `new_heap=12126704`,
+  `memory_pages=185`, `needed_pages=1`, `remaining_pages=0`,
+  `gc_free_list_max_body_size=1592`, but it was not committed because it
+  regressed the required depth-8 fixture with `Exception: unreachable`.
+- Issue 308 remains blocked on issue 309 for the next live allocation/shape
+  reducer, and on issue 310 for a safe activation-frame root-liveness slice.
+  Issue 300 remains open; no official ABC451 sample compatibility is claimed.
 
 ## Completion evidence
 
