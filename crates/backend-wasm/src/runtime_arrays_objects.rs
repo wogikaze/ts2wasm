@@ -201,6 +201,71 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_array_map_value_to_string(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_map_value_to_string (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local $mapped_len i32)
+    (local $mapped_ptr i32)
+    (local $result_ptr i32)
+    (if (i32.ne (i32.and (local.get $arr) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $mapped_len
+          (call $value_to_string_into (local.get $elem) (i32.const {scratch_offset})))
+        (local.set $mapped_ptr
+          (call $alloc_heap
+            (i32.add (i32.const {string_header}) (local.get $mapped_len))))
+        (i32.store (local.get $mapped_ptr) (local.get $mapped_len))
+        (call $copy
+          (i32.const {scratch_offset})
+          (i32.add (local.get $mapped_ptr) (i32.const {string_header}))
+          (local.get $mapped_len))
+        (i32.store
+          (i32.add
+            (local.get $result_ptr)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.or (local.get $mapped_ptr) (i32.const {string_tag})))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            string_tag = ValueTag::STRING,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            string_header = Layout::STRING_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     pub(super) fn emit_array_map_string_split(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
