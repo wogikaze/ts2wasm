@@ -666,6 +666,7 @@ fn lower_binary_op(op: BinaryOp) -> Result<LoweredBinaryOp, Diagnostic> {
         BinaryOp::StrictNotEqual => Ok(LoweredBinaryOp::StrictNotEqual),
         BinaryOp::And => Ok(LoweredBinaryOp::And),
         BinaryOp::Or => Ok(LoweredBinaryOp::Or),
+        BinaryOp::NullishCoalesce => Ok(LoweredBinaryOp::NullishCoalesce),
         BinaryOp::Power
         | BinaryOp::BitwiseAnd
         | BinaryOp::BitwiseOr

@@ -204,6 +204,27 @@ impl WatEmitter<'_> {
                 );
             }
             LoweredExpr::Binary { left, op, right } => {
+                if *op == LoweredBinaryOp::NullishCoalesce {
+                    let lhs_tmp = frame.switch_value_tmp();
+                    self.emit_expr(wat, left, indent, frame);
+                    wat.push_str(&format!("{pad}(local.set {})\n", lhs_tmp));
+                    wat.push_str(&format!("{pad}(if (result i32)\n"));
+                    wat.push_str(&format!(
+                        "{pad}  (i32.or\n{pad}    (i32.eq (local.get {}) (i32.const {}))\n{pad}    (i32.eq (local.get {}) (i32.const {})))\n",
+                        lhs_tmp,
+                        ValueTag::UNDEFINED,
+                        lhs_tmp,
+                        ValueTag::NULL
+                    ));
+                    wat.push_str(&format!("{pad}  (then\n"));
+                    self.emit_expr(wat, right, indent + 4, &frame.child_temp_frame());
+                    wat.push_str(&format!("{pad}  )\n"));
+                    wat.push_str(&format!(
+                        "{pad}  (else\n{pad}    (local.get {})\n{pad}  ))\n",
+                        lhs_tmp
+                    ));
+                    return;
+                }
                 let left_ty = left.inferred_type();
                 let right_ty = right.inferred_type();
                 match op {
@@ -303,6 +324,9 @@ impl WatEmitter<'_> {
                             LoweredBinaryOp::StrictNotEqual => RuntimeFn::StrictNotEqual,
                             LoweredBinaryOp::And => RuntimeFn::And,
                             LoweredBinaryOp::Or => RuntimeFn::Or,
+                            LoweredBinaryOp::NullishCoalesce => unreachable!(
+                                "nullish coalescing is emitted as a short-circuit expression"
+                            ),
                         };
                         if expr_may_collect(right) && !expr_uses_caller_backend_tmp(right) {
                             let lhs_tmp = frame.switch_value_tmp();

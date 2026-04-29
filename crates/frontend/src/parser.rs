@@ -11,6 +11,7 @@ pub struct Parser {
     cursor: usize,
     strict_mode: bool,
     typescript_generic_functions: HashSet<String>,
+    parenthesized_expr_spans: HashSet<(usize, usize)>,
 }
 
 struct ParsedParam {

@@ -39,6 +39,7 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/truthiness.ts",
         "fixtures/core-semantics/strict-equal.ts",
         "fixtures/core-semantics/abstract-equality.ts",
+        "fixtures/core-semantics/nullish-coalescing.ts",
         "fixtures/core-semantics/plus.ts",
         "fixtures/core-semantics/number-stringify.ts",
         "fixtures/core-semantics/ir-test.ts",

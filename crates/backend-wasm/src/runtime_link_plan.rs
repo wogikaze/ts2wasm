@@ -433,6 +433,7 @@ impl RuntimeLinkPlan {
                     }
                     LoweredBinaryOp::And => self.add_required_runtime(RuntimeFn::And),
                     LoweredBinaryOp::Or => self.add_required_runtime(RuntimeFn::Or),
+                    LoweredBinaryOp::NullishCoalesce => {}
                 }
             }
             LoweredExpr::Call { kind, args } => {
