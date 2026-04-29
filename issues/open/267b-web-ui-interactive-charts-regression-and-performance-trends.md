@@ -111,6 +111,15 @@ Follow-up issues:
 
 Prefer the existing `recharts` dependency before introducing another charting library.
 
+## Progress evidence
+
+2026-04-29:
+
+- Added Recharts-backed coverage mix, suite coverage, and priority charts to the Coverage tab.
+- Added historical result and performance trend charts to the History tab.
+- Added adjacent-run pass/fail/skip and compile/runtime deltas plus regression flags for increased failures, dropped passes, or performance increases above the documented 20% threshold.
+- Remaining scope before close: final responsive visual review and any docs/current-state synchronization required by broader issue 267.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

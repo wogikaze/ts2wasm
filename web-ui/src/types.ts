@@ -19,6 +19,7 @@ export interface CoverageData {
     p3: number;
     future: number;
   };
+  suites?: CoverageSuite[];
 }
 
 export interface HistoricalData {
@@ -29,4 +30,16 @@ export interface HistoricalData {
   skipped: number;
   compile_time: number;
   runtime: number;
+}
+
+export interface CoverageSuite {
+  suite: string;
+  source: string;
+  denominator: number;
+  executed: number;
+  build_pass: number;
+  semantic_pass: number;
+  fail: number;
+  unsupported: number;
+  blocked: number;
 }
