@@ -19,11 +19,12 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-TEST262_ROOT = REPO_ROOT / "reference" / "test262"
+REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
+TEST262_ROOT = Path(os.environ.get("TS2WASM_TEST262_ROOT", REFERENCE_ROOT / "test262")).resolve()
 HARNESS_DIR = TEST262_ROOT / "harness"
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
-UNSUPPORTED_FLAGS = ("module", "async", "IsHTMLDDA")
+UNSUPPORTED_FLAGS = ("module", "IsHTMLDDA")
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
 TEST262_HOST_PRELUDE = r"""
@@ -584,7 +585,7 @@ def main():
         print(f"Sample mode: first {sample} files per category", file=sys.stderr)
     
     # Find test files
-    test_files = sorted(REPO_ROOT.glob("reference/test262/test/language/**/*.js"))
+    test_files = sorted((TEST262_ROOT / "test" / "language").glob("**/*.js"))
     
     # Filter by category
     category_seen = {}
