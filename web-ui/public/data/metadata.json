@@ -3,7 +3,7 @@
   "generator": "scripts/gen/web-ui-data.py",
   "notes": [
     "Coverage totals are derived from artifacts/coverage/results/*.json.",
-    "Per-case rows are included when --test-jsonl inputs are provided; otherwise aggregate suite rows are generated."
+    "Per-case rows use artifacts/coverage/results/*-results.jsonl by default when available."
   ],
   "output_files": [
     "web-ui/public/data/test-results.json",
@@ -16,6 +16,7 @@
     "artifacts/coverage/results/test262-summary.json",
     "artifacts/coverage/results/test262.json",
     "artifacts/coverage/results/tsc.json",
-    "artifacts/coverage/results/tsgo.json"
+    "artifacts/coverage/results/tsgo.json",
+    "artifacts/coverage/results/test262-results.jsonl"
   ]
 }

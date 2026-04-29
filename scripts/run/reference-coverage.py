@@ -204,8 +204,11 @@ def evidence_command(suite, limit, paths_file, path_filters):
 
 def refresh_web_ui_data():
     """Regenerate web UI data without changing this command's stdout contract."""
+    command = [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")]
+    for jsonl_file in sorted((REPO_ROOT / "artifacts/coverage/results").glob("*-results.jsonl")):
+        command.extend(["--test-jsonl", str(jsonl_file)])
     result = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")],
+        command,
         capture_output=True,
         text=True,
         cwd=REPO_ROOT,

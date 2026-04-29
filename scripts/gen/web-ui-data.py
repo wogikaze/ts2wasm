@@ -2,8 +2,8 @@
 """Generate static web UI JSON data from repository artifacts.
 
 The generator prefers existing coverage artifacts in artifacts/coverage/results.
-Optional JSONL test-record inputs can add per-case rows, but the command remains
-useful in a fresh worktree that only has the checked-in coverage artifacts.
+Per-case JSONL test records are used by default when present so web-ui reloads
+do not silently fall back to aggregate rows like semantic-pass/build-pass.
 """
 
 import argparse
@@ -151,6 +151,21 @@ def aggregate_test_records(artifacts):
     return tests
 
 
+def normalize_detail_text(value):
+    if value is None:
+        return None
+    text = str(value)
+    if "\\n" in text and "\n" not in text:
+        text = text.replace("\\r\\n", "\n").replace("\\n", "\n").replace("\\t", "\t")
+    return text
+
+
+def default_jsonl_test_records(coverage_dir):
+    if not coverage_dir.is_dir():
+        return []
+    return sorted(coverage_dir.glob("*-results.jsonl"))
+
+
 def load_jsonl_test_records(paths, start_id):
     tests = []
     row_id = start_id
@@ -161,17 +176,15 @@ def load_jsonl_test_records(paths, start_id):
                 if not raw_line:
                     continue
                 data = json.loads(raw_line)
-                suite = data.get("suite") or "test262"
+                suite = data.get("suite") or path.name.removesuffix("-results.jsonl") or "unknown"
                 case_name = data.get("case") or data.get("name") or data.get("path") or f"line-{line_number}"
-                
-                # Extract a cleaner name from the full path
-                if "/" in case_name:
-                    # Get the last part of the path (filename)
-                    clean_name = case_name.split("/")[-1]
-                else:
-                    clean_name = case_name
-                
+                clean_name = case_name.split("/")[-1] if "/" in case_name else case_name
                 status = normalize_status(data.get("status"))
+                reason = normalize_detail_text(data.get("reason"))
+                stderr = normalize_detail_text(data.get("stderr"))
+                actual = normalize_detail_text(data.get("actual"))
+                error = normalize_detail_text(data.get("error") or stderr or (actual if status in ("fail", "error") else None))
+
                 record = {
                     "id": str(row_id),
                     "suite": suite,
@@ -183,31 +196,46 @@ def load_jsonl_test_records(paths, start_id):
                 duration = data.get("duration") or data.get("duration_ms")
                 if isinstance(duration, (int, float)):
                     record["duration"] = duration
-                reason = data.get("reason")
                 if reason:
                     record["reason"] = reason
-                error = data.get("error") or data.get("actual") or data.get("stderr")
                 if error:
-                    record["error"] = str(error)
+                    record["error"] = error
+
+                for detail_key in ("expected", "actual", "stderr", "source_code", "error_line"):
+                    value = data.get(detail_key)
+                    if value is not None:
+                        record[detail_key] = normalize_detail_text(value) if isinstance(value, str) else value
+
                 tests.append(record)
                 row_id += 1
     return tests
 
 
-def build_test_results(artifacts, jsonl_paths):
-    # Only use individual test records from JSONL, skip aggregate summaries
+def build_test_results(artifacts, jsonl_paths, generated_at, row_limit=1000):
     if jsonl_paths:
-        tests = load_jsonl_test_records(jsonl_paths, 1)
+        all_tests = load_jsonl_test_records(jsonl_paths, 1)
+        record_mode = "jsonl"
     else:
-        # Fallback to aggregate summaries if no JSONL provided
-        tests = aggregate_test_records(artifacts)
-    
-    # Limit to first 1000 tests for UI performance
-    if len(tests) > 1000:
-        tests = tests[:1000]
-    
-    return {"tests": tests, "summary": count_summary(tests)}
+        all_tests = aggregate_test_records(artifacts)
+        record_mode = "aggregate"
 
+    shown_tests = all_tests[:row_limit]
+    return {
+        "tests": shown_tests,
+        "summary": count_summary(all_tests),
+        "metadata": {
+            "schema_version": 2,
+            "generated_at": generated_at,
+            "generator": "scripts/gen/web-ui-data.py",
+            "record_mode": record_mode,
+            "total_records": len(all_tests),
+            "shown_records": len(shown_tests),
+            "row_limit": row_limit,
+            "truncated": len(all_tests) > len(shown_tests),
+            "sources": [item["_source_path"] for item in artifacts]
+            + [path.relative_to(REPO_ROOT).as_posix() for path in jsonl_paths],
+        },
+    }
 
 def priority_for_feature(feature):
     return FEATURE_PRIORITY.get(feature, "p2")
@@ -282,7 +310,7 @@ def build_metadata(artifacts, jsonl_paths, generated_at):
         ],
         "notes": [
             "Coverage totals are derived from artifacts/coverage/results/*.json.",
-            "Per-case rows are included when --test-jsonl inputs are provided; otherwise aggregate suite rows are generated.",
+            "Per-case rows use artifacts/coverage/results/*-results.jsonl by default when available.",
         ],
     }
 
@@ -312,10 +340,11 @@ def main():
     args = parse_args()
     coverage_dir = args.coverage_dir if args.coverage_dir.is_absolute() else REPO_ROOT / args.coverage_dir
     out_dir = args.out_dir if args.out_dir.is_absolute() else REPO_ROOT / args.out_dir
-    jsonl_paths = [
+    explicit_jsonl_paths = [
         path if path.is_absolute() else REPO_ROOT / path
         for path in args.test_jsonl
     ]
+    jsonl_paths = explicit_jsonl_paths or default_jsonl_test_records(coverage_dir)
 
     artifacts = load_coverage_artifacts(coverage_dir)
     if not artifacts:
@@ -326,7 +355,7 @@ def main():
 
     generated_at = generated_at_iso(artifacts)
     outputs = {
-        "test-results.json": build_test_results(artifacts, jsonl_paths),
+        "test-results.json": build_test_results(artifacts, jsonl_paths, generated_at),
         "coverage.json": build_coverage(artifacts),
         "history.json": build_history(artifacts),
         "metadata.json": build_metadata(artifacts, jsonl_paths, generated_at),
