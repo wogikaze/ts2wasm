@@ -173,6 +173,16 @@ pub enum ResolvedExpr {
         key: String,
         span: Span,
     },
+    OptionalPropertyAccess {
+        object: Box<ResolvedExpr>,
+        key: String,
+        span: Span,
+    },
+    OptionalComputedIndex {
+        object: Box<ResolvedExpr>,
+        index: Box<ResolvedExpr>,
+        span: Span,
+    },
     MethodCall {
         object: Box<ResolvedExpr>,
         method: String,

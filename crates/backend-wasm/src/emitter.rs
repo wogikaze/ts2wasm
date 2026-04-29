@@ -561,9 +561,17 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(obj);
                 self.intern_string(key);
             }
+            LoweredExpr::OptionalPropertyGet { obj, key } => {
+                self.collect_expr_strings(obj);
+                self.intern_string(key);
+            }
             LoweredExpr::PropertyGetDynamic { obj, key } => {
                 self.collect_expr_strings(obj);
                 self.collect_expr_strings(key);
+            }
+            LoweredExpr::OptionalIndex { object, index } => {
+                self.collect_expr_strings(object);
+                self.collect_expr_strings(index);
             }
             LoweredExpr::MethodCall { object, .. } => {
                 self.collect_expr_strings(object);
@@ -907,6 +915,7 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::Unary { expr, .. }
             | LoweredExpr::GetLength(expr)
             | LoweredExpr::PropertyGet { obj: expr, .. }
+            | LoweredExpr::OptionalPropertyGet { obj: expr, .. }
             | LoweredExpr::MethodCall { object: expr, .. }
             | LoweredExpr::PropertyDelete { object: expr, .. } => {
                 Self::collect_class_prototypes_from_expr(expr, prototypes);
@@ -924,6 +933,10 @@ impl<'a> WatEmitter<'a> {
                 index: key,
             }
             | LoweredExpr::Index {
+                object: obj,
+                index: key,
+            }
+            | LoweredExpr::OptionalIndex {
                 object: obj,
                 index: key,
             }
@@ -1015,6 +1028,7 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::Unary { expr, .. }
             | LoweredExpr::GetLength(expr)
             | LoweredExpr::PropertyGet { obj: expr, .. }
+            | LoweredExpr::OptionalPropertyGet { obj: expr, .. }
             | LoweredExpr::MethodCall { object: expr, .. }
             | LoweredExpr::PropertyDelete { object: expr, .. } => {
                 Self::collect_builtin_error_prototypes_from_expr(expr, prototypes);
@@ -1025,6 +1039,10 @@ impl<'a> WatEmitter<'a> {
                 key: right,
             }
             | LoweredExpr::Index {
+                object: left,
+                index: right,
+            }
+            | LoweredExpr::OptionalIndex {
                 object: left,
                 index: right,
             }

@@ -601,12 +601,35 @@ impl NameResolver {
                     span: *span,
                 })
             }
-            Expr::OptionalMember { span, .. }
-            | Expr::OptionalIndex { span, .. }
-            | Expr::OptionalCall { span, .. } => Err(Diagnostic {
+            Expr::OptionalMember {
+                object,
+                property,
+                span,
+            } => {
+                let resolved_object = self.resolve_expr(object)?;
+                Ok(Expr::OptionalMember {
+                    object: Box::new(resolved_object),
+                    property: property.clone(),
+                    span: *span,
+                })
+            }
+            Expr::OptionalIndex {
+                object,
+                index,
+                span,
+            } => {
+                let resolved_object = self.resolve_expr(object)?;
+                let resolved_index = self.resolve_expr(index)?;
+                Ok(Expr::OptionalIndex {
+                    object: Box::new(resolved_object),
+                    index: Box::new(resolved_index),
+                    span: *span,
+                })
+            }
+            Expr::OptionalCall { span, .. } => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-246: optional chaining parses, but lowering/runtime semantics are not implemented"
+                    "issue-253: optional call runtime semantics are not implemented in this slice"
                         .to_owned(),
                 span: Some(*span),
             }),
