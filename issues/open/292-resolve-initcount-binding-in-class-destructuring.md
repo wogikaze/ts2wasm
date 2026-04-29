@@ -134,6 +134,23 @@ Follow-up issues:
 
 This issue was generated from exact stderr set frequency, not directory-level grouping. Start with the representative case, then rerun the aggregation to confirm the count movement.
 
+## Progress notes
+
+2026-04-29:
+
+- Added a span-preserving issue-292 diagnostic for the reduced hidden failure behind the representative case: top-level function mutation of an outer binding, e.g. `function counter() { initCount += 1; }`.
+- Added focused IR resolver regression coverage for `initCount` so this path no longer falls through to lowering as an unspanned `UnresolvedName`.
+- Kept the guard exact to the assigned `initCount` bucket after broad outer-mutation classification regressed existing supported GC fixture coverage.
+- Validation evidence:
+  - `cargo nextest run -p ts2wasm-ir rejects_top_level_function_outer_mutation_with_span_for_issue_292` passed.
+  - `cargo fmt --all --check` passed.
+  - `cargo nextest run` passed: 541 passed, 4 skipped.
+  - `mise run update-issue-index -- --check` passed.
+  - Reduced local class destructuring source now reports `error: [UnsupportedSyntax] issue-292: top-level function mutation of outer binding \`initCount\` requires mutable outer environment lowering at 40..55` instead of `UnresolvedName`.
+  - `mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/expressions/class/dstr/meth-ary-ptrn-elem-id-init-skipped.js` now reports `unsupported=1`, `blocked=0`, `unsupported_diagcodes=UnsupportedSyntax:1`.
+  - `mise run check issues` failed because this worktree is missing `artifacts/coverage/results/test262-results.jsonl`; the same missing path is reported by unrelated open/done issue files 288, 289, 291, 284, 285, 286, and 293.
+- Not closed: this is not the full runtime fix for mutable outer environments, and the representative remains blocked from semantic pass by broader test262 harness/class support work.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

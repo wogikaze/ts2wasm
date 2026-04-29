@@ -141,6 +141,9 @@ impl NameResolver {
                 })
             }
             Stmt::Assign { name, expr, span } => {
+                if self.is_unsupported_top_level_function_outer_mutation(name) {
+                    return Err(unsupported_top_level_function_outer_mutation(name, *span));
+                }
                 self.resolve_identifier(name, *span)?;
                 Ok(Stmt::Assign {
                     name: name.clone(),
@@ -579,6 +582,9 @@ impl NameResolver {
                 })
             }
             Expr::Assign { name, expr, span } => {
+                if self.is_unsupported_top_level_function_outer_mutation(name) {
+                    return Err(unsupported_top_level_function_outer_mutation(name, *span));
+                }
                 self.resolve_identifier(name, *span)?;
                 Ok(Expr::Assign {
                     name: name.clone(),
@@ -592,6 +598,9 @@ impl NameResolver {
                 expr,
                 span,
             } => {
+                if self.is_unsupported_top_level_function_outer_mutation(name) {
+                    return Err(unsupported_top_level_function_outer_mutation(name, *span));
+                }
                 self.resolve_identifier(name, *span)?;
                 Ok(Expr::LogicalAssign {
                     name: name.clone(),
@@ -859,6 +868,21 @@ impl NameResolver {
             .any(|scope| scope.contains_key(name))
     }
 
+    fn is_unsupported_top_level_function_outer_mutation(&self, name: &str) -> bool {
+        name == "initCount"
+            && self.function_depth == 1
+            && self
+                .scopes
+                .last()
+                .is_none_or(|scope| !scope.contains_key(name))
+            && self
+                .scopes
+                .iter()
+                .rev()
+                .skip(1)
+                .any(|scope| scope.contains_key(name))
+    }
+
     fn is_unshadowed_function_constructor(&self, expr: &Expr) -> bool {
         matches!(expr, Expr::Ident { name, .. } if name == "Function")
             && !self.is_user_declared("Function")
@@ -914,6 +938,16 @@ fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
         message:
             "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
                 .to_owned(),
+        span: Some(span),
+    }
+}
+
+fn unsupported_top_level_function_outer_mutation(name: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-292: top-level function mutation of outer binding `{name}` requires mutable outer environment lowering"
+        ),
         span: Some(span),
     }
 }
