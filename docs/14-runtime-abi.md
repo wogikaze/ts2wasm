@@ -317,7 +317,7 @@ Pseudo flow:
 
 1. markフェーズ: ルートとして `globals` / `runtime stacks` / `module cache` を走査
 2. sweepフェーズ: 生存フラグがないブロックを free-list へ回収
-3. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する
+3. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する。sweep は free-list 内の最大 body size も記録し、要求 payload がそれを超える場合は `$alloc_heap` の線形 free-list scan を省略する
 4. 必要なら `memory.grow`、`MEMORY_MAX_PAGES` まで増やせなければ trap
 
 ### Safety and compatibility notes
@@ -481,6 +481,13 @@ sweep():
       clear mark bit
     ptr += size
 ```
+
+Committed runtime also keeps `$gc_free_list_max_body_size` as a conservative
+upper bound for free-list reuse. Sweep resets it and raises it while adding
+free blocks; allocation uses it only to skip scans when the requested aligned
+payload is larger than every block discovered by the last sweep. If later
+free-list reuse makes the value stale, it may overestimate and allow an
+unnecessary scan, but it must not underestimate and skip a reusable block.
 
 ### Implementation Notes
 

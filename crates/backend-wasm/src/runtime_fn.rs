@@ -495,6 +495,7 @@ pub(crate) enum RuntimeResult {
 pub(crate) enum RuntimeGlobal {
     AllocBytesSinceLastGc,
     GcFreeList,
+    GcFreeListMaxBodySize,
     GcRootBase,
     GcRootCount,
     GcCallFrameBase,
@@ -511,6 +512,7 @@ impl RuntimeGlobal {
         match self {
             Self::AllocBytesSinceLastGc => "$alloc_bytes_since_last_gc",
             Self::GcFreeList => "$gc_free_list",
+            Self::GcFreeListMaxBodySize => "$gc_free_list_max_body_size",
             Self::GcRootBase => "$gc_root_base",
             Self::GcRootCount => "$gc_root_count",
             Self::GcCallFrameBase => "$gc_call_frame_base",
@@ -527,6 +529,7 @@ impl RuntimeGlobal {
         match self {
             Self::AllocBytesSinceLastGc => 0,
             Self::GcFreeList => 0,
+            Self::GcFreeListMaxBodySize => 0,
             Self::GcRootBase => 0,
             Self::GcRootCount => 0,
             Self::GcCallFrameBase
@@ -557,6 +560,7 @@ const NO_RUNTIME_STRINGS: &[&str] = &[];
 const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
     RuntimeGlobal::AllocBytesSinceLastGc,
     RuntimeGlobal::GcFreeList,
+    RuntimeGlobal::GcFreeListMaxBodySize,
     RuntimeGlobal::GcRootBase,
     RuntimeGlobal::GcRootCount,
     RuntimeGlobal::GcCallFrameBase,

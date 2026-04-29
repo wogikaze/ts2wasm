@@ -2560,81 +2560,88 @@ impl WatEmitter<'_> {
           (then (call $gc_collect)))))
 
     ;; Reuse a swept block when one is large enough for this payload.
+    ;; Skip the linear free-list scan when sweep proved no free block is large
+    ;; enough for the aligned request.
     (local.set $free_header (global.get $gc_free_list))
-    (block $free_not_found
-      (loop $free_scan
-        (br_if $free_not_found (i32.eqz (local.get $free_header)))
-        (local.set $free_body_size
-          (i32.load
-            (i32.add (local.get $free_header) (i32.const {gc_body_size_offset}))))
-        (local.set $free_next
-          (i32.load
-            (i32.add (local.get $free_header) (i32.const {gc_sweep_next_offset}))))
-        (if (i32.ge_u (local.get $free_body_size) (local.get $payload_size))
-          (then
-            (if
-              (i32.ge_u
-                (local.get $free_body_size)
-                (i32.add
-                  (local.get $payload_size)
-                  (i32.const {gc_header_size_plus_min_payload})))
+    (if
+      (i32.and
+        (i32.ne (local.get $free_header) (i32.const 0))
+        (i32.ge_u (global.get $gc_free_list_max_body_size) (local.get $payload_size)))
+      (then
+        (block $free_not_found
+          (loop $free_scan
+            (br_if $free_not_found (i32.eqz (local.get $free_header)))
+            (local.set $free_body_size
+              (i32.load
+                (i32.add (local.get $free_header) (i32.const {gc_body_size_offset}))))
+            (local.set $free_next
+              (i32.load
+                (i32.add (local.get $free_header) (i32.const {gc_sweep_next_offset}))))
+            (if (i32.ge_u (local.get $free_body_size) (local.get $payload_size))
               (then
-                (local.set $split_header
-                  (i32.add
-                    (local.get $free_header)
-                    (i32.add (i32.const {gc_header_size}) (local.get $payload_size))))
-                (local.set $split_body_size
-                  (i32.sub
-                    (i32.sub (local.get $free_body_size) (local.get $payload_size))
-                    (i32.const {gc_header_size})))
+                (if
+                  (i32.ge_u
+                    (local.get $free_body_size)
+                    (i32.add
+                      (local.get $payload_size)
+                      (i32.const {gc_header_size_plus_min_payload})))
+                  (then
+                    (local.set $split_header
+                      (i32.add
+                        (local.get $free_header)
+                        (i32.add (i32.const {gc_header_size}) (local.get $payload_size))))
+                    (local.set $split_body_size
+                      (i32.sub
+                        (i32.sub (local.get $free_body_size) (local.get $payload_size))
+                        (i32.const {gc_header_size})))
+                    (i32.store
+                      (i32.add (local.get $split_header) (i32.const {gc_flags_offset}))
+                      (i32.const {gc_kind_unknown}))
+                    (i32.store
+                      (i32.add (local.get $split_header) (i32.const {gc_body_size_offset}))
+                      (local.get $split_body_size))
+                    (i32.store
+                      (i32.add (local.get $split_header) (i32.const {gc_sweep_next_offset}))
+                      (local.get $free_next))
+                    (i32.store
+                      (i32.add (local.get $split_header) (i32.const {gc_reserved_offset}))
+                      (i32.const 0))
+                    (if (i32.eqz (local.get $free_prev))
+                      (then
+                        (global.set $gc_free_list (local.get $split_header)))
+                      (else
+                        (i32.store
+                          (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
+                          (local.get $split_header))))
+                    (local.set $free_body_size (local.get $payload_size)))
+                  (else
+                    (if (i32.eqz (local.get $free_prev))
+                      (then
+                        (global.set $gc_free_list (local.get $free_next)))
+                      (else
+                        (i32.store
+                          (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
+                          (local.get $free_next))))))
                 (i32.store
-                  (i32.add (local.get $split_header) (i32.const {gc_flags_offset}))
+                  (i32.add (local.get $free_header) (i32.const {gc_flags_offset}))
                   (i32.const {gc_kind_unknown}))
                 (i32.store
-                  (i32.add (local.get $split_header) (i32.const {gc_body_size_offset}))
-                  (local.get $split_body_size))
+                  (i32.add (local.get $free_header) (i32.const {gc_body_size_offset}))
+                  (local.get $free_body_size))
                 (i32.store
-                  (i32.add (local.get $split_header) (i32.const {gc_sweep_next_offset}))
-                  (local.get $free_next))
-                (i32.store
-                  (i32.add (local.get $split_header) (i32.const {gc_reserved_offset}))
+                  (i32.add (local.get $free_header) (i32.const {gc_sweep_next_offset}))
                   (i32.const 0))
-                (if (i32.eqz (local.get $free_prev))
-                  (then
-                    (global.set $gc_free_list (local.get $split_header)))
-                  (else
-                    (i32.store
-                      (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
-                      (local.get $split_header))))
-                (local.set $free_body_size (local.get $payload_size)))
-              (else
-                (if (i32.eqz (local.get $free_prev))
-                  (then
-                    (global.set $gc_free_list (local.get $free_next)))
-                  (else
-                    (i32.store
-                      (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
-                      (local.get $free_next))))))
-            (i32.store
-              (i32.add (local.get $free_header) (i32.const {gc_flags_offset}))
-              (i32.const {gc_kind_unknown}))
-            (i32.store
-              (i32.add (local.get $free_header) (i32.const {gc_body_size_offset}))
-              (local.get $free_body_size))
-            (i32.store
-              (i32.add (local.get $free_header) (i32.const {gc_sweep_next_offset}))
-              (i32.const 0))
-            (i32.store
-              (i32.add (local.get $free_header) (i32.const {gc_reserved_offset}))
-              (i32.const 0))
-            (global.set $alloc_bytes_since_last_gc
-              (i32.add
-                (global.get $alloc_bytes_since_last_gc)
-                (i32.add (i32.const {gc_header_size}) (local.get $free_body_size))))
-            (return (i32.add (local.get $free_header) (i32.const {gc_header_size})))))
-        (local.set $free_prev (local.get $free_header))
-        (local.set $free_header (local.get $free_next))
-        (br $free_scan)))
+                (i32.store
+                  (i32.add (local.get $free_header) (i32.const {gc_reserved_offset}))
+                  (i32.const 0))
+                (global.set $alloc_bytes_since_last_gc
+                  (i32.add
+                    (global.get $alloc_bytes_since_last_gc)
+                    (i32.add (i32.const {gc_header_size}) (local.get $free_body_size))))
+                (return (i32.add (local.get $free_header) (i32.const {gc_header_size})))))
+            (local.set $free_prev (local.get $free_header))
+            (local.set $free_header (local.get $free_next))
+            (br $free_scan)))))
 
     ;; OOM check: verify allocation fits within current memory
     (local.set $memory_pages (memory.size))
@@ -2877,6 +2884,7 @@ impl WatEmitter<'_> {
     (local.set $cursor (i32.const {heap_start}))
     (local.set $heap_end (global.get $heap))
     (global.set $gc_free_list (i32.const 0))
+    (global.set $gc_free_list_max_body_size (i32.const 0))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $cursor) (local.get $heap_end)))
@@ -2927,6 +2935,12 @@ impl WatEmitter<'_> {
             (i32.store
               (i32.add (local.get $cursor) (i32.const {gc_sweep_next_offset}))
               (global.get $gc_free_list))
+            (if
+              (i32.gt_u
+                (local.get $body_size)
+                (global.get $gc_free_list_max_body_size))
+              (then
+                (global.set $gc_free_list_max_body_size (local.get $body_size))))
             (global.set $gc_free_list (local.get $cursor))))
         (local.set $cursor (local.get $next))
         (br $scan))))
