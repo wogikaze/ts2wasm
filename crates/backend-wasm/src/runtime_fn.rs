@@ -43,6 +43,9 @@ pub(crate) enum RuntimeFn {
     BigIntUnaryMinus,
     BigIntAdd,
     BigIntSub,
+    BigIntMul,
+    BigIntDiv,
+    BigIntRem,
     StringEqual,
     Concat,
     IsString,
@@ -364,6 +367,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntUnaryMinus" => Some(RuntimeFn::BigIntUnaryMinus),
         "BigIntAdd" => Some(RuntimeFn::BigIntAdd),
         "BigIntSub" => Some(RuntimeFn::BigIntSub),
+        "BigIntMul" => Some(RuntimeFn::BigIntMul),
+        "BigIntDiv" => Some(RuntimeFn::BigIntDiv),
+        "BigIntRem" => Some(RuntimeFn::BigIntRem),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
@@ -609,6 +615,9 @@ const TYPEOF_RUNTIME_STRINGS: &[&str] = &[
 const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_DIV_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 // String method dependencies
 const STRING_CHAR_AT_DEPS: &[RuntimeFn] =
@@ -825,6 +834,30 @@ impl RuntimeFn {
             Self::BigIntSub => RuntimeSpec {
                 symbol: "$bigint_sub",
                 deps: BIGINT_SUB_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntMul => RuntimeSpec {
+                symbol: "$bigint_mul",
+                deps: BIGINT_MUL_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntDiv => RuntimeSpec {
+                symbol: "$bigint_div",
+                deps: BIGINT_DIV_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::BigIntRem => RuntimeSpec {
+                symbol: "$bigint_rem",
+                deps: BIGINT_REM_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: NO_RUNTIME_STRINGS,
@@ -1658,6 +1691,9 @@ impl RuntimeFn {
             Self::BigIntUnaryMinus => "bigint_unary_minus",
             Self::BigIntAdd => "bigint_add",
             Self::BigIntSub => "bigint_sub",
+            Self::BigIntMul => "bigint_mul",
+            Self::BigIntDiv => "bigint_div",
+            Self::BigIntRem => "bigint_rem",
             Self::StringEqual => "string_equal",
             Self::Concat => "concat",
             Self::IsString => "is_string",
@@ -1805,6 +1841,9 @@ impl RuntimeFn {
             Self::BigIntAdd,
             Self::BigIntUnaryMinus,
             Self::BigIntSub,
+            Self::BigIntMul,
+            Self::BigIntDiv,
+            Self::BigIntRem,
             Self::MemEqual,
             Self::ArrayGet,
             Self::Index,
@@ -1932,6 +1971,9 @@ impl RuntimeFn {
             Self::BigIntAdd,
             Self::BigIntUnaryMinus,
             Self::BigIntSub,
+            Self::BigIntMul,
+            Self::BigIntDiv,
+            Self::BigIntRem,
             Self::MemEqual,
             Self::ArrayGet,
             Self::Index,
