@@ -65,6 +65,18 @@ impl WatEmitter<'_> {
                       (i32.add (i32.const {string_header}) (local.get $i))))
                   (i32.const {number_shift}))
                 (i32.const {number_tag})))))
+        ;; Object numeric indexing is property access through the decimal index key.
+        (if (i32.eq (local.get $obj_tag) (i32.const {object_tag}))
+          (then
+            (local.set $key_len
+              (call $value_to_string_into
+                (local.get $idx)
+                (i32.const {scratch_offset})))
+            (return
+              (call $property_get
+                (local.get $obj)
+                (i32.const {scratch_offset})
+                (local.get $key_len)))))
         ;; Array indexing
         (if (i32.ne (local.get $obj_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
         (if (i32.ge_u (local.get $i) (i32.load (local.get $base)))
@@ -90,6 +102,7 @@ impl WatEmitter<'_> {
             tag_mask = ValueTag::TAG_MASK,
             string_tag = ValueTag::STRING,
             array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
             number_tag = ValueTag::NUMBER,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
@@ -116,18 +129,33 @@ impl WatEmitter<'_> {
         (return
           (i32.or
             (i32.shl
-              (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
+            (i32.load (i32.and (local.get $v) (i32.const {heap_mask})))
               (i32.const {number_shift}))
             (i32.const {number_tag})))))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (i32.store8 (i32.const {scratch_offset}) (i32.const 108))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 101))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 110))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 103))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 116))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 104))
+        (return
+          (call $property_get
+            (local.get $v)
+            (i32.const {scratch_offset})
+            (i32.const 6)))))
     (i32.const {undefined}))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             string_tag = ValueTag::STRING,
             array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
             number_tag = ValueTag::NUMBER,
             undefined = ValueTag::UNDEFINED,
+            scratch_offset = Layout::SCRATCH_OFFSET,
         ));
     }
 

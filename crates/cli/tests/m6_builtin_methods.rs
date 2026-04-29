@@ -261,6 +261,16 @@ fn build_smoke_array_push_multi_arg_method() {
 }
 
 #[test]
+fn build_smoke_array_push_prototype_array_like_method() {
+    let result = run_fixture("builtins-and-io/array-prototype-push-array-like.ts");
+    assert!(
+        result.is_ok(),
+        "Array.prototype.push array-like call should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_array_pop_method() {
     let result = run_fixture("builtins-and-io/array-pop.ts");
     assert!(result.is_ok(), "Array.pop should build: {:?}", result.err());

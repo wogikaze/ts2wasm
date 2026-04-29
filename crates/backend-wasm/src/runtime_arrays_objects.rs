@@ -9,7 +9,59 @@ impl WatEmitter<'_> {
     (local $obj i32)
     (local $tag i32)
     (local $len i32)
+    (local $len_value i32)
+    (local $key_len i32)
     (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (i32.store8 (i32.const {scratch_offset}) (i32.const 108))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 101))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 110))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 103))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 116))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 104))
+        (local.set $len_value
+          (call $property_get
+            (local.get $arr)
+            (i32.const {scratch_offset})
+            (i32.const 6)))
+        (if (i32.eq
+              (i32.and (local.get $len_value) (i32.const {tag_mask}))
+              (i32.const {number_tag}))
+          (then
+            (local.set $len (i32.shr_s (local.get $len_value) (i32.const {number_shift}))))
+          (else
+            (local.set $len (i32.const 0))))
+        (local.set $key_len
+          (call $value_to_string_into
+            (i32.or
+              (i32.shl (local.get $len) (i32.const {number_shift}))
+              (i32.const {number_tag}))
+            (i32.const {scratch_offset})))
+        (drop
+          (call $property_set
+            (local.get $arr)
+            (i32.const {scratch_offset})
+            (local.get $key_len)
+            (local.get $val)))
+        (local.set $len (i32.add (local.get $len) (i32.const {one})))
+        (i32.store8 (i32.const {scratch_offset}) (i32.const 108))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 101))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 110))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 103))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 116))
+        (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 104))
+        (local.set $len_value
+          (i32.or
+            (i32.shl (local.get $len) (i32.const {number_shift}))
+            (i32.const {number_tag})))
+        (drop
+          (call $property_set
+            (local.get $arr)
+            (i32.const {scratch_offset})
+            (i32.const 6)
+            (local.get $len_value)))
+        (return (local.get $len_value))))
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $obj)))
@@ -21,6 +73,7 @@ impl WatEmitter<'_> {
 "#,
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
+            object_tag = ValueTag::OBJECT,
             heap_mask = ValueTag::HEAP_MASK,
             number_shift = ValueTag::NUMBER_SHIFT,
             number_tag = ValueTag::NUMBER,
@@ -28,6 +81,7 @@ impl WatEmitter<'_> {
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
+            scratch_offset = Layout::SCRATCH_OFFSET,
         ));
     }
 

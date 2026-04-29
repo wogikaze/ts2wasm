@@ -814,6 +814,9 @@ impl<'a> Resolver<'a> {
                 if is_private_field_storage_key(key) {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
+                if is_array_prototype_push_property(object, key) {
+                    return Ok(LoweredExpr::Number(0));
+                }
                 if key.starts_with('#') {
                     if self.current_private_method_id(key).is_some() {
                         return Err(Diagnostic {
@@ -950,6 +953,27 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
+                if method == "call" && is_array_prototype_push_expr(object) {
+                    let Some((receiver, values)) = args.split_first() else {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: "Array.prototype.push.call expects a receiver argument"
+                                .to_owned(),
+                            span: Some(*span),
+                        });
+                    };
+                    let mut lowered_args = vec![self.lower_expr(receiver)?];
+                    lowered_args.extend(
+                        values
+                            .iter()
+                            .map(|e| self.lower_expr(e))
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "ArrayPushMany".to_owned(),
+                        args: lowered_args,
+                    });
+                }
                 if method == "call" && is_set_prototype_property_expr(object, "originalAdd") {
                     return self.lower_native_set_add_call(args, *span);
                 }
@@ -2766,6 +2790,28 @@ fn is_set_prototype_property_expr(expr: &ResolvedExpr, expected_key: &str) -> bo
         return false;
     };
     is_set_prototype_property(object, key, expected_key)
+}
+
+fn is_array_prototype_push_property(object: &ResolvedExpr, key: &str) -> bool {
+    key == "push" && matches_array_prototype_object(object)
+}
+
+fn is_array_prototype_push_expr(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    is_array_prototype_push_property(object, key)
+}
+
+fn matches_array_prototype_object(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    key == "prototype"
+        && matches!(
+            object.as_ref(),
+            ResolvedExpr::Ident(name) if name == "Array"
+        )
 }
 
 fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {

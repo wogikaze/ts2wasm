@@ -43,6 +43,7 @@ mise run update-coverage-matrix
 - 最小 subset の TS/JS を WASI `.wasm` に変換し、`iwasm` 実行が可能。
 - semantic-core の curated fixture は Node differential で一致。
 - data-model の curated fixture（array/object basic）は Node differential で一致。
+- `Array.prototype.push` supports the current direct array receiver boundary plus array-like object receivers through `obj.push = Array.prototype.push; obj.push(value)` and `Array.prototype.push.call(obj, ...)`, with Node/iwasm differential coverage.
 - Module cache test now passes (require_cache_reuses_same_object_at_runtime_semantic_diff).
 - class / node-api fixture と broader module fixtures は build 成功の確認は通過しているが、semantic parity は `m2_node_diff.rs` 側で未確定として明示している。Static named ES module import/export の narrow local fixture は Node/iwasm differential で一致。
 
