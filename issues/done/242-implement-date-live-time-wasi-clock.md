@@ -9,6 +9,8 @@ depends_on: [239]
 blocks: ["050"]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -29,12 +31,12 @@ Problem: Live Date entry points still emit unsupported diagnostics even after th
 
 In scope:
 
-- [ ] Add manifest schema/runtime support for `wasi.clock.realtime`.
-- [ ] Lower `Date.now()` to a WASI realtime clock read.
-- [ ] Lower no-argument `new Date()` to the same live epoch-millisecond source used by Date values.
-- [ ] Emit `wasi_snapshot_preview1.clock_time_get` only for live Date entry points.
-- [ ] Add manifest/import and host-deny regression coverage.
-- [ ] Preserve deterministic `new Date(<epoch-ms integer>)` behavior without adding live-time imports.
+- [x] Add manifest schema/runtime support for `wasi.clock.realtime`.
+- [x] Lower `Date.now()` to a WASI realtime clock read.
+- [x] Lower no-argument `new Date()` to the same live epoch-millisecond source used by Date values.
+- [x] Emit `wasi_snapshot_preview1.clock_time_get` only for live Date entry points.
+- [x] Add manifest/import and host-deny regression coverage.
+- [x] Preserve deterministic `new Date(<epoch-ms integer>)` behavior without adding live-time imports.
 
 Out of scope:
 
@@ -61,12 +63,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Date.now()` succeeds and returns a number within the host before/after execution clock window.
-- [ ] no-argument `new Date().getTime()` succeeds and returns a number within the host before/after execution clock window.
-- [ ] `--emit-manifest` records `wasi.clock.realtime: true` and `capability_reasons["wasi.clock.realtime"]` with `Date.now` or `new Date()`.
-- [ ] wasm imports include `wasi_snapshot_preview1.clock_time_get` exactly when live Date entry points require it.
-- [ ] deterministic Date fixtures still emit no `wasi.clock.realtime` capability and no `clock_time_get` import.
-- [ ] issue 050 remains open until broader Date epic scope is complete.
+- [x] `Date.now()` succeeds and returns a number within the host before/after execution clock window.
+- [x] no-argument `new Date().getTime()` succeeds and returns a number within the host before/after execution clock window.
+- [x] `--emit-manifest` records `wasi.clock.realtime: true` and `capability_reasons["wasi.clock.realtime"]` with `Date.now` or `new Date()`.
+- [x] wasm imports include `wasi_snapshot_preview1.clock_time_get` exactly when live Date entry points require it.
+- [x] deterministic Date fixtures still emit no `wasi.clock.realtime` capability and no `clock_time_get` import.
+- [x] issue 050 remains open until broader Date epic scope is complete.
 
 ## Validation
 
@@ -93,15 +95,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated if implementation changes the issue-239 policy
+- [x] not affected; implementation consumed the issue-239 policy without changing it
 
 Current state:
 
-- [ ] updated: `current-state.md` when live time becomes implemented
+- [x] updated: `current-state.md` when live time becomes implemented
 
 Follow-up issues:
 
-- [ ] none unless validation exposes a smaller blocked sub-slice
+- [x] none
 
 ## Notes
 
@@ -113,14 +115,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `3f9fc1b` issue-242: implement date live time via wasi clock
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli date
+result: pass; 12 tests run, 12 passed, 249 skipped
+date: 2026-04-29
+
+command: mise run check manifest
+result: pass; fixtures/basics-hello/hello.ts manifest imports match wasm imports
+date: 2026-04-29
+
+command: mise run check manifest -- --fixture fixtures/builtins-and-io/date-now-live-time.ts
+result: pass; Date.now live-time manifest imports match wasm imports
+date: 2026-04-29
+
+command: mise run check manifest -- --fixture fixtures/builtins-and-io/date-noarg-live-time.ts
+result: pass; no-argument new Date live-time manifest imports match wasm imports
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass; 421 tests run, 421 passed, 4 skipped
+date: 2026-04-29
 ```
 
 Remaining risks:

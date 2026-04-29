@@ -285,13 +285,20 @@ fn lowering_routes_date_get_time_to_runtime_call() {
 }
 
 #[test]
-fn lowering_rejects_date_now_with_issue_050_diagnostic() {
+fn lowering_routes_date_now_to_live_time_runtime_call() {
     let program = parse_and_resolve("let ms = Date.now();");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-050"));
-    assert!(err.message.contains("auditable time capability policy"));
+    match &lowered.top_level_statements[0] {
+        ts2wasm_ir::lowered::LoweredStmt::Let(
+            _,
+            ts2wasm_ir::lowered::LoweredExpr::RuntimeCall { runtime_fn, args },
+        ) => {
+            assert_eq!(runtime_fn, "DateNow");
+            assert!(args.is_empty());
+        }
+        other => panic!("unexpected lowered Date.now statement: {other:?}"),
+    }
 }
 
 #[test]
