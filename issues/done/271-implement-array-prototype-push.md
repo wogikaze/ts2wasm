@@ -113,7 +113,7 @@ mise run check issues
 
 Commits:
 
-- `02fdd8b6 issue-271: implement array prototype push boundary`
+- `2063987b issue-271: implement array prototype push boundary`
 
 Validation result:
 
