@@ -130,9 +130,11 @@ Progress on 2026-04-29:
 - Implemented the matching runtime helper path by comparing booleans as the
   current small integer boundary (`false -> 0`, `true -> 1`) without changing
   BigInt/Number or BigInt/String relational behavior.
-- Remaining issue-282 work: `>=` coverage/helper parity, mixed BigInt/String
-  relational comparison, object `ToPrimitive`, and unsupported string grammar
-  outside the current small-int runtime boundary.
+- Added `>=` coverage/helper parity for the same BigInt/Boolean relational
+  slice.
+- Remaining issue-282 work: mixed BigInt/String relational comparison, object
+  `ToPrimitive`, and unsupported string grammar outside the current small-int
+  runtime boundary.
 
 ## Completion evidence
 
