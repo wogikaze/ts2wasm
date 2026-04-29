@@ -1590,9 +1590,19 @@ impl<'a> Resolver<'a> {
             .collect::<Result<Vec<_>, _>>()?;
         let mut lowered_params = params
             .iter()
-            .map(|name| (name.clone(), None, false))
+            .map(|name| ResolvedParam {
+                name: name.clone(),
+                default: None,
+                is_rest: false,
+                span: None,
+            })
             .collect::<Vec<_>>();
-        lowered_params.extend(capture_names.iter().map(|name| (name.clone(), None, false)));
+        lowered_params.extend(capture_names.iter().map(|name| ResolvedParam {
+            name: name.clone(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }));
 
         let func_id = FuncId(self.next_func_id);
         self.next_func_id += 1;
@@ -1628,7 +1638,10 @@ impl<'a> Resolver<'a> {
         params: &[ResolvedParam],
         body: &[ResolvedStmt],
     ) -> Result<LoweredExpr, Diagnostic> {
-        if params.iter().any(|(_, default, is_rest)| default.is_some() || *is_rest) {
+        if params
+            .iter()
+            .any(|param| param.default.is_some() || param.is_rest)
+        {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
@@ -1665,7 +1678,12 @@ impl<'a> Resolver<'a> {
         lowered_params.extend(
             capture_names
                 .iter()
-                .map(|capture| (capture.clone(), None, false)),
+                .map(|capture| ResolvedParam {
+                    name: capture.clone(),
+                    default: None,
+                    is_rest: false,
+                    span: None,
+                }),
         );
 
         let func_id = FuncId(self.next_func_id);
@@ -1712,7 +1730,7 @@ impl<'a> Resolver<'a> {
     ) -> Vec<String> {
         let mut excluded = params
             .iter()
-            .map(|(param, _, _)| param.clone())
+            .map(|param| param.name.clone())
             .collect::<HashSet<_>>();
         excluded.insert(name.to_owned());
         collect_declared_names_in_stmts(body, &mut excluded);

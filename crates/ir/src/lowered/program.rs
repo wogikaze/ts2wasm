@@ -44,8 +44,12 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     (Vec::new(), Vec::new())
                 };
 
-                let mut ctor_params_with_this: Vec<ResolvedParam> =
-                    vec![("this".to_owned(), None, false)];
+                let mut ctor_params_with_this: Vec<ResolvedParam> = vec![ResolvedParam {
+                    name: "this".to_owned(),
+                    default: None,
+                    is_rest: false,
+                    span: None,
+                }];
                 ctor_params_with_this.extend(ctor_params.clone());
 
                 let lowered = lower_function(
@@ -69,11 +73,16 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
                     let method_id = function_ids[&method_key];
-                    let method_params_with_this: Vec<(String, Option<ResolvedExpr>, bool)> =
+                    let method_params_with_this: Vec<ResolvedParam> =
                         if method.name.starts_with("static::") {
                             method.params.clone()
                         } else {
-                            let mut params = vec![("this".to_owned(), None, false)];
+                            let mut params = vec![ResolvedParam {
+                                name: "this".to_owned(),
+                                default: None,
+                                is_rest: false,
+                                span: None,
+                            }];
                             params.extend(method.params.clone());
                             params
                         };
@@ -265,8 +274,8 @@ fn collect_function_signatures(
                         explicit_params: params.len(),
                         needs_receiver: block_contains_this(body),
                         needs_arguments: block_contains_arguments(body)
-                            && !params.iter().any(|(name, _, _)| name == "arguments"),
-                        has_rest: params.iter().any(|(_, _, is_rest)| *is_rest),
+                            && !params.iter().any(|param| param.name == "arguments"),
+                        has_rest: params.iter().any(|param| param.is_rest),
                         metadata_length: fixed_arity_metadata_length(params),
                         returns_heap_closure: block_returns_declared_function(body),
                     },
@@ -286,7 +295,7 @@ fn collect_function_signatures(
                     + 1;
                 let ctor_has_rest = constructor
                     .as_ref()
-                    .is_some_and(|(params, _)| params.iter().any(|(_, _, is_rest)| *is_rest));
+                    .is_some_and(|(params, _)| params.iter().any(|param| param.is_rest));
                 let ctor_returns_heap_closure = constructor
                     .as_ref()
                     .is_some_and(|(_, body)| block_returns_declared_function(body));
@@ -307,7 +316,7 @@ fn collect_function_signatures(
                         function_ids[&method_key],
                         FunctionSignature {
                             explicit_params: method.params.len() + receiver_param_count,
-                            has_rest: method.params.iter().any(|(_, _, is_rest)| *is_rest),
+                            has_rest: method.params.iter().any(|param| param.is_rest),
                             returns_heap_closure: block_returns_declared_function(&method.body),
                             ..FunctionSignature::default()
                         },
@@ -328,7 +337,7 @@ fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
 fn fixed_arity_metadata_length(params: &[ResolvedParam]) -> Option<usize> {
     if params
         .iter()
-        .any(|(_, default, is_rest)| default.is_some() || *is_rest)
+        .any(|param| param.default.is_some() || param.is_rest)
     {
         None
     } else {
@@ -752,11 +761,21 @@ fn lower_function(
     }
     let mut lowered_params = Vec::new();
     if signature.needs_receiver {
-        lowered_params.push(("this".to_owned(), None, false));
+        lowered_params.push(ResolvedParam {
+            name: "this".to_owned(),
+            default: None,
+            is_rest: false,
+            span: None,
+        });
     }
     lowered_params.extend(params.iter().cloned());
     if signature.needs_arguments {
-        lowered_params.push(("arguments".to_owned(), None, false));
+        lowered_params.push(ResolvedParam {
+            name: "arguments".to_owned(),
+            default: None,
+            is_rest: false,
+            span: None,
+        });
     }
 
     let (mut resolver, param_ids) = Resolver::with_params(
@@ -764,7 +783,7 @@ fn lower_function(
         function_signatures,
         lowered_params
             .iter()
-            .map(|(name, _, _)| name.clone())
+            .map(|param| param.name.clone())
             .collect::<Vec<_>>()
             .as_slice(),
         class_parents,
@@ -776,31 +795,31 @@ fn lower_function(
 
     let rest_param_index = params
         .iter()
-        .position(|(_, _, is_rest)| *is_rest)
+        .position(|param| param.is_rest)
         .map(|index| index + usize::from(signature.needs_receiver));
 
     // Insert default parameter assignments at the start of the body.
     let mut body_with_defaults = Vec::new();
-    for (param_name, default_expr, is_rest) in params {
-        if let Some(pattern) = parse_binding_pattern(param_name, None)? {
-            if *is_rest {
+    for param in params {
+        if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
+            if param.is_rest {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: "issue-251: rest parameter binding patterns are not supported"
                         .to_owned(),
-                    span: None,
+                    span: param.span,
                 });
             }
-            if default_expr.is_some() {
+            if param.default.is_some() {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message:
                         "issue-251: defaulted parameter binding patterns are not supported in this runtime slice"
                             .to_owned(),
-                    span: None,
+                    span: param.span,
                 });
             }
-            let param_local = resolver.resolve_local(param_name)?;
+            let param_local = resolver.resolve_local(&param.name)?;
             body_with_defaults.extend(
                 resolver.lower_binding_pattern_declarations(
                     &pattern,
@@ -809,11 +828,11 @@ fn lower_function(
             );
             continue;
         }
-        if *is_rest {
+        if param.is_rest {
             // Rest parameters are populated by call lowering/emission.
             continue;
-        } else if let Some(default) = default_expr {
-            let param_local = resolver.resolve_local(param_name)?;
+        } else if let Some(default) = &param.default {
+            let param_local = resolver.resolve_local(&param.name)?;
             let lowered_default = resolver.lower_expr(default)?;
             // Generate: if (param === undefined) { param = default; }
             body_with_defaults.push(LoweredStmt::If {
@@ -831,7 +850,7 @@ fn lower_function(
 
     let min_required = params
         .iter()
-        .filter(|(_, default, is_rest)| default.is_none() && !*is_rest)
+        .filter(|param| param.default.is_none() && !param.is_rest)
         .count()
         + usize::from(signature.needs_receiver)
         + usize::from(signature.needs_arguments);
