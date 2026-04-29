@@ -171,3 +171,10 @@ Elision follow-up:
 - Added `fixtures/core-semantics/destructuring-binding-elision-runtime.ts` and Node/iwasm differential coverage for declaration, ordinary function parameter, and arrow parameter elisions.
 - Rest, nested patterns, non-literal defaults, and broad iterator semantics remain issue-251 unsupported diagnostics.
 - Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (12 passed); `mise run check issues`; `cargo nextest run` (501 passed, 4 skipped).
+
+Array rest follow-up:
+
+- Implemented simple array rest binding for dense-array declaration and parameter patterns by lowering to the existing `ArraySlice` runtime helper.
+- Added `fixtures/core-semantics/destructuring-binding-rest-runtime.ts` and Node/iwasm differential coverage for declarations, ordinary function parameters, and arrow parameters.
+- Added `fixtures/core-semantics/destructuring-binding-object-rest-unsupported.ts`; object rest remains a source-spanned issue-251 unsupported diagnostic.
+- Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (13 passed); `mise run check issues`; `cargo nextest run` (503 passed, 4 skipped).
