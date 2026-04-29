@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: [294]
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -176,6 +176,17 @@ Progress on 2026-04-29:
   changes needed to preserve numeric conversion semantics.
 - Remaining issue-295 work: chained `trim().split(...).map(...)` receiver,
   plus unary plus callbacks.
+
+Progress on 2026-04-30:
+
+- Added a focused chained local string receiver fixture for
+  `inputText.trim().split("\n").map(row => row.split(" "))`, covered by
+  Node/iwasm differential test
+  `array_map_arrow_chained_trim_split_fixture_matches_node_output_under_iwasm`.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` now advances past the
+  chained input parsing map and reaches the next blocker:
+  `error: [UnsupportedSyntax] binary operator Power not yet supported`.
+- Remaining issue-295 work: unary plus callbacks.
 
 ## Completion evidence
 
