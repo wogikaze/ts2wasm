@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 57 | 10 | 47 |
+| runtime | 61 | 13 | 48 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 282 | 143 | 139 |
+| total | 286 | 146 | 140 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -43,12 +43,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 062g | Define and implement heap closure object ABI and rooting | feature | runtime/abi | design-ready | P1 |  | Returned closures cannot be represented by the current devirtualized |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
-| 250 | Design BigInt runtime value support | feature | runtime/semantics | design-ready | P2 |  | BigInt literals now parse as explicit AST nodes, but runtime representation, operations, equality, and builtin behavi... |
 | 251 | Implement destructuring binding runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Parsed destructuring binding patterns are accepted for AST/dump coverage, but name resolution, lowering, and runtime ... |
 | 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Issue 247 intentionally covers binding patterns only; assignment targets such as `({ x } = obj)` and `[a] = arr` stil... |
 | 253 | Implement optional chaining runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Issue 246 classifies `obj?.x`, `obj?.[key]`, and `fn?.()` in the frontend parser, but name resolution currently repor... |
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 249 parses `static { ... }` as `ClassStaticBlock`, but builtin resolution currently rejects static blocks with ... |
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters, but builtin resolution rejects ... |
+| 256 | Implement BigInt literal runtime values | feature | runtime/semantics | implementation-ready | P2 |  | BigInt literals parse as explicit AST nodes, but build/runtime phases still report unsupported diagnostics instead of... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -190,6 +190,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
+| 257 | Implement BigInt arithmetic operators | feature | runtime/semantics | 256 | Implement BigInt arithmetic operators |
+| 258 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | 256 | Implement BigInt equality comparison and coercion boundaries |
+| 259 | Implement BigInt builtins and string conversion | feature | runtime/builtins | 256 | Implement BigInt builtins and string conversion |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -337,6 +340,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 247 | Implement destructuring binding pattern parser support | feature | frontend/syntax | see `issues/done/247-implement-destructuring-binding-pattern-parser.md` |
 | 248 | Implement private class element parser support | feature | frontend/syntax | see `issues/done/248-implement-private-class-element-parser.md` |
 | 249 | Implement class static block parser support | feature | frontend/syntax | see `issues/done/249-implement-class-static-block-parser.md` |
+| 250 | Design BigInt runtime value support | feature | runtime/semantics | see `issues/done/250-design-bigint-runtime-value-support.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

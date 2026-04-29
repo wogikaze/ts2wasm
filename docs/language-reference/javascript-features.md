@@ -137,7 +137,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `array` | ES1 | heap object | 実装済み (dense) | - | - |
 | `function` | ES1 | closure object | 実装済み (basic) | - | - |
 | `symbol` | ES6 | interned value | 未実装 | P2 | - |
-| `bigint` | ES2020 | heap object | 構文認識済み; runtime 値未実装 | P2 | 250 |
+| `bigint` | ES2020 | heap object | 構文認識済み; runtime 値未実装（ABI 設計済み、実装は literal 256 / arithmetic 257 / comparison 258 / builtin 259） | P2 | 256-259 |
 
 ## 式と演算子
 
