@@ -7,8 +7,8 @@ class: implementation-ready
 priority: P2
 depends_on: []
 blocks: ["289", "292"]
-created: 2026-04-30
-updated: 2026-04-30
+created: 2026-04-29
+updated: 2026-04-29
 ---
 
 ## Summary
