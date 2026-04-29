@@ -7,8 +7,10 @@ class: implementation-ready
 priority: P2
 depends_on: ["247"]
 blocks: []
+status: done
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -36,10 +38,10 @@ Destructuring assignment expressions parse into explicit assignment-pattern AST 
 
 In scope:
 
-- [ ] Parse object destructuring assignment expressions.
-- [ ] Parse array destructuring assignment expressions.
-- [ ] Cover defaults, nesting, elisions, and rest placement at parser level.
-- [ ] Reject invalid assignment targets with issue-linked diagnostics.
+- [x] Parse object destructuring assignment expressions.
+- [x] Parse array destructuring assignment expressions.
+- [x] Cover defaults, nesting, elisions, and rest placement at parser level.
+- [x] Reject invalid assignment targets with issue-linked diagnostics.
 
 Out of scope:
 
@@ -62,10 +64,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `({ x } = obj);` parses without being confused with an object literal statement.
-- [ ] `[a, b] = arr;` parses as a destructuring assignment target.
-- [ ] Invalid rest placement reports an explicit issue-linked diagnostic.
-- [ ] Parser/CLI dump tests cover supported assignment-pattern forms.
+- [x] `({ x } = obj);` parses without being confused with an object literal statement.
+- [x] `[a, b] = arr;` parses as a destructuring assignment target.
+- [x] Invalid rest placement reports an explicit issue-linked diagnostic.
+- [x] Parser/CLI dump tests cover supported assignment-pattern forms.
 
 ## Validation
 
@@ -86,21 +88,21 @@ mise run reference-coverage -- test262 --path-filter reference/test262/test/lang
 
 Not run:
 
-- none
+- `mise run reference-coverage -- test262 --path-filter reference/test262/test/language/destructuring/assignment/ --detail` could not run because `reference/test262` is not checked out in this worktree.
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] not affected unless runtime support changes
+- [x] not affected; runtime support was not changed
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -112,16 +114,40 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- branch HEAD for issue 252 close
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass (80 tests)
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: pass (36 tests)
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass
+date: 2026-04-29
+
+command: mise run check issues
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass (460 tests run, 460 passed, 4 skipped)
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/language/destructuring/assignment/ --detail
+result: not run; required source checkout `reference/test262` is missing
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Runtime destructuring assignment semantics are intentionally out of scope and remain unsupported.

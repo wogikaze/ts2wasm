@@ -116,7 +116,7 @@ Current state:
 Follow-up issues:
 
 - [x] created runtime destructuring binding issue: `issues/open/251-implement-destructuring-binding-runtime-semantics.md`
-- [x] created assignment-pattern issue for `({ x } = obj)` separately: `issues/open/252-implement-destructuring-assignment-pattern-parser.md`
+- [x] created assignment-pattern issue for `({ x } = obj)` separately: `issues/done/252-implement-destructuring-assignment-pattern-parser.md`
 
 ## Notes
 
