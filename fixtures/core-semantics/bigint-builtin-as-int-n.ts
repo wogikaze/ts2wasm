@@ -8,3 +8,7 @@ console.log(BigInt.asUintN(0, 123n));
 console.log(String(BigInt.asUintN(8, -1n)));
 console.log(BigInt.asIntN(64, 9223372036854775808n));
 console.log(BigInt.asUintN(64, -1n));
+const dynamicBits = 8;
+const dynamicValue = 255n;
+console.log(BigInt.asIntN(dynamicBits, dynamicValue));
+console.log(BigInt.asUintN(dynamicBits, dynamicValue));
