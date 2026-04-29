@@ -92,7 +92,7 @@ BigInt は **heap object representation** を採用する。現行 `RawValue` �
 - `RawValue` の tag 空間を拡張すると既存 array/string/object wire encoding と backend helper 全体に波及する
 - GC heap object に統一すると literal / arithmetic / boxed builtin boundary / future Wasm GC backend の差し替えを同じ論理 ABI で扱える
 
-BigInt object payload は canonical little-endian limb sequence とする。Issue 259 implements the literal runtime slice for values that fit the current first-limb backend constructor path and stores a cached decimal representation after the canonical prefix for observable literal printing and `String(<literal>)`; broader arbitrary-precision operations remain owned by issues 260-262.
+BigInt object payload は canonical little-endian limb sequence とする。Issue 259 implements the literal runtime slice for values that fit the current first-limb backend constructor path and stores a cached decimal representation after the canonical prefix for observable literal printing and `String(<literal>)`. Issue 260 has a dynamic unary-minus and `+` / `-` progress slice that reconstructs through signed i64 and the same first-limb/cached-decimal constructor only when a pre-lowering guard proves the operands/results fit that helper slice; nested control-flow assignments conservatively invalidate tracked safe state. Full canonical multi-limb runtime arithmetic remains owned by issue 260 before broad compatibility can be claimed.
 
 ```text
 BigInt payload:
@@ -131,20 +131,21 @@ BigInt を扱う runtime helper は論理 `jsval` を入出力に使う。現行
 | `bigint_strict_equal` | `(jsval, jsval) -> bool` | issue 261 | BigInt 同士は mathematical value 比較。Number とは常に false |
 | `bigint_abstract_equal` | `(jsval, jsval) -> bool` | issue 261 | Number/String/Boolean との ECMA-262 coercion 境界を実装する |
 | `bigint_compare` | `(op, jsval, jsval) -> jsval` | issue 261 | `< <= > >=`。成功時 bool `jsval`、例外時 pending exception |
-| `bigint_add` / `sub` / `mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260 | BigInt 同士のみ。Number 混在は TypeError |
-| `bigint_unary_minus` | `(jsval) -> jsval` | issue 260 | `-0n` は `0n` |
+| `bigint_add` / `sub` | `(jsval, jsval) -> jsval` | issue 260 | Progress slice implemented for known BigInt operands proven signed-i64-safe through first-limb reconstruction. Number 混在は TypeError boundary; statically visible and dynamically tracked mixes are issue-linked diagnostics today |
+| `bigint_mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260 | Not yet implemented for dynamic heap operands |
+| `bigint_unary_minus` | `(jsval) -> jsval` | issue 260 | Progress slice implemented through signed-i64-backed first-limb reconstruction. `-0n` は `0n` |
 
 IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
 - Parser/frontend: BigInt syntax classification only。invalid literal syntax は issue 244 の diagnostics を維持する
 - Resolver/BuiltinResolver: BigInt literal node を runtime-capable expression として残し、未実装 operation は該当 implementation issue ID を含む source diagnostic にする
-- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。BigInt operation は mixed Number/BigInt TypeError path を runtime helper に委譲する
+- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus and `+` / `-` currently lower to issue-260 runtime helpers. BigInt operation は mixed Number/BigInt TypeError path を runtime helper に委譲する予定だが、現在は statically visible mixes を issue-linked diagnostic にする
 - Backend/runtime link plan: BigInt helper は `RuntimeFn` catalog で deps/imports/capabilities/runtime strings を持つ。BigInt だけでは host import を要求しない
 
 Unsupported boundary:
 
 - literal runtime values: implemented by issue 259 for decimal/binary/octal/hex literal construction, `console.log`, `typeof`, literal `String(...)`, and truthiness
-- BigInt arithmetic and unary operators until issue 260: `unsupported-bigint-arithmetic` / issue 260
+- BigInt arithmetic beyond current issue-260 unary minus and `+` / `-` signed-i64-backed progress slice: `unsupported-bigint-arithmetic` / issue 260
 - BigInt equality, relational comparison, and coercion until issue 261: `unsupported-bigint-comparison` / issue 261
 - BigInt builtin functions and string conversion until issue 262: `unsupported-bigint-builtin` / issue 262
 

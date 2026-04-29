@@ -17,6 +17,7 @@ struct Resolver<'a> {
     local_classes: HashMap<LocalId, String>,
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
+    bigint_locals: HashSet<LocalId>,
     current_class: Option<String>,
     in_constructor: bool,
 }
@@ -65,6 +66,7 @@ impl<'a> Resolver<'a> {
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
+            bigint_locals: HashSet::new(),
             current_class: None,
             in_constructor: false,
         }
@@ -100,6 +102,7 @@ impl<'a> Resolver<'a> {
             local_classes: HashMap::new(),
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
+            bigint_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
         };
@@ -174,6 +177,7 @@ impl<'a> Resolver<'a> {
                     self.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
+                self.update_bigint_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -207,6 +211,7 @@ impl<'a> Resolver<'a> {
                     self.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
+                self.update_bigint_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -411,6 +416,12 @@ impl<'a> Resolver<'a> {
                 span: None,
             }),
             ResolvedExpr::Unary { op, expr } => {
+                if *op == UnaryOp::Negate && self.resolved_expr_is_bigint(expr) {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntUnaryMinus".to_owned(),
+                        args: vec![self.lower_expr(expr)?],
+                    });
+                }
                 if *op == UnaryOp::Delete {
                     // Lower delete to PropertyDelete or PropertyDeleteDynamic
                     match expr.as_ref() {
@@ -474,6 +485,19 @@ impl<'a> Resolver<'a> {
                             key: Box::new(self.lower_expr(left)?),
                         }),
                     }
+                } else if matches!(op, BinaryOp::Add | BinaryOp::Subtract)
+                    && self.resolved_expr_is_bigint(left)
+                    && self.resolved_expr_is_bigint(right)
+                {
+                    let runtime_fn = match op {
+                        BinaryOp::Add => "BigIntAdd",
+                        BinaryOp::Subtract => "BigIntSub",
+                        _ => unreachable!("checked above"),
+                    };
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: runtime_fn.to_owned(),
+                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    })
                 } else {
                     Ok(LoweredExpr::Binary {
                         left: Box::new(self.lower_expr(left)?),
@@ -1617,6 +1641,14 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    fn update_bigint_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if self.resolved_expr_is_bigint(expr) {
+            self.bigint_locals.insert(local_id);
+        } else {
+            self.bigint_locals.remove(&local_id);
+        }
+    }
+
     fn update_heap_closure_local(
         &mut self,
         local_id: LocalId,
@@ -1652,6 +1684,25 @@ impl<'a> Resolver<'a> {
                 .resolve_local(name)
                 .ok()
                 .is_some_and(|local_id| self.heap_closure_locals.contains(&local_id)),
+            _ => false,
+        }
+    }
+
+    fn resolved_expr_is_bigint(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::BigIntLiteral { .. } => true,
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local_id| self.bigint_locals.contains(&local_id)),
+            ResolvedExpr::Unary { op, expr } => {
+                *op == UnaryOp::Negate && self.resolved_expr_is_bigint(expr)
+            }
+            ResolvedExpr::Binary { left, op, right } => {
+                matches!(op, BinaryOp::Add | BinaryOp::Subtract)
+                    && self.resolved_expr_is_bigint(left)
+                    && self.resolved_expr_is_bigint(right)
+            }
             _ => false,
         }
     }
