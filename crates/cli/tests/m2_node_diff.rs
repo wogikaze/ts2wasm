@@ -870,15 +870,16 @@ fn arrow_function_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/arrow-block-body.ts",
         "fixtures/core-semantics/arrow-captured-local.ts",
         "fixtures/core-semantics/arrow-lexical-this.ts",
+        "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
 }
 
 #[test]
-fn arrow_assigned_recursive_fixture_reports_function_valued_call_gap() {
+fn arrow_assigned_recursive_reassignment_reports_function_valued_call_gap() {
     assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts",
+        "fixtures/core-semantics/arrow-assigned-recursive-reassigned-unsupported.ts",
         "issue-211: function-valued local calls such as extracted method `fact(...)` are not supported",
     );
 }
