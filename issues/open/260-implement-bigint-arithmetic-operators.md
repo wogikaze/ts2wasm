@@ -25,13 +25,15 @@ printf 'console.log(1n + 2n); console.log(5n / 2n); console.log(-0n);\n' > "$tmp
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-260-bigint-arithmetic.wasm
 ```
 
-Current result: dynamic BigInt unary minus and binary `+`, `-`, `*`, `/`, `%` over the current signed-i64-backed helper slice match Node/iwasm output only when the builtin resolver proves the operands/results fit that slice. Out-of-slice dynamic BigInt values, such as `18446744073709551616n` stored in a local and then added, now emit spanned issue-260 diagnostics instead of silently routing through first-limb reconstruction. The guard also invalidates tracked BigInt locals assigned inside branches, loops, switch cases, and try/catch/finally blocks so a later use cannot rely on stale pre-branch safe state. Full multi-limb dynamic arithmetic, runtime RangeError-compatible division/remainder by zero, and complete runtime TypeError behavior for mixed Number/BigInt operands remain issue-260 work.
+Current result: dynamic BigInt unary minus and binary `+`, `-`, `*`, `/`, `%` over the current signed-i64-backed helper slice match Node/iwasm output only when the builtin resolver proves the operands/results fit that slice. Out-of-slice dynamic BigInt values, such as `18446744073709551616n` stored in a local and then added, now emit spanned issue-260 diagnostics instead of silently routing through first-limb reconstruction. The guard also invalidates tracked BigInt locals assigned inside branches, loops, switch cases, and try/catch/finally blocks so a later use cannot rely on stale pre-branch safe state. Dynamic division/remainder by a known zero BigInt local now lowers to the runtime helper slice and traps at runtime instead of being rejected before lowering; true JS `RangeError` object throwing still remains issue-260 work. Full multi-limb dynamic arithmetic and complete runtime TypeError behavior for mixed Number/BigInt operands remain issue-260 work.
 
 Progress result (2026-04-29): BigInt arithmetic where both operands are literal-foldable is resolved at compile time with arbitrary-size decimal math and Node/iwasm coverage. This did not close the runtime helper requirement.
 
 Progress result (2026-04-29, dynamic runtime slice): BigInt locals now lower unary minus and binary `+` / `-` to BigInt runtime helpers instead of generic number operations when a pre-lowering guard proves the runtime helper slice is safe. This helper slice converts through signed i64 and the existing issue-259 first-limb/cached-decimal constructor, so it is not the full canonical multi-limb operation implementation required for final closure.
 
-Progress result (2026-04-29, issue 263 slice): dynamic BigInt `*`, `/`, and `%` now lower to signed-i64-backed BigInt runtime helpers under the same pre-lowering proof boundary. Node/iwasm fixtures cover negative operands, truncating division, remainder sign semantics, and canonical zero; large dynamic multiplication results and division/remainder by zero produce issue-260 diagnostics instead of silently lowering.
+Progress result (2026-04-29, issue 263 slice): dynamic BigInt `*`, `/`, and `%` now lower to signed-i64-backed BigInt runtime helpers under the same pre-lowering proof boundary. Node/iwasm fixtures cover negative operands, truncating division, remainder sign semantics, and canonical zero; large dynamic multiplication results produce issue-260 diagnostics instead of silently lowering.
+
+Progress result (2026-04-29, division-by-zero runtime trap slice): dynamic division/remainder by a known zero BigInt local now builds successfully and the signed-i64-backed runtime helpers explicitly trap on zero divisors. Node baseline evidence confirms these fixtures are `RangeError: Division by zero`; iwasm currently reports an `unreachable` trap because the project does not yet have compatible JS exception object throwing for this path.
 
 ## Desired final state
 
@@ -79,7 +81,7 @@ Do not touch:
 - [ ] Node/iwasm differential fixtures cover addition, subtraction, multiplication, division, remainder, unary minus, and canonical zero.
 - [x] Node/iwasm differential fixture covers dynamic BigInt unary minus, binary addition/subtraction, assignment through a known BigInt local, negative results, and canonical zero for the current signed-i64-backed runtime helper slice.
 - [x] Node/iwasm differential fixture covers dynamic BigInt multiplication, truncating division, remainder sign semantics, negative operands, and canonical zero for the current signed-i64-backed runtime helper slice.
-- [x] Negative fixtures cover large dynamic BigInt add/sub operands, branch-assigned out-of-slice BigInt locals, large dynamic multiplication results, division/remainder by zero, and dynamic mixed Number/BigInt arithmetic as issue-260 diagnostics.
+- [x] Negative/runtime failure fixtures cover large dynamic BigInt add/sub operands, branch-assigned out-of-slice BigInt locals, large dynamic multiplication results, dynamic mixed Number/BigInt arithmetic as issue-260 diagnostics, and dynamic division/remainder by zero as runtime traps with Node `RangeError` baseline evidence.
 - [x] Node/iwasm differential fixture covers literal addition, subtraction, multiplication, division, remainder, unary minus, canonical zero, and values larger than the issue-259 first-limb cache.
 - [x] Mixed Number/BigInt arithmetic is issue-linked for the current static slice; it is not compiled as number arithmetic.
 - [x] Runtime linker structure tests cover the selected BigInt arithmetic helpers and their deps.
@@ -129,6 +131,8 @@ Arithmetic helpers operate on canonical BigInt heap objects and must not depend 
 
 2026-04-29 dynamic runtime progress slice: `let x = 1n; console.log(x + 2n);`, subtraction, and unary minus now route through BigInt-specific runtime helpers with Node/iwasm coverage. A pre-lowering guard rejects dynamic helper use when operands/results are not proven signed-i64-safe and reports dynamic mixed Number/BigInt arithmetic with the original source span. The guard conservatively invalidates tracked locals assigned inside nested control-flow bodies to avoid stale safe-state assumptions. The runtime helpers intentionally operate through a signed-i64 reconstruction of the existing first-limb heap payload plus cached decimal construction; full canonical multi-limb runtime storage/operation correctness, multiplication, division, remainder, bitwise/exponentiation policy, and complete mixed Number/BigInt TypeError behavior remain before this issue can close.
 
+2026-04-29 division-by-zero runtime trap slice: `let z = 0n; console.log(a / z);` and `console.log(a % z);` now lower through `BigIntDiv` / `BigIntRem` when the operands remain inside the signed-i64-backed helper slice. The helpers check the signed-i64 divisor and trap with `unreachable` for zero. This removes the pre-lowering false boundary for dynamic zero divisors but does not claim compatible `RangeError` throwing yet.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
@@ -150,17 +154,27 @@ PASS (14 tests)
 2026-04-29
 
 cargo fmt --all --check
+PASS
+
+cargo nextest run -E 'test(bigint_runtime_div_zero_traps_after_successful_build) or test(bigint_runtime_rem_zero_traps_after_successful_build)'
+PASS (2 tests)
+
 cargo nextest run -E 'test(bigint) or test(node_diff)'
-PASS (18 tests)
+PASS (30 tests)
+
 mise run update-issue-index -- --check
+PASS
+
 mise run check issues
+PASS
+
 cargo nextest run
-PASS (477 tests, 4 skipped)
+PASS (500 tests, 4 skipped)
 2026-04-29
 ```
 
 Remaining risks:
 
 - Dynamic unary/add/sub/mul/div/rem helpers are signed-i64-backed and do not yet provide full canonical multi-limb arithmetic correctness.
-- Dynamic division/remainder by zero currently reports issue-260 during pre-lowering instead of throwing the compatible runtime RangeError path.
+- Dynamic division/remainder by zero now reaches a runtime trap for the signed-i64-backed helper slice, but it does not yet throw a compatible JavaScript `RangeError` object.
 - Bitwise/exponentiation policy and complete runtime TypeError behavior for non-statically-known mixed Number/BigInt operands remain incomplete.

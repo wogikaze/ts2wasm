@@ -1440,6 +1440,16 @@ impl BigIntRuntimeGuard {
                 let runtime_needed = left_info.runtime_needed || right_info.runtime_needed;
                 let value = match (left_info.value, right_info.value) {
                     (Some(left), Some(right)) => {
+                        if runtime_needed
+                            && matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
+                            && right.sign == 0
+                        {
+                            return Ok(Some(BigIntStaticInfo {
+                                value: None,
+                                helper_safe: left_info.helper_safe && right_info.helper_safe,
+                                runtime_needed,
+                            }));
+                        }
                         let result = fold_bigint_binary(left, *op, right, *span)?;
                         if runtime_needed && !result.fits_runtime_signed_i64() {
                             return Err(bigint_dynamic_runtime_diagnostic(*span));
