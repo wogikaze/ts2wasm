@@ -1,0 +1,13 @@
+{
+  "total": 150,
+  "implemented": 95,
+  "unimplemented": 40,
+  "future": 15,
+  "byPriority": {
+    "p0": 5,
+    "p1": 15,
+    "p2": 12,
+    "p3": 8,
+    "future": 15
+  }
+}
