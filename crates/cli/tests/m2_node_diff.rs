@@ -351,6 +351,13 @@ fn bigint_runtime_mixed_string_abstract_equality_matches_node_output_under_iwasm
 }
 
 #[test]
+fn bigint_runtime_mixed_relational_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-boolean-relational.ts",
+    );
+}
+
+#[test]
 fn bigint_runtime_mixed_relational_traps_instead_of_false() {
     assert_fixture_iwasm_traps("fixtures/core-semantics/bigint-runtime-mixed-relational-trap.ts");
 }
