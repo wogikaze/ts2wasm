@@ -324,18 +324,18 @@ fn bigint_new_constructor_reports_issue_262() {
 }
 
 #[test]
-fn bigint_mixed_abstract_equality_reports_issue_261() {
+fn bigint_mixed_abstract_equality_reports_issue_282() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-mixed-abstract-equality-unsupported.ts",
-        "issue-261: mixed BigInt abstract equality and relational comparison coercion is not implemented in this slice",
+        "issue-282: mixed BigInt abstract equality and relational comparison coercion is not implemented in this runtime coercion slice",
     );
 }
 
 #[test]
-fn bigint_mixed_relational_reports_issue_261() {
+fn bigint_mixed_relational_reports_issue_282() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-mixed-relational-unsupported.ts",
-        "issue-261: mixed BigInt abstract equality and relational comparison coercion is not implemented in this slice",
+        "issue-282: mixed BigInt abstract equality and relational comparison coercion is not implemented in this runtime coercion slice",
     );
 }
 

@@ -3299,7 +3299,7 @@ fn bigint_mixed_runtime_diagnostic(span: Span) -> Diagnostic {
 fn bigint_comparison_runtime_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-261: mixed BigInt abstract equality and relational comparison coercion is not implemented in this slice".to_owned(),
+        message: "issue-282: mixed BigInt abstract equality and relational comparison coercion is not implemented in this runtime coercion slice".to_owned(),
         span: Some(span),
     }
 }

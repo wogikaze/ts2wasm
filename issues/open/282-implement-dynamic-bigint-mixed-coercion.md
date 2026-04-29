@@ -101,6 +101,15 @@ Progress on 2026-04-29:
 - Runtime-only BigInt/Boolean and BigInt/nullish abstract equality now has Node/iwasm differential coverage in `fixtures/core-semantics/bigint-runtime-mixed-boolean-nullish-abstract-equality.ts`.
 - BigInt/String abstract equality and mixed BigInt relational comparison remain intentionally outside this slice; the existing runtime-only String and relational trap fixtures continue to own those blockers.
 
+Progress on 2026-04-29:
+
+- Reclassified the remaining statically visible mixed BigInt abstract equality
+  and relational comparison unsupported diagnostics from closed issue 261 to
+  issue 282, so future work is owned by this runtime coercion issue.
+- This is a diagnostic ownership slice only. It does not implement dynamic
+  StringToBigInt parsing, object `ToPrimitive`, or mixed relational runtime
+  semantics.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
