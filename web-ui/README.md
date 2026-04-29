@@ -9,6 +9,7 @@ Interactive web UI for displaying test results, coverage, and historical data - 
 - **Historical Comparison**: Track test runs over time with result deltas, regression flags, and performance trends
 - **Real-time Updates**: Live updates during test runs (planned)
 - **Export Functionality**: Export the active view as JSON or CSV, or use browser print/PDF
+- **Theme Toggle**: Switch dark/light themes with a persisted browser preference
 
 ## Tech Stack
 
@@ -105,10 +106,14 @@ The header export buttons operate on the active tab:
 - `CSV` downloads the active tab's tabular rows.
 - `PDF` opens the browser print flow so the current view can be saved as PDF.
 
+### Theme
+
+The header theme button switches between dark and light modes. The preference is
+stored in `localStorage` and is restored on reload.
+
 ## Future Enhancements
 
 - [ ] Real-time WebSocket updates during test runs
-- [ ] Dark/light theme toggle
 - [ ] CI/CD integration
 - [ ] Authentication/authorization
 - [ ] Mobile-responsive design improvements

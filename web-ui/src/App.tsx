@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Play, CheckCircle, XCircle, AlertCircle, AlertTriangle, SkipForward, BarChart3, History, Download, Search, Filter } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Play, CheckCircle, XCircle, AlertCircle, AlertTriangle, SkipForward, BarChart3, History, Download, Search, Filter, Moon, Sun } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -20,6 +20,7 @@ import type { CoverageData, HistoricalData, TestResult } from './types'
 import './index.css'
 
 const PERF_REGRESSION_THRESHOLD = 0.2
+const THEME_STORAGE_KEY = 'ts2wasm-web-ui-theme'
 
 const coverageColors = ['#22c55e', '#ef4444', '#eab308']
 const priorityColors = {
@@ -43,6 +44,15 @@ interface TrendRun extends HistoricalData {
   trendLabel: string
   deltas: RunDeltas
   regressionReasons: string[]
+}
+
+type ThemePreference = 'dark' | 'light'
+
+function getInitialTheme(): ThemePreference {
+  if (typeof window === 'undefined') return 'dark'
+  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY)
+  if (storedTheme === 'dark' || storedTheme === 'light') return storedTheme
+  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark'
 }
 
 function formatPercent(value: number) {
@@ -172,6 +182,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<'tests' | 'coverage' | 'history'>('tests')
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'pass' | 'fail' | 'skip'>('all')
+  const [theme, setTheme] = useState<ThemePreference>(getInitialTheme)
 
   // Load real data
   const { tests, summary, loading: testsLoading, error: testsError } = useTestData()
@@ -217,6 +228,13 @@ function App() {
   const latestTrend = trendRuns[trendRuns.length - 1]
 
   const currentExportName = `ts2wasm-${activeTab}`
+  const nextTheme = theme === 'dark' ? 'light' : 'dark'
+
+  useEffect(() => {
+    window.localStorage.setItem(THEME_STORAGE_KEY, theme)
+    document.documentElement.dataset.theme = theme
+    document.documentElement.style.colorScheme = theme
+  }, [theme])
 
   const exportJson = () => {
     const payload = activeTab === 'tests'
@@ -278,7 +296,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
+    <div className={`theme-${theme} min-h-screen bg-gray-900 text-gray-100`}>
       {/* Header */}
       <header className="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-4 py-4">
@@ -288,6 +306,16 @@ function App() {
               <h1 className="text-2xl font-bold">ts2wasm Test Reporter</h1>
             </div>
             <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setTheme(nextTheme)}
+                aria-pressed={theme === 'light'}
+                title={`Switch to ${nextTheme} theme`}
+                className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors"
+              >
+                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                {theme === 'dark' ? 'Light' : 'Dark'}
+              </button>
               <button
                 onClick={exportJson}
                 className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
