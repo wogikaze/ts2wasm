@@ -9,6 +9,8 @@ depends_on: []
 blocks: ["059"]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -46,10 +48,10 @@ BigInt literals are recognized as BigInt syntax. Until BigInt runtime values are
 
 In scope:
 
-- [ ] Recognize decimal, binary, octal, and hexadecimal BigInt literal forms with `n` suffix.
-- [ ] Reject invalid BigInt numeric forms, including fractional or exponent forms.
-- [ ] Add parser/unit and CLI diagnostic coverage for BigInt syntax.
-- [ ] Keep BigInt runtime semantics out of semantic-pass claims unless separately implemented.
+- [x] Recognize decimal, binary, octal, and hexadecimal BigInt literal forms with `n` suffix.
+- [x] Reject invalid BigInt numeric forms, including fractional or exponent forms.
+- [x] Add parser/unit and CLI diagnostic coverage for BigInt syntax.
+- [x] Keep BigInt runtime semantics out of semantic-pass claims unless separately implemented.
 
 Out of scope:
 
@@ -72,10 +74,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `1n` is no longer parsed as `Number(1)` followed by `Ident("n")`.
-- [ ] `dump --ast --unparse` or CLI diagnostics show an explicit BigInt literal classification.
-- [ ] Invalid BigInt forms such as `1.0n` and `1e2n` report stable diagnostics.
-- [ ] A focused reference slice under `reference/test262/test/language/literals/bigint/` no longer reports the current semicolon/identifier parser failure.
+- [x] `1n` is no longer parsed as `Number(1)` followed by `Ident("n")`.
+- [x] `dump --ast --unparse` or CLI diagnostics show an explicit BigInt literal classification.
+- [x] Invalid BigInt forms such as `1.0n` and `1e2n` report stable diagnostics.
+- [x] A focused reference slice under `reference/test262/test/language/literals/bigint/` no longer reports the current semicolon/identifier parser failure for non-separator BigInt forms in this issue scope.
 
 ## Validation
 
@@ -104,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update `docs/language-reference/javascript-features.md` if implementation status changes
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] update `current-state.md` if BigInt support boundary changes
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] create runtime BigInt issue if parser classification exposes a new semantic gap
+- [x] created: `issues/open/250-design-bigint-runtime-value-support.md`
 
 ## Notes
 
@@ -124,16 +126,41 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `819e864` issue-244: classify bigint literals
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-frontend
+result: pass; 63 tests run, 63 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli --test dump_cli
+result: pass; 26 tests run, 26 passed
+date: 2026-04-29
+
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter reference/test262/test/language/literals/bigint/ --detail
+result: pass; executed=59, unsupported=59, unsupported_diagcodes=UnsupportedSyntax:59. Non-separator BigInt invalid forms now classify as issue-linked unsupported diagnostics; numeric separator cases remain parser-syntax under issue 243.
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass
+date: 2026-04-29
+
+command: mise run check issues
+result: pass
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- BigInt runtime representation and operations are out of scope and tracked by issue 250.
+- BigInt numeric separator syntax is out of scope and tracked by issue 243.

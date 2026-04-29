@@ -335,6 +335,13 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
 fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         Expr::Number { value, .. } => Ok(ResolvedExpr::Number(*value)),
+        Expr::BigInt { raw, span } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-244: BigInt literal `{raw}` is parsed, but runtime BigInt values are not implemented"
+            ),
+            span: Some(*span),
+        }),
         Expr::String { value, .. } => Ok(ResolvedExpr::String(value.clone())),
         Expr::Bool { value, .. } => Ok(ResolvedExpr::Bool(*value)),
         Expr::Null { .. } => Ok(ResolvedExpr::Null),
@@ -766,6 +773,7 @@ fn validate_read_stdin_utf8_args(args: &[Expr], callee: &Expr) -> Result<(), Dia
 fn span_of_expr(expr: &Expr) -> Option<Span> {
     match expr {
         Expr::Number { span, .. }
+        | Expr::BigInt { span, .. }
         | Expr::String { span, .. }
         | Expr::Bool { span, .. }
         | Expr::Null { span }

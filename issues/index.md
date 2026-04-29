@@ -14,17 +14,17 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
-| frontend | 188 | 135 | 53 |
+| frontend | 188 | 134 | 54 |
 | ir | 6 | 0 | 6 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 54 | 8 | 46 |
+| runtime | 55 | 9 | 46 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 276 | 146 | 130 |
+| total | 277 | 146 | 131 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -44,12 +44,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 062g | Define and implement heap closure object ABI and rooting | feature | runtime/abi | design-ready | P1 |  | Returned closures cannot be represented by the current devirtualized |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
-| 244 | Implement BigInt literal parser classification | feature | frontend/syntax | implementation-ready | P2 |  | BigInt literals such as `1n` are tokenized as a numeric literal followed by identifier `n`, so the parser reports `pa... |
 | 245 | Implement nullish coalescing frontend support | feature | frontend/semantics | implementation-ready | P2 |  | The lexer recognizes `??`, but the parser does not accept it in expression grammar, so `a ?? b` reports `parser-syntax`. |
 | 246 | Implement optional chaining parser support | feature | frontend/syntax | implementation-ready | P2 |  | The lexer recognizes `?.`, but the parser does not accept optional member access, so `obj?.x` reports `parser-syntax`. |
 | 247 | Implement destructuring binding pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Array and object binding patterns in declarations are rejected before AST construction, so destructuring syntax repor... |
 | 248 | Implement private class element parser support | feature | frontend/syntax | implementation-ready | P2 |  | The lexer rejects `#` before the class parser can classify private fields or methods, so private class syntax reports... |
 | 249 | Implement class static block parser support | feature | frontend/syntax | implementation-ready | P2 |  | Class body parsing does not model `static { ... }` as `ClassStaticBlock`, so static initialization blocks are not rep... |
+| 250 | Design BigInt runtime value support | feature | runtime/semantics | design-ready | P2 |  | BigInt literals now parse as explicit AST nodes, but runtime representation, operations, equality, and builtin behavi... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -331,6 +331,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 241 | Implement Annex B Date legacy methods | feature | runtime/builtins | see `issues/done/241-implement-annex-b-date-legacy-methods.md` |
 | 242 | Implement Date live time with WASI realtime clock | feature | runtime/builtins | see `issues/done/242-implement-date-live-time-wasi-clock.md` |
 | 243 | Implement numeric literal separator parser support | feature | frontend/syntax | see `issues/done/243-implement-numeric-literal-separator-parser.md` |
+| 244 | Implement BigInt literal parser classification | feature | frontend/syntax | see `issues/done/244-implement-bigint-literal-parser-classification.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

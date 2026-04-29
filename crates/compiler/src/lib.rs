@@ -353,6 +353,13 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
 fn lower_static_export_literal_expr(expr: &Expr) -> Result<lowered::LoweredExpr, Diagnostic> {
     match expr {
         Expr::Number { value, .. } => Ok(lowered::LoweredExpr::Number(*value)),
+        Expr::BigInt { raw, span } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!(
+                "issue-244: BigInt literal `{raw}` is parsed, but runtime BigInt values are not implemented"
+            ),
+            span: Some(*span),
+        }),
         Expr::String { value, .. } => Ok(lowered::LoweredExpr::String(value.clone())),
         Expr::Bool { value, .. } => Ok(lowered::LoweredExpr::Bool(*value)),
         Expr::Null { .. } => Ok(lowered::LoweredExpr::Null),
@@ -386,6 +393,7 @@ fn is_static_export_literal(expr: &Expr) -> bool {
     matches!(
         expr,
         Expr::Number { .. }
+            | Expr::BigInt { .. }
             | Expr::String { .. }
             | Expr::Bool { .. }
             | Expr::Null { .. }
