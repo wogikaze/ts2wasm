@@ -26,6 +26,16 @@ struct ArrowClosure {
     captures: Vec<LocalId>,
 }
 
+impl ArrowClosure {
+    fn to_expr(&self, representation: ClosureRepresentation) -> LoweredExpr {
+        LoweredExpr::ArrowFn {
+            func_id: self.func_id,
+            captures: self.captures.clone(),
+            representation,
+        }
+    }
+}
+
 impl<'a> Resolver<'a> {
     fn new(
         function_ids: &'a HashMap<String, FuncId>,
@@ -146,7 +156,10 @@ impl<'a> Resolver<'a> {
                 let local_id = self.declare_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
-                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                if let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = &lowered
+                {
                     self.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
@@ -175,7 +188,10 @@ impl<'a> Resolver<'a> {
                 let local_id = self.resolve_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
-                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                if let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = &lowered
+                {
                     self.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
@@ -216,25 +232,24 @@ impl<'a> Resolver<'a> {
             }),
             ResolvedStmt::Return(expr) => {
                 if let ResolvedExpr::Ident(name) = expr
-                    && self
+                    && let Some(closure) = self
                         .resolve_local(name)
                         .ok()
-                        .is_some_and(|local| self.arrow_locals.contains_key(&local))
+                        .and_then(|local| self.arrow_locals.get(&local))
                 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-062e: returning closure `{name}` requires heap environment/rooting support and is not supported in this slice"
-                        ),
-                        span: None,
-                    });
+                    return Ok(LoweredStmt::Return(
+                        closure.to_expr(ClosureRepresentation::HeapObject),
+                    ));
                 }
                 Ok(LoweredStmt::Return(self.lower_expr(expr)?))
             }
             ResolvedStmt::Function { name, params, body } => {
                 let local_id = self.declare_local(name)?;
                 let closure = self.lower_nested_function(name, params, body)?;
-                if let LoweredExpr::ArrowFn { func_id, captures } = &closure {
+                if let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = &closure
+                {
                     self.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
@@ -1321,7 +1336,11 @@ impl<'a> Resolver<'a> {
         self.generated_functions.push(lowered.function);
         self.generated_functions.extend(lowered.generated_functions);
 
-        Ok(LoweredExpr::ArrowFn { func_id, captures })
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
+        })
     }
 
     fn lower_nested_function(
@@ -1389,7 +1408,11 @@ impl<'a> Resolver<'a> {
         self.generated_functions.push(lowered.function);
         self.generated_functions.extend(lowered.generated_functions);
 
-        Ok(LoweredExpr::ArrowFn { func_id, captures })
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
+        })
     }
 
     fn arrow_capture_names(&self, params: &[String], body: &ResolvedExpr) -> Vec<String> {
