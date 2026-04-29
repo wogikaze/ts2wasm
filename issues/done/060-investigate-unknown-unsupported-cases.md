@@ -117,16 +117,16 @@ This is a spike to understand the unknown cases before implementation.
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 100
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 100
 result: pass; unsupported_features=regexp-literal:47,name-resolution:33,date:16,string-builtin:3,array-builtin:1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 200
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 200
 result: pass; unsupported_features=name-resolution:76,string-builtin:60,regexp-literal:47,date:16,array-builtin:1; unknown-unsupported=0
 
 TS2WASM_REFERENCE_ROOT=/tmp/ts2wasm-issue060-reference mise run reference-coverage -- tsc --limit 100
 result: pass; unsupported_features=parser-syntax:47,type-alias:23,class-accessor:17,import-export:3,declaration-emit:2,scope-analysis:2,jsdoc:1,module-system-amd:1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 82
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- tsgo --limit 82
 result: pass; unsupported_features=import-export:18,declaration-emit:16,parser-syntax:10,class:6,type-system:6,jsx:3,module-resolution:3,type-assertion:3,decorator:2,destructuring:2,jsdoc:2,object-literal:2,type-alias:2,enum:1,module-system-amd:1,scope-analysis:1; unknown-unsupported=0
 ```
 
@@ -146,20 +146,20 @@ This is validated PROGRESS, not DONE: full acceptance still requires exhausting 
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 300
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 300
 result: pass; unsupported_features=name-resolution:93,string-builtin:63,eval:51,regexp-literal:47,legacy-global-builtin:20,date:16,html-comment:8,array-builtin:1,builtin-api:1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsc --limit 150
-result: blocked; assigned reference root is missing /home/wogikaze/wgkz/ts2wasm/reference/typescript, so the command fails before classification.
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- tsc --limit 150
+result: blocked; assigned reference root is missing ./reference/typescript, so the command fails before classification.
 
 TS2WASM_REFERENCE_ROOT=/tmp/ts2wasm-issue060-reference mise run reference-coverage -- tsc --limit 150
 result: pass; unsupported_features=parser-syntax:50,ambient-declaration:25,type-alias:23,import-export:20,class-accessor:17,declaration-emit:3,scope-analysis:2,function:1,jsdoc:1,module-resolution:1,module-system-amd:1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 100
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- tsgo --limit 100
 result: pass; unsupported_features=import-export:20,declaration-emit:16,parser-syntax:13,jsx:8,type-system:7,class:6,module-resolution:4,decorator:3,enum:3,type-assertion:3,destructuring:2,jsdoc:2,object-literal:2,type-alias:2,class-accessor:1,module-system-amd:1,name-resolution:1,scope-analysis:1; unknown-unsupported=0
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for the exact assigned tsc command.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for the exact assigned tsc command.
 
 2026-04-28 child classification ramp slice:
 
@@ -176,17 +176,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 500
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 500
 result: pass; unsupported_features=eval:246,name-resolution:106,string-builtin:63,regexp-literal:47,legacy-global-builtin:20,date:16,array-builtin:1,builtin-api:1; unknown-unsupported=0
 
 TS2WASM_REFERENCE_ROOT=/tmp/ts2wasm-issue060-reference mise run reference-coverage -- tsc --limit 200
 result: pass; unsupported_features=parser-syntax:59,ambient-declaration:30,type-alias:23,import-export:21,class-accessor:17,arguments-object:10,module-system-amd:10,declaration-emit:8,class:3,scope-analysis:3,module-resolution:2,name-resolution:2,function:1,jsdoc:1,object-literal:1,type-assertion:1,type-system:1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- tsgo --limit 120
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- tsgo --limit 120
 result: pass; unsupported_features=import-export:20,parser-syntax:17,declaration-emit:16,module-resolution:10,jsx:8,class:7,type-system:7,decorator:4,enum:3,object-literal:3,type-assertion:3,type-directive-resolution:3,destructuring:2,jsdoc:2,parameter-property:2,type-alias:2,class-accessor:1,module-system-amd:1,name-resolution:1,scope-analysis:1; unknown-unsupported=0
 ```
 
-This is the fixed close boundary for issue 060: `test262` with `--limit 17000` against `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference` must report `unknown-unsupported=0`. Broader suite/window expansion is not part of this parent spike; future work must be filed as separate ramp issues with an explicit suite, limit, command, and expected unknown count. The assigned reference root still lacks the external TypeScript checkout required for exact tsc validation, so tsc/tsgo expansion remains residual risk outside this close boundary.
+This is the fixed close boundary for issue 060: `test262` with `--limit 17000` against `TS2WASM_REFERENCE_ROOT=./reference` must report `unknown-unsupported=0`. Broader suite/window expansion is not part of this parent spike; future work must be filed as separate ramp issues with an explicit suite, limit, command, and expected unknown count. The assigned reference root still lacks the external TypeScript checkout required for exact tsc validation, so tsc/tsgo expansion remains residual risk outside this close boundary.
 
 2026-04-28 child coverage ramp continuation:
 
@@ -205,13 +205,13 @@ This is the fixed close boundary for issue 060: `test262` with `--limit 17000` a
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 750 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 750 --detail
 result before classifier update: pass; unsupported_features=eval:461,name-resolution:118,string-builtin:63,regexp-literal:47,legacy-global-builtin:20,parser-syntax:17,date:16,unknown-unsupported:4,builtin-api:1,function:1,object-literal:1
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 750 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 750 --detail
 result after classifier update: pass; unsupported_features=eval:461,name-resolution:118,string-builtin:63,regexp-literal:47,legacy-global-builtin:20,date:16,parser-syntax:16,logical-assignment:3,legacy-octal-escape:2,array-builtin:1,builtin-api:1,function:1,object-literal:1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 750 --json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 750 --json
 result: pass; stored artifacts/coverage/results/test262.json with executed=750 and unknown-unsupported=0
 
 mise run update-coverage-matrix
@@ -239,20 +239,20 @@ This later ramp evidence exceeds the close boundary above and remains useful con
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 1000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 1000 --detail
 result: pass; unsupported_features=eval:461,parser-syntax:168,name-resolution:138,function:87,string-builtin:63,regexp-literal:46,date:16,legacy-global-builtin:16,arguments-object:1,builtin-api:1,object-literal:1,switch:1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
 result: pass; unsupported_features=array-builtin:1; blocked=0; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 1000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 1000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=1000, unsupported=1000, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp3 continuation:
 
@@ -269,20 +269,20 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 1250 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 1250 --detail
 result before classifier update: pass; unsupported_features=eval:461,name-resolution:207,parser-syntax:188,function:127,array-builtin:88,string-builtin:63,regexp-literal:53,date:16,legacy-global-builtin:16,builtin-api:14,declaration-emit:4,duplicate-local:4,destructuring:2,object-literal:2,arguments-object:1,class:1,switch:1,unknown-unsupported:1; blocked=1
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 1250 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 1250 --detail
 result after classifier update: pass; unsupported_features=eval:461,name-resolution:207,parser-syntax:188,function:127,array-builtin:89,string-builtin:63,regexp-literal:53,date:16,legacy-global-builtin:16,builtin-api:14,declaration-emit:4,duplicate-local:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=0; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 1250 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 1250 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=1250, unsupported=1250, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp1500 continuation:
 
@@ -294,20 +294,20 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 1500 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 1500 --detail
 result: pass; unsupported_features=eval:461,name-resolution:283,array-builtin:259,parser-syntax:188,function:127,string-builtin:63,regexp-literal:53,date:16,legacy-global-builtin:16,builtin-api:14,duplicate-local:7,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
 result: pass; unsupported_features=array-builtin:1; blocked=0; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 1500 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 1500 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=1500, unsupported=1500, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp2000 continuation:
 
@@ -319,20 +319,20 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 2000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 2000 --detail
 result: pass; unsupported_features=array-builtin:598,eval:461,name-resolution:444,parser-syntax:188,function:127,string-builtin:63,regexp-literal:53,date:16,legacy-global-builtin:16,builtin-api:14,duplicate-local:7,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
 result: pass; unsupported_features=array-builtin:1; blocked=0; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 2000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 2000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=2000, unsupported=2000, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp2500 continuation:
 
@@ -344,20 +344,20 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 2500 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 2500 --detail
 result: pass; unsupported_features=array-builtin:969,name-resolution:573,eval:461,parser-syntax:188,function:127,string-builtin:63,regexp-literal:53,date:16,legacy-global-builtin:16,builtin-api:14,duplicate-local:7,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/built-ins/Array/from/iterator-method-emulates-undefined.js --detail
 result: pass; unsupported_features=array-builtin:1; blocked=0; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 2500 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 2500 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=2500, unsupported=2500, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp3000 continuation:
 
@@ -369,17 +369,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 3000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 3000 --detail
 result: pass; unsupported_features=array-builtin:1315,name-resolution:731,eval:461,parser-syntax:188,function:127,string-builtin:63,regexp-literal:51,legacy-global-builtin:16,builtin-api:14,date:13,duplicate-local:8,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 3000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 3000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=3000, unsupported=3000, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp3500 continuation:
 
@@ -391,17 +391,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 3500 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 3500 --detail
 result: pass; unsupported_features=array-builtin:1708,name-resolution:835,eval:461,parser-syntax:188,function:127,string-builtin:63,regexp-literal:51,legacy-global-builtin:16,builtin-api:14,date:13,duplicate-local:11,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 3500 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 3500 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=3500, unsupported=3500, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp4000 continuation:
 
@@ -413,17 +413,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 4000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 4000 --detail
 result: pass; unsupported_features=array-builtin:2032,name-resolution:1001,eval:461,parser-syntax:188,function:127,string-builtin:63,regexp-literal:51,duplicate-local:21,legacy-global-builtin:16,builtin-api:14,date:13,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 4000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 4000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=4000, unsupported=4000, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp5000 continuation:
 
@@ -435,17 +435,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 5000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 5000 --detail
 result: pass; unsupported_features=array-builtin:2166,name-resolution:1209,builtin-api:667,eval:461,parser-syntax:188,function:127,string-builtin:63,regexp-literal:51,duplicate-local:26,legacy-global-builtin:16,date:13,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 5000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 5000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=5000, unsupported=5000, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp6000 continuation:
 
@@ -457,17 +457,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 6000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 6000 --detail
 result: pass; unsupported_features=array-builtin:2166,name-resolution:1533,builtin-api:1215,eval:461,parser-syntax:188,date:140,function:127,string-builtin:63,regexp-literal:51,duplicate-local:27,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 6000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 6000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=6000, unsupported=6000, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp7000 continuation:
 
@@ -482,17 +482,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 7000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 7000 --detail
 result: pass; unsupported_features=array-builtin:2166,name-resolution:1769,builtin-api:1315,function:508,eval:461,date:421,parser-syntax:188,string-builtin:63,regexp-literal:51,duplicate-local:28,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=2; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 7000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 7000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=7000, unsupported=7000, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp8000 continuation:
 
@@ -504,17 +504,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 8000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 8000 --detail
 result: pass; unsupported_features=array-builtin:2166,builtin-api:2117,name-resolution:1933,function:542,eval:461,date:421,parser-syntax:188,string-builtin:63,regexp-literal:51,duplicate-local:28,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 8000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 8000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=8000, build_pass=1, unsupported=7999, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp9000 continuation:
 
@@ -527,17 +527,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 9000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 9000 --detail
 result: pass; unsupported_features=name-resolution:2546,builtin-api:2399,array-builtin:2166,function:542,eval:461,date:421,parser-syntax:188,object-builtin:102,string-builtin:63,regexp-literal:51,duplicate-local:31,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 9000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 9000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=9000, build_pass=1, unsupported=8999, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp10000 continuation:
 
@@ -550,17 +550,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 10000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 10000 --detail
 result: pass; unsupported_features=name-resolution:2841,builtin-api:2399,array-builtin:2166,object-builtin:807,function:542,eval:461,date:421,parser-syntax:188,string-builtin:63,regexp-literal:51,duplicate-local:31,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 10000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 10000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=10000, build_pass=1, unsupported=9999, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp11000 continuation:
 
@@ -573,17 +573,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 11000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 11000 --detail
 result: pass; unsupported_features=name-resolution:3058,builtin-api:2399,array-builtin:2166,object-builtin:1590,function:542,eval:461,date:421,parser-syntax:188,string-builtin:63,regexp-literal:51,duplicate-local:31,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 11000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 11000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=11000, build_pass=1, unsupported=10999, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp12000 continuation:
 
@@ -596,17 +596,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 12000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 12000 --detail
 result: pass; unsupported_features=name-resolution:3677,builtin-api:2399,array-builtin:2166,object-builtin:1968,function:542,eval:461,date:421,parser-syntax:188,string-builtin:63,regexp-literal:51,duplicate-local:31,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 12000 --json > artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 12000 --json > artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=12000, build_pass=4, semantic_pass=3, unsupported=11996, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp13000 continuation:
 
@@ -619,10 +619,10 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 13000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 13000 --detail
 result: pass; unsupported_features=name-resolution:3842,builtin-api:3138,array-builtin:2166,object-builtin:2063,function:542,eval:461,date:421,parser-syntax:188,string-builtin:63,regexp-literal:51,duplicate-local:31,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,function-resolution:1,switch:1; blocked=1; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 13000 --json > temp && mv temp artifacts/coverage/results/test262.json
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 13000 --json > temp && mv temp artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=13000, build_pass=4, semantic_pass=3, unsupported=12996, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
@@ -638,7 +638,7 @@ mise run check agent-state
 result: pass
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp14000 continuation:
 
@@ -651,10 +651,10 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 14000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 14000 --detail
 result: pass; unsupported_features=name-resolution:4140,builtin-api:3375,array-builtin:2166,object-builtin:2063,function:542,regexp-literal:506,eval:461,date:421,parser-syntax:188,string-builtin:63,duplicate-local:41,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,function-resolution:1,switch:1; blocked=1; unknown-unsupported=0
 
-tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 14000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
+tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 14000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=14000, build_pass=4, semantic_pass=3, unsupported=13996, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
@@ -664,7 +664,7 @@ mise run update-coverage-matrix -- --check
 result: pass; coverage matrix OK
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp15000 continuation:
 
@@ -677,17 +677,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 15000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 15000 --detail
 result: pass; unsupported_features=name-resolution:4339,builtin-api:3375,array-builtin:2166,object-builtin:2063,regexp-literal:1307,function:542,eval:461,date:421,parser-syntax:188,string-builtin:63,duplicate-local:41,legacy-global-builtin:16,declaration-emit:4,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,class:1,function-resolution:1,switch:1; blocked=1; unknown-unsupported=0
 
-tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 15000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
+tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 15000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=15000, build_pass=4, semantic_pass=3, unsupported=14996, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp16000 continuation:
 
@@ -707,23 +707,23 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 16000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 16000 --detail
 result before classifier update: pass; unsupported_features=name-resolution:4614,builtin-api:3799,array-builtin:2166,object-builtin:2064,regexp-literal:1497,function:542,eval:461,date:421,parser-syntax:188,string-builtin:159,duplicate-local:42,legacy-global-builtin:16,unknown-unsupported:8,declaration-emit:4,logical-assignment:3,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; blocked=1
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --path-filter annexB/language/expressions/equals/emulates-undefined.js --path-filter annexB/language/statements/if/emulated-undefined.js --detail
 result: pass; unsupported_features=annexb-ishtmldda:2; blocked=0; unknown-unsupported=0
 
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 16000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 16000 --detail
 result after classifier update: pass; unsupported_features=name-resolution:4614,builtin-api:3799,array-builtin:2167,object-builtin:2064,regexp-literal:1497,function:542,eval:461,date:421,parser-syntax:187,string-builtin:159,duplicate-local:42,legacy-global-builtin:16,annexb-ishtmldda:9,declaration-emit:4,logical-assignment:3,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; blocked=0; unknown-unsupported=0
 
-tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 16000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
+tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 16000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=16000, build_pass=5, semantic_pass=3, unsupported=15995, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp17000 continuation:
 
@@ -736,17 +736,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 17000 --detail
 result: pass; unsupported_features=name-resolution:5224,builtin-api:3740,array-builtin:2121,object-builtin:2058,regexp-literal:1476,string-builtin:698,function:595,eval:460,date:405,parser-syntax:131,duplicate-local:45,legacy-global-builtin:16,annexb-ishtmldda:12,declaration-emit:4,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; blocked=2; unknown-unsupported=0
 
-tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
+tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 17000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=17000, build_pass=5, semantic_pass=3, unsupported=16995, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 2026-04-28 child coverage ramp18000 continuation:
 
@@ -759,17 +759,17 @@ This remains validated PROGRESS, not DONE: full acceptance still requires exhaus
 Validated classification commands:
 
 ```text
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 18000 --detail
+TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 18000 --detail
 result: pass; unsupported_features=name-resolution:5513,builtin-api:4434,array-builtin:2120,object-builtin:2058,regexp-literal:1476,string-builtin:715,function:595,eval:460,date:405,parser-syntax:131,duplicate-local:45,legacy-global-builtin:16,annexb-ishtmldda:12,declaration-emit:4,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; blocked=1; unknown-unsupported=0
 
-tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 18000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
+tmp=$(mktemp artifacts/coverage/results/test262.json.tmp.XXXXXX); TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 18000 --json > "$tmp"; mv "$tmp" artifacts/coverage/results/test262.json
 result: pass; stored artifacts/coverage/results/test262.json with executed=18000, build_pass=5, semantic_pass=3, unsupported=17995, blocked=0, unknown-unsupported=0
 
 mise run update-coverage-matrix
 result: pass; artifacts/coverage/reference-coverage-matrix.md updated
 ```
 
-This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `/home/wogikaze/wgkz/ts2wasm/reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
+This remains validated PROGRESS, not DONE: full acceptance still requires exhausting broader reference windows, and the assigned `./reference` root currently lacks the TypeScript checkout needed for tsc validation from that exact root.
 
 ## Completion evidence
 
@@ -780,7 +780,7 @@ Commits:
 Validation result:
 
 ```text
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 17000 --detail
+command: TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 17000 --detail
 result: pass; executed=17000; build_pass=5; semantic_pass=3; unsupported=16994; blocked=1; unsupported_features=name-resolution:5224,builtin-api:3740,array-builtin:2120,object-builtin:2058,regexp-literal:1476,string-builtin:698,function:595,eval:460,date:405,parser-syntax:131,duplicate-local:45,legacy-global-builtin:16,annexb-ishtmldda:12,declaration-emit:4,class:2,destructuring:2,object-literal:2,arguments-object:1,async-iteration:1,function-resolution:1,switch:1; unknown-unsupported=0
 date: 2026-04-29
 
@@ -791,5 +791,5 @@ date: 2026-04-29
 
 Remaining risks:
 
-- The exact assigned `/home/wogikaze/wgkz/ts2wasm/reference` root lacks `TypeScript`, so exact tsc coverage validation from that root remains out of scope for this close. Existing tsc evidence used `/tmp/ts2wasm-issue060-reference`.
+- The exact assigned `./reference` root lacks `TypeScript`, so exact tsc coverage validation from that root remains out of scope for this close. Existing tsc evidence used `/tmp/ts2wasm-issue060-reference`.
 - The 2026-04-29 detail run reported one blocked test262 case: `annexB/built-ins/Array/from/iterator-method-emulates-undefined.js`. It did not affect the `unknown-unsupported=0` close criterion.
