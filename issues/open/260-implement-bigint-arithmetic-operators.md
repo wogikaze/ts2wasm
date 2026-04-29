@@ -25,11 +25,13 @@ printf 'console.log(1n + 2n); console.log(5n / 2n); console.log(-0n);\n' > "$tmp
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-260-bigint-arithmetic.wasm
 ```
 
-Current result: dynamic BigInt unary minus and binary `+` / `-` over the current signed-i64-backed helper slice match Node/iwasm output only when the builtin resolver proves the operands/results fit that slice. Out-of-slice dynamic BigInt values, such as `18446744073709551616n` stored in a local and then added, now emit spanned issue-260 diagnostics instead of silently routing through first-limb reconstruction. The guard also invalidates tracked BigInt locals assigned inside branches, loops, switch cases, and try/catch/finally blocks so a later use cannot rely on stale pre-branch safe state. BigInt `*`, `/`, `%`, full multi-limb dynamic arithmetic, and complete runtime TypeError behavior for mixed Number/BigInt operands remain issue-260 work.
+Current result: dynamic BigInt unary minus and binary `+`, `-`, `*`, `/`, `%` over the current signed-i64-backed helper slice match Node/iwasm output only when the builtin resolver proves the operands/results fit that slice. Out-of-slice dynamic BigInt values, such as `18446744073709551616n` stored in a local and then added, now emit spanned issue-260 diagnostics instead of silently routing through first-limb reconstruction. The guard also invalidates tracked BigInt locals assigned inside branches, loops, switch cases, and try/catch/finally blocks so a later use cannot rely on stale pre-branch safe state. Full multi-limb dynamic arithmetic, runtime RangeError-compatible division/remainder by zero, and complete runtime TypeError behavior for mixed Number/BigInt operands remain issue-260 work.
 
 Progress result (2026-04-29): BigInt arithmetic where both operands are literal-foldable is resolved at compile time with arbitrary-size decimal math and Node/iwasm coverage. This did not close the runtime helper requirement.
 
 Progress result (2026-04-29, dynamic runtime slice): BigInt locals now lower unary minus and binary `+` / `-` to BigInt runtime helpers instead of generic number operations when a pre-lowering guard proves the runtime helper slice is safe. This helper slice converts through signed i64 and the existing issue-259 first-limb/cached-decimal constructor, so it is not the full canonical multi-limb operation implementation required for final closure.
+
+Progress result (2026-04-29, issue 263 slice): dynamic BigInt `*`, `/`, and `%` now lower to signed-i64-backed BigInt runtime helpers under the same pre-lowering proof boundary. Node/iwasm fixtures cover negative operands, truncating division, remainder sign semantics, and canonical zero; large dynamic multiplication results and division/remainder by zero produce issue-260 diagnostics instead of silently lowering.
 
 ## Desired final state
 
@@ -41,10 +43,11 @@ In scope:
 
 - [ ] Add runtime helpers for BigInt unary minus and core arithmetic.
 - [x] Add a dynamic runtime helper slice for BigInt unary minus and binary `+` / `-` over current signed-i64-backed heap BigInt operands.
+- [x] Add a dynamic runtime helper slice for BigInt `*`, `/`, and `%` over current signed-i64-backed heap BigInt operands/results.
 - [x] Preserve canonical zero for `-0n` in the implemented literal and dynamic unary-minus slices.
-- [ ] Implement truncating BigInt division/remainder semantics compatible with Node.
+- [x] Implement truncating BigInt division/remainder semantics compatible with Node for the current signed-i64-backed runtime helper slice.
 - [x] Add diagnostics for statically visible Number/BigInt arithmetic mixing.
-- [x] Add diagnostics for dynamic values outside the signed-i64-backed helper slice so they do not silently miscompile, including after possible control-flow assignments.
+- [x] Add diagnostics for dynamic values outside the signed-i64-backed helper slice so they do not silently miscompile, including after possible control-flow assignments and large dynamic multiplication results.
 - [x] Add a compiler-side literal-folding slice for BigInt unary minus and literal `+`, `-`, `*`, `/`, `%`.
 
 Out of scope:
@@ -75,7 +78,8 @@ Do not touch:
 
 - [ ] Node/iwasm differential fixtures cover addition, subtraction, multiplication, division, remainder, unary minus, and canonical zero.
 - [x] Node/iwasm differential fixture covers dynamic BigInt unary minus, binary addition/subtraction, assignment through a known BigInt local, negative results, and canonical zero for the current signed-i64-backed runtime helper slice.
-- [x] Negative fixtures cover large dynamic BigInt add and sub operands, branch-assigned out-of-slice BigInt locals, and dynamic mixed Number/BigInt arithmetic as spanned issue-260 diagnostics.
+- [x] Node/iwasm differential fixture covers dynamic BigInt multiplication, truncating division, remainder sign semantics, negative operands, and canonical zero for the current signed-i64-backed runtime helper slice.
+- [x] Negative fixtures cover large dynamic BigInt add/sub operands, branch-assigned out-of-slice BigInt locals, large dynamic multiplication results, division/remainder by zero, and dynamic mixed Number/BigInt arithmetic as issue-260 diagnostics.
 - [x] Node/iwasm differential fixture covers literal addition, subtraction, multiplication, division, remainder, unary minus, canonical zero, and values larger than the issue-259 first-limb cache.
 - [x] Mixed Number/BigInt arithmetic is issue-linked for the current static slice; it is not compiled as number arithmetic.
 - [x] Runtime linker structure tests cover the selected BigInt arithmetic helpers and their deps.
@@ -114,7 +118,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created `issues/open/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` for dynamic `*` / `/` / `%` signed-i64 slice
+- [x] completed `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` for dynamic `*` / `/` / `%` signed-i64 slice
 - [ ] create narrower bitwise/exponentiation follow-up if those operators are left unsupported
 
 ## Notes
@@ -157,6 +161,6 @@ PASS (477 tests, 4 skipped)
 
 Remaining risks:
 
-- Runtime helpers for dynamic BigInt multiplication, division, and remainder remain unimplemented.
-- Dynamic unary/add/sub helpers are signed-i64-backed and do not yet provide full canonical multi-limb arithmetic correctness.
-- Complete runtime TypeError behavior for non-statically-known mixed Number/BigInt operands remains incomplete.
+- Dynamic unary/add/sub/mul/div/rem helpers are signed-i64-backed and do not yet provide full canonical multi-limb arithmetic correctness.
+- Dynamic division/remainder by zero currently reports issue-260 during pre-lowering instead of throwing the compatible runtime RangeError path.
+- Bitwise/exponentiation policy and complete runtime TypeError behavior for non-statically-known mixed Number/BigInt operands remain incomplete.
