@@ -212,10 +212,23 @@ fn bigint_bitwise_unary_reports_issue_260() {
 }
 
 #[test]
-fn bigint_equality_reports_issue_261() {
+fn bigint_equality_comparison_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-equality-comparison.ts");
+}
+
+#[test]
+fn bigint_mixed_abstract_equality_reports_issue_261() {
     assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-equality-unsupported.ts",
-        "issue-261: BigInt equality and comparison are tracked separately from literal runtime values",
+        "fixtures/core-semantics/bigint-mixed-abstract-equality-unsupported.ts",
+        "issue-261: mixed BigInt abstract equality and relational comparison coercion is not implemented in this slice",
+    );
+}
+
+#[test]
+fn bigint_mixed_relational_reports_issue_261() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-mixed-relational-unsupported.ts",
+        "issue-261: mixed BigInt abstract equality and relational comparison coercion is not implemented in this slice",
     );
 }
 

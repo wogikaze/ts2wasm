@@ -682,6 +682,112 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(super) fn emit_bigint_compare(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $is_bigint (param $v i32) (result i32)
+    (local $obj i32)
+    (if (i32.ne (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then (return (i32.const {zero}))))
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (if (result i32)
+      (i32.eq
+        (i32.load
+          (i32.add
+            (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+            (i32.const {gc_flags_offset})))
+        (i32.const {gc_kind_bigint}))
+      (then (i32.const {one}))
+      (else (i32.const {zero}))))
+
+  (func $bigint_compare (param $a i32) (param $b i32) (result i32)
+    (local $obj_a i32)
+    (local $obj_b i32)
+    (local $sign_a i32)
+    (local $sign_b i32)
+    (local $ptr_a i32)
+    (local $ptr_b i32)
+    (local $len_a i32)
+    (local $len_b i32)
+    (local $offset_a i32)
+    (local $offset_b i32)
+    (local $mag_len_a i32)
+    (local $mag_len_b i32)
+    (local $i i32)
+    (local $ch_a i32)
+    (local $ch_b i32)
+    (local.set $obj_a (i32.and (local.get $a) (i32.const {heap_mask})))
+    (local.set $obj_b (i32.and (local.get $b) (i32.const {heap_mask})))
+    (local.set $sign_a (i32.load (i32.add (local.get $obj_a) (i32.const {bigint_sign_offset}))))
+    (local.set $sign_b (i32.load (i32.add (local.get $obj_b) (i32.const {bigint_sign_offset}))))
+    (if (i32.lt_s (local.get $sign_a) (local.get $sign_b))
+      (then (return (i32.const {minus_one}))))
+    (if (i32.gt_s (local.get $sign_a) (local.get $sign_b))
+      (then (return (i32.const {one}))))
+    (if (i32.eqz (local.get $sign_a))
+      (then (return (i32.const {zero}))))
+    (local.set $ptr_a (i32.add (local.get $obj_a) (i32.const {bigint_decimal_data_offset})))
+    (local.set $ptr_b (i32.add (local.get $obj_b) (i32.const {bigint_decimal_data_offset})))
+    (local.set $len_a (i32.load (i32.add (local.get $obj_a) (i32.const {bigint_decimal_len_offset}))))
+    (local.set $len_b (i32.load (i32.add (local.get $obj_b) (i32.const {bigint_decimal_len_offset}))))
+    (if (i32.lt_s (local.get $sign_a) (i32.const {zero}))
+      (then
+        (local.set $offset_a (i32.const {one}))
+        (local.set $offset_b (i32.const {one}))))
+    (local.set $mag_len_a (i32.sub (local.get $len_a) (local.get $offset_a)))
+    (local.set $mag_len_b (i32.sub (local.get $len_b) (local.get $offset_b)))
+    (if (i32.lt_u (local.get $mag_len_a) (local.get $mag_len_b))
+      (then
+        (if (i32.lt_s (local.get $sign_a) (i32.const {zero}))
+          (then (return (i32.const {one}))))
+        (return (i32.const {minus_one}))))
+    (if (i32.gt_u (local.get $mag_len_a) (local.get $mag_len_b))
+      (then
+        (if (i32.lt_s (local.get $sign_a) (i32.const {zero}))
+          (then (return (i32.const {minus_one}))))
+        (return (i32.const {one}))))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $mag_len_a)))
+        (local.set $ch_a
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $ptr_a) (local.get $offset_a))
+              (local.get $i))))
+        (local.set $ch_b
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $ptr_b) (local.get $offset_b))
+              (local.get $i))))
+        (if (i32.lt_u (local.get $ch_a) (local.get $ch_b))
+          (then
+            (if (i32.lt_s (local.get $sign_a) (i32.const {zero}))
+              (then (return (i32.const {one}))))
+            (return (i32.const {minus_one}))))
+        (if (i32.gt_u (local.get $ch_a) (local.get $ch_b))
+          (then
+            (if (i32.lt_s (local.get $sign_a) (i32.const {zero}))
+              (then (return (i32.const {minus_one}))))
+            (return (i32.const {one}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {zero}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
+            minus_one = -1,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(super) fn emit_string_equal(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -719,6 +825,13 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $strict_equal (param $a i32) (param $b i32) (result i32)
+    (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then
+        (if (i32.eq (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then (return (i32.const {false_tag}))))
     (if (i32.and (call $is_string (local.get $a)) (call $is_string (local.get $b)))
       (then (return (call $string_equal (local.get $a) (local.get $b)))))
     (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
@@ -729,6 +842,7 @@ impl WatEmitter<'_> {
 "#,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -1229,6 +1343,13 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $less (param $a i32) (param $b i32) (result i32)
+    (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then
+        (if (i32.lt_s (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then (return (i32.const {false_tag}))))
     (if (result i32)
       (i32.lt_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
       (then (i32.const {true_tag}))
@@ -1237,6 +1358,7 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -1269,6 +1391,13 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $less_equal (param $a i32) (param $b i32) (result i32)
+    (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then
+        (if (i32.le_s (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then (return (i32.const {false_tag}))))
     (if (result i32)
       (i32.le_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
       (then (i32.const {true_tag}))
@@ -1277,6 +1406,7 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 
@@ -1309,6 +1439,13 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $greater (param $a i32) (param $b i32) (result i32)
+    (if (i32.and (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then
+        (if (i32.gt_s (call $bigint_compare (local.get $a) (local.get $b)) (i32.const {zero}))
+          (then (return (i32.const {true_tag}))))
+        (return (i32.const {false_tag}))))
+    (if (i32.or (call $is_bigint (local.get $a)) (call $is_bigint (local.get $b)))
+      (then (return (i32.const {false_tag}))))
     (if (result i32)
       (i32.gt_s (i32.shr_s (local.get $a) (i32.const {number_shift})) (i32.shr_s (local.get $b) (i32.const {number_shift})))
       (then (i32.const {true_tag}))
@@ -1317,6 +1454,7 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            zero = RuntimeConst::ZERO,
         ));
     }
 

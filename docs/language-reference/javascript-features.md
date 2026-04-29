@@ -137,16 +137,16 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | `array` | ES1 | heap object | 実装済み (dense) | - | - |
 | `function` | ES1 | closure object | 実装済み (basic) | - | - |
 | `symbol` | ES6 | interned value | 未実装 | P2 | - |
-| `bigint` | ES2020 | heap object | literal runtime values 実装済み（decimal/binary/octal/hex, `console.log`, `typeof`, literal `String`, truthiness）。literal arithmetic は compile-time folding 対応。dynamic unary minus と `+` / `-` / `*` / `/` / `%` は proven-safe signed-i64-backed runtime slice のみ対応し、out-of-slice dynamic 値と division/remainder by zero は issue-260 diagnostic。full multi-limb arithmetic 260 / comparison 261 / broader builtin 262 は未実装 | P2 | 260-262 |
+| `bigint` | ES2020 | heap object | literal runtime values 実装済み（decimal/binary/octal/hex, `console.log`, `typeof`, literal `String`, truthiness）。literal arithmetic は compile-time folding 対応。dynamic unary minus と `+` / `-` / `*` / `/` / `%` は proven-safe signed-i64-backed runtime slice のみ対応し、out-of-slice dynamic 値と division/remainder by zero は issue-260 diagnostic。BigInt/BigInt equality/comparison は実装済み。mixed BigInt coercion 261 / full multi-limb arithmetic 260 / broader builtin 262 は未実装 | P2 | 260-262 |
 
 ## 式と演算子
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
-| `===` (strict equality) | ES3 | primitive fast path | 実装済み | - | - |
-| `==` (abstract equality) | ES1 | runtime helper | 実装済み（primitive coercion: nullish / boolean / number / string; object ToPrimitive は未実装） | P2 | - |
+| `===` (strict equality) | ES3 | primitive fast path | 実装済み（BigInt/BigInt mathematical value 比較を含む） | - | - |
+| `==` (abstract equality) | ES1 | runtime helper | 実装済み（primitive coercion: nullish / boolean / number / string; BigInt/BigInt; object ToPrimitive と mixed BigInt coercion は未実装） | P2 | 261 |
 | `!==`, `!=` | ES1 | derived from equality | 実装済み | - | - |
-| `<`, `>`, `<=`, `>=` | ES1 | number/string comparison | 実装済み | - | - |
+| `<`, `>`, `<=`, `>=` | ES1 | number/string/BigInt comparison | 実装済み（BigInt/BigInt 含む; mixed BigInt coercion は未実装） | P2 | 261 |
 | `+` (addition) | ES1 | number/string overload | 実装済み | - | - |
 | `-`, `*`, `/`, `%` | ES1 | arithmetic | 実装済み | - | - |
 | `++`, `--` | ES1 | arithmetic with assignment | 実装済み | - | - |
