@@ -156,7 +156,7 @@ literal.
 
 ## Progress evidence
 
-2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c`:
+2026-04-29 child `019dda13-74bf-7ec2-9146-e75ae64c098c`:
 
 - Implemented a narrow integer-only heap-number path for ordinary `number`
   values outside the tagged small-int payload range.
@@ -184,7 +184,7 @@ cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-
   access`. The issue remains open until the official sample path is safe and
   Node-compatible.
 
-2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c`:
+2026-04-29 child `019dda13-74bf-7ec2-9146-e75ae64c098c`:
 
 - Isolated the first post-build runtime trap to statement-form
   `array.push(...)` on arrays allocated from `[]`: array literals allocated
@@ -223,7 +223,7 @@ allocator (`wasm function 26`, `$alloc_heap`) called from recursive search
 ended in `$alloc_heap`, so the remaining blocker is narrower than the original
 out-of-bounds write but not yet safe to close.
 
-2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c` follow-up:
+2026-04-29 child `019dda13-74bf-7ec2-9146-e75ae64c098c` follow-up:
 
 - Narrowed the allocator trap to free-list reuse under recursive
   string/array-allocation pressure. `$alloc_heap` previously reused a swept
@@ -243,7 +243,7 @@ out-of-bounds write but not yet safe to close.
   live result set requires an accepted memory-limit policy change or a further
   GC/representation fix.
 
-2026-04-30 child `019dda13-74bf-7ec2-9146-e75ae64c098c` reducer follow-up:
+2026-04-29 child `019dda13-74bf-7ec2-9146-e75ae64c098c` reducer follow-up:
 
 - Created implementation-ready issue 303 for the memory-limit policy decision.
 - Reduced the remaining `$alloc_heap` trap to an ABC451 depth-7 live-set
