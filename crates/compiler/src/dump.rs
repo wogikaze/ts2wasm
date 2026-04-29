@@ -801,6 +801,25 @@ fn unparse_expr(expr: &Expr) -> String {
         Expr::ArrowFn { params, body, .. } => {
             format!("({}) => {}", params.join(", "), unparse_expr(body))
         }
+        Expr::FunctionExpr {
+            name, params, body, ..
+        } => {
+            let params = params
+                .iter()
+                .map(|(name, _, is_rest)| {
+                    if *is_rest {
+                        format!("...{name}")
+                    } else {
+                        name.clone()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join(", ");
+            let mut out = format!("function {name}({params}) {{\n");
+            unparse_block(&mut out, body, 1);
+            out.push('}');
+            out
+        }
         Expr::Spread { expr, .. } => format!("...{}", unparse_expr(expr)),
         Expr::PropertyAssign {
             object,

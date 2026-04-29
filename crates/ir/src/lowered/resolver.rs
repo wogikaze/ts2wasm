@@ -1488,6 +1488,9 @@ impl<'a> Resolver<'a> {
                 module_id: self.module_id_for_specifier(specifier),
             }),
             ResolvedExpr::ArrowFn { params, body } => self.lower_arrow_fn(params, body),
+            ResolvedExpr::FunctionExpr { name, params, body } => {
+                self.lower_named_function_expr(name, params, body)
+            }
         }
     }
 
@@ -1993,6 +1996,15 @@ impl<'a> Resolver<'a> {
             captures,
             representation: ClosureRepresentation::DirectLocalToken,
         })
+    }
+
+    fn lower_named_function_expr(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        self.lower_nested_function(name, params, body)
     }
 
     fn arrow_capture_names(

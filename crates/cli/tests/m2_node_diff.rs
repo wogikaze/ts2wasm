@@ -826,6 +826,7 @@ fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/ordinary-function-direct-call.ts",
         "fixtures/core-semantics/ordinary-function-closure-capture.ts",
         "fixtures/core-semantics/recursive-nested-function.ts",
+        "fixtures/core-semantics/named-function-expression-recursive.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -860,14 +861,6 @@ fn unsupported_mutable_ordinary_function_closure_reports_issue_062e() {
     assert_build_fails_with_unsupported_syntax_without_span(
         "fixtures/core-semantics/ordinary-function-closure-mutation-unsupported.ts",
         "issue-062e:",
-    );
-}
-
-#[test]
-fn unsupported_recursive_named_function_expression_reports_issue_273() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/named-function-expression-recursive-unsupported.ts",
-        "issue-273: named function expressions are not supported in this recursive function slice",
     );
 }
 

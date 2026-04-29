@@ -232,4 +232,9 @@ pub enum ResolvedExpr {
         params: Vec<String>,
         body: Box<ResolvedExpr>,
     },
+    FunctionExpr {
+        name: String,
+        params: Vec<ResolvedParam>,
+        body: Vec<ResolvedStmt>,
+    },
 }

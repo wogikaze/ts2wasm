@@ -591,6 +591,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
             expr_contains_this(object) || expr_contains_this(key) || expr_contains_this(value)
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_this(body),
+        ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
@@ -734,6 +735,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
                 || expr_contains_arguments(value)
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
+        ResolvedExpr::FunctionExpr { .. } => false,
         ResolvedExpr::This { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -1701,6 +1703,7 @@ fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut
             }
         }
         ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -2025,6 +2028,7 @@ fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bool {
                 || expr_assigns_any_name(value, names)
         }
         ResolvedExpr::ArrowFn { .. }
+        | ResolvedExpr::FunctionExpr { .. }
         | ResolvedExpr::This { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }
