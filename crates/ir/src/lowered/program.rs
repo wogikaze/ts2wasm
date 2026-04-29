@@ -834,6 +834,7 @@ fn lower_function(
                 resolver.lower_binding_pattern_declarations(
                     &pattern,
                     LoweredExpr::Local(param_local),
+                    None,
                 )?,
             );
             continue;

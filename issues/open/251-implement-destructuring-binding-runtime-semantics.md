@@ -185,3 +185,10 @@ Nested array follow-up:
 - Added `fixtures/core-semantics/destructuring-binding-nested-runtime.ts` and Node/iwasm differential coverage for declaration, ordinary function parameter, and arrow parameter nested arrays.
 - Added `fixtures/core-semantics/destructuring-binding-nested-object-unsupported.ts`; nested object binding remains a source-spanned issue-251 unsupported diagnostic.
 - Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (14 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (506 passed, 4 skipped).
+
+Object rest follow-up:
+
+- Implemented object rest binding for declaration patterns whose source is a static object literal by materializing the rest object from non-excluded literal keys.
+- Added `fixtures/core-semantics/destructuring-binding-object-rest-runtime.ts` and Node/iwasm differential coverage for shorthand and alias exclusions.
+- Kept dynamic-source and parameter object rest out of scope with source-spanned issue-251 diagnostics via `fixtures/core-semantics/destructuring-binding-object-rest-unsupported.ts`.
+- Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (15 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (507 passed, 4 skipped).
