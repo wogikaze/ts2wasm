@@ -681,6 +681,7 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/private-class-field-read-write.ts",
         "fixtures/core-semantics/private-class-field-internal-slot-gc.ts",
         "fixtures/core-semantics/private-class-method-call.ts",
+        "fixtures/core-semantics/private-class-static-method-call.ts",
         "fixtures/core-semantics/private-class-getter-direct.ts",
         "fixtures/core-semantics/private-class-setter-direct.ts",
     ] {
@@ -697,6 +698,7 @@ fn private_class_field_unsupported_forms_report_issue_255() {
         "fixtures/core-semantics/private-class-field-object-keys-unsupported.ts",
         "fixtures/core-semantics/private-class-method-external-unsupported.ts",
         "fixtures/core-semantics/private-class-method-extracted-unsupported.ts",
+        "fixtures/core-semantics/private-class-static-method-external-unsupported.ts",
         "fixtures/core-semantics/private-class-getter-external-unsupported.ts",
         "fixtures/core-semantics/private-class-setter-unsupported.ts",
         "fixtures/core-semantics/private-class-setter-external-unsupported.ts",
