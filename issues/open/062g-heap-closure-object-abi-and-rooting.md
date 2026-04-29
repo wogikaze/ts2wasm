@@ -3,10 +3,10 @@ id: 062g
 title: "Define and implement heap closure object ABI and rooting"
 type: feature
 area: runtime/abi
-class: design-ready
+class: blocked
 priority: P1
 depends_on: []
-blocks: ["062e"]
+blocks: ["062e", "256", "257", "258"]
 created: 2026-04-29
 updated: 2026-04-29
 ---
@@ -15,6 +15,9 @@ updated: 2026-04-29
 
 Define and implement the closure value representation needed for ordinary
 functions or arrows that escape the declaring activation.
+
+Problem: Returned closures need a heap object ABI and GC rooting contract before
+implementation can safely preserve captured activations.
 
 Problem: Returned closures cannot be represented by the current devirtualized
 generated-function lowering because captured values are passed as hidden call
@@ -120,13 +123,21 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/256-lower-returned-immutable-closures-to-heap-values.md`
+- [x] created: `issues/open/257-emit-heap-closure-allocation-and-dispatch.md`
+- [x] created: `issues/open/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md`
 
 ## Notes
 
 Start from the current non-escaping closure path: it already collects immutable
 captures and passes them as hidden params for direct known calls. Do not reuse
 that opaque token for escaping closures without a heap environment.
+
+2026-04-29 design slice: `docs/14-runtime-abi.md` now defines the closure heap
+object ABI. Closure values are object-tagged heap values with a closure sentinel,
+`code_id`, immutable capture count, reserved flags, and raw capture slots. The
+remaining implementation is split into issues 256, 257, and 258 so this broad
+parent remains a tracking blocker rather than an executable work order.
 
 ## Completion evidence
 
