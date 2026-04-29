@@ -1847,7 +1847,7 @@ impl<'a> Resolver<'a> {
                             lowered_args.push(self.lower_expr(elem)?);
                         }
                     } else if let Some(value) = self.static_string_spread_value(spread_expr) {
-                        lowered_args.extend(Self::lower_ascii_string_call_spread_chars(&value)?);
+                        lowered_args.extend(Self::lower_ascii_string_spread_chars(&value)?);
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1878,14 +1878,12 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    fn lower_ascii_string_call_spread_chars(
-        value: &str,
-    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+    fn lower_ascii_string_spread_chars(value: &str) -> Result<Vec<LoweredExpr>, Diagnostic> {
         if !value.is_ascii() {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message:
-                    "issue-274: string call spread is currently limited to ASCII literal-derived strings"
+                    "issue-274: string spread is currently limited to ASCII literal-derived strings"
                         .to_owned(),
                 span: None,
             });
@@ -1920,6 +1918,11 @@ impl<'a> Resolver<'a> {
                 ResolvedExpr::Spread(spread_expr) => {
                     if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
                         pending_dense.extend(self.lower_array_literal_elements(spread_elements)?);
+                        continue;
+                    }
+
+                    if let Some(value) = self.static_string_spread_value(spread_expr) {
+                        pending_dense.extend(Self::lower_ascii_string_spread_chars(&value)?);
                         continue;
                     }
 
@@ -2008,16 +2011,19 @@ impl<'a> Resolver<'a> {
         for element in elements {
             match element {
                 ResolvedExpr::Spread(spread_expr) => {
-                    let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() else {
+                    if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
+                        lowered.extend(self.lower_array_literal_elements(spread_elements)?);
+                    } else if let Some(value) = self.static_string_spread_value(spread_expr) {
+                        lowered.extend(Self::lower_ascii_string_spread_chars(&value)?);
+                    } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message:
-                                "issue-274: array literal spread is only supported for literal arrays in this milestone"
+                                "issue-274: array literal spread is only supported for literal arrays and ASCII literal-derived strings in this milestone"
                                     .to_owned(),
                             span: None,
                         });
-                    };
-                    lowered.extend(self.lower_array_literal_elements(spread_elements)?);
+                    }
                 }
                 _ => lowered.push(self.lower_expr(element)?),
             }

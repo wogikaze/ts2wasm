@@ -1167,6 +1167,11 @@ fn spread_operator_array_local_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_string_array_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-string.ts");
+}
+
+#[test]
 fn spread_operator_set_array_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-array-set.ts");
 }
