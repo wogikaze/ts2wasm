@@ -653,6 +653,7 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/private-class-field-read-write.ts",
         "fixtures/core-semantics/private-class-field-internal-slot-gc.ts",
+        "fixtures/core-semantics/private-class-method-call.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -665,6 +666,8 @@ fn private_class_field_unsupported_forms_report_issue_255() {
         "fixtures/core-semantics/private-class-field-external-unsupported.ts",
         "fixtures/core-semantics/private-class-field-backing-key-unsupported.ts",
         "fixtures/core-semantics/private-class-field-object-keys-unsupported.ts",
+        "fixtures/core-semantics/private-class-method-external-unsupported.ts",
+        "fixtures/core-semantics/private-class-method-extracted-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-255:");
     }
