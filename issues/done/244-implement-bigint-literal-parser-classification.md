@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/250-design-bigint-runtime-value-support.md`
+- [x] created: `issues/done/250-design-bigint-runtime-value-support.md`
 
 ## Notes
 

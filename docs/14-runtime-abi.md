@@ -82,6 +82,72 @@ ptr を取り出すには: `ptr = raw_value & HEAP_MASK`
 length を読むには: `len = i32.load(ptr)`
 文字列バイトは: `ptr + 4` から `len` バイト
 
+### BigInt value representation (accepted design)
+
+BigInt は **heap object representation** を採用する。現行 `RawValue` の下位 3bit tag はすでに immediate / array / string / object で使い切っているため、BigInt 専用 immediate tag は追加しない。BigInt `RawValue` は `object` tag (`ptr | 0b111`) を使い、GC heap header の object kind で BigInt payload として判別する。
+
+選択理由:
+
+- BigInt は任意精度整数であり、small immediate だけでは ECMA-262 の値域を表せない
+- `RawValue` の tag 空間を拡張すると既存 array/string/object wire encoding と backend helper 全体に波及する
+- GC heap object に統一すると literal / arithmetic / boxed builtin boundary / future Wasm GC backend の差し替えを同じ論理 ABI で扱える
+
+BigInt object payload は canonical little-endian limb sequence とする。
+
+```text
+BigInt payload:
+
+  +0: i32 sign        ; -1 negative, 0 zero, 1 positive
+  +4: i32 limb_count  ; canonical zero は sign=0, limb_count=0
+  +8: u64 limbs[limb_count] little-endian magnitude limbs
+```
+
+Canonicalization rules:
+
+- zero は必ず `sign=0, limb_count=0` に正規化する
+- non-zero は `sign` を `-1` または `1` にし、最上位 limb の zero padding を持たない
+- `-0n` は ECMA-262 と同じく `0n` と同一値に正規化する
+- 文字列化は `n` suffix を付けない decimal string を返す
+
+`RawValue` 判定は次の順で行う。
+
+1. 下位 tag が immediate / array / string / object のどれかを判定する
+2. object tag の場合だけ heap header kind を読む
+3. heap kind が `bigint` のとき BigInt payload として扱う
+
+BigInt object は GC mark 対象だが、payload は primitive limb array なので子参照を持たない。interned BigInt は当面作らず、literal lowering は runtime constructor で heap allocation する。
+
+### BigInt runtime ABI boundary
+
+BigInt を扱う runtime helper は論理 `jsval` を入出力に使う。現行 wasm wire では `RawValue i32` を返し、将来の `jsval i64` bridge では同じ論理 helper 名を維持する。
+
+| Logical helper | Signature | First implementation owner | Notes |
+|---|---|---|---|
+| `make_bigint_literal` | `(ptr digits, len, radix, negative) -> jsval` | issue 259 | Source literal digits を runtime が canonical limb に変換する |
+| `bigint_to_string` | `(jsval) -> jsval` | issue 262 | decimal string。`n` suffix は含めない |
+| `bigint_to_boolean` | `(jsval) -> bool` | issue 259 | `0n` は false、それ以外は true |
+| `bigint_strict_equal` | `(jsval, jsval) -> bool` | issue 261 | BigInt 同士は mathematical value 比較。Number とは常に false |
+| `bigint_abstract_equal` | `(jsval, jsval) -> bool` | issue 261 | Number/String/Boolean との ECMA-262 coercion 境界を実装する |
+| `bigint_compare` | `(op, jsval, jsval) -> jsval` | issue 261 | `< <= > >=`。成功時 bool `jsval`、例外時 pending exception |
+| `bigint_add` / `sub` / `mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260 | BigInt 同士のみ。Number 混在は TypeError |
+| `bigint_unary_minus` | `(jsval) -> jsval` | issue 260 | `-0n` は `0n` |
+
+IR は BigInt literal と BigInt operations を phase-specific に扱う。
+
+- Parser/frontend: BigInt syntax classification only。invalid literal syntax は issue 244 の diagnostics を維持する
+- Resolver/BuiltinResolver: BigInt literal node を runtime-capable expression として残し、未実装 operation は該当 implementation issue ID を含む source diagnostic にする
+- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。BigInt operation は mixed Number/BigInt TypeError path を runtime helper に委譲する
+- Backend/runtime link plan: BigInt helper は `RuntimeFn` catalog で deps/imports/capabilities/runtime strings を持つ。BigInt だけでは host import を要求しない
+
+Unsupported boundary:
+
+- literal runtime values until issue 259: `unsupported-bigint-runtime` / issue 259
+- BigInt arithmetic and unary operators until issue 260: `unsupported-bigint-arithmetic` / issue 260
+- BigInt equality, relational comparison, and coercion until issue 261: `unsupported-bigint-comparison` / issue 261
+- BigInt builtin functions and string conversion until issue 262: `unsupported-bigint-builtin` / issue 262
+
+Broad BigInt implementation must not be hidden inside parser, backend emitter, or generic number helpers. Each slice must update docs/current-state/tests with Node differential evidence for the exact operation class it enables.
+
 ## Planned Heap GC strategy (017a)
 
 This section records the planned GC model for the current runtime. The implementation is not in this issue.

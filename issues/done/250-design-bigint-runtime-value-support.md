@@ -6,9 +6,11 @@ area: runtime/semantics
 class: design-ready
 priority: P2
 depends_on: []
-blocks: []
+blocks: [259, 260, 261, 262]
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -37,10 +39,10 @@ The compiler has an accepted BigInt value representation and phase contract. A l
 
 In scope:
 
-- [ ] Decide whether BigInt values use a heap object representation, tagged immediate representation, or hybrid representation.
-- [ ] Define the IR/runtime boundary for BigInt literals and basic operations.
-- [ ] Define diagnostics for unsupported BigInt operations that remain out of the first implementation slice.
-- [ ] Split implementation-ready child issues for literal values, arithmetic/comparison, equality/coercion boundaries, and builtin/string conversion behavior as needed.
+- [x] Decide whether BigInt values use a heap object representation, tagged immediate representation, or hybrid representation.
+- [x] Define the IR/runtime boundary for BigInt literals and basic operations.
+- [x] Define diagnostics for unsupported BigInt operations that remain out of the first implementation slice.
+- [x] Split implementation-ready child issues for literal values, arithmetic/comparison, equality/coercion boundaries, and builtin/string conversion behavior as needed.
 
 Out of scope:
 
@@ -67,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] BigInt value representation and ABI boundary are documented.
-- [ ] Unsupported and supported BigInt operation boundaries are issue-linked and phase-specific.
-- [ ] Implementation-ready child issues exist for the first runtime slices.
-- [ ] Docs/current-state/issues are synchronized with the chosen boundary.
+- [x] BigInt value representation and ABI boundary are documented.
+- [x] Unsupported and supported BigInt operation boundaries are issue-linked and phase-specific.
+- [x] Implementation-ready child issues exist for the first runtime slices.
+- [x] Docs/current-state/issues are synchronized with the chosen boundary.
 
 ## Validation
 
@@ -97,15 +99,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update runtime/ABI docs with the accepted BigInt contract
+- [x] update runtime/ABI docs with the accepted BigInt contract
 
 Current state:
 
-- [ ] update `current-state.md` if implementation status changes
+- [x] update `current-state.md` if implementation status changes
 
 Follow-up issues:
 
-- [ ] create implementation-ready child issues after the runtime design boundary is accepted
+- [x] create implementation-ready child issues after the runtime design boundary is accepted
 
 ## Notes
 
@@ -117,16 +119,32 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `<pending>`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: mise run update-issue-index
+result: pass; issues/index.md regenerated
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK (up to date)
+date: 2026-04-29
+
+command: mise run check issues
+result: pass; check_issue_health OK
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass; 455 passed, 4 skipped
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Implementation remains split across issues 259-262.
