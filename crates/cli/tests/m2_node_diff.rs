@@ -127,6 +127,11 @@ fn array_map_arrow_pushed_local_string_constructor_fixture_matches_node_output_u
 }
 
 #[test]
+fn array_sort_numeric_comparator_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-sort-numeric-comparator.ts");
+}
+
+#[test]
 fn m5_edge_case_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         // tag-check safety: out-of-bounds array access → undefined
@@ -2078,6 +2083,14 @@ fn array_map_fixtures_report_issue_270() {
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-270: Array.prototype.map");
     }
+}
+
+#[test]
+fn array_sort_unsupported_forms_report_issue_299() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/array-sort-default-unsupported.ts",
+        "issue-299: Array.prototype.sort",
+    );
 }
 
 #[test]
