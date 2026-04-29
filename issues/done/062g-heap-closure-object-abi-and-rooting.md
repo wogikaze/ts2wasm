@@ -7,8 +7,10 @@ class: blocked
 priority: P1
 depends_on: ["256", "257", "258"]
 blocks: ["062e"]
+status: done
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -49,11 +51,11 @@ across allocation pressure.
 
 In scope:
 
-- [ ] Define the closure object/environment layout and code identity contract.
-- [ ] Lower returned ordinary function closures to heap closure values.
-- [ ] Dispatch calls through supported heap closure values.
-- [ ] Root closure environments during GC mark/sweep.
-- [ ] Add Node/iwasm differential fixtures for returned closure capture under
+- [x] Define the closure object/environment layout and code identity contract.
+- [x] Lower returned ordinary function closures to heap closure values.
+- [x] Dispatch calls through supported heap closure values.
+- [x] Root closure environments during GC mark/sweep.
+- [x] Add Node/iwasm differential fixtures for returned closure capture under
       allocation pressure.
 
 Out of scope:
@@ -81,13 +83,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A returned closure keeps an immutable captured local live after the
+- [x] A returned closure keeps an immutable captured local live after the
       declaring function returns.
-- [ ] A returned closure with a captured heap value survives allocation pressure
+- [x] A returned closure with a captured heap value survives allocation pressure
       in a Node/iwasm differential fixture.
-- [ ] Unsupported mutable environment forms either work correctly or produce an
+- [x] Unsupported mutable environment forms either work correctly or produce an
       issue-linked diagnostic with a follow-up.
-- [ ] Runtime/ABI docs or current-state notes are synchronized with the closure
+- [x] Runtime/ABI docs or current-state notes are synchronized with the closure
       object contract.
 
 ## Validation
@@ -115,11 +117,11 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md` if the runtime closure ABI changes
+- [x] updated: `docs/14-runtime-abi.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
@@ -145,16 +147,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `50e36ded2d68eb09dc29d5ed7fcd7723bc49c867`
+- `b1e9a98c8fc94ccf794998ba97376045e7438cb9`
+- `115d5cf74a9d19840303ff951463264529deb415`
+- `29d57aced2fdcc3273ead0997bac39797780e0e5`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -E 'test(closure) or test(function) or test(node_diff) or test(gc)'
+result: pass; 42 tests
+date: 2026-04-29
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/ordinary-function-closure-gc-pressure.ts -o /tmp/ts2wasm-258-gc-pressure-parent.wasm && iwasm /tmp/ts2wasm-258-gc-pressure-parent.wasm
+result: pass; output `closure-object-alive`
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass
+date: 2026-04-29
+
+command: mise run check issues
+result: pass
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Mutable captured environments, function metadata/prototype properties,
+  broader closure arity dispatch, dynamic `Function`, `eval`, generators, and
+  async closures remain outside this parent issue and are tracked by existing
+  separate issues/scopes.

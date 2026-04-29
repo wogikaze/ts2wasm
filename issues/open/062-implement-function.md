@@ -55,7 +55,7 @@ Implementation scope belongs to child issues:
 - [x] Dynamic Function constructor diagnostics and policy: issue 062b
 - [ ] Ordinary function declarations and direct calls: issue 062c
 - [ ] Function receiver `this` and `arguments`: issue 062d
-- [ ] Closures and captured lexical environments: issue 062e
+- [x] Closures and captured lexical environments: issue 062e
 - [ ] Function object metadata: issue 062f
 
 Out of scope:
