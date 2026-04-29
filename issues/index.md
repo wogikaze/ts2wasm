@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
 | frontend | 191 | 129 | 62 |
-| ir | 7 | 1 | 6 |
+| ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
@@ -24,7 +24,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 289 | 148 | 141 |
+| total | 289 | 147 | 142 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,7 +46,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 253 | Implement optional chaining runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Issue 246 classifies `obj?.x`, `obj?.[key]`, and `fn?.()` in the frontend parser, but name resolution currently repor... |
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 249 parses `static { ... }` as `ClassStaticBlock`, but builtin resolution currently rejects static blocks with ... |
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters, but builtin resolution rejects ... |
-| 256 | Lower returned immutable closures to heap closure values | feature | ir | implementation-ready | P1 |  | Returned nested closures are currently rejected with `issue-062e` |
+| 257 | Emit heap closure allocation and dispatch | feature | backend | implementation-ready | P1 | 256 | The backend currently emits `LoweredExpr::ArrowFn` as an opaque numeric |
 | 259 | Implement BigInt literal runtime values | feature | runtime/semantics | implementation-ready | P2 |  | BigInt literals parse as explicit AST nodes, but build/runtime phases still report unsupported diagnostics instead of... |
 <!-- generated:ready:end -->
 
@@ -190,7 +190,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
-| 257 | Emit heap closure allocation and dispatch | feature | backend | 256 | Emit heap closure allocation and dispatch |
 | 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | 257 | Mark heap closure captures and add allocation-pressure fixture |
 | 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | 259 | Implement BigInt arithmetic operators |
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | 259 | Implement BigInt equality comparison and coercion boundaries |
@@ -344,6 +343,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 249 | Implement class static block parser support | feature | frontend/syntax | see `issues/done/249-implement-class-static-block-parser.md` |
 | 250 | Design BigInt runtime value support | feature | runtime/semantics | see `issues/done/250-design-bigint-runtime-value-support.md` |
 | 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | see `issues/done/252-implement-destructuring-assignment-pattern-parser.md` |
+| 256 | Lower returned immutable closures to heap closure values | feature | ir | see `issues/done/256-lower-returned-immutable-closures-to-heap-values.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

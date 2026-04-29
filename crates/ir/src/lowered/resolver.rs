@@ -7,6 +7,7 @@ struct Resolver<'a> {
     next_func_id: usize,
     generated_functions: Vec<LoweredFunction>,
     arrow_locals: HashMap<LocalId, ArrowClosure>,
+    heap_closure_locals: HashSet<LocalId>,
     module_ids: HashMap<String, usize>,
     modules: Vec<ModuleInfo>,
     class_constructor_ids: HashMap<String, FuncId>,
@@ -24,6 +25,16 @@ struct Resolver<'a> {
 struct ArrowClosure {
     func_id: FuncId,
     captures: Vec<LocalId>,
+}
+
+impl ArrowClosure {
+    fn to_expr(&self, representation: ClosureRepresentation) -> LoweredExpr {
+        LoweredExpr::ArrowFn {
+            func_id: self.func_id,
+            captures: self.captures.clone(),
+            representation,
+        }
+    }
 }
 
 impl<'a> Resolver<'a> {
@@ -44,6 +55,7 @@ impl<'a> Resolver<'a> {
             next_func_id,
             generated_functions: Vec::new(),
             arrow_locals: HashMap::new(),
+            heap_closure_locals: HashSet::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -78,6 +90,7 @@ impl<'a> Resolver<'a> {
             next_func_id,
             generated_functions: Vec::new(),
             arrow_locals: HashMap::new(),
+            heap_closure_locals: HashSet::new(),
             module_ids: HashMap::new(),
             modules: Vec::new(),
             class_constructor_ids,
@@ -146,7 +159,10 @@ impl<'a> Resolver<'a> {
                 let local_id = self.declare_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
-                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                if let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = &lowered
+                {
                     self.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
@@ -157,6 +173,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.arrow_locals.remove(&local_id);
                 }
+                self.update_heap_closure_local(local_id, expr, &lowered);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -175,7 +192,10 @@ impl<'a> Resolver<'a> {
                 let local_id = self.resolve_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = self.lower_expr(expr)?;
-                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                if let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = &lowered
+                {
                     self.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
@@ -186,6 +206,7 @@ impl<'a> Resolver<'a> {
                 } else {
                     self.arrow_locals.remove(&local_id);
                 }
+                self.update_heap_closure_local(local_id, expr, &lowered);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -216,25 +237,24 @@ impl<'a> Resolver<'a> {
             }),
             ResolvedStmt::Return(expr) => {
                 if let ResolvedExpr::Ident(name) = expr
-                    && self
+                    && let Some(closure) = self
                         .resolve_local(name)
                         .ok()
-                        .is_some_and(|local| self.arrow_locals.contains_key(&local))
+                        .and_then(|local| self.arrow_locals.get(&local))
                 {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-062e: returning closure `{name}` requires heap environment/rooting support and is not supported in this slice"
-                        ),
-                        span: None,
-                    });
+                    return Ok(LoweredStmt::Return(
+                        closure.to_expr(ClosureRepresentation::HeapObject),
+                    ));
                 }
                 Ok(LoweredStmt::Return(self.lower_expr(expr)?))
             }
             ResolvedStmt::Function { name, params, body } => {
                 let local_id = self.declare_local(name)?;
                 let closure = self.lower_nested_function(name, params, body)?;
-                if let LoweredExpr::ArrowFn { func_id, captures } = &closure {
+                if let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = &closure
+                {
                     self.arrow_locals.insert(
                         local_id,
                         ArrowClosure {
@@ -536,6 +556,17 @@ impl<'a> Resolver<'a> {
                     lowered_args.extend(closure.captures.iter().copied().map(LoweredExpr::Local));
                     return Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(closure.func_id),
+                        args: lowered_args,
+                    });
+                }
+
+                if let Ok(local_id) = self.resolve_local(func_name)
+                    && self.heap_closure_locals.contains(&local_id)
+                {
+                    let mut lowered_args = vec![LoweredExpr::Local(local_id)];
+                    lowered_args.extend(self.lower_call_args(args)?);
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "HeapClosureCall".to_owned(),
                         args: lowered_args,
                     });
                 }
@@ -1321,7 +1352,11 @@ impl<'a> Resolver<'a> {
         self.generated_functions.push(lowered.function);
         self.generated_functions.extend(lowered.generated_functions);
 
-        Ok(LoweredExpr::ArrowFn { func_id, captures })
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
+        })
     }
 
     fn lower_nested_function(
@@ -1389,7 +1424,11 @@ impl<'a> Resolver<'a> {
         self.generated_functions.push(lowered.function);
         self.generated_functions.extend(lowered.generated_functions);
 
-        Ok(LoweredExpr::ArrowFn { func_id, captures })
+        Ok(LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation: ClosureRepresentation::DirectLocalToken,
+        })
     }
 
     fn arrow_capture_names(&self, params: &[String], body: &ResolvedExpr) -> Vec<String> {
@@ -1534,6 +1573,45 @@ impl<'a> Resolver<'a> {
             self.regexp_literal_locals.insert(local_id);
         } else {
             self.regexp_literal_locals.remove(&local_id);
+        }
+    }
+
+    fn update_heap_closure_local(
+        &mut self,
+        local_id: LocalId,
+        expr: &ResolvedExpr,
+        lowered: &LoweredExpr,
+    ) {
+        if self.expr_is_known_heap_closure(expr)
+            || matches!(
+                lowered,
+                LoweredExpr::ArrowFn {
+                    representation: ClosureRepresentation::HeapObject,
+                    ..
+                }
+            )
+        {
+            self.heap_closure_locals.insert(local_id);
+        } else {
+            self.heap_closure_locals.remove(&local_id);
+        }
+    }
+
+    fn expr_is_known_heap_closure(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Call { callee, .. } => match callee.as_ref() {
+                ResolvedExpr::Ident(name) => self
+                    .resolve_func(name)
+                    .ok()
+                    .and_then(|func_id| self.function_signatures.get(&func_id))
+                    .is_some_and(|signature| signature.returns_heap_closure),
+                _ => false,
+            },
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local_id| self.heap_closure_locals.contains(&local_id)),
+            _ => false,
         }
     }
 

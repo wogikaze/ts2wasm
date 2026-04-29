@@ -375,6 +375,20 @@ fn validate_expr(
                 }
             }
         }
+        LoweredExpr::RuntimeCall { runtime_fn, args } => {
+            for arg in args {
+                validate_expr(arg, local_count, num_funcs, program, errors, true);
+            }
+            if runtime_fn == "HeapClosureCall" {
+                errors.push(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-257: heap closure call dispatch is not implemented by the backend yet"
+                            .to_owned(),
+                    span: None,
+                });
+            }
+        }
         LoweredExpr::ArrayNew { elements } => {
             for elem in elements {
                 validate_expr(elem, local_count, num_funcs, program, errors, true);
@@ -456,10 +470,24 @@ fn validate_expr(
                 span: None,
             });
         }
-        LoweredExpr::ArrowFn { func_id, captures } => {
+        LoweredExpr::ArrowFn {
+            func_id,
+            captures,
+            representation,
+        } => {
             check_func_id(*func_id, num_funcs, errors);
             for capture in captures {
                 check_local_id(*capture, local_count, errors);
+            }
+            if matches!(representation, ClosureRepresentation::HeapObject) {
+                errors.push(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-257: heap closure `{}` allocation/dispatch is not implemented by the backend yet",
+                        func_id.0
+                    ),
+                    span: None,
+                });
             }
         }
         _ => {}

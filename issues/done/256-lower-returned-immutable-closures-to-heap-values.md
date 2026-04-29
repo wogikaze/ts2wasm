@@ -7,8 +7,10 @@ class: implementation-ready
 priority: P1
 depends_on: []
 blocks: []
+status: done
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -38,13 +40,13 @@ the generic `issue-211` function-valued local diagnostic.
 
 In scope:
 
-- [ ] Add lowered IR nodes or call kinds for heap closure creation and supported
+- [x] Add lowered IR nodes or call kinds for heap closure creation and supported
       heap closure calls.
-- [ ] Detect returned nested ordinary functions with immutable captures and
+- [x] Detect returned nested ordinary functions with immutable captures and
       lower them to the new heap closure value representation.
-- [ ] Preserve the existing non-escaping direct-call closure path where it is
+- [x] Preserve the existing non-escaping direct-call closure path where it is
       already sufficient.
-- [ ] Keep mutable captured bindings rejected with an issue-linked diagnostic.
+- [x] Keep mutable captured bindings rejected with an issue-linked diagnostic.
 
 Out of scope:
 
@@ -69,13 +71,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `ts2wasm_ir::lowered` can represent `return inner;` for an immutable
+- [x] `ts2wasm_ir::lowered` can represent `return inner;` for an immutable
       captured nested function as heap closure creation.
-- [ ] A new or updated lowering regression asserts the closure carries the
+- [x] A new or updated lowering regression asserts the closure carries the
       expected `FuncId` and capture `LocalId` order.
-- [ ] `ordinary-function-closure-mutation-unsupported.ts` still reports an
+- [x] `ordinary-function-closure-mutation-unsupported.ts` still reports an
       issue-linked mutable-environment diagnostic.
-- [ ] Backend validation remains honest: unsupported heap-closure IR is either
+- [x] Backend validation remains honest: unsupported heap-closure IR is either
       rejected by backend validation until issue 257 lands, or covered by
       explicit backend support.
 
@@ -104,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` if supported behavior changes
+- [x] updated: `current-state.md`
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -126,16 +128,50 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `4f913980c01e374793088134f5d1222dee459359`
+- `80842da68bf616d1f18417b0b77928f626315f7d`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli -E 'test(lowering_represents_returned_ordinary_closure_as_heap_creation) or test(validate_rejects_heap_closure_creation_until_issue_257_backend_support)'
+result: pass; 2 tests run, 2 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli -E 'test(lowering_represents_known_heap_closure_local_call_explicitly) or test(validate_rejects_heap_closure_creation_until_issue_257_backend_support) or test(unsupported_returned_ordinary_function_closure_reports_issue_257)'
+result: pass; 3 tests run, 3 passed
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(closure) or test(function) or test(node_diff)'
+result: pass; 31 tests run, 31 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-ir
+result: pass; 21 tests run, 21 passed
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass; 464 tests run, 464 passed, 4 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass
+date: 2026-04-29
+
+command: mise run check issues
+result: pass
+date: 2026-04-29
+
+command: mise run reference-coverage -- test262 --limit 94 --detail
+result: not run; not required for close by parent request in this follow-up
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Heap closure allocation/dispatch remains unsupported by backend and is
+  intentionally rejected with issue-257 until issue 257 lands.
