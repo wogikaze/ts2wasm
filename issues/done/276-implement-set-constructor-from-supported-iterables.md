@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/279-implement-observable-set-constructor-add-dispatch.md`
+- [x] created: `issues/done/279-implement-observable-set-constructor-add-dispatch.md`
 
 ## Notes
 
