@@ -140,6 +140,22 @@ Prefer a narrow resolver tracking fix. If mutation invalidation is uncertain,
 keep the slice to direct locals initialized from array literals and mutated by
 supported `.push(...)` calls.
 
+2026-04-29 progress:
+
+- Added a conservative lowered-function signature fact for functions that
+  return a local initialized from `[]` and preserved through supported
+  `.push(...)` construction.
+- Added a focused Node/iwasm fixture for `let values = [];
+  values.push(...); values.map(n => String(n))`.
+- Verified the ABC451 fixture advances past the prior
+  `issue-211: unknown receiver class for method map at 970..996` blocker.
+  The next blocker is now `DuplicateLocal: duplicate local binding: i`.
+- While validating a wider multi-element pushed-array map fixture, direct
+  indexing of the pushed array matched Node but `ArrayMapValueToString` over the
+  mutated array produced a separate Node/iwasm difference. This slice keeps the
+  regression fixture to the minimal tracked receiver case and leaves the runtime
+  mapping/rooting behavior for a follow-up.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

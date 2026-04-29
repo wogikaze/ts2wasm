@@ -2885,6 +2885,14 @@ impl<'a> Resolver<'a> {
                 self.is_known_array_expr(object)
                     && (string_constructor_arrow_callback(args) || unary_plus_arrow_callback(args))
             }
+            ResolvedExpr::Call { callee, .. } => match callee.as_ref() {
+                ResolvedExpr::Ident(name) => self
+                    .resolve_func(name)
+                    .ok()
+                    .and_then(|func_id| self.function_signatures.get(&func_id))
+                    .is_some_and(|signature| signature.returns_dense_array),
+                _ => false,
+            },
             _ => false,
         }
     }
