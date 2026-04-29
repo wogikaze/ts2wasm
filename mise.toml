@@ -188,3 +188,15 @@ run = "python scripts/manager.py check-fixture-differential"
 [tasks.manager]
 description = "Print script manager help (list all commands)"
 run = "python scripts/manager.py help"
+
+[tasks."gen-site"]
+description = "Generate documentation site content from docs/issues/fixtures"
+run = "python scripts/gen-site.py"
+
+[tasks."build-site"]
+description = "Build documentation site (generates content then builds)"
+run = "python scripts/gen-site.py && cd site && npm run build"
+
+[tasks."serve-site"]
+description = "Serve documentation site locally for development"
+run = "cd site && npm run dev"
