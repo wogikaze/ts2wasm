@@ -33,9 +33,9 @@ isolated with bounded evidence and issue 300 remains open.
 
 In scope:
 
-- [ ] Adjust GC trigger cadence, sweep/free-list scanning, or allocation policy
+- [x] Adjust GC trigger cadence, sweep/free-list scanning, or allocation policy
       based on the issue 307 counters.
-- [ ] Add focused regression or telemetry coverage that proves the chosen
+- [x] Add focused regression or telemetry coverage that proves the chosen
       policy reduces repeated sweep scans without hiding OOM boundaries.
 - [x] Preserve the explicit OOM trap behavior for committed code.
 - [x] Update issue 300 with attempted-policy evidence.
@@ -71,11 +71,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Bounded evidence shows lower GC sweep pressure than issue 307's
+- [x] Bounded evidence shows lower GC sweep pressure than issue 307's
       baseline (`gc_collect_count=834`, `gc_sweep_block_visits=196941253` at
       1,000,000 allocations).
 - [ ] If the depth-9 reducer completes, it prints Node-matching `1404832`.
-- [ ] `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` remains
+- [x] `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` remains
       passing.
 - [x] `oom_alloc_check_must_fail_iwasm` remains passing if runtime memory or GC
       policy changes.
@@ -113,10 +113,13 @@ Final-state docs:
 
 - [x] updated: `docs/14-runtime-abi.md` to state the current
       `alloc_bytes_since_last_gc + requested_block_size` threshold contract
+- [x] updated: `docs/14-runtime-abi.md` to state the committed 12-page GC
+      headroom and 16-page minimum memory growth policy
 
 Current state:
 
-- [x] not affected; no runtime policy change was committed
+- [x] updated: `current-state.md` records the committed headroom-aware GC
+      cadence slice and residual depth-9 blocker
 
 Follow-up issues:
 
@@ -170,6 +173,43 @@ and from `gc_sweep_block_visits=196941253` to `96942634`, but it is not a safe
 runtime change because it regresses the committed depth-8 reducer. Issue 308
 remains open. Issue 300 remains open.
 
+2026-04-29 child `308-gc-scan-slice-20260429T195405Z` progress:
+
+- Committed a memory-headroom-aware GC cadence policy: allocation-pressure GC
+  now runs only when `alloc_bytes_since_last_gc + requested_block_size >=
+  GC_THRESHOLD` and the bump allocation result is within
+  `GC_HEADROOM_PAGES=12` pages of the currently reserved memory. Small
+  `memory.grow` requests are rounded up to `HEAP_GROW_MIN_PAGES=16` when that
+  remains below `MEMORY_MAX_PAGES=185`.
+- The committed `MEMORY_MAX_PAGES=185` depth-9 search-only reducer still traps
+  in `$alloc_heap`, so issue 308 remains open and issue 300 compatibility is
+  not claimed:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-slice.wasm
+result: Exception: unreachable; elapsed 6.44
+date: 2026-04-29
+```
+
+- WAT-only telemetry with memory max 1024 and the committed 12-page headroom
+  policy produced lower 1,000,000-allocation sweep pressure than issue 307:
+
+```text
+alloc_count: 1000000
+allocated_block_bytes: 62908504
+gc_collect_count: 790
+gc_sweep_block_visits: 192697486
+gc_sweep_freed_blocks: 20567471
+heap_high_water_bytes: 20524256
+elapsed: 16.29
+```
+
+- Nearby lower-headroom candidates were rejected because they regressed the
+  required depth-8 fixture with `Exception: unreachable`:
+  `GC_HEADROOM_PAGES=1`, `8`, and `10`. `GC_HEADROOM_PAGES=16` passed depth-8
+  but did not reduce issue 307 telemetry (`gc_collect_count=837`,
+  `gc_sweep_block_visits=197777965`).
+
 ## Completion evidence
 
 Commits:
@@ -221,6 +261,46 @@ date: 2026-04-29
 
 command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
 result: failed for each uncommitted runtime candidate with iwasm `Exception: unreachable`; runtime candidates were not committed
+date: 2026-04-29
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 tests passed
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass; 1 test passed with `GC_HEADROOM_PAGES=12`
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: node /tmp/abc451-search-depth-9-308-slice.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-308-slice.wasm
+result: trapped with Exception: unreachable after 6.44s under committed 185-page policy
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 60s iwasm /tmp/abc451-search-depth-9-308-slice-telemetry-cap1024.wasm
+result: diagnostic abort after 1,000,000 allocations; GC collections 790; sweep block visits 192,697,486; freed sweep blocks 20,567,471; heap high-water 20,524,256 bytes; elapsed 16.29s
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: failed for `GC_HEADROOM_PAGES=1`, `8`, and `10` with iwasm `Exception: unreachable`; those candidates were not committed
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-04-29
+
+command: mise run check issues
+result: pass after copying parent `artifacts/coverage/results/test262-results.jsonl` into the worktree as allowed by the assignment
 date: 2026-04-29
 ```
 

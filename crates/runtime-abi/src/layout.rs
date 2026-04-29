@@ -82,6 +82,12 @@ impl Layout {
     pub const GC_RESERVED_OFFSET: u32 = 12;
     /// Initial GC threshold in bytes (trigger GC when heap exceeds this).
     pub const GC_THRESHOLD: u32 = 64 * 1024;
+    /// Reserved memory headroom that makes allocation-pressure GC run before
+    /// the bump pointer reaches the currently reserved memory end.
+    pub const GC_HEADROOM_PAGES: u32 = 12;
+    /// Minimum page count requested by one successful heap growth when far
+    /// enough from `MEMORY_MAX_PAGES`.
+    pub const HEAP_GROW_MIN_PAGES: u32 = 16;
     /// Bytes reserved in the root table allocation for active function call frames.
     ///
     /// Function entry/exit manages this as a LIFO stack so call-frame roots can be
