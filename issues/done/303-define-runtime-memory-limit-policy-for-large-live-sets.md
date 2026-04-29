@@ -193,7 +193,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- pending
+- `b4209d4` (`issue-303: define runtime memory cap`)
 
 Validation result:
 
