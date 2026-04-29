@@ -211,7 +211,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | array index `arr[n]` | ES1 | numeric index | 実装済み | - | - |
 | `arr.length` | ES1 | length property | 実装済み | - | - |
 | array holes `[1, , 3]` | ES1 | sparse array | 未実装 | P2 | - |
-| spread elements `[...arr]` | ES6 | array spreading | 未実装 | P2 | - |
+| spread elements `[...arr]` | ES6 | array spreading | 実装済み (basic: dense literals / known dense array locals / known Set locals / ASCII literal-derived strings) | - | 274 |
 | destructuring binding patterns `let [a, b] = arr` | ES6 | pattern matching | Parser accepts declarations/parameters; simple identifier-only array/object declaration bindings are runtime-supported for the covered dense-array/object-property subset, including array elisions/rest, nested array/object bindings, static object-literal rest, and literal default initializers; object rest for dynamic sources remains issue-linked unsupported | P2 | 247, 251 |
 | destructuring assignment `[a, b] = arr` | ES6 | pattern matching | Parser accepts array/object assignment patterns; runtime assignment semantics are 未実装 | P2 | 252 |
 
