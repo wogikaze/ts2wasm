@@ -26,7 +26,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 062f | Implement function object metadata | feature | frontend/semantics | implementation-ready | P2 |  | Function object metadata such as `name`, `length`, and prototype |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
-| 241 | Implement Annex B Date legacy methods | feature | runtime/builtins | implementation-ready | P2 |  | issue 061 was closed as a duplicate of the Date epic, but its Annex B Date reference evidence needs a closeable child... |
 | 242 | Implement Date live time with WASI realtime clock | feature | runtime/builtins | implementation-ready | P1 | 239 | Live Date entry points still emit unsupported diagnostics even after the policy decision; implementation now needs to... |
 <!-- generated:ready:end -->
 
@@ -299,6 +298,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 237 | Implement Annex B IsHTMLDDA compatibility | feature | runtime/semantics | see `issues/done/237-implement-annexb-ishtmldda-compatibility.md` |
 | 238 | Make strict warning gates pass | infra | tests | see `issues/done/238-make-strict-warning-gates-pass.md` |
 | 239 | Design Date live-time capability policy | docs | runtime/builtins | see `issues/done/239-design-date-live-time-capability-policy.md` |
+| 241 | Implement Annex B Date legacy methods | feature | runtime/builtins | see `issues/done/241-implement-annex-b-date-legacy-methods.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

@@ -371,7 +371,7 @@ fn date_to_string_fixture_reports_timezone_policy_diagnostic() {
 }
 
 #[test]
-fn date_annex_b_fixtures_report_issue_061() {
+fn date_annex_b_fixtures_report_issue_241() {
     for (fixture, method) in [
         (
             "fixtures/builtins-and-io/date-annexb-get-year-unsupported.ts",
@@ -388,7 +388,7 @@ fn date_annex_b_fixtures_report_issue_061() {
     ] {
         assert_build_fails_with_unsupported_syntax(
             fixture,
-            &format!("issue-061: Date.prototype.{method} is Annex B legacy Date behavior"),
+            &format!("issue-241: Date.prototype.{method} is Annex B legacy Date behavior"),
         );
     }
 }

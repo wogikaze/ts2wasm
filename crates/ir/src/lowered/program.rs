@@ -657,7 +657,7 @@ fn unsupported_annex_b_date_method_diagnostic(method: &str, span: Option<Span>) 
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
-            "issue-061: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
+            "issue-241: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
         ),
         span,
     }
@@ -998,4 +998,3 @@ fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
         }),
     }
 }
-
