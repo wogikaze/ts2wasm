@@ -34,7 +34,7 @@ if (fact_of_3 !== 6) {
 }
 ```
 
-Current historical behavior: UnresolvedName or UnsupportedSyntax when function forms call themselves.
+Historical behavior: UnresolvedName or UnsupportedSyntax when function forms call themselves.
 
 ## Acceptance criteria
 
@@ -70,11 +70,15 @@ mise run check issues
 2026-04-29 named function expression slice:
 
 - Added frontend/IR support for named function expressions and lowered them through the existing nested-function closure path so the internal function name binds inside the function body.
-- Converted the named function expression recursion fixture in the child branch and added it to the Node/iwasm differential function fixture group.
+- Converted the named function expression recursion fixture to `fixtures/core-semantics/named-function-expression-recursive.ts` and added it to the Node/iwasm differential function fixture group.
 
 Validation result:
 
 ```text
+command: cargo run -q -p ts2wasm-cli -- build fixtures/core-semantics/named-function-expression-recursive.ts -o /tmp/issue273.wasm && iwasm /tmp/issue273.wasm && node fixtures/core-semantics/named-function-expression-recursive.ts
+result: after implementation both iwasm and Node printed 6
+date: 2026-04-29
+
 command: cargo nextest run -E 'test(recursive) or test(function) or test(node_diff)'
 result: pass in child branch; 28 tests run, 28 passed, 495 skipped
 date: 2026-04-29

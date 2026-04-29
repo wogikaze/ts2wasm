@@ -1592,17 +1592,51 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Function,
                 span,
-            }) => Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-273: named function expressions are not supported in this recursive function slice; use a function declaration for recursive calls".to_owned(),
-                span: Some(span),
-            }),
+            }) => self.function_expression(span),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unsupported expression: {other:?}"),
                 span: self.peek_span(),
             }),
         }
+    }
+
+    fn function_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
+        let (name, _) = self.expect_ident()?;
+        let has_generic_params = self.consume_typescript_generic_parameter_list()?;
+        if has_generic_params {
+            self.typescript_generic_functions.insert(name.clone());
+        }
+        self.expect(TokenKind::LeftParen)?;
+        let mut params = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self.parse_param(false)?;
+                let is_rest = param.is_rest;
+                params.push((param.name, param.default, is_rest));
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
+                self.expect(TokenKind::Comma)?;
+            }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+        }
+        let body = self.block()?;
+        let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
+        Ok(Expr::FunctionExpr {
+            name,
+            params,
+            body,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
     }
 
     fn template_literal_expr(&self, raw: &str, span: Span) -> Result<Expr, Diagnostic> {
