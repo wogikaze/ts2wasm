@@ -38,10 +38,10 @@ Coverage, historical comparison, and performance panels provide interactive char
 
 In scope:
 
-- [ ] Add interactive coverage charts for implementation progress and priority breakdown.
-- [ ] Add historical comparison deltas between selected or adjacent runs.
-- [ ] Flag regressions when failures increase, passed count drops, or performance worsens beyond a documented threshold.
-- [ ] Add compile/runtime performance trend visualization.
+- [x] Add interactive coverage charts for implementation progress and priority breakdown.
+- [x] Add historical comparison deltas between selected or adjacent runs.
+- [x] Flag regressions when failures increase, passed count drops, or performance worsens beyond a documented threshold.
+- [x] Add compile/runtime performance trend visualization.
 
 Out of scope:
 
@@ -65,12 +65,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Coverage tab renders at least one interactive chart backed by coverage data.
-- [ ] History tab shows pass/fail/skip deltas between runs.
-- [ ] Regression indicators are visible for worsening test counts or performance metrics.
-- [ ] Performance trends are displayed as charted compile/runtime series.
-- [ ] Responsive layout remains usable on desktop and mobile widths.
-- [ ] Docs/current-state/issues are synchronized when status or design changes.
+- [x] Coverage tab renders at least one interactive chart backed by coverage data.
+- [x] History tab shows pass/fail/skip deltas between runs.
+- [x] Regression indicators are visible for worsening test counts or performance metrics.
+- [x] Performance trends are displayed as charted compile/runtime series.
+- [x] Responsive layout remains usable on desktop and mobile widths.
+- [x] Docs/current-state/issues are synchronized when status or design changes.
 
 ## Validation
 
@@ -97,15 +97,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/` web UI usage/deployment documentation if controls or data contracts change
+- not affected; issue-267d added `docs/18-web-ui-reporting.md`
 
 Current state:
 
-- [ ] not affected
+- not affected
 
 Follow-up issues:
 
-- [ ] none
+- none
 
 ## Notes
 
@@ -118,7 +118,8 @@ Prefer the existing `recharts` dependency before introducing another charting li
 - Added Recharts-backed coverage mix, suite coverage, and priority charts to the Coverage tab.
 - Added historical result and performance trend charts to the History tab.
 - Added adjacent-run pass/fail/skip and compile/runtime deltas plus regression flags for increased failures, dropped passes, or performance increases above the documented 20% threshold.
-- Remaining scope before close: final responsive visual review and any docs/current-state synchronization required by broader issue 267.
+- Added responsive layout bounds for header/actions, summary cards, filter controls, tables, coverage bars, and chart containers.
+- Playwright visual review covered desktop and mobile Test Results, Coverage, and History tabs with no document-level horizontal overflow.
 
 ## Completion evidence
 
@@ -126,14 +127,31 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `4d0aa35f` issue-267b charts, deltas, regressions, and trend views
+- close commit records responsive polish, visual review evidence, and issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cd web-ui && npm run build
+result: PASS
+date: 2026-04-29
+
+command: Playwright desktop screenshots for Test Results, Coverage, History
+result: PASS; charts and tables render without incoherent overlap
+date: 2026-04-29
+
+command: Playwright mobile screenshots for Test Results, Coverage, History
+result: PASS; document scrollWidth matched viewport width
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:

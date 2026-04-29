@@ -45,12 +45,12 @@ In scope:
 
 - [ ] Web UI framework setup (Vite + React + TypeScript)
 - [ ] Test result display with filtering/search
-- [ ] Coverage visualization with interactive charts
-- [ ] Historical comparison view
-- [ ] Performance metrics dashboard
+- [x] Coverage visualization with interactive charts
+- [x] Historical comparison view
+- [x] Performance metrics dashboard
 - [ ] Real-time test run updates
 - [x] Export functionality (JSON, CSV, PDF)
-- [ ] Responsive design
+- [x] Responsive design
 - [x] Dark/light theme support
 
 Out of scope:
@@ -78,9 +78,9 @@ Do not touch:
 - [ ] Web UI can be built and served locally
 - [ ] Test results display with pass/fail/skip status
 - [ ] Filtering by test suite, status, and search
-- [ ] Coverage charts show implementation progress
-- [ ] Historical comparison shows regressions
-- [ ] Performance metrics displayed with trends
+- [x] Coverage charts show implementation progress
+- [x] Historical comparison shows regressions
+- [x] Performance metrics displayed with trends
 - [ ] Real-time updates during test runs
 - [x] Export functionality works for all views
 - [x] Documentation covers usage and deployment
@@ -124,7 +124,7 @@ Follow-up issues:
 - [ ] none
 - [x] created/updated:
   - `issues/done/267a-web-ui-data-generation-and-script-integration.md`
-  - `issues/open/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
+  - `issues/done/267b-web-ui-interactive-charts-regression-and-performance-trends.md`
   - `issues/open/267c-web-ui-real-time-test-run-updates.md`
   - `issues/done/267d-web-ui-export-theme-and-usage-docs.md`
 
