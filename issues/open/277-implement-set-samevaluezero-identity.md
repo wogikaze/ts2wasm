@@ -39,6 +39,14 @@ true
 2
 ```
 
+Current behavior (string normalization):
+
+```text
+true
+true
+1
+```
+
 ## Desired final state
 
 Set membership uses SameValueZero-compatible identity for the supported primitive and heap object values, including distinct identity for string `"1"` and number `1`.
@@ -113,6 +121,8 @@ Follow-up issues:
 
 Split from stale broad issue 272 and from issue 049's recorded remaining risk.
 
+**Current implementation limitation**: The current Set implementation uses `value_to_string_into` to normalize all values to strings before storing them. This means that number `1` and string `"1"` are treated as the same key. Implementing SameValueZero identity requires a significant change to the collection infrastructure to store tagged values directly and implement proper value comparison semantics.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
@@ -131,4 +141,5 @@ date:
 
 Remaining risks:
 
-- none
+- Requires substantial changes to collection infrastructure
+- May impact Map implementation as well
