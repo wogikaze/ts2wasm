@@ -117,7 +117,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- Close commit pending in branch `agent/262-bigint-builtins-close-20260429T092800Z`.
+- `fb4474a` issue-262 close commit in branch `agent/262-bigint-builtins-close-20260429T092800Z`.
 
 Validation result:
 
