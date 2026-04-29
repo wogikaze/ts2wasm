@@ -1,6 +1,8 @@
 use ts2wasm_ir::builtin::BuiltinId;
 use ts2wasm_runtime_abi::RuntimeString;
 
+pub(crate) const NATIVE_SET_ADD_SENTINEL: i32 = -4;
+
 /// ABI contract type for host imports.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum HostAbi {
@@ -107,6 +109,8 @@ pub(crate) enum RuntimeFn {
     SetClear,
     SetFromArray,
     SetValuesArray,
+    SetPrototypeAddGet,
+    SetPrototypeAddSet,
     /// Issue 050: Date epoch slices.
     DateNew,
     DateNewLive,
@@ -413,6 +417,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "SetClear" => Some(RuntimeFn::SetClear),
         "SetFromArray" => Some(RuntimeFn::SetFromArray),
         "SetValuesArray" => Some(RuntimeFn::SetValuesArray),
+        "SetPrototypeAddGet" => Some(RuntimeFn::SetPrototypeAddGet),
+        "SetPrototypeAddSet" => Some(RuntimeFn::SetPrototypeAddSet),
         "DateNew" => Some(RuntimeFn::DateNew),
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
@@ -481,6 +487,7 @@ pub(crate) enum RuntimeGlobal {
     GcCallFrameCurrent,
     ModuleCache,
     CurrentModuleId,
+    SetPrototypeAdd,
 }
 
 impl RuntimeGlobal {
@@ -496,6 +503,7 @@ impl RuntimeGlobal {
             Self::GcCallFrameCurrent => "$gc_call_frame_current",
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
+            Self::SetPrototypeAdd => "$set_prototype_add",
         }
     }
 
@@ -510,6 +518,7 @@ impl RuntimeGlobal {
             | Self::GcCallFrameLimit
             | Self::GcCallFrameCurrent => 0,
             Self::ModuleCache | Self::CurrentModuleId => 0,
+            Self::SetPrototypeAdd => NATIVE_SET_ADD_SENTINEL,
         }
     }
 }
@@ -541,6 +550,7 @@ const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
 ];
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
+const GLOBALS_SET_PROTOTYPE_ADD: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeAdd];
 
 const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
@@ -1295,6 +1305,22 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::SetPrototypeAddGet => RuntimeSpec {
+                symbol: "$set_prototype_add_get",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::SetPrototypeAddSet => RuntimeSpec {
+                symbol: "$set_prototype_add_set",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::DateNew => RuntimeSpec {
                 symbol: "$date_new",
                 deps: DATE_NEW_DEPS,
@@ -1732,6 +1758,9 @@ impl RuntimeFn {
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 GLOBALS_MODULE_RUNTIME
             }
+            Self::SetFromArray | Self::SetPrototypeAddGet | Self::SetPrototypeAddSet => {
+                GLOBALS_SET_PROTOTYPE_ADD
+            }
             _ => NO_GLOBALS,
         }
     }
@@ -1817,6 +1846,8 @@ impl RuntimeFn {
             Self::SetClear => "set_clear",
             Self::SetFromArray => "set_from_array",
             Self::SetValuesArray => "set_values_array",
+            Self::SetPrototypeAddGet => "set_prototype_add_get",
+            Self::SetPrototypeAddSet => "set_prototype_add_set",
             Self::DateNew => "date_new",
             Self::DateNewLive => "date_new_live",
             Self::DateNow => "date_now",
@@ -1944,6 +1975,8 @@ impl RuntimeFn {
             Self::SetClear,
             Self::SetFromArray,
             Self::SetValuesArray,
+            Self::SetPrototypeAddGet,
+            Self::SetPrototypeAddSet,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
@@ -2080,6 +2113,8 @@ impl RuntimeFn {
             Self::SetClear,
             Self::SetFromArray,
             Self::SetValuesArray,
+            Self::SetPrototypeAddGet,
+            Self::SetPrototypeAddSet,
             Self::DateNew,
             Self::DateEpochMsNowNumber,
             Self::DateNewLive,
