@@ -25,7 +25,7 @@ printf 'console.log(1n === 1n); console.log(1n === 1); console.log(1n == "1"); c
 cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-261-bigint-comparison.wasm
 ```
 
-Current result: BigInt/BigInt `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` now match Node for the current heap BigInt representation, including negative values, canonical zero, and a large literal that exceeds the first-limb payload. Statically visible BigInt/String literal abstract equality folds supported StringToBigInt forms and invalid string inputs to Node-compatible booleans. Statically visible BigInt/Boolean literal abstract equality folds through Boolean-to-0/1 coercion. Other statically visible mixed BigInt abstract equality and relational comparison emit issue-261 diagnostics; runtime-only mixed BigInt abstract equality and relational comparison trap instead of silently returning a normal wrong boolean.
+Current result: BigInt/BigInt `===`, `!==`, `==`, `!=`, `<`, `<=`, `>`, and `>=` now match Node for the current heap BigInt representation, including negative values, canonical zero, and a large literal that exceeds the first-limb payload. Statically visible BigInt/String literal abstract equality folds supported StringToBigInt forms and invalid string inputs to Node-compatible booleans. Statically visible BigInt/Boolean literal abstract equality folds through Boolean-to-0/1 coercion. Statically visible BigInt/Number integer-literal abstract equality folds for representable tagged-int number literals. Other statically visible mixed BigInt abstract equality and relational comparison emit issue-261 diagnostics; runtime-only mixed BigInt abstract equality and relational comparison trap instead of silently returning a normal wrong boolean.
 
 ## Desired final state
 
@@ -118,6 +118,8 @@ Do not claim full equality parity if broader `number` support still cannot repre
 
 2026-04-29 progress slice: statically folded BigInt/Boolean literal abstract equality now applies Boolean-to-Number-to-BigInt-equivalent comparison for the literal `false -> 0n` and `true -> 1n` cases. Covered Node/iwasm fixtures include symmetric forms such as `0n == false`, `false == 0n`, `1n == true`, `true == 1n`, and mismatch `!=` cases. Dynamic boolean values still remain issue-261 diagnostics/traps until the runtime mixed primitive equality boundary is intentionally widened.
 
+2026-04-29 progress slice: statically folded BigInt/Number integer-literal abstract equality now compares known BigInt literals against `Expr::Number` tagged-int literals. Covered Node/iwasm fixtures include symmetric forms such as `1n == 1`, `1 == 1n`, `0n == 0`, and mismatch `!=` cases. Fractional numbers, `NaN`, `Infinity`, `-0`, dynamic numbers, and relational BigInt/Number comparisons remain issue-261 diagnostics/traps.
+
 Validation for this progress slice:
 
 ```text
@@ -163,6 +165,34 @@ date: 2026-04-29
 
 command: cargo test -p ts2wasm-cli bigint
 result: passed (26 passed across filtered CLI tests)
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: passed
+date: 2026-04-29
+
+command: mise run check issues
+result: passed
+date: 2026-04-29
+```
+
+Validation for BigInt/Number integer-literal progress slice:
+
+```text
+command: cargo nextest run -E 'test(bigint_mixed_number_abstract_equality_fixture_matches_node_output_under_iwasm) or test(bigint_mixed_abstract_equality_reports_issue_261) or test(bigint_runtime_mixed_abstract_equality_traps_instead_of_false)'
+result: passed (3 passed, 513 skipped)
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: passed
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(bigint) or test(node_diff)'
+result: passed (34 passed, 482 skipped)
+date: 2026-04-29
+
+command: cargo test -p ts2wasm-cli bigint
+result: passed (27 passed across filtered CLI tests)
 date: 2026-04-29
 
 command: mise run update-issue-index -- --check
