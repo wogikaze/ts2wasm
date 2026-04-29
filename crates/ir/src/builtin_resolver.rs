@@ -431,7 +431,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     | BinaryOp::BitwiseXor
                     | BinaryOp::LeftShift
                     | BinaryOp::RightShift
-                    | BinaryOp::UnsignedRightShift => "issue-260: BigInt arithmetic and bitwise operators are tracked separately from literal runtime values",
+                    | BinaryOp::UnsignedRightShift => {
+                        "issue-260: BigInt arithmetic and bitwise operators are tracked separately from literal runtime values"
+                    }
                     BinaryOp::Less
                     | BinaryOp::LessEqual
                     | BinaryOp::Greater
@@ -439,9 +441,13 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     | BinaryOp::StrictEqual
                     | BinaryOp::EqualEqual
                     | BinaryOp::BangEqual
-                    | BinaryOp::StrictNotEqual => "issue-261: BigInt equality and comparison are tracked separately from literal runtime values",
+                    | BinaryOp::StrictNotEqual => {
+                        "issue-261: BigInt equality and comparison are tracked separately from literal runtime values"
+                    }
                     BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => "",
-                    BinaryOp::InstanceOf | BinaryOp::In => "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values",
+                    BinaryOp::InstanceOf | BinaryOp::In => {
+                        "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values"
+                    }
                 };
                 if !issue.is_empty() {
                     return Err(Diagnostic {
@@ -591,13 +597,28 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 })
             }
         }
-        Expr::OptionalMember { span, .. }
-        | Expr::OptionalIndex { span, .. }
-        | Expr::OptionalCall { span, .. } => Err(Diagnostic {
+        Expr::OptionalMember {
+            object,
+            property,
+            span,
+        } => Ok(ResolvedExpr::OptionalPropertyAccess {
+            object: Box::new(resolve_expr(object)?),
+            key: property.clone(),
+            span: *span,
+        }),
+        Expr::OptionalIndex {
+            object,
+            index,
+            span,
+        } => Ok(ResolvedExpr::OptionalComputedIndex {
+            object: Box::new(resolve_expr(object)?),
+            index: Box::new(resolve_expr(index)?),
+            span: *span,
+        }),
+        Expr::OptionalCall { span, .. } => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
-            message:
-                "issue-246: optional chaining parses, but lowering/runtime semantics are not implemented"
-                    .to_owned(),
+            message: "issue-253: optional call runtime semantics are not implemented in this slice"
+                .to_owned(),
             span: Some(*span),
         }),
         Expr::Array { elements, .. } => Ok(ResolvedExpr::Array(

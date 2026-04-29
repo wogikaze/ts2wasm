@@ -254,9 +254,17 @@ pub enum LoweredExpr {
         obj: Box<LoweredExpr>,
         key: String,
     },
+    OptionalPropertyGet {
+        obj: Box<LoweredExpr>,
+        key: String,
+    },
     PropertyGetDynamic {
         obj: Box<LoweredExpr>,
         key: Box<LoweredExpr>,
+    },
+    OptionalIndex {
+        object: Box<LoweredExpr>,
+        index: Box<LoweredExpr>,
     },
     MethodCall {
         object: Box<LoweredExpr>,

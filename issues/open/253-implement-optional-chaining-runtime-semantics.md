@@ -39,11 +39,11 @@ Supported optional chaining forms short-circuit on `null` and `undefined` with N
 
 In scope:
 
-- [ ] Lower `obj?.x` for supported object/property access.
-- [ ] Lower `obj?.[key]` for supported computed access.
+- [x] Lower `obj?.x` for supported object/property access.
+- [x] Lower `obj?.[key]` for supported computed access.
 - [ ] Lower `fn?.()` for supported function calls.
-- [ ] Preserve single evaluation of the base expression.
-- [ ] Add Node/iwasm differential fixtures for nullish and non-nullish bases.
+- [x] Preserve single evaluation of the base expression for the implemented property/index subset.
+- [x] Add Node/iwasm differential fixtures for nullish and non-nullish bases for the implemented property/index subset.
 
 Out of scope:
 
@@ -67,10 +67,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `obj?.x` returns `undefined` for nullish bases and the property value for supported objects.
-- [ ] `obj?.[key]` preserves key evaluation only when required by the supported semantics.
+- [x] `obj?.x` returns `undefined` for nullish bases and the property value for supported objects.
+- [x] `obj?.[key]` preserves key evaluation only when required by the supported semantics.
 - [ ] `fn?.()` short-circuits nullish callees and calls supported functions otherwise.
-- [ ] Node/iwasm differential coverage proves the supported subset.
+- [x] Node/iwasm differential coverage proves the supported property/index subset.
 
 ## Validation
 
@@ -91,3 +91,13 @@ mise run reference-coverage -- test262 --path-filter reference/test262/test/lang
 ## Notes
 
 Split from issue 246 so parser classification can close independently from runtime semantics.
+
+## Progress evidence
+
+2026-04-29:
+
+- Implemented `obj?.x` and `obj?.[key]` lowering/runtime behavior for the supported object/index subset.
+- Added `fixtures/core-semantics/optional-chaining-member-index.ts` and `optional_chaining_member_index_fixture_matches_node_output_under_iwasm`.
+- `fn?.()` remains open and is still diagnosed as `issue-253`.
+- Validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(optional) or test(node_diff)'` (5 passed); `cargo nextest run` (472 passed, 4 skipped); `mise run update-issue-index -- --check`; `mise run check issues`.
+- Impacted reference coverage command could not run because `reference/test262` is not checked out in this worktree.
