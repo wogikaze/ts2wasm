@@ -5,17 +5,17 @@ Interactive web UI for displaying test results, coverage, and historical data - 
 ## Features
 
 - **Test Results**: Interactive test result browser with filtering and search
-- **Coverage Visualization**: Implementation status with progress bars and priority breakdown
-- **Historical Comparison**: Track test runs over time with performance metrics
+- **Coverage Visualization**: Implementation status, priority breakdown, and suite charts
+- **Historical Comparison**: Track test runs over time with result deltas, regression flags, and performance trends
 - **Real-time Updates**: Live updates during test runs (planned)
-- **Export Functionality**: Export data in JSON, CSV formats (planned)
+- **Export Functionality**: Export the active view as JSON or CSV, or use browser print/PDF
 
 ## Tech Stack
 
 - **Framework**: Vite + React + TypeScript
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
-- **Charts**: Recharts (planned)
+- **Charts**: Recharts
 - **Data Loading**: JSON-based API
 
 ## Development
@@ -97,13 +97,18 @@ mise run test262 -- --sample 50 --web-ui
 
 These commands write the same `web-ui/public/data/*.json` files used by the UI.
 
+### Export
+
+The header export buttons operate on the active tab:
+
+- `JSON` downloads the current test, coverage, or history payload.
+- `CSV` downloads the active tab's tabular rows.
+- `PDF` opens the browser print flow so the current view can be saved as PDF.
+
 ## Future Enhancements
 
 - [ ] Real-time WebSocket updates during test runs
-- [ ] Interactive charts with Recharts
-- [ ] Test diff comparison between runs
 - [ ] Dark/light theme toggle
-- [ ] Export to PDF reports
 - [ ] CI/CD integration
 - [ ] Authentication/authorization
 - [ ] Mobile-responsive design improvements

@@ -16,7 +16,7 @@ import {
   YAxis,
 } from 'recharts'
 import { useTestData, useCoverageData, useHistoricalData } from './hooks/useData'
-import type { HistoricalData } from './types'
+import type { CoverageData, HistoricalData, TestResult } from './types'
 import './index.css'
 
 const PERF_REGRESSION_THRESHOLD = 0.2
@@ -114,6 +114,60 @@ function buildTrendRuns(history: HistoricalData[]): TrendRun[] {
   })
 }
 
+function csvCell(value: unknown) {
+  const text = String(value ?? '')
+  return /[",\n\r]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text
+}
+
+function toCsv(rows: Array<Record<string, unknown>>) {
+  if (rows.length === 0) return ''
+  const headers = Object.keys(rows[0])
+  const lines = [
+    headers.map(csvCell).join(','),
+    ...rows.map(row => headers.map(header => csvCell(row[header])).join(',')),
+  ]
+  return `${lines.join('\n')}\n`
+}
+
+function downloadText(filename: string, mimeType: string, content: string) {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.click()
+  URL.revokeObjectURL(url)
+}
+
+function coverageCsvRows(coverage: CoverageData) {
+  const suites = coverage.suites?.map(suite => ({
+    kind: 'suite',
+    name: suite.suite,
+    total: suite.denominator,
+    implemented: suite.build_pass,
+    unimplemented: suite.unsupported,
+    future: 0,
+    failed: suite.fail,
+    blocked: suite.blocked,
+    semantic_pass: suite.semantic_pass,
+  })) ?? []
+
+  return [
+    {
+      kind: 'summary',
+      name: 'all',
+      total: coverage.total,
+      implemented: coverage.implemented,
+      unimplemented: coverage.unimplemented,
+      future: coverage.future,
+      failed: 0,
+      blocked: 0,
+      semantic_pass: 0,
+    },
+    ...suites,
+  ]
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState<'tests' | 'coverage' | 'history'>('tests')
   const [searchQuery, setSearchQuery] = useState('')
@@ -162,6 +216,49 @@ function App() {
   const historyRows = useMemo(() => [...trendRuns].reverse(), [trendRuns])
   const latestTrend = trendRuns[trendRuns.length - 1]
 
+  const currentExportName = `ts2wasm-${activeTab}`
+
+  const exportJson = () => {
+    const payload = activeTab === 'tests'
+      ? { summary, tests: filteredTests }
+      : activeTab === 'coverage'
+        ? coverage
+        : { history: historyRows }
+    downloadText(`${currentExportName}.json`, 'application/json', `${JSON.stringify(payload, null, 2)}\n`)
+  }
+
+  const exportCsv = () => {
+    const rows = activeTab === 'tests'
+      ? filteredTests.map((test: TestResult) => ({
+          id: test.id,
+          suite: test.suite,
+          name: test.name,
+          status: test.status,
+          duration: test.duration ?? '',
+          error: test.error ?? '',
+        }))
+      : activeTab === 'coverage'
+        ? coverageCsvRows(coverage)
+        : historyRows.map(run => ({
+            run_id: run.run_id,
+            timestamp: run.timestamp,
+            passed: run.passed,
+            failed: run.failed,
+            skipped: run.skipped,
+            compile_time: run.compile_time,
+            runtime: run.runtime,
+            passed_delta: run.deltas.passed ?? '',
+            failed_delta: run.deltas.failed ?? '',
+            skipped_delta: run.deltas.skipped ?? '',
+            regression: run.regressionReasons.join('; '),
+          }))
+    downloadText(`${currentExportName}.csv`, 'text/csv', toCsv(rows))
+  }
+
+  const exportPdf = () => {
+    window.print()
+  }
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pass': return <CheckCircle className="w-5 h-5 text-green-500" />
@@ -190,10 +287,27 @@ function App() {
               <Play className="w-8 h-8 text-purple-500" />
               <h1 className="text-2xl font-bold">ts2wasm Test Reporter</h1>
             </div>
-            <div className="flex items-center gap-4">
-              <button className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors">
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <button
+                onClick={exportJson}
+                className="flex items-center gap-2 px-3 py-2 bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors"
+              >
                 <Download className="w-4 h-4" />
-                Export
+                JSON
+              </button>
+              <button
+                onClick={exportCsv}
+                className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                CSV
+              </button>
+              <button
+                onClick={exportPdf}
+                className="flex items-center gap-2 px-3 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                PDF
               </button>
             </div>
           </div>

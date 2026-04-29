@@ -111,6 +111,16 @@ Follow-up issues:
 
 Keep export behavior local/static-host friendly; issue 267 explicitly excludes authentication and CI/CD integration.
 
+## Progress evidence
+
+2026-04-29:
+
+- Added active-tab JSON export for test results, coverage, and history data.
+- Added active-tab CSV export for test rows, coverage summary/suite rows, and history rows with deltas/regression flags.
+- Connected the PDF control to the browser print flow as the local/static-host friendly PDF path.
+- Updated `web-ui/README.md` to document the export controls and current chart/trend status.
+- Remaining scope before close: dark/light theme toggle, persisted theme preference, and final-state `docs/` usage/deployment documentation.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
