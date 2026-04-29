@@ -701,6 +701,11 @@ impl NameResolver {
 
     fn resolve_block(&mut self, block: &[Stmt]) -> Result<Vec<Stmt>, Diagnostic> {
         self.enter_scope();
+        for stmt in block {
+            if let Stmt::Function { name, span, .. } = stmt {
+                self.declare_variable(name, Some(*span))?;
+            }
+        }
         let result = block.iter().map(|s| self.resolve_stmt(s)).collect();
         self.exit_scope();
         result

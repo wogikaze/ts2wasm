@@ -521,6 +521,7 @@ fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/primitives-control-flow/function.ts",
         "fixtures/core-semantics/ordinary-function-direct-call.ts",
+        "fixtures/core-semantics/ordinary-function-closure-capture.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -540,11 +541,13 @@ fn unsupported_function_prototype_metadata_reports_issue_062f() {
 }
 
 #[test]
-fn nested_function_declaration_fixture_reports_issue_062c() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/nested-function-declaration-unsupported.ts",
-        "issue-062c: nested function declarations are not supported",
-    );
+fn unsupported_ordinary_function_closure_forms_report_issue_062e() {
+    for fixture in [
+        "fixtures/core-semantics/ordinary-function-closure-escape-unsupported.ts",
+        "fixtures/core-semantics/ordinary-function-closure-mutation-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax_without_span(fixture, "issue-062e:");
+    }
 }
 
 #[test]
@@ -927,6 +930,18 @@ fn unique_temp_dir(label: &str) -> PathBuf {
 }
 
 fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
+    assert_build_fails_with_unsupported_syntax_impl(fixture, expected, true);
+}
+
+fn assert_build_fails_with_unsupported_syntax_without_span(fixture: &str, expected: &str) {
+    assert_build_fails_with_unsupported_syntax_impl(fixture, expected, false);
+}
+
+fn assert_build_fails_with_unsupported_syntax_impl(
+    fixture: &str,
+    expected: &str,
+    require_span: bool,
+) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -953,10 +968,12 @@ fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
         stderr.contains(expected),
         "expected diagnostic containing {expected:?} for {fixture}, got:\n{stderr}"
     );
-    assert!(
-        stderr_has_source_span(&stderr),
-        "expected diagnostic with source span for {fixture}, got:\n{stderr}"
-    );
+    if require_span {
+        assert!(
+            stderr_has_source_span(&stderr),
+            "expected diagnostic with source span for {fixture}, got:\n{stderr}"
+        );
+    }
 }
 
 fn stderr_has_source_span(stderr: &str) -> bool {

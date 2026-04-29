@@ -49,6 +49,20 @@ Do not touch:
 
 - `crates/runtime-abi/` unless ABI changes are explicitly required and reviewed.
 
+## Progress
+
+2026-04-29 child-062e progress slice:
+
+- Non-escaping nested ordinary functions can capture immutable outer locals and
+  be called before the declaring activation returns.
+- Returning a nested ordinary closure remains rejected with `issue-062e`
+  because heap closure object ABI/rooting is not implemented.
+- Mutable captured outer locals remain rejected with `issue-062e` because the
+  current narrow slice passes captures as hidden values, not as a shared mutable
+  heap environment.
+- Follow-up issue `issues/open/062g-heap-closure-object-abi-and-rooting.md`
+  tracks returned closure object ABI, dispatch, and GC rooting.
+
 ## Acceptance criteria
 
 - [ ] A nested function can capture an outer local and return the captured value.

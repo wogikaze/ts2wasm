@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 53 | 7 | 46 |
+| runtime | 54 | 8 | 46 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 275 | 146 | 129 |
+| total | 276 | 147 | 129 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -42,6 +42,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 052g | Implement JSON.stringify function replacer callbacks | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` still reports issue-052 diagnostics for function replacer callbacks instead of invoking the callback... |
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
+| 062g | Define and implement heap closure object ABI and rooting | feature | runtime/abi | design-ready | P1 |  | Returned closures cannot be represented by the current devirtualized |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 243 | Implement numeric literal separator parser support | feature | frontend/syntax | implementation-ready | P2 |  | Numeric literals such as `1_000` are tokenized as a number followed by an identifier suffix, so the parser reports `p... |
 | 244 | Implement BigInt literal parser classification | feature | frontend/syntax | implementation-ready | P2 |  | BigInt literals such as `1n` are tokenized as a numeric literal followed by identifier `n`, so the parser reports `pa... |
