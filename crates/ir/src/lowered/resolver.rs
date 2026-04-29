@@ -267,7 +267,29 @@ impl<'a> Resolver<'a> {
                 self.update_regexp_literal_local(local_id, expr);
                 Ok(LoweredStmt::Assign(local_id, lowered))
             }
-            ResolvedStmt::Expr(expr) => Ok(LoweredStmt::Expr(self.lower_expr(expr)?)),
+            ResolvedStmt::Expr(expr) => {
+                if let ResolvedExpr::MethodCall {
+                    object,
+                    method,
+                    args,
+                    ..
+                } = expr
+                    && method == "push"
+                    && args.len() == 1
+                    && let ResolvedExpr::Ident(name) = object.as_ref()
+                    && let Ok(local_id) = self.resolve_local(name)
+                    && self.array_locals.contains(&local_id)
+                {
+                    return Ok(LoweredStmt::Assign(
+                        local_id,
+                        LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayPushGrow".to_owned(),
+                            args: vec![LoweredExpr::Local(local_id), self.lower_expr(&args[0])?],
+                        },
+                    ));
+                }
+                Ok(LoweredStmt::Expr(self.lower_expr(expr)?))
+            }
             ResolvedStmt::If {
                 condition,
                 then_body,

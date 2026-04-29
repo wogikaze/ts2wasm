@@ -1,0 +1,49 @@
+function search(before: string, parts: string[]): string[] {
+    const answers: string[] = [];
+    if (before.length > 0) answers.push(before);
+    const remainDigits = 3 - before.length;
+    for (let i = 0; i < parts.length; i++) {
+        const after = parts[i];
+        if (after.length > remainDigits) break;
+        const child = search(before + after, parts);
+        for (let j = 0; j < child.length; j++) {
+            answers.push(child[j]);
+        }
+    }
+    return answers;
+}
+
+const powersOfTwoStr: string[] = [
+    "1",
+    "2",
+    "4",
+    "8",
+    "16",
+    "32",
+    "64",
+    "128",
+    "256",
+    "512",
+    "1024",
+    "2048",
+    "4096",
+    "8192",
+    "16384",
+    "32768",
+    "65536",
+    "131072",
+    "262144",
+    "524288",
+    "1048576",
+    "2097152",
+    "4194304",
+    "8388608",
+    "16777216",
+    "33554432",
+    "67108864",
+    "134217728",
+    "268435456",
+    "536870912"
+];
+
+console.log(search("", powersOfTwoStr).length);

@@ -655,6 +655,10 @@ impl WatEmitter<'_> {
                     self.emit_array_push_many_call(wat, args, indent, frame);
                     return;
                 }
+                if runtime_fn == "ArrayPushGrow" {
+                    self.emit_array_push_grow_call(wat, args, indent, frame);
+                    return;
+                }
                 if runtime_fn == "HeapClosureCall" {
                     self.emit_heap_closure_dispatch(wat, args, indent, frame);
                     return;
@@ -1087,6 +1091,107 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(drop)\n"));
             }
         }
+    }
+
+    fn emit_array_push_grow_call(
+        &self,
+        wat: &mut String,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let [array, value] = args else {
+            return;
+        };
+        let pad = " ".repeat(indent);
+        let old_array = frame.heap_base_tmp();
+        let pushed_value = frame.heap_value_tmp();
+        let new_array = frame.switch_value_tmp();
+        let scratch_frame = frame.child_temp_frame();
+        let old_len = scratch_frame.heap_base_tmp();
+        let old_capacity = scratch_frame.heap_value_tmp();
+        let new_capacity = scratch_frame.switch_value_tmp();
+        self.emit_expr(wat, array, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {old_array})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, old_array, frame);
+        self.emit_expr(wat, value, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {pushed_value})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, pushed_value, frame);
+        wat.push_str(&format!(
+            "{pad}(local.set {old_len} (i32.load (i32.and (local.get {old_array}) (i32.const {}))))\n\
+             {pad}(local.set {old_capacity}\n\
+             {pad}  (i32.shr_u\n\
+             {pad}    (i32.sub\n\
+             {pad}      (i32.load\n\
+             {pad}        (i32.add\n\
+             {pad}          (i32.sub (i32.and (local.get {old_array}) (i32.const {})) (i32.const {}))\n\
+             {pad}          (i32.const {})))\n\
+             {pad}      (i32.const {}))\n\
+             {pad}    (i32.const {})))\n\
+             {pad}(if (result i32)\n\
+             {pad}  (i32.lt_u (local.get {old_len}) (local.get {old_capacity}))\n\
+             {pad}  (then\n\
+             {pad}    (i32.store\n\
+             {pad}      (i32.add\n\
+             {pad}        (i32.and (local.get {old_array}) (i32.const {}))\n\
+             {pad}        (i32.add (i32.const {}) (i32.shl (local.get {old_len}) (i32.const {}))))\n\
+             {pad}      (local.get {pushed_value}))\n\
+             {pad}    (i32.store\n\
+             {pad}      (i32.and (local.get {old_array}) (i32.const {}))\n\
+             {pad}      (i32.add (local.get {old_len}) (i32.const 1)))\n\
+             {pad}    (local.get {old_array})\n\
+             {pad}  )\n\
+             {pad}  (else\n\
+             {pad}    (local.set {new_capacity} (i32.shl (local.get {old_capacity}) (i32.const 1)))\n\
+             {pad}    (if (i32.lt_u (local.get {new_capacity}) (i32.const 4))\n\
+             {pad}      (then (local.set {new_capacity} (i32.const 4))))\n\
+             {pad}    (if (i32.lt_u (local.get {new_capacity}) (i32.add (local.get {old_len}) (i32.const 1)))\n\
+             {pad}      (then (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1)))))\n\
+             {pad}    (local.set {new_array}\n\
+             {pad}      (call {}\n\
+             {pad}        (i32.add\n\
+             {pad}          (i32.const {})\n\
+             {pad}          (i32.shl (local.get {new_capacity}) (i32.const {})))))\n",
+            ValueTag::HEAP_MASK,
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_BODY_SIZE_OFFSET,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            ValueTag::HEAP_MASK,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            ValueTag::HEAP_MASK,
+            RuntimeFn::AllocHeap.symbol(),
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+        ));
+        self.emit_gc_root_mirror_index(wat, &format!("{pad}    "), new_array, frame);
+        wat.push_str(&format!(
+            "{pad}    (i32.store\n\
+             {pad}      (local.get {new_array})\n\
+             {pad}      (i32.add (local.get {old_len}) (i32.const 1)))\n\
+             {pad}    (call {}\n\
+             {pad}      (i32.add (i32.and (local.get {old_array}) (i32.const {})) (i32.const {}))\n\
+             {pad}      (i32.add (local.get {new_array}) (i32.const {}))\n\
+             {pad}      (i32.shl (local.get {old_len}) (i32.const {})))\n\
+             {pad}    (i32.store\n\
+             {pad}      (i32.add\n\
+             {pad}        (local.get {new_array})\n\
+             {pad}        (i32.add (i32.const {}) (i32.shl (local.get {old_len}) (i32.const {}))))\n\
+             {pad}      (local.get {pushed_value}))\n\
+             {pad}    (i32.or (local.get {new_array}) (i32.const {}))\n\
+             {pad}  )\n\
+             {pad})\n",
+            RuntimeFn::Copy.symbol(),
+            ValueTag::HEAP_MASK,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            ValueTag::ARRAY_TAG
+        ));
     }
 
     fn emit_array_literal(
