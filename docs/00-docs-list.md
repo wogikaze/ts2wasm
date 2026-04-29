@@ -23,6 +23,7 @@
 | `docs/16-commit-and-push-policy.md` | commit/push 方針、agent rule | なし | 新規追加 |
 | `docs/language-reference/javascript-features.md` | JavaScript 構文・機能の対応方針と実装状況 | ECMA-262 仕様に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/typescript-features.md` | TypeScript 構文・機能の対応方針と実装状況 | TypeScript Handbook に基づく機能一覧 | 新規追加 |
+| `docs/language-reference/frontend-parser-wave.md` | frontend/parser 仕様 slice の issue 分割・検証運用 | ECMA-262 / TypeScript parser / reference tests に基づく parser wave | 新規追加 |
 | `docs/language-reference/wasm-features.md` | WebAssembly 提案・機能の対応方針と実装状況 | WebAssembly Spec に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/wasi-features.md` | WASI 機能の対応方針と実装状況 | WASI Preview 1/2 に基づく機能一覧 | 新規追加 |
 | `current-state.md` | 現在の実装事実、未実装範囲、検証状況 | なし | status tracking |
@@ -30,6 +31,8 @@
 ## Language reference tracking
 
 `docs/language-reference/*.md` は仕様カバレッジの全体像をトラックするマップであり、個別の実装作業は `issues/` で管理する。
+
+Frontend lexer/parser の仕様 slice を作る場合は `docs/language-reference/frontend-parser-wave.md` を先に参照し、ECMA-262 / TypeScript parser source から child issue を切る。
 
 ### language-reference テーブルの列
 

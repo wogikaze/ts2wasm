@@ -2,11 +2,14 @@
 
 この文書は ECMAScript (JavaScript) の構文・機能について、本プロジェクトでの対応方針と実装状況をまとめる。ECMAScript 仕様は [ECMA-262](https://tc39.es/ecma262/) を正とする。
 
+Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/frontend-parser-wave.md` を参照する。
+
 ## 仕様リファレンス
 
 | 仕様 | URL | 用途 |
 |---|---|---|
 | ECMA-262 (ECMAScript) | <https://tc39.es/ecma262/> | 言語仕様の正典 |
+| ECMA-262 local mirror | `reference/ecma262/spec.html` | lexer/parser wave の primary source |
 | TC39 Proposals | <https://github.com/tc39/proposals> | 提案段階の機能 |
 | MDN Web Docs | <https://developer.mozilla.org/en-US/docs/Web/JavaScript> | 実用的なリファレンス |
 
