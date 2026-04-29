@@ -74,6 +74,7 @@ https://github.com/microsoft/typescript-go.git reference/typescript-go
 https://github.com/microsoft/TypeScript.git reference/typescript
 https://github.com/quickjs-ng/quickjs.git reference/quickjs-ng
 https://github.com/rustwasm/wasm-bindgen.git reference/wasm-bindgen
+https://github.com/tc39/ecma262.git reference/ecma262
 EOF
 
 # install repo-managed git hooks
