@@ -116,15 +116,6 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
             private_elements,
             ..
         } => {
-            if let Some(private_element) = private_elements.first() {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message:
-                        "issue-248: private class elements parse, but runtime storage/access semantics are not implemented"
-                            .to_owned(),
-                    span: Some(private_element_span(private_element)),
-                });
-            }
             // Parse extends (must be an identifier for now)
             let extends_name = match extends {
                 Some(ext_expr) => match ext_expr.as_ref() {
@@ -140,6 +131,9 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 },
                 None => None,
             };
+
+            let (private_fields, private_field_initializers) =
+                resolve_private_field_initializers(name, extends_name.as_ref(), private_elements)?;
 
             // Parse class body to extract constructor and methods
             let mut constructor = None;
@@ -177,7 +171,13 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                             _,
                         >>(
                         )?;
-                        constructor = Some((resolved_params, resolved_body));
+                        constructor = Some((
+                            resolved_params,
+                            prepend_private_field_initializers(
+                                &private_field_initializers,
+                                resolved_body,
+                            ),
+                        ));
                     }
                     // Regular methods
                     Stmt::Function {
@@ -228,6 +228,10 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 }
             }
 
+            if constructor.is_none() && !private_field_initializers.is_empty() {
+                constructor = Some((Vec::new(), private_field_initializers.clone()));
+            }
+
             let static_blocks = static_blocks
                 .iter()
                 .map(|block| {
@@ -247,6 +251,7 @@ fn resolve_stmt(stmt: &Stmt) -> Result<ResolvedStmt, Diagnostic> {
                 methods,
                 statics,
                 static_blocks,
+                private_fields,
             })
         }
         Stmt::TryCatch {
@@ -517,6 +522,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .iter()
                 .map(resolve_expr)
                 .collect::<Result<Vec<_>, _>>()?;
+            if let Expr::Member { property, .. } = callee.as_ref()
+                && is_private_member_key(property)
+            {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-255: private methods are not supported in this private field runtime slice".to_owned(),
+                    span: Some(*span),
+                });
+            }
             if let Some(builtin) = resolve_builtin_call(callee.as_ref(), args)? {
                 let builtin_args = if matches!(builtin, BuiltinId::ReadStdinUtf8) {
                     Vec::new()
@@ -562,32 +576,41 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             op,
             expr,
             ..
-        } => match (object_expr.as_ref(), computed_key.as_ref()) {
-            (Some(object_expr), Some(key)) => Ok(ResolvedExpr::LogicalComputedMemberAssign {
-                object: Box::new(resolve_expr(object_expr)?),
-                key: Box::new(resolve_expr(key)?),
-                op: *op,
-                expr: Box::new(resolve_expr(expr)?),
-            }),
-            (Some(object_expr), None) => Ok(ResolvedExpr::LogicalMemberAssign {
-                object: Box::new(resolve_expr(object_expr)?),
-                key: property.clone(),
-                op: *op,
-                expr: Box::new(resolve_expr(expr)?),
-            }),
-            (None, Some(key)) => Ok(ResolvedExpr::LogicalComputedPropertyAssign {
-                object: object.clone(),
-                key: Box::new(resolve_expr(key)?),
-                op: *op,
-                expr: Box::new(resolve_expr(expr)?),
-            }),
-            (None, None) => Ok(ResolvedExpr::LogicalPropertyAssign {
-                object: object.clone(),
-                key: property.clone(),
-                op: *op,
-                expr: Box::new(resolve_expr(expr)?),
-            }),
-        },
+        } => {
+            if is_private_member_key(property) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-255: private field logical assignment is not supported in this private field runtime slice".to_owned(),
+                    span: span_of_expr(expr),
+                });
+            }
+            match (object_expr.as_ref(), computed_key.as_ref()) {
+                (Some(object_expr), Some(key)) => Ok(ResolvedExpr::LogicalComputedMemberAssign {
+                    object: Box::new(resolve_expr(object_expr)?),
+                    key: Box::new(resolve_expr(key)?),
+                    op: *op,
+                    expr: Box::new(resolve_expr(expr)?),
+                }),
+                (Some(object_expr), None) => Ok(ResolvedExpr::LogicalMemberAssign {
+                    object: Box::new(resolve_expr(object_expr)?),
+                    key: property.clone(),
+                    op: *op,
+                    expr: Box::new(resolve_expr(expr)?),
+                }),
+                (None, Some(key)) => Ok(ResolvedExpr::LogicalComputedPropertyAssign {
+                    object: object.clone(),
+                    key: Box::new(resolve_expr(key)?),
+                    op: *op,
+                    expr: Box::new(resolve_expr(expr)?),
+                }),
+                (None, None) => Ok(ResolvedExpr::LogicalPropertyAssign {
+                    object: object.clone(),
+                    key: property.clone(),
+                    op: *op,
+                    expr: Box::new(resolve_expr(expr)?),
+                }),
+            }
+        }
         Expr::Member {
             object,
             property,
@@ -632,11 +655,21 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             object,
             property,
             span,
-        } => Ok(ResolvedExpr::OptionalPropertyAccess {
-            object: Box::new(resolve_expr(object)?),
-            key: property.clone(),
-            span: *span,
-        }),
+        } => {
+            if is_private_member_key(property) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-253: optional chaining of private fields is not supported"
+                        .to_owned(),
+                    span: Some(*span),
+                });
+            }
+            Ok(ResolvedExpr::OptionalPropertyAccess {
+                object: Box::new(resolve_expr(object)?),
+                key: property.clone(),
+                span: *span,
+            })
+        }
         Expr::OptionalIndex {
             object,
             index,
@@ -749,6 +782,100 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             expr: Box::new(resolve_expr(expr)?),
         }),
     }
+}
+
+fn resolve_private_field_initializers(
+    class_name: &str,
+    extends_name: Option<&String>,
+    private_elements: &[ClassPrivateElement],
+) -> Result<(Vec<String>, Vec<ResolvedStmt>), Diagnostic> {
+    let mut fields = Vec::new();
+    let mut initializers = Vec::new();
+    let mut seen = HashSet::new();
+
+    for element in private_elements {
+        match element {
+            ClassPrivateElement::Field {
+                name,
+                name_span,
+                value,
+                is_static,
+                span,
+            } => {
+                if *is_static {
+                    return Err(unsupported_private_element(
+                        "static private fields are not supported in this private field runtime slice",
+                        *span,
+                    ));
+                }
+                if extends_name.is_some() {
+                    return Err(unsupported_private_element(
+                        "private fields on derived classes require coordinated super() initialization support",
+                        *span,
+                    ));
+                }
+                if !seen.insert(name.clone()) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-255: duplicate private field `#{name}` in class `{class_name}`"
+                        ),
+                        span: Some(*span),
+                    });
+                }
+                fields.push(name.clone());
+                initializers.push(ResolvedStmt::Expr(ResolvedExpr::PropertyAssign {
+                    object: Box::new(ResolvedExpr::This { span: *name_span }),
+                    key: format!("#{name}"),
+                    value: Box::new(
+                        value
+                            .as_ref()
+                            .map(resolve_expr)
+                            .transpose()?
+                            .unwrap_or(ResolvedExpr::Undefined),
+                    ),
+                }));
+            }
+            ClassPrivateElement::Method { span, .. } => {
+                return Err(unsupported_private_element(
+                    "private methods are not supported in this private field runtime slice",
+                    *span,
+                ));
+            }
+            ClassPrivateElement::Getter { span, .. } | ClassPrivateElement::Setter { span, .. } => {
+                return Err(unsupported_private_element(
+                    "private accessors are not supported in this private field runtime slice",
+                    *span,
+                ));
+            }
+        }
+    }
+
+    Ok((fields, initializers))
+}
+
+fn prepend_private_field_initializers(
+    initializers: &[ResolvedStmt],
+    mut body: Vec<ResolvedStmt>,
+) -> Vec<ResolvedStmt> {
+    if initializers.is_empty() {
+        return body;
+    }
+    let mut merged = initializers.to_vec();
+    merged.append(&mut body);
+    merged
+}
+
+fn unsupported_private_element(detail: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!("issue-255: {detail}"),
+        span: Some(span),
+    }
+}
+
+fn is_private_member_key(key: &str) -> bool {
+    key.starts_with('#')
 }
 
 fn parse_bigint_literal(raw: &str, span: Span) -> Result<ResolvedExpr, Diagnostic> {
@@ -1998,15 +2125,6 @@ fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Spread { span, .. }
         | Expr::PropertyAssign { span, .. }
         | Expr::IndexAssign { span, .. } => Some(*span),
-    }
-}
-
-fn private_element_span(element: &ClassPrivateElement) -> Span {
-    match element {
-        ClassPrivateElement::Field { span, .. }
-        | ClassPrivateElement::Method { span, .. }
-        | ClassPrivateElement::Getter { span, .. }
-        | ClassPrivateElement::Setter { span, .. } => *span,
     }
 }
 
