@@ -135,6 +135,10 @@ class Test262Metadata:
     def expects_negative(self):
         return self.negative_phase is not None
 
+    @property
+    def expects_parse_syntax_error(self):
+        return self.negative_phase == "parse" and self.negative_type == "SyntaxError"
+
 def usage():
     print("Usage: python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose] [--web-ui]")
     print()
@@ -289,6 +293,7 @@ def feature_label(diag_code, stderr, test_file):
     """Generate feature label from diagnostic code."""
     # Simplified version - in the full script this would use feature-labels.sh
     feature_map = {
+        "ExpectedNegativeSyntax": "negative-parse-syntaxerror",
         "UnsupportedSyntax": "feature-unsupported",
         "UnresolvedName": "feature-resolution",
         "UnresolvedFunction": "feature-resolution",
@@ -299,6 +304,21 @@ def feature_label(diag_code, stderr, test_file):
         "CompilationError": "compilation",
     }
     return feature_map.get(diag_code, diag_code.lower())
+
+def classify_completed_negative(metadata):
+    if metadata.expects_parse_syntax_error:
+        return (
+            "unsupported",
+            "ExpectedNegativeSyntax",
+            "negative-parse-syntaxerror",
+            "expected negative parse/SyntaxError but compiler and runtime completed successfully",
+        )
+    return (
+        "fail",
+        "ExpectedNegativeFailure",
+        "",
+        f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} completed successfully",
+    )
 
 def compile_and_run_test(test_file, tmp_dir):
     """Compile and run a single test file."""
@@ -393,8 +413,7 @@ def compile_and_run_test(test_file, tmp_dir):
         else:
             result_status = "fail" if metadata.expects_negative else "pass"
         if metadata.expects_negative:
-            result_diag = "ExpectedNegativeFailure"
-            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} completed successfully"
+            result_status, result_diag, result_feature, result_reason = classify_completed_negative(metadata)
     else:
         result_status = "pass" if metadata.expects_negative else "fail"
         result_diag = f"RuntimeError:{result.returncode}"
