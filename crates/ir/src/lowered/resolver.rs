@@ -1489,26 +1489,34 @@ impl<'a> Resolver<'a> {
         binding: &ArrayBinding,
         value: &LoweredExpr,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
-        let local_id = self.declare_local(&binding.name)?;
-        if binding.is_rest {
-            return Ok(vec![LoweredStmt::Let(
-                local_id,
-                LoweredExpr::RuntimeCall {
-                    runtime_fn: "ArraySlice".to_owned(),
-                    args: vec![
-                        value.clone(),
-                        LoweredExpr::Number(binding.index as i32),
-                        LoweredExpr::GetLength(Box::new(value.clone())),
-                    ],
-                },
-            )]);
-        }
-        self.lower_binding_declaration_with_default(
-            local_id,
+        let element_value = if binding.is_rest {
+            LoweredExpr::RuntimeCall {
+                runtime_fn: "ArraySlice".to_owned(),
+                args: vec![
+                    value.clone(),
+                    LoweredExpr::Number(binding.index as i32),
+                    LoweredExpr::GetLength(Box::new(value.clone())),
+                ],
+            }
+        } else {
             LoweredExpr::Index {
                 object: Box::new(value.clone()),
                 index: Box::new(LoweredExpr::Number(binding.index as i32)),
-            },
+            }
+        };
+        let Some(name) = binding.target.identifier() else {
+            if let Some(pattern) = binding.target.pattern() {
+                return self.lower_binding_pattern_declarations(pattern, element_value);
+            }
+            unreachable!("binding target must be identifier or pattern");
+        };
+        let local_id = self.declare_local(name)?;
+        if binding.is_rest {
+            return Ok(vec![LoweredStmt::Let(local_id, element_value)]);
+        }
+        self.lower_binding_declaration_with_default(
+            local_id,
+            element_value,
             binding.default.as_ref(),
         )
     }
@@ -1518,7 +1526,10 @@ impl<'a> Resolver<'a> {
         binding: &ObjectBinding,
         value: &LoweredExpr,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
-        let local_id = self.declare_local(&binding.name)?;
+        let Some(name) = binding.target.identifier() else {
+            unreachable!("object binding parser rejects nested targets");
+        };
+        let local_id = self.declare_local(name)?;
         self.lower_binding_declaration_with_default(
             local_id,
             LoweredExpr::PropertyGet {
