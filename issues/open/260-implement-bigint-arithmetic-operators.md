@@ -114,6 +114,7 @@ Current state:
 
 Follow-up issues:
 
+- [x] created `issues/open/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` for dynamic `*` / `/` / `%` signed-i64 slice
 - [ ] create narrower bitwise/exponentiation follow-up if those operators are left unsupported
 
 ## Notes
