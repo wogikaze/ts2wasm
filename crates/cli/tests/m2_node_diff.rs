@@ -571,11 +571,13 @@ fn unsupported_function_prototype_metadata_reports_issue_062f() {
 }
 
 #[test]
-fn unsupported_returned_ordinary_function_closure_reports_issue_257() {
-    assert_build_fails_with_unsupported_syntax_without_span(
+fn returned_ordinary_function_closure_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
         "fixtures/core-semantics/ordinary-function-closure-escape-unsupported.ts",
-        "issue-257:",
-    );
+        "fixtures/core-semantics/ordinary-function-closure-make-adder.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]
