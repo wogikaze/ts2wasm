@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 72 | 17 | 55 |
+| runtime | 72 | 16 | 56 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 303 | 147 | 156 |
+| total | 303 | 146 | 157 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | implementation-ready | P2 | 259 | After BigInt values exist, builtin and conversion behavior still needs explicit runtime helpers and diagnostics so `B... |
 | 267 | Implement interactive web UI for test results | feature | coverage | implementation-ready | P1 |  | No interactive web UI for test results, coverage visualization, and historical comparison. |
 | 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
-| 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
 | 273 | Implement recursive function calls | feature | runtime/semantics | implementation-ready | P2 |  | Implement recursive function calls |
 | 274 | Implement spread operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement spread operator |
 | 275 | Implement Set size and clear | feature | runtime/builtins | implementation-ready | P2 |  | `new Set()` currently has validated constructor/add/has/delete coverage, but `Set.prototype.size` and `Set.prototype.... |
@@ -358,6 +357,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
 | 268 | Implement for loop increment operator | feature | frontend/semantics | see file |
 | 269 | Implement Math.pow | feature | runtime/builtins | see file |
+| 271 | Implement Array.prototype.push | feature | runtime/builtins | see file |
 | 272 | Implement Set | feature | runtime/builtins | see `issues/done/272-implement-set.md` |
 <!-- generated:done:end -->
 
