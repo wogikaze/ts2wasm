@@ -701,7 +701,7 @@ impl WatEmitter<'_> {
             (i32.const {ten})))))
     (i32.const -1))
 
-  (func $json_parse_unicode_escape_byte (param $obj i32) (param $len i32) (param $pos i32) (result i32)
+  (func $json_parse_unicode_escape_code_unit (param $obj i32) (param $len i32) (param $pos i32) (result i32)
     (local $d0 i32)
     (local $d1 i32)
     (local $d2 i32)
@@ -750,9 +750,80 @@ impl WatEmitter<'_> {
         (i32.add
           (i32.shl (local.get $d2) (i32.const 4))
           (local.get $d3))))
-    (if (i32.gt_u (local.get $code) (i32.const {ascii_max}))
-      (then (return (i32.const -1))))
     (local.get $code))
+
+  (func $json_utf8_len (param $code i32) (result i32)
+    (if (i32.lt_u (local.get $code) (i32.const 128))
+      (then (return (i32.const {one}))))
+    (if (i32.lt_u (local.get $code) (i32.const 2048))
+      (then (return (i32.const 2))))
+    (if (i32.lt_u (local.get $code) (i32.const 65536))
+      (then (return (i32.const 3))))
+    (i32.const 4))
+
+  (func $json_write_utf8_at (param $ptr i32) (param $code i32) (result i32)
+    (if (i32.lt_u (local.get $code) (i32.const 128))
+      (then
+        (i32.store8 (local.get $ptr) (local.get $code))
+        (return (i32.const {one}))))
+    (if (i32.lt_u (local.get $code) (i32.const 2048))
+      (then
+        (i32.store8
+          (local.get $ptr)
+          (i32.or
+            (i32.const 192)
+            (i32.shr_u (local.get $code) (i32.const 6))))
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const {one}))
+          (i32.or
+            (i32.const 128)
+            (i32.and (local.get $code) (i32.const 63))))
+        (return (i32.const 2))))
+    (if (i32.lt_u (local.get $code) (i32.const 65536))
+      (then
+        (i32.store8
+          (local.get $ptr)
+          (i32.or
+            (i32.const 224)
+            (i32.shr_u (local.get $code) (i32.const 12))))
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const {one}))
+          (i32.or
+            (i32.const 128)
+            (i32.and
+              (i32.shr_u (local.get $code) (i32.const 6))
+              (i32.const 63))))
+        (i32.store8
+          (i32.add (local.get $ptr) (i32.const 2))
+          (i32.or
+            (i32.const 128)
+            (i32.and (local.get $code) (i32.const 63))))
+        (return (i32.const 3))))
+    (i32.store8
+      (local.get $ptr)
+      (i32.or
+        (i32.const 240)
+        (i32.shr_u (local.get $code) (i32.const 18))))
+    (i32.store8
+      (i32.add (local.get $ptr) (i32.const {one}))
+      (i32.or
+        (i32.const 128)
+        (i32.and
+          (i32.shr_u (local.get $code) (i32.const 12))
+          (i32.const 63))))
+    (i32.store8
+      (i32.add (local.get $ptr) (i32.const 2))
+      (i32.or
+        (i32.const 128)
+        (i32.and
+          (i32.shr_u (local.get $code) (i32.const 6))
+          (i32.const 63))))
+    (i32.store8
+      (i32.add (local.get $ptr) (i32.const 3))
+      (i32.or
+        (i32.const 128)
+        (i32.and (local.get $code) (i32.const 63))))
+    (i32.const 4))
 
   (func $json_parse_string (param $obj i32) (param $len i32) (param $pos i32) (result i32)
     (local $start i32)
@@ -761,6 +832,9 @@ impl WatEmitter<'_> {
     (local $result_ptr i32)
     (local $ch i32)
     (local $store_ch i32)
+    (local $code i32)
+    (local $low_code i32)
+    (local $unicode_advance i32)
     (local.set $start (i32.add (local.get $pos) (i32.const {one})))
     (local.set $pos (local.get $start))
     (block $found
@@ -787,15 +861,69 @@ impl WatEmitter<'_> {
                   (local.get $pos))))
             (if (i32.eq (local.get $ch) (i32.const {ascii_u}))
               (then
+                (local.set $code
+                  (call $json_parse_unicode_escape_code_unit
+                    (local.get $obj)
+                    (local.get $len)
+                    (i32.add (local.get $pos) (i32.const {one}))))
                 (if
-                  (i32.lt_s
-                    (call $json_parse_unicode_escape_byte
-                      (local.get $obj)
-                      (local.get $len)
-                      (i32.add (local.get $pos) (i32.const {one})))
-                    (i32.const {zero}))
+                  (i32.lt_s (local.get $code) (i32.const {zero}))
                   (then (return (i32.const {undefined}))))
-                (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
+                (local.set $unicode_advance (i32.const 5))
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $code) (i32.const {high_surrogate_start}))
+                    (i32.le_u (local.get $code) (i32.const {high_surrogate_end})))
+                  (then
+                    (if
+                      (i32.and
+                        (i32.le_u (i32.add (local.get $pos) (i32.const 11)) (local.get $len))
+                        (i32.and
+                          (i32.eq
+                            (i32.load8_u
+                              (i32.add
+                                (i32.add (local.get $obj) (i32.const {str_header}))
+                                (i32.add (local.get $pos) (i32.const 5))))
+                            (i32.const {backslash}))
+                          (i32.eq
+                            (i32.load8_u
+                              (i32.add
+                                (i32.add (local.get $obj) (i32.const {str_header}))
+                                (i32.add (local.get $pos) (i32.const 6))))
+                            (i32.const {ascii_u}))))
+                      (then
+                        (local.set $low_code
+                          (call $json_parse_unicode_escape_code_unit
+                            (local.get $obj)
+                            (local.get $len)
+                            (i32.add (local.get $pos) (i32.const 7))))
+                        (if
+                          (i32.and
+                            (i32.ge_u (local.get $low_code) (i32.const {low_surrogate_start}))
+                            (i32.le_u (local.get $low_code) (i32.const {low_surrogate_end})))
+                          (then
+                            (local.set $code
+                              (i32.add
+                                (i32.const 65536)
+                                (i32.add
+                                  (i32.shl
+                                    (i32.sub (local.get $code) (i32.const {high_surrogate_start}))
+                                    (i32.const 10))
+                                  (i32.sub (local.get $low_code) (i32.const {low_surrogate_start})))))
+                            (local.set $unicode_advance (i32.const 11))))))
+                    (if (i32.eq (local.get $unicode_advance) (i32.const 5))
+                      (then (local.set $code (i32.const {replacement_char}))))))
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $code) (i32.const {low_surrogate_start}))
+                    (i32.le_u (local.get $code) (i32.const {low_surrogate_end})))
+                  (then (local.set $code (i32.const {replacement_char}))))
+                (local.set $out_len
+                  (i32.add
+                    (local.get $out_len)
+                    (call $json_utf8_len (local.get $code))))
+                (local.set $pos (i32.add (local.get $pos) (local.get $unicode_advance)))
+                (br $scan))
               (else
                 (if
                   (i32.eqz
@@ -841,14 +969,72 @@ impl WatEmitter<'_> {
             (local.set $store_ch (local.get $ch))
             (if (i32.eq (local.get $ch) (i32.const {ascii_u}))
               (then
-                (local.set $store_ch
-                  (call $json_parse_unicode_escape_byte
+                (local.set $code
+                  (call $json_parse_unicode_escape_code_unit
                     (local.get $obj)
                     (local.get $len)
                     (i32.add (local.get $pos) (i32.const {one}))))
-                (if (i32.lt_s (local.get $store_ch) (i32.const {zero}))
+                (if (i32.lt_s (local.get $code) (i32.const {zero}))
                   (then (return (i32.const {undefined}))))
-                (local.set $pos (i32.add (local.get $pos) (i32.const 4))))
+                (local.set $unicode_advance (i32.const 5))
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $code) (i32.const {high_surrogate_start}))
+                    (i32.le_u (local.get $code) (i32.const {high_surrogate_end})))
+                  (then
+                    (if
+                      (i32.and
+                        (i32.le_u (i32.add (local.get $pos) (i32.const 11)) (local.get $len))
+                        (i32.and
+                          (i32.eq
+                            (i32.load8_u
+                              (i32.add
+                                (i32.add (local.get $obj) (i32.const {str_header}))
+                                (i32.add (local.get $pos) (i32.const 5))))
+                            (i32.const {backslash}))
+                          (i32.eq
+                            (i32.load8_u
+                              (i32.add
+                                (i32.add (local.get $obj) (i32.const {str_header}))
+                                (i32.add (local.get $pos) (i32.const 6))))
+                            (i32.const {ascii_u}))))
+                      (then
+                        (local.set $low_code
+                          (call $json_parse_unicode_escape_code_unit
+                            (local.get $obj)
+                            (local.get $len)
+                            (i32.add (local.get $pos) (i32.const 7))))
+                        (if
+                          (i32.and
+                            (i32.ge_u (local.get $low_code) (i32.const {low_surrogate_start}))
+                            (i32.le_u (local.get $low_code) (i32.const {low_surrogate_end})))
+                          (then
+                            (local.set $code
+                              (i32.add
+                                (i32.const 65536)
+                                (i32.add
+                                  (i32.shl
+                                    (i32.sub (local.get $code) (i32.const {high_surrogate_start}))
+                                    (i32.const 10))
+                                  (i32.sub (local.get $low_code) (i32.const {low_surrogate_start})))))
+                            (local.set $unicode_advance (i32.const 11))))))
+                    (if (i32.eq (local.get $unicode_advance) (i32.const 5))
+                      (then (local.set $code (i32.const {replacement_char}))))))
+                (if
+                  (i32.and
+                    (i32.ge_u (local.get $code) (i32.const {low_surrogate_start}))
+                    (i32.le_u (local.get $code) (i32.const {low_surrogate_end})))
+                  (then (local.set $code (i32.const {replacement_char}))))
+                (local.set $out_pos
+                  (i32.add
+                    (local.get $out_pos)
+                    (call $json_write_utf8_at
+                      (i32.add
+                        (i32.add (local.get $result_ptr) (i32.const {str_header}))
+                        (local.get $out_pos))
+                      (local.get $code))))
+                (local.set $pos (i32.add (local.get $pos) (local.get $unicode_advance)))
+                (br $copy_loop))
               (else
                 (if (i32.eq (local.get $ch) (i32.const {ascii_b}))
                   (then (local.set $store_ch (i32.const {backspace}))))
@@ -1652,7 +1838,6 @@ impl WatEmitter<'_> {
             ascii_a = 97,
             ascii_lower_a = 97,
             ascii_lower_f = 102,
-            ascii_max = 127,
             ascii_b = 98,
             ascii_e = 101,
             ascii_E = 69,
@@ -1663,6 +1848,11 @@ impl WatEmitter<'_> {
             ascii_s = 115,
             ascii_t = 116,
             ascii_u = 117,
+            high_surrogate_start = 0xD800,
+            high_surrogate_end = 0xDBFF,
+            low_surrogate_start = 0xDC00,
+            low_surrogate_end = 0xDFFF,
+            replacement_char = 0xFFFD,
             backspace = 8,
             formfeed = 12,
             space = 32,

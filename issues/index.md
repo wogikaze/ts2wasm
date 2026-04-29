@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 52 | 10 | 42 |
+| runtime | 52 | 9 | 43 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 267 | 144 | 123 |
+| total | 267 | 143 | 124 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -40,7 +40,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 052c | Implement JSON UTF-16 and surrogate string handling | feature | runtime/builtins | implementation-ready | P1 |  | JSON string parsing currently supports ASCII and ASCII-valued `\uXXXX` escapes, but rejects non-ASCII code points and... |
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
 | 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | implementation-ready | P2 |  | `JSON.stringify` has validated narrow boxed `space` handling, but broader boxed and object-coercion edge cases are no... |
 | 052f | Implement JSON.parse throw-compatible diagnostics | feature | runtime/builtins | implementation-ready | P1 |  | Invalid `JSON.parse` cases are now rejected in many paths, but iwasm usually traps with `Exception: unreachable` inst... |
@@ -257,6 +256,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 051 | Implement RegExp | feature | runtime/builtins | see `issues/done/051-implement-regexp.md` |
 | 052a | Close JSON supported subset contract | docs | runtime/builtins | see `issues/done/052a-close-json-supported-subset-contract.md` |
 | 052b | Implement JSON non-integer number representation | feature | runtime/builtins | see `issues/done/052b-implement-json-noninteger-number-representation.md` |
+| 052c | Implement JSON UTF-16 and surrogate string handling | feature | runtime/builtins | see `issues/done/052c-implement-json-utf16-surrogate-strings.md` |
 | 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 | 054 | Implement Error types | feature | runtime/builtins | see `issues/done/054-implement-error-types.md` |
 | 055 | Umbrella: implement import and export | feature | frontend/semantics | see `issues/done/055-implement-import-export.md` |
