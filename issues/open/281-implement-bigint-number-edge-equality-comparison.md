@@ -111,6 +111,17 @@ Split from issue 261 on 2026-04-29 because issue 261 already implemented BigInt/
   number comparison semantics requires the broader number model and is not
   closed by this slice.
 
+2026-04-29:
+
+- Extended the same source-spanned issue-281 diagnostic boundary to signed unary
+  special number globals such as `-Infinity`, preventing those BigInt/Number
+  comparisons from falling through to generic unresolved-name diagnostics.
+- Added unsupported regression coverage in
+  `fixtures/core-semantics/bigint-mixed-number-unary-special-unsupported.ts`.
+- Remaining scope: fractional number tokens still fail before IR name
+  resolution under the current parser/number-model boundary, and compatible
+  `NaN` / `Infinity` runtime comparison semantics remain unimplemented.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
