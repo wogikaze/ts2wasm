@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 202 | 131 | 71 |
+| frontend | 203 | 132 | 71 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 334 | 147 | 187 |
+| total | 335 | 148 | 187 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,8 +51,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 292 | Resolve initCount binding in class destructuring defaults | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring default-initializer tests repeatedly lose the `initCount` side-effect counter binding. |
 | 301 | Implement mutable class-method outer environment cells | feature | frontend/ir/runtime | implementation-ready | P2 |  | `callCount = callCount + 1` inside a class method needs a shared |
-| 302 | Implement direct eval block function declaration slice | feature | frontend/semantics | implementation-ready | P3 |  | Direct eval block-function reference cases still report unsupported |
 | 305 | Support ABC451 depth-9 search budget | feature | runtime/memory | implementation-ready | P1 |  | The official ABC451 rewritten fixture still traps in `$alloc_heap` |
+| 306 | Implement mutable direct eval block-function environments | feature | frontend/ir/runtime | implementation-ready | P3 |  | `func-block-decl-eval-func-block-scoping.js` now gets past the static |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -195,6 +195,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
+| 302 | Implement direct eval block function declaration slice | feature | frontend/semantics | 306 | Implement direct eval block function declaration slice |
 <!-- generated:blocked:end -->
 
 ## Done queue
