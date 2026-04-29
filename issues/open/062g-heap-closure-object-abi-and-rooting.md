@@ -124,7 +124,7 @@ Current state:
 Follow-up issues:
 
 - [x] created: `issues/done/256-lower-returned-immutable-closures-to-heap-values.md`
-- [x] created: `issues/open/257-emit-heap-closure-allocation-and-dispatch.md`
+- [x] created: `issues/done/257-emit-heap-closure-allocation-and-dispatch.md`
 - [x] created: `issues/open/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md`
 
 ## Notes
