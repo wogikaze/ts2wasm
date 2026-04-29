@@ -164,18 +164,16 @@ fn bigint_runtime_large_mul_reports_issue_260() {
 }
 
 #[test]
-fn bigint_runtime_div_zero_reports_issue_260() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-runtime-div-zero-unsupported.ts",
-        "issue-260: BigInt division by zero runtime throw is not implemented",
+fn bigint_runtime_div_zero_traps_after_successful_build() {
+    assert_fixture_node_rangeerror_and_iwasm_traps(
+        "fixtures/core-semantics/bigint-runtime-div-zero-trap.ts",
     );
 }
 
 #[test]
-fn bigint_runtime_rem_zero_reports_issue_260() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-runtime-rem-zero-unsupported.ts",
-        "issue-260: BigInt division by zero runtime throw is not implemented",
+fn bigint_runtime_rem_zero_traps_after_successful_build() {
+    assert_fixture_node_rangeerror_and_iwasm_traps(
+        "fixtures/core-semantics/bigint-runtime-rem-zero-trap.ts",
     );
 }
 
@@ -962,6 +960,26 @@ fn assert_fixture_iwasm_traps(fixture: &str) {
         output_text.contains("unreachable"),
         "expected unreachable trap for {fixture}, got:\n{output_text}"
     );
+}
+
+fn assert_fixture_node_rangeerror_and_iwasm_traps(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    assert!(
+        !node.status.success(),
+        "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+    let node_stderr = String::from_utf8_lossy(&node.stderr);
+    assert!(
+        node_stderr.contains("RangeError") && node_stderr.contains("Division by zero"),
+        "expected Node RangeError division by zero for {fixture}, got:\n{node_stderr}"
+    );
+
+    assert_fixture_iwasm_traps(fixture);
 }
 
 fn assert_live_time_fixture_in_host_window(fixture: &str) {
