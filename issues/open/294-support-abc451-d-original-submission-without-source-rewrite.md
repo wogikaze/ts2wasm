@@ -277,6 +277,18 @@ This issue is intentionally blocked because the fixture crosses several existing
   sort at 1200..1232`, on `allGoodInt.sort((a, b) => a - b)`.
 - Split issue 299 for the dense numeric `Array.sort((a, b) => a - b)` slice.
 
+2026-04-30 progress:
+
+- Added the issue-299 dense numeric `Array.sort((a, b) => a - b)` slice.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` advances beyond the
+  prior `issue-211: unknown receiver class for method sort at 1200..1232`
+  blocker.
+- Current first failure is now:
+  `error: [NumberOutOfRange] number literal 1000000000 is out of small-int
+  tagged range (-268435456..=268435455)`.
+- The remaining blocker is the broader number representation / large integer
+  lowering needed by ABC451; issue 299 does not widen the runtime number model.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
