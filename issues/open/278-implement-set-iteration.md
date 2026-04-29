@@ -113,6 +113,14 @@ Follow-up issues:
 
 Split from stale broad issue 272 after issue 049 closed the basic constructor/add/has/delete subset.
 
+**Current implementation limitation**: The current for...of implementation only supports arrays. Implementing Set iteration requires:
+1. Adding iterator protocol support for Set
+2. Implementing Set.prototype.values and Set.prototype[Symbol.iterator]
+3. Modifying the for...of lowering to handle Set iterables
+4. Ensuring insertion order is preserved
+
+This requires substantial changes to the iteration infrastructure.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
@@ -131,4 +139,5 @@ date:
 
 Remaining risks:
 
-- none
+- Requires substantial changes to iteration infrastructure
+- May impact Map iteration as well

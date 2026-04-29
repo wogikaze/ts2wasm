@@ -129,32 +129,12 @@ Split from stale broad issue 272 after issue 049 closed the zero-argument constr
 Validation result:
 
 ```text
-command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/set-constructor-array.ts -o /tmp/issue276-set-array.wasm && iwasm /tmp/issue276-set-array.wasm && node fixtures/builtins-and-io/set-constructor-array.ts
-result: pass; iwasm and Node printed `true`, `true`, `false`, `2`
-date: 2026-04-29
-
 command: cargo nextest run -p ts2wasm-cli set
-result: pass; 5 tests run, 5 passed, 329 skipped
-date: 2026-04-29
-
-command: cargo nextest run -p ts2wasm-cli map_set_collection_fixture_matches_node_output_under_iwasm set_size_clear_fixture_matches_node_output_under_iwasm
-result: pass; 2 tests run, 2 passed, 332 skipped
+result: pass; 5 tests run, 5 passed, 330 skipped
 date: 2026-04-29
 
 command: cargo nextest run
-result: pass; 521 tests run, 521 passed, 4 skipped
-date: 2026-04-29
-
-command: mise run update-issue-index
-result: pass; issues/index.md regenerated
-date: 2026-04-29
-
-command: mise run update-issue-index -- --check
-result: pass; issues/index.md OK
-date: 2026-04-29
-
-command: mise run check issues
-result: pass; issues/index.md queue OK; check_issue_health OK
+result: pass; 522 tests run, 522 passed, 4 skipped
 date: 2026-04-29
 ```
 
@@ -176,4 +156,4 @@ date:
 
 Remaining risks:
 
-- none
+- Observable `Set.prototype.add` dispatch remains tracked by issue 279.
