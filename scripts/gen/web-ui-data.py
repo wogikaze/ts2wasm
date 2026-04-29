@@ -163,12 +163,20 @@ def load_jsonl_test_records(paths, start_id):
                 data = json.loads(raw_line)
                 suite = data.get("suite") or "test262"
                 case_name = data.get("case") or data.get("name") or data.get("path") or f"line-{line_number}"
+                
+                # Extract a cleaner name from the full path
+                if "/" in case_name:
+                    # Get the last part of the path (filename)
+                    clean_name = case_name.split("/")[-1]
+                else:
+                    clean_name = case_name
+                
                 status = normalize_status(data.get("status"))
                 record = {
                     "id": str(row_id),
                     "suite": suite,
                     "case": case_name,
-                    "name": case_name,
+                    "name": clean_name,
                     "target": data.get("target") or "wasm",
                     "status": status,
                 }
@@ -187,8 +195,17 @@ def load_jsonl_test_records(paths, start_id):
 
 
 def build_test_results(artifacts, jsonl_paths):
-    tests = aggregate_test_records(artifacts)
-    tests.extend(load_jsonl_test_records(jsonl_paths, len(tests) + 1))
+    # Only use individual test records from JSONL, skip aggregate summaries
+    if jsonl_paths:
+        tests = load_jsonl_test_records(jsonl_paths, 1)
+    else:
+        # Fallback to aggregate summaries if no JSONL provided
+        tests = aggregate_test_records(artifacts)
+    
+    # Limit to first 1000 tests for UI performance
+    if len(tests) > 1000:
+        tests = tests[:1000]
+    
     return {"tests": tests, "summary": count_summary(tests)}
 
 
