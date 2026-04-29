@@ -280,6 +280,54 @@ date: 2026-04-29
 
 - Issue 300 remains open. No official ABC451 sample compatibility is claimed.
 
+2026-04-29 child `308-next-blocker-20260429T204403Z` progress:
+
+- Committed sweep tail trimming: when `$gc_sweep` coalesces an unmarked range
+  that reaches the current `$heap` end, it lowers `$heap` to the range start
+  instead of linking the tail into the free list. Future bump allocation can
+  reuse that top-of-heap garbage directly, and the free-list scan does not have
+  to visit the tail block.
+- Added backend WAT contract coverage for the tail-trim path.
+- Required depth-8 and OOM regressions still pass, but the depth-9 reducer and
+  official smallest sample remain blocked under the committed 185-page cap:
+
+```text
+command: node /tmp/abc451-search-depth-9-308-lastchance.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-search-depth-9-308-lastchance.ts -o /tmp/abc451-search-depth-9-tailtrim.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-tailtrim.wasm
+result: trapped with Exception: unreachable after 9.84s under committed 185-page policy
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s sh -c "printf '10\n' | iwasm /tmp/abc451-d-tailtrim.wasm"
+result: trapped with Exception: unreachable after 10.85s under committed 185-page policy
+date: 2026-04-29
+```
+
+- WAT-only 1024-page telemetry with the committed tail-trim policy lowered
+  bounded sweep pressure further than the previous committed issue 308 slice:
+
+```text
+alloc_count: 1000000
+allocated_block_bytes: 62648256
+gc_collect_count: 729
+gc_sweep_block_visits: 171324221
+gc_sweep_freed_blocks: 18531756
+heap_high_water_bytes: 20430896
+gc_tail_trim_count: 9
+gc_tail_trim_bytes: 49712
+elapsed: 16.47
+```
+
+This improves the previous committed telemetry from `gc_collect_count=790` and
+`gc_sweep_block_visits=192697486`, but it does not complete the depth-9
+reducer. Issue 308 remains open. Issue 300 remains open.
+
 ## Completion evidence
 
 Commits:
@@ -399,6 +447,22 @@ date: 2026-04-29
 
 command: mise run check issues
 result: pass after copying parent `artifacts/coverage/results/test262-results.jsonl` into the worktree as allowed by the assignment
+date: 2026-04-29
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 tests passed including sweep tail-trim WAT contract
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 60s iwasm /tmp/abc451-search-depth-9-tailtrim-telemetry-cap1024.wasm
+result: diagnostic abort after 1,000,000 allocations; GC collections 729; sweep block visits 171,324,221; freed sweep blocks 18,531,756; heap high-water 20,430,896 bytes; tail trims 9; tail-trimmed bytes 49,712; elapsed 16.47s
 date: 2026-04-29
 ```
 

@@ -320,7 +320,7 @@ Pseudo flow:
 
 1. markフェーズ: ルートとして `globals` / `runtime stacks` / `module cache` を走査
 2. sweepフェーズ: 生存フラグがないブロックを free-list へ回収
-3. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する。sweep は free-list 内の最大 body size も記録し、要求 payload がそれを超える場合は `$alloc_heap` の線形 free-list scan を省略する
+3. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する。sweep は free-list 内の最大 body size も記録し、要求 payload がそれを超える場合は `$alloc_heap` の線形 free-list scan を省略する。sweep が heap 末尾まで続く unmarked range を見つけた場合は、その range を free-list に入れず `$heap` を range 先頭へ戻す
 4. 必要なら `memory.grow`、`MEMORY_MAX_PAGES` まで増やせなければ trap
 
 ### Safety and compatibility notes
@@ -389,6 +389,9 @@ GC の直後に小刻みな `memory.grow` と sweep を繰り返す状態を避�
 現在の `memory.size` がすでに `MEMORY_MAX_PAGES` の場合は、`memory.grow` が
 失敗して trap する前に last-chance GC を実行し、直後の free-list scan で
 回収済み block を再利用できるようにする。
+Sweep が heap 末尾まで続く unmarked range を回収する場合は、free-list 登録ではなく
+`$heap` の tail trim として処理し、以後の bump allocation がその末尾領域を直接再利用
+できるようにする。
 `MEMORY_MAX_PAGES` まで増やせなければ `unreachable` で trap する。
 これにより、大きな割り当てによる未定義動作やメモリ破損を防ぐ。
 現在の上限は 185 pages で、ABC451 D の depth-8 large live-set reducer はこの cap で
@@ -498,6 +501,11 @@ free blocks; allocation uses it only to skip scans when the requested aligned
 payload is larger than every block discovered by the last sweep. If later
 free-list reuse makes the value stale, it may overestimate and allow an
 unnecessary scan, but it must not underestimate and skip a reusable block.
+When a coalesced unmarked range reaches the current `$heap` end, sweep lowers
+`$heap` to the start of that range and exits instead of linking the tail into
+the free list. This keeps the high-water bump pointer from staying pinned by
+dead top-of-heap objects and avoids scanning a tail block that future bump
+allocation can reuse directly.
 
 ### Implementation Notes
 

@@ -278,6 +278,7 @@ mod tests {
         assert!(wat.contains("(local $next_body_size i32)"));
         assert!(wat.contains("(loop $coalesce"));
         assert!(wat.contains("(i32.add (i32.const 16) (local.get $next_body_size))"));
+        assert!(wat.contains("(global.set $heap (local.get $cursor))"));
         assert!(wat.contains("(global.set $gc_free_list (local.get $cursor))"));
         assert!(wat.contains("(local $free_header i32)"));
         assert!(wat.contains("(local $free_body_size i32)"));
