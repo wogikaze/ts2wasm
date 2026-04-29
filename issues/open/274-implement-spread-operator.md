@@ -90,3 +90,6 @@ cargo fmt --all --check
 - 2026-04-29: Added a dense array local call-spread slice:
   - direct fixed-arity function calls such as `sum(...values)` where `values` is a known dense array local lower each formal argument through existing `ArrayGet` runtime reads and match Node/iwasm output;
   - string/custom iterable call spread, rest/`arguments`-observing callees, sparse arrays, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.
+- 2026-04-29: Added an ASCII string literal call-spread slice:
+  - direct fixed-arity function calls such as `join(..."abc")` lower to one-character string arguments and match Node/iwasm output;
+  - string locals, non-ASCII string iterator parity, custom iterable call spread, rest/`arguments`-observing callees, sparse arrays, and general iterator protocol semantics remain guarded by `issue-274` diagnostics.
