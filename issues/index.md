@@ -19,12 +19,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 2 | 2 | 0 |
-| runtime | 52 | 7 | 45 |
+| runtime | 52 | 6 | 46 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 267 | 140 | 127 |
+| total | 267 | 139 | 128 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -41,7 +41,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
-| 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | implementation-ready | P2 |  | `JSON.stringify` has validated narrow boxed `space` handling, but broader boxed and object-coercion edge cases are no... |
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
 | 062f | Implement function object metadata | feature | frontend/semantics | implementation-ready | P2 |  | Function object metadata such as `name`, `length`, and prototype |
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
@@ -254,6 +253,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 052a | Close JSON supported subset contract | docs | runtime/builtins | see `issues/done/052a-close-json-supported-subset-contract.md` |
 | 052b | Implement JSON non-integer number representation | feature | runtime/builtins | see `issues/done/052b-implement-json-noninteger-number-representation.md` |
 | 052c | Implement JSON UTF-16 and surrogate string handling | feature | runtime/builtins | see `issues/done/052c-implement-json-utf16-surrogate-strings.md` |
+| 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | see `issues/done/052e-complete-json-stringify-boxed-argument-edge-cases.md` |
 | 052f | Implement JSON.parse throw-compatible diagnostics | feature | runtime/builtins | see `issues/done/052f-implement-json-parse-throw-compatible-diagnostics.md` |
 | 053 | Implement Math | feature | runtime/builtins | see `issues/done/053-implement-math.md` |
 | 054 | Implement Error types | feature | runtime/builtins | see `issues/done/054-implement-error-types.md` |
