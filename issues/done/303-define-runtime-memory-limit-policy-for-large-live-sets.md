@@ -3,12 +3,14 @@ id: 303
 title: "Define runtime memory limit policy for large live sets"
 type: feature
 area: runtime/memory
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [300]
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-30
+status: done
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -91,14 +93,14 @@ tested OOM boundary.
 
 In scope:
 
-- [ ] Choose and document the default wasm memory maximum for standalone
+- [x] Choose and document the default wasm memory maximum for standalone
       modules.
-- [ ] Update `Layout::MEMORY_MAX_PAGES` or add an equivalent compiler/runtime
+- [x] Update `Layout::MEMORY_MAX_PAGES` or add an equivalent compiler/runtime
       policy knob.
-- [ ] Update OOM regression coverage so intentional OOM tests still exceed the
+- [x] Update OOM regression coverage so intentional OOM tests still exceed the
       new policy.
-- [ ] Verify the depth-7 reducer prints `61002` under `iwasm`.
-- [ ] Re-run the ABC451 sample commands and record whether they advance.
+- [x] Verify the depth-7 reducer prints `61002` under `iwasm`.
+- [x] Re-run the ABC451 sample commands and record whether they advance.
 
 Out of scope:
 
@@ -129,13 +131,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A committed regression or scripted validation proves the depth-7 reducer
+- [x] A committed regression or scripted validation proves the depth-7 reducer
       prints `61002` under `iwasm`.
-- [ ] Existing OOM coverage still traps intentionally under the chosen policy.
-- [ ] `fixtures/atcoder/abc451-d-concat-power2.ts` is rebuilt and the three
+- [x] Existing OOM coverage still traps intentionally under the chosen policy.
+- [x] `fixtures/atcoder/abc451-d-concat-power2.ts` is rebuilt and the three
       official sample commands are re-run, with pass output or a newly narrowed
       blocker recorded in issue 300.
-- [ ] Runtime memory-limit documentation/current-state is synchronized if the
+- [x] Runtime memory-limit documentation/current-state is synchronized if the
       default maximum changes.
 
 ## Validation
@@ -169,15 +171,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md` if the default wasm memory maximum changes
+- [x] updated: `docs/14-runtime-abi.md` if the default wasm memory maximum changes
 
 Current state:
 
-- [ ] updated: `current-state.md` if supported standalone workload limits change
+- [x] updated: `current-state.md` if supported standalone workload limits change
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -191,16 +193,37 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo run -q -- build /tmp/abc451-search-depth-7.ts -o /tmp/abc451-search-depth-7.wasm --host-deny && iwasm /tmp/abc451-search-depth-7.wasm
+result: pass; iwasm stdout `61002`
+date: 2026-04-30
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; intentional OOM fixture still traps under the 42-page cap
+date: 2026-04-30
+
+command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-memory-policy-child.wasm --host-deny
+result: pass
+date: 2026-04-30
+
+command: printf '10\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
+result: blocked; `Exception: unreachable`
+date: 2026-04-30
+
+command: printf '69\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
+result: blocked; `Exception: unreachable`
+date: 2026-04-30
+
+command: printf '1099898\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
+result: blocked; `Exception: unreachable`
+date: 2026-04-30
 ```
 
 Remaining risks:
 
-- none
+- The full ABC451 official sample path still traps in runtime allocation under
+  the new cap; issue 300 remains open with the recorded blocker.

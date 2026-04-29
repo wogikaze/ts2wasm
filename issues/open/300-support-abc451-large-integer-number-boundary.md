@@ -255,6 +255,35 @@ out-of-bounds write but not yet safe to close.
   allocator free-list corruption bug. Issue 300 remains open until issue 303 is
   resolved and the three ABC451 official samples are verified.
 
+2026-04-30 child `019dda50-d705-7782-bce9-c7e3e8dbf72d` memory-policy follow-up:
+
+- Implemented issue 303's bounded memory policy by raising
+  `Layout::MEMORY_MAX_PAGES` from 16 to 42 pages. The depth-7 ABC451 live-set
+  reducer now prints Node-matching `61002` under `iwasm`; 40 pages still traps
+  with `Exception: unreachable`, so 42 pages is the smallest confirmed cap for
+  that reducer.
+- Re-ran the ABC451 fixture build and all three official sample commands under
+  the 42-page cap:
+
+```sh
+cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-memory-policy-child.wasm --host-deny
+printf '10\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
+printf '69\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
+printf '1099898\n' | iwasm /tmp/abc451-d-memory-policy-child.wasm
+```
+
+Result:
+
+```text
+Exception: unreachable
+Exception: unreachable
+Exception: unreachable
+```
+
+- A 64-page trial also trapped on the smallest official sample input, so the
+  remaining ABC451 sample blocker is still in the runtime allocation/GC path
+  rather than the issue 303 depth-7 reducer cap itself. Issue 300 remains open.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
