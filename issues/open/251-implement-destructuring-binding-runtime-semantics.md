@@ -164,3 +164,10 @@ Defaults follow-up:
 - Added `fixtures/core-semantics/destructuring-binding-defaults-runtime.ts` and Node/iwasm differential coverage.
 - Kept non-literal defaults, rest, nested patterns, elisions, and broad iterator semantics as issue-251 unsupported diagnostics; updated unsupported fixtures to assert source-spanned non-literal default diagnostics.
 - Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (11 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (496 passed, 4 skipped).
+
+Elision follow-up:
+
+- Implemented array binding elisions for simple identifier-only declaration and parameter patterns while preserving later element indexes.
+- Added `fixtures/core-semantics/destructuring-binding-elision-runtime.ts` and Node/iwasm differential coverage for declaration, ordinary function parameter, and arrow parameter elisions.
+- Rest, nested patterns, non-literal defaults, and broad iterator semantics remain issue-251 unsupported diagnostics.
+- Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (12 passed); `mise run check issues`; `cargo nextest run` (501 passed, 4 skipped).
