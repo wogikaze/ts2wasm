@@ -489,6 +489,24 @@ fn arrow_function_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/primitives-control-flow/function.ts",
+        "fixtures/core-semantics/ordinary-function-direct-call.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn nested_function_declaration_fixture_reports_issue_062c() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/nested-function-declaration-unsupported.ts",
+        "issue-062c: nested function declarations are not supported",
+    );
+}
+
+#[test]
 fn rest_parameter_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/rest-params-zero.ts",
