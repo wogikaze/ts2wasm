@@ -166,7 +166,7 @@ the first block-function declaration behavior.
   for the introduced function binding to resolve without treating broader
   dynamic eval as supported.
 
-2026-04-30 child progress:
+2026-04-29 child progress:
 
 - Expanded the static direct-eval block-function parser slice from a single
   block source to selected prefix/block and block/suffix forms. Prefix-only
