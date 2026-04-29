@@ -5,7 +5,7 @@ type: feature
 area: runtime
 class: blocked
 priority: P1
-depends_on: [305]
+depends_on: [307]
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
@@ -385,6 +385,25 @@ exit 124, no output
   bounded evidence that the official depth-9 sample path completes under the
   larger cap. Issue 305 now owns the next concrete blocker: depth-9 recursive
   search memory/performance isolation.
+
+2026-04-29 child `305-abc451-depth9-budget-20260429T190850Z` depth-9
+search-only isolation:
+
+- Recreated the depth-9 search-only reducer from issue 305. Node prints
+  `1404832`.
+- Under committed `MEMORY_MAX_PAGES=185`, the reducer traps with
+  `Exception: unreachable`.
+- WAT-only memory-cap trials do not justify a committed memory-policy change:
+  512 pages still traps after 1:11.00, 1024 pages times out after 90 seconds
+  with no output, and 2048 pages also times out after 90 seconds with no
+  output.
+- A WAT-only trial that changed only the GC allocation-pressure threshold from
+  64KiB to 1MiB while using 2048 pages also timed out after 90 seconds with no
+  output.
+- Issue 307 now owns the smaller next blocker: bounded allocation/GC
+  performance telemetry for the depth-9 live-set path. Issue 300 remains open
+  and blocked until that path produces completion-time evidence and the
+  official samples match Node.
 
 ## Completion evidence
 

@@ -3,12 +3,14 @@ id: 305
 title: "Support ABC451 depth-9 search budget"
 type: feature
 area: runtime/memory
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
-blocks: [300]
+blocks: [307]
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -72,14 +74,14 @@ is split with evidence showing why depth-9 cannot be safely fixed as one slice.
 
 In scope:
 
-- [ ] Isolate whether the remaining blocker is memory capacity, GC retention,
+- [x] Isolate whether the remaining blocker is memory capacity, GC retention,
       allocation strategy, algorithmic overhead from current lowering, or a
       later runtime path after search returns.
-- [ ] Prefer a committed depth-9 search-only reducer if it can complete within
+- [x] Prefer a committed depth-9 search-only reducer if it can complete within
       a practical focused-test timeout.
-- [ ] If changing memory policy, prove the smallest justified cap with reducer
+- [x] If changing memory policy, prove the smallest justified cap with reducer
       evidence and preserve the intentional OOM boundary.
-- [ ] If changing allocation/GC behavior, add focused Node/iwasm regression
+- [x] If changing allocation/GC behavior, add focused Node/iwasm regression
       coverage.
 
 Out of scope:
@@ -112,13 +114,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The next depth-9 blocker is classified with bounded commands that do not
+- [x] The next depth-9 blocker is classified with bounded commands that do not
       rely on unbounded sample execution.
-- [ ] If implementation changes are made, focused Node/iwasm regression
+- [x] If implementation changes are made, focused Node/iwasm regression
       coverage is added for the fixed reducer or runtime path.
-- [ ] If memory policy changes, `oom_alloc_check_must_fail_iwasm` still passes
+- [x] If memory policy changes, `oom_alloc_check_must_fail_iwasm` still passes
       and `docs/14-runtime-abi.md` is updated.
-- [ ] Issue 300 is updated with the new evidence and remains open until all
+- [x] Issue 300 is updated with the new evidence and remains open until all
       official sample outputs match Node.
 
 ## Validation
@@ -148,18 +150,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if memory policy changes
+- [x] not affected
+- [x] updated: `docs/14-runtime-abi.md` if memory policy changes
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root) if supported runtime facts change
+- [x] not affected
+- [x] updated: `current-state.md` (repo root) if supported runtime facts change
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated if a smaller allocator/GC/lowering blocker is isolated
+- [x] none
+- [x] created/updated if a smaller allocator/GC/lowering blocker is isolated
 
 ## Notes
 
@@ -169,20 +171,44 @@ timed out after 60 seconds without output for sample input `10`.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `1e77d94b`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: node /tmp/abc451-search-depth-9-305.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-search-depth-9-305.ts -o /tmp/abc451-search-depth-9-305.wasm --host-deny && timeout 45s iwasm /tmp/abc451-search-depth-9-305.wasm
+result: fail; iwasm trapped with Exception: unreachable under committed MEMORY_MAX_PAGES=185
+date: 2026-04-29
+
+command: WAT-only memory max 512 pages, timeout 90s iwasm /tmp/abc451-search-depth-9-305-cap-512.wasm
+result: fail; Exception: unreachable after 1:11.00, maxrss 105248KB
+date: 2026-04-29
+
+command: WAT-only memory max 1024 pages, timeout 90s iwasm /tmp/abc451-search-depth-9-305-cap-1024.wasm
+result: fail; timeout 124 after 1:30.01, no output, maxrss 110716KB
+date: 2026-04-29
+
+command: WAT-only memory max 2048 pages, timeout 90s iwasm /tmp/abc451-search-depth-9-305-cap-2048.wasm
+result: fail; timeout 124 after 1:30.01, no output, maxrss 110012KB
+date: 2026-04-29
+
+command: WAT-only GC threshold 1MiB with memory max 2048 pages, timeout 90s iwasm /tmp/abc451-search-depth-9-305-th-1048576.wasm
+result: fail; timeout 124 after 1:30.01, no output, maxrss 103768KB
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- The bounded depth-9 search-only reducer isolates the next blocker as
+  completion-time/runtime allocation performance under large live-set pressure,
+  not a justified memory-cap-only implementation slice. 512 pages still traps,
+  while 1024/2048 pages do not complete within 90 seconds. A WAT-only 1MiB GC
+  threshold trial also timed out, so issue 307 owns the next smaller
+  instrumentation/performance slice before any committed memory or GC policy
+  change.
