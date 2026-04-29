@@ -126,6 +126,71 @@ The existing logical payload shape is kept; header is additive.
 
 `object` は既存仕様に合わせて `prototype_ptr` を保持し、`[[Prototype]]` 走査は将来の markフェーズと連携させる。
 
+### Closure heap object ABI
+
+Escaping ordinary functions and arrows are represented as GC-managed heap
+objects. The low-bit `RawValue` tag remains `object` (`ptr | 0b111`); no new
+low-bit closure tag is introduced in this ABI slice. The closure subtype is
+identified by the first payload word, so existing value-tag checks can keep
+treating closure values as heap object values while runtime helpers can route
+them away from ordinary property-entry scanning.
+
+```text
+RawValue closure value:
+
+  closure_value = closure_payload_ptr | OBJECT_TAG
+
+GC header:
+
+  flags/type kind = GC_KIND_OBJECT
+
+Closure payload:
+
+  +0  i32 object_subtype     ; CLOSURE_SENTINEL, distinct from property_count
+  +4  i32 code_id            ; lowered function identity, stable within module
+  +8  i32 capture_count      ; number of RawValue capture slots
+  +12 i32 env_flags          ; reserved, must be 0 in the immutable-env slice
+  +16 i32 capture0           ; RawValue
+  +20 i32 capture1           ; RawValue
+  ...
+```
+
+The closure payload deliberately does not reuse the ordinary object
+`property_count/prototype_ptr/(key:value)` layout. Generic object-property
+helpers must detect `CLOSURE_SENTINEL` before interpreting the payload as
+property entries. Until function metadata/prototype work extends this contract,
+closure objects expose no own JS properties through the generic object table.
+
+`code_id` is the lowered `FuncId` ordinal for a compiler-generated wasm
+function. The function body ABI is unchanged from the current non-escaping
+closure path: user arguments are followed by hidden immutable capture
+parameters in the lowered function parameter order. A heap-closure dispatch
+helper loads `code_id`, selects the generated target for the requested arity,
+loads captures from the payload in order, and calls the target with
+`user_args..., captures...`.
+
+Mutable captured bindings are not represented by this immutable closure payload.
+Until a separate environment-cell object contract exists, mutable capture forms
+must remain an issue-linked diagnostic rather than being lowered to stale
+captured values.
+
+GC marking for closure objects is part of the closure ABI:
+
+```text
+mark_object_payload(payload):
+  if i32.load(payload + 0) == CLOSURE_SENTINEL:
+    count = i32.load(payload + 8)
+    for i in 0..count:
+      mark_value(i32.load(payload + 16 + i * 4))
+    return
+  scan ordinary object prototype and property entries
+```
+
+Closure allocation must keep all evaluated capture values rooted before calling
+`$alloc_heap`; the newly-created closure value is then mirrored into the caller
+root slot like any other heap value. This preserves captured heap objects across
+allocation pressure and after the declaring function's activation has returned.
+
 ### GC trigger points
 
 `$alloc_heap` は以下のどちらかを満たすと GC を試行する:
