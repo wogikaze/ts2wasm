@@ -1,11 +1,11 @@
 ---
-id: 259
+id: 262
 title: "Implement BigInt builtins and string conversion"
 type: feature
 area: runtime/builtins
 class: implementation-ready
 priority: P2
-depends_on: [256]
+depends_on: [259]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -20,9 +20,9 @@ Problem: After BigInt values exist, builtin and conversion behavior still needs 
 ## Current failure
 
 ```sh
-tmp=/tmp/ts2wasm-259-bigint-builtins.ts
+tmp=/tmp/ts2wasm-262-bigint-builtins.ts
 printf 'console.log(BigInt("10")); console.log(String(10n)); console.log(BigInt.asIntN(8, 255n));\n' > "$tmp"
-cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-259-bigint-builtins.wasm
+cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-262-bigint-builtins.wasm
 ```
 
 Current result: unsupported BigInt runtime/builtin diagnostics.
@@ -42,9 +42,9 @@ In scope:
 
 Out of scope:
 
-- BigInt literal allocation; issue 256.
-- BigInt arithmetic; issue 257.
-- BigInt equality/comparison; issue 258.
+- BigInt literal allocation; issue 259.
+- BigInt arithmetic; issue 260.
+- BigInt equality/comparison; issue 261.
 - Full object `ToPrimitive` if the broader object model cannot support it yet.
 
 ## Affected paths
@@ -67,7 +67,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] Node/iwasm differential fixtures cover `BigInt(...)`, `String(bigint)`, template/string interpolation involving BigInt, and selected `BigInt.asIntN` / `BigInt.asUintN` cases or a split follow-up if those are not in this slice.
-- [ ] Unsupported BigInt builtin and conversion forms produce source diagnostics with issue 259 or a narrower follow-up issue ID.
+- [ ] Unsupported BigInt builtin and conversion forms produce source diagnostics with issue 262 or a narrower follow-up issue ID.
 - [ ] Runtime linker structure tests cover selected BigInt builtin helpers and avoid new host imports.
 - [ ] Docs/current-state/issues state the supported builtin subset and remaining limits.
 

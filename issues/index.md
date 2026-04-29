@@ -48,7 +48,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 253 | Implement optional chaining runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Issue 246 classifies `obj?.x`, `obj?.[key]`, and `fn?.()` in the frontend parser, but name resolution currently repor... |
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 249 parses `static { ... }` as `ClassStaticBlock`, but builtin resolution currently rejects static blocks with ... |
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters, but builtin resolution rejects ... |
-| 256 | Implement BigInt literal runtime values | feature | runtime/semantics | implementation-ready | P2 |  | BigInt literals parse as explicit AST nodes, but build/runtime phases still report unsupported diagnostics instead of... |
+| 259 | Implement BigInt literal runtime values | feature | runtime/semantics | implementation-ready | P2 |  | BigInt literals parse as explicit AST nodes, but build/runtime phases still report unsupported diagnostics instead of... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -190,9 +190,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 199 | Implement Compiler | spike | frontend/syntax | class: triage-needed | Implement Compiler |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
-| 257 | Implement BigInt arithmetic operators | feature | runtime/semantics | 256 | Implement BigInt arithmetic operators |
-| 258 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | 256 | Implement BigInt equality comparison and coercion boundaries |
-| 259 | Implement BigInt builtins and string conversion | feature | runtime/builtins | 256 | Implement BigInt builtins and string conversion |
+| 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | 259 | Implement BigInt arithmetic operators |
+| 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | 259 | Implement BigInt equality comparison and coercion boundaries |
+| 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | 259 | Implement BigInt builtins and string conversion |
 <!-- generated:blocked:end -->
 
 ## Done queue

@@ -55,7 +55,7 @@ Compatibility evidence distinguishes syntax/build support from semantic parity. 
 
 Abstract equality (`==` / `!=`) supports the current primitive runtime value set: `undefined`, `null`, booleans, tagged integer numbers, and strings that coerce to tagged integers. Full object `ToPrimitive`, floating point, `NaN`, and `-0` behavior remain tied to the broader object and number-model work.
 
-BigInt は heap object representation として設計済みだが、runtime 値と操作は段階実装である。BigInt literal runtime values は issue 256、arithmetic は issue 257、equality/comparison/coercion は issue 258、builtin/string conversion は issue 259 が所有する。BigInt と Number の arithmetic は暗黙変換せず TypeError path にする。BigInt の strict equality は BigInt 同士の mathematical value 比較、Number との `===` は常に false、abstract equality と relational comparison は ECMA-262 の BigInt/Number/String coercion rules に従う。
+BigInt は heap object representation として設計済みだが、runtime 値と操作は段階実装である。BigInt literal runtime values は issue 259、arithmetic は issue 260、equality/comparison/coercion は issue 261、builtin/string conversion は issue 262 が所有する。BigInt と Number の arithmetic は暗黙変換せず TypeError path にする。BigInt の strict equality は BigInt 同士の mathematical value 比較、Number との `===` は常に false、abstract equality と relational comparison は ECMA-262 の BigInt/Number/String coercion rules に従う。
 
 ## Array / object semantics（実装済み範囲）
 

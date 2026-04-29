@@ -123,14 +123,14 @@ BigInt を扱う runtime helper は論理 `jsval` を入出力に使う。現行
 
 | Logical helper | Signature | First implementation owner | Notes |
 |---|---|---|---|
-| `make_bigint_literal` | `(ptr digits, len, radix, negative) -> jsval` | issue 256 | Source literal digits を runtime が canonical limb に変換する |
-| `bigint_to_string` | `(jsval) -> jsval` | issue 259 | decimal string。`n` suffix は含めない |
-| `bigint_to_boolean` | `(jsval) -> bool` | issue 256 | `0n` は false、それ以外は true |
-| `bigint_strict_equal` | `(jsval, jsval) -> bool` | issue 258 | BigInt 同士は mathematical value 比較。Number とは常に false |
-| `bigint_abstract_equal` | `(jsval, jsval) -> bool` | issue 258 | Number/String/Boolean との ECMA-262 coercion 境界を実装する |
-| `bigint_compare` | `(op, jsval, jsval) -> jsval` | issue 258 | `< <= > >=`。成功時 bool `jsval`、例外時 pending exception |
-| `bigint_add` / `sub` / `mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 257 | BigInt 同士のみ。Number 混在は TypeError |
-| `bigint_unary_minus` | `(jsval) -> jsval` | issue 257 | `-0n` は `0n` |
+| `make_bigint_literal` | `(ptr digits, len, radix, negative) -> jsval` | issue 259 | Source literal digits を runtime が canonical limb に変換する |
+| `bigint_to_string` | `(jsval) -> jsval` | issue 262 | decimal string。`n` suffix は含めない |
+| `bigint_to_boolean` | `(jsval) -> bool` | issue 259 | `0n` は false、それ以外は true |
+| `bigint_strict_equal` | `(jsval, jsval) -> bool` | issue 261 | BigInt 同士は mathematical value 比較。Number とは常に false |
+| `bigint_abstract_equal` | `(jsval, jsval) -> bool` | issue 261 | Number/String/Boolean との ECMA-262 coercion 境界を実装する |
+| `bigint_compare` | `(op, jsval, jsval) -> jsval` | issue 261 | `< <= > >=`。成功時 bool `jsval`、例外時 pending exception |
+| `bigint_add` / `sub` / `mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260 | BigInt 同士のみ。Number 混在は TypeError |
+| `bigint_unary_minus` | `(jsval) -> jsval` | issue 260 | `-0n` は `0n` |
 
 IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
@@ -141,10 +141,10 @@ IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
 Unsupported boundary:
 
-- literal runtime values until issue 256: `unsupported-bigint-runtime` / issue 256
-- BigInt arithmetic and unary operators until issue 257: `unsupported-bigint-arithmetic` / issue 257
-- BigInt equality, relational comparison, and coercion until issue 258: `unsupported-bigint-comparison` / issue 258
-- BigInt builtin functions and string conversion until issue 259: `unsupported-bigint-builtin` / issue 259
+- literal runtime values until issue 259: `unsupported-bigint-runtime` / issue 259
+- BigInt arithmetic and unary operators until issue 260: `unsupported-bigint-arithmetic` / issue 260
+- BigInt equality, relational comparison, and coercion until issue 261: `unsupported-bigint-comparison` / issue 261
+- BigInt builtin functions and string conversion until issue 262: `unsupported-bigint-builtin` / issue 262
 
 Broad BigInt implementation must not be hidden inside parser, backend emitter, or generic number helpers. Each slice must update docs/current-state/tests with Node differential evidence for the exact operation class it enables.
 
