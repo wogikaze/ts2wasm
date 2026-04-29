@@ -31,11 +31,11 @@ Current validated JSON behavior is intentionally a subset, not full JSON support
 `JSON.parse` currently has Node/iwasm differential or rejection evidence for:
 
 - whitespace-trimmed primitives: `true`, `false`, `null`, supported strings, and supported numbers;
-- small integer numbers plus decimal/exponent forms that reduce exactly to the current tagged small-int representation;
+- small integer numbers, decimal/exponent forms that reduce exactly to the current tagged small-int representation, and non-integer decimal/exponent forms represented by the current heap-backed observable number subset;
 - ASCII strings with standard single-byte escapes (`\"`, `\\`, `\/`, `\b`, `\f`, `\n`, `\r`, and `\t`);
 - `\uXXXX` escapes only when the decoded code point fits the current single-byte ASCII string representation;
 - arrays and objects containing supported primitive values, nested arrays, nested objects, arrays inside objects, and objects inside arrays;
-- rejection of trailing tokens, incomplete object/array/string/number paths, invalid literals, leading-zero numbers, invalid unicode escapes, unsupported non-ASCII/surrogate unicode escapes, unsupported non-integer values, and unescaped control characters.
+- rejection of trailing tokens, incomplete object/array/string/number paths, invalid literals, leading-zero numbers, invalid unicode escapes, unsupported non-ASCII/surrogate unicode escapes, and unescaped control characters.
 
 `JSON.stringify` currently has Node/iwasm differential or diagnostic evidence for:
 
@@ -47,7 +47,6 @@ Current validated JSON behavior is intentionally a subset, not full JSON support
 
 Remaining full-spec work is not part of this parent issue's Ready queue surface:
 
-- 052b: arbitrary non-integer JSON number representation.
 - 052c: full UTF-16, non-ASCII, and surrogate-pair string handling.
 - 052d: broader `JSON.stringify` replacer semantics.
 - 052e: remaining boxed/object coercion edge cases for `JSON.stringify` arguments.
