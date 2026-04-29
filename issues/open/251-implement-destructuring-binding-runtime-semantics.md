@@ -178,3 +178,10 @@ Array rest follow-up:
 - Added `fixtures/core-semantics/destructuring-binding-rest-runtime.ts` and Node/iwasm differential coverage for declarations, ordinary function parameters, and arrow parameters.
 - Added `fixtures/core-semantics/destructuring-binding-object-rest-unsupported.ts`; object rest remains a source-spanned issue-251 unsupported diagnostic.
 - Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (13 passed); `mise run check issues`; `cargo nextest run` (503 passed, 4 skipped).
+
+Nested array follow-up:
+
+- Implemented nested array binding patterns for dense-array declaration and parameter patterns by making binding targets recursive and reusing existing array element lowering.
+- Added `fixtures/core-semantics/destructuring-binding-nested-runtime.ts` and Node/iwasm differential coverage for declaration, ordinary function parameter, and arrow parameter nested arrays.
+- Added `fixtures/core-semantics/destructuring-binding-nested-object-unsupported.ts`; nested object binding remains a source-spanned issue-251 unsupported diagnostic.
+- Required validation passed: `cargo fmt --all --check`; `cargo nextest run -E 'test(destructuring) or test(node_diff)'` (14 passed); `mise run update-issue-index -- --check`; `mise run check issues`; `cargo nextest run` (506 passed, 4 skipped).
