@@ -432,18 +432,22 @@ fn for_await_of_unsupported_reports_issue_230() {
 }
 
 #[test]
-fn for_loop_post_increment_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node("fixtures/core-semantics/for-loop-post-increment.ts");
+fn for_loop_increment_update_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/core-semantics/for-loop-post-increment.ts",
+        "fixtures/core-semantics/for-loop-post-decrement.ts",
+        "fixtures/core-semantics/for-loop-prefix-inc-dec.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]
-fn for_loop_increment_out_of_scope_forms_report_issue_268() {
-    for fixture in [
-        "fixtures/core-semantics/for-loop-decrement-unsupported.ts",
-        "fixtures/core-semantics/for-loop-preincrement-unsupported.ts",
-    ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-268:");
-    }
+fn for_loop_non_identifier_increment_update_reports_issue_268() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/for-loop-nonidentifier-update-unsupported.ts",
+        "issue-268: for-loop increment/decrement updates currently require an identifier target",
+    );
 }
 
 #[test]
