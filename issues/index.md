@@ -22,9 +22,9 @@ Issue files are the source of truth for work items. The generated section below 
 | runtime | 63 | 10 | 53 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
-| tests | 5 | 0 | 5 |
+| tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 290 | 140 | 150 |
+| total | 291 | 140 | 151 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -345,6 +345,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | see `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md` |
 | 259 | Implement BigInt literal runtime values | feature | runtime/semantics | see `issues/done/259-implement-bigint-literal-runtime-values.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
+| 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
