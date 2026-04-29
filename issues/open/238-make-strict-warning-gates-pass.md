@@ -138,3 +138,22 @@ date:
 Remaining risks:
 
 - none
+
+## Progress evidence
+
+2026-04-29 child-238:
+
+- Split oversized parser and lowered IR implementation into focused subfiles while keeping the existing module/API surface:
+  - `crates/frontend/src/parser.rs`: 28 lines
+  - parser subfiles: largest subfile 1395 lines
+  - `crates/ir/src/lowered.rs`: 4 lines
+  - lowered subfiles: largest subfile 1299 lines
+- `mise run fmt`: pass.
+- `mise run clippy`: pass.
+- `mise run check-architecture-rules`: pass; no oversized-file errors remain.
+- `cargo nextest run`: pass, 414 passed, 4 skipped.
+- `mise run gate-all`: code/toolchain/custom harness portions pass, including `cargo nextest (RUSTFLAGS=-D warnings)` and `mise run check architecture`; final aggregate result still fails because `mise run gate-fast`/`mise run check issues` report missing historical ignored report artifacts referenced by unrelated issue files:
+  - `issues/open/052-implement-json.md`: missing historical report artifact paths.
+  - `issues/done/228-implement-logical-assignment-operators.md`: missing historical report artifact path.
+
+Issue remains open because `gate-fast`, `gate-all`, and `check issues` are still red for blockers outside child-238's allowed file scope.
