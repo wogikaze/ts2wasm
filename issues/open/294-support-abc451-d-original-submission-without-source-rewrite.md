@@ -262,6 +262,8 @@ This issue is intentionally blocked because the fixture crosses several existing
 - Current first failure is now:
   `error: [DuplicateLocal] duplicate local binding: i`, after the
   `allGoodIntStr.map(n => +n)` receiver is recognized.
+- Split issue 298 for the repeated `for (let i = ...)` loop-local scope
+  blocker.
 
 ## Completion evidence
 
