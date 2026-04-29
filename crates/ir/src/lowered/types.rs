@@ -18,6 +18,7 @@ pub struct FuncId(pub usize);
 type ClassConstructorMap = HashMap<String, FuncId>;
 type ClassMethodMap = HashMap<(String, String), FuncId>;
 type ClassPrivateFieldSlots = HashMap<String, HashMap<String, usize>>;
+type ClassStaticPrivateFields = HashMap<String, HashMap<String, String>>;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct ClassPrototypeRef {

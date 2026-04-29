@@ -12,6 +12,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         .collect::<HashSet<_>>();
     let class_parents = collect_class_parents(program);
     let class_private_fields = collect_class_private_fields(program);
+    let class_static_private_fields = collect_class_static_private_fields(program);
     let mut next_func_id = function_ids.len();
     let mut functions_by_id = vec![None; function_ids.len()];
     let mut generated_functions = Vec::new();
@@ -32,6 +33,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &HashSet::new(),
                     class_parents.clone(),
                     class_private_fields.clone(),
+                    class_static_private_fields.clone(),
                     LowerFunctionOptions {
                         current_class: None,
                         in_constructor: false,
@@ -78,6 +80,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &HashSet::new(),
                     class_parents.clone(),
                     class_private_fields.clone(),
+                    class_static_private_fields.clone(),
                     LowerFunctionOptions {
                         current_class: Some(name),
                         in_constructor: true,
@@ -129,6 +132,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         &HashSet::new(),
                         class_parents.clone(),
                         class_private_fields.clone(),
+                        class_static_private_fields.clone(),
                         LowerFunctionOptions {
                             current_class: Some(name),
                             in_constructor: false,
@@ -154,13 +158,25 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         &direct_eval_env.heap_closure_names,
         class_parents.clone(),
         class_private_fields,
+        class_static_private_fields,
         next_func_id,
     );
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
             ResolvedStmt::Function { .. } => {}
-            ResolvedStmt::ClassDecl { static_blocks, .. } => {
+            ResolvedStmt::ClassDecl {
+                name,
+                static_private_fields,
+                static_blocks,
+                ..
+            } => {
+                for (field, initializer) in static_private_fields {
+                    top_level_statements.push(resolver.lower_stmt(&ResolvedStmt::Let(
+                        crate::builtin_resolver::static_private_field_local_name(name, field),
+                        initializer.clone(),
+                    ))?);
+                }
                 for block in static_blocks {
                     top_level_statements.extend(resolver.lower_nested_block(block)?);
                 }
@@ -307,6 +323,32 @@ fn collect_class_private_fields(program: &[ResolvedStmt]) -> ClassPrivateFieldSl
     fields
 }
 
+fn collect_class_static_private_fields(program: &[ResolvedStmt]) -> ClassStaticPrivateFields {
+    let mut fields = HashMap::new();
+    for stmt in program {
+        if let ResolvedStmt::ClassDecl {
+            name,
+            static_private_fields,
+            ..
+        } = stmt
+        {
+            fields.insert(
+                name.clone(),
+                static_private_fields
+                    .iter()
+                    .map(|(field, _)| {
+                        (
+                            field.clone(),
+                            crate::builtin_resolver::static_private_field_local_name(name, field),
+                        )
+                    })
+                    .collect(),
+            );
+        }
+    }
+    fields
+}
+
 fn collect_function_signatures(
     program: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
@@ -418,7 +460,9 @@ fn collect_class_method_mutable_captures(
             for method in methods {
                 let mut mutable = Vec::new();
                 for capture in &method.captures {
-                    if block_assigns_any_name(&method.body, std::slice::from_ref(capture)) {
+                    if is_static_private_field_local_name(capture)
+                        || block_assigns_any_name(&method.body, std::slice::from_ref(capture))
+                    {
                         mutable.push(capture.clone());
                     }
                 }
@@ -442,7 +486,9 @@ fn collect_mutable_class_capture_names(program: &[ResolvedStmt]) -> HashSet<Stri
         if let ResolvedStmt::ClassDecl { methods, .. } = stmt {
             for method in methods {
                 for capture in &method.captures {
-                    if block_assigns_any_name(&method.body, std::slice::from_ref(capture)) {
+                    if is_static_private_field_local_name(capture)
+                        || block_assigns_any_name(&method.body, std::slice::from_ref(capture))
+                    {
                         names.insert(capture.clone());
                     }
                 }
@@ -450,6 +496,10 @@ fn collect_mutable_class_capture_names(program: &[ResolvedStmt]) -> HashSet<Stri
         }
     }
     names
+}
+
+fn is_static_private_field_local_name(name: &str) -> bool {
+    name.starts_with("__ts2wasm_static_private::")
 }
 
 #[derive(Default)]
@@ -1390,6 +1440,7 @@ fn lower_function(
     heap_closure_names: &HashSet<String>,
     class_parents: HashMap<String, Option<String>>,
     class_private_fields: ClassPrivateFieldSlots,
+    class_static_private_fields: ClassStaticPrivateFields,
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
     let signature = function_signatures.get(&id).copied().unwrap_or_default();
@@ -1433,6 +1484,7 @@ fn lower_function(
             .as_slice(),
         class_parents,
         class_private_fields,
+        class_static_private_fields,
         options.current_class,
         options.in_constructor,
         options.next_func_id,
