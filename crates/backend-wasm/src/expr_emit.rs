@@ -20,6 +20,8 @@ const CLOSURE_CAPTURE_COUNT_OFFSET: u32 = 8;
 const CLOSURE_ENV_FLAGS_OFFSET: u32 = 12;
 const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
+const ENV_CELL_SLOT_COUNT: u32 = 1;
+const ENV_CELL_VALUE_OFFSET: u32 = Layout::ARRAY_HEADER_SIZE;
 const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
@@ -121,22 +123,32 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
                 self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
                 wat.push_str(&format!(
-                    "{pad}(local.set {} (call {} (i32.const 4)))\n",
+                    "{pad}(local.set {} (call {} (i32.const {})))\n",
                     frame.heap_base_tmp(),
                     RuntimeFn::AllocHeap.symbol(),
+                    Layout::ARRAY_HEADER_SIZE + ENV_CELL_SLOT_COUNT * 4,
                 ));
                 self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
                 wat.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (local.get {}))\n",
+                    "{pad}(i32.store (local.get {}) (i32.const {ENV_CELL_SLOT_COUNT}))\n",
+                    frame.heap_base_tmp(),
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
                     frame.heap_base_tmp(),
                     frame.heap_value_tmp(),
                 ));
-                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
+                wat.push_str(&format!(
+                    "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+                    frame.heap_base_tmp(),
+                    ValueTag::ARRAY_TAG,
+                ));
             }
             LoweredExpr::EnvCellGet(cell) => {
                 wat.push_str(&format!(
-                    "{pad}(i32.load (local.get {}))\n",
-                    local_index(*cell)
+                    "{pad}(i32.load (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})))\n",
+                    local_index(*cell),
+                    ValueTag::HEAP_MASK,
                 ));
             }
             LoweredExpr::EnvCellSet { cell, expr } => {
@@ -144,8 +156,9 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(local.tee {})\n", frame.heap_value_tmp()));
                 self.emit_gc_root_mirror_index(wat, &pad, frame.heap_value_tmp(), frame);
                 wat.push_str(&format!(
-                    "{pad}(i32.store (local.get {}) (local.get {}))\n",
+                    "{pad}(i32.store (i32.add (i32.and (local.get {}) (i32.const {})) (i32.const {ENV_CELL_VALUE_OFFSET})) (local.get {}))\n",
                     local_index(*cell),
+                    ValueTag::HEAP_MASK,
                     frame.heap_value_tmp(),
                 ));
             }

@@ -192,7 +192,7 @@ Mutable outer local captures, including the original `callCount = callCount + 1`
 bucket, remain unsupported with a spanned `issue-289` diagnostic because the
 current closure/class ABI has no shared mutable environment cell. Split that
 remaining work to
-`issues/open/301-implement-mutable-class-method-outer-environment-cells.md`.
+`issues/done/301-implement-mutable-class-method-outer-environment-cells.md`.
 
 Validation:
 

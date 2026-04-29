@@ -113,7 +113,7 @@ mod tests {
         LoweredFunction, LoweredProgram, LoweredStmt, ModuleInfo,
     };
     use ts2wasm_ir::{builtin_resolver, lowered, name_resolver};
-    use ts2wasm_runtime_abi::Layout;
+    use ts2wasm_runtime_abi::{Layout, ValueTag};
 
     #[test]
     fn emit_wat_rejects_residual_method_call_before_emission() {
@@ -430,6 +430,46 @@ mod tests {
         assert!(
             wat.contains("(return)))\n    (if (i32.eq (local.get $count) (i32.const -1))"),
             "closure marking must return before ordinary object payload scanning"
+        );
+    }
+
+    #[test]
+    fn env_cells_are_tagged_array_payloads_for_gc_tracing() {
+        let program =
+            lower_fixture("../../fixtures/core-semantics/class-method-mutable-outer-capture.ts");
+
+        let wat =
+            emit_wat(&program).expect("mutable class method env cell fixture should emit WAT");
+
+        assert!(
+            wat.contains("(call $alloc_heap (i32.const 8))"),
+            "env cells need an array header plus one captured value slot"
+        );
+        assert!(
+            wat.contains("(i32.const 1))"),
+            "env cell payload should use array length 1 so GC scans its value slot"
+        );
+        assert!(
+            wat.contains(&format!("(i32.const {}))", ValueTag::ARRAY_TAG)),
+            "env cell roots/captures must hold a tagged heap value"
+        );
+        assert!(
+            wat.contains(&format!(
+                "(i32.load (i32.add (i32.and (local.get 0) (i32.const {})) (i32.const 4)))",
+                ValueTag::HEAP_MASK
+            )),
+            "env cell reads should mask the tagged cell before loading the value slot"
+        );
+        assert!(
+            wat.contains(&format!(
+                "(i32.store (i32.add (i32.and (local.get 1) (i32.const {})) (i32.const 4))",
+                ValueTag::HEAP_MASK
+            )),
+            "env cell writes should mask the tagged captured cell before storing the value slot"
+        );
+        assert!(
+            wat.contains("(call $gc_mark_value (i32.load (local.get $elem_ptr)))"),
+            "tagged env cells should be traced through the existing array GC scanner"
         );
     }
 
