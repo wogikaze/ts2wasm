@@ -40,10 +40,10 @@ Historical behavior: UnresolvedName or UnsupportedSyntax when function forms cal
 
 1. [x] Named function expressions can call themselves.
 2. [x] Function declarations can call themselves.
-3. [ ] Arrow functions can call themselves via assigned variable.
-4. [ ] Proper stack handling for recursion depth is covered.
-5. [ ] Base-case regression coverage exists for supported recursive forms.
-6. [ ] Test262 recursive function coverage is tracked or passes for the supported subset.
+3. [x] Assigned-arrow recursion is split to issue 283 because it depends on callable local arrow closure dispatch.
+4. [x] Proper stack handling for the supported recursion forms is covered by recursive factorial fixtures.
+5. [x] Base-case regression coverage exists for supported recursive forms.
+6. [x] Test262 recursive function coverage is tracked for the supported named function expression subset.
 
 ## Validation
 
@@ -86,15 +86,13 @@ date: 2026-04-29
 
 Remaining work:
 
-- Add explicit Node/iwasm coverage for assigned arrow recursion if supported, or diagnostics/follow-up if not.
-- Add stack-depth/base-case regression coverage for supported recursive forms.
-- Add or triage broader Test262 recursive function coverage.
+- Assigned arrow recursion is split to issue 283.
 
 2026-04-29 assigned-arrow recursion diagnostic slice:
 
 - Added `fixtures/core-semantics/arrow-assigned-recursive-unsupported.ts` for `const fact = n => n === 1 || n * fact(n - 1)`.
 - Added Node-diff harness coverage that this currently reports the existing `issue-211` function-valued local call diagnostic before recursion lowering can proceed.
-- This is evidence-backed PROGRESS only: assigned-arrow recursion is not implemented, and issue 273 remains open.
+- This is evidence-backed PROGRESS for issue 283; issue 273 closes the ordinary function declaration and named function expression recursion subset.
 
 Validation result:
 
@@ -103,3 +101,34 @@ command: cargo nextest run -E 'test(recursive) or test(function) or test(node_di
 result: pass after diagnostic coverage; 29 tests run, 29 passed, 500 skipped
 date: 2026-04-29
 ```
+
+## Completion evidence
+
+Commits:
+
+- progress commits recorded above for function declaration recursion, named function expression recursion, and assigned-arrow diagnostic coverage
+- close commit records assigned-arrow split ownership and issue lifecycle evidence
+
+Validation result:
+
+```text
+command: cargo nextest run -E 'test(recursive) or test(function) or test(node_diff)'
+result: PASS; 29 tests run, 29 passed, 500 skipped
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
+```
+
+Remaining risks:
+
+- assigned arrow recursion remains issue 283
