@@ -322,7 +322,8 @@ Pseudo flow:
 2. sweepフェーズ: 生存フラグがないブロックを free-list へ回収
 3. GC 後は bump allocation cursor を再計算する。sweep が heap 末尾まで続く unmarked range を見つけて `$heap` を range 先頭へ戻した場合、同じ allocation がその top-of-heap garbage を即時再利用できる
 4. free-list に十分な block があれば再利用する。block が要求 payload より十分大きい場合は、要求分と remainder free block に split する。sweep は free-list 内の最大 body size も記録し、要求 payload がそれを超える場合は `$alloc_heap` の線形 free-list scan を省略する。sweep が heap 末尾まで続く unmarked range を見つけた場合は、その range を free-list に入れず `$heap` を range 先頭へ戻す
-5. 必要なら `memory.grow`、`MEMORY_MAX_PAGES` まで増やせなければ trap
+5. 必要なら `memory.grow`。要求 pages が `MEMORY_MAX_PAGES - memory.size`
+   を超える場合は、失敗する `memory.grow` を発行せず明示的に trap する
 
 ### Safety and compatibility notes
 
@@ -394,6 +395,8 @@ Sweep が heap 末尾まで続く unmarked range を回収する場合は、free
 `$heap` の tail trim として処理し、以後の bump allocation がその末尾領域を直接再利用
 できるようにする。
 `MEMORY_MAX_PAGES` まで増やせなければ `unreachable` で trap する。
+このとき allocator はまず必要な page 数と残り page 数を比較し、要求が残り
+`MEMORY_MAX_PAGES - memory.size` を超える場合は `memory.grow` 前に明示 trap する。
 これにより、大きな割り当てによる未定義動作やメモリ破損を防ぐ。
 現在の上限は 185 pages で、ABC451 D の depth-8 large live-set reducer はこの cap で
 Node と同じ `292743` を出力する。184 pages では同じ reducer が `$alloc_heap` で trap

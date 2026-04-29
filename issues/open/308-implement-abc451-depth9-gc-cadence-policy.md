@@ -381,6 +381,47 @@ date: 2026-04-29
 
 Issue 308 remains open. Issue 300 remains open.
 
+2026-04-29 child `308-gc-depth9-telemetry-20260429T2155Z` progress:
+
+- Committed an explicit remaining-page OOM guard in `$alloc_heap`: before
+  issuing `memory.grow`, the allocator now compares computed `needed_pages`
+  with `MEMORY_MAX_PAGES - memory.size` and traps immediately when the request
+  cannot fit under the committed cap. This does not raise the cap or weaken the
+  OOM boundary; it makes max-cap allocation failures mechanically distinct from
+  host `memory.grow == -1`.
+- Added backend WAT contract coverage for the remaining-page guard.
+- Reproduced the depth-9 search-only reducer after the guard. Node still prints
+  `1404832`, while the wasm build still traps under the committed 185-page cap.
+  `wasmtime` places the trap in wasm function 24 (`$alloc_heap`) at byte offset
+  `0x125b`; `wasm-objdump` maps `0x125b` to the new
+  `needed_pages > remaining_pages` guard before `memory.grow`. This isolates
+  the next blocker as a max-cap growth request after post-GC bump recompute,
+  not a post-grow bounds check:
+
+```text
+command: node /tmp/abc451-depth9-live-set-308.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: cargo run -q -- build /tmp/abc451-depth9-live-set-308.ts -o /tmp/abc451-depth9-live-set-308-remaining.wasm --host-deny
+result: pass
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-depth9-live-set-308-remaining.wasm
+result: trapped with Exception: unreachable after 10.10s under committed 185-page policy
+date: 2026-04-29
+
+command: WASMTIME_BACKTRACE_DETAILS=1 /usr/bin/time -f 'elapsed:%e' timeout 90s wasmtime run /tmp/abc451-depth9-live-set-308-remaining.wasm
+result: trapped at wasm function 24 offset 0x125b after 10.00s
+date: 2026-04-29
+
+command: wasm-objdump -d /tmp/abc451-depth9-live-set-308-remaining.wasm | sed -n '/func\[24\]/,/func\[25\]/p' | rg -n "125b|unreachable|memory.grow|i32.gt_u|i32.sub"
+result: offset 0x125b is the explicit remaining-page unreachable; memory.grow follows at 0x125f
+date: 2026-04-29
+```
+
+Issue 308 remains open. Issue 300 remains open.
+
 ## Completion evidence
 
 Commits:
@@ -528,6 +569,30 @@ date: 2026-04-29
 
 command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
 result: pass; 1 test passed
+date: 2026-04-29
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 tests passed including remaining-page OOM guard WAT contract
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-04-29
+
+command: mise run check issues
+result: pass after trusting this worktree's mise.toml and copying parent `artifacts/coverage/results/test262-results.jsonl` into the worktree as allowed by the assignment
 date: 2026-04-29
 ```
 

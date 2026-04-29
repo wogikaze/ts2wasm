@@ -607,6 +607,29 @@ date: 2026-04-29
   until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
   committed runtime policy.
 
+2026-04-29 child `308-gc-depth9-telemetry-20260429T2155Z` issue 308 follow-up:
+
+- Issue 308 added an explicit remaining-page guard in `$alloc_heap`: before
+  issuing `memory.grow`, allocation traps if `needed_pages` exceeds
+  `MEMORY_MAX_PAGES - memory.size`.
+- This does not establish issue 300 compatibility. The depth-9 search-only
+  reducer still traps under the committed 185-page cap after Node confirms
+  `1404832`, but the trap is now isolated to the max-cap growth request:
+
+```text
+command: WASMTIME_BACKTRACE_DETAILS=1 /usr/bin/time -f 'elapsed:%e' timeout 90s wasmtime run /tmp/abc451-depth9-live-set-308-remaining.wasm
+result: trapped at wasm function 24 (`$alloc_heap`) offset 0x125b after 10.00s
+date: 2026-04-29
+
+command: wasm-objdump -d /tmp/abc451-depth9-live-set-308-remaining.wasm | sed -n '/func\[24\]/,/func\[25\]/p' | rg -n "125b|unreachable|memory.grow|i32.gt_u|i32.sub"
+result: offset 0x125b is the explicit remaining-page unreachable; memory.grow follows at 0x125f
+date: 2026-04-29
+```
+
+- No official ABC451 sample output parity is claimed; issue 300 remains open
+  until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
