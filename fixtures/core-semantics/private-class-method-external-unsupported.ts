@@ -1,8 +1,8 @@
 class C {
-  static #m() {
+  #m() {
     return 1;
   }
 }
 
 let c = new C();
-console.log(c);
+console.log(c.#m());
