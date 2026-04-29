@@ -197,8 +197,9 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Return(expr) => Ok(LoweredStmt::Return(self.lower_expr(expr)?)),
             ResolvedStmt::Function { .. } => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: "nested function declarations are not supported in this milestone"
-                    .to_owned(),
+                message:
+                    "issue-062c: nested function declarations are not supported in this milestone"
+                        .to_owned(),
                 span: None,
             }),
             ResolvedStmt::TryCatch {
@@ -1296,4 +1297,3 @@ fn class_maps(
 
     (ctor_ids, method_ids, static_method_ids)
 }
-
