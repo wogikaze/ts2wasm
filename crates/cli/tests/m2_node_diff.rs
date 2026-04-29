@@ -955,6 +955,7 @@ fn private_class_field_unsupported_forms_report_issue_255() {
         "fixtures/core-semantics/private-class-field-method-unsupported.ts",
         "fixtures/core-semantics/private-class-field-external-unsupported.ts",
         "fixtures/core-semantics/private-class-static-field-unsupported.ts",
+        "fixtures/core-semantics/private-class-delete-unsupported.ts",
         "fixtures/core-semantics/private-class-field-backing-key-unsupported.ts",
         "fixtures/core-semantics/private-class-field-object-keys-unsupported.ts",
         "fixtures/core-semantics/private-class-method-external-unsupported.ts",
@@ -967,6 +968,14 @@ fn private_class_field_unsupported_forms_report_issue_255() {
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-255:");
     }
+}
+
+#[test]
+fn private_class_delete_backing_key_reports_issue_255() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/private-class-delete-backing-key-unsupported.ts",
+        "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice",
+    );
 }
 
 #[test]

@@ -186,3 +186,18 @@ cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
 mise run update-issue-index -- --check
 mise run check issues
 ```
+
+2026-04-29 private delete diagnostic slice:
+
+- Hardened delete lowering so `delete this.#value` reports issue-255 instead of compiling as an ordinary property delete.
+- Hardened the guarded private backing-key path so `delete c["__ts2wasm_private::C::value"]` reports the existing private storage leak diagnostic instead of bypassing the computed-access guard.
+- Added unsupported diagnostics coverage: `fixtures/core-semantics/private-class-delete-unsupported.ts` and `fixtures/core-semantics/private-class-delete-backing-key-unsupported.ts`.
+
+Validation recorded in child branch:
+
+```sh
+cargo fmt --all --check
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+mise run update-issue-index -- --check
+mise run check issues
+```
