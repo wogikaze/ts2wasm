@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 1 | 1 | 0 |
 | docs | 2 | 0 | 2 |
-| frontend | 193 | 127 | 66 |
+| frontend | 193 | 126 | 67 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 303 | 148 | 155 |
+| total | 303 | 147 | 156 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -47,7 +47,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | implementation-ready | P2 | 259 | BigInt cannot share the current primitive equality/comparison helpers because Number/BigInt and String/BigInt coercio... |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | implementation-ready | P2 | 259 | After BigInt values exist, builtin and conversion behavior still needs explicit runtime helpers and diagnostics so `B... |
 | 267 | Implement interactive web UI for test results | feature | coverage | implementation-ready | P1 |  | No interactive web UI for test results, coverage visualization, and historical comparison. |
-| 268 | Implement for loop increment operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement for loop increment operator |
 | 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
 | 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
 | 273 | Implement recursive function calls | feature | runtime/semantics | implementation-ready | P2 |  | Implement recursive function calls |
@@ -357,6 +356,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 259 | Implement BigInt literal runtime values | feature | runtime/semantics | see `issues/done/259-implement-bigint-literal-runtime-values.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
 | 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
+| 268 | Implement for loop increment operator | feature | frontend/semantics | see file |
 | 269 | Implement Math.pow | feature | runtime/builtins | see file |
 | 272 | Implement Set | feature | runtime/builtins | see `issues/done/272-implement-set.md` |
 <!-- generated:done:end -->
