@@ -193,7 +193,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/200-implement-parser-syntax.md",
+    "path": "issues/done/200-implement-parser-syntax.md",
     "title": "Implement parser syntax extensions",
     "reason": "same feature label, title overlap"
   },
