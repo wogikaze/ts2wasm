@@ -203,18 +203,115 @@ This section shows test coverage results across different test suites.
             # Check for coverage results
             results_dir = COVERAGE_DIR / "results"
             if results_dir.exists():
-                suite_results = results_dir / f"{suite_name}.json"
-                if suite_results.exists():
+                # Try new format first (summary.json with jsonl_file)
+                summary_file = results_dir / f"{suite_name}-summary.json"
+                # Fall back to old format (test262.json)
+                if not summary_file.exists():
+                    summary_file = results_dir / f"{suite_name}.json"
+                
+                if summary_file.exists():
                     suite_content += f"## Latest Results\n\n"
                     try:
-                        results = json.loads(suite_results.read_text(encoding="utf-8"))
+                        results = json.loads(summary_file.read_text(encoding="utf-8"))
                         suite_content += f"- Passed: {results.get('passed', 0)}\n"
                         suite_content += f"- Failed: {results.get('failed', 0)}\n"
+                        suite_content += f"- Unsupported: {results.get('unsupported', 0)}\n"
+                        suite_content += f"- Blocked: {results.get('blocked', 0)}\n"
                         suite_content += f"- Total: {results.get('total', 0)}\n"
                         if 'timestamp' in results:
                             suite_content += f"- Last run: {results['timestamp']}\n"
-                    except:
-                        pass
+                        
+                        # Process JSONL results if available
+                        jsonl_file = results.get('jsonl_file')
+                        if jsonl_file and Path(jsonl_file).exists():
+                            jsonl_path = Path(jsonl_file)
+                            suite_content += f"\n## Detailed Results\n\n"
+                            
+                            # Parse JSONL and categorize results
+                            failed_tests = []
+                            unsupported_tests = []
+                            
+                            with open(jsonl_path, 'r', encoding='utf-8') as f:
+                                for line in f:
+                                    try:
+                                        record = json.loads(line.strip())
+                                        if record.get('status') == 'fail':
+                                            failed_tests.append(record)
+                                        elif record.get('status') == 'unsupported':
+                                            unsupported_tests.append(record)
+                                    except:
+                                        pass
+                            
+                            # Add failed tests section
+                            if failed_tests:
+                                suite_content += f"### Failed Tests ({len(failed_tests)})\n\n"
+                                for i, test in enumerate(failed_tests[:50]):  # Limit to first 50
+                                    case_path = test.get('case', 'unknown')
+                                    reason = test.get('reason', 'No reason')
+                                    actual = test.get('actual', '')
+                                    expected = test.get('expected', '')
+                                    
+                                    # Try to read the test source code
+                                    test_source = ""
+                                    test_file_path = REFERENCE_DIR / suite_name / case_path
+                                    if test_file_path.exists():
+                                        try:
+                                            test_source = test_file_path.read_text(encoding="utf-8")
+                                        except:
+                                            pass
+                                    
+                                    # Create individual test page
+                                    test_id = case_path.replace('/', '-').replace('.', '-')
+                                    test_page = suite_output / f"failed-{test_id}.md"
+                                    test_content = f"""# Failed Test: {case_path}
+
+**Status:** Failed  
+**Reason:** {reason}
+
+## Test Source Code
+
+```javascript
+{test_source}
+```
+
+## Expected Output
+
+```
+{expected}
+```
+
+## Actual Output
+
+```
+{actual}
+```
+
+**Path:** `{case_path}`
+"""
+                                    test_page.parent.mkdir(parents=True, exist_ok=True)
+                                    test_page.write_text(test_content, encoding="utf-8")
+                                    
+                                    suite_content += f"- [{case_path}](./failed-{test_id}.html) - {reason}\n"
+                                
+                                if len(failed_tests) > 50:
+                                    suite_content += f"\n*... and {len(failed_tests) - 50} more failed tests*\n"
+                                suite_content += "\n"
+                            
+                            # Add unsupported tests section
+                            if unsupported_tests:
+                                suite_content += f"### Unsupported Tests ({len(unsupported_tests)})\n\n"
+                                for i, test in enumerate(unsupported_tests[:50]):  # Limit to first 50
+                                    case_path = test.get('case', 'unknown')
+                                    reason = test.get('reason', 'No reason')
+                                    
+                                    suite_content += f"- {case_path} - {reason}\n"
+                                
+                                if len(unsupported_tests) > 50:
+                                    suite_content += f"\n*... and {len(unsupported_tests) - 50} more unsupported tests*\n"
+                                suite_content += "\n"
+                    
+                    except Exception as e:
+                        suite_content += f"Error loading results: {e}\n"
             
             (suite_output / "index.md").write_text(suite_content, encoding="utf-8")
     
