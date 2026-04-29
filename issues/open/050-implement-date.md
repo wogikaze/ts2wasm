@@ -26,7 +26,7 @@ Queue design note:
   - issue 239: live-time capability policy for `new Date()` / `Date.now()` (policy prerequisite)
   - issue 242: implement live-time Date entry points after issue 239
   - issue 240: timezone-aware `Date.prototype.toString()` policy/implementation
-  - issue 241: Annex B legacy `getYear` / `setYear` / `toGMTString`
+  - issue 241: Annex B legacy `getYear` / `setYear` / `toGMTString` diagnostics
 
 ## Problem
 
@@ -125,6 +125,15 @@ Follow-up issues:
 - The existing unsupported diagnostics for `Date.now()` and no-argument `new Date()`
   remain correct until issue 242 consumes that policy and adds manifest/import and
   host-deny coverage.
+
+2026-04-29 Annex B legacy method note:
+
+- Issue 241 owns the preserved Annex B `Date.prototype.getYear`, `setYear`, and
+  `toGMTString` reference cases from the superseded issue 061 evidence.
+- These legacy methods now produce stable `issue-241` unsupported diagnostics when used
+  on deterministic Date receivers. This keeps the deterministic Date subset explicit
+  while the broad issue 050 epic remains open for live time, timezone formatting,
+  non-literal inputs, and full Date API behavior.
 
 2026-04-28 progress evidence:
 
