@@ -9,6 +9,8 @@ depends_on: []
 blocks: []
 created: 2026-04-26
 updated: 2026-04-29
+completed: 2026-04-29
+status: done
 ---
 
 ## Summary
@@ -46,10 +48,10 @@ This generated bucket is not used as a direct implementation work order. It is e
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [x] Run the representative `mise run reference-triage -- ...` command
+- [x] Confirm whether duplicate candidates already cover this failure
+- [x] Close as superseded/resolved instead of splitting: the representative path now builds, and broader parser syntax ownership is covered by done issue 059 plus its child wave.
+- [x] Carry source context, diagnostic code, AST evidence, and validation commands into completion evidence
 
 Out of scope:
 
@@ -71,10 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates are confirmed as superseding issues: `issues/done/059-implement-parser-syntax-extensions.md`, `issues/done/065-implement-parser-syntax.md`, and `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md`.
+- [x] No new child issue is required for the representative path because focused coverage now reports `build_pass`.
+- [x] Source context, diagnostic code, visible symbols, and AST/resolved evidence are recorded below.
+- [x] The exact reference path and diagnostic/stdout change are named below.
 
 ## Validation
 
@@ -100,15 +102,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not updated; this is generated bucket cleanup with no implementation state change
 
 Follow-up issues:
 
-- [ ] none
+- [x] none for the representative path; broader remaining parser/runtime work is already tracked by specific open issues such as `250`-`255`.
 
 ## Notes
 
@@ -132,22 +134,31 @@ Follow-up issues:
 - `issues/done/065-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` - Merge duplicate parser syntax issue into 059 (same feature label, title overlap)
 
+## Closure note
+
+Issue 200 is a generated parser-syntax bucket and is not a direct implementation work order. The representative path `reference/typescript-go/testdata/tests/cases/compiler/assertsPredicateParameterMismatch.ts` no longer reproduces a parser-syntax failure: focused reference coverage reports `build_pass`, and `reference-triage` shows token, AST, and resolved dumps are all available. Broader parser syntax ownership has been closed or split through issue 059 and its child issues.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending parent commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run reference-triage -- tsgo reference/typescript-go/testdata/tests/cases/compiler/assertsPredicateParameterMismatch.ts
+result: pass; diagnostic now reports Unknown/unknown from TypeScript oracle context, while tokens/ast/resolved compiler dumps are ok; no parser-syntax failure remains for this path
+date: 2026-04-29
+
+command: mise run reference-coverage -- tsgo --path-filter reference/typescript-go/testdata/tests/cases/compiler/assertsPredicateParameterMismatch.ts --detail
+result: pass; executed=1, build_pass=1, semantic_pass=1, unsupported=0
+date: 2026-04-29
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- The old 51-case generated bucket should not be selected directly again; future failures must be represented by exact reference-backed child issues.
