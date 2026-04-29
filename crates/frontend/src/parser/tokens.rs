@@ -64,6 +64,10 @@ impl Parser {
                 kind: Token::Delete,
                 span,
             }) => Ok((String::from("delete"), span)),
+            Some(SpannedToken {
+                kind: Token::PrivateIdentifier(name),
+                span,
+            }) => Ok((format!("#{name}"), span)),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("expected member property name, got {other:?}"),

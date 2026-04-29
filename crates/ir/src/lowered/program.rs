@@ -2,6 +2,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let function_ids = collect_function_ids(program)?;
     let function_signatures = collect_function_signatures(program, &function_ids);
     let class_parents = collect_class_parents(program);
+    let class_private_fields = collect_class_private_fields(program);
     let mut next_func_id = function_ids.len();
     let mut functions_by_id = vec![None; function_ids.len()];
     let mut generated_functions = Vec::new();
@@ -17,6 +18,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &function_ids,
                     &function_signatures,
                     class_parents.clone(),
+                    class_private_fields.clone(),
                     LowerFunctionOptions {
                         current_class: None,
                         in_constructor: false,
@@ -53,6 +55,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &function_ids,
                     &function_signatures,
                     class_parents.clone(),
+                    class_private_fields.clone(),
                     LowerFunctionOptions {
                         current_class: Some(name),
                         in_constructor: true,
@@ -81,6 +84,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         &function_ids,
                         &function_signatures,
                         class_parents.clone(),
+                        class_private_fields.clone(),
                         LowerFunctionOptions {
                             current_class: Some(name),
                             in_constructor: false,
@@ -100,6 +104,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         &function_ids,
         &function_signatures,
         class_parents.clone(),
+        class_private_fields,
         next_func_id,
     );
     let mut top_level_statements = Vec::new();
@@ -228,6 +233,21 @@ fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<Str
         }
     }
     parents
+}
+
+fn collect_class_private_fields(program: &[ResolvedStmt]) -> HashMap<String, HashSet<String>> {
+    let mut fields = HashMap::new();
+    for stmt in program {
+        if let ResolvedStmt::ClassDecl {
+            name,
+            private_fields,
+            ..
+        } = stmt
+        {
+            fields.insert(name.clone(), private_fields.iter().cloned().collect());
+        }
+    }
+    fields
 }
 
 fn collect_function_signatures(
@@ -715,6 +735,7 @@ fn lower_function(
     function_ids: &HashMap<String, FuncId>,
     function_signatures: &HashMap<FuncId, FunctionSignature>,
     class_parents: HashMap<String, Option<String>>,
+    class_private_fields: HashMap<String, HashSet<String>>,
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
     let signature = function_signatures.get(&id).copied().unwrap_or_default();
@@ -743,6 +764,7 @@ fn lower_function(
             .collect::<Vec<_>>()
             .as_slice(),
         class_parents,
+        class_private_fields,
         options.current_class,
         options.in_constructor,
         options.next_func_id,
