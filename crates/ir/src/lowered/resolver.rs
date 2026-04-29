@@ -1,0 +1,1299 @@
+struct Resolver<'a> {
+    function_ids: &'a HashMap<String, FuncId>,
+    scopes: Vec<HashMap<String, LocalId>>,
+    next_local_id: usize,
+    locals: Vec<LocalId>,
+    next_func_id: usize,
+    generated_functions: Vec<LoweredFunction>,
+    arrow_locals: HashMap<LocalId, ArrowClosure>,
+    module_ids: HashMap<String, usize>,
+    modules: Vec<ModuleInfo>,
+    class_constructor_ids: HashMap<String, FuncId>,
+    class_method_ids: HashMap<(String, String), FuncId>,
+    class_static_method_ids: HashMap<(String, String), FuncId>,
+    class_parents: HashMap<String, Option<String>>,
+    local_classes: HashMap<LocalId, String>,
+    regexp_literal_locals: HashSet<LocalId>,
+    current_class: Option<String>,
+    in_constructor: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ArrowClosure {
+    func_id: FuncId,
+    captures: Vec<LocalId>,
+}
+
+impl<'a> Resolver<'a> {
+    fn new(
+        function_ids: &'a HashMap<String, FuncId>,
+        class_parents: HashMap<String, Option<String>>,
+        next_func_id: usize,
+    ) -> Self {
+        let (class_constructor_ids, class_method_ids, class_static_method_ids) =
+            class_maps(function_ids);
+        Self {
+            function_ids,
+            scopes: vec![HashMap::new()],
+            next_local_id: 0,
+            locals: Vec::new(),
+            next_func_id,
+            generated_functions: Vec::new(),
+            arrow_locals: HashMap::new(),
+            module_ids: HashMap::new(),
+            modules: Vec::new(),
+            class_constructor_ids,
+            class_method_ids,
+            class_static_method_ids,
+            class_parents,
+            local_classes: HashMap::new(),
+            regexp_literal_locals: HashSet::new(),
+            current_class: None,
+            in_constructor: false,
+        }
+    }
+
+    fn with_params(
+        function_ids: &'a HashMap<String, FuncId>,
+        params: &[String],
+        class_parents: HashMap<String, Option<String>>,
+        current_class: Option<&str>,
+        in_constructor: bool,
+        next_func_id: usize,
+    ) -> Result<(Self, Vec<LocalId>), Diagnostic> {
+        let (class_constructor_ids, class_method_ids, class_static_method_ids) =
+            class_maps(function_ids);
+        let mut resolver = Self {
+            function_ids,
+            scopes: vec![HashMap::new()],
+            next_local_id: 0,
+            locals: Vec::new(),
+            next_func_id,
+            generated_functions: Vec::new(),
+            arrow_locals: HashMap::new(),
+            module_ids: HashMap::new(),
+            modules: Vec::new(),
+            class_constructor_ids,
+            class_method_ids,
+            class_static_method_ids,
+            class_parents,
+            local_classes: HashMap::new(),
+            regexp_literal_locals: HashSet::new(),
+            current_class: current_class.map(ToOwned::to_owned),
+            in_constructor,
+        };
+        let mut param_ids = Vec::new();
+        let mut seen_params = HashMap::new();
+
+        for param in params {
+            if seen_params.contains_key(param) {
+                return Err(Diagnostic {
+                    code: DiagCode::DuplicateParameter,
+                    message: format!("duplicate parameter name: `{param}`"),
+                    span: None,
+                });
+            }
+            seen_params.insert(param.clone(), ());
+            let local_id = LocalId(resolver.next_local_id);
+            resolver.next_local_id += 1;
+            resolver
+                .scopes
+                .last_mut()
+                .expect("function scope must exist")
+                .insert(param.clone(), local_id);
+            if let Some(current_class) = current_class
+                && param == "this"
+            {
+                resolver
+                    .local_classes
+                    .insert(local_id, current_class.to_owned());
+            }
+            param_ids.push(local_id);
+        }
+
+        Ok((resolver, param_ids))
+    }
+
+    fn lower_block(&mut self, statements: &[ResolvedStmt]) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let mut lowered = Vec::with_capacity(statements.len());
+        for statement in statements {
+            lowered.push(self.lower_stmt(statement)?);
+        }
+        Ok(lowered)
+    }
+
+    fn lower_nested_block(
+        &mut self,
+        statements: &[ResolvedStmt],
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        self.scopes.push(HashMap::new());
+        let lowered = self.lower_block(statements);
+        self.scopes.pop();
+        lowered
+    }
+
+    fn lower_stmt(&mut self, stmt: &ResolvedStmt) -> Result<LoweredStmt, Diagnostic> {
+        match stmt {
+            ResolvedStmt::Let(name, expr) => {
+                let local_id = self.declare_local(name)?;
+                let lowered = self.lower_expr(expr)?;
+                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                    self.arrow_locals.insert(
+                        local_id,
+                        ArrowClosure {
+                            func_id: *func_id,
+                            captures: captures.clone(),
+                        },
+                    );
+                } else {
+                    self.arrow_locals.remove(&local_id);
+                }
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = expr_class {
+                    self.local_classes.insert(local_id, class_name);
+                } else {
+                    self.local_classes.remove(&local_id);
+                }
+                self.update_regexp_literal_local(local_id, expr);
+                Ok(LoweredStmt::Let(local_id, lowered))
+            }
+            ResolvedStmt::Assign(name, expr) => {
+                let local_id = self.resolve_local(name)?;
+                let lowered = self.lower_expr(expr)?;
+                if let LoweredExpr::ArrowFn { func_id, captures } = &lowered {
+                    self.arrow_locals.insert(
+                        local_id,
+                        ArrowClosure {
+                            func_id: *func_id,
+                            captures: captures.clone(),
+                        },
+                    );
+                } else {
+                    self.arrow_locals.remove(&local_id);
+                }
+                let expr_class = self.infer_class_for_expr(expr);
+                if let Some(class_name) = expr_class {
+                    self.local_classes.insert(local_id, class_name);
+                } else {
+                    self.local_classes.remove(&local_id);
+                }
+                self.update_regexp_literal_local(local_id, expr);
+                Ok(LoweredStmt::Assign(local_id, lowered))
+            }
+            ResolvedStmt::Expr(expr) => Ok(LoweredStmt::Expr(self.lower_expr(expr)?)),
+            ResolvedStmt::If {
+                condition,
+                then_body,
+                else_body,
+            } => Ok(LoweredStmt::If {
+                condition: self.lower_expr(condition)?,
+                then_body: self.lower_nested_block(then_body)?,
+                else_body: self.lower_nested_block(else_body)?,
+            }),
+            ResolvedStmt::While { condition, body } => Ok(LoweredStmt::While {
+                condition: self.lower_expr(condition)?,
+                body: self.lower_nested_block(body)?,
+            }),
+            ResolvedStmt::Return(expr) => Ok(LoweredStmt::Return(self.lower_expr(expr)?)),
+            ResolvedStmt::Function { .. } => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "nested function declarations are not supported in this milestone"
+                    .to_owned(),
+                span: None,
+            }),
+            ResolvedStmt::TryCatch {
+                try_block,
+                catch_param,
+                catch_block,
+                finally_block,
+            } => {
+                let catch_var = if let Some(param) = catch_param {
+                    Some(self.declare_local(param)?)
+                } else {
+                    None
+                };
+                Ok(LoweredStmt::TryCatch {
+                    try_body: self.lower_nested_block(try_block)?,
+                    catch_var,
+                    catch_body: catch_block
+                        .as_ref()
+                        .map(|b| self.lower_nested_block(b))
+                        .transpose()?,
+                    finally_body: finally_block
+                        .as_ref()
+                        .map(|b| self.lower_nested_block(b))
+                        .transpose()?,
+                })
+            }
+            ResolvedStmt::Throw(expr) => Ok(LoweredStmt::Throw(self.lower_expr(expr)?)),
+            ResolvedStmt::Switch { expr, cases } => {
+                let resolved_cases = cases
+                    .iter()
+                    .map(|(cond, body)| {
+                        Ok((
+                            cond.as_ref().map(|e| self.lower_expr(e)).transpose()?,
+                            self.lower_nested_block(body)?,
+                        ))
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredStmt::Switch {
+                    expr: self.lower_expr(expr)?,
+                    cases: resolved_cases,
+                })
+            }
+            ResolvedStmt::DoWhile { body, condition } => Ok(LoweredStmt::DoWhile {
+                body: self.lower_nested_block(body)?,
+                condition: self.lower_expr(condition)?,
+            }),
+            ResolvedStmt::For {
+                init,
+                condition,
+                update,
+                body,
+            } => {
+                let resolved_init = if let Some(i) = init {
+                    Some(Box::new(self.lower_stmt(i)?))
+                } else {
+                    None
+                };
+                Ok(LoweredStmt::For {
+                    init: resolved_init,
+                    condition: condition.as_ref().map(|c| self.lower_expr(c)).transpose()?,
+                    update: update.as_ref().map(|u| self.lower_expr(u)).transpose()?,
+                    body: self.lower_nested_block(body)?,
+                })
+            }
+            ResolvedStmt::ForIn { var, iter, body } => {
+                let var_id = self.declare_local(var)?;
+                Ok(LoweredStmt::ForIn {
+                    var: var_id,
+                    iter: self.lower_expr(iter)?,
+                    iter_local: self.alloc_temp(),
+                    index_local: self.alloc_temp(),
+                    len_local: self.alloc_temp(),
+                    body: self.lower_nested_block(body)?,
+                })
+            }
+            ResolvedStmt::ForOf { var, iter, body } => {
+                let var_id = self.declare_local(var)?;
+                Ok(LoweredStmt::ForOf {
+                    var: var_id,
+                    iter: self.lower_expr(iter)?,
+                    iter_local: self.alloc_temp(),
+                    index_local: self.alloc_temp(),
+                    len_local: self.alloc_temp(),
+                    body: self.lower_nested_block(body)?,
+                })
+            }
+            ResolvedStmt::Labeled { label, body } => Ok(LoweredStmt::Labeled {
+                label: label.clone(),
+                body: Box::new(self.lower_stmt(body)?),
+            }),
+            ResolvedStmt::Break { label } => Ok(LoweredStmt::Break {
+                label: label.clone(),
+            }),
+            ResolvedStmt::Continue { label } => Ok(LoweredStmt::Continue {
+                label: label.clone(),
+            }),
+            ResolvedStmt::Export { name, expr } => Ok(LoweredStmt::Export {
+                name: name.clone(),
+                expr: self.lower_expr(expr)?,
+            }),
+            ResolvedStmt::ModuleExportsAssign { expr } => Ok(LoweredStmt::ModuleExportsAssign {
+                expr: self.lower_expr(expr)?,
+            }),
+            ResolvedStmt::ClassDecl { .. } => Ok(LoweredStmt::Expr(LoweredExpr::Undefined)),
+        }
+    }
+
+    fn lower_expr(&mut self, expr: &ResolvedExpr) -> Result<LoweredExpr, Diagnostic> {
+        match expr {
+            ResolvedExpr::Number(value) => Ok(LoweredExpr::Number(*value)),
+            ResolvedExpr::String(value) => Ok(LoweredExpr::String(value.clone())),
+            ResolvedExpr::Bool(value) => Ok(LoweredExpr::Bool(*value)),
+            ResolvedExpr::Null => Ok(LoweredExpr::Null),
+            ResolvedExpr::Undefined => Ok(LoweredExpr::Undefined),
+            ResolvedExpr::This { span } => match self.resolve_local("this") {
+                Ok(local) => Ok(LoweredExpr::Local(local)),
+                Err(_) => Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-211: `this` is only supported inside receiver-bound class constructors and instance methods".to_owned(),
+                    span: Some(*span),
+                }),
+            },
+            ResolvedExpr::Ident(name) => Ok(LoweredExpr::Local(self.resolve_local(name)?)),
+            ResolvedExpr::Spread(_) => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "spread expressions are only supported in call arguments".to_owned(),
+                span: None,
+            }),
+            ResolvedExpr::Unary { op, expr } => {
+                if *op == UnaryOp::Delete {
+                    // Lower delete to PropertyDelete or PropertyDeleteDynamic
+                    match expr.as_ref() {
+                        ResolvedExpr::PropertyAccess { object, key } => {
+                            Ok(LoweredExpr::PropertyDelete {
+                                object: Box::new(self.lower_expr(object)?),
+                                key: key.clone(),
+                            })
+                        }
+                        ResolvedExpr::ComputedIndex { object, index } => {
+                            Ok(LoweredExpr::PropertyDeleteDynamic {
+                                object: Box::new(self.lower_expr(object)?),
+                                key: Box::new(self.lower_expr(index)?),
+                            })
+                        }
+                        _ => Ok(LoweredExpr::Unary {
+                            op: lower_unary_op(*op)?,
+                            expr: Box::new(self.lower_expr(expr)?),
+                        }),
+                    }
+                } else {
+                    Ok(LoweredExpr::Unary {
+                        op: lower_unary_op(*op)?,
+                        expr: Box::new(self.lower_expr(expr)?),
+                    })
+                }
+            }
+            ResolvedExpr::Binary { left, op, right } => {
+                if *op == BinaryOp::InstanceOf {
+                    let prototype = match right.as_ref() {
+                        ResolvedExpr::Ident(name) => {
+                            if let Some(constructor) = BuiltinErrorConstructor::from_name(name) {
+                                LoweredExpr::BuiltinErrorPrototype(constructor)
+                            } else {
+                                self.class_prototype_ref(name)
+                                    .map(LoweredExpr::ClassPrototype)?
+                            }
+                        }
+                        _ => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "issue-207: instanceof right-hand side must be a supported class constructor".to_owned(),
+                                span: None,
+                            });
+                        }
+                    };
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "$instanceof".to_string(),
+                        args: vec![self.lower_expr(left)?, prototype],
+                    })
+                } else if *op == BinaryOp::In {
+                    // Lower in to PropertyIn or PropertyInDynamic
+                    // key in object -> check if key exists in object
+                    match left.as_ref() {
+                        ResolvedExpr::String(key) => Ok(LoweredExpr::PropertyIn {
+                            obj: Box::new(self.lower_expr(right)?),
+                            key: key.clone(),
+                        }),
+                        _ => Ok(LoweredExpr::PropertyInDynamic {
+                            obj: Box::new(self.lower_expr(right)?),
+                            key: Box::new(self.lower_expr(left)?),
+                        }),
+                    }
+                } else {
+                    Ok(LoweredExpr::Binary {
+                        left: Box::new(self.lower_expr(left)?),
+                        op: lower_binary_op(*op)?,
+                        right: Box::new(self.lower_expr(right)?),
+                    })
+                }
+            }
+            ResolvedExpr::Assign { name, expr } => {
+                let local = self.resolve_local(name)?;
+                Ok(LoweredExpr::Assign {
+                    local,
+                    expr: Box::new(self.lower_expr(expr)?),
+                })
+            }
+            ResolvedExpr::LogicalAssign { name, op, expr } => {
+                let local = self.resolve_local(name)?;
+                Ok(LoweredExpr::LogicalAssign {
+                    local,
+                    op: lower_logical_assign_op(*op),
+                    expr: Box::new(self.lower_expr(expr)?),
+                })
+            }
+            ResolvedExpr::LogicalPropertyAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => {
+                let object = self.resolve_local(object)?;
+                Ok(LoweredExpr::LogicalPropertyAssign {
+                    object,
+                    key: key.clone(),
+                    op: lower_logical_assign_op(*op),
+                    expr: Box::new(self.lower_expr(expr)?),
+                })
+            }
+            ResolvedExpr::LogicalComputedPropertyAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => {
+                let object = self.resolve_local(object)?;
+                Ok(LoweredExpr::LogicalComputedPropertyAssign {
+                    object,
+                    key: Box::new(self.lower_expr(key)?),
+                    op: lower_logical_assign_op(*op),
+                    expr: Box::new(self.lower_expr(expr)?),
+                })
+            }
+            ResolvedExpr::LogicalComputedMemberAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => Ok(LoweredExpr::LogicalComputedMemberAssign {
+                object: Box::new(self.lower_expr(object)?),
+                key: Box::new(self.lower_expr(key)?),
+                op: lower_logical_assign_op(*op),
+                expr: Box::new(self.lower_expr(expr)?),
+            }),
+            ResolvedExpr::LogicalMemberAssign {
+                object,
+                key,
+                op,
+                expr,
+            } => Ok(LoweredExpr::LogicalMemberAssign {
+                object: Box::new(self.lower_expr(object)?),
+                key: key.clone(),
+                op: lower_logical_assign_op(*op),
+                expr: Box::new(self.lower_expr(expr)?),
+            }),
+            ResolvedExpr::Call { callee, args, span } => {
+                let func_name = match callee.as_ref() {
+                    ResolvedExpr::Ident(name) => name,
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "only identifier calls are supported in expression context"
+                                .to_owned(),
+                            span: Some(*span),
+                        });
+                    }
+                };
+
+                if let Ok(local_id) = self.resolve_local(func_name)
+                    && let Some(closure) = self.arrow_locals.get(&local_id).cloned()
+                {
+                    let mut lowered_args = self.lower_call_args(args)?;
+                    lowered_args.extend(closure.captures.iter().copied().map(LoweredExpr::Local));
+                    return Ok(LoweredExpr::Call {
+                        kind: FunctionCallKind::User(closure.func_id),
+                        args: lowered_args,
+                    });
+                }
+
+                if func_name == "super" {
+                    if !self.in_constructor {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "super(...) is only supported in constructors".to_owned(),
+                            span: None,
+                        });
+                    }
+                    let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "super(...) requires class context".to_owned(),
+                        span: None,
+                    })?;
+                    let parent_name = self
+                        .class_parents
+                        .get(class_name)
+                        .and_then(|p| p.clone())
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "super(...) used in class without extends".to_owned(),
+                            span: None,
+                        })?;
+                    let parent_ctor = self
+                        .class_constructor_ids
+                        .get(&parent_name)
+                        .copied()
+                        .ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "super class constructor for `{}` not found",
+                                parent_name
+                            ),
+                            span: None,
+                        })?;
+
+                    let mut lowered_args = vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                    lowered_args.extend(
+                        args.iter()
+                            .map(|arg| self.lower_expr(arg))
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
+
+                    return Ok(LoweredExpr::Call {
+                        kind: FunctionCallKind::User(parent_ctor),
+                        args: lowered_args,
+                    });
+                }
+
+                let lowered_args = self.lower_call_args(args)?;
+                let func_id = match self.resolve_func(func_name) {
+                    Ok(func_id) => func_id,
+                    Err(_) if self.resolve_local(func_name).is_ok() => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-211: function-valued local calls such as extracted method `{func_name}(...)` are not supported; call receiver.method(...) directly"
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Err(err) => return Err(err),
+                };
+
+                Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::User(func_id),
+                    args: lowered_args,
+                })
+            }
+            ResolvedExpr::BuiltinCall { builtin, args } => {
+                let lowered_args = args
+                    .iter()
+                    .map(|arg| self.lower_expr(arg))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(*builtin),
+                    args: lowered_args,
+                })
+            }
+            ResolvedExpr::BuiltinProperty { builtin, object } => match builtin {
+                BuiltinPropertyId::Length => {
+                    Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?)))
+                }
+            },
+            ResolvedExpr::PropertyAccess { object, key } => Ok(LoweredExpr::PropertyGet {
+                obj: Box::new(self.lower_expr(object)?),
+                key: key.clone(),
+            }),
+            ResolvedExpr::ComputedIndex { object, index } => {
+                // Lower the object first to determine its type
+                let lowered_object = self.lower_expr(object)?;
+                let lowered_index = self.lower_expr(index)?;
+
+                // Keep obvious array literals on the compact array helper. Unknown
+                // receivers must use the generic index helper so object[stringKey]
+                // and array[numberIndex] both preserve JavaScript semantics.
+                if matches!(object.as_ref(), ResolvedExpr::String(_)) {
+                    Ok(LoweredExpr::Index {
+                        object: Box::new(lowered_object),
+                        index: Box::new(lowered_index),
+                    })
+                } else if matches!(object.as_ref(), ResolvedExpr::Array(_))
+                    || matches!(lowered_object, LoweredExpr::ArrayNew { .. })
+                {
+                    Ok(LoweredExpr::ArrayGet {
+                        arr: Box::new(lowered_object),
+                        index: Box::new(lowered_index),
+                    })
+                } else {
+                    Ok(LoweredExpr::Index {
+                        object: Box::new(lowered_object),
+                        index: Box::new(lowered_index),
+                    })
+                }
+            }
+            ResolvedExpr::Array(elements) => {
+                let lowered = elements
+                    .iter()
+                    .map(|e| self.lower_expr(e))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::ArrayNew { elements: lowered })
+            }
+            ResolvedExpr::Object(props) => {
+                let lowered = props
+                    .iter()
+                    .map(|(k, v)| Ok((k.clone(), self.lower_expr(v)?)))
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok(LoweredExpr::ObjectNew { props: lowered })
+            }
+            ResolvedExpr::MethodCall {
+                object,
+                method,
+                args,
+                span,
+            } => {
+                if is_json_static_call(object, method) {
+                    validate_json_stringify_args(args, *span, self.function_ids)?;
+                    let mut lowered_args = Vec::with_capacity(3);
+                    let value = if let (
+                        ResolvedExpr::Object(props),
+                        Some(replacer_keys),
+                    ) = (&args[0], json_stringify_replacer_keys(args))
+                    {
+                        let mut lowered_props = Vec::new();
+                        for allowed_key in replacer_keys {
+                            if lowered_props
+                                .iter()
+                                .any(|(key, _): &(String, LoweredExpr)| key == &allowed_key)
+                            {
+                                continue;
+                            }
+
+                            if let Some((key, value)) =
+                                props.iter().rev().find(|(key, _)| key == &allowed_key)
+                            {
+                                lowered_props.push((key.clone(), self.lower_expr(value)?));
+                            }
+                        }
+                        LoweredExpr::ObjectNew {
+                            props: lowered_props,
+                        }
+                    } else {
+                        self.lower_expr(&args[0])?
+                    };
+                    lowered_args.push(value);
+                    lowered_args.push(match args.get(1) {
+                        Some(ResolvedExpr::Array(_)) => LoweredExpr::Null,
+                        Some(replacer) => self.lower_expr(replacer)?,
+                        None => LoweredExpr::Undefined,
+                    });
+                    lowered_args.push(match args.get(2) {
+                        Some(space)
+                            if should_ignore_json_stringify_space(space, self.function_ids) =>
+                        {
+                            LoweredExpr::Undefined
+                        }
+                        Some(space) => {
+                            if let Some(boxed_space) = json_stringify_boxed_space_value(space) {
+                                self.lower_expr(boxed_space)?
+                            } else {
+                                self.lower_expr(space)?
+                            }
+                        }
+                        None => LoweredExpr::Undefined,
+                    });
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "JsonStringify".to_owned(),
+                        args: lowered_args,
+                    })
+                } else if is_date_now_live_time_call(object, method) {
+                    Err(unsupported_live_time_diagnostic("Date.now()", Some(*span)))
+                } else if self.is_unsupported_regexp_compile_receiver(object, method) {
+                    Err(unsupported_regexp_compile_diagnostic(Some(*span)))
+                } else if let Some(regexp_args) = regexp_test_runtime(object, method, args, *span)?
+                {
+                    let lowered_args = regexp_args
+                        .iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "RegExpTest".to_owned(),
+                        args: lowered_args,
+                    })
+                } else if let Some(regexp_args) = regexp_exec_runtime(object, method, args, *span)?
+                {
+                    let lowered_args = regexp_args
+                        .iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "RegExpMatch".to_owned(),
+                        args: lowered_args,
+                    })
+                } else if let Some(regexp_args) =
+                    regexp_string_match_runtime(object, method, args, *span)?
+                {
+                    let lowered_args = regexp_args
+                        .iter()
+                        .map(|e| self.lower_expr(e))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "RegExpMatch".to_owned(),
+                        args: lowered_args,
+                    })
+                } else if matches!(method.as_str(), "getTime" | "valueOf")
+                    && self.is_date_receiver(object)
+                {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateGetTime".to_owned(),
+                        args: vec![self.lower_expr(object)?],
+                    })
+                } else if is_annex_b_date_method(method) && self.is_date_receiver(object) {
+                    Err(unsupported_annex_b_date_method_diagnostic(
+                        method,
+                        Some(*span),
+                    ))
+                } else if method == "toString" && self.is_date_receiver(object) {
+                    Err(unsupported_date_timezone_diagnostic(method, Some(*span)))
+                } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
+                    if let Some(diagnostic) = unsupported_annex_b_string_method(method, *span) {
+                        Err(diagnostic)
+                    } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                        let mut lowered_args = vec![self.lower_expr(object)?];
+                        lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<
+                            Result<Vec<_>, _>,
+                        >(
+                        )?);
+                        Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn,
+                            args: lowered_args,
+                        })
+                    } else {
+                        Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "String.prototype.{method} is not supported in this milestone"
+                            ),
+                            span: Some(*span),
+                        })
+                    }
+                } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
+                    let mut lowered_args = Vec::new();
+                    let is_static_call = matches!(
+                        object.as_ref(),
+                        ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object" || name == "String"
+                    );
+                    if !is_static_call {
+                        lowered_args.push(self.lower_expr(object)?);
+                    }
+                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
+                        Vec<_>,
+                        _,
+                    >>(
+                    )?);
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn,
+                        args: lowered_args,
+                    })
+                } else {
+                    if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
+                        let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "this.method(...) requires class context".to_owned(),
+                            span: Some(*span),
+                        })?;
+                        let method_id =
+                            self.resolve_class_method(class_name, method)
+                                .ok_or_else(|| Diagnostic {
+                                    code: DiagCode::UnsupportedSyntax,
+                                    message: format!(
+                                        "method `{}.{}` not found",
+                                        class_name, method
+                                    ),
+                                    span: Some(*span),
+                                })?;
+
+                        let mut lowered_args =
+                            vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                        lowered_args.extend(
+                            args.iter()
+                                .map(|e| self.lower_expr(e))
+                                .collect::<Result<Vec<_>, _>>()?,
+                        );
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(method_id),
+                            args: lowered_args,
+                        });
+                    }
+
+                    let receiver_name = match object.as_ref() {
+                        ResolvedExpr::Ident(name) => name,
+                        _ => {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-211: method `{}` requires an identifier receiver",
+                                    method
+                                ),
+                                span: Some(*span),
+                            });
+                        }
+                    };
+
+                    if let Ok(obj_local) = self.resolve_local(receiver_name)
+                        && let Some(class_name) = self.local_classes.get(&obj_local)
+                        && let Some(runtime_fn) = collection_method_runtime_fn(class_name, method)
+                    {
+                        if class_name == "RegExp" && args.len() != 1 {
+                            return Err(Diagnostic {
+                                code: DiagCode::ArityMismatch,
+                                message: format!(
+                                    "RegExp.prototype.{method} expects 1 argument, got {}",
+                                    args.len()
+                                ),
+                                span: Some(*span),
+                            });
+                        }
+                        let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
+                        lowered_args.extend(
+                            args.iter()
+                                .map(|e| self.lower_expr(e))
+                                .collect::<Result<Vec<_>, _>>()?,
+                        );
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: runtime_fn.to_owned(),
+                            args: lowered_args,
+                        });
+                    }
+
+                    if receiver_name == "super" {
+                        let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "super.method(...) requires class context".to_owned(),
+                            span: Some(*span),
+                        })?;
+                        let parent_name = self
+                            .class_parents
+                            .get(class_name)
+                            .and_then(|p| p.clone())
+                            .ok_or_else(|| Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: "super.method(...) used in class without extends"
+                                    .to_owned(),
+                                span: Some(*span),
+                            })?;
+                        let method_id = self
+                            .resolve_class_method(&parent_name, method)
+                            .ok_or_else(|| Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "super method `{}.{}` not found",
+                                    parent_name, method
+                                ),
+                                span: Some(*span),
+                            })?;
+
+                        let mut lowered_args =
+                            vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                        lowered_args.extend(
+                            args.iter()
+                                .map(|e| self.lower_expr(e))
+                                .collect::<Result<Vec<_>, _>>()?,
+                        );
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(method_id),
+                            args: lowered_args,
+                        });
+                    }
+
+                    if let Some(method_id) = self
+                        .class_static_method_ids
+                        .get(&(receiver_name.clone(), method.clone()))
+                        .copied()
+                    {
+                        let lowered_args = args
+                            .iter()
+                            .map(|e| self.lower_expr(e))
+                            .collect::<Result<Vec<_>, _>>()?;
+                        return Ok(LoweredExpr::Call {
+                            kind: FunctionCallKind::User(method_id),
+                            args: lowered_args,
+                        });
+                    }
+
+                    let obj_local = self.resolve_local(receiver_name)?;
+
+                    let class_name =
+                        self.local_classes
+                            .get(&obj_local)
+                            .ok_or_else(|| Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-211: unknown receiver class for method `{}`",
+                                    method
+                                ),
+                                span: Some(*span),
+                            })?;
+
+                    let method_id =
+                        self.resolve_class_method(class_name, method)
+                            .ok_or_else(|| Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!("method `{}.{}` not found", class_name, method),
+                                span: Some(*span),
+                            })?;
+
+                    let mut lowered_args = vec![LoweredExpr::Local(obj_local)];
+                    lowered_args.extend(args.iter().map(|e| self.lower_expr(e)).collect::<Result<
+                        Vec<_>,
+                        _,
+                    >>(
+                    )?);
+
+                    Ok(LoweredExpr::Call {
+                        kind: FunctionCallKind::User(method_id),
+                        args: lowered_args,
+                    })
+                }
+            }
+            ResolvedExpr::PropertyAssign { object, key, value } => Ok(LoweredExpr::PropertySet {
+                object: Box::new(self.lower_expr(object)?),
+                key: key.clone(),
+                value: Box::new(self.lower_expr(value)?),
+            }),
+            ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+                Ok(LoweredExpr::PropertySetDynamic {
+                    object: Box::new(self.lower_expr(object)?),
+                    index: Box::new(self.lower_expr(key)?),
+                    value: Box::new(self.lower_expr(value)?),
+                })
+            }
+            ResolvedExpr::New {
+                class_name,
+                args,
+                span,
+            } => {
+                if class_name == "RegExp" {
+                    return Ok(LoweredExpr::String(regexp_constructor_literal(args)?));
+                }
+                if class_name == "Date" {
+                    if args.is_empty() {
+                        return Err(unsupported_live_time_diagnostic(
+                            "new Date()",
+                            Some(*span),
+                        ));
+                    }
+                    if args.len() != 1 {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-050: only deterministic new Date(<epoch-ms integer>) is supported in this slice"
+                                .to_owned(),
+                            span: None,
+                        });
+                    }
+                    let epoch_ms = &args[0];
+                    if !is_date_constructor_epoch_arg(epoch_ms) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-050: Date constructor currently requires an integer epoch millisecond literal".to_owned(),
+                            span: None,
+                        });
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateNew".to_owned(),
+                        args: vec![self.lower_expr(epoch_ms)?],
+                    });
+                }
+                if class_name == "Map" || class_name == "Set" {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-049: new {class_name}(iterable) is not supported yet"
+                            ),
+                            span: None,
+                        });
+                    }
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: format!("{class_name}New"),
+                        args: Vec::new(),
+                    });
+                }
+                if let Some(constructor) = BuiltinErrorConstructor::from_name(class_name) {
+                    let message = match args.first() {
+                        Some(message) => LoweredExpr::RuntimeCall {
+                            runtime_fn: "ErrorMessage".to_owned(),
+                            args: vec![self.lower_expr(message)?],
+                        },
+                        None => LoweredExpr::String(String::new()),
+                    };
+                    return Ok(LoweredExpr::ErrorNew {
+                        constructor,
+                        message: Box::new(message),
+                    });
+                }
+
+                let prototype = self.class_prototype_ref(class_name)?;
+
+                let lowered_args = args
+                    .iter()
+                    .map(|arg| self.lower_expr(arg))
+                    .collect::<Result<Vec<_>, _>>()?;
+
+                Ok(LoweredExpr::New {
+                    constructor: prototype.constructor,
+                    prototype,
+                    args: lowered_args,
+                    base_local: self.alloc_temp(),
+                })
+            }
+            ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
+                module_id: self.module_id_for_specifier(specifier),
+            }),
+            ResolvedExpr::ArrowFn { params, body } => self.lower_arrow_fn(params, body),
+        }
+    }
+
+    fn lower_call_args(&mut self, args: &[ResolvedExpr]) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        let mut lowered_args = Vec::new();
+        for arg in args {
+            match arg {
+                ResolvedExpr::Spread(spread_expr) => {
+                    if let ResolvedExpr::Array(elements) = spread_expr.as_ref() {
+                        for elem in elements {
+                            lowered_args.push(self.lower_expr(elem)?);
+                        }
+                    } else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message:
+                                "spread arguments are only supported for literal arrays in this milestone"
+                                    .to_owned(),
+                            span: None,
+                        });
+                    }
+                }
+                _ => lowered_args.push(self.lower_expr(arg)?),
+            }
+        }
+        Ok(lowered_args)
+    }
+
+    fn lower_arrow_fn(
+        &mut self,
+        params: &[String],
+        body: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let capture_names = self.arrow_capture_names(params, body);
+        let captures = capture_names
+            .iter()
+            .map(|name| self.resolve_local(name))
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut lowered_params = params
+            .iter()
+            .map(|name| (name.clone(), None, false))
+            .collect::<Vec<_>>();
+        lowered_params.extend(capture_names.iter().map(|name| (name.clone(), None, false)));
+
+        let func_id = FuncId(self.next_func_id);
+        self.next_func_id += 1;
+        let body_stmts = vec![ResolvedStmt::Return((*body).clone())];
+        let lowered = lower_function(
+            func_id,
+            &lowered_params,
+            &body_stmts,
+            self.function_ids,
+            self.class_parents.clone(),
+            LowerFunctionOptions {
+                current_class: self.current_class.as_deref(),
+                in_constructor: false,
+                next_func_id: self.next_func_id,
+            },
+        )?;
+        self.next_func_id = lowered.next_func_id;
+        self.generated_functions.push(lowered.function);
+        self.generated_functions.extend(lowered.generated_functions);
+
+        Ok(LoweredExpr::ArrowFn { func_id, captures })
+    }
+
+    fn arrow_capture_names(&self, params: &[String], body: &ResolvedExpr) -> Vec<String> {
+        let mut captures = Vec::new();
+        collect_arrow_captures(body, params, &mut captures);
+        captures
+            .into_iter()
+            .filter(|name| self.resolve_local(name).is_ok())
+            .collect()
+    }
+
+    fn declare_local(&mut self, name: &str) -> Result<LocalId, Diagnostic> {
+        let scope = self.scopes.last_mut().expect("scope must exist");
+        if scope.contains_key(name) {
+            return Err(Diagnostic {
+                code: DiagCode::DuplicateLocal,
+                message: format!("duplicate local binding: `{name}`"),
+                span: None,
+            });
+        }
+        let local_id = LocalId(self.next_local_id);
+        self.next_local_id += 1;
+        self.locals.push(local_id);
+        scope.insert(name.to_owned(), local_id);
+        Ok(local_id)
+    }
+
+    fn alloc_temp(&mut self) -> LocalId {
+        let id = LocalId(self.next_local_id);
+        self.next_local_id += 1;
+        self.locals.push(id);
+        id
+    }
+
+    fn resolve_local(&self, name: &str) -> Result<LocalId, Diagnostic> {
+        self.scopes
+            .iter()
+            .rev()
+            .find_map(|scope| scope.get(name).copied())
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnresolvedName,
+                message: format!("unresolved name: `{name}`"),
+                span: None,
+            })
+    }
+
+    fn resolve_func(&self, name: &str) -> Result<FuncId, Diagnostic> {
+        self.function_ids
+            .get(name)
+            .copied()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnresolvedFunction,
+                message: format!("unresolved function: `{name}`"),
+                span: None,
+            })
+    }
+
+    fn module_id_for_specifier(&mut self, specifier: &str) -> usize {
+        if let Some(id) = self.module_ids.get(specifier) {
+            return *id;
+        }
+
+        let id = self.modules.len() + 1;
+        self.module_ids.insert(specifier.to_owned(), id);
+        self.modules.push(ModuleInfo {
+            id,
+            specifier: specifier.to_owned(),
+            statements: Vec::new(),
+            locals_count: 0,
+        });
+        id
+    }
+
+    fn resolve_class_method(&self, class_name: &str, method: &str) -> Option<FuncId> {
+        let mut current = Some(class_name.to_owned());
+        while let Some(class) = current {
+            if let Some(id) = self
+                .class_method_ids
+                .get(&(class.clone(), method.to_owned()))
+                .copied()
+            {
+                return Some(id);
+            }
+            current = self.class_parents.get(&class).and_then(|p| p.clone());
+        }
+        None
+    }
+
+    fn is_date_receiver(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::New { class_name, .. } => class_name == "Date",
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .and_then(|local_id| self.local_classes.get(&local_id))
+                .is_some_and(|class_name| class_name == "Date"),
+            _ => false,
+        }
+    }
+
+    fn is_unsupported_regexp_compile_receiver(&self, expr: &ResolvedExpr, method: &str) -> bool {
+        if method != "compile" {
+            return false;
+        }
+        match expr {
+            ResolvedExpr::String(raw) if looks_like_regexp_literal(raw) => true,
+            ResolvedExpr::New { class_name, .. } => class_name == "RegExp",
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.regexp_literal_locals.contains(&local_id)
+                    || self
+                        .local_classes
+                        .get(&local_id)
+                        .is_some_and(|class_name| class_name == "RegExp")
+            }),
+            _ => false,
+        }
+    }
+
+    fn update_regexp_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if matches!(expr, ResolvedExpr::String(raw) if looks_like_regexp_literal(raw)) {
+            self.regexp_literal_locals.insert(local_id);
+        } else {
+            self.regexp_literal_locals.remove(&local_id);
+        }
+    }
+
+    fn class_prototype_ref(&self, class_name: &str) -> Result<ClassPrototypeRef, Diagnostic> {
+        let constructor = self
+            .class_constructor_ids
+            .get(class_name)
+            .copied()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-207: instanceof right-hand side must be a supported class constructor `{}`",
+                    class_name
+                ),
+                span: None,
+            })?;
+
+        let mut parent_constructors = Vec::new();
+        let mut current = self.class_parents.get(class_name).and_then(|p| p.clone());
+        while let Some(parent) = current {
+            let parent_constructor = self
+                .class_constructor_ids
+                .get(&parent)
+                .copied()
+                .ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-207: superclass constructor `{}` is not available for instanceof",
+                        parent
+                    ),
+                    span: None,
+                })?;
+            parent_constructors.push(parent_constructor);
+            current = self.class_parents.get(&parent).and_then(|p| p.clone());
+        }
+
+        Ok(ClassPrototypeRef {
+            constructor,
+            parent_constructors,
+        })
+    }
+
+    fn infer_class_for_expr(&self, expr: &ResolvedExpr) -> Option<String> {
+        match expr {
+            ResolvedExpr::New { class_name, .. } => Some(class_name.clone()),
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .and_then(|local_id| self.local_classes.get(&local_id).cloned()),
+            _ => None,
+        }
+    }
+}
+
+fn class_maps(
+    function_ids: &HashMap<String, FuncId>,
+) -> (ClassConstructorMap, ClassMethodMap, ClassMethodMap) {
+    let mut ctor_ids = HashMap::new();
+    let mut method_ids = HashMap::new();
+    let mut static_method_ids = HashMap::new();
+
+    for (name, id) in function_ids {
+        if let Some(rest) = name.strip_prefix("class::") {
+            let mut parts = rest.splitn(2, "::");
+            let class = parts.next().unwrap_or_default();
+            let member = parts.next().unwrap_or_default();
+            if member == "constructor" {
+                ctor_ids.insert(class.to_owned(), *id);
+            } else if let Some(static_name) = member.strip_prefix("static::") {
+                static_method_ids.insert((class.to_owned(), static_name.to_owned()), *id);
+            } else if !class.is_empty() && !member.is_empty() {
+                method_ids.insert((class.to_owned(), member.to_owned()), *id);
+            }
+        }
+    }
+
+    (ctor_ids, method_ids, static_method_ids)
+}
+
