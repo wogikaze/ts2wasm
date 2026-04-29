@@ -1059,6 +1059,14 @@ console.log(optional.value);
 }
 
 #[test]
+fn empty_export_module_marker_matches_node_baseline_under_iwasm() {
+    assert_fixture_matches_js_baseline(
+        "fixtures/module-system/empty-export.ts",
+        r#"console.log("ok");"#,
+    );
+}
+
+#[test]
 fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
     let fixture = "fixtures/core-semantics/instanceof-unsupported-rhs.ts";
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))

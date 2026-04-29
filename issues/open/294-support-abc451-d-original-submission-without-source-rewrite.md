@@ -207,6 +207,16 @@ This issue is intentionally blocked because the fixture crosses several existing
 - The original ABC451 repro now advances beyond the function-body `return;`
   statement to the next module/Bun boundary.
 
+2026-04-29 progress:
+
+- Treated `export {};` / `export { };` as an empty module marker rather than
+  an unsupported named export. Non-empty named exports still report issue-055.
+- Added a differential fixture proving the empty export marker is a no-op under
+  wasm execution by comparing against an equivalent Node baseline.
+- The original ABC451 repro now advances beyond the empty export marker and
+  reaches the next unsupported boundary at top-level `await
+  Bun.file("/dev/stdin").text()`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
