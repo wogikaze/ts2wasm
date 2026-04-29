@@ -115,7 +115,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- pending close commit; final cycle status records the validated commit hash
+- `3f9fc1b` issue-242: implement date live time via wasi clock
 
 Validation result:
 
