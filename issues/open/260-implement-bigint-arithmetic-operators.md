@@ -27,6 +27,8 @@ cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-260-bigint-arithmeti
 
 Current result: unsupported BigInt runtime/operator diagnostics.
 
+Progress result (2026-04-29): BigInt arithmetic where both operands are literal-foldable is resolved at compile time with arbitrary-size decimal math and Node/iwasm coverage. Dynamic BigInt operands still report issue-260 because runtime arithmetic helpers are not implemented yet.
+
 ## Desired final state
 
 BigInt unary minus and binary `+`, `-`, `*`, `/`, and `%` work for BigInt operands with Node differential evidence. Mixed Number/BigInt arithmetic reports or raises the ECMAScript TypeError path, not silent coercion.
@@ -39,6 +41,7 @@ In scope:
 - [ ] Preserve canonical zero for `-0n`.
 - [ ] Implement truncating BigInt division/remainder semantics compatible with Node.
 - [ ] Add diagnostics or runtime TypeError handling for Number/BigInt arithmetic mixing.
+- [x] Add a compiler-side literal-folding slice for BigInt unary minus and literal `+`, `-`, `*`, `/`, `%`.
 
 Out of scope:
 
@@ -67,7 +70,8 @@ Do not touch:
 ## Acceptance criteria
 
 - [ ] Node/iwasm differential fixtures cover addition, subtraction, multiplication, division, remainder, unary minus, and canonical zero.
-- [ ] Mixed Number/BigInt arithmetic is issue-linked or TypeError-compatible; it is not compiled as number arithmetic.
+- [x] Node/iwasm differential fixture covers literal addition, subtraction, multiplication, division, remainder, unary minus, canonical zero, and values larger than the issue-259 first-limb cache.
+- [x] Mixed Number/BigInt arithmetic is issue-linked for the current static slice; it is not compiled as number arithmetic.
 - [ ] Runtime linker structure tests cover the selected BigInt arithmetic helpers and their deps.
 - [ ] Docs/current-state/issues remain synchronized with the operation boundary.
 
@@ -110,6 +114,8 @@ Follow-up issues:
 
 Arithmetic helpers operate on canonical BigInt heap objects and must not depend on JavaScript `number` fast paths. Issue 259 only implemented the observable literal slice using a sign/first-limb prefix plus cached decimal bytes; this issue owns full canonical multi-limb storage/operation correctness before arithmetic can be claimed compatible.
 
+2026-04-29 progress slice: literal-only BigInt arithmetic now folds in the resolver using arbitrary-size decimal math and then emits an ordinary BigInt literal heap object. This intentionally does not close the runtime helper requirement: `let x = 1n; console.log(x + 2n);` remains issue-260 unsupported until dynamic BigInt heap operands can be added/subtracted/multiplied/divided at runtime.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
@@ -117,15 +123,17 @@ Fill only when moving to `done/`.
 Commits:
 
 - `...`
+- `7bf3a05`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo nextest run -E 'test(bigint) or test(node_diff)'
+PASS (12 tests)
+2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Runtime helpers for dynamic BigInt operands remain unimplemented.
+- Full issue closure still requires runtime linker structure tests for selected BigInt arithmetic helpers.
