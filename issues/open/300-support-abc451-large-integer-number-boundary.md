@@ -431,6 +431,44 @@ heap_high_water_bytes: 20258192
 - Issue 308 owns the next implementation slice for GC cadence / sweep scan
   policy based on this telemetry.
 
+2026-04-29 child `308-gc-cadence-20260429T195300Z` GC cadence attempt:
+
+- Tested three small GC cadence policy candidates against issue 307 telemetry:
+  free-list-first collection with post-GC retry, free-list reuse not counting
+  as fresh allocation pressure, and a 128KiB GC threshold. None was committed
+  because each candidate failed the required depth-8 regression with
+  `Exception: unreachable`.
+- The unchanged committed `MEMORY_MAX_PAGES=185` depth-9 search-only reducer
+  still traps in `$alloc_heap`, so issue 300 compatibility is not claimed:
+
+```sh
+/usr/bin/time -f 'elapsed:%e' timeout 120s iwasm /tmp/abc451-search-depth-9-308.wasm
+```
+
+Result:
+
+```text
+Exception: unreachable
+elapsed: 5.52
+```
+
+- WAT-only telemetry with memory max 1024 and 2048 pages produced identical
+  counters at the 1,000,000 allocation diagnostic abort for the free-list-first
+  experiment, improving the issue 307 baseline but failing depth-8 validation:
+
+```text
+alloc_count: 1000000
+allocated_block_bytes: 62642176
+gc_collect_count: 456
+gc_sweep_block_visits: 96942634
+gc_sweep_freed_blocks: 11591576
+heap_high_water_bytes: 20487448
+```
+
+- Issue 308 remains open. Issue 300 remains open until the official samples
+  `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

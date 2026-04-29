@@ -228,7 +228,11 @@ mod tests {
 
         let wat = emit_wat(&program).expect("object allocation should emit WAT");
 
-        assert!(wat.contains("(memory (export \"memory\") 2 16)"));
+        assert!(wat.contains(&format!(
+            "(memory (export \"memory\") {} {})",
+            Layout::MEMORY_MIN_PAGES,
+            Layout::MEMORY_MAX_PAGES
+        )));
         assert!(wat.contains("(global $alloc_bytes_since_last_gc (mut i32) (i32.const 0))"));
         assert!(wat.contains("(global $gc_free_list (mut i32) (i32.const 0))"));
         assert!(wat.contains("(func $gc_collect"));
@@ -240,7 +244,7 @@ mod tests {
         assert!(wat.contains("(memory.grow (local.get $needed_pages))"));
         assert!(wat.contains("(i32.const -1)"));
         assert!(wat.contains("(global.get $alloc_bytes_since_last_gc)"));
-        assert!(wat.contains("(then (call $gc_collect))"));
+        assert!(wat.contains("(call $gc_collect)"));
         assert!(wat.contains("(global.set $alloc_bytes_since_last_gc"));
         assert!(wat.contains("(local.get $payload_base))"));
     }

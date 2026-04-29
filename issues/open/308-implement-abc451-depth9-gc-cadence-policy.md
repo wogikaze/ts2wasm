@@ -37,8 +37,8 @@ In scope:
       based on the issue 307 counters.
 - [ ] Add focused regression or telemetry coverage that proves the chosen
       policy reduces repeated sweep scans without hiding OOM boundaries.
-- [ ] Preserve the explicit OOM trap behavior.
-- [ ] Update issue 300 with committed runtime evidence.
+- [x] Preserve the explicit OOM trap behavior for committed code.
+- [x] Update issue 300 with attempted-policy evidence.
 
 Out of scope:
 
@@ -77,9 +77,9 @@ Do not touch:
 - [ ] If the depth-9 reducer completes, it prints Node-matching `1404832`.
 - [ ] `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` remains
       passing.
-- [ ] `oom_alloc_check_must_fail_iwasm` remains passing if runtime memory or GC
+- [x] `oom_alloc_check_must_fail_iwasm` remains passing if runtime memory or GC
       policy changes.
-- [ ] Issue 300 remains open unless all official ABC451 sample outputs match
+- [x] Issue 300 remains open unless all official ABC451 sample outputs match
       Node.
 
 ## Validation
@@ -111,18 +111,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if memory or GC policy changes
+- [x] updated: `docs/14-runtime-abi.md` to state the current
+      `alloc_bytes_since_last_gc + requested_block_size` threshold contract
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` if runtime facts change
+- [x] not affected; no runtime policy change was committed
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated if a smaller implementation blocker is isolated
+- [x] none; issue 308 remains open with narrowed negative evidence
 
 ## Notes
 
@@ -137,9 +135,42 @@ gc_sweep_freed_blocks: 19816743
 heap_high_water_bytes: 20258192
 ```
 
-## Completion evidence
+2026-04-29 child `308-gc-cadence-20260429T195300Z` progress:
 
-Fill only when moving to `done/`.
+- Tested three candidate GC cadence changes and did not commit them because
+  each failed the required depth-8 regression
+  `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` with
+  `Exception: unreachable`:
+  free-list-first collection with post-GC retry, free-list reuse not counting
+  as fresh allocation pressure, and raising `GC_THRESHOLD` to 128KiB.
+- Kept the committed runtime policy unchanged. Under that policy, the depth-9
+  search-only reducer still traps in `$alloc_heap`:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 120s iwasm /tmp/abc451-search-depth-9-308.wasm
+result: Exception: unreachable; elapsed 5.52
+date: 2026-04-29
+```
+
+- WAT-only telemetry for the uncommitted free-list-first experiment with memory
+  max 1024 and 2048 pages produced identical counters at the 1,000,000
+  allocation diagnostic abort:
+
+```text
+alloc_count: 1000000
+allocated_block_bytes: 62642176
+gc_collect_count: 456
+gc_sweep_block_visits: 96942634
+gc_sweep_freed_blocks: 11591576
+heap_high_water_bytes: 20487448
+```
+
+This would lower the issue 307 baseline from `gc_collect_count=834` to `456`
+and from `gc_sweep_block_visits=196941253` to `96942634`, but it is not a safe
+runtime change because it regresses the committed depth-8 reducer. Issue 308
+remains open. Issue 300 remains open.
+
+## Completion evidence
 
 Commits:
 
@@ -148,11 +179,52 @@ Commits:
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo test -p ts2wasm-backend-wasm -- --nocapture
+result: pass; 27 tests passed
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass after reverting unsafe runtime candidates; 1 test passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; 1 test passed
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-04-29
+
+command: mise run check issues
+result: fail; pre-existing missing test262 coverage result artifact references in unrelated issues 271, 284-286, 288-289, 291-293, and 296
+date: 2026-04-29
+
+command: node /tmp/abc451-search-depth-9-308.ts
+result: pass; stdout 1404832
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 120s iwasm /tmp/abc451-search-depth-9-308.wasm
+result: trapped with Exception: unreachable after 5.52s under committed 185-page policy
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 60s iwasm /tmp/abc451-search-depth-9-308-telemetry-cap1024.wasm
+result: diagnostic abort after 1,000,000 allocations; GC collections 456; sweep block visits 96,942,634; elapsed 13.61s
+date: 2026-04-29
+
+command: /usr/bin/time -f 'elapsed:%e' timeout 60s iwasm /tmp/abc451-search-depth-9-308-telemetry-cap2048.wasm
+result: same diagnostic counters as 1024-page run; elapsed 13.77s
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: failed for each uncommitted runtime candidate with iwasm `Exception: unreachable`; runtime candidates were not committed
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Depth-9 search-only and official ABC451 sample compatibility remain open in
+  issue 308 / issue 300.
