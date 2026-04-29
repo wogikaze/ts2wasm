@@ -33,6 +33,7 @@ Discord reporting is part of the loop, not an afterthought:
 - If sending fails, save the payload/error under `reports/runs/<run_id>/`, retry once, mark `DEFERRED` if it still fails, and continue.
 - Before merging a child or assigning the next wave, the parent must record whether reporting was `SENT` or `DEFERRED`.
 - At the end of every parent cycle, send or defer the parent cycle report the same way.
+- Parent cycle reports are Discord/local artifacts only; do not send a user-facing cycle summary when work can continue.
 - `reports/` is local and git-ignored; do not commit report artifacts.
 
 Do not stop when one issue blocks.
@@ -45,10 +46,10 @@ Use subagents for implementation, testing, and review that directly closes or pr
 Do not use subagents as search engines.
 Do not accept investigation-only work unless it creates a concrete follow-up issue, a mergeable fix, or a documented BLOCKED state with evidence.
 
-End each parent cycle with:
+Record cycle throughput in the parent cycle report:
 ISSUE_THROUGHPUT: done=<n> merged=<n> progressed=<n> blocked=<n> open=<n>
-ORCHESTRATOR_STATUS: CONTINUE
-or a justified clean stop status.
+If work can continue, immediately start the next parent cycle without a user-facing response.
+Only send a user-facing response for a clean stop, explicit unsafe state, explicit human-review request, or explicit user pause/stop request.
 ```
 
 ## Prompt files
