@@ -4,12 +4,23 @@ use ts2wasm_frontend::{DiagCode, Diagnostic, Span};
 pub struct ArrayBinding {
     pub index: usize,
     pub name: String,
+    pub default: Option<BindingDefault>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectBinding {
     pub key: String,
     pub name: String,
+    pub default: Option<BindingDefault>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum BindingDefault {
+    Number(i32),
+    String(String),
+    Bool(bool),
+    Null,
+    Undefined,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -73,8 +84,9 @@ fn parse_array_binding_pattern(
                 span,
             ));
         }
-        reject_unsupported_part(part, span)?;
-        if !is_identifier(part) {
+        let (target, default) = split_binding_default(part, span)?;
+        reject_unsupported_target(target, span)?;
+        if !is_identifier(target) {
             return Err(issue_251(
                 "array binding elements must be identifiers in this runtime slice",
                 span,
@@ -82,7 +94,8 @@ fn parse_array_binding_pattern(
         }
         bindings.push(ArrayBinding {
             index,
-            name: part.to_owned(),
+            name: target.to_owned(),
+            default,
         });
     }
     Ok(BindingPattern::Array(bindings))
@@ -109,12 +122,13 @@ fn parse_object_binding_pattern(
                 span,
             ));
         }
-        reject_unsupported_part(part, span)?;
+        let (target_part, default) = split_binding_default(part, span)?;
+        reject_unsupported_target(target_part, span)?;
 
-        let (key, name) = if let Some((key, target)) = part.split_once(':') {
+        let (key, name) = if let Some((key, target)) = target_part.split_once(':') {
             let key = key.trim();
             let target = target.trim();
-            reject_unsupported_part(target, span)?;
+            reject_unsupported_target(target, span)?;
             if !is_identifier(key) || !is_identifier(target) {
                 return Err(issue_251(
                     "object binding aliases must use identifier keys and targets in this runtime slice",
@@ -123,39 +137,92 @@ fn parse_object_binding_pattern(
             }
             (key.to_owned(), target.to_owned())
         } else {
-            if !is_identifier(part) {
+            if !is_identifier(target_part) {
                 return Err(issue_251(
                     "object binding properties must be identifier shorthands in this runtime slice",
                     span,
                 ));
             }
-            (part.to_owned(), part.to_owned())
+            (target_part.to_owned(), target_part.to_owned())
         };
-        bindings.push(ObjectBinding { key, name });
+        bindings.push(ObjectBinding { key, name, default });
     }
     Ok(BindingPattern::Object(bindings))
 }
 
-fn reject_unsupported_part(part: &str, span: Option<Span>) -> Result<(), Diagnostic> {
-    if part.starts_with("...") {
+fn split_binding_default(
+    part: &str,
+    span: Option<Span>,
+) -> Result<(&str, Option<BindingDefault>), Diagnostic> {
+    let Some((target, default)) = part.split_once('=') else {
+        return Ok((part.trim(), None));
+    };
+    if default.contains('=') {
+        return Err(issue_251(
+            "complex default binding initializers are not supported in this runtime slice",
+            span,
+        ));
+    }
+    Ok((
+        target.trim(),
+        Some(parse_binding_default(default.trim(), span)?),
+    ))
+}
+
+fn reject_unsupported_target(target: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+    if target.starts_with("...") {
         return Err(issue_251(
             "rest binding is not supported in this runtime slice",
             span,
         ));
     }
-    if part.contains('=') {
+    if target.contains('=') {
         return Err(issue_251(
-            "default binding initializers are not supported in this runtime slice",
+            "complex default binding initializers are not supported in this runtime slice",
             span,
         ));
     }
-    if part.contains('[') || part.contains(']') || part.contains('{') || part.contains('}') {
+    if target.contains('[') || target.contains(']') || target.contains('{') || target.contains('}')
+    {
         return Err(issue_251(
             "nested binding patterns are not supported in this runtime slice",
             span,
         ));
     }
     Ok(())
+}
+
+fn parse_binding_default(text: &str, span: Option<Span>) -> Result<BindingDefault, Diagnostic> {
+    if text == "true" {
+        return Ok(BindingDefault::Bool(true));
+    }
+    if text == "false" {
+        return Ok(BindingDefault::Bool(false));
+    }
+    if text == "null" {
+        return Ok(BindingDefault::Null);
+    }
+    if text == "undefined" {
+        return Ok(BindingDefault::Undefined);
+    }
+    if let Ok(value) = text.parse::<i32>() {
+        return Ok(BindingDefault::Number(value));
+    }
+    if let Some(value) = parse_string_literal(text) {
+        return Ok(BindingDefault::String(value));
+    }
+    Err(issue_251(
+        "only literal default binding initializers are supported in this runtime slice",
+        span,
+    ))
+}
+
+fn parse_string_literal(text: &str) -> Option<String> {
+    let inner = text.strip_prefix('"')?.strip_suffix('"')?;
+    if inner.contains('\\') {
+        return None;
+    }
+    Some(inner.to_owned())
 }
 
 fn is_identifier(text: &str) -> bool {

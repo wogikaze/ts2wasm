@@ -1366,14 +1366,20 @@ impl<'a> Resolver<'a> {
         value: LoweredExpr,
     ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         match pattern {
-            BindingPattern::Array(bindings) => bindings
-                .iter()
-                .map(|binding| self.lower_array_binding_declaration(binding, &value))
-                .collect(),
-            BindingPattern::Object(bindings) => bindings
-                .iter()
-                .map(|binding| self.lower_object_binding_declaration(binding, &value))
-                .collect(),
+            BindingPattern::Array(bindings) => {
+                let mut statements = Vec::new();
+                for binding in bindings {
+                    statements.extend(self.lower_array_binding_declaration(binding, &value)?);
+                }
+                Ok(statements)
+            }
+            BindingPattern::Object(bindings) => {
+                let mut statements = Vec::new();
+                for binding in bindings {
+                    statements.extend(self.lower_object_binding_declaration(binding, &value)?);
+                }
+                Ok(statements)
+            }
         }
     }
 
@@ -1381,30 +1387,60 @@ impl<'a> Resolver<'a> {
         &mut self,
         binding: &ArrayBinding,
         value: &LoweredExpr,
-    ) -> Result<LoweredStmt, Diagnostic> {
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let local_id = self.declare_local(&binding.name)?;
-        Ok(LoweredStmt::Let(
+        self.lower_binding_declaration_with_default(
             local_id,
             LoweredExpr::Index {
                 object: Box::new(value.clone()),
                 index: Box::new(LoweredExpr::Number(binding.index as i32)),
             },
-        ))
+            binding.default.as_ref(),
+        )
     }
 
     fn lower_object_binding_declaration(
         &mut self,
         binding: &ObjectBinding,
         value: &LoweredExpr,
-    ) -> Result<LoweredStmt, Diagnostic> {
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
         let local_id = self.declare_local(&binding.name)?;
-        Ok(LoweredStmt::Let(
+        self.lower_binding_declaration_with_default(
             local_id,
             LoweredExpr::PropertyGet {
                 obj: Box::new(value.clone()),
                 key: binding.key.clone(),
             },
-        ))
+            binding.default.as_ref(),
+        )
+    }
+
+    fn lower_binding_declaration_with_default(
+        &mut self,
+        local_id: LocalId,
+        value: LoweredExpr,
+        default: Option<&BindingDefault>,
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        let Some(default) = default else {
+            return Ok(vec![LoweredStmt::Let(local_id, value)]);
+        };
+        let temp_id = self.alloc_temp();
+        Ok(vec![
+            LoweredStmt::Let(temp_id, value),
+            LoweredStmt::Let(local_id, LoweredExpr::Local(temp_id)),
+            LoweredStmt::If {
+                condition: LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(temp_id)),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Undefined),
+                },
+                then_body: vec![LoweredStmt::Assign(
+                    local_id,
+                    lowered_binding_default(default),
+                )],
+                else_body: vec![],
+            },
+        ])
     }
 
     fn lower_optional_call(
@@ -2120,6 +2156,16 @@ fn class_maps(
     }
 
     (ctor_ids, method_ids, static_method_ids)
+}
+
+fn lowered_binding_default(default: &BindingDefault) -> LoweredExpr {
+    match default {
+        BindingDefault::Number(value) => LoweredExpr::Number(*value),
+        BindingDefault::String(value) => LoweredExpr::String(value.clone()),
+        BindingDefault::Bool(value) => LoweredExpr::Bool(*value),
+        BindingDefault::Null => LoweredExpr::Null,
+        BindingDefault::Undefined => LoweredExpr::Undefined,
+    }
 }
 
 const PRIVATE_FIELD_STORAGE_PREFIX: &str = "__ts2wasm_private::";
