@@ -294,6 +294,18 @@ fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
 }
 
 #[test]
+fn bigint_dynamic_string_diagnostics_remain_source_spanned_issue_280() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-builtin-dynamic-string-unsupported.ts",
+        "issue-280: dynamic StringToBigInt conversion is not implemented in this builtin slice",
+    );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
+        "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals",
+    );
+}
+
+#[test]
 fn bigint_new_constructor_reports_issue_262() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-new-unsupported.ts",
