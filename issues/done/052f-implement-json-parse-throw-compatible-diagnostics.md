@@ -3,12 +3,13 @@ id: 052f
 title: "Implement JSON.parse throw-compatible diagnostics"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
+completed: 2026-04-29
 ---
 
 Problem: Invalid `JSON.parse` cases are now rejected in many paths, but iwasm usually traps with `Exception: unreachable` instead of producing throw-compatible JavaScript diagnostics.
@@ -29,10 +30,10 @@ Malformed JSON inputs reject through the project's JavaScript error/diagnostic m
 
 In scope:
 
-- [ ] Define the runtime behavior for `JSON.parse` syntax errors in the current compiler/runtime error model.
-- [ ] Convert selected invalid JSON traps to throw-compatible behavior.
-- [ ] Preserve unsupported traps or diagnostics for representation gaps such as non-ASCII strings until their own issues close.
-- [ ] Add regression coverage for invalid literals, invalid numbers, invalid strings, trailing tokens, and incomplete input.
+- [x] Define the runtime behavior for `JSON.parse` syntax errors in the current compiler/runtime error model.
+- [x] Convert selected invalid JSON traps to throw-compatible behavior.
+- [x] Preserve unsupported traps or diagnostics for representation gaps such as non-ASCII strings until their own issues close.
+- [x] Add regression coverage for invalid literals, invalid numbers, invalid strings, trailing tokens, and incomplete input.
 
 Out of scope:
 
@@ -56,10 +57,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A representative malformed JSON fixture reports throw-compatible parse failure rather than an unclassified `unreachable` trap.
-- [ ] Invalid literal, leading-zero number, incomplete-number, control-character, and trailing-token cases remain rejected.
-- [ ] Unsupported representation gaps stay separately tracked by 052b and 052c.
-- [ ] Node differential or expected-rejection tests document the selected compatibility contract.
+- [x] A representative malformed JSON fixture reports throw-compatible parse failure rather than an unclassified `unreachable` trap.
+- [x] Invalid literal, leading-zero number, incomplete-number, control-character, and trailing-token cases remain rejected.
+- [x] Unsupported representation gaps stay separately tracked by 052b and 052c.
+- [x] Node differential or expected-rejection tests document the selected compatibility contract.
 
 ## Validation
 
@@ -87,32 +88,58 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] update `current-state.md` if the supported JSON subset changes
+- [x] update `current-state.md` if the supported JSON subset changes
 
 Follow-up issues:
 
-- [ ] update `issues/open/052-implement-json.md`
+- [x] update `issues/open/052-implement-json.md`
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- `f02e3ef`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(json_parse_invalid)'
+result: pass, 5 tests run / 5 passed
+date: 2026-04-29
+
+command: cargo nextest run -E 'test(json)'
+result: pass, 18 tests run / 18 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli json
+result: pass, 15 tests run / 15 passed
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass, 418 tests run / 418 passed / 4 skipped
+date: 2026-04-29
+
+command: mise run check issues
+result: pass after restoring local gitignored reports/runs evidence paths referenced by existing issue history
+date: 2026-04-29
+```
+
+Manual runtime evidence:
+
+```text
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-parse-invalid-literal.ts -o /tmp/ts2wasm-052f-json-invalid-literal-after.wasm && iwasm /tmp/ts2wasm-052f-json-invalid-literal-after.wasm
+result: rejects with `SyntaxError: JSON.parse invalid JSON` before `Exception: unreachable`
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Full ECMAScript Error object throw/catch metadata is still outside this selected runtime diagnostic contract.
