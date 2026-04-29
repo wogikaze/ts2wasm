@@ -5,6 +5,7 @@ struct Resolver<'a> {
     class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
     env_cell_names: HashSet<String>,
     env_cell_locals: HashSet<LocalId>,
+    heap_closure_names: HashSet<String>,
     scopes: Vec<HashMap<String, LocalId>>,
     next_local_id: usize,
     locals: Vec<LocalId>,
@@ -53,6 +54,7 @@ impl<'a> Resolver<'a> {
         class_method_captures: &'a HashMap<FuncId, Vec<String>>,
         class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
         env_cell_names: &HashSet<String>,
+        heap_closure_names: &HashSet<String>,
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
         next_func_id: usize,
@@ -66,6 +68,7 @@ impl<'a> Resolver<'a> {
             class_method_mutable_captures,
             env_cell_names: env_cell_names.clone(),
             env_cell_locals: HashSet::new(),
+            heap_closure_names: heap_closure_names.clone(),
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -98,6 +101,7 @@ impl<'a> Resolver<'a> {
         class_method_captures: &'a HashMap<FuncId, Vec<String>>,
         class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
         env_cell_names: &HashSet<String>,
+        heap_closure_names: &HashSet<String>,
         params: &[String],
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
@@ -114,6 +118,7 @@ impl<'a> Resolver<'a> {
             class_method_mutable_captures,
             env_cell_names: env_cell_names.clone(),
             env_cell_locals: HashSet::new(),
+            heap_closure_names: heap_closure_names.clone(),
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -159,6 +164,9 @@ impl<'a> Resolver<'a> {
                 .insert(param.clone(), local_id);
             if resolver.env_cell_names.contains(param) {
                 resolver.env_cell_locals.insert(local_id);
+            }
+            if resolver.heap_closure_names.contains(param) {
+                resolver.heap_closure_locals.insert(local_id);
             }
             if let Some(current_class) = current_class
                 && param == "this"
@@ -275,6 +283,9 @@ impl<'a> Resolver<'a> {
                     self.arrow_locals.remove(&local_id);
                 }
                 self.update_heap_closure_local(local_id, expr, &lowered);
+                if self.heap_closure_names.contains(name) {
+                    self.heap_closure_locals.insert(local_id);
+                }
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
@@ -391,21 +402,43 @@ impl<'a> Resolver<'a> {
             }
             ResolvedStmt::Function { name, params, body } => {
                 let local_id = self.declare_local(name)?;
+                if self.env_cell_names.contains(name) {
+                    self.env_cell_locals.insert(local_id);
+                }
                 let closure = self.lower_nested_function(name, params, body)?;
                 if let LoweredExpr::ArrowFn {
-                    func_id, captures, ..
+                    func_id,
+                    captures,
+                    representation,
                 } = &closure
                 {
-                    self.arrow_locals.insert(
-                        local_id,
-                        ArrowClosure {
-                            func_id: *func_id,
-                            captures: captures.clone(),
-                        },
-                    );
+                    if matches!(representation, ClosureRepresentation::HeapObject) {
+                        self.heap_closure_locals.insert(local_id);
+                    } else {
+                        self.arrow_locals.insert(
+                            local_id,
+                            ArrowClosure {
+                                func_id: *func_id,
+                                captures: captures.clone(),
+                            },
+                        );
+                    }
                 }
                 self.nullish_locals.remove(&local_id);
-                Ok(LoweredStmt::Let(local_id, closure))
+                if self.env_cell_locals.contains(&local_id) {
+                    Ok(LoweredStmt::Block(vec![
+                        LoweredStmt::Let(
+                            local_id,
+                            LoweredExpr::EnvCellNew(Box::new(LoweredExpr::Undefined)),
+                        ),
+                        LoweredStmt::Expr(LoweredExpr::EnvCellSet {
+                            cell: local_id,
+                            expr: Box::new(closure),
+                        }),
+                    ]))
+                } else {
+                    Ok(LoweredStmt::Let(local_id, closure))
+                }
             }
             ResolvedStmt::TryCatch {
                 try_block,
@@ -798,7 +831,12 @@ impl<'a> Resolver<'a> {
                 if let Ok(local_id) = self.resolve_local(func_name)
                     && self.heap_closure_locals.contains(&local_id)
                 {
-                    let mut lowered_args = vec![LoweredExpr::Local(local_id)];
+                    let receiver = if self.env_cell_locals.contains(&local_id) {
+                        LoweredExpr::EnvCellGet(local_id)
+                    } else {
+                        LoweredExpr::Local(local_id)
+                    };
+                    let mut lowered_args = vec![receiver];
                     lowered_args.extend(self.lower_call_args(args)?);
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "HeapClosureCall".to_owned(),
@@ -2565,6 +2603,7 @@ impl<'a> Resolver<'a> {
             self.class_method_captures,
             self.class_method_mutable_captures,
             &self.env_cell_names,
+            &self.heap_closure_names,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             LowerFunctionOptions {
@@ -2618,7 +2657,15 @@ impl<'a> Resolver<'a> {
         }
 
         let capture_names = self.nested_function_capture_names(name, params, body)?;
-        if block_assigns_any_name(body, &capture_names) {
+        let mutable_captures = capture_names
+            .iter()
+            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .cloned()
+            .collect::<Vec<_>>();
+        if mutable_captures
+            .iter()
+            .any(|capture| !self.env_cell_names.contains(capture))
+        {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!(
@@ -2649,7 +2696,7 @@ impl<'a> Resolver<'a> {
             name,
             func_id,
             capture_names: &capture_names,
-        });
+        }).filter(|_| !self.env_cell_names.contains(name));
 
         let lowered = lower_function(
             func_id,
@@ -2660,6 +2707,7 @@ impl<'a> Resolver<'a> {
             self.class_method_captures,
             self.class_method_mutable_captures,
             &self.env_cell_names,
+            &self.heap_closure_names,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             LowerFunctionOptions {
@@ -2676,7 +2724,11 @@ impl<'a> Resolver<'a> {
         Ok(LoweredExpr::ArrowFn {
             func_id,
             captures,
-            representation: ClosureRepresentation::DirectLocalToken,
+            representation: if self.heap_closure_names.contains(name) {
+                ClosureRepresentation::HeapObject
+            } else {
+                ClosureRepresentation::DirectLocalToken
+            },
         })
     }
 
@@ -2715,7 +2767,9 @@ impl<'a> Resolver<'a> {
         )?
         .into_iter()
         .collect::<HashSet<_>>();
-        excluded.insert(name.to_owned());
+        if !self.env_cell_names.contains(name) {
+            excluded.insert(name.to_owned());
+        }
         collect_declared_names_in_stmts(body, &mut excluded);
 
         let mut captures = Vec::new();
