@@ -3,12 +3,14 @@ id: 298
 title: "Allow reused for-loop local names in separate loop scopes"
 type: bug
 area: frontend/ir
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
+status: done
+completed: 2026-04-29
 ---
 
 ## Summary
@@ -62,10 +64,10 @@ for true same-scope duplicate declarations.
 
 In scope:
 
-- [ ] Support repeated `for (let i = ...)` names in separate loop statements.
-- [ ] Preserve local lookup inside each loop body/update/condition.
-- [ ] Keep true same-scope duplicate local diagnostics intact.
-- [ ] Verify the ABC451 fixture advances past the duplicate-local blocker and
+- [x] Support repeated `for (let i = ...)` names in separate loop statements.
+- [x] Preserve local lookup inside each loop body/update/condition.
+- [x] Keep true same-scope duplicate local diagnostics intact.
+- [x] Verify the ABC451 fixture advances past the duplicate-local blocker and
   record the next blocker.
 
 Out of scope:
@@ -93,12 +95,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Focused fixture with two separate `for (let i = ...)` loops matches Node
+- [x] Focused fixture with two separate `for (let i = ...)` loops matches Node
   output under `iwasm`.
-- [ ] Existing duplicate local tests still reject true duplicate declarations.
-- [ ] `fixtures/atcoder/abc451-d-concat-power2.ts` advances past
+- [x] Existing duplicate local tests still reject true duplicate declarations.
+- [x] `fixtures/atcoder/abc451-d-concat-power2.ts` advances past
   `DuplicateLocal: duplicate local binding: i`.
-- [ ] No code path detects the ABC451 source text or substitutes another
+- [x] No code path detects the ABC451 source text or substitutes another
   program.
 
 ## Validation
@@ -126,40 +128,65 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- [x] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 ## Notes
 
 Prefer a narrow fix for repeated loop initializer names. Do not implement full
 per-iteration closure capture semantics in this issue.
 
-## Completion evidence
+Progress on 2026-04-29:
 
-Fill only when moving to `done/`.
+- Lowering now gives each `ResolvedStmt::For` its own local scope for
+  initializer, condition, update, and body lowering, matching the earlier name
+  resolver scope and allowing independent `for (let i = ...)` statements to
+  receive distinct lowered locals.
+- Added `fixtures/core-semantics/reused-for-loop-local.ts` to cover two
+  separate `for (let i = ...)` loops whose condition, update, and body all use
+  the loop-local binding.
+- Added
+  `fixtures/core-semantics/duplicate-local-same-scope-unsupported.ts` and a
+  CLI diagnostic test proving true same-scope duplicates still report
+  `DuplicateLocal`.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` advances beyond the
+  repeated-loop `DuplicateLocal` blocker. The current next blocker is
+  `error: [UnsupportedSyntax] issue-211: unknown receiver class for method
+  sort at 1200..1232`.
+
+## Completion evidence
 
 Commits:
 
-- `...`
+- child branch final commit: reused loop-local lowered scope slice.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli reused_for_loop_local_fixture_matches_node_output_under_iwasm same_scope_duplicate_local_still_reports_duplicate_local
+result: pass, 2 passed
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-ir test_duplicate_local_error
+result: pass, 1 passed
+date: 2026-04-29
+
+command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-loop-scope-child.wasm --host-deny
+result: advanced past DuplicateLocal; next blocker is issue-211 unknown receiver class for method `sort` at 1200..1232
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Full per-iteration closure capture semantics remain out of scope.
