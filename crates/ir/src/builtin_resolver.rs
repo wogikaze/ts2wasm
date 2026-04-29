@@ -432,9 +432,9 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
                         return Ok(bigint_to_resolved(result));
                     }
-                    let syntactic_number_mix =
-                        (left_contains_bigint && matches!(right.as_ref(), Expr::Number { .. }))
-                            || (right_contains_bigint && matches!(left.as_ref(), Expr::Number { .. }));
+                    let syntactic_number_mix = (left_contains_bigint
+                        && matches!(right.as_ref(), Expr::Number { .. }))
+                        || (right_contains_bigint && matches!(left.as_ref(), Expr::Number { .. }));
                     if syntactic_number_mix {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
