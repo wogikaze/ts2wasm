@@ -3,9 +3,9 @@ id: 300
 title: "Support ABC451 large integer number boundary"
 type: feature
 area: runtime
-class: blocked
+class: implementation-ready
 priority: P1
-depends_on: [304]
+depends_on: []
 blocks: [294]
 created: 2026-04-29
 updated: 2026-04-29
@@ -324,6 +324,11 @@ recursive `search` (wasm function 49), before the later Set/spread/sort path.
 - Issue 300 remains open for the next ABC451 blocker: official depth-9 sample
   compatibility is still unclaimed, and previous 512/1024-page depth-9 trials
   did not finish within 90 seconds.
+
+2026-04-29 parent queue sync:
+
+- Issue 304 is now closed, so issue 300 is unblocked for the next official
+  ABC451 sample compatibility investigation and implementation slice.
 
 ## Completion evidence
 
