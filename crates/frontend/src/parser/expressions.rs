@@ -8,34 +8,8 @@ impl Parser {
         let saved_cursor = self.cursor;
 
         // Try to parse arrow function
-        let is_arrow = if self.consume(TokenKind::LeftParen) {
-            // Could be arrow function with multiple params
-            let mut _param_count = 0;
-            while !matches!(self.peek(), Some(Token::RightParen)) && !self.is_at_end() {
-                if matches!(self.peek(), Some(Token::Ident(_))) {
-                    self.advance();
-                    if self.consume(TokenKind::Colon) {
-                        self.skip_type_annotation_until(&[
-                            TokenKind::Comma,
-                            TokenKind::RightParen,
-                        ])?;
-                    }
-                    _param_count += 1;
-                    if !self.consume(TokenKind::Comma) {
-                        break;
-                    }
-                } else {
-                    break;
-                }
-            }
-            if self.consume(TokenKind::RightParen) {
-                if self.consume(TokenKind::Colon) {
-                    self.skip_type_annotation_until(&[TokenKind::Arrow])?;
-                }
-                self.consume(TokenKind::Arrow)
-            } else {
-                false
-            }
+        let is_arrow = if matches!(self.peek(), Some(Token::LeftParen)) {
+            self.probe_parenthesized_arrow_params().unwrap_or(false)
         } else if matches!(self.peek(), Some(Token::Ident(_))) {
             self.advance();
             self.consume(TokenKind::Arrow)
@@ -221,16 +195,27 @@ impl Parser {
         if self.consume(TokenKind::LeftParen) {
             if !self.consume(TokenKind::RightParen) {
                 loop {
-                    let (param, _) = self.expect_ident()?;
-                    if self.consume(TokenKind::Colon) {
-                        self.skip_type_annotation_until(&[
-                            TokenKind::Comma,
-                            TokenKind::RightParen,
-                        ])?;
-                    }
-                    params.push(param);
+                    let param = self.parse_param(false)?;
+                    let is_rest = param.is_rest;
+                    let param_name = if let Some(default) = param.default {
+                        format!(
+                            "{} = {}",
+                            param.name,
+                            self.binding_default_expr_text(&default)
+                        )
+                    } else {
+                        param.name
+                    };
+                    params.push(if is_rest {
+                        format!("...{param_name}")
+                    } else {
+                        param_name
+                    });
                     if self.consume(TokenKind::RightParen) {
                         break;
+                    }
+                    if is_rest {
+                        return Err(self.invalid_rest_binding_diagnostic(param.span));
                     }
                     self.expect(TokenKind::Comma)?;
                 }
@@ -275,6 +260,23 @@ impl Parser {
                 end,
             },
         })
+    }
+
+    fn probe_parenthesized_arrow_params(&mut self) -> Result<bool, Diagnostic> {
+        self.expect(TokenKind::LeftParen)?;
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                self.parse_param(false)?;
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                self.expect(TokenKind::Comma)?;
+            }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::Arrow])?;
+        }
+        Ok(self.consume(TokenKind::Arrow))
     }
 
     fn ternary(&mut self) -> Result<Expr, Diagnostic> {

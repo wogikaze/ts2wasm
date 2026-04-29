@@ -478,6 +478,65 @@ mod tests {
     }
 
     #[test]
+    fn parses_destructuring_binding_patterns_in_declarations() {
+        let program = parse_program(
+            "let [a, , b = 2, ...rest] = arr; const { x, y: z = 3, nested: [n], ...others } = obj;",
+        )
+        .unwrap();
+
+        assert_eq!(program.len(), 2);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "[a, , b = 2, ...rest]");
+                assert!(matches!(expr, Expr::Ident { name, .. } if name == "arr"));
+            }
+            other => panic!("unexpected array binding statement: {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "{x, y: z = 3, nested: [n], ...others}");
+                assert!(matches!(expr, Expr::Ident { name, .. } if name == "obj"));
+            }
+            other => panic!("unexpected object binding statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_destructuring_binding_patterns_in_parameters() {
+        let program = parse_program(
+            "function f([a], { x }) { return a; } let g = ([b, ...rest], { y: z = 1 }) => b;",
+        )
+        .unwrap();
+
+        match &program[0] {
+            Stmt::Function { params, .. } => {
+                assert_eq!(params.len(), 2);
+                assert_eq!(params[0].0, "[a]");
+                assert_eq!(params[1].0, "{x}");
+            }
+            other => panic!("unexpected function statement: {other:?}"),
+        }
+        match &program[1] {
+            Stmt::Let {
+                expr: Expr::ArrowFn { params, .. },
+                ..
+            } => {
+                assert_eq!(params, &vec!["[b, ...rest]".to_owned(), "{y: z = 1}".to_owned()]);
+            }
+            other => panic!("unexpected arrow binding statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn rejects_non_final_rest_in_binding_patterns() {
+        let err = parse_program("let [...a, b] = arr;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert!(err.message.contains("issue-247"));
+        assert!(err.message.contains("rest binding must be the final element"));
+        assert_eq!(err.span, Some(Span { start: 5, end: 8 }));
+    }
+
+    #[test]
     fn parses_string_literal_computed_logical_assignment_as_property_assignment() {
         let program = parse_program("target[\"value\"] ||= rhs();").unwrap();
 

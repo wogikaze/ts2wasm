@@ -172,6 +172,30 @@ fn dump_ast_unparse_erases_typescript_type_annotations() {
 }
 
 #[test]
+fn dump_ast_unparse_accepts_destructuring_binding_patterns() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "let arr = [1, 2];\nlet [a, b] = arr;\nlet { x } = obj;\nfunction f([c], { y }) {}\nlet g = ([d]) => d;\n",
+    );
+
+    assert_eq!(
+        output,
+        "let arr = [1, 2];\nlet [a, b] = arr;\nlet {x} = obj;\nfunction f([c], {y}) {\n}\nlet g = ([d]) => d;\n"
+    );
+}
+
+#[test]
+fn dump_ast_reports_explicit_invalid_destructuring_rest() {
+    let stderr = run_dump_error(&["--ast", "--unparse"], "let [...a, b] = arr;");
+
+    assert!(stderr.contains("issue-247"), "{stderr}");
+    assert!(
+        stderr.contains("rest binding must be the final element"),
+        "{stderr}"
+    );
+}
+
+#[test]
 fn dump_ast_unparse_erases_typescript_interface_declarations() {
     let output = run_dump(
         &["--ast", "--unparse"],
