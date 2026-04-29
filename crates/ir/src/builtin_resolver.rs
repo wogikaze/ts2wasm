@@ -542,6 +542,11 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .iter()
                 .map(resolve_expr)
                 .collect::<Result<Vec<_>, _>>()?;
+            if let Expr::Ident { name, .. } = callee.as_ref()
+                && name == "BigInt"
+            {
+                return resolve_bigint_function_call(&resolved_args, *span);
+            }
             if let Expr::Member { property, .. } = callee.as_ref()
                 && is_private_member_key(property)
             {
@@ -745,6 +750,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 name: class_name, ..
             } = new_expr.as_ref()
             {
+                if class_name == "BigInt" {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-262: BigInt is not a constructor; use BigInt(...) without new"
+                                .to_owned(),
+                        span: Some(*span),
+                    });
+                }
                 let resolved_args = args
                     .iter()
                     .map(resolve_expr)
@@ -1049,6 +1063,72 @@ fn bigint_to_resolved(value: BigIntConst) -> ResolvedExpr {
         sign: value.sign,
         limb_low,
         limb_high,
+    }
+}
+
+fn resolve_bigint_function_call(
+    args: &[ResolvedExpr],
+    span: Span,
+) -> Result<ResolvedExpr, Diagnostic> {
+    let [arg] = args else {
+        return Err(bigint_builtin_unsupported_diagnostic(span));
+    };
+    let value = match arg {
+        ResolvedExpr::BigIntLiteral { .. } => return Ok(arg.clone()),
+        ResolvedExpr::String(value) => bigint_from_string_builtin(value, span)?,
+        ResolvedExpr::Bool(true) => BigIntConst::from_decimal(1, "1"),
+        ResolvedExpr::Bool(false) => BigIntConst::zero(),
+        ResolvedExpr::Number(value) => bigint_from_i32(*value),
+        ResolvedExpr::Unary { op, expr }
+            if *op == UnaryOp::Negate && matches!(expr.as_ref(), ResolvedExpr::Number(_)) =>
+        {
+            let ResolvedExpr::Number(value) = expr.as_ref() else {
+                unreachable!("guarded by matches")
+            };
+            bigint_from_i64(-i64::from(*value))
+        }
+        _ => return Err(bigint_builtin_unsupported_diagnostic(span)),
+    };
+    Ok(bigint_to_resolved(value))
+}
+
+fn bigint_from_i32(value: i32) -> BigIntConst {
+    bigint_from_i64(i64::from(value))
+}
+
+fn bigint_from_i64(value: i64) -> BigIntConst {
+    if value == 0 {
+        return BigIntConst::zero();
+    }
+    let sign = value.signum() as i32;
+    BigIntConst::from_decimal(sign, value.unsigned_abs().to_string().as_str())
+}
+
+fn bigint_from_string_builtin(value: &str, span: Span) -> Result<BigIntConst, Diagnostic> {
+    let trimmed = value.trim();
+    let (sign, digits) = if let Some(digits) = trimmed.strip_prefix('-') {
+        (-1, digits)
+    } else if let Some(digits) = trimmed.strip_prefix('+') {
+        (1, digits)
+    } else {
+        (1, trimmed)
+    };
+    if digits.is_empty() || !digits.bytes().all(|byte| byte.is_ascii_digit()) {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-262: BigInt(string) currently supports decimal integer string literals"
+                .to_owned(),
+            span: Some(span),
+        });
+    }
+    Ok(BigIntConst::from_decimal(sign, digits))
+}
+
+fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-262: BigInt(...) currently supports string, boolean, integer number, or BigInt literal inputs in this builtin slice".to_owned(),
+        span: Some(span),
     }
 }
 
@@ -2011,6 +2091,15 @@ fn resolve_builtin_call(
         name: object_name, ..
     } = object.as_ref()
     {
+        if object_name == "BigInt" && matches!(property.as_str(), "asIntN" | "asUintN") {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-262: BigInt.asIntN/asUintN are not implemented in this builtin slice"
+                        .to_owned(),
+                span: span_of_expr(callee),
+            });
+        }
         if object_name == "console" {
             return if property == "log" {
                 Ok(Some(BuiltinId::ConsoleLog))
