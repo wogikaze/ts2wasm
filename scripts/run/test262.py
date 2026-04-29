@@ -2,10 +2,10 @@
 """Stream G: Test262 Runner with differential comparison
 
 Usage:
-  python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] > test262-results.jsonl
+  python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose] > test262-results.jsonl
 
 Compiles each test262 file, runs with iwasm, and compares output against Node.js reference.
-Outputs one TestRecord per line in JSON Lines format.
+Outputs one TestRecord per line in JSON Lines format to stdout (use --verbose for console output).
 """
 
 import sys
@@ -19,14 +19,129 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+TEST262_ROOT = REPO_ROOT / "reference" / "test262"
+HARNESS_DIR = TEST262_ROOT / "harness"
+
+CORE_HARNESS_FILES = ("sta.js", "assert.js")
+UNSUPPORTED_FLAGS = ("module", "async", "IsHTMLDDA")
+ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
+
+TEST262_HOST_PRELUDE = r"""
+function print(message) {
+  console.log(message);
+}
+
+var $262 = {};
+
+function test262_gc() {}
+
+function test262_evalScript(source) {
+  throw new Test262Error("$262.evalScript is not supported by this harness slice");
+}
+
+function test262_createRealm() {
+  return {};
+}
+
+function test262_detachArrayBuffer() {
+  throw new Test262Error("$262.detachArrayBuffer is not supported by this harness slice");
+}
+
+function test262_agent_start() {
+  throw new Test262Error("$262.agent is not supported by this harness slice");
+}
+
+$262.global = {};
+$262.gc = test262_gc;
+$262.evalScript = test262_evalScript;
+$262.createRealm = test262_createRealm;
+$262.detachArrayBuffer = test262_detachArrayBuffer;
+$262.IsHTMLDDA = undefined;
+$262.agent = {};
+$262.agent.start = test262_agent_start;
+"""
+
+WASM_HOST_PRELUDE = r"""
+function print(message) {
+  console.log(message);
+}
+"""
+
+WASM_HARNESS_SHIM = r"""
+class Test262Error {
+  constructor(message) {
+    this.message = message || "";
+  }
+}
+
+function $DONOTEVALUATE() {
+  throw "Test262: This statement should not be evaluated.";
+}
+
+class assert {
+  static _isSameValue(a, b) {
+    if (a === b) {
+      return a !== 0 || 1 / a === 1 / b;
+    }
+    return a !== a && b !== b;
+  }
+
+  static sameValue(actual, expected, message) {
+    if (actual === expected) {
+      return undefined;
+    }
+    print("__TS2WASM_TEST262_ASSERT_FAIL__");
+    throw new Test262Error(message);
+  }
+
+  static notSameValue(actual, unexpected, message) {
+    if (actual !== unexpected) {
+      return undefined;
+    }
+    print("__TS2WASM_TEST262_ASSERT_FAIL__");
+    throw new Test262Error(message);
+  }
+
+  static throws(expectedErrorConstructor, func, message) {
+    print("__TS2WASM_TEST262_ASSERT_FAIL__");
+    throw new Test262Error(message);
+  }
+}
+"""
+
+class Test262Metadata:
+    def __init__(self, flags=None, includes=None, features=None, negative_phase=None, negative_type=None):
+        self.flags = flags or set()
+        self.includes = includes or []
+        self.features = features or []
+        self.negative_phase = negative_phase
+        self.negative_type = negative_type
+
+    @property
+    def raw(self):
+        return "raw" in self.flags
+
+    @property
+    def unsupported_reason(self):
+        for flag in UNSUPPORTED_FLAGS:
+            if flag in self.flags:
+                return f"test262 flag `{flag}` is not supported by this runner slice"
+        if "IsHTMLDDA" in self.features:
+            return "test262 feature `IsHTMLDDA` is not supported by this runner slice"
+        return None
+
+    @property
+    def expects_negative(self):
+        return self.negative_phase is not None
 
 def usage():
-    print("Usage: python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N]")
+    print("Usage: python scripts/manager.py test262 [--sample N] [--category PATTERN] [--jobs N] [--verbose]")
     print()
     print("Options:")
     print("  --sample N          Run up to N files per extracted category.")
     print("  --category PATTERN  Regex matched against extracted category.")
     print("  --jobs N            Number of parallel workers (default: TEST262_JOBS or os.cpu_count or 4).")
+    print("  --verbose           Show detailed per-test processing information.")
     print("  -h, --help          Show this help.")
 
 def escape_json(s):
@@ -39,6 +154,108 @@ def extract_category(path):
     """Extract category from test262 file path."""
     match = re.search(r'test/language/([^/]+)/', str(path))
     return match.group(1) if match else "unknown"
+
+def _parse_yaml_list(value):
+    value = value.strip()
+    if not value:
+        return []
+    if value.startswith("[") and value.endswith("]"):
+        inner = value[1:-1].strip()
+        if not inner:
+            return []
+        return [part.strip().strip("'\"") for part in inner.split(",") if part.strip()]
+    return [value.strip().strip("'\"")]
+
+def parse_test262_metadata(source_code):
+    """Parse the subset of test262 frontmatter needed by this runner."""
+    match = re.search(r'/\*---(.*?)---\*/', source_code, re.DOTALL)
+    if not match:
+        return Test262Metadata()
+
+    flags = set()
+    includes = []
+    features = []
+    negative_phase = None
+    negative_type = None
+    current_key = None
+    in_negative = False
+
+    for raw_line in match.group(1).splitlines():
+        line = raw_line.rstrip()
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+
+        if stripped.startswith("- ") and current_key:
+            value = stripped[2:].strip().strip("'\"")
+            if current_key == "flags":
+                flags.add(value)
+            elif current_key == "includes":
+                includes.append(value)
+            elif current_key == "features":
+                features.append(value)
+            continue
+
+        if not raw_line.startswith((" ", "\t")):
+            in_negative = False
+
+        if ":" not in stripped:
+            continue
+
+        key, value = stripped.split(":", 1)
+        key = key.strip()
+        value = value.strip()
+        current_key = key
+
+        if key == "flags":
+            flags.update(_parse_yaml_list(value))
+        elif key in ("includes", "include"):
+            includes.extend(_parse_yaml_list(value))
+        elif key == "features":
+            features.extend(_parse_yaml_list(value))
+        elif key == "negative":
+            in_negative = True
+        elif in_negative and key == "phase":
+            negative_phase = value.strip("'\"")
+        elif in_negative and key == "type":
+            negative_type = value.strip("'\"")
+
+    return Test262Metadata(flags, includes, features, negative_phase, negative_type)
+
+def load_harness_file(name):
+    path = HARNESS_DIR / name
+    if not path.is_file():
+        raise FileNotFoundError(f"missing test262 harness file: {path}")
+    return path.read_text(encoding="utf-8")
+
+def build_test262_source(test_file, source_code, metadata, target="wasm"):
+    """Create the source compiled by ts2wasm and executed by the Node oracle."""
+    if metadata.raw:
+        return source_code
+
+    if target == "wasm":
+        chunks = [WASM_HOST_PRELUDE]
+        chunks.append("\n/* test262 harness compatibility shim: sta.js + assert.js */\n")
+        chunks.append(WASM_HARNESS_SHIM)
+    else:
+        chunks = [TEST262_HOST_PRELUDE]
+        for harness_name in CORE_HARNESS_FILES:
+            chunks.append(f"\n/* test262 harness: {harness_name} */\n")
+            chunks.append(load_harness_file(harness_name))
+
+        for include in metadata.includes:
+            if include in CORE_HARNESS_FILES:
+                continue
+            chunks.append(f"\n/* test262 harness: {include} */\n")
+            chunks.append(load_harness_file(include))
+
+    try:
+        display_path = test_file.resolve().relative_to(REPO_ROOT)
+    except ValueError:
+        display_path = test_file
+    chunks.append(f"\n/* test262 case: {display_path} */\n")
+    chunks.append(source_code)
+    return "\n".join(chunks)
 
 def create_test_record(suite, case_path, target, status, expected=None, actual=None, reason=None, tracking=None, source_code=None, error_line=None, stderr=None):
     """Create a TestRecord JSON object."""
@@ -84,6 +301,7 @@ def feature_label(diag_code, stderr, test_file):
 def compile_and_run_test(test_file, tmp_dir):
     """Compile and run a single test file."""
     tmp_wasm = tmp_dir / f"test-{os.getpid()}-{id(test_file)}.wasm"
+    tmp_source = tmp_dir / f"test262-{os.getpid()}-{id(test_file)}.js"
     tmp_stdout = tmp_dir / f"stdout-{os.getpid()}-{id(test_file)}.txt"
     tmp_stderr = tmp_dir / f"stderr-{os.getpid()}-{id(test_file)}.txt"
     
@@ -101,10 +319,21 @@ def compile_and_run_test(test_file, tmp_dir):
         source_code = test_file.read_text(encoding="utf-8")
     except:
         pass
+
+    metadata = parse_test262_metadata(source_code)
+    unsupported_reason = metadata.unsupported_reason
+    if unsupported_reason:
+        return "unsupported", "UnsupportedTest262Metadata", "test262-metadata", unsupported_reason, result_actual, source_code, result_error_line, result_stderr_full
+
+    try:
+        prepared_source = build_test262_source(test_file, source_code, metadata, target="wasm")
+        tmp_source.write_text(prepared_source, encoding="utf-8")
+    except Exception as exc:
+        return "blocked", "HarnessError", "test262-harness", str(exc), result_actual, source_code, result_error_line, result_stderr_full
     
     # Compile with ts2wasm
     result = subprocess.run(
-        ["cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", str(test_file), "-o", str(tmp_wasm)],
+        ["cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", str(tmp_source), "-o", str(tmp_wasm)],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT
@@ -137,6 +366,10 @@ def compile_and_run_test(test_file, tmp_dir):
         reason_match = re.search(re.escape(f"[{result_diag}]"), stderr_content)
         result_reason = reason_match.group(0) if reason_match else stderr_content.split('\n')[0] if stderr_content else ""
         result_feature = feature_label(result_diag, stderr_content, str(test_file))
+        if metadata.expects_negative:
+            result_status = "pass"
+            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during compilation"
+            result_actual = stderr_content
         return result_status, result_diag, result_feature, result_reason, result_actual, source_code, result_error_line, result_stderr_full
     
     # Run with iwasm
@@ -148,14 +381,25 @@ def compile_and_run_test(test_file, tmp_dir):
     )
     
     if result.returncode == 0:
-        result_status = "pass"
         with open(tmp_stdout, 'w') as f:
             f.write(result.stdout)
         result_actual = result.stdout
+        if ASSERT_FAILURE_SENTINEL in result.stdout:
+            result_status = "fail"
+            result_diag = "Test262AssertionFailure"
+            result_reason = "test262 assertion failed"
+        else:
+            result_status = "fail" if metadata.expects_negative else "pass"
+        if metadata.expects_negative:
+            result_diag = "ExpectedNegativeFailure"
+            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} completed successfully"
     else:
-        result_status = "fail"
+        result_status = "pass" if metadata.expects_negative else "fail"
         result_diag = f"RuntimeError:{result.returncode}"
-        result_reason = result.stderr[:200] if result.stderr else ""
+        if metadata.expects_negative:
+            result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution"
+        else:
+            result_reason = result.stderr[:200] if result.stderr else ""
         result_stderr_full = result.stderr
         result_actual = result.stdout if result.stdout else ""
         
@@ -168,9 +412,14 @@ def compile_and_run_test(test_file, tmp_dir):
 def get_node_reference(test_file, tmp_dir):
     """Get Node.js reference output."""
     tmp_out = tmp_dir / f"node-{os.getpid()}-{id(test_file)}.txt"
+    source_code = test_file.read_text(encoding="utf-8")
+    metadata = parse_test262_metadata(source_code)
+    prepared_source = build_test262_source(test_file, source_code, metadata, target="node")
+    tmp_source = tmp_dir / f"node-source-{os.getpid()}-{id(test_file)}.js"
+    tmp_source.write_text(prepared_source, encoding="utf-8")
     
     result = subprocess.run(
-        ["timeout", "5s", "node", str(test_file)],
+        ["timeout", "5s", "node", str(tmp_source)],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT
@@ -179,15 +428,25 @@ def get_node_reference(test_file, tmp_dir):
     with open(tmp_out, 'w') as f:
         f.write(result.stdout + result.stderr)
     
-    return result.stdout + result.stderr, result.returncode == 0
+    node_ok = result.returncode == 0
+    if metadata.expects_negative:
+        node_ok = result.returncode != 0
+    return result.stdout + result.stderr, node_ok
 
-def process_one_test(test_file, tmp_dir):
+def process_one_test(test_file, tmp_dir, verbose=False):
     """Process a single test file and return JSON record and status."""
-    print(f"Processing: {test_file}", file=sys.stderr)
+    if verbose:
+        print(f"Processing: {test_file}", file=sys.stderr)
     
     result_status, result_diag, result_feature, result_reason, result_actual, source_code, error_line, stderr_full = compile_and_run_test(test_file, tmp_dir)
+    metadata = parse_test262_metadata(source_code)
     
     if result_status == "pass":
+        if metadata.expects_negative:
+            expected = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'}"
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_reason, source_code=source_code, stderr=stderr_full)
+            return record, "pass"
+
         expected, node_ok = get_node_reference(test_file, tmp_dir)
         
         if node_ok and result_actual == expected:
@@ -205,6 +464,11 @@ def process_one_test(test_file, tmp_dir):
         reason = f"{result_diag}/{result_feature}: {result_reason}"
         record = create_test_record("test262", str(test_file), "wasm-iwasm", "unsupported", None, None, reason, tracking_key, source_code, error_line, stderr_full)
         return record, "unsupported"
+
+    elif result_status == "blocked":
+        reason = f"{result_diag}/{result_feature}: {result_reason}"
+        record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", None, None, reason, source_code=source_code, error_line=error_line, stderr=stderr_full)
+        return record, "blocked"
     
     elif result_status == "fail":
         reason = f"{result_diag}: {result_reason}"
@@ -219,6 +483,7 @@ def main():
     sample = None
     category_pattern = "."
     jobs = int(os.environ.get("TEST262_JOBS", "")) if os.environ.get("TEST262_JOBS") else None
+    verbose = False
     
     i = 0
     while i < len(args):
@@ -248,6 +513,9 @@ def main():
                 print("ERROR: --jobs must be a positive integer", file=sys.stderr)
                 sys.exit(1)
             i += 2
+        elif args[i] == "--verbose":
+            verbose = True
+            i += 1
         elif args[i] in ("-h", "--help"):
             usage()
             sys.exit(0)
@@ -326,13 +594,18 @@ def main():
         
         with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
             with ThreadPoolExecutor(max_workers=jobs) as executor:
-                futures = {executor.submit(process_one_test, f, tmp_dir): f for f in selected_files}
+                futures = {executor.submit(process_one_test, f, tmp_dir, verbose): f for f in selected_files}
+                
+                completed = 0
+                total = len(selected_files)
+                last_progress = 0
                 
                 for future in as_completed(futures):
                     record, status = future.result()
                     
                     if record:
-                        print(record)
+                        if verbose:
+                            print(record)
                         jsonl_out.write(record + "\n")
                     
                     if status == "pass":
@@ -343,6 +616,13 @@ def main():
                         unsupported += 1
                     elif status == "blocked":
                         blocked += 1
+                    
+                    completed += 1
+                    # Report progress at 5% increments
+                    progress = int((completed / total) * 100)
+                    if progress >= last_progress + 5:
+                        print(f"Progress: {progress}% ({completed}/{total})", file=sys.stderr)
+                        last_progress = progress
     
     print("", file=sys.stderr)
     print("=== Test262 Summary ===", file=sys.stderr)
