@@ -23,3 +23,15 @@ console.log(String(fromString));
 console.log(String(-14n));
 console.log("value=" + fromString);
 console.log(`${fromString}:${fromFalse}`);
+
+let dynamicNumber = 12;
+dynamicNumber = dynamicNumber + 0;
+console.log(BigInt(dynamicNumber));
+
+let dynamicBool = false;
+dynamicBool = !dynamicBool;
+console.log(BigInt(dynamicBool));
+
+let dynamicBigInt = 13n;
+dynamicBigInt = dynamicBigInt + 0n;
+console.log(BigInt(dynamicBigInt));

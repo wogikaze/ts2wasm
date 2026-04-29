@@ -656,6 +656,14 @@ impl<'a> Resolver<'a> {
                     }
                 };
 
+                if let Some(runtime_fn) = crate::builtin_resolver::bigint_runtime_fn_name(func_name)
+                {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: runtime_fn.to_owned(),
+                        args: self.lower_call_args(args)?,
+                    });
+                }
+
                 if let Ok(local_id) = self.resolve_local(func_name)
                     && let Some(closure) = self.arrow_locals.get(&local_id).cloned()
                 {
@@ -951,6 +959,16 @@ impl<'a> Resolver<'a> {
                     && self.native_set_add_locals.contains(&local_id)
                 {
                     return self.lower_native_set_add_call(args, *span);
+                }
+                if matches!(
+                    object.as_ref(),
+                    ResolvedExpr::Ident(name) if name == "__ts2wasm_bigint_runtime"
+                ) && let Some(runtime_fn) = crate::builtin_resolver::bigint_runtime_fn_name(method)
+                {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: runtime_fn.to_owned(),
+                        args: self.lower_call_args(args)?,
+                    });
                 }
                 if method.starts_with('#') {
                     if let Some(method_id) = self.current_static_private_method_id(method) {
@@ -2596,6 +2614,19 @@ impl<'a> Resolver<'a> {
                 )
                     && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
+            }
+            ResolvedExpr::Call { callee, .. } => {
+                matches!(
+                    callee.as_ref(),
+                    ResolvedExpr::Ident(name)
+                        if crate::builtin_resolver::bigint_runtime_fn_name(name).is_some()
+                )
+            }
+            ResolvedExpr::MethodCall { object, method, .. } => {
+                matches!(
+                    object.as_ref(),
+                    ResolvedExpr::Ident(name) if name == "__ts2wasm_bigint_runtime"
+                ) && crate::builtin_resolver::bigint_runtime_fn_name(method).is_some()
             }
             _ => false,
         }

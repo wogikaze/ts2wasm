@@ -266,6 +266,16 @@ fn bigint_builtin_as_int_n_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_dynamic_builtin_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/core-semantics/bigint-builtin-dynamic-as-int-n.ts",
+        "fixtures/core-semantics/bigint-builtin-dynamic-as-uint-n.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
     for fixture in [
         "fixtures/core-semantics/bigint-builtin-as-int-n-unsupported.ts",
