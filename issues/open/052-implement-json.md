@@ -6,7 +6,7 @@ area: runtime/builtins
 class: blocked
 priority: P1
 depends_on: []
-blocks: [052b, 052d, 052e, 052f]
+blocks: [052d, 052e]
 created: 2026-04-26
 updated: 2026-04-29
 ---
@@ -21,7 +21,7 @@ Queue design note:
 
 - This is an epic-level issue and must not be selected directly from the Ready queue.
 - The currently supported subset contract was closed by issue 052a.
-- Track remaining behavior as separate child issues: 052b, 052d, 052e, and 052f. Issue 052c is closed for the current byte-backed UTF-8 string contract.
+- Track remaining behavior as separate child issues: 052d and 052e. Issues 052b, 052c, and 052f are closed for the current number, string, and parse-diagnostic contracts.
 - Keep this parent issue `blocked` until those child issues close or the final-state goal changes.
 
 ## Supported subset contract
@@ -37,7 +37,7 @@ Current validated JSON behavior is intentionally a subset, not full JSON support
 - valid UTF-16 surrogate pairs decoded to their Unicode scalar value and emitted as UTF-8 bytes;
 - lone surrogate escapes materialized as U+FFFD under the current byte-backed string contract;
 - arrays and objects containing supported primitive values, nested arrays, nested objects, arrays inside objects, and objects inside arrays;
-- rejection of trailing tokens, incomplete object/array/string/number paths, invalid literals, leading-zero numbers, invalid unicode escapes, unsupported non-ASCII/surrogate unicode escapes, and unescaped control characters.
+- rejection of trailing tokens, incomplete object/array/string/number paths, invalid literals, leading-zero numbers, invalid unicode escapes, unsupported non-ASCII/surrogate unicode escapes, and unescaped control characters, with malformed JSON reporting the selected `SyntaxError: JSON.parse invalid JSON` runtime diagnostic before aborting.
 
 `JSON.stringify` currently has Node/iwasm differential or diagnostic evidence for:
 
@@ -51,7 +51,6 @@ Remaining full-spec work is not part of this parent issue's Ready queue surface:
 
 - 052d: broader `JSON.stringify` replacer semantics.
 - 052e: remaining boxed/object coercion edge cases for `JSON.stringify` arguments.
-- 052f: broader throw-compatible `JSON.parse` diagnostics.
 
 Close decision: issue 052 remains open as a blocked parent epic for full JSON compatibility. The closeable subset milestone is issue 052a; implementation workers should select child issues instead of this parent.
 
@@ -89,7 +88,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Child issues 052b through 052f are closed or superseded by narrower follow-ups.
+- [ ] Child issues 052d and 052e are closed or superseded by narrower follow-ups.
 - [ ] JSON.parse works correctly for the full supported final-state contract.
 - [ ] JSON.stringify works correctly for the full supported final-state contract.
 - [ ] Fixtures cover completed JSON behavior.

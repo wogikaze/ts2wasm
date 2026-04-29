@@ -1,5 +1,9 @@
 use super::emitter::WatEmitter;
-use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
+use ts2wasm_runtime_abi::{
+    consts::{RuntimeConst, RuntimeString},
+    layout::Layout,
+    value::ValueTag,
+};
 
 impl WatEmitter<'_> {
     pub(super) fn emit_math_floor(&self, wat: &mut String) {
@@ -544,8 +548,14 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_json_parse(&self, wat: &mut String) {
+        let syntax_error =
+            self.string_offset(RuntimeString::JSON_PARSE_SYNTAX_ERROR) + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
+  (func $json_parse_syntax_error
+    (call $write (i32.const {json_parse_syntax_error}) (i32.const {json_parse_syntax_error_len}))
+    (unreachable))
+
   (func $json_parse (param $s i32) (result i32)
     (local $s_obj i32)
     (local $s_len i32)
@@ -557,7 +567,7 @@ impl WatEmitter<'_> {
     (local.set $s_len (i32.load (local.get $s_obj)))
     (local.set $pos (call $json_skip_whitespace (local.get $s_obj) (local.get $s_len) (i32.const {zero})))
     (if (i32.ge_u (local.get $pos) (local.get $s_len))
-      (then (unreachable)))
+      (then (call $json_parse_syntax_error)))
     (local.set $ch
       (i32.load8_u
         (i32.add
@@ -568,21 +578,21 @@ impl WatEmitter<'_> {
         (then
           (local.set $value (call $json_parse_object (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.eq (local.get $value) (i32.const {undefined}))
-            (then (unreachable)))
+            (then (call $json_parse_syntax_error)))
           (local.set $pos (call $json_skip_container (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (br $parsed_value)))
       (if (i32.eq (local.get $ch) (i32.const {lbracket}))
         (then
           (local.set $value (call $json_parse_array (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.eq (local.get $value) (i32.const {undefined}))
-            (then (unreachable)))
+            (then (call $json_parse_syntax_error)))
           (local.set $pos (call $json_skip_container (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (br $parsed_value)))
       (if (i32.eq (local.get $ch) (i32.const {quote}))
         (then
           (local.set $value (call $json_parse_string (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.eq (local.get $value) (i32.const {undefined}))
-            (then (unreachable)))
+            (then (call $json_parse_syntax_error)))
           (local.set $pos (call $json_skip_string (local.get $s_obj) (local.get $s_len) (local.get $pos)))
           (if (i32.gt_u (local.get $pos) (local.get $s_len))
             (then (return (i32.const {undefined}))))
@@ -629,14 +639,14 @@ impl WatEmitter<'_> {
           (br $parsed_value)))
       (local.set $value (call $json_parse_number_value (local.get $s_obj) (local.get $s_len) (local.get $pos)))
       (if (i32.eq (local.get $value) (i32.const {undefined}))
-        (then (unreachable)))
+        (then (call $json_parse_syntax_error)))
       (local.set $pos (call $json_skip_number (local.get $s_obj) (local.get $s_len) (local.get $pos)))
       (if (i32.gt_u (local.get $pos) (local.get $s_len))
         (then (return (i32.const {undefined}))))
       (br $parsed_value))
     (local.set $pos (call $json_skip_whitespace (local.get $s_obj) (local.get $s_len) (local.get $pos)))
     (if (i32.ne (local.get $pos) (local.get $s_len))
-      (then (unreachable)))
+      (then (call $json_parse_syntax_error)))
     (local.get $value))
 
   (func $json_match_literal4 (param $obj i32) (param $len i32) (param $pos i32) (param $c0 i32) (param $c1 i32) (param $c2 i32) (param $c3 i32) (result i32)
@@ -1795,6 +1805,8 @@ impl WatEmitter<'_> {
         (br $done)))
     (local.get $pos))
 "#,
+            json_parse_syntax_error = syntax_error,
+            json_parse_syntax_error_len = RuntimeString::JSON_PARSE_SYNTAX_ERROR.len() as i32,
             undefined = ValueTag::UNDEFINED,
             null_tag = ValueTag::NULL,
             false_tag = ValueTag::FALSE,
