@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Play, CheckCircle, XCircle, AlertCircle, AlertTriangle, SkipForward, BarChart3, History, Download, Search, Filter, Moon, Sun } from 'lucide-react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Play, CheckCircle, XCircle, AlertCircle, AlertTriangle, SkipForward, BarChart3, History, Download, Search, Filter, Moon, Sun, ChevronDown, ChevronRight } from 'lucide-react'
 import {
   Bar,
   BarChart,
@@ -47,6 +47,7 @@ interface TrendRun extends HistoricalData {
 }
 
 type ThemePreference = 'dark' | 'light'
+type StatusFilter = 'all' | TestResult['status']
 
 function getInitialTheme(): ThemePreference {
   if (typeof window === 'undefined') return 'dark'
@@ -71,6 +72,37 @@ function percentOf(value: number, total: number) {
 
 function formatDuration(value?: number) {
   return Number.isFinite(value) ? `${value}ms` : '-'
+}
+
+function cleanDetail(value?: string | number) {
+  if (value === undefined || value === null) return ''
+  return String(value).trim()
+}
+
+function hasTestDetails(test: TestResult) {
+  return Boolean(
+    test.case || test.target || test.reason || test.error || test.expected ||
+    test.actual || test.stderr || test.source_code || test.error_line !== undefined
+  )
+}
+
+function DetailBlock({ title, value, tone = 'default' }: { title: string; value?: string | number; tone?: 'default' | 'error' | 'code' }) {
+  const text = cleanDetail(value)
+  if (!text) return null
+  const toneClass = tone === 'error'
+    ? 'border-red-500/30 bg-red-500/5 text-red-100'
+    : tone === 'code'
+      ? 'border-gray-700 bg-gray-950 text-gray-100'
+      : 'border-gray-700 bg-gray-900/70 text-gray-100'
+
+  return (
+    <section className="min-w-0">
+      <h4 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">{title}</h4>
+      <pre className={`max-h-[32rem] overflow-auto whitespace-pre-wrap break-words rounded-md border p-3 font-mono text-xs leading-5 ${toneClass}`}>
+        {text}
+      </pre>
+    </section>
+  )
 }
 
 function formatLastUpdated(value: string | null) {
@@ -198,14 +230,16 @@ function coverageCsvRows(coverage: CoverageData) {
 function App() {
   const [activeTab, setActiveTab] = useState<'tests' | 'coverage' | 'history'>('tests')
   const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pass' | 'fail' | 'skip'>('all')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [suiteFilter, setSuiteFilter] = useState('all')
+  const [expandedTestId, setExpandedTestId] = useState<string | null>(null)
   const [theme, setTheme] = useState<ThemePreference>(getInitialTheme)
 
   // Load real data
   const {
     tests,
     summary,
+    metadata: testMetadata,
     loading: testsLoading,
     error: testsError,
     liveStatus,
@@ -216,8 +250,8 @@ function App() {
   const { history, loading: historyLoading, error: historyError } = useHistoricalData()
 
   const filteredTests = tests.filter(test => {
-    const matchesSearch = test.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         test.suite.toLowerCase().includes(searchQuery.toLowerCase())
+    const haystack = [test.name, test.suite, test.case, test.reason, test.error, test.stderr].filter(Boolean).join(' ').toLowerCase()
+    const matchesSearch = haystack.includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === 'all' || test.status === statusFilter
     const matchesSuite = suiteFilter === 'all' || test.suite === suiteFilter
     return matchesSearch && matchesStatus && matchesSuite
@@ -287,7 +321,14 @@ function App() {
           name: test.name,
           status: test.status,
           duration: test.duration ?? '',
+          case: test.case ?? '',
+          target: test.target ?? '',
+          reason: test.reason ?? '',
+          expected: test.expected ?? '',
+          actual: test.actual ?? '',
           error: test.error ?? '',
+          stderr: test.stderr ?? '',
+          source_code: test.source_code ?? '',
         }))
       : activeTab === 'coverage'
         ? coverageCsvRows(coverage)
@@ -444,6 +485,15 @@ function App() {
               </div>
             ) : null}
 
+            {testMetadata ? (
+              <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-300">
+                <span>Data source: <span className="font-semibold text-gray-100">{testMetadata.record_mode ?? 'unknown'}</span></span>
+                <span>Showing <span className="font-semibold text-gray-100">{(testMetadata.shown_records ?? tests.length).toLocaleString()}</span> of <span className="font-semibold text-gray-100">{(testMetadata.total_records ?? tests.length).toLocaleString()}</span> records</span>
+                {testMetadata.truncated ? <span className="text-yellow-400">table is capped for browser performance</span> : null}
+                {testMetadata.generated_at ? <span className="text-gray-400">generated {new Date(testMetadata.generated_at).toLocaleString()}</span> : null}
+              </div>
+            ) : null}
+
             {/* Summary Cards */}
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
@@ -494,13 +544,14 @@ function App() {
                 <Filter className="w-4 h-4 text-gray-400" />
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as 'all' | 'pass' | 'fail' | 'skip')}
+                  onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
                   className="min-w-36 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 >
                   <option value="all">All Status</option>
                   <option value="pass">Pass</option>
                   <option value="fail">Fail</option>
                   <option value="skip">Skip</option>
+                  <option value="error">Error</option>
                 </select>
                 <select
                   value={suiteFilter}
@@ -519,44 +570,90 @@ function App() {
             </div>
 
             {/* Test List */}
-            <div className="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div className="overflow-hidden rounded-lg border border-gray-700 bg-gray-800">
               <div className="overflow-x-auto">
-              <table className="w-full min-w-[840px]">
-                <thead className="bg-gray-800/50">
-                  <tr>
-                    <th className="w-40 px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Test Name</th>
-                    <th className="w-40 px-4 py-3 text-left text-sm font-medium text-gray-400">Suite</th>
-                    <th className="w-28 px-4 py-3 text-right text-sm font-medium text-gray-400">Duration</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-700">
-                  {filteredTests.length === 0 ? (
+                <table className="w-full min-w-[1120px] table-fixed">
+                  <thead className="bg-gray-800/50">
                     <tr>
-                      <td colSpan={4} className="px-4 py-10 text-center text-gray-400">
-                        No tests match the current filters.
-                      </td>
+                      <th className="w-40 px-4 py-3 text-left text-sm font-medium text-gray-400">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Test Name / Reason</th>
+                      <th className="w-36 px-4 py-3 text-left text-sm font-medium text-gray-400">Suite</th>
+                      <th className="w-28 px-4 py-3 text-right text-sm font-medium text-gray-400">Duration</th>
+                      <th className="w-32 px-4 py-3 text-right text-sm font-medium text-gray-400">Details</th>
                     </tr>
-                  ) : filteredTests.map((test) => (
-                    <tr key={test.id} className="hover:bg-gray-700/50 transition-colors">
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(test.status)}
-                          <span className={`px-2 py-1 text-xs font-medium rounded border ${getStatusColor(test.status)}`}>
-                            {test.status.toUpperCase()}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 font-medium">
-                        <div className="max-w-[760px] truncate" title={test.name}>{test.name}</div>
-                        {test.error ? <div className="mt-1 max-w-[760px] truncate text-xs text-red-400" title={test.error}>{test.error}</div> : null}
-                      </td>
-                      <td className="px-4 py-3 text-gray-400">{test.suite}</td>
-                      <td className="px-4 py-3 text-right text-gray-400">{formatDuration(test.duration)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-gray-700">
+                    {filteredTests.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-10 text-center text-gray-400">
+                          No tests match the current filters.
+                        </td>
+                      </tr>
+                    ) : filteredTests.map((test) => {
+                      const expanded = expandedTestId === test.id
+                      const canExpand = hasTestDetails(test)
+                      const primaryReason = test.reason || test.error
+                      return (
+                        <Fragment key={test.id}>
+                          <tr className="hover:bg-gray-700/50 transition-colors">
+                            <td className="px-4 py-3 align-top">
+                              <div className="flex items-center gap-2">
+                                {getStatusIcon(test.status)}
+                                <span className={`px-2 py-1 text-xs font-medium rounded border ${getStatusColor(test.status)}`}>
+                                  {test.status.toUpperCase()}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 align-top font-medium">
+                              <div className="truncate text-gray-100" title={test.name}>{test.name}</div>
+                              {primaryReason ? (
+                                <div className="mt-1 line-clamp-2 text-sm font-semibold text-red-400" title={primaryReason}>
+                                  {primaryReason}
+                                </div>
+                              ) : null}
+                              {test.case && test.case !== test.name ? (
+                                <div className="mt-1 truncate text-xs text-gray-500" title={test.case}>{test.case}</div>
+                              ) : null}
+                            </td>
+                            <td className="px-4 py-3 align-top text-gray-400">{test.suite}</td>
+                            <td className="px-4 py-3 align-top text-right text-gray-400">{formatDuration(test.duration)}</td>
+                            <td className="px-4 py-3 align-top text-right">
+                              <button
+                                type="button"
+                                disabled={!canExpand}
+                                onClick={() => setExpandedTestId(expanded ? null : test.id)}
+                                className="inline-flex items-center gap-1 rounded-md border border-gray-700 bg-gray-900 px-3 py-2 text-sm font-medium text-gray-100 transition-colors hover:bg-gray-700 disabled:cursor-not-allowed disabled:opacity-40"
+                              >
+                                {expanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                Details
+                              </button>
+                            </td>
+                          </tr>
+                          {expanded ? (
+                            <tr className="bg-gray-900/40">
+                              <td colSpan={5} className="px-4 py-4">
+                                <div className="space-y-4">
+                                  <div className="flex flex-wrap gap-2 text-xs text-gray-300">
+                                    {test.target ? <span className="rounded border border-gray-700 bg-gray-800 px-2 py-1">target: {test.target}</span> : null}
+                                    {test.error_line !== undefined ? <span className="rounded border border-gray-700 bg-gray-800 px-2 py-1">error line: {test.error_line}</span> : null}
+                                    {test.case ? <span className="max-w-full truncate rounded border border-gray-700 bg-gray-800 px-2 py-1" title={test.case}>case: {test.case}</span> : null}
+                                  </div>
+                                  <DetailBlock title={test.status === 'error' ? 'Build Error / Reason' : 'Reason'} value={test.reason || test.error} tone="error" />
+                                  <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                                    <DetailBlock title="Expected" value={test.expected} />
+                                    <DetailBlock title="Actual" value={test.actual} />
+                                  </div>
+                                  <DetailBlock title="Stderr" value={test.stderr} tone="error" />
+                                  <DetailBlock title="Test Code" value={test.source_code} tone="code" />
+                                </div>
+                              </td>
+                            </tr>
+                          ) : null}
+                        </Fragment>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
             </div>
             </>

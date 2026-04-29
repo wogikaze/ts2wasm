@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { TestResult, CoverageData, HistoricalData } from '../types'
+import type { TestResult, CoverageData, HistoricalData, TestResultsMetadata } from '../types'
 
 const DEFAULT_LIVE_POLL_MS = 2000
 const MIN_LIVE_POLL_MS = 250
@@ -21,6 +21,7 @@ function livePollIntervalMs() {
 export function useTestData() {
   const [tests, setTests] = useState<TestResult[]>([])
   const [summary, setSummary] = useState({ total: 0, passed: 0, failed: 0, skipped: 0 })
+  const [metadata, setMetadata] = useState<TestResultsMetadata | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [liveStatus, setLiveStatus] = useState<LiveStatus>('static')
@@ -41,6 +42,7 @@ export function useTestData() {
         if (cancelled) return
         setTests(data.tests || [])
         setSummary(data.summary || { total: 0, passed: 0, failed: 0, skipped: 0 })
+        setMetadata(data.metadata || null)
         setError(null)
         setLastUpdated(new Date().toISOString())
         setLiveStatus(mode === 'live' ? 'connected' : 'static')
@@ -67,7 +69,7 @@ export function useTestData() {
     }
   }, [])
 
-  return { tests, summary, loading, error, liveStatus, lastUpdated, liveMode: liveModeEnabled() }
+  return { tests, summary, metadata, loading, error, liveStatus, lastUpdated, liveMode: liveModeEnabled() }
 }
 
 export function useCoverageData() {

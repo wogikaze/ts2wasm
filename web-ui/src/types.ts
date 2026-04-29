@@ -5,6 +5,26 @@ export interface TestResult {
   suite: string;
   duration?: number;
   error?: string;
+  case?: string;
+  target?: string;
+  reason?: string;
+  expected?: string;
+  actual?: string;
+  stderr?: string;
+  source_code?: string;
+  error_line?: number;
+}
+
+export interface TestResultsMetadata {
+  schema_version?: number;
+  generated_at?: string;
+  generator?: string;
+  record_mode?: 'jsonl' | 'aggregate' | string;
+  total_records?: number;
+  shown_records?: number;
+  row_limit?: number;
+  truncated?: boolean;
+  sources?: string[];
 }
 
 export interface CoverageData {
