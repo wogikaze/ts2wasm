@@ -1223,7 +1223,7 @@ impl Parser {
         let mut args = Vec::new();
         if !self.consume(TokenKind::RightParen) {
             loop {
-                if let Some(spread_span) = self.consume_span(TokenKind::Spread) {
+                if let Some(spread_span) = self.consume_span(TokenKind::DotDotDot) {
                     let spread_expr = self.unary()?;
                     let end = spread_expr.span().end;
                     args.push(Expr::Spread {
@@ -1530,7 +1530,19 @@ impl Parser {
                 let mut elements = Vec::new();
                 if !self.consume(TokenKind::RightBracket) {
                     loop {
-                        elements.push(self.expression()?);
+                        if let Some(spread_span) = self.consume_span(TokenKind::DotDotDot) {
+                            let spread_expr = self.assignment()?;
+                            let end = spread_expr.span().end;
+                            elements.push(Expr::Spread {
+                                expr: Box::new(spread_expr),
+                                span: Span {
+                                    start: spread_span.start,
+                                    end,
+                                },
+                            });
+                        } else {
+                            elements.push(self.expression()?);
+                        }
                         if self.consume(TokenKind::RightBracket) {
                             break;
                         }
@@ -1553,10 +1565,15 @@ impl Parser {
                 let mut props = Vec::new();
                 if !self.consume(TokenKind::RightBrace) {
                     loop {
-                        let key = self.parse_object_key()?;
-                        self.expect(TokenKind::Colon)?;
-                        let val = self.expression()?;
-                        props.push((key, val));
+                        if self.consume(TokenKind::DotDotDot) {
+                            let val = self.assignment()?;
+                            props.push((OBJECT_SPREAD_SENTINEL.to_owned(), val));
+                        } else {
+                            let key = self.parse_object_key()?;
+                            self.expect(TokenKind::Colon)?;
+                            let val = self.expression()?;
+                            props.push((key, val));
+                        }
                         if self.consume(TokenKind::RightBrace) {
                             break;
                         }
