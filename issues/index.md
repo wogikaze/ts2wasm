@@ -52,7 +52,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 284 | Support test262 async flag in reference coverage | test | reference/tests | implementation-ready | P1 |  | The largest stderr bucket is the reference runner rejecting every test262 case with the `async` flag before compiler/... |
 | 285 | Support test262 module flag in reference coverage | test | reference/tests | implementation-ready | P1 |  | The second largest stderr bucket is the reference runner rejecting test262 `module` cases before syntax or module sem... |
 | 286 | Classify expected negative SyntaxError tests correctly | bug | reference/tests | implementation-ready | P1 |  | Negative test262 parse/SyntaxError cases are currently counted as failures when compilation succeeds, creating a high... |
-| 287 | Fix arguments-object arity mismatch bucket | bug | runtime/semantics | implementation-ready | P1 |  | Arguments-object coverage hits a repeated arity mismatch where generated calls provide fewer arguments than the lower... |
 | 288 | Provide test262 assert harness binding | feature | reference/runtime | implementation-ready | P1 |  | Many admitted test262 cases fail before semantic comparison because the test262 `assert` harness function is unresolved. |
 | 289 | Resolve callCount binding in class destructuring tests | bug | frontend/ir | implementation-ready | P2 |  | Class destructuring method tests repeatedly lose or fail to resolve the `callCount` local used to observe evaluation ... |
 | 291 | Provide Object global binding for test262 cases | feature | runtime/semantics | implementation-ready | P2 |  | Several test262 cases fail before semantic comparison because the global `Object` binding is unresolved. |
@@ -377,6 +376,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 278 | Implement Set iteration | feature | runtime/builtins | see `issues/done/278-implement-set-iteration.md` |
 | 279 | Implement observable Set constructor add dispatch | feature | runtime/builtins | see `issues/done/279-implement-observable-set-constructor-add-dispatch.md` |
 | 283 | Implement assigned arrow recursion | feature | runtime/semantics | see `issues/done/283-implement-assigned-arrow-recursion.md` |
+| 287 | Fix arguments-object arity mismatch bucket | bug | runtime/semantics | see `issues/done/287-fix-arguments-object-arity-mismatch.md` |
 | 290 | Fix ASI EOF semicolon parser bucket | bug | frontend | see `issues/done/290-fix-asi-eof-semicolon-parser-bucket.md` |
 <!-- generated:done:end -->
 
