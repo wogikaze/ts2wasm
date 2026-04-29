@@ -6,7 +6,7 @@ area: runtime/builtins
 class: blocked
 priority: P1
 depends_on: []
-blocks: [052d, 052e]
+blocks: [052d]
 created: 2026-04-26
 updated: 2026-04-29
 ---
@@ -15,14 +15,14 @@ updated: 2026-04-29
 
 Implement full JSON.parse and JSON.stringify.
 
-Problem: JSON support has a validated subset, but full ECMAScript JSON compatibility still depends on separately tracked number, string, replacer, boxed-edge, and diagnostic follow-up work.
+Problem: JSON support has a validated subset, but full ECMAScript JSON compatibility still depends on separately tracked broader replacer callback work.
 
 Queue design note:
 
 - This is an epic-level issue and must not be selected directly from the Ready queue.
 - The currently supported subset contract was closed by issue 052a.
-- Track remaining behavior as separate child issues: 052d and 052e. Issues 052b, 052c, and 052f are closed for the current number, string, and parse-diagnostic contracts.
-- Keep this parent issue `blocked` until those child issues close or the final-state goal changes.
+- Track remaining behavior through child issue 052d. Issues 052b, 052c, 052e, and 052f are closed for the current number, string, boxed-argument, and parse-diagnostic contracts.
+- Keep this parent issue `blocked` until that child issue closes or the final-state goal changes.
 
 ## Supported subset contract
 
@@ -43,14 +43,13 @@ Current validated JSON behavior is intentionally a subset, not full JSON support
 
 - primitives and aggregate values representable by the current runtime: small integers, booleans, null, ASCII strings, arrays, flat objects, and nested object/array literal values;
 - escaping of `"`, `\`, `\b`, `\f`, `\n`, `\r`, and `\t` for string values and object keys;
-- numeric `space`, string `space`, ignored boolean/object/function/symbol `space`, and narrow boxed `Number`/`String`/`Boolean` `space` forms covered by fixtures;
-- object-literal array replacer property lists containing string and numeric literal entries, preserving property-list order and duplicate suppression in the validated subset;
-- issue-linked diagnostics for unsupported function replacers and unsupported array replacer property-list contents/forms outside the validated subset.
+- numeric `space`, string `space`, ignored boolean/object/function/symbol `space`, selected boxed `Number`/`String`/`Boolean`/`Object` `space` forms covered by fixtures, and issue-052e diagnostics for broader object-coercion `space` forms outside the supported runtime object model;
+- object-literal array replacer property lists containing string/numeric literal entries and boxed `Number`/`String` entries, preserving property-list order and duplicate suppression in the validated subset;
+- issue-linked diagnostics for unsupported function replacers and unsupported array replacer property-list contents/forms outside the validated subset, including boxed entries that would require broader object coercion.
 
 Remaining full-spec work is not part of this parent issue's Ready queue surface:
 
-- 052d: broader `JSON.stringify` replacer semantics.
-- 052e: remaining boxed/object coercion edge cases for `JSON.stringify` arguments.
+- 052d: broader `JSON.stringify` replacer callback semantics.
 
 Close decision: issue 052 remains open as a blocked parent epic for full JSON compatibility. The closeable subset milestone is issue 052a; implementation workers should select child issues instead of this parent.
 
@@ -88,7 +87,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Child issues 052d and 052e are closed or superseded by narrower follow-ups.
+- [ ] Child issue 052d is closed or superseded by narrower follow-ups.
 - [ ] JSON.parse works correctly for the full supported final-state contract.
 - [ ] JSON.stringify works correctly for the full supported final-state contract.
 - [ ] Fixtures cover completed JSON behavior.
