@@ -110,6 +110,9 @@ impl WatEmitter<'_> {
     ) {
         let pad = " ".repeat(indent);
         match statement {
+            LoweredStmt::Block(statements) => {
+                self.emit_statements(wat, statements, indent, loop_ctx, frame);
+            }
             LoweredStmt::Let(local_id, expr) | LoweredStmt::Assign(local_id, expr) => {
                 self.emit_expr(wat, expr, indent, frame);
                 wat.push_str(&format!("{pad}(local.set {})\n", local_index(*local_id)));

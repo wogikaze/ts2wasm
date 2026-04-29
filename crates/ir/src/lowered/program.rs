@@ -44,8 +44,12 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     (Vec::new(), Vec::new())
                 };
 
-                let mut ctor_params_with_this: Vec<ResolvedParam> =
-                    vec![("this".to_owned(), None, false)];
+                let mut ctor_params_with_this: Vec<ResolvedParam> = vec![ResolvedParam {
+                    name: "this".to_owned(),
+                    default: None,
+                    is_rest: false,
+                    span: None,
+                }];
                 ctor_params_with_this.extend(ctor_params.clone());
 
                 let lowered = lower_function(
@@ -69,11 +73,16 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 for method in methods {
                     let method_key = class_method_key(name, &method.name);
                     let method_id = function_ids[&method_key];
-                    let method_params_with_this: Vec<(String, Option<ResolvedExpr>, bool)> =
+                    let method_params_with_this: Vec<ResolvedParam> =
                         if method.name.starts_with("static::") {
                             method.params.clone()
                         } else {
-                            let mut params = vec![("this".to_owned(), None, false)];
+                            let mut params = vec![ResolvedParam {
+                                name: "this".to_owned(),
+                                default: None,
+                                is_rest: false,
+                                span: None,
+                            }];
                             params.extend(method.params.clone());
                             params
                         };
@@ -272,8 +281,8 @@ fn collect_function_signatures(
                         explicit_params: params.len(),
                         needs_receiver: block_contains_this(body),
                         needs_arguments: block_contains_arguments(body)
-                            && !params.iter().any(|(name, _, _)| name == "arguments"),
-                        has_rest: params.iter().any(|(_, _, is_rest)| *is_rest),
+                            && !params.iter().any(|param| param.name == "arguments"),
+                        has_rest: params.iter().any(|param| param.is_rest),
                         metadata_length: fixed_arity_metadata_length(params),
                         returns_heap_closure: block_returns_declared_function(body),
                     },
@@ -293,7 +302,7 @@ fn collect_function_signatures(
                     + 1;
                 let ctor_has_rest = constructor
                     .as_ref()
-                    .is_some_and(|(params, _)| params.iter().any(|(_, _, is_rest)| *is_rest));
+                    .is_some_and(|(params, _)| params.iter().any(|param| param.is_rest));
                 let ctor_returns_heap_closure = constructor
                     .as_ref()
                     .is_some_and(|(_, body)| block_returns_declared_function(body));
@@ -314,7 +323,7 @@ fn collect_function_signatures(
                         function_ids[&method_key],
                         FunctionSignature {
                             explicit_params: method.params.len() + receiver_param_count,
-                            has_rest: method.params.iter().any(|(_, _, is_rest)| *is_rest),
+                            has_rest: method.params.iter().any(|param| param.is_rest),
                             returns_heap_closure: block_returns_declared_function(&method.body),
                             ..FunctionSignature::default()
                         },
@@ -335,7 +344,7 @@ fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
 fn fixed_arity_metadata_length(params: &[ResolvedParam]) -> Option<usize> {
     if params
         .iter()
-        .any(|(_, default, is_rest)| default.is_some() || *is_rest)
+        .any(|param| param.default.is_some() || param.is_rest)
     {
         None
     } else {
@@ -396,6 +405,7 @@ fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<S
                 collect_declared_function_names(std::slice::from_ref(body.as_ref()), names);
             }
             ResolvedStmt::Let(_, _)
+            | ResolvedStmt::DestructureLet { .. }
             | ResolvedStmt::Assign(_, _)
             | ResolvedStmt::Expr(_)
             | ResolvedStmt::Return(_)
@@ -450,6 +460,7 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
         ResolvedStmt::Labeled { body, .. } => stmt_returns_any_name(body, names),
         ResolvedStmt::Function { .. }
         | ResolvedStmt::Let(_, _)
+        | ResolvedStmt::DestructureLet { .. }
         | ResolvedStmt::Assign(_, _)
         | ResolvedStmt::Expr(_)
         | ResolvedStmt::Return(_)
@@ -465,6 +476,7 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
 fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
         | ResolvedStmt::Assign(_, expr)
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
@@ -594,6 +606,7 @@ fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
 fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
     match stmt {
         ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
         | ResolvedStmt::Assign(_, expr)
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
@@ -755,11 +768,21 @@ fn lower_function(
     }
     let mut lowered_params = Vec::new();
     if signature.needs_receiver {
-        lowered_params.push(("this".to_owned(), None, false));
+        lowered_params.push(ResolvedParam {
+            name: "this".to_owned(),
+            default: None,
+            is_rest: false,
+            span: None,
+        });
     }
     lowered_params.extend(params.iter().cloned());
     if signature.needs_arguments {
-        lowered_params.push(("arguments".to_owned(), None, false));
+        lowered_params.push(ResolvedParam {
+            name: "arguments".to_owned(),
+            default: None,
+            is_rest: false,
+            span: None,
+        });
     }
 
     let (mut resolver, param_ids) = Resolver::with_params(
@@ -767,7 +790,7 @@ fn lower_function(
         function_signatures,
         lowered_params
             .iter()
-            .map(|(name, _, _)| name.clone())
+            .map(|param| param.name.clone())
             .collect::<Vec<_>>()
             .as_slice(),
         class_parents,
@@ -779,17 +802,44 @@ fn lower_function(
 
     let rest_param_index = params
         .iter()
-        .position(|(_, _, is_rest)| *is_rest)
+        .position(|param| param.is_rest)
         .map(|index| index + usize::from(signature.needs_receiver));
 
     // Insert default parameter assignments at the start of the body.
     let mut body_with_defaults = Vec::new();
-    for (param_name, default_expr, is_rest) in params {
-        if *is_rest {
+    for param in params {
+        if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
+            if param.is_rest {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-251: rest parameter binding patterns are not supported"
+                        .to_owned(),
+                    span: param.span,
+                });
+            }
+            if param.default.is_some() {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message:
+                        "issue-251: defaulted parameter binding patterns are not supported in this runtime slice"
+                            .to_owned(),
+                    span: param.span,
+                });
+            }
+            let param_local = resolver.resolve_local(&param.name)?;
+            body_with_defaults.extend(
+                resolver.lower_binding_pattern_declarations(
+                    &pattern,
+                    LoweredExpr::Local(param_local),
+                )?,
+            );
+            continue;
+        }
+        if param.is_rest {
             // Rest parameters are populated by call lowering/emission.
             continue;
-        } else if let Some(default) = default_expr {
-            let param_local = resolver.resolve_local(param_name)?;
+        } else if let Some(default) = &param.default {
+            let param_local = resolver.resolve_local(&param.name)?;
             let lowered_default = resolver.lower_expr(default)?;
             // Generate: if (param === undefined) { param = default; }
             body_with_defaults.push(LoweredStmt::If {
@@ -807,7 +857,7 @@ fn lower_function(
 
     let min_required = params
         .iter()
-        .filter(|(_, default, is_rest)| default.is_none() && !*is_rest)
+        .filter(|param| param.default.is_none() && !param.is_rest)
         .count()
         + usize::from(signature.needs_receiver)
         + usize::from(signature.needs_arguments);
@@ -1645,6 +1695,11 @@ fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mut HashSet<S
             ResolvedStmt::Let(name, _) => {
                 names.insert(name.clone());
             }
+            ResolvedStmt::DestructureLet { pattern, .. } => {
+                for name in pattern.names() {
+                    names.insert(name.to_owned());
+                }
+            }
             ResolvedStmt::Function { name, body, .. } => {
                 names.insert(name.clone());
                 collect_declared_names_in_stmts(body, names);
@@ -1717,6 +1772,7 @@ fn collect_stmt_captures(
     for stmt in stmts {
         match stmt {
             ResolvedStmt::Let(_, expr)
+            | ResolvedStmt::DestructureLet { expr, .. }
             | ResolvedStmt::Assign(_, expr)
             | ResolvedStmt::Expr(expr)
             | ResolvedStmt::Return(expr)
@@ -1812,6 +1868,7 @@ fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bool {
             names.iter().any(|capture| capture == name) || expr_assigns_any_name(expr, names)
         }
         ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
         | ResolvedStmt::Expr(expr)
         | ResolvedStmt::Return(expr)
         | ResolvedStmt::Throw(expr) => expr_assigns_any_name(expr, names),

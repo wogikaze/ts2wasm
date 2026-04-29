@@ -1,5 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
+use super::binding_pattern::{ArrayBinding, BindingPattern, ObjectBinding, parse_binding_pattern};
 use super::builtin::{BuiltinId, BuiltinPropertyId, BuiltinResult};
 use super::builtin_resolved::{ResolvedExpr, ResolvedParam, ResolvedStmt};
 use ts2wasm_frontend::{BinaryOp, DiagCode, Diagnostic, LogicalAssignOp, Span, UnaryOp};
@@ -77,6 +78,7 @@ pub struct LoweredFunction {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoweredStmt {
+    Block(Vec<LoweredStmt>),
     Let(LocalId, LoweredExpr),
     Assign(LocalId, LoweredExpr),
     Expr(LoweredExpr),

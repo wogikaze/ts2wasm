@@ -370,6 +370,9 @@ impl<'a> WatEmitter<'a> {
 
     fn collect_statement_strings(&mut self, statement: &LoweredStmt) {
         match statement {
+            LoweredStmt::Block(statements) => {
+                self.collect_program_strings(statements);
+            }
             LoweredStmt::Let(_, expr)
             | LoweredStmt::Assign(_, expr)
             | LoweredStmt::Expr(expr)
@@ -729,6 +732,9 @@ impl<'a> WatEmitter<'a> {
     ) {
         for stmt in stmts {
             match stmt {
+                LoweredStmt::Block(statements) => {
+                    Self::collect_class_prototypes_from_stmts(statements, prototypes);
+                }
                 LoweredStmt::Let(_, expr)
                 | LoweredStmt::Assign(_, expr)
                 | LoweredStmt::Expr(expr)
@@ -816,6 +822,9 @@ impl<'a> WatEmitter<'a> {
     ) {
         for stmt in stmts {
             match stmt {
+                LoweredStmt::Block(statements) => {
+                    Self::collect_builtin_error_prototypes_from_stmts(statements, prototypes);
+                }
                 LoweredStmt::Let(_, expr)
                 | LoweredStmt::Assign(_, expr)
                 | LoweredStmt::Expr(expr)
