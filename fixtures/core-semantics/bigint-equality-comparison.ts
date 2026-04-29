@@ -1,0 +1,21 @@
+let a = 1n;
+let alsoA = 1n;
+let b = 2n;
+let neg = -1n;
+let zero = 0n;
+let huge = 18446744073709551616n;
+
+console.log(a === alsoA);
+console.log(a !== b);
+console.log(a == alsoA);
+console.log(a != b);
+console.log(a < b);
+console.log(b > a);
+console.log(a <= alsoA);
+console.log(b >= a);
+console.log(neg < zero);
+console.log(neg <= -1n);
+console.log(huge > b);
+console.log(0n === -0n);
+console.log(1n === 1);
+console.log(1n !== 1);
