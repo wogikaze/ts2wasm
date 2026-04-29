@@ -195,7 +195,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 240 | Implement Date timezone-aware toString policy | feature | runtime/builtins | class: blocked | Implement Date timezone-aware toString policy |
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
-| 302 | Implement direct eval block function declaration slice | feature | frontend/semantics | 306 | Implement direct eval block function declaration slice |
+| 302 | Implement direct eval block function declaration slice | feature | frontend/semantics | class: blocked | Implement direct eval block function declaration slice |
 <!-- generated:blocked:end -->
 
 ## Done queue

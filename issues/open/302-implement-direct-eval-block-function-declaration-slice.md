@@ -3,7 +3,7 @@ id: 302
 title: "Implement direct eval block function declaration slice"
 type: feature
 area: frontend/semantics
-class: implementation-ready
+class: blocked
 priority: P3
 depends_on: [306]
 blocks: []
