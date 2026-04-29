@@ -1,5 +1,6 @@
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
+    let function_signatures = collect_function_signatures(program, &function_ids);
     let class_parents = collect_class_parents(program);
     let mut next_func_id = function_ids.len();
     let mut functions_by_id = vec![None; function_ids.len()];
@@ -14,6 +15,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     params,
                     body,
                     &function_ids,
+                    &function_signatures,
                     class_parents.clone(),
                     LowerFunctionOptions {
                         current_class: None,
@@ -49,6 +51,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &ctor_params_with_this,
                     &ctor_body,
                     &function_ids,
+                    &function_signatures,
                     class_parents.clone(),
                     LowerFunctionOptions {
                         current_class: Some(name),
@@ -76,6 +79,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         &method_params_with_this,
                         &method.body,
                         &function_ids,
+                        &function_signatures,
                         class_parents.clone(),
                         LowerFunctionOptions {
                             current_class: Some(name),
@@ -92,7 +96,12 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         }
     }
 
-    let mut resolver = Resolver::new(&function_ids, class_parents.clone(), next_func_id);
+    let mut resolver = Resolver::new(
+        &function_ids,
+        &function_signatures,
+        class_parents.clone(),
+        next_func_id,
+    );
     let mut top_level_statements = Vec::new();
     for stmt in program {
         match stmt {
@@ -125,6 +134,14 @@ struct FunctionLowering {
     function: LoweredFunction,
     generated_functions: Vec<LoweredFunction>,
     next_func_id: usize,
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+struct FunctionSignature {
+    explicit_params: usize,
+    needs_receiver: bool,
+    needs_arguments: bool,
+    has_rest: bool,
 }
 
 fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
@@ -206,6 +223,325 @@ fn collect_class_parents(program: &[ResolvedStmt]) -> HashMap<String, Option<Str
     parents
 }
 
+fn collect_function_signatures(
+    program: &[ResolvedStmt],
+    function_ids: &HashMap<String, FuncId>,
+) -> HashMap<FuncId, FunctionSignature> {
+    let mut signatures = HashMap::new();
+
+    for stmt in program {
+        match stmt {
+            ResolvedStmt::Function { name, params, body } => {
+                signatures.insert(
+                    function_ids[name],
+                    FunctionSignature {
+                        explicit_params: params.len(),
+                        needs_receiver: block_contains_this(body),
+                        needs_arguments: block_contains_arguments(body)
+                            && !params.iter().any(|(name, _, _)| name == "arguments"),
+                        has_rest: params.iter().any(|(_, _, is_rest)| *is_rest),
+                    },
+                );
+            }
+            ResolvedStmt::ClassDecl {
+                name,
+                constructor,
+                methods,
+                ..
+            } => {
+                let ctor_key = class_constructor_key(name);
+                let ctor_params_len = constructor
+                    .as_ref()
+                    .map(|(params, _)| params.len())
+                    .unwrap_or_default()
+                    + 1;
+                let ctor_has_rest = constructor
+                    .as_ref()
+                    .is_some_and(|(params, _)| params.iter().any(|(_, _, is_rest)| *is_rest));
+                signatures.insert(
+                    function_ids[&ctor_key],
+                    FunctionSignature {
+                        explicit_params: ctor_params_len,
+                        has_rest: ctor_has_rest,
+                        ..FunctionSignature::default()
+                    },
+                );
+
+                for method in methods {
+                    let method_key = class_method_key(name, &method.name);
+                    let receiver_param_count = usize::from(!method.name.starts_with("static::"));
+                    signatures.insert(
+                        function_ids[&method_key],
+                        FunctionSignature {
+                            explicit_params: method.params.len() + receiver_param_count,
+                            has_rest: method.params.iter().any(|(_, _, is_rest)| *is_rest),
+                            ..FunctionSignature::default()
+                        },
+                    );
+                }
+            }
+            _ => {}
+        }
+    }
+
+    signatures
+}
+
+fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_contains_this)
+}
+
+fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr) => expr_contains_this(expr),
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_contains_this(condition)
+                || block_contains_this(then_body)
+                || block_contains_this(else_body)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+            expr_contains_this(condition) || block_contains_this(body)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_this(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_this(block))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_this(block))
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_contains_this(expr)
+                || cases.iter().any(|(case_expr, body)| {
+                    case_expr.as_ref().is_some_and(expr_contains_this)
+                        || block_contains_this(body)
+                })
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref().is_some_and(|stmt| stmt_contains_this(stmt))
+                || condition.as_ref().is_some_and(expr_contains_this)
+                || update.as_ref().is_some_and(expr_contains_this)
+                || block_contains_this(body)
+        }
+        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            expr_contains_this(iter) || block_contains_this(body)
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_this(body),
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            expr_contains_this(expr)
+        }
+        ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
+    }
+}
+
+fn expr_contains_this(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::This { .. } => true,
+        ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => expr_contains_this(expr),
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_contains_this(left) || expr_contains_this(right)
+        }
+        ResolvedExpr::Call { callee, args, .. } => {
+            expr_contains_this(callee) || args.iter().any(expr_contains_this)
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => expr_contains_this(expr),
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_contains_this(object) || expr_contains_this(expr)
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            expr_contains_this(key) || expr_contains_this(expr)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => expr_contains_this(object) || expr_contains_this(key) || expr_contains_this(expr),
+        ResolvedExpr::Array(elements) => elements.iter().any(expr_contains_this),
+        ResolvedExpr::Object(props) => props.iter().any(|(_, value)| expr_contains_this(value)),
+        ResolvedExpr::ComputedIndex { object, index } => {
+            expr_contains_this(object) || expr_contains_this(index)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            args.iter().any(expr_contains_this)
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. } => expr_contains_this(object),
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            expr_contains_this(object) || args.iter().any(expr_contains_this)
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_contains_this(object) || expr_contains_this(value)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_contains_this(object) || expr_contains_this(key) || expr_contains_this(value)
+        }
+        ResolvedExpr::ArrowFn { body, .. } => expr_contains_this(body),
+        ResolvedExpr::Number(_)
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. } => false,
+    }
+}
+
+fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
+    stmts.iter().any(stmt_contains_arguments)
+}
+
+fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
+    match stmt {
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr) => expr_contains_arguments(expr),
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_contains_arguments(condition)
+                || block_contains_arguments(then_body)
+                || block_contains_arguments(else_body)
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+            expr_contains_arguments(condition) || block_contains_arguments(body)
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            block_contains_arguments(try_block)
+                || catch_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_arguments(block))
+                || finally_block
+                    .as_ref()
+                    .is_some_and(|block| block_contains_arguments(block))
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            expr_contains_arguments(expr)
+                || cases.iter().any(|(case_expr, body)| {
+                    case_expr.as_ref().is_some_and(expr_contains_arguments)
+                        || block_contains_arguments(body)
+                })
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref().is_some_and(|stmt| stmt_contains_arguments(stmt))
+                || condition.as_ref().is_some_and(expr_contains_arguments)
+                || update.as_ref().is_some_and(expr_contains_arguments)
+                || block_contains_arguments(body)
+        }
+        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            expr_contains_arguments(iter) || block_contains_arguments(body)
+        }
+        ResolvedStmt::Labeled { body, .. } => stmt_contains_arguments(body),
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            expr_contains_arguments(expr)
+        }
+        ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => false,
+    }
+}
+
+fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
+    match expr {
+        ResolvedExpr::Ident(name) => name == "arguments",
+        ResolvedExpr::Unary { expr, .. } | ResolvedExpr::Spread(expr) => {
+            expr_contains_arguments(expr)
+        }
+        ResolvedExpr::Binary { left, right, .. } => {
+            expr_contains_arguments(left) || expr_contains_arguments(right)
+        }
+        ResolvedExpr::Call { callee, args, .. } => {
+            expr_contains_arguments(callee) || args.iter().any(expr_contains_arguments)
+        }
+        ResolvedExpr::Assign { name, expr } | ResolvedExpr::LogicalAssign { name, expr, .. } => {
+            name == "arguments" || expr_contains_arguments(expr)
+        }
+        ResolvedExpr::LogicalPropertyAssign { object, expr, .. } => {
+            object == "arguments" || expr_contains_arguments(expr)
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            expr_contains_arguments(object) || expr_contains_arguments(expr)
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { object, key, expr, .. } => {
+            object == "arguments" || expr_contains_arguments(key) || expr_contains_arguments(expr)
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            expr_contains_arguments(object)
+                || expr_contains_arguments(key)
+                || expr_contains_arguments(expr)
+        }
+        ResolvedExpr::Array(elements) => elements.iter().any(expr_contains_arguments),
+        ResolvedExpr::Object(props) => {
+            props.iter().any(|(_, value)| expr_contains_arguments(value))
+        }
+        ResolvedExpr::ComputedIndex { object, index } => {
+            expr_contains_arguments(object) || expr_contains_arguments(index)
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            args.iter().any(expr_contains_arguments)
+        }
+        ResolvedExpr::BuiltinProperty { object, .. }
+        | ResolvedExpr::PropertyAccess { object, .. } => expr_contains_arguments(object),
+        ResolvedExpr::MethodCall { object, args, .. } => {
+            expr_contains_arguments(object) || args.iter().any(expr_contains_arguments)
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            expr_contains_arguments(object) || expr_contains_arguments(value)
+        }
+        ResolvedExpr::PropertyAssignDynamic { object, key, value } => {
+            expr_contains_arguments(object)
+                || expr_contains_arguments(key)
+                || expr_contains_arguments(value)
+        }
+        ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
+        ResolvedExpr::This { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::ModuleLoad { .. } => false,
+    }
+}
+
 struct LowerFunctionOptions<'a> {
     current_class: Option<&'a str>,
     in_constructor: bool,
@@ -217,12 +553,31 @@ fn lower_function(
     params: &[ResolvedParam],
     body: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
+    function_signatures: &HashMap<FuncId, FunctionSignature>,
     class_parents: HashMap<String, Option<String>>,
     options: LowerFunctionOptions<'_>,
 ) -> Result<FunctionLowering, Diagnostic> {
+    let signature = function_signatures.get(&id).copied().unwrap_or_default();
+    if signature.needs_arguments && signature.has_rest {
+        return Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-062d: `arguments` together with rest parameters is not supported in this milestone".to_owned(),
+            span: None,
+        });
+    }
+    let mut lowered_params = Vec::new();
+    if signature.needs_receiver {
+        lowered_params.push(("this".to_owned(), None, false));
+    }
+    lowered_params.extend(params.iter().cloned());
+    if signature.needs_arguments {
+        lowered_params.push(("arguments".to_owned(), None, false));
+    }
+
     let (mut resolver, param_ids) = Resolver::with_params(
         function_ids,
-        params
+        function_signatures,
+        lowered_params
             .iter()
             .map(|(name, _, _)| name.clone())
             .collect::<Vec<_>>()
@@ -233,7 +588,10 @@ fn lower_function(
         options.next_func_id,
     )?;
 
-    let rest_param_index = params.iter().position(|(_, _, is_rest)| *is_rest);
+    let rest_param_index = params
+        .iter()
+        .position(|(_, _, is_rest)| *is_rest)
+        .map(|index| index + usize::from(signature.needs_receiver));
 
     // Insert default parameter assignments at the start of the body.
     let mut body_with_defaults = Vec::new();
@@ -261,7 +619,9 @@ fn lower_function(
     let min_required = params
         .iter()
         .filter(|(_, default, is_rest)| default.is_none() && !*is_rest)
-        .count();
+        .count()
+        + usize::from(signature.needs_receiver)
+        + usize::from(signature.needs_arguments);
     Ok(FunctionLowering {
         function: LoweredFunction {
             id,
