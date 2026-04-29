@@ -1,0 +1,14 @@
+console.log(1n == "1");
+console.log("1" == 1n);
+console.log(1n != "2");
+console.log("2" != 1n);
+console.log("0x10" == 16n);
+console.log("0b101" == 5n);
+console.log("0o17" == 15n);
+console.log("" == 0n);
+console.log("   " == 0n);
+console.log("-3" == -3n);
+console.log("+3" == 3n);
+console.log("1.0" == 1n);
+console.log("abc" != 0n);
+console.log("-0x10" == -16n);
