@@ -1025,7 +1025,14 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                             span: Some(*span),
                         });
                     }
-                    if matches!(op, BinaryOp::Add | BinaryOp::Subtract) {
+                    if matches!(
+                        op,
+                        BinaryOp::Add
+                            | BinaryOp::Subtract
+                            | BinaryOp::Multiply
+                            | BinaryOp::Divide
+                            | BinaryOp::Modulo
+                    ) {
                         return Ok(ResolvedExpr::Binary {
                             left: Box::new(left_resolved),
                             op: *op,
