@@ -675,10 +675,14 @@ impl WatEmitter<'_> {
         wat.push_str(
             r#"
   (func $bigint_div (param $a i32) (param $b i32) (result i32)
+    (local $rhs i64)
+    (local.set $rhs (call $bigint_signed_i64 (local.get $b)))
+    (if (i64.eqz (local.get $rhs))
+      (then (unreachable)))
     (call $bigint_from_signed_i64
       (i64.div_s
         (call $bigint_signed_i64 (local.get $a))
-        (call $bigint_signed_i64 (local.get $b)))))
+        (local.get $rhs))))
 "#,
         );
     }
@@ -687,10 +691,14 @@ impl WatEmitter<'_> {
         wat.push_str(
             r#"
   (func $bigint_rem (param $a i32) (param $b i32) (result i32)
+    (local $rhs i64)
+    (local.set $rhs (call $bigint_signed_i64 (local.get $b)))
+    (if (i64.eqz (local.get $rhs))
+      (then (unreachable)))
     (call $bigint_from_signed_i64
       (i64.rem_s
         (call $bigint_signed_i64 (local.get $a))
-        (call $bigint_signed_i64 (local.get $b)))))
+        (local.get $rhs))))
 "#,
         );
     }
