@@ -2619,6 +2619,18 @@ impl WatEmitter<'_> {
                         (i32.store
                           (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
                           (local.get $split_header))))
+                    (if
+                      (i32.eq
+                        (local.get $free_body_size)
+                        (global.get $gc_free_list_max_body_size))
+                      (then
+                        (global.set $gc_free_list_max_body_size
+                          (select
+                            (local.get $split_body_size)
+                            (global.get $gc_free_list_second_max_body_size)
+                            (i32.gt_u
+                              (local.get $split_body_size)
+                              (global.get $gc_free_list_second_max_body_size))))))
                     (local.set $free_body_size (local.get $payload_size)))
                   (else
                     (if (i32.eqz (local.get $free_prev))
@@ -2627,7 +2639,14 @@ impl WatEmitter<'_> {
                       (else
                         (i32.store
                           (i32.add (local.get $free_prev) (i32.const {gc_sweep_next_offset}))
-                          (local.get $free_next))))))
+                          (local.get $free_next))))
+                    (if
+                      (i32.eq
+                        (local.get $free_body_size)
+                        (global.get $gc_free_list_max_body_size))
+                      (then
+                        (global.set $gc_free_list_max_body_size
+                          (global.get $gc_free_list_second_max_body_size))))))
                 (i32.store
                   (i32.add (local.get $free_header) (i32.const {gc_flags_offset}))
                   (i32.const {gc_kind_unknown}))
@@ -2891,6 +2910,7 @@ impl WatEmitter<'_> {
     (local.set $heap_end (global.get $heap))
     (global.set $gc_free_list (i32.const 0))
     (global.set $gc_free_list_max_body_size (i32.const 0))
+    (global.set $gc_free_list_second_max_body_size (i32.const 0))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $cursor) (local.get $heap_end)))
@@ -2951,7 +2971,16 @@ impl WatEmitter<'_> {
                 (local.get $body_size)
                 (global.get $gc_free_list_max_body_size))
               (then
-                (global.set $gc_free_list_max_body_size (local.get $body_size))))
+                (global.set $gc_free_list_second_max_body_size
+                  (global.get $gc_free_list_max_body_size))
+                (global.set $gc_free_list_max_body_size (local.get $body_size)))
+              (else
+                (if
+                  (i32.gt_u
+                    (local.get $body_size)
+                    (global.get $gc_free_list_second_max_body_size))
+                  (then
+                    (global.set $gc_free_list_second_max_body_size (local.get $body_size))))))
             (global.set $gc_free_list (local.get $cursor))))
         (local.set $cursor (local.get $next))
         (br $scan))))

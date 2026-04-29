@@ -564,6 +564,25 @@ date: 2026-04-29
   until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
   committed runtime policy.
 
+2026-04-29 child `308-next-gc-20260429T210037Z` issue 308 follow-up:
+
+- Issue 308 tightened the free-list max-size summary by tracking the
+  second-largest swept free block and downgrading the max summary after
+  consuming or splitting the largest known block.
+- This does not establish issue 300 compatibility. The depth-9 search-only
+  reducer still traps under the committed 185-page cap after Node confirms
+  `1404832`:
+
+```text
+command: /usr/bin/time -f 'elapsed:%e' timeout 90s iwasm /tmp/abc451-search-depth-9-secondmax.wasm
+result: Exception: unreachable; elapsed 10.06
+date: 2026-04-29
+```
+
+- No official ABC451 sample output parity is claimed; issue 300 remains open
+  until `10 -> 21`, `69 -> 328`, and `1099898 -> 819264512` match Node under
+  committed runtime policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
