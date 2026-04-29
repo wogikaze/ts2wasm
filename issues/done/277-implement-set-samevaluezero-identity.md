@@ -55,9 +55,9 @@ Set membership uses SameValueZero-compatible identity for the supported primitiv
 
 In scope:
 
-- [ ] Preserve current basic add/has/delete behavior.
-- [ ] Distinguish supported primitive types that currently collide through string normalization.
-- [ ] Add Node/iwasm differential coverage for number/string distinction and duplicate suppression.
+- [x] Preserve current basic add/has/delete behavior.
+- [x] Distinguish supported primitive types that currently collide through string normalization.
+- [x] Add Node/iwasm differential coverage for number/string distinction and duplicate suppression.
 
 Out of scope:
 
@@ -79,10 +79,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A fixture proves `Set` distinguishes `1` from `"1"`.
-- [ ] The fixture proves duplicate values do not create duplicate entries.
-- [ ] The same identity behavior is covered for `has` and `delete` where supported.
-- [ ] Node and iwasm stdout match for the fixture.
+- [x] A fixture proves `Set` distinguishes `1` from `"1"`.
+- [x] The fixture proves duplicate values do not create duplicate entries.
+- [x] The same identity behavior is covered for `has` and `delete` where supported.
+- [x] Node and iwasm stdout match for the fixture.
 
 ## Validation
 
@@ -107,15 +107,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- not affected
 
 Current state:
 
-- [ ] not affected
+- not affected
 
 Follow-up issues:
 
-- [ ] none
+- none
 
 ## Notes
 
@@ -130,8 +130,8 @@ Split from stale broad issue 272 and from issue 049's recorded remaining risk.
   through `value_to_string_into`, which distinguishes number `1` from string
   `"1"` for supported Set operations. The regression fixture
   `fixtures/builtins-and-io/set-identity-number-string.ts` matches Node/iwasm
-  output for duplicate suppression, `has`, `delete`, and `size`. Full
-  SameValueZero across broader heap/string/object identity remains open.
+  output for duplicate suppression, `has`, `delete`, and `size`. Full object
+  identity remains out of scope for this issue.
 
 ## Completion evidence
 
@@ -139,17 +139,29 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- progress commit records the Set-only identity slice
+- close commit records validation and issue lifecycle evidence
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: PASS
+date: 2026-04-29
+
+command: cargo nextest run -p ts2wasm-cli set
+result: PASS; 6 tests run, 6 passed, 338 skipped
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: PASS before lifecycle move
+date: 2026-04-29
+
+command: mise run check issues
+result: PASS before lifecycle move
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- Requires substantial changes to collection infrastructure
-- May impact Map implementation as well
+- Full object identity remains out of scope for this Set primitive identity slice.
