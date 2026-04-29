@@ -2,12 +2,15 @@
 
 この文書は TypeScript の構文・機能について、本プロジェクトでの対応方針と実装状況をまとめる。TypeScript 仕様は [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html) を正とする。
 
+TypeScript 構文を frontend/parser slice に分割する運用は `docs/language-reference/frontend-parser-wave.md` を参照する。
+
 ## 仕様リファレンス
 
 | 仕様 | URL | 用途 |
 |---|---|---|
 | TypeScript Handbook | <https://www.typescriptlang.org/docs/handbook/intro.html> | 公式ハンドブック |
 | TypeScript Language Specification | <https://github.com/microsoft/TypeScript/blob/main/doc/spec-ARCHITECTURE.md> | 言語仕様 |
+| TypeScript parser local source | `reference/typescript/src/compiler/scanner.ts`, `reference/typescript/src/compiler/parser.ts` | lexer/parser wave の primary source |
 | TypeScript Playground | <https://www.typescriptlang.org/play> | オンライン実行環境 |
 | DefinitelyTyped | <https://github.com/DefinitelyTyped/DefinitelyTyped> | 型定義リポジトリ |
 
