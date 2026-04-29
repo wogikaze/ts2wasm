@@ -183,6 +183,40 @@ the first block-function declaration behavior.
   `reference/test262` is missing. `mise run check issues` is also blocked by
   pre-existing missing coverage-result artifact references outside this issue.
 
+2026-04-29 child progress:
+
+- Added a narrow lowered direct-IIFE statement path for no-argument function
+  expression calls whose body contains the static eval block-function expansion,
+  so the selected `func-init` IIFE shape can update caller var-env bindings
+  without broad dynamic eval support.
+- Added
+  `fixtures/core-semantics/direct-eval-block-function-iife-init.ts` to cover the
+  upstream `func-block-decl-eval-func-init.js` binding shape with Node/iwasm
+  differential validation.
+- Added a narrow test262 harness path for
+  `assert.throws(ReferenceError, function() { name; }, ...)` probes so the
+  selected `func-init` case can pass the intentional ReferenceError assertion
+  without reporting `UnresolvedName`.
+- Added narrow statement-form test262 harness lowering for
+  `assert.sameValue` / `assert.notSameValue`: passing assertions stay silent,
+  while failures emit `__TS2WASM_TEST262_ASSERT_FAIL__`, preserving
+  Node/iwasm differential assertion signal without routing through the partial
+  class-static assertion shim.
+- Left the selected upstream block-scoping mutable closure effect out of this
+  progress slice; it is restored to the previous `UnresolvedName` /
+  `name-resolution` bucket until the closure environment behavior is
+  implemented.
+- Validation: `cargo fmt --all --check` passed; `cargo nextest run -p
+  ts2wasm-cli direct_eval_block_function` passed. With
+  `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference`,
+  `func-block-decl-eval-func-init.js` reports `build_pass` with
+  `semantic_pass=1`, and
+  `func-block-decl-eval-func-block-scoping.js` reports
+  `UnresolvedName: name-resolution`. `mise run update-issue-index -- --check`
+  and `mise run check issues` passed. A local negative assertion smoke changed
+  the selected init reference's expected `changed` value from `123` to `124` and
+  confirmed iwasm emits `__TS2WASM_TEST262_ASSERT_FAIL__`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
