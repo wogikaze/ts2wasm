@@ -850,6 +850,22 @@ mod tests {
     }
 
     #[test]
+    fn parses_bare_return_as_undefined() {
+        let program = parse_program("function fn() { return; }").unwrap();
+
+        let Stmt::Function { body, .. } = &program[0] else {
+            panic!("expected function declaration");
+        };
+        assert!(matches!(
+            &body[0],
+            Stmt::Return {
+                expr: Expr::Undefined { .. },
+                ..
+            }
+        ));
+    }
+
+    #[test]
     fn accepts_expression_statement_without_semicolon_at_eof() {
         let program = parse_program("1 * {}").unwrap();
 

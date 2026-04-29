@@ -200,6 +200,13 @@ This issue is intentionally blocked because the fixture crosses several existing
   unary plus, `String(value)`, Set spread, `Array.sort`, and broader number
   representation work remain.
 
+2026-04-29 progress:
+
+- Added parser support for bare `return;` by representing it as `return
+  undefined`, matching the existing AST shape without adding a new return form.
+- The original ABC451 repro now advances beyond the function-body `return;`
+  statement to the next module/Bun boundary.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
