@@ -21,6 +21,7 @@
 | `docs/14-runtime-abi.md` | RawValue tagged encoding、heap layout、RuntimeFn catalog、host import ABI | なし | 新規追加 |
 | `docs/15-coverage-matrix.md` | reference coverage の運用ポリシーと gate 基準 | `docs/06` の coverage 方針を運用化 | generated artifact 参照 |
 | `docs/16-commit-and-push-policy.md` | commit/push 方針、agent rule | なし | 新規追加 |
+| `docs/18-web-ui-reporting.md` | Web UI の data contract、利用方法、static deployment、export/theme 操作 | coverage dashboard の利用運用 | 新規追加 |
 | `docs/language-reference/javascript-features.md` | JavaScript 構文・機能の対応方針と実装状況 | ECMA-262 仕様に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/typescript-features.md` | TypeScript 構文・機能の対応方針と実装状況 | TypeScript Handbook に基づく機能一覧 | 新規追加 |
 | `docs/language-reference/frontend-parser-wave.md` | frontend/parser 仕様 slice の issue 分割・検証運用 | ECMA-262 / TypeScript parser / reference tests に基づく parser wave | 新規追加 |
@@ -112,3 +113,4 @@ mise run coverage-report -- --format markdown
 - **docs/03-api-and-host-capability.md** - API 対応と capability manifest
 - **docs/09-security-and-capability-model.md** - Security と capability model
 - **docs/15-coverage-matrix.md** - Coverage 運用と gate 基準
+- **docs/18-web-ui-reporting.md** - Web UI report の生成、利用、配布

@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 5 | 1 | 4 |
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
-| coverage | 5 | 4 | 1 |
+| coverage | 5 | 3 | 2 |
 | docs | 2 | 0 | 2 |
 | frontend | 193 | 126 | 67 |
 | ir | 7 | 0 | 7 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 311 | 152 | 159 |
+| total | 311 | 151 | 160 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 267 | Implement interactive web UI for test results | feature | coverage | implementation-ready | P1 |  | No interactive web UI for test results, coverage visualization, and historical comparison. |
 | 267b | Implement web UI interactive charts, regression detection, and performance trends | feature | coverage | implementation-ready | P1 |  | Web UI visualization is currently static and does not expose regressions or trends. |
 | 267c | Implement web UI real-time test run updates | feature | coverage | implementation-ready | P1 |  | Web UI does not update while tests are running. |
-| 267d | Implement web UI export controls, theme toggle, and usage docs | feature | coverage | implementation-ready | P1 |  | Export, theme, and final-state web UI docs do not satisfy issue 267 acceptance. |
 | 270 | Implement Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.map |
 | 271 | Implement Array.prototype.push | feature | runtime/builtins | implementation-ready | P2 |  | Implement Array.prototype.push |
 | 273 | Implement recursive function calls | feature | runtime/semantics | implementation-ready | P2 |  | Implement recursive function calls |
@@ -363,6 +362,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
 | 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
 | 267a | Implement web UI data generation and script integration | feature | coverage | see `issues/done/267a-web-ui-data-generation-and-script-integration.md` |
+| 267d | Implement web UI export controls, theme toggle, and usage docs | feature | coverage | see `issues/done/267d-web-ui-export-theme-and-usage-docs.md` |
 | 268 | Implement for loop increment operator | feature | frontend/semantics | see file |
 | 269 | Implement Math.pow | feature | runtime/builtins | see file |
 | 272 | Implement Set | feature | runtime/builtins | see `issues/done/272-implement-set.md` |
