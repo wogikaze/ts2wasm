@@ -427,7 +427,7 @@ payload_ptr             : type-specific payload
 
 GC は以下のタイミングで実行:
 
-1. **Allocation threshold**: `$heap` が `HEAP_START + GC_THRESHOLD` を超えた場合
+1. **Allocation threshold**: `alloc_bytes_since_last_gc + requested_block_size >= GC_THRESHOLD` の場合
    - `GC_THRESHOLD` は初期値として 64KB
    - threshold は GC 後に動的に調整可能
 
