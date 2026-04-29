@@ -14,7 +14,7 @@ Issue files are the source of truth for work items. The generated section below 
 | cli | 3 | 0 | 3 |
 | compiler | 1 | 0 | 1 |
 | docs | 2 | 0 | 2 |
-| frontend | 191 | 130 | 61 |
+| frontend | 191 | 129 | 62 |
 | ir | 7 | 1 | 6 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -24,7 +24,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 5 | 0 | 5 |
 | wasi | 1 | 0 | 1 |
-| total | 285 | 146 | 139 |
+| total | 285 | 145 | 140 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -44,7 +44,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 250 | Design BigInt runtime value support | feature | runtime/semantics | design-ready | P2 |  | BigInt literals now parse as explicit AST nodes, but runtime representation, operations, equality, and builtin behavi... |
 | 251 | Implement destructuring binding runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Parsed destructuring binding patterns are accepted for AST/dump coverage, but name resolution, lowering, and runtime ... |
-| 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | implementation-ready | P2 |  | Issue 247 intentionally covers binding patterns only; assignment targets such as `({ x } = obj)` and `[a] = arr` stil... |
 | 253 | Implement optional chaining runtime semantics | feature | frontend/semantics | implementation-ready | P2 |  | Issue 246 classifies `obj?.x`, `obj?.[key]`, and `fn?.()` in the frontend parser, but name resolution currently repor... |
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 249 parses `static { ... }` as `ClassStaticBlock`, but builtin resolution currently rejects static blocks with ... |
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters, but builtin resolution rejects ... |
@@ -340,6 +339,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 247 | Implement destructuring binding pattern parser support | feature | frontend/syntax | see `issues/done/247-implement-destructuring-binding-pattern-parser.md` |
 | 248 | Implement private class element parser support | feature | frontend/syntax | see `issues/done/248-implement-private-class-element-parser.md` |
 | 249 | Implement class static block parser support | feature | frontend/syntax | see `issues/done/249-implement-class-static-block-parser.md` |
+| 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | see `issues/done/252-implement-destructuring-assignment-pattern-parser.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

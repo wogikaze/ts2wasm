@@ -213,7 +213,7 @@ Lexer/parser の仕様 slice 分割と検証運用は `docs/language-reference/f
 | array holes `[1, , 3]` | ES1 | sparse array | 未実装 | P2 | - |
 | spread elements `[...arr]` | ES6 | array spreading | 未実装 | P2 | - |
 | destructuring binding patterns `let [a, b] = arr` | ES6 | pattern matching | Parser accepts declarations/parameters; runtime binding semantics are 未実装 | P2 | 247 |
-| destructuring assignment `[a, b] = arr` | ES6 | pattern matching | 未実装 | P2 | 252 |
+| destructuring assignment `[a, b] = arr` | ES6 | pattern matching | Parser accepts array/object assignment patterns; runtime assignment semantics are 未実装 | P2 | 252 |
 
 ## クラスとプロトタイプ
 
