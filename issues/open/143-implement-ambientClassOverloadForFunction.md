@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Ambientclassoverloadforfunction` 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ambientClassOverloadForFunction.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientClassOverloadForFunction.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ambientClassOverloadForFunction.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientClassOverloadForFunction.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/ambientClassOverloadForFunction.ts`
+Representative path: `reference/typescript/tests/cases/compiler/ambientClassOverloadForFunction.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/ambientClassOverloadForFunction.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/ambientClassOverloadForFunction.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/ambientClassOverloadForFunction.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/ambientClassOverloadForFunction.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/ambientClassOverloadForFunction.ts`
+- `reference/typescript/tests/cases/compiler/ambientClassOverloadForFunction.ts`
 
 ## Duplicate detection
 

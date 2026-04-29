@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Aliasesinsystemmodule` fails with
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/aliasesInSystemModule1.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasesInSystemModule1.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/aliasesInSystemModule1.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasesInSystemModule1.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/aliasesInSystemModule1.ts`
+Representative path: `reference/typescript/tests/cases/compiler/aliasesInSystemModule1.ts`
 Feature label: `unknown-unsupported`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/aliasesInSystemModule1.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/aliasesInSystemModule1.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasesInSystemModule1.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasesInSystemModule1.ts --detail
 ```
 
 Not run:
@@ -115,8 +115,8 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/aliasesInSystemModule1.ts`
-- `reference/TypeScript/tests/cases/compiler/aliasesInSystemModule2.ts`
+- `reference/typescript/tests/cases/compiler/aliasesInSystemModule1.ts`
+- `reference/typescript/tests/cases/compiler/aliasesInSystemModule2.ts`
 
 ## Duplicate detection
 

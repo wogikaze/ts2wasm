@@ -7,7 +7,7 @@ Usage:
 
 Suites:
   test262   -> reference/test262/test/**/*.js
-  tsc       -> reference/TypeScript/tests/cases/compiler/**/*.ts
+  tsc       -> reference/typescript/tests/cases/compiler/**/*.ts
   tsgo      -> reference/typescript-go/testdata/tests/**
 
 Notes:
@@ -50,9 +50,9 @@ SUITE_METADATA = {
         "name": "TypeScript compiler cases",
         "repo_path": REFERENCE_ROOT / "TypeScript",
         "path": REFERENCE_ROOT / "TypeScript" / "tests" / "cases" / "compiler",
-        "pattern": "reference/TypeScript/tests/cases/compiler/**/*.ts",
-        "clone_cmd": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/TypeScript",
-        "clone_hint": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/TypeScript",
+        "pattern": "reference/typescript/tests/cases/compiler/**/*.ts",
+        "clone_cmd": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/typescript",
+        "clone_hint": "git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/typescript",
     },
     "tsgo": {
         "name": "typescript-go testdata",
@@ -108,7 +108,7 @@ def usage():
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
-    print("  tsc       -> reference/TypeScript/tests/cases/compiler/**/*.ts")
+    print("  tsc       -> reference/typescript/tests/cases/compiler/**/*.ts")
     print("  tsgo      -> reference/typescript-go/testdata/tests/**")
 
 def repo_relative(path):

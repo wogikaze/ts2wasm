@@ -345,10 +345,10 @@ const OFFICIAL_SAMPLE_CASES: &[(&str, &str)] = &[
     ),
     (
         "typescript",
-        "reference/TypeScript/tests/cases/compiler/FunctionDeclaration3.ts",
+        "reference/typescript/tests/cases/compiler/FunctionDeclaration3.ts",
     ),
     (
         "typescript",
-        "reference/TypeScript/tests/cases/compiler/2dArrays.ts",
+        "reference/typescript/tests/cases/compiler/2dArrays.ts",
     ),
 ];

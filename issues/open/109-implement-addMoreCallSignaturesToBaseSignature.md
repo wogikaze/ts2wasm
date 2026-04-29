@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Addmorecallsignaturestobasesignat
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts`
+Representative path: `reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts --detail
 ```
 
 Not run:
@@ -115,8 +115,8 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts`
-- `reference/TypeScript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature2.ts`
+- `reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature.ts`
+- `reference/typescript/tests/cases/compiler/addMoreCallSignaturesToBaseSignature2.ts`
 
 ## Duplicate detection
 

@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Aliasusageinorexpression` fails w
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/aliasUsageInOrExpression.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInOrExpression.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/aliasUsageInOrExpression.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasUsageInOrExpression.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/aliasUsageInOrExpression.ts`
+Representative path: `reference/typescript/tests/cases/compiler/aliasUsageInOrExpression.ts`
 Feature label: `unknown-unsupported`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/aliasUsageInOrExpression.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/aliasUsageInOrExpression.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInOrExpression.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasUsageInOrExpression.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/aliasUsageInOrExpression.ts`
+- `reference/typescript/tests/cases/compiler/aliasUsageInOrExpression.ts`
 
 ## Duplicate detection
 

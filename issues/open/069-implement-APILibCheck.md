@@ -26,16 +26,16 @@ Problem: generated reference bucket `Implement Apilibcheck` fails with `parser-s
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/APILibCheck.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/APILibCheck.ts
 ```
 
 Narrow coverage reproduction:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/APILibCheck.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/APILibCheck.ts --detail
 ```
 
-Representative path: `reference/TypeScript/tests/cases/compiler/APILibCheck.ts`
+Representative path: `reference/typescript/tests/cases/compiler/APILibCheck.ts`
 Feature label: `parser-syntax`
 
 ## Desired final state
@@ -89,8 +89,8 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-triage -- tsc reference/TypeScript/tests/cases/compiler/APILibCheck.ts
-mise run reference-coverage -- tsc --path-filter reference/TypeScript/tests/cases/compiler/APILibCheck.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/APILibCheck.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/APILibCheck.ts --detail
 ```
 
 Not run:
@@ -115,7 +115,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/TypeScript/tests/cases/compiler/APILibCheck.ts`
+- `reference/typescript/tests/cases/compiler/APILibCheck.ts`
 
 ## Duplicate detection
 

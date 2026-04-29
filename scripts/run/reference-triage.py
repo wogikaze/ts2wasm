@@ -3,7 +3,7 @@
 
 Usage:
   mise run reference-triage -- test262 reference/test262/test/built-ins/Date/now.js
-  mise run reference-triage -- --format json tsc reference/TypeScript/tests/cases/compiler/foo.ts
+  mise run reference-triage -- --format json tsc reference/typescript/tests/cases/compiler/foo.ts
 """
 
 from __future__ import annotations
