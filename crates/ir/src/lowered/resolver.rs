@@ -21,6 +21,7 @@ struct Resolver<'a> {
     regexp_literal_locals: HashSet<LocalId>,
     bigint_locals: HashSet<LocalId>,
     array_locals: HashSet<LocalId>,
+    native_set_add_locals: HashSet<LocalId>,
     current_class: Option<String>,
     in_constructor: bool,
 }
@@ -74,6 +75,7 @@ impl<'a> Resolver<'a> {
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            native_set_add_locals: HashSet::new(),
             current_class: None,
             in_constructor: false,
         }
@@ -114,6 +116,7 @@ impl<'a> Resolver<'a> {
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            native_set_add_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
         };
@@ -203,6 +206,7 @@ impl<'a> Resolver<'a> {
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
+                self.update_native_set_add_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -239,6 +243,7 @@ impl<'a> Resolver<'a> {
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
+                self.update_native_set_add_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
                 } else {
@@ -857,6 +862,12 @@ impl<'a> Resolver<'a> {
                         args: vec![LoweredExpr::Local(obj_local)],
                     });
                 }
+                if is_set_prototype_property(object, key, "add") {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "SetPrototypeAddGet".to_owned(),
+                        args: Vec::new(),
+                    });
+                }
                 Ok(LoweredExpr::PropertyGet {
                     obj: Box::new(self.lower_expr(object)?),
                     key: key.clone(),
@@ -927,6 +938,16 @@ impl<'a> Resolver<'a> {
                 args,
                 span,
             } => {
+                if method == "call" && is_set_prototype_property_expr(object, "originalAdd") {
+                    return self.lower_native_set_add_call(args, *span);
+                }
+                if method == "call"
+                    && let ResolvedExpr::Ident(name) = object.as_ref()
+                    && let Ok(local_id) = self.resolve_local(name)
+                    && self.native_set_add_locals.contains(&local_id)
+                {
+                    return self.lower_native_set_add_call(args, *span);
+                }
                 if method.starts_with('#') {
                     if let Some(method_id) = self.current_static_private_method_id(method) {
                         let same_class_static_receiver = match object.as_ref() {
@@ -1367,6 +1388,20 @@ impl<'a> Resolver<'a> {
                 if is_private_field_storage_key(key) {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
+                if is_set_prototype_property(object, key, "add") {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "SetPrototypeAddSet".to_owned(),
+                        args: vec![self.lower_set_prototype_add_assignment_value(value)?],
+                    });
+                }
+                if is_set_prototype_property(object, key, "originalAdd")
+                    && is_set_prototype_property_expr(value, "add")
+                {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "SetPrototypeAddGet".to_owned(),
+                        args: Vec::new(),
+                    });
+                }
                 if key.starts_with('#') {
                     if let Some(setter_id) = self.current_private_setter_id(key) {
                         if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
@@ -1600,6 +1635,39 @@ impl<'a> Resolver<'a> {
             lowered.push((key.clone(), self.lower_expr(value)?));
         }
         Ok(lowered)
+    }
+
+    fn lower_set_prototype_add_assignment_value(
+        &mut self,
+        value: &ResolvedExpr,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if let ResolvedExpr::Ident(name) = value
+            && let Ok(func_id) = self.resolve_func(name)
+        {
+            return Ok(LoweredExpr::Number(func_id.0 as i32));
+        }
+        self.lower_expr(value)
+    }
+
+    fn lower_native_set_add_call(
+        &mut self,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if args.len() != 2 {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: format!(
+                    "Set.prototype.add.call expects receiver and value arguments, got {}",
+                    args.len()
+                ),
+                span: Some(span),
+            });
+        }
+        Ok(LoweredExpr::RuntimeCall {
+            runtime_fn: "SetAdd".to_owned(),
+            args: vec![self.lower_expr(&args[0])?, self.lower_expr(&args[1])?],
+        })
     }
 
     fn lower_binding_pattern_declarations(
@@ -2446,6 +2514,14 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    fn update_native_set_add_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if is_set_prototype_property_expr(expr, "add") {
+            self.native_set_add_locals.insert(local_id);
+        } else {
+            self.native_set_add_locals.remove(&local_id);
+        }
+    }
+
     fn is_known_array_expr(&self, expr: &ResolvedExpr) -> bool {
         match expr {
             ResolvedExpr::Array(_) => true,
@@ -2613,6 +2689,28 @@ fn private_storage_observable_access_diagnostic(span: Option<Span>) -> Diagnosti
         message: "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice".to_owned(),
         span,
     }
+}
+
+fn is_set_prototype_property(object: &ResolvedExpr, key: &str, expected_key: &str) -> bool {
+    key == expected_key && matches_set_prototype_object(object)
+}
+
+fn is_set_prototype_property_expr(expr: &ResolvedExpr, expected_key: &str) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    is_set_prototype_property(object, key, expected_key)
+}
+
+fn matches_set_prototype_object(expr: &ResolvedExpr) -> bool {
+    let ResolvedExpr::PropertyAccess { object, key, .. } = expr else {
+        return false;
+    };
+    key == "prototype"
+        && matches!(
+            object.as_ref(),
+            ResolvedExpr::Ident(name) if name == "Set"
+        )
 }
 
 fn unsupported_array_map_diagnostic(span: Option<Span>) -> Diagnostic {

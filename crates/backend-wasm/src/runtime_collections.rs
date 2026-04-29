@@ -719,7 +719,7 @@ impl WatEmitter<'_> {
               (i32.add
                 (i32.const {array_header})
                 (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        (drop (call $set_add (local.get $set) (local.get $value)))
+        (drop (call $set_add_dispatch (local.get $set) (local.get $value)))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $values)))
     (local.get $set))
@@ -733,6 +733,25 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
         ));
+    }
+
+    pub(super) fn emit_set_prototype_add_get(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_add_get (result i32)
+    (global.get $set_prototype_add))
+"#,
+        );
+    }
+
+    pub(super) fn emit_set_prototype_add_set(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $set_prototype_add_set (param $value i32) (result i32)
+    (global.set $set_prototype_add (local.get $value))
+    (local.get $value))
+"#,
+        );
     }
 
     pub(super) fn emit_set_values_array(&self, wat: &mut String) {

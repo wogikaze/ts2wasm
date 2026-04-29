@@ -8,7 +8,7 @@ use ts2wasm_ir::lowered::{
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::runtime_fn::{RuntimeFn, RuntimeGlobal};
+use super::runtime_fn::{NATIVE_SET_ADD_SENTINEL, RuntimeFn, RuntimeGlobal};
 use super::runtime_link_plan::RuntimeLinkPlan;
 use super::wat_writer::WatModuleBuilder;
 
@@ -165,6 +165,13 @@ impl<'a> WatEmitter<'a> {
         self.emit_builtin_error_prototype_globals(&mut wat);
         self.emit_data_segments(&mut wat);
         self.emit_runtime(&mut wat);
+        if self
+            .link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::SetFromArray)
+        {
+            self.emit_set_add_dispatcher(&mut wat);
+        }
         if self
             .link_plan
             .required_runtime_functions()
@@ -1208,6 +1215,42 @@ impl<'a> WatEmitter<'a> {
         }
 
         wat.push_str("    (local.get $value))\n");
+    }
+
+    fn emit_set_add_dispatcher(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            "  (func $set_add_dispatch (param $set i32) (param $value i32) (result i32)\n    (local $callback i32)\n    (local $id i32)\n    (local.set $callback (global.get $set_prototype_add))\n    (if (i32.eq (local.get $callback) (i32.const {native}))\n      (then (return (call $set_add (local.get $set) (local.get $value)))))\n    (if (i32.ne (i32.and (local.get $callback) (i32.const {tag_mask})) (i32.const {number_tag}))\n      (then (return (i32.const {undefined}))))\n    (local.set $id (i32.shr_s (local.get $callback) (i32.const {number_shift})))\n",
+            native = NATIVE_SET_ADD_SENTINEL,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            undefined = ValueTag::UNDEFINED,
+            number_shift = ValueTag::NUMBER_SHIFT,
+        ));
+
+        for function in &self.program.functions {
+            wat.push_str(&format!(
+                "    (if (i32.eq (local.get $id) (i32.const {}))\n      (then\n",
+                function.id.0
+            ));
+            let mut supplied = 0usize;
+            if function.uses_receiver {
+                wat.push_str("        (local.get $set)\n");
+                supplied += 1;
+            }
+            if supplied < function.params.len() {
+                wat.push_str("        (local.get $value)\n");
+                supplied += 1;
+            }
+            for _ in supplied..function.params.len() {
+                wat.push_str(&format!("        (i32.const {})\n", ValueTag::UNDEFINED));
+            }
+            wat.push_str(&format!(
+                "        (return (call ${}))))\n",
+                function_symbol(function.id)
+            ));
+        }
+
+        wat.push_str("    (call $set_add (local.get $set) (local.get $value)))\n");
     }
 
     fn emit_module_initializers(&self, wat: &mut String) {
