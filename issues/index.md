@@ -23,7 +23,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | implementation-ready | P1 |  | `JSON.stringify` currently supports a narrow object-literal array replacer subset and diagnoses function replacers an... |
 | 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | implementation-ready | P2 |  | `JSON.stringify` has validated narrow boxed `space` handling, but broader boxed and object-coercion edge cases are no... |
 | 052f | Implement JSON.parse throw-compatible diagnostics | feature | runtime/builtins | implementation-ready | P1 |  | Invalid `JSON.parse` cases are now rejected in many paths, but iwasm usually traps with `Exception: unreachable` inst... |
-| 060a | Close unknown-unsupported fixed-window spike | spike | frontend | verification-ready | P1 |  | Unknown-unsupported classification has reached zero in large test262 windows, but the parent spike has no fixed compl... |
 | 062c | Implement ordinary function declarations and direct calls | feature | frontend/semantics | implementation-ready | P1 |  | Ordinary function declarations and direct calls are a separate callable |
 | 062d | Implement function this and arguments semantics | feature | frontend/semantics | implementation-ready | P1 |  | Function receiver binding and the `arguments` object have observable |
 | 062e | Implement function closures | feature | frontend/semantics | implementation-ready | P1 |  | Captured lexical environments require different resolver, lowering, |
@@ -44,7 +43,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 059 | Implement parser syntax extensions for TypeScript and advanced JS | feature | frontend | class: blocked | Implement parser syntax extensions for TypeScript and advanced JS |
-| 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | class: blocked | Investigate and classify unknown-unsupported diagnostic cases |
 | 062 | Implement function support | feature | frontend | class: blocked | Implement function support |
 | 064 | Implement name resolution | spike | reference | class: triage-needed | Implement name resolution |
 | 066 | Implement RegExp literal support | spike | reference | class: triage-needed | Implement RegExp literal support |
@@ -255,6 +253,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 057 | Implement function resolution for function calls | feature | frontend | see `issues/done/057-implement-function-resolution.md` |
 | 058 | Implement equality operators (==, !=, ===, !==) | feature | runtime/semantics | see `issues/done/058-implement-equality-operators.md` |
 | 059a | Implement TypeScript satisfies and const assertion erasure | feature | frontend | see `issues/done/059a-implement-typescript-satisfies-and-const-assertion-erasure.md` |
+| 060 | Investigate and classify unknown-unsupported diagnostic cases | spike | frontend | see `issues/done/060-investigate-unknown-unsupported-cases.md` |
+| 060a | Close unknown-unsupported fixed-window spike | spike | frontend | see `issues/done/060a-close-unknown-unsupported-fixed-window-spike.md` |
 | 061 | Implement Date object support | feature | frontend | see `issues/done/061-implement-date.md` |
 | 061a | Merge Date reference issue into Date epic | cleanup | issues | see `issues/done/061a-merge-date-reference-issue-into-date-epic.md` |
 | 062a | Split function epic into callable child issues | cleanup | issues | see `issues/done/062a-split-function-epic-into-callable-child-issues.md` |
