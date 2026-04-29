@@ -26,6 +26,7 @@ struct Resolver<'a> {
     regexp_literal_locals: HashSet<LocalId>,
     bigint_locals: HashSet<LocalId>,
     array_locals: HashSet<LocalId>,
+    string_literal_locals: HashMap<LocalId, String>,
     native_set_add_locals: HashSet<LocalId>,
     current_class: Option<String>,
     in_constructor: bool,
@@ -89,6 +90,7 @@ impl<'a> Resolver<'a> {
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: None,
             in_constructor: false,
@@ -139,6 +141,7 @@ impl<'a> Resolver<'a> {
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
@@ -289,6 +292,7 @@ impl<'a> Resolver<'a> {
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
+                self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
@@ -326,6 +330,7 @@ impl<'a> Resolver<'a> {
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
+                self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);
                 if let Some(props) = function_props {
                     self.object_function_props.insert(local_id, props);
@@ -1841,26 +1846,13 @@ impl<'a> Resolver<'a> {
                         for elem in elements {
                             lowered_args.push(self.lower_expr(elem)?);
                         }
-                    } else if let ResolvedExpr::String(value) = spread_expr.as_ref() {
-                        if !value.is_ascii() {
-                            return Err(Diagnostic {
-                                code: DiagCode::UnsupportedSyntax,
-                                message:
-                                    "issue-274: string literal call spread is currently limited to ASCII strings"
-                                        .to_owned(),
-                                span: None,
-                            });
-                        }
-                        lowered_args.extend(
-                            value
-                                .chars()
-                                .map(|ch| LoweredExpr::String(ch.to_string())),
-                        );
+                    } else if let Some(value) = self.static_string_spread_value(spread_expr) {
+                        lowered_args.extend(Self::lower_ascii_string_call_spread_chars(&value)?);
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
                             message:
-                                "issue-274: spread arguments are only supported for literal arrays and ASCII string literals in this milestone"
+                                "issue-274: spread arguments are only supported for literal arrays and ASCII literal-derived strings in this milestone"
                                     .to_owned(),
                             span: None,
                         });
@@ -1870,6 +1862,38 @@ impl<'a> Resolver<'a> {
             }
         }
         Ok(lowered_args)
+    }
+
+    fn static_string_spread_value(&self, spread_expr: &ResolvedExpr) -> Option<String> {
+        match spread_expr {
+            ResolvedExpr::String(value) => Some(value.clone()),
+            ResolvedExpr::Ident(name) => {
+                let local_id = self.resolve_local(name).ok()?;
+                if self.env_cell_locals.contains(&local_id) {
+                    return None;
+                }
+                self.string_literal_locals.get(&local_id).cloned()
+            }
+            _ => None,
+        }
+    }
+
+    fn lower_ascii_string_call_spread_chars(
+        value: &str,
+    ) -> Result<Vec<LoweredExpr>, Diagnostic> {
+        if !value.is_ascii() {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-274: string call spread is currently limited to ASCII literal-derived strings"
+                        .to_owned(),
+                span: None,
+            });
+        }
+        Ok(value
+            .chars()
+            .map(|ch| LoweredExpr::String(ch.to_string()))
+            .collect())
     }
 
     fn lower_array_literal(
@@ -3138,6 +3162,28 @@ impl<'a> Resolver<'a> {
             self.array_locals.insert(local_id);
         } else {
             self.array_locals.remove(&local_id);
+        }
+    }
+
+    fn update_string_literal_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
+        if let Some(value) = self.resolved_expr_static_string_value(expr) {
+            self.string_literal_locals.insert(local_id, value);
+        } else {
+            self.string_literal_locals.remove(&local_id);
+        }
+    }
+
+    fn resolved_expr_static_string_value(&self, expr: &ResolvedExpr) -> Option<String> {
+        match expr {
+            ResolvedExpr::String(value) => Some(value.clone()),
+            ResolvedExpr::Ident(name) => {
+                let local_id = self.resolve_local(name).ok()?;
+                if self.env_cell_locals.contains(&local_id) {
+                    return None;
+                }
+                self.string_literal_locals.get(&local_id).cloned()
+            }
+            _ => None,
         }
     }
 
