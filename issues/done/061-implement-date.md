@@ -2,7 +2,7 @@
 id: 061
 title: "Implement Date object support"
 type: feature
-area: frontend
+area: runtime/builtins
 class: blocked
 priority: P1
 depends_on: []

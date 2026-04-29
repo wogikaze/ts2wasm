@@ -2,7 +2,7 @@
 id: 190
 title: "Implement Anymappedtypeserror"
 type: spike
-area: reference
+area: frontend/syntax
 class: docs-ready
 priority: P1
 depends_on: []

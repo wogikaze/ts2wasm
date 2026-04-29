@@ -2,7 +2,7 @@
 id: 063
 title: "Implement function resolution"
 type: feature
-area: frontend
+area: frontend/resolver
 class: blocked
 priority: P1
 depends_on: []

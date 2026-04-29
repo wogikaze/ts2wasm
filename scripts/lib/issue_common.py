@@ -212,6 +212,44 @@ def escape_cell(value: str) -> str:
     return value.replace("|", "\\|")
 
 
+def area_group(area: str) -> str:
+    value = area.strip()
+    if not value:
+        return "unspecified"
+    return value.split("/", 1)[0]
+
+
+def render_summary_table(issues: list[Issue]) -> str:
+    totals: dict[str, dict[str, int]] = {}
+    for issue in issues:
+        if issue.path.name.startswith("000-") or "sample" in issue.path.name:
+            continue
+        area = area_group(issue.area)
+        row = totals.setdefault(area, {"total": 0, "open": 0, "resolved": 0})
+        row["total"] += 1
+        if issue.state == "open":
+            row["open"] += 1
+        elif issue.state == "done":
+            row["resolved"] += 1
+
+    lines = [
+        "| Area | Total | Open | Resolved |",
+        "|---|---:|---:|---:|",
+    ]
+    grand_total = {"total": 0, "open": 0, "resolved": 0}
+    for area in sorted(totals):
+        row = totals[area]
+        grand_total["total"] += row["total"]
+        grand_total["open"] += row["open"]
+        grand_total["resolved"] += row["resolved"]
+        lines.append(f"| {escape_cell(area)} | {row['total']} | {row['open']} | {row['resolved']} |")
+
+    lines.append(
+        f"| total | {grand_total['total']} | {grand_total['open']} | {grand_total['resolved']} |"
+    )
+    return "\n".join(lines)
+
+
 def render_ready_table(issues: list[Issue], open_ids: set[str], blocked_ids: set[str]) -> str:
     lines = [
         "| ID | Title | Type | Area | Class | Priority | Depends on | Summary |",

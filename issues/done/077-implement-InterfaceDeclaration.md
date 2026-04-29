@@ -2,7 +2,7 @@
 id: 077
 title: "Implement Interfacedeclaration"
 type: spike
-area: reference
+area: frontend/syntax
 class: docs-ready
 priority: P1
 depends_on: []

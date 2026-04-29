@@ -2,7 +2,7 @@
 id: 062
 title: "Implement function support"
 type: feature
-area: frontend
+area: frontend/semantics
 class: blocked
 priority: P1
 depends_on: []
@@ -69,11 +69,11 @@ Expected:
 - `crates/frontend/src/`
 - `crates/cli/src/`
 - `fixtures/`
+- `scripts/run/reference-triage.py`
 
 Do not touch:
 
-- `crates/runtime-abi/`
-- `crates/backend-wasm/`
+- unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
 
 ## Acceptance criteria
 

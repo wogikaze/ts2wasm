@@ -2,7 +2,7 @@
 id: 201
 title: "Investigate and classify unknown-unsupported cases"
 type: spike
-area: reference
+area: reference/triage
 class: triage-needed
 priority: P1
 depends_on: []
@@ -62,13 +62,11 @@ Expected:
 
 - `issues/open/`
 - `scripts/run/reference-triage.py`
-- `crates/frontend/src/`
-- `crates/cli/src/`
 - `fixtures/`
 
 Do not touch:
 
-- unrelated runtime/backend files unless `reference-triage` proves the failure is not parser/frontend
+- implementation code until the triage report assigns a concrete frontend/runtime/backend owner
 
 ## Acceptance criteria
 

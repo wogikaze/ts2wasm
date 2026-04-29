@@ -36,6 +36,7 @@ from issue_common import (
     render_blocked_table,
     render_done_table,
     render_ready_table,
+    render_summary_table,
     replace_generated_block,
 )
 
@@ -217,12 +218,19 @@ def main() -> int:
 
         # Compute expected tables
         blocked_ids = compute_blocked_ids(issues, open_ids)
+        expected_summary = render_summary_table(issues)
         expected_ready = render_ready_table(issues, open_ids, blocked_ids)
         expected_blocked = render_blocked_table(issues, blocked_ids)
         expected_done = render_done_table(issues)
 
         expected_index = replace_generated_block(
             index_content,
+            "<!-- generated:summary:start -->",
+            "<!-- generated:summary:end -->",
+            expected_summary,
+        )
+        expected_index = replace_generated_block(
+            expected_index,
             "<!-- generated:ready:start -->",
             "<!-- generated:ready:end -->",
             expected_ready,
