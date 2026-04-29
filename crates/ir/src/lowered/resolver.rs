@@ -360,7 +360,7 @@ impl<'a> Resolver<'a> {
                 if *op == UnaryOp::Delete {
                     // Lower delete to PropertyDelete or PropertyDeleteDynamic
                     match expr.as_ref() {
-                        ResolvedExpr::PropertyAccess { object, key } => {
+                        ResolvedExpr::PropertyAccess { object, key, .. } => {
                             Ok(LoweredExpr::PropertyDelete {
                                 object: Box::new(self.lower_expr(object)?),
                                 key: key.clone(),
@@ -609,15 +609,29 @@ impl<'a> Resolver<'a> {
                     args: lowered_args,
                 })
             }
-            ResolvedExpr::BuiltinProperty { builtin, object } => match builtin {
-                BuiltinPropertyId::Length => {
-                    Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?)))
-                }
+            ResolvedExpr::BuiltinProperty {
+                builtin,
+                object,
+                span,
+            } => match builtin {
+                BuiltinPropertyId::Length => match object.as_ref() {
+                    ResolvedExpr::Ident(name) if self.resolve_func(name).is_ok() => {
+                        self.lower_function_metadata_property(name, "length", *span)
+                    }
+                    _ => Ok(LoweredExpr::GetLength(Box::new(self.lower_expr(object)?))),
+                },
             },
-            ResolvedExpr::PropertyAccess { object, key } => Ok(LoweredExpr::PropertyGet {
-                obj: Box::new(self.lower_expr(object)?),
-                key: key.clone(),
-            }),
+            ResolvedExpr::PropertyAccess { object, key, span } => {
+                if let ResolvedExpr::Ident(name) = object.as_ref()
+                    && self.resolve_func(name).is_ok()
+                {
+                    return self.lower_function_metadata_property(name, key, *span);
+                }
+                Ok(LoweredExpr::PropertyGet {
+                    obj: Box::new(self.lower_expr(object)?),
+                    key: key.clone(),
+                })
+            },
             ResolvedExpr::ComputedIndex { object, index } => {
                 // Lower the object first to determine its type
                 let lowered_object = self.lower_expr(object)?;
@@ -1189,6 +1203,50 @@ impl<'a> Resolver<'a> {
 
     fn is_function_identifier(&self, expr: &ResolvedExpr) -> bool {
         matches!(expr, ResolvedExpr::Ident(name) if self.resolve_func(name).is_ok())
+    }
+
+    fn lower_function_metadata_property(
+        &self,
+        name: &str,
+        key: &str,
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let func_id = self.resolve_func(name)?;
+        match key {
+            "name" => Ok(LoweredExpr::String(name.to_owned())),
+            "length" => {
+                let signature = self
+                    .function_signatures
+                    .get(&func_id)
+                    .copied()
+                    .unwrap_or_default();
+                if let Some(length) = signature.metadata_length {
+                    Ok(LoweredExpr::Number(length as i32))
+                } else {
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-062f: function `{name}` length metadata is only supported for fixed-arity function declarations"
+                        ),
+                        span: Some(span),
+                    })
+                }
+            }
+            "prototype" => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062f: function `{name}` prototype metadata is not supported in this slice"
+                ),
+                span: Some(span),
+            }),
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062f: function `{name}` metadata property `{key}` is not supported"
+                ),
+                span: Some(span),
+            }),
+        }
     }
 
     fn lower_arrow_fn(

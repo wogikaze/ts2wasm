@@ -142,6 +142,7 @@ struct FunctionSignature {
     needs_receiver: bool,
     needs_arguments: bool,
     has_rest: bool,
+    metadata_length: Option<usize>,
 }
 
 fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, FuncId>, Diagnostic> {
@@ -240,6 +241,7 @@ fn collect_function_signatures(
                         needs_arguments: block_contains_arguments(body)
                             && !params.iter().any(|(name, _, _)| name == "arguments"),
                         has_rest: params.iter().any(|(_, _, is_rest)| *is_rest),
+                        metadata_length: fixed_arity_metadata_length(params),
                     },
                 );
             }
@@ -289,6 +291,17 @@ fn collect_function_signatures(
 
 fn block_contains_this(stmts: &[ResolvedStmt]) -> bool {
     stmts.iter().any(stmt_contains_this)
+}
+
+fn fixed_arity_metadata_length(params: &[ResolvedParam]) -> Option<usize> {
+    if params
+        .iter()
+        .any(|(_, default, is_rest)| default.is_some() || *is_rest)
+    {
+        None
+    } else {
+        Some(params.len())
+    }
 }
 
 fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
