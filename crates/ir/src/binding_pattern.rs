@@ -5,6 +5,7 @@ pub struct ArrayBinding {
     pub index: usize,
     pub name: String,
     pub default: Option<BindingDefault>,
+    pub is_rest: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -81,7 +82,7 @@ fn parse_array_binding_pattern(
         if part.is_empty() {
             continue;
         }
-        let (target, default) = split_binding_default(part, span)?;
+        let (target, default, is_rest) = split_array_binding_target(part, span)?;
         reject_unsupported_target(target, span)?;
         if !is_identifier(target) {
             return Err(issue_251(
@@ -93,6 +94,7 @@ fn parse_array_binding_pattern(
             index,
             name: target.to_owned(),
             default,
+            is_rest,
         });
     }
     Ok(BindingPattern::Array(bindings))
@@ -166,7 +168,31 @@ fn split_binding_default(
     ))
 }
 
+fn split_array_binding_target(
+    part: &str,
+    span: Option<Span>,
+) -> Result<(&str, Option<BindingDefault>, bool), Diagnostic> {
+    let Some(rest_target) = part.strip_prefix("...") else {
+        let (target, default) = split_binding_default(part, span)?;
+        return Ok((target, default, false));
+    };
+    let target = rest_target.trim();
+    if target.contains('=') {
+        return Err(issue_251(
+            "rest binding default initializers are not supported in this runtime slice",
+            span,
+        ));
+    }
+    Ok((target, None, true))
+}
+
 fn reject_unsupported_target(target: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+    if target.trim().is_empty() {
+        return Err(issue_251(
+            "empty binding target is not supported in this runtime slice",
+            span,
+        ));
+    }
     if target.starts_with("...") {
         return Err(issue_251(
             "rest binding is not supported in this runtime slice",
