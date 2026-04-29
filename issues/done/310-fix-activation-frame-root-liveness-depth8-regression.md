@@ -3,12 +3,14 @@ id: 310
 title: "Fix activation-frame root liveness depth-8 regression"
 type: feature
 area: runtime/memory
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [309, 308, 300]
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-30
+status: done
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -46,12 +48,12 @@ root/heap evidence.
 
 In scope:
 
-- [ ] Reproduce the depth-8 regression caused by activation-frame root clearing.
-- [ ] Identify why clearing stale user-call or block-scoped locals exposes an
+- [x] Reproduce the depth-8 regression caused by activation-frame root clearing.
+- [x] Identify why clearing stale user-call or block-scoped locals exposes an
       invalid GC/free-list state or loses a still-live value.
-- [ ] Implement the smallest safe root-liveness narrowing, or record a smaller
+- [x] Implement the smallest safe root-liveness narrowing, or record a smaller
       blocker with exact evidence.
-- [ ] Preserve current depth-8 output and OOM trap behavior.
+- [x] Preserve current depth-8 output and OOM trap behavior.
 
 Out of scope:
 
@@ -71,7 +73,7 @@ Expected:
 - `issues/open/300-support-abc451-large-integer-number-boundary.md`
 - `issues/open/308-implement-abc451-depth9-gc-cadence-policy.md`
 - `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md`
-- `issues/open/310-fix-activation-frame-root-liveness-depth8-regression.md`
+- `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md`
 - `issues/index.md`
 
 Do not touch:
@@ -83,13 +85,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused reproduction or regression test covers the unsafe
+- [x] A focused reproduction or regression test covers the unsafe
       activation-frame root-clearing behavior.
-- [ ] If root-liveness narrowing is implemented, the depth-8 fixture still
+- [x] If root-liveness narrowing is implemented, the depth-8 fixture still
       matches Node under iwasm.
-- [ ] If no safe implementation is committed, the next blocker is documented
-      with exact allocation/root evidence and issue 309 remains blocked.
-- [ ] `oom_alloc_check_must_fail_iwasm` remains passing.
+- [x] Safe implementation committed; no smaller blocker was needed.
+- [x] `oom_alloc_check_must_fail_iwasm` remains passing.
 
 ## Validation
 
@@ -120,18 +121,18 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if runtime memory or GC policy changes
+- [x] affected
+- [x] updated: `docs/14-runtime-abi.md` if runtime memory or GC policy changes
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` if runtime facts change
+- [x] affected
+- [x] updated: `current-state.md` if runtime facts change
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated if this slice proves a smaller blocker
+- [x] none
+- [x] no smaller blocker needed
 
 ## Notes
 
@@ -144,16 +145,44 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- this commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: pass; 1 test passed
+date: 2026-04-30
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass; 1 test passed
+date: 2026-04-30
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 tests passed, including backend WAT contract verifying backend temp roots are cleared while user locals are not cleared
+date: 2026-04-30
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-30
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-04-30
+
+command: mise run check issues
+result: pass; issue health OK after copying parent test262 coverage artifact into the child worktree
+date: 2026-04-30
+
+command: direct block-scoped user-local clearing reproduction
+result: fail as expected; depth-8 traps at remaining-page guard with size=6140, block_size=6160, new_heap=12129576, memory_pages=185, needed_pages=1, remaining_pages=0, gc_free_list_max_body_size=2088
+date: 2026-04-30
+
+command: backend-temp root clearing depth-9 impacted run
+result: still traps under 185-page cap; remaining-page guard reports size=24572, block_size=24592, new_heap=12139256, memory_pages=185, needed_pages=1, remaining_pages=0, gc_free_list_max_body_size=12392
+date: 2026-04-30
 ```
 
 Remaining risks:
 
-- none
+- Depth-9 and official ABC451 sample compatibility remain issue 309 / issue 300 work.

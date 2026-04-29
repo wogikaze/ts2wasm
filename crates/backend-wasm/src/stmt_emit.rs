@@ -83,8 +83,10 @@ impl WatEmitter<'_> {
         loop_ctx: &mut LoopContext,
         frame: &LocalFrame,
     ) {
+        let pad = " ".repeat(indent);
         for statement in statements {
             self.emit_statement(wat, statement, indent, loop_ctx, frame);
+            self.emit_gc_backend_temp_roots_clear(wat, &pad, frame);
         }
     }
 

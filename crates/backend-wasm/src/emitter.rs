@@ -1417,6 +1417,21 @@ impl<'a> WatEmitter<'a> {
         self.emit_gc_root_mirror_slot(wat, pad, local_index, slot);
     }
 
+    pub(super) fn emit_gc_backend_temp_roots_clear(
+        &self,
+        wat: &mut String,
+        pad: &str,
+        frame: &LocalFrame,
+    ) {
+        for local_index in frame.backend_base..frame.total_local_count() {
+            wat.push_str(&format!(
+                "{pad}(local.set {local_index} (i32.const {}))\n",
+                ValueTag::UNDEFINED,
+            ));
+            self.emit_gc_root_mirror_index(wat, pad, local_index, frame);
+        }
+    }
+
     fn emit_gc_root_mirror_slot(
         &self,
         wat: &mut String,

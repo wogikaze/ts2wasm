@@ -431,6 +431,17 @@ mod tests {
         assert!(wat.contains(&format!(
             "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const {backend_last_offset})) (local.get {backend_last_local}))"
         )));
+        assert!(wat.contains(&format!(
+            "(local.set 1 (i32.const {}))",
+            ValueTag::UNDEFINED
+        )));
+        assert!(!wat.contains(&format!(
+            "(local.set 0 (i32.const {}))",
+            ValueTag::UNDEFINED
+        )));
+        assert!(wat.contains(
+            "(i32.store (i32.add (global.get $gc_call_frame_current) (i32.const 12)) (local.get 1))"
+        ));
         assert!(wat.contains("(call $gc_mark_call_frame_roots"));
         assert!(
             wat.contains("(global.set $gc_call_frame_top (global.get $gc_call_frame_current))")

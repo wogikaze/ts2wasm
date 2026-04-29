@@ -473,7 +473,10 @@ from `_start` as part of the GC root table allocation. Function entry registers 
 frame containing the previous-frame pointer, slot count, and mirrored local
 slots; every function return unregisters that frame before returning the saved
 result. This avoids allocating during function prologue, so heap parameters are
-not exposed to collection before registration.
+not exposed to collection before registration. Backend-owned temporary locals
+are cleared from the mirrored root slots at statement boundaries; user locals
+stay rooted until reassignment or frame pop so block-scope root narrowing does
+not introduce extra free-list fragmentation in recursive array workloads.
 
 Mark algorithm:
 
