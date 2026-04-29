@@ -3,7 +3,7 @@ id: 296
 title: "Support small-int exponentiation operator"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: [294]
@@ -54,13 +54,13 @@ non-negative integer exponents within the current tagged small-int range.
 
 In scope:
 
-- [ ] Add lowering/backend support for `BinaryOp::Power` over the current
+- [x] Add lowering/backend support for `BinaryOp::Power` over the current
   integer-backed number subset.
-- [ ] Cover dynamic right-hand exponents such as `2 ** i` where `i` is a loop
+- [x] Cover dynamic right-hand exponents such as `2 ** i` where `i` is a loop
   counter.
-- [ ] Keep unsupported BigInt exponentiation and out-of-range numeric behavior
+- [x] Keep unsupported BigInt exponentiation and out-of-range numeric behavior
   issue-linked or trapped rather than silently miscompiled.
-- [ ] Record the next ABC451 blocker after `**`, if the fixture advances.
+- [x] Record the next ABC451 blocker after `**`, if the fixture advances.
 
 Out of scope:
 
@@ -88,12 +88,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Focused fixture for small-int `**` matches Node output under `iwasm`.
-- [ ] Focused fixture covers dynamic exponent `2 ** i`.
-- [ ] `fixtures/atcoder/abc451-d-concat-power2.ts` advances past the
+- [x] Focused fixture for small-int `**` matches Node output under `iwasm`.
+- [x] Focused fixture covers dynamic exponent `2 ** i`.
+- [x] `fixtures/atcoder/abc451-d-concat-power2.ts` advances past the
   `binary operator Power not yet supported` blocker.
-- [ ] BigInt exponentiation remains issue-260-linked or is explicitly split.
-- [ ] No code path detects the ABC451 source text or substitutes another
+- [x] BigInt exponentiation remains issue-260-linked or is explicitly split.
+- [x] No code path detects the ABC451 source text or substitutes another
   program.
 
 ## Validation
@@ -121,40 +121,74 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
+- [x] not affected
 
 Current state:
 
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
-- [ ] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
+- [x] created/updated: `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md`
 
 ## Notes
 
 Prefer a small runtime helper or existing integer arithmetic path. Do not widen
 the runtime number model in this issue.
 
-## Completion evidence
+Progress on 2026-04-29:
 
-Fill only when moving to `done/`.
+- Added `BinaryOp::Power` lowering to `LoweredBinaryOp::Power` and linked it to
+  the existing tagged-number `$math_pow` runtime helper.
+- Added focused Node/iwasm differential coverage for constants and dynamic
+  loop-counter exponents in
+  `fixtures/core-semantics/small-int-exponentiation.ts`.
+- Added a BigInt exponentiation unsupported fixture proving the current path
+  remains issue-260-linked instead of using the number helper.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` advances past
+  `binary operator Power not yet supported` and now reaches:
+  `error: [UnsupportedSyntax] issue-211: unknown receiver class for method
+  map at 970..996`.
+
+## Completion evidence
 
 Commits:
 
-- `...`
+- child branch final commit: small-int exponentiation operator slice.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli small_int_exponentiation_fixture_matches_node_output_under_iwasm bigint_exponentiation_reports_issue_260
+result: pass, 2 passed
+date: 2026-04-29
+
+command: cargo run -q -- build fixtures/atcoder/abc451-d-concat-power2.ts -o /tmp/abc451-d-power-child.wasm --host-deny
+result: advanced past Power; next blocker is issue-211 unknown receiver class for method `map` at 970..996
+date: 2026-04-29
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-29
+
+command: mise run update-issue-index -- --check
+result: pass
+date: 2026-04-29
+
+command: mise run check issues
+result: pass after restoring ignored local artifact `artifacts/coverage/results/test262-results.jsonl` in this worktree
+date: 2026-04-29
+
+command: mise run check
+result: pass
+date: 2026-04-29
+
+command: cargo nextest run
+result: pass, 569 passed, 4 skipped
+date: 2026-04-29
 ```
 
 Remaining risks:
 
-- none
+- Out-of-scope fractional, negative-exponent, `NaN`, `Infinity`, BigInt, and
+  full `Math.pow` compatibility semantics remain tracked outside this issue.
