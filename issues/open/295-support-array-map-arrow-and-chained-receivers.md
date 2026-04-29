@@ -167,8 +167,15 @@ Progress on 2026-04-29:
 - Added a focused expression receiver split-map slice for
   `"a b\nc d".split("\n").map(row => row.split(" "))`, covered by
   `fixtures/core-semantics/array-map-arrow-expression-split.ts`.
+- Added a focused `String(n)` callback slice for dense arrays such as
+  `[1, -2, 0].map(n => String(n))`, covered by
+  `fixtures/core-semantics/array-map-arrow-string-constructor.ts`.
+- Deferred unary plus callback in this child because
+  `crates/frontend/src/parser/expressions.rs` currently parses unary `+` as a
+  no-op and the assignment's allowed files do not include frontend AST/parser
+  changes needed to preserve numeric conversion semantics.
 - Remaining issue-295 work: chained `trim().split(...).map(...)` receiver,
-  plus `String(n)` and unary plus callbacks.
+  plus unary plus callbacks.
 
 ## Completion evidence
 
