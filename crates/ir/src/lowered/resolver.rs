@@ -1,6 +1,7 @@
 struct Resolver<'a> {
     function_ids: &'a HashMap<String, FuncId>,
     function_signatures: &'a HashMap<FuncId, FunctionSignature>,
+    class_method_captures: &'a HashMap<FuncId, Vec<String>>,
     scopes: Vec<HashMap<String, LocalId>>,
     next_local_id: usize,
     locals: Vec<LocalId>,
@@ -46,6 +47,7 @@ impl<'a> Resolver<'a> {
     fn new(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
+        class_method_captures: &'a HashMap<FuncId, Vec<String>>,
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
         next_func_id: usize,
@@ -55,6 +57,7 @@ impl<'a> Resolver<'a> {
         Self {
             function_ids,
             function_signatures,
+            class_method_captures,
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -84,6 +87,7 @@ impl<'a> Resolver<'a> {
     fn with_params(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
+        class_method_captures: &'a HashMap<FuncId, Vec<String>>,
         params: &[String],
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
@@ -96,6 +100,7 @@ impl<'a> Resolver<'a> {
         let mut resolver = Self {
             function_ids,
             function_signatures,
+            class_method_captures,
             scopes: vec![HashMap::new()],
             next_local_id: 0,
             locals: Vec::new(),
@@ -1358,6 +1363,7 @@ impl<'a> Resolver<'a> {
                                 .map(|e| self.lower_expr(e))
                                 .collect::<Result<Vec<_>, _>>()?,
                         );
+                        self.append_class_method_captures(method_id, &mut lowered_args)?;
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
@@ -1438,6 +1444,7 @@ impl<'a> Resolver<'a> {
                                 .map(|e| self.lower_expr(e))
                                 .collect::<Result<Vec<_>, _>>()?,
                         );
+                        self.append_class_method_captures(method_id, &mut lowered_args)?;
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
@@ -1453,6 +1460,8 @@ impl<'a> Resolver<'a> {
                             .iter()
                             .map(|e| self.lower_expr(e))
                             .collect::<Result<Vec<_>, _>>()?;
+                        let mut lowered_args = lowered_args;
+                        self.append_class_method_captures(method_id, &mut lowered_args)?;
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
@@ -1498,6 +1507,7 @@ impl<'a> Resolver<'a> {
                         _,
                     >>(
                     )?);
+                    self.append_class_method_captures(method_id, &mut lowered_args)?;
 
                     Ok(LoweredExpr::Call {
                         kind: FunctionCallKind::User(method_id),
@@ -2242,6 +2252,29 @@ impl<'a> Resolver<'a> {
         Ok(lowered_args)
     }
 
+    fn append_class_method_captures(
+        &self,
+        method_id: FuncId,
+        lowered_args: &mut Vec<LoweredExpr>,
+    ) -> Result<(), Diagnostic> {
+        let Some(captures) = self.class_method_captures.get(&method_id) else {
+            return Ok(());
+        };
+
+        for capture in captures {
+            let local = self.resolve_local(capture).map_err(|_| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-289: class method capture `{capture}` is not available at this call site; escaped class lexical environments require heap environment support"
+                ),
+                span: None,
+            })?;
+            lowered_args.push(LoweredExpr::Local(local));
+        }
+
+        Ok(())
+    }
+
     fn lower_function_expr_call(
         &mut self,
         name: &str,
@@ -2417,19 +2450,20 @@ impl<'a> Resolver<'a> {
             &body_stmts,
             self.function_ids,
             self.function_signatures,
+            self.class_method_captures,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
-                LowerFunctionOptions {
-                    current_class: self.current_class.as_deref(),
-                    in_constructor: false,
-                    next_func_id: self.next_func_id,
-                    self_closure: active_self_name.map(|name| SelfClosureOptions {
-                        name,
-                        func_id,
-                        capture_names: &capture_names,
-                    }),
-                },
-            )?;
+            LowerFunctionOptions {
+                current_class: self.current_class.as_deref(),
+                in_constructor: false,
+                next_func_id: self.next_func_id,
+                self_closure: active_self_name.map(|name| SelfClosureOptions {
+                    name,
+                    func_id,
+                    capture_names: &capture_names,
+                }),
+            },
+        )?;
         self.next_func_id = lowered.next_func_id;
         self.generated_functions.push(lowered.function);
         self.generated_functions.extend(lowered.generated_functions);
@@ -2509,6 +2543,7 @@ impl<'a> Resolver<'a> {
             body,
             self.function_ids,
             self.function_signatures,
+            self.class_method_captures,
             self.class_parents.clone(),
             self.class_private_fields.clone(),
             LowerFunctionOptions {

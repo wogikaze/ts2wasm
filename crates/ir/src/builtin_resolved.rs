@@ -101,6 +101,7 @@ pub struct ClassMethod {
     pub name: String,
     pub params: Vec<ResolvedParam>,
     pub body: Vec<ResolvedStmt>,
+    pub captures: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

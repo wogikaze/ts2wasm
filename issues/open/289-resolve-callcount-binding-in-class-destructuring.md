@@ -180,6 +180,27 @@ result: pass
 
 Remaining scope: class-method lexical capture environments are still not implemented, so the issue remains open as PROGRESS rather than DONE.
 
+### Progress note: 2026-04-30 child-019dda15 issue-289
+
+Implemented the smallest validated class-method lexical capture slice: class
+methods that read immutable outer locals now carry those locals as hidden
+parameters at known class-method call sites. Added
+`fixtures/core-semantics/class-method-immutable-outer-capture.ts` and an IR
+lowering regression proving the hidden capture argument is appended.
+
+Mutable outer local captures, including the original `callCount = callCount + 1`
+bucket, remain unsupported with a spanned `issue-289` diagnostic because the
+current closure/class ABI has no shared mutable environment cell. Split that
+remaining work to
+`issues/open/301-implement-mutable-class-method-outer-environment-cells.md`.
+
+Validation:
+
+```text
+cargo nextest run -E 'test(class_method_outer_local_capture_reports_spanned_issue_289) or test(lowering_passes_immutable_class_method_outer_local_capture) or test(this_receiver_method_fixtures_match_node_output_under_iwasm)'
+result: pass, 3 passed
+```
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
