@@ -368,6 +368,81 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_array_sort_numeric(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_sort_numeric (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local $j i32)
+    (local $left_addr i32)
+    (local $right_addr i32)
+    (local $left_value i32)
+    (local $right_value i32)
+    (local $left_num i32)
+    (local $right_num i32)
+    (if (i32.ne (i32.and (local.get $arr) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (if (i32.lt_u (local.get $len) (i32.const 2)) (then (return (local.get $arr))))
+    (block $outer_done
+      (loop $outer_loop
+        (br_if $outer_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $j (i32.const {zero}))
+        (block $inner_done
+          (loop $inner_loop
+            (br_if $inner_done
+              (i32.ge_u
+                (i32.add (local.get $j) (i32.const {one}))
+                (local.get $len)))
+            (local.set $left_addr
+              (i32.add
+                (local.get $obj)
+                (i32.add
+                  (i32.const {array_header})
+                  (i32.shl (local.get $j) (i32.const {elem_shift})))))
+            (local.set $right_addr
+              (i32.add (local.get $left_addr) (i32.const 4)))
+            (local.set $left_value (i32.load (local.get $left_addr)))
+            (local.set $right_value (i32.load (local.get $right_addr)))
+            (if
+              (i32.or
+                (i32.ne
+                  (i32.and (local.get $left_value) (i32.const {tag_mask}))
+                  (i32.const {number_tag}))
+                (i32.ne
+                  (i32.and (local.get $right_value) (i32.const {tag_mask}))
+                  (i32.const {number_tag})))
+              (then (return (i32.const {undefined}))))
+            (local.set $left_num
+              (i32.shr_s (local.get $left_value) (i32.const {number_shift})))
+            (local.set $right_num
+              (i32.shr_s (local.get $right_value) (i32.const {number_shift})))
+            (if (i32.gt_s (local.get $left_num) (local.get $right_num))
+              (then
+                (i32.store (local.get $left_addr) (local.get $right_value))
+                (i32.store (local.get $right_addr) (local.get $left_value))))
+            (local.set $j (i32.add (local.get $j) (i32.const {one})))
+            (br $inner_loop)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $outer_loop)))
+    (local.get $arr))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            number_tag = ValueTag::NUMBER,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     pub(super) fn emit_array_join(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
