@@ -39,8 +39,9 @@ Supported private class fields and methods behave like Node for construction, ac
 
 In scope:
 
-- [ ] Define private-name representation and class brand storage.
-- [ ] Lower private fields, methods, getters, and setters for the supported class subset.
+- [x] Define an internal slot representation for the supported non-derived instance private field subset.
+- [ ] Define full private-name representation and class brand storage.
+- [ ] Lower private methods, getters, setters, static private elements, and derived private initialization.
 - [x] Reject unsupported private access forms with issue-linked diagnostics.
 - [x] Add Node/iwasm differential fixtures for supported private element behavior.
 
@@ -85,13 +86,38 @@ Split from issue 248 so parser support can close independently from runtime sema
 - Added Node/iwasm differential coverage: `fixtures/core-semantics/private-class-field-read-write.ts`.
 - Added unsupported diagnostics coverage: `fixtures/core-semantics/private-class-field-method-unsupported.ts`, `fixtures/core-semantics/private-class-field-external-unsupported.ts`, `fixtures/core-semantics/private-class-field-backing-key-unsupported.ts`, and `fixtures/core-semantics/private-class-field-object-keys-unsupported.ts`.
 
+2026-04-29 internal-slot progress slice:
+
+- Replaced supported `this.#field` read/write storage with backend-internal private slots instead of ordinary string-keyed properties.
+- Class instance allocation records the private slot count and appends private slot payload after the existing public-property capacity.
+- GC object marking now scans private slots so heap values retained only by supported private fields survive allocation pressure.
+- Kept conservative diagnostics for observable ordinary access/enumeration patterns that could otherwise mask private-storage leaks while full brand semantics remain open.
+- Added IR regression coverage for `PrivateFieldGet`/`PrivateFieldSet` lowering and private slot count allocation metadata.
+- Added Node/iwasm differential allocation-pressure coverage: `fixtures/core-semantics/private-class-field-internal-slot-gc.ts`.
+- Verified the parent review repro `c["__ts2wasm_private::Counter::value"]` fails with the issue-255 diagnostic instead of compiling to a wrong observable value.
+
 Validation recorded in the child branch:
 
 ```sh
 cargo fmt --all --check
+cargo nextest run -E 'test(lowering_represents_private_field_access_as_internal_slot_calls)'
 cargo nextest run -E 'test(private_class_field_read_write_fixture_matches_node_output_under_iwasm) or test(private_class_field_unsupported_forms_report_issue_255)'
 cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
 cargo nextest run
 mise run update-issue-index -- --check
 mise run check issues
+```
+
+Manual leak repro recorded:
+
+```sh
+tmp=/tmp/ts2wasm-255-private-leak.ts
+printf 'class Counter { #value = 7; read(){ return this.#value; } }\nlet c = new Counter();\nconsole.log(c["__ts2wasm_private::Counter::value"]);\n' > "$tmp"
+cargo run -q -p ts2wasm-cli -- build "$tmp" -o /tmp/ts2wasm-255-private-leak.wasm
+```
+
+Result:
+
+```text
+error: [UnsupportedSyntax] issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice
 ```

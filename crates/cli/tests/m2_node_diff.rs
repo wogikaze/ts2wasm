@@ -580,7 +580,12 @@ fn class_static_block_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
-    assert_fixture_matches_node("fixtures/core-semantics/private-class-field-read-write.ts");
+    for fixture in [
+        "fixtures/core-semantics/private-class-field-read-write.ts",
+        "fixtures/core-semantics/private-class-field-internal-slot-gc.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
 }
 
 #[test]

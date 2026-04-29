@@ -15,7 +15,7 @@ struct Resolver<'a> {
     class_method_ids: HashMap<(String, String), FuncId>,
     class_static_method_ids: HashMap<(String, String), FuncId>,
     class_parents: HashMap<String, Option<String>>,
-    class_private_fields: HashMap<String, HashSet<String>>,
+    class_private_fields: ClassPrivateFieldSlots,
     local_classes: HashMap<LocalId, String>,
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
@@ -45,7 +45,7 @@ impl<'a> Resolver<'a> {
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         class_parents: HashMap<String, Option<String>>,
-        class_private_fields: HashMap<String, HashSet<String>>,
+        class_private_fields: ClassPrivateFieldSlots,
         next_func_id: usize,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -82,7 +82,7 @@ impl<'a> Resolver<'a> {
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
         params: &[String],
         class_parents: HashMap<String, Option<String>>,
-        class_private_fields: HashMap<String, HashSet<String>>,
+        class_private_fields: ClassPrivateFieldSlots,
         current_class: Option<&str>,
         in_constructor: bool,
         next_func_id: usize,
@@ -765,10 +765,10 @@ impl<'a> Resolver<'a> {
                     return Err(private_storage_observable_access_diagnostic(Some(*span)));
                 }
                 if key.starts_with('#') {
-                    let storage_key = self.private_field_storage_key(object, key, *span)?;
-                    return Ok(LoweredExpr::PropertyGet {
-                        obj: Box::new(self.lower_expr(object)?),
-                        key: storage_key,
+                    let slot = self.private_field_slot(object, key, *span)?;
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "PrivateFieldGet".to_owned(),
+                        args: vec![self.lower_expr(object)?, LoweredExpr::Number(slot as i32)],
                     });
                 }
                 if let ResolvedExpr::Ident(name) = object.as_ref()
@@ -1211,12 +1211,14 @@ impl<'a> Resolver<'a> {
                     return Err(private_storage_observable_access_diagnostic(None));
                 }
                 if key.starts_with('#') {
-                    let storage_key =
-                        self.private_field_storage_key(object, key, Span { start: 0, end: 0 })?;
-                    return Ok(LoweredExpr::PropertySet {
-                        object: Box::new(self.lower_expr(object)?),
-                        key: storage_key,
-                        value: Box::new(self.lower_expr(value)?),
+                    let slot = self.private_field_slot(object, key, Span { start: 0, end: 0 })?;
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "PrivateFieldSet".to_owned(),
+                        args: vec![
+                            self.lower_expr(object)?,
+                            LoweredExpr::Number(slot as i32),
+                            self.lower_expr(value)?,
+                        ],
                     });
                 }
                 Ok(LoweredExpr::PropertySet {
@@ -1312,6 +1314,7 @@ impl<'a> Resolver<'a> {
                     prototype,
                     args: lowered_args,
                     base_local: self.alloc_temp(),
+                    private_slot_count: self.private_slot_count(class_name),
                 })
             }
             ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
@@ -1744,14 +1747,18 @@ impl<'a> Resolver<'a> {
         None
     }
 
-    fn private_field_storage_key(
+    fn private_field_slot(
         &self,
         object: &ResolvedExpr,
         key: &str,
         span: Span,
-    ) -> Result<String, Diagnostic> {
+    ) -> Result<usize, Diagnostic> {
         let Some(field_name) = key.strip_prefix('#') else {
-            return Ok(key.to_owned());
+            return Err(Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!("private field slot lookup requires private key, got `{key}`"),
+                span: Some(span),
+            });
         };
         if !matches!(object, ResolvedExpr::This { .. }) {
             return Err(Diagnostic {
@@ -1769,10 +1776,12 @@ impl<'a> Resolver<'a> {
             ),
             span: Some(span),
         })?;
-        if !self
+        let Some(slot) = self
             .class_private_fields
             .get(class_name)
-            .is_some_and(|fields| fields.contains(field_name))
+            .and_then(|fields| fields.get(field_name))
+            .copied()
+        else
         {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -1781,8 +1790,14 @@ impl<'a> Resolver<'a> {
                 ),
                 span: Some(span),
             });
-        }
-        Ok(private_field_storage_key(class_name, field_name))
+        };
+        Ok(slot)
+    }
+
+    fn private_slot_count(&self, class_name: &str) -> usize {
+        self.class_private_fields
+            .get(class_name)
+            .map_or(0, HashMap::len)
     }
 
     fn is_object_key_enumeration_leak(
@@ -2029,10 +2044,6 @@ fn class_maps(
     }
 
     (ctor_ids, method_ids, static_method_ids)
-}
-
-fn private_field_storage_key(class_name: &str, field_name: &str) -> String {
-    format!("{PRIVATE_FIELD_STORAGE_PREFIX}{class_name}::{field_name}")
 }
 
 const PRIVATE_FIELD_STORAGE_PREFIX: &str = "__ts2wasm_private::";

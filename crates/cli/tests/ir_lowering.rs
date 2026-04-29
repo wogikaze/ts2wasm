@@ -599,6 +599,71 @@ fn validate_accepts_heap_closure_creation_for_backend_dispatch() {
 }
 
 #[test]
+fn lowering_represents_private_field_access_as_internal_slot_calls() {
+    use ts2wasm_ir::lowered::{FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class Counter {
+          #value = 7;
+          read() { return this.#value; }
+          write(v) { this.#value = v; }
+        }
+
+        let c = new Counter();
+        console.log(c.read());
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    match &lowered.top_level_statements[0] {
+        LoweredStmt::Let(
+            LocalId(0),
+            LoweredExpr::New {
+                private_slot_count, ..
+            },
+        ) => assert_eq!(*private_slot_count, 1),
+        other => panic!("unexpected private class instance binding: {other:?}"),
+    }
+
+    let constructor = &lowered.functions[0];
+    match &constructor.body[0] {
+        LoweredStmt::Expr(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+            assert_eq!(runtime_fn, "PrivateFieldSet");
+            assert!(matches!(
+                args.as_slice(),
+                [
+                    LoweredExpr::Local(LocalId(0)),
+                    LoweredExpr::Number(0),
+                    LoweredExpr::Number(7)
+                ]
+            ));
+        }
+        other => panic!("unexpected private field initializer lowering: {other:?}"),
+    }
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+            assert_eq!(runtime_fn, "PrivateFieldGet");
+            assert!(matches!(
+                args.as_slice(),
+                [LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(0)]
+            ));
+        }
+        other => panic!("unexpected private field read lowering: {other:?}"),
+    }
+
+    match &lowered.top_level_statements[1] {
+        LoweredStmt::Expr(LoweredExpr::Call {
+            kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+            ..
+        }) => {}
+        other => panic!("unexpected console.log lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn builtin_console_log_contract_is_effect_only() {
     use ts2wasm_ir::builtin::{BuiltinId, BuiltinResult};
     assert_eq!(BuiltinId::ConsoleLog.expected_arity(), 1);
