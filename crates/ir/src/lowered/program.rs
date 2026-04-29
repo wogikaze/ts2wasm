@@ -2035,9 +2035,12 @@ fn lower_unary_op(op: UnaryOp) -> Result<LoweredUnaryOp, Diagnostic> {
         UnaryOp::Increment
         | UnaryOp::Decrement
         | UnaryOp::PreIncrement
-        | UnaryOp::PreDecrement
-        | UnaryOp::BitwiseNot
-        | UnaryOp::Void => Err(Diagnostic {
+        | UnaryOp::PreDecrement => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: format!("issue-268: unary operator {:?} not yet supported", op),
+            span: None,
+        }),
+        UnaryOp::BitwiseNot | UnaryOp::Void => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("unary operator {:?} not yet supported", op),
             span: None,
