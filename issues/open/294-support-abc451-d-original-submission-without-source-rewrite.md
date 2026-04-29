@@ -252,6 +252,17 @@ This issue is intentionally blocked because the fixture crosses several existing
 - Split issue 297 for the pushed dense array local tracking required by
   `powersOfTwo.map(n => String(n))`.
 
+2026-04-29 progress:
+
+- Added the issue-297 pushed dense array local tracking slice for functions
+  returning locals built from `[]` with supported `.push(...)` calls.
+- Verified `fixtures/atcoder/abc451-d-concat-power2.ts` advances beyond the
+  prior `issue-211: unknown receiver class for method map at 970..996`
+  blocker.
+- Current first failure is now:
+  `error: [DuplicateLocal] duplicate local binding: i`, after the
+  `allGoodIntStr.map(n => +n)` receiver is recognized.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
