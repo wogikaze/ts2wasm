@@ -1197,8 +1197,10 @@ impl WatEmitter<'_> {
              {pad}      (then\n\
              {pad}        (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1)))))\n\
              {pad}    (if (i32.lt_u (local.get {new_capacity}) (i32.const 4))\n\
-             {pad}      (if (i32.lt_u (local.get {new_capacity}) (i32.add (local.get {old_len}) (i32.const 1)))\n\
-             {pad}        (then (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1)))))\n\
+             {pad}      (then (local.set {new_capacity} (i32.const 4)))\n\
+             {pad}    )\n\
+             {pad}    (if (i32.lt_u (local.get {new_capacity}) (i32.add (local.get {old_len}) (i32.const 1)))\n\
+             {pad}      (then (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1))))\n\
              {pad}    (local.set {new_array}\n\
              {pad}      (call {}\n\
              {pad}        (i32.add\n\
