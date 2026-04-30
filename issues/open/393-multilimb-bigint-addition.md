@@ -79,8 +79,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic BigInt add with operands or results outside signed i64.
-- [ ] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
+- [ ] Node/iwasm differential fixtures cover dynamic BigInt add with operands or results outside signed i64, and existing signed-i64 slice fixtures from issue 260 continue to match Node.
 - [ ] Runtime linker structure tests cover any new multi-limb helper deps.
 - [ ] Docs/current-state/issues state the new addition boundary.
 

@@ -83,8 +83,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] BigInt bitwise NOT/AND/OR/XOR fixtures outside signed i64 match Node/iwasm, with no lowering through ordinary number bitwise helpers.
-- [ ] Unsupported mixed or exception forms have source-backed diagnostics or compatible TypeError behavior.
+- [ ] BigInt bitwise NOT/AND/OR/XOR fixtures outside signed i64 match Node/iwasm with no lowering through ordinary number bitwise helpers, and unsupported mixed or exception forms have source-backed diagnostics or compatible TypeError behavior.
 - [ ] Docs/current-state/issues are synchronized.
 
 ## Validation
