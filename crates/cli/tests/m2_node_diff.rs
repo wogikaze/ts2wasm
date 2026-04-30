@@ -17,7 +17,7 @@ use iwasm_runtime::{
 };
 
 use ts2wasm_shared::{TestRecord, TestStatus};
-#[path = "m2_node_diff_fixture_tests.rs"]
+#[path = "common/m2_node_diff_fixture_tests.rs"]
 mod m2_node_diff_fixture_tests;
 
 fn assert_fixture_matches_node(fixture: &str) {

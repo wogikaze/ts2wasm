@@ -3,6 +3,6 @@ function sameValue(actual, expected) {
     console.log(actual === expected);
 }
 
-let assert = { sameValue: sameValue };
+let checks = { sameValue: sameValue };
 
-assert.sameValue(1, 1);
+checks.sameValue(1, 1);

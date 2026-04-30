@@ -619,9 +619,17 @@ impl<'a> Resolver<'a> {
         }
 
         if signature.needs_arguments {
-            lowered_args.push(LoweredExpr::ArrayNew {
-                elements: explicit_args,
-            });
+            let argument_count = explicit_args.len();
+            let mut props = explicit_args
+                .into_iter()
+                .enumerate()
+                .map(|(index, arg)| (index.to_string(), arg))
+                .collect::<Vec<_>>();
+            props.push((
+                "length".to_owned(),
+                LoweredExpr::Number(argument_count as i32),
+            ));
+            lowered_args.push(LoweredExpr::ObjectNew { props });
         }
 
         Ok(lowered_args)
