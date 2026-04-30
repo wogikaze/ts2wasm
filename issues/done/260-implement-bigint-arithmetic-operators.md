@@ -166,8 +166,8 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
-- `829946d`
+- `bb28f4a4` close/split BigInt arithmetic slice and create follow-up issues
+- `829946d` prior issue-260 progress evidence
 
 Validation result:
 
@@ -206,4 +206,4 @@ Remaining risks:
 - Dynamic division/remainder by zero now reaches a runtime trap for the signed-i64-backed helper slice; compatible JavaScript `RangeError` throwing is tracked by issue 370.
 - BigInt bitwise/exponentiation policy is tracked by issue 371; complete runtime `TypeError` behavior for mixed Number/BigInt arithmetic is tracked by issue 370.
 
-Close/split decision (2026-05-01): issue 260 is closed as the implemented BigInt arithmetic slice: literal arbitrary-size folding plus signed-i64-backed dynamic unary/add/sub/mul/div/rem helpers, diagnostics for out-of-slice values and mixed arithmetic, and runtime trap evidence for zero division/remainder with Node `RangeError` baseline. Remaining future work is split to issue 369 (full multi-limb runtime arithmetic), issue 370 (`RangeError`/`TypeError` exception parity), and issue 371 (BigInt bitwise/exponentiation policy).
+Close/split decision (2026-05-01, commit `bb28f4a4`): issue 260 is closed as the implemented BigInt arithmetic slice: literal arbitrary-size folding plus signed-i64-backed dynamic unary/add/sub/mul/div/rem helpers, diagnostics for out-of-slice values and mixed arithmetic, and runtime trap evidence for zero division/remainder with Node `RangeError` baseline. Remaining future work is split to issue 369 (full multi-limb runtime arithmetic), issue 370 (`RangeError`/`TypeError` exception parity), and issue 371 (BigInt bitwise/exponentiation policy).
