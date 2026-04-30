@@ -175,6 +175,10 @@ Remaining risks:
   tests passed).
 - Selected Test262 representative rerun:
   `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
-  no longer reports raw `UnresolvedName: callCnt`; it now advances to
-  `[UnsupportedSyntax] issue-207: instanceof right-hand side must be a supported class constructor 'Array'`
-  in the Test262 assert shim.
+  no longer reports raw `UnresolvedName: callCnt`; parent rerun after merge
+  reports `[UnsupportedBuiltin] issue-404: top-level Array.prototype.map
+  callback mutation of outer binding \`callCnt\` requires mutable callback
+  environment lowering`.
+- Issue remains open. The focused fixture passes, but the selected Test262
+  representative still stops at the issue-404 mutable callback environment
+  boundary.
