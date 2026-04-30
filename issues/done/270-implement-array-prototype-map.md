@@ -18,7 +18,7 @@ shape `(value, index, array)`.
 
 This issue does not claim full `Array.prototype.map` compatibility. Sparse
 arrays, `thisArg`, `Array.prototype.map.call(...)`, async callbacks, generic
-callback allocation, and broad Test262 coverage are split to issue 318 or other
+callback allocation, and broad Test262 coverage are split to issue 334 or other
 more-specific follow-ups.
 
 ## Evidence
@@ -71,7 +71,7 @@ Next close bar resolution:
 
 - This issue is narrowed to the implemented dense-array named-callback slice.
 - Residual `Array.prototype.map` sparse/`thisArg`/Test262 semantics are split to
-  `issues/open/318-complete-array-map-sparse-thisarg-test262.md`.
+  `issues/open/334-complete-array-map-sparse-thisarg-test262.md`.
 
 ## Completion evidence
 

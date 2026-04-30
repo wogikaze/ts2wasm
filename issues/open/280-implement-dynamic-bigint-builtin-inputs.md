@@ -3,12 +3,12 @@ id: 280
 title: "Implement dynamic BigInt builtin inputs"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: verification-ready
 priority: P2
 depends_on: [259, 262]
 blocks: []
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -54,6 +54,7 @@ Expected:
 - `crates/ir/src/`
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/`
+- `crates/cli/tests/common/`
 - `fixtures/core-semantics/*bigint*`
 - `docs/language-reference/javascript-features.md`
 - `current-state.md`
@@ -115,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/333-implement-bigint-dynamic-string-exception-parity.md`
 
 ## Notes
 
@@ -175,6 +176,20 @@ widths through the runtime helper when the parsed width is within the existing
 `0..=64` slice. `fixtures/core-semantics/bigint-builtin-dynamic-as-int-n.ts`
 and `fixtures/core-semantics/bigint-builtin-dynamic-as-uint-n.ts` cover the
 string-width path with Node/iwasm differential output.
+
+2026-04-30 verification progress: the supported issue-280 dynamic subset is
+implemented and narrow BigInt validation passes with
+`cargo test -p ts2wasm-cli --test m2_node_diff bigint` (37 passed, 0 failed).
+The assigned `cargo nextest run -E 'test(bigint) or test(node_diff)'` command
+currently fails before executing issue-280 assertions because parent-state
+split test helpers compile as standalone test targets:
+`crates/cli/tests/common/m2_node_diff_fixture_tests.rs` reports
+`there are too many leading super keywords`, and
+`crates/frontend/src/lexer_tests.rs` cannot import lexer/parser symbols from
+its module context. Issue 280 is left open as verification-ready until that
+unrelated harness blocker is resolved and the assigned broad command can run.
+The remaining unknown dynamic invalid/out-of-range StringToBigInt runtime
+exception parity has been split to issue 333 rather than broadening issue 280.
 
 ## Completion evidence
 
