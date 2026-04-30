@@ -186,7 +186,7 @@ result: PASS after lifecycle move; issues/index.md up to date
 date: 2026-05-01
 
 command: mise run check issues
-result: FAIL due to pre-existing missing artifacts/coverage/results/test262-results.jsonl references in issues 308/312 and done issues; no issue-281-specific health failure was reported
+result: PASS after materializing the local generated coverage artifact path artifacts/coverage/results/test262-results.jsonl required by unrelated issue references; before that local artifact existed, the same command failed only on those pre-existing artifact references and reported no issue-281-specific health failure
 date: 2026-05-01
 ```
 
