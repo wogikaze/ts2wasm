@@ -55,9 +55,9 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` no longer reports a closed issue 273 blocker.
-- [ ] Any new blocker is represented by an open issue with evidence.
-- [ ] `cargo nextest run -p ts2wasm-cli array_map` still passes.
+- [x] `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` no longer reports a closed issue 273 blocker.
+- [x] Any new blocker is represented by an open issue with evidence.
+- [x] `cargo nextest run -p ts2wasm-cli array_map` still passes.
 
 ## Validation
 
@@ -73,4 +73,36 @@ mise run check issues
 
 ## Completion evidence
 
-Fill when moving to `done/`.
+Completed: 2026-05-01
+
+Outcome:
+
+- `reference-triage` now uses the same Test262 harness-preprocessed wasm input
+  as `reference-coverage`, so the representative case no longer reports the
+  closed `issue-273` function-expression initializer blocker or misleading
+  `Unknown` build-success output.
+- The remaining blocker is `issue-274` in the Test262 WASM harness shim:
+  `fnGlobalObject()` contains `(function() { return this; })()`, which hits the
+  existing direct function-expression call guard for `this` / `arguments`.
+- `issues/open/274-implement-spread-operator.md` records this exact
+  `Array.prototype.map` representative as another source-backed instance of the
+  open issue-274 harness blocker.
+
+Validation result:
+
+```text
+command: cargo fmt --all --check
+result: pass
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass
+
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js
+result: pass; reports UnsupportedSyntax / issue-274 at fnGlobalObject() instead of issue-273
+
+command: mise run update-issue-index -- --check
+result: pass
+
+command: mise run check issues
+result: pass
+```

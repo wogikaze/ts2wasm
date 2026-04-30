@@ -184,7 +184,19 @@ def source_summary(path: Path, suite: str, source: str) -> dict[str, Any]:
     return summary
 
 
-def parse_diagnostic(stderr: str, source: str, path: Path) -> DiagnosticInfo:
+def parse_diagnostic(returncode: int, stderr: str, source: str, path: Path) -> DiagnosticInfo:
+    if returncode == 0:
+        return DiagnosticInfo(
+            "BuildPass",
+            "ts2wasm build succeeded",
+            None,
+            None,
+            None,
+            None,
+            "build-pass",
+            "pass",
+        )
+
     diag_match = re.search(r"\[([A-Za-z0-9_]+)\]\s*(.*)", stderr)
     code = diag_match.group(1) if diag_match else "Unknown"
     message = diag_match.group(2).strip() if diag_match else stderr.strip().splitlines()[0][:240] if stderr.strip() else ""
@@ -205,6 +217,8 @@ def parse_diagnostic(stderr: str, source: str, path: Path) -> DiagnosticInfo:
         error_type = "compiler-invariant"
     elif code == "Unknown":
         error_type = "unknown"
+    elif code == "BuildPass":
+        error_type = "pass"
     else:
         error_type = "compiler-diagnostic"
 
@@ -388,6 +402,9 @@ return Err(Diagnostic {
 
 def suggestions_for(diagnostic: DiagnosticInfo) -> list[str]:
     suggestions = []
+    if diagnostic.error_type == "pass":
+        suggestions.append("No compiler blocker was found by the build step; use reference-coverage for semantic parity evidence.")
+        return suggestions
     if diagnostic.error_type == "parser-or-frontend-unsupported":
         suggestions.append("Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.")
         suggestions.append("Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.")
@@ -405,49 +422,75 @@ def suggestions_for(diagnostic: DiagnosticInfo) -> list[str]:
 
 def title_for(path: Path, diagnostic: DiagnosticInfo) -> str:
     stem = path.stem.replace("_", " ").replace("-", " ")
+    if diagnostic.error_type == "pass":
+        return f"Build pass: {stem}"
     feature = diagnostic.feature_label.replace("-", " ")
     return f"Triage {feature}: {stem}"
 
 
-def build_report(suite: str, path: Path, max_dump_chars: int) -> TriageReport:
+def prepare_triage_input(
+    suite: str, path: Path, tmp_dir: Path
+) -> tuple[Path, Path, str, str]:
     source = path.read_text(encoding="utf-8", errors="replace")
+    if suite != "test262":
+        return path, path, source, source
+
+    metadata = REFERENCE_COVERAGE.test262_runner.parse_test262_metadata(source)
+    REFERENCE_COVERAGE.test262_runner.HARNESS_DIR = REFERENCE_COVERAGE.test262_harness_dir_for(path)
+    build_input = tmp_dir / "test262-triage-wasm-input.js"
+    node_input = tmp_dir / "test262-triage-node-input.js"
+    build_source = REFERENCE_COVERAGE.test262_runner.build_test262_source(
+        path, source, metadata, target="wasm"
+    )
+    node_source = REFERENCE_COVERAGE.test262_runner.build_test262_source(
+        path, source, metadata, target="node"
+    )
+    build_input.write_text(build_source, encoding="utf-8")
+    node_input.write_text(node_source, encoding="utf-8")
+    return build_input, node_input, source, build_source
+
+
+def build_report(suite: str, path: Path, max_dump_chars: int) -> TriageReport:
     rel_path = repo_relative(path)
     reproduction_command = f"mise run reference-triage -- {suite} {rel_path}"
 
     with tempfile.TemporaryDirectory() as tmp_dir:
+        tmp_path = Path(tmp_dir)
+        build_input, oracle_input, source, diagnostic_source = prepare_triage_input(
+            suite, path, tmp_path
+        )
         out_wasm = Path(tmp_dir) / "out.wasm"
         build = run_command(
-            [str(TS2WASM_BINARY), "build", str(path), "-o", str(out_wasm)],
+            [str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
             timeout_seconds=12,
         )
+        diagnostic = parse_diagnostic(build.returncode, build.stderr, diagnostic_source, build_input)
+        title = title_for(path, diagnostic)
+        dumps = {
+            "tokens": dump_phase(build_input, "--tokens", max_dump_chars),
+            "ast": dump_phase(build_input, "--ast", max_dump_chars),
+            "resolved": dump_phase(build_input, "--resolved", max_dump_chars),
+        }
+        if build.returncode != 0 and diagnostic.error_type in {"backend-io", "compiler-invariant"}:
+            dumps["wat"] = dump_phase(build_input, "--wat", max_dump_chars)
 
-    diagnostic = parse_diagnostic(build.stderr, source, path)
-    title = title_for(path, diagnostic)
-    dumps = {
-        "tokens": dump_phase(path, "--tokens", max_dump_chars),
-        "ast": dump_phase(path, "--ast", max_dump_chars),
-        "resolved": dump_phase(path, "--resolved", max_dump_chars),
-    }
-    if build.returncode != 0 and diagnostic.error_type in {"backend-io", "compiler-invariant"}:
-        dumps["wat"] = dump_phase(path, "--wat", max_dump_chars)
-
-    return TriageReport(
-        suite=suite,
-        title=title,
-        path=rel_path,
-        reproduction_command=reproduction_command,
-        issue_class="triage-needed",
-        source_summary=source_summary(path, suite, source),
-        diagnostic=diagnostic,
-        source_context=line_context(source, diagnostic.line),
-        visible_symbols=collect_visible_symbols(source, diagnostic.span_start),
-        stack_trace=extract_stack_trace(build.stderr),
-        dump=dumps,
-        oracle=typescript_oracle(path, source, diagnostic),
-        duplicate_candidates=duplicate_candidates(title, rel_path, diagnostic.feature_label),
-        suggestions=suggestions_for(diagnostic),
-        rough_rust=rough_rust_suggestion(diagnostic, source),
-    )
+        return TriageReport(
+            suite=suite,
+            title=title,
+            path=rel_path,
+            reproduction_command=reproduction_command,
+            issue_class="none" if diagnostic.error_type == "pass" else "triage-needed",
+            source_summary=source_summary(path, suite, source),
+            diagnostic=diagnostic,
+            source_context=line_context(diagnostic_source, diagnostic.line),
+            visible_symbols=collect_visible_symbols(diagnostic_source, diagnostic.span_start),
+            stack_trace=extract_stack_trace(build.stderr),
+            dump=dumps,
+            oracle=typescript_oracle(oracle_input, source, diagnostic),
+            duplicate_candidates=duplicate_candidates(title, rel_path, diagnostic.feature_label),
+            suggestions=suggestions_for(diagnostic),
+            rough_rust=rough_rust_suggestion(diagnostic, diagnostic_source),
+        )
 
 
 def fenced(value: str, lang: str = "text") -> str:

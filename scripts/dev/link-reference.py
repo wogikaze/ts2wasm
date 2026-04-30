@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import subprocess
 import sys
 from pathlib import Path
 
@@ -33,8 +34,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--reference-root",
         type=Path,
-        default=DEFAULT_REFERENCE,
-        help="Source reference directory. Defaults to this repo's reference/.",
+        default=None,
+        help=(
+            "Source reference directory. Defaults to TS2WASM_REFERENCE_ROOT, "
+            "then this repo's reference/, then another git worktree's populated reference/."
+        ),
     )
     parser.add_argument(
         "--replace-broken",
@@ -42,6 +46,45 @@ def parse_args() -> argparse.Namespace:
         help="Replace existing broken corpus symlinks under reference/.",
     )
     return parser.parse_args()
+
+
+def git_worktree_reference_roots() -> list[Path]:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(REPO_ROOT), "worktree", "list", "--porcelain"],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+    except OSError:
+        return []
+    if result.returncode != 0:
+        return []
+    roots = []
+    for line in result.stdout.splitlines():
+        if line.startswith("worktree "):
+            roots.append(Path(line.removeprefix("worktree ")) / "reference")
+    return roots
+
+
+def has_corpus_entries(reference_root: Path) -> bool:
+    try:
+        return any(entry.is_dir() and not entry.is_symlink() for entry in reference_root.iterdir())
+    except FileNotFoundError:
+        return False
+
+
+def default_reference_root() -> Path:
+    if env_root := os.environ.get("TS2WASM_REFERENCE_ROOT"):
+        return Path(env_root)
+    if has_corpus_entries(DEFAULT_REFERENCE):
+        return DEFAULT_REFERENCE
+    for candidate in git_worktree_reference_roots():
+        if same_path(candidate, DEFAULT_REFERENCE):
+            continue
+        if has_corpus_entries(candidate):
+            return candidate
+    return DEFAULT_REFERENCE
 
 
 def same_path(left: Path, right: Path) -> bool:
@@ -126,9 +169,10 @@ def link_reference(worktree: Path, reference_root: Path, replace_broken: bool) -
 def main() -> int:
     args = parse_args()
     worktrees = args.worktrees or [REPO_ROOT]
+    reference_root = args.reference_root or default_reference_root()
     ok = True
     for worktree in worktrees:
-        ok = link_reference(worktree, args.reference_root, args.replace_broken) and ok
+        ok = link_reference(worktree, reference_root, args.replace_broken) and ok
     return 0 if ok else 1
 
 

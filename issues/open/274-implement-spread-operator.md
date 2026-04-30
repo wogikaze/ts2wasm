@@ -94,6 +94,8 @@ Child issues:
 - 2026-04-29: Added a focused function-expression call slice:
   - anonymous function expressions now parse in call position, and direct calls such as `(function(a, b, c) { console.log(a + b + c); }(...[3, 4, 5]))` lower to a generated function call with literal-array spread expansion and match Node/iwasm output;
   - broader function-expression spread calls that use `this`, `arguments`, rest parameters, or mutable captured outer locals remain explicitly guarded. The representative test262 case `language/expressions/call/spread-sngl-literal.js` now reaches the spread/IIFE boundary and reports `issue-274: direct function-expression spread calls with this or arguments require broader call-expression runtime support`.
+- 2026-05-01: issue 389 aligned `reference-triage` with the Test262 harness input and confirmed `reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` reaches the same harness blocker at `fnGlobalObject()`:
+  `issue-274: direct function-expression spread calls with this or arguments require broader call-expression runtime support`.
 - 2026-04-29: Added a Set-to-array spread slice:
   - array literal spread over a known `Set` local, such as `let copy = [...set]`, lowers through the existing `SetValuesArray` runtime helper and preserves insertion order under Node/iwasm differential coverage;
   - mixed array literals such as `[0, ...set]`, dynamic iterable spread, Map/custom iterable spread, and general iterator protocol semantics remain out of scope.
