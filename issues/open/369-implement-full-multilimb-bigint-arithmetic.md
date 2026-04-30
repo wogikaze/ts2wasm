@@ -5,7 +5,7 @@ type: feature
 area: runtime/semantics
 class: blocked
 priority: P2
-depends_on: [259, 260, 382, 383, 384]
+depends_on: [259, 260, 393, 394, 383, 391, 392]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -61,9 +61,11 @@ Out of scope:
 - BigInt equality/comparison/builtins except where tests need arithmetic setup.
 
 Split from this issue:
-- Issue 382: Multi-limb BigInt add/sub (focused on addition and subtraction)
+- Issue 393: Multi-limb BigInt addition (focused on addition)
+- Issue 394: Multi-limb BigInt subtraction (focused on subtraction)
 - Issue 383: Multi-limb BigInt multiplication (focused on multiplication)
-- Issue 384: Multi-limb BigInt division/remainder (focused on division and remainder)
+- Issue 391: Multi-limb BigInt division (focused on division)
+- Issue 392: Multi-limb BigInt remainder (focused on remainder)
 
 ## Affected paths
 

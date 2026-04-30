@@ -3,12 +3,13 @@ id: 389
 title: "Unblock Array.map generic Test262 representative with function-expression initializer"
 type: bug
 area: frontend/parser
-class: ready
+class: done
 priority: P2
 depends_on: [273, 340]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -81,12 +82,11 @@ Outcome:
   as `reference-coverage`, so the representative case no longer reports the
   closed `issue-273` function-expression initializer blocker or misleading
   `Unknown` build-success output.
-- The remaining blocker is `issue-274` in the Test262 WASM harness shim:
-  `fnGlobalObject()` contains `(function() { return this; })()`, which hits the
-  existing direct function-expression call guard for `this` / `arguments`.
-- `issues/open/274-implement-spread-operator.md` records this exact
-  `Array.prototype.map` representative as another source-backed instance of the
-  open issue-274 harness blocker.
+- Parent validation showed the remaining blocker is a harness-shim parser issue:
+  `var undefined = void 0;` is tokenized as keyword `Undefined` and rejected as
+  a binding name with a closed `issue-247` diagnostic.
+- `issues/open/390-test262-harness-undefined-binding-name.md` records the
+  actual remaining blocker with source-backed evidence.
 
 Validation result:
 
@@ -98,7 +98,7 @@ command: cargo nextest run -p ts2wasm-cli array_map
 result: pass
 
 command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js
-result: pass; reports UnsupportedSyntax / issue-274 at fnGlobalObject() instead of issue-273
+result: pass; reports UnsupportedSyntax / issue-247 at `var undefined = void 0` instead of issue-273; remaining blocker split to issue 390
 
 command: mise run update-issue-index -- --check
 result: pass

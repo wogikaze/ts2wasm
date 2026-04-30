@@ -3,9 +3,9 @@ id: 382
 title: "Multi-limb BigInt addition and subtraction"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: blocked
 priority: P2
-depends_on: [259, 260]
+depends_on: [259, 260, 393, 394]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -13,9 +13,11 @@ updated: 2026-05-01
 
 ## Summary
 
-Implement canonical multi-limb BigInt addition and subtraction for dynamic operands and results outside the signed-i64-backed helper slice.
+This issue has been split into:
+- Issue 393: Multi-limb BigInt addition
+- Issue 394: Multi-limb BigInt subtraction
 
-Problem: Dynamic BigInt `+` and `-` with operands or results outside the signed-i64-backed helper slice report diagnostics instead of using canonical BigInt limb arithmetic.
+This issue is now blocked on the completion of its split child issues.
 
 ## Problem
 
@@ -132,6 +134,10 @@ Follow-up issues:
 - [ ] none
 
 ## Notes
+
+This issue has been split into:
+- Issue 393: Multi-limb BigInt addition
+- Issue 394: Multi-limb BigInt subtraction
 
 This is a focused split from issue 369, covering only addition and subtraction. Do not implement this by widening the signed-i64 conversion path. The compatibility target is the canonical heap BigInt limb representation.
 
