@@ -750,7 +750,7 @@ const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_DEPS: &[RuntimeFn] =
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Write];
 const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
-const PRIVATE_BRAND_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
+const PRIVATE_BRAND_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR,
     "Cannot mix BigInt and other types, use explicit conversions",
@@ -763,8 +763,11 @@ const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_RUNTIME_STRINGS: &[&str] = &[
 ];
 const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR];
-const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] =
-    &[RuntimeString::PRIVATE_BRAND_TYPE_ERROR];
+const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
+    RuntimeString::PRIVATE_BRAND_TYPE_ERROR,
+    "Cannot read private member from an object whose class did not declare it",
+    "message",
+];
 const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 // String method dependencies

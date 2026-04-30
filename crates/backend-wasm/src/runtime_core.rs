@@ -1662,10 +1662,12 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_private_brand_type_error(&self, wat: &mut String) {
-        self.emit_runtime_diagnostic_abort(
+        self.emit_runtime_catchable_error(
             wat,
             "$private_brand_type_error (result i32)",
+            builtin_error_prototype_global(ts2wasm_ir::lowered::BuiltinErrorConstructor::TypeError),
             RuntimeString::PRIVATE_BRAND_TYPE_ERROR,
+            "Cannot read private member from an object whose class did not declare it",
         );
     }
 

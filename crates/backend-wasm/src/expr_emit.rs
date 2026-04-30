@@ -1073,18 +1073,19 @@ impl WatEmitter<'_> {
         self.emit_expr(wat, object, indent, frame);
         wat.push_str(&format!("{pad}(local.set {object_value})\n"));
         self.emit_gc_root_mirror_index(wat, &pad, object_value, frame);
+        wat.push_str(&format!("{pad}(block (result i32)\n"));
         wat.push_str(&format!(
-            "{pad}(if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
+            "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
             ValueTag::TAG_MASK,
             ValueTag::OBJECT_TAG,
         ));
         wat.push_str(&format!(
-            "{pad}  (then\n{pad}    (call {})\n{pad}    (drop)\n{pad}  ))\n",
+            "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!("{pad}(if\n"));
+        wat.push_str(&format!("{pad}  (if\n"));
         wat.push_str(&format!(
-            "{pad}  (i32.eqz\n{pad}    (i32.and\n{pad}      (i32.eq\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {brand_marker}))\n{pad}      (i32.gt_u\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {slot}))))\n",
+            "{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n",
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
             Layout::GC_RESERVED_OFFSET,
@@ -1096,13 +1097,14 @@ impl WatEmitter<'_> {
             slot = *slot as u32,
         ));
         wat.push_str(&format!(
-            "{pad}  (then\n{pad}    (call {})\n{pad}    (drop)\n{pad}  ))\n",
+            "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
         wat.push_str(&format!(
-            "{pad}(i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n",
+            "{pad}  (i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n",
             ValueTag::HEAP_MASK,
         ));
+        wat.push_str(&format!("{pad})\n"));
     }
 
     fn emit_private_field_set(
@@ -1134,18 +1136,19 @@ impl WatEmitter<'_> {
         self.emit_expr(wat, value, indent, frame);
         wat.push_str(&format!("{pad}(local.set {stored_value})\n"));
         self.emit_gc_root_mirror_index(wat, &pad, stored_value, frame);
+        wat.push_str(&format!("{pad}(block (result i32)\n"));
         wat.push_str(&format!(
-            "{pad}(if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
+            "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
             ValueTag::TAG_MASK,
             ValueTag::OBJECT_TAG,
         ));
         wat.push_str(&format!(
-            "{pad}  (then\n{pad}    (call {})\n{pad}    (drop)\n{pad}  ))\n",
+            "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
-        wat.push_str(&format!("{pad}(if\n"));
+        wat.push_str(&format!("{pad}  (if\n"));
         wat.push_str(&format!(
-            "{pad}  (i32.eqz\n{pad}    (i32.and\n{pad}      (i32.eq\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {brand_marker}))\n{pad}      (i32.gt_u\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {slot}))))\n",
+            "{pad}    (i32.eqz\n{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot}))))\n",
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
             Layout::GC_RESERVED_OFFSET,
@@ -1157,14 +1160,15 @@ impl WatEmitter<'_> {
             slot = *slot as u32,
         ));
         wat.push_str(&format!(
-            "{pad}  (then\n{pad}    (call {})\n{pad}    (drop)\n{pad}  ))\n",
+            "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
             RuntimeFn::PrivateBrandTypeError.symbol(),
         ));
         wat.push_str(&format!(
-            "{pad}(i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n",
+            "{pad}  (i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n",
             ValueTag::HEAP_MASK,
         ));
-        wat.push_str(&format!("{pad}(local.get {stored_value})\n"));
+        wat.push_str(&format!("{pad}  (local.get {stored_value})\n"));
+        wat.push_str(&format!("{pad})\n"));
     }
 
     fn emit_array_push_many_call(

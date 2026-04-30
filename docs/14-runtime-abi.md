@@ -143,12 +143,15 @@ receivers inside the declaring class, lower to these calls. The backend checks t
 value is an object, the packed brand matches, and the masked slot count is greater than
 the requested slot before reading or writing private slot payload after the public
 property capacity. A mismatch now routes through the cataloged
-`private_brand_type_error` runtime diagnostic, which writes a `TypeError` message and
-aborts instead of returning `undefined` or silently skipping a write.
+`private_brand_type_error` runtime helper. Without an active supported handler it
+writes a `TypeError` message and aborts instead of returning `undefined` or silently
+skipping a write; with an active handler it raises a catchable TypeError-like object
+and lets the current `TryCatch` statement-boundary propagation bind it.
 
 This is current progress toward ECMAScript private brands. Compatible catchable
-`TypeError` object propagation on mismatch and private accessor/method external
-lowering remain issue 351 / issue 255 work.
+`TypeError` propagation now covers lowered private field brand mismatches that occur
+inside the supported `try/catch` statement shape. Private accessor/method external
+lowering and broader external syntax lowering remain issue 351 / issue 255 work.
 
 ### BigInt value representation (accepted design)
 
@@ -244,8 +247,11 @@ Issue 396 implemented these helpers behind one backend diagnostic/catchable-erro
   depend on this helper instead of inlining their diagnostic path, so RangeError uses
   the same cataloged runtime-string and `$write` dependency substrate as TypeError.
 - `private_brand_type_error() -> jsval` writes `TypeError: Cannot read private member from an object whose class did not declare it`
-  and aborts for private-field brand mismatches. This shares the same runtime string
-  and `$write` diagnostic boundary as the BigInt TypeError and RangeError helpers.
+  and aborts for uncaught private-field brand mismatches; with an active handler it
+  raises a catchable TypeError-like object whose `message` property contains the same
+  generic private-member message without the `TypeError:` diagnostic prefix. This shares
+  the same runtime string, `$write`, Error-like allocation, and TypeError prototype
+  substrate as the BigInt TypeError helper.
 - Each helper declares its dependencies and runtime strings through the `RuntimeFn`
   catalog, so capabilities, exception globals, and string interning remain link-plan
   driven. The catchable helper path allocates only the minimal Error-like object shape

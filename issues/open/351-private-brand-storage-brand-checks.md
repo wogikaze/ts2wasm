@@ -224,3 +224,31 @@ date:
 Remaining risks:
 
 - Runtime TypeError throwing requires JS exception object support, which may not be fully implemented
+
+2026-05-01 catchable brand TypeError slice:
+
+- Reused the issue-396 runtime exception substrate for `private_brand_type_error`.
+- Private field get/set brand mismatches now keep the uncaught diagnostic/abort
+  behavior without a handler, and raise a catchable TypeError-like object when a
+  supported `try/catch` is active.
+- Added backend regression coverage proving lowered private field calls can
+  branch to the catch body and continue after the try/catch.
+- Added Node/iwasm differential coverage for same-class external receiver
+  brand mismatch inside the declaring class:
+  `fixtures/core-semantics/private-class-field-external-receiver-catch.ts`.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-backend-wasm private_field_runtime_calls -- --nocapture: pass (4 passed)
+cargo test -p ts2wasm-cli private -- --nocapture: pass (4 private node_diff tests plus private parser/lowering filtered tests)
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)': fail after 64 passed / 3 failed / 167 not run; failures are existing/out-of-slice bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm, bigint_dynamic_builtin_fixtures_match_node_output_under_iwasm, and abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timeout
+mise run update-issue-index -- --check && mise run check issues: pass
+```
+
+Remaining blockers:
+
+- Issue 351 remains open: subclass/no-inherited-brand fixture coverage and
+  broader extracted/external private method/accessor brand-check forms are not
+  complete in this slice.

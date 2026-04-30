@@ -1201,9 +1201,9 @@ impl RuntimeFn {
     pub(crate) const fn globals(self) -> &'static [RuntimeGlobal] {
         match self {
             Self::AllocHeap => GLOBALS_ALLOC_HEAP,
-            Self::BigIntDivisionByZeroRangeError | Self::BigIntMixedArithmeticTypeError => {
-                super::GLOBALS_EXCEPTION_RUNTIME
-            }
+            Self::BigIntDivisionByZeroRangeError
+            | Self::BigIntMixedArithmeticTypeError
+            | Self::PrivateBrandTypeError => super::GLOBALS_EXCEPTION_RUNTIME,
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 GLOBALS_MODULE_RUNTIME
             }

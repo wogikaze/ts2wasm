@@ -737,6 +737,10 @@ impl<'a> WatEmitter<'a> {
             .link_plan
             .required_runtime_functions()
             .contains(&RuntimeFn::BigIntMixedArithmeticTypeError)
+            || self
+                .link_plan
+                .required_runtime_functions()
+                .contains(&RuntimeFn::PrivateBrandTypeError)
         {
             add_builtin_error_prototype_ref(BuiltinErrorConstructor::TypeError, &mut prototypes);
         }
