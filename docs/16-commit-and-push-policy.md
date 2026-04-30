@@ -150,6 +150,7 @@ webhook 送信ルール:
 - `reports/` は git 追跡しないローカル生成物として扱う。
 - `.md` / `.json` ファイルを `discord-report` で送信した場合、送信済み registry に記録し、同じファイルの再送をエラーにする。
 - `.githooks/pre-push` は gate 成功後に pre-push report を生成して webhook 送信し、送信失敗時は push を止める。
+- `.githooks/pre-push` や push 前 gate が失敗した場合、`git push --no-verify` などで bypass してはならない。既知 baseline に見える失敗でも、修正するか blocker として報告して push を止める。
 - `DISCORD_WEBHOOK_URL` は環境変数または `.env` で設定する。
 - webhook URL は secret として扱い、commit しない。
 
@@ -170,6 +171,7 @@ mise run check issues
 
 - secret / token / credential の混入が疑われる
 - webhook 送信に失敗している、または `DISCORD_WEBHOOK_URL` が未設定
+- pre-push hook / push 前 gate が失敗している
 - merge conflict が残っている
 - working tree に分類不能な差分がある
 - failing test を既知の失敗として記録していない
