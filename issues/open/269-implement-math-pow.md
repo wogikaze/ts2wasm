@@ -3,9 +3,10 @@ id: 269
 title: Implement Math.pow
 type: feature
 area: runtime/builtins
-class: done
+class: implementation-ready
 priority: P2
 tracking: feature:math-builtins
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -91,6 +92,34 @@ All tests pass.
 - Math.pow is part of ES5.1 specification
 - Should handle special cases per IEEE 754 semantics (future work)
 - Consider implementing other Math builtins in parallel (Math.floor, Math.ceil, Math.round, etc.)
+
+## Reopened by audit
+
+Date: 2026-04-30
+
+Classification: false-done / incomplete acceptance.
+
+Reason: the issue was under `issues/done/` while its acceptance and own
+limitations still claim unsupported `Math.pow` behavior: Infinity, NaN, +0,
+-0, floating-point semantics, and Test262 coverage remain incomplete. Issue
+296 deliberately closed only the `**` small-int operator slice and explicitly
+left full `Math.pow` compatibility out of scope, so it is not a corresponding
+open tracker for this done issue's remaining work.
+
+Evidence:
+
+- This issue file, before the audit move from done to open, recorded
+  "Follow-up issue needed for full floating-point Math.pow support".
+- `issues/done/296-support-small-int-exponentiation-operator.md` lists full
+  ECMAScript `Math.pow` compatibility as out of scope.
+- `current-state.md` documents fractional values, `NaN`, `Infinity`, and `-0`
+  outside the current number subset.
+
+Next close bar:
+
+- Either narrow this issue title/scope to the implemented integer-only slice and
+  create a separate open issue for full `Math.pow`, or implement/diagnose the
+  remaining `Math.pow` edge semantics with Node/Test262 evidence.
 
 ## Commit
 
