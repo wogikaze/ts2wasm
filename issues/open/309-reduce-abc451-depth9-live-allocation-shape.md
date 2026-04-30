@@ -3,7 +3,7 @@ id: 309
 title: "Reduce ABC451 depth-9 live allocation shape"
 type: feature
 area: runtime/memory
-class: implementation-ready
+class: blocked
 priority: P1
 depends_on: []
 blocks: [308, 300]
@@ -411,3 +411,10 @@ date: 2026-05-01
 - No runtime implementation from these rejected candidates was left in the
   tree. Issue 300 remains open; no official ABC451 sample compatibility is
   claimed.
+- After backing out the runtime candidates, the assigned worktree still timed
+  out on the same required depth-8 gate at `30.311s`, while
+  `cargo fmt --all --check`,
+  `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm`,
+  `mise run update-issue-index -- --check`, and `mise run check issues`
+  passed. This confirms the child branch has no mergeable runtime change from
+  this attempt.

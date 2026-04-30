@@ -44,7 +44,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | meta | frontend/semantics | ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
-| 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 380 cannot produce a compatible catchable `RangeError`... |
 <!-- generated:ready:end -->
@@ -190,6 +189,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | class: blocked | Implement ABC451 depth-9 GC cadence policy |
+| 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | class: blocked | Reduce ABC451 depth-9 live allocation shape |
 | 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | class: blocked | Fix test262 arguments object index assignment semantics |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
 | 313 | Implement array-builtin support | spike | runtime/builtins | class: triage-needed | Implement array-builtin support |

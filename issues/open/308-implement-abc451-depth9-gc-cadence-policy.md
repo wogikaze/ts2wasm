@@ -766,3 +766,7 @@ date: 2026-04-29
   `$copy` uses `memory.copy`; bounded slack/geometric growth restores some copy
   pressure but trips the committed 185-page cap on depth-8. No GC cadence policy
   change is justified by this slice.
+
+2026-05-01 child `child/309-depth9-live-allocation-20260501-065708` follow-up:
+
+- Issue 309 tested heap-tail `ArrayPushGrow` in-place page growth to avoid old/new live-array overlap, plus a variant that restored allocation-pressure GC before the in-place grow. Both variants were rejected because the required depth-8 gate still timed out (`30.310s` and `30.242s` respectively). After backing out the runtime candidates, the child worktree still timed out on the same depth-8 gate at `30.311s`. This further confirms issue 308's remaining blocker is not another GC trigger cadence adjustment; it requires a representation or lifetime reduction that lowers live/copy volume without violating the depth-8 runtime budget.
