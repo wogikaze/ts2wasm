@@ -136,6 +136,10 @@ Child issues:
   - targeted regression `cargo nextest run function_expression_return_this_iife_fixture_matches_node_output_under_iwasm` passed, and `mise run update-issue-index -- --check` plus `mise run check issues` passed;
   - `cargo fmt --all --check` is `BLOCKED_BY_UNRELATED_FORMAT` in `crates/ir/src/builtin_resolver.rs`, which is outside this issue-274 slice;
   - broader direct ordinary-function `this` binding, top-level `this`, `arguments`, parameters, spread/rest arguments, and receiver-dependent function-expression calls remain guarded by existing issue-062d/issue-274 diagnostics.
+- 2026-05-01: Added sparse spread progress for issue 354:
+  - Node/iwasm differential fixtures now cover `[...sparse]` materializing a hole as present `undefined`, `0 in arr`/`1 in arr`/`2 in arr`, length, and sparse call spread mapping the hole argument to `undefined`;
+  - `cargo test -p ts2wasm-cli spread_operator_sparse -- --nocapture` passed both sparse fixtures;
+  - issue 354 remains open because required broad validation is blocked by existing Set spread failures and a frontend lib-test compile error in the nextest selector.
 - 2026-05-01: Added the smallest Test262 wasm harness/assert slice for the Array.map representative:
   - `scripts/lib/test262_harness.py` now emits a lightweight wasm-side harness shim instead of compiling the full self-referential `assert.js` implementation;
   - direct `assert(false)` and unsupported wasm harness hooks report the existing `__TS2WASM_TEST262_ASSERT_FAIL__` sentinel, while `assert.sameValue`/`assert.notSameValue` statements continue to use the compiler-side Test262 assertion lowering;

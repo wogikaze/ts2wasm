@@ -133,6 +133,16 @@ Exact fixture targets:
 
 Targeted validation: `cargo fmt --all --check`; `cargo nextest run -E 'test(spread) or test(node_diff)'`; `mise run update-issue-index -- --check`; `mise run check issues`.
 
+## Progress
+
+2026-05-01:
+
+- Added Node/iwasm differential fixtures `spread-sparse-array-materializes-undefined.ts` and `spread-sparse-call-undefined.ts`.
+- Focused sparse validation passed: `cargo test -p ts2wasm-cli spread_operator_sparse -- --nocapture` ran both sparse tests successfully.
+- Required broad spread validation is blocked by existing Set spread failures outside issue 354: `spread-array-set.ts` prints `undefined` values where Node prints `2` and `1`, and `spread-call-set-local.ts` traps with `Exception: unreachable`.
+- Required nextest selector is also blocked before running tests by a frontend lib-test compile error in `crates/frontend/src/parser/tests.rs`: `use of undeclared type ArrayLiteralElement`.
+- Issue remains open until the required broad gates pass or those unrelated blockers are dispositioned.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
