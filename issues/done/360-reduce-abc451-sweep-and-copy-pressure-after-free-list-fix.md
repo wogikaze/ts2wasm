@@ -3,12 +3,14 @@ id: 360
 title: "Reduce ABC451 sweep and copy pressure after free-list fix"
 type: bug
 area: runtime/memory
-class: implementation-ready
+class: done
 priority: P1
 depends_on: [359]
 blocks: [357, 309]
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-04-30
+status: done
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -71,7 +73,7 @@ In scope:
 - [x] Preserve the committed 185-page memory policy.
 - [x] Preserve explicit OOM failure behavior.
 - [x] Record before/after diagnostic evidence with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30`.
-- [ ] If the depth-8 fixture now completes, close issue 357 in the same merge or request parent close after verification.
+- [x] Depth-8 did not complete; issue 357 remains open and issue 361 tracks the remaining blocker.
 
 Out of scope:
 
@@ -87,7 +89,7 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
-- `issues/open/360-reduce-abc451-sweep-and-copy-pressure-after-free-list-fix.md`
+- `issues/done/360-reduce-abc451-sweep-and-copy-pressure-after-free-list-fix.md`
 - `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
@@ -106,7 +108,7 @@ Do not touch:
 - [x] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
 - [x] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes if backend runtime code changes.
 - [x] `cargo fmt --all --check` passes.
-- [ ] `mise run update-issue-index -- --check` and `mise run check issues` pass.
+- [x] `mise run update-issue-index -- --check` and `mise run check issues` pass.
 
 ## Validation
 
@@ -144,7 +146,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] create only if this slice isolates a smaller remaining blocker
+- [x] created issue 361 for remaining array/copy pressure
 
 ## Notes
 
@@ -222,3 +224,14 @@ date:
 Remaining risks:
 
 - none
+
+## Parent close evidence
+
+Parent verified and closed this focused issue after integrating child progress.
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; free_list_scan_visits=0; gc_collections=6; sweep_visits=62313; array_copy_calls=3119; timed_out=false
+
+action: created issue 361 for remaining array/copy pressure because issue 357 still times out.
+```
