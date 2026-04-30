@@ -50,7 +50,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
-| 336 | Implement test262 includes directive processing | feature | cli/reference | partially-complete | P1 |  | test262 `includes:` directive is ignored, causing UnresolvedName for helper functions like `verifyProperty`. |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | implementation-ready | P1 |  | `cargo nextest run -E 'test(bigint) or test(node_diff)'` stops before executing target tests due to `expr_emit.rs` ar... |
 <!-- generated:ready:end -->
@@ -203,6 +202,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: triage-needed | Fix Object.keys backend-io error |
 | 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | 280 | Implement BigInt dynamic string exception parity |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
+| 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | 334 | Sparse array holes handling for Array.prototype.map |
 | 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | 334 | Callback thisArg for Array.prototype.map |
 | 340 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) | feature | runtime/builtins | 334 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) |

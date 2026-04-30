@@ -3,9 +3,9 @@ id: 336
 title: "Implement test262 includes directive processing"
 type: feature
 area: cli/reference
-class: partially-complete
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [050]
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30
@@ -91,7 +91,7 @@ Do not touch:
 - [ ] At least 50 test262 tests with `includes:` directive transition from unsupported to build_pass (requires full helper parsing)
 - [x] Regression test added for includes processing
 
-**Partially complete:** Helper functions resolve using hardcoded stubs, but full helper file parsing and comprehensive coverage require parser support for more complex JavaScript syntax.
+**Blocked / partially complete:** Helper functions resolve using hardcoded stubs, but full helper file parsing and comprehensive coverage require parser support for more complex JavaScript syntax. The representative Annex B Date case still cannot be honestly used as close evidence while the Date/runtime blocker remains unresolved, and child-336 could not run the reference commands because this worktree currently fails to build in an assignment-forbidden backend file.
 
 ## Validation
 
@@ -184,3 +184,36 @@ Remaining risks:
 - Date UnsupportedSyntax requires issue 050 (Implement Date)
 - Hardcoded function stubs limit full helper functionality
 - Some helper functions (assert.sameValue, etc.) not yet stubbed
+
+## Child-336 blocker evidence
+
+**Attempted 2026-04-30**
+
+Issue 336 is not honestly closeable from the current partial-complete state:
+
+- `verifyProperty` helper resolution has prior completion evidence.
+- `reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js` build success remains unverified and blocked by the Date/runtime dependency tracked as issue 050.
+- The 50-test transition from unsupported to `build_pass` remains unverified and still requires full helper parsing or a broader helper stub slice.
+- This child owns only the assignment-listed files, so the current backend compile failure cannot be fixed in this slice.
+
+Validation/blocker commands:
+
+```text
+command: mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js
+result: blocked before execution; ts2wasm binary not found
+date: 2026-04-30
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/annexB/built-ins/Date/prototype/ --detail
+result: blocked before execution; ts2wasm binary not found
+date: 2026-04-30
+
+command: cargo build
+result: fail
+date: 2026-04-30
+evidence: crates/backend-wasm/src/expr_emit.rs fails to compile with an unused format argument for Layout::ARRAY_ELEM_SHIFT and unresolved lowercase array_push_grow_linear_growth_threshold; crates/backend-wasm/** is outside child-336 ownership.
+```
+
+Required follow-up:
+
+- Fix the current backend compile failure outside child-336 ownership, then rerun the issue 336 reference-triage/reference-coverage commands.
+- Split or assign a focused helper parsing/stub expansion slice if the 50-test `includes:` transition remains below acceptance after the backend build is green.
