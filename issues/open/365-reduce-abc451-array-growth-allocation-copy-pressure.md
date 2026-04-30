@@ -187,3 +187,51 @@ Parent decision:
 ```text
 Do not merge the empty-array spare backing-store runtime change as-is. A valid follow-up must reduce array-growth pressure without increasing total allocation pressure or reintroducing free-list scans at the diagnostic budgets.
 ```
+
+## Child v2 blocker evidence: 2026-05-01
+
+Status: `BLOCKED`.
+
+This child did not keep runtime code changes because the tested candidates were neutral at the required 100000-event diagnostic budget and therefore did not satisfy the parent merge constraint.
+
+Baseline reproduced:
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; alloc_array_growth_bytes=362976; alloc_array_growth_calls=2648; copy_array_growth_bytes=181008; copy_array_growth_calls=2648; allocation_requested_bytes=521193; sweep_visits=58859; free_list_scan_visits=0
+```
+
+Rejected candidates:
+
+```text
+candidate: pre-reserve hidden top-of-heap ArrayPushGrow capacity before evaluating the pushed value, while delaying length/element mutation until after value evaluation
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; neutral counters versus baseline; alloc_array_growth_bytes=362976; copy_array_growth_bytes=181008; allocation_requested_bytes=521193; sweep_visits=58859; free_list_scan_visits=0
+decision: not kept because it produced no measurable pressure reduction
+```
+
+```text
+candidate: raise ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD from 3072 to 4096
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; neutral counters versus baseline; alloc_array_growth_bytes=362976; copy_array_growth_bytes=181008; allocation_requested_bytes=521193; sweep_visits=58859; free_list_scan_visits=0
+decision: not kept because it produced no measurable pressure reduction
+```
+
+Remaining blocker:
+
+```text
+The 100000-event array-growth pressure is below the 3072 linear-growth threshold, and the current top-of-heap extension is not reached for the dominant non-top result arrays. The next useful slice should either add attribution for ArrayPushGrow top-of-heap miss reasons or implement a representation-level append strategy that reduces non-top array copying without increasing aggregate requested allocation or sweep volume.
+```
+
+Validation:
+
+```text
+cargo fmt --all --check: pass
+mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30: pass; baseline counters reproduced
+mise run abc451-runtime-costs -- --event-budget 300000 --timeout 30: not run because no 100000-event candidate was promising
+cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm: fail; iwasm timed out after 30.211s
+cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm: pass
+cargo test -p ts2wasm-backend-wasm --lib -- --nocapture: pass; 27 passed
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
