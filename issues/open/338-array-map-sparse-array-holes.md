@@ -5,7 +5,7 @@ type: feature
 area: runtime/builtins
 class: blocked
 priority: P2
-depends_on: [404]
+depends_on: [405]
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01
