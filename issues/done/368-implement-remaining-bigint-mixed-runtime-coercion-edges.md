@@ -138,7 +138,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- closure commit: pending in child branch `agent/368-close-split-20260501T000000Z`
+- `4f42013a` - issue-368 narrow object coercion close and follow-up split
 
 Validation result:
 
