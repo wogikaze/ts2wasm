@@ -316,3 +316,55 @@ fn date_deterministic_epoch_omits_wasi_realtime() {
         "deterministic Date fixture should not import clock_time_get"
     );
 }
+
+#[test]
+fn static_direct_eval_declares_no_node_host_eval_capability() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../fixtures")
+        .join("core-semantics/direct-eval-caller-local.ts");
+
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-host-deny-static-direct-eval-{}.wasm",
+        std::process::id()
+    ));
+
+    let output_manifest = std::env::temp_dir().join(format!(
+        "ts2wasm-host-deny-static-direct-eval-{}.json",
+        std::process::id()
+    ));
+
+    let output = std::process::Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture)
+        .arg("-o")
+        .arg(&output_wasm)
+        .arg("--emit-manifest")
+        .arg(&output_manifest)
+        .arg("--host-deny")
+        .output()
+        .expect("Failed to execute ts2wasm");
+
+    assert!(
+        output.status.success(),
+        "static direct eval should compile as standalone lowered wasm: {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+
+    let manifest_content =
+        std::fs::read_to_string(&output_manifest).expect("Failed to read manifest");
+    let manifest: serde_json::Value =
+        serde_json::from_str(&manifest_content).expect("Manifest should be valid JSON");
+
+    assert_eq!(manifest["standalone"], true);
+    assert_eq!(manifest["node_host"]["required"], false);
+    assert_eq!(manifest["node_host"]["imports"], serde_json::json!([]));
+    assert_eq!(manifest["wasi"]["stdout"], true);
+    assert!(
+        manifest["capability_reasons"]
+            .as_object()
+            .expect("capability reasons should be an object")
+            .keys()
+            .all(|key| !key.starts_with("host.eval")),
+        "static direct eval should not request a host eval capability: {manifest}"
+    );
+}

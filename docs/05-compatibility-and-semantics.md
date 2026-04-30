@@ -81,7 +81,7 @@ WAMR は multi-thread (wasi-threads)、socket API (Berkeley/Posix Socket) をサ
 | `===`           | primitive fast path を用意                   |
 | `NaN` / `-0`    | number semantics のテスト対象にする                |
 | exception       | runtime stack と wasm exception の両案を検討     |
-| `eval`          | 初期非対応、診断必須                                |
+| `eval`          | static-string direct eval は eval-code を caller scope 内の Lowered IR に展開して wasm として実行。dynamic / indirect eval は診断または将来の audited host shim 対象 |
 | `with`          | 初期非対応、診断必須                                |
 | Proxy           | 初期非対応、object model 安定後に検討                 |
 

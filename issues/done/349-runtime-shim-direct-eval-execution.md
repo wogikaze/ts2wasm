@@ -135,6 +135,10 @@ command: cargo test -p ts2wasm-cli static_direct_eval_declares_no_node_host_eval
 result: pass
 date: 2026-05-01
 
+command: tmp=$(mktemp -d /tmp/ts2wasm-349-repro.XXXXXX); printf 'let x = 1; eval("console.log(x)");\n' > "$tmp/eval.ts"; cargo run -q -p ts2wasm-cli -- build "$tmp/eval.ts" -o "$tmp/eval.wasm" --emit-manifest "$tmp/eval.manifest.json"; iwasm "$tmp/eval.wasm"
+result: pass (iwasm stdout: 1; manifest standalone=true, node_host.required=false, node_host.imports=[])
+date: 2026-05-01
+
 command: cargo test -p ts2wasm-cli type_alias -- --nocapture
 result: pass; confirms issue-345 generic type alias parsing was restored after the namespace classification regression
 date: 2026-05-01

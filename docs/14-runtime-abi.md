@@ -481,6 +481,21 @@ pub struct RuntimeFn {
 host import は capability manifest から生成する。
 backend が直接 import 文字列を持つことは禁止（`RuntimeLinkPlan` 由来に限定する）。
 
+### Direct eval execution strategy
+
+Static-string direct `eval(...)` does not add a runtime helper or host import.
+The frontend/resolver/lowering slice parses the eval source at compile time and
+expands the supported eval-code statements into caller-scope `Lowered IR`.
+The backend therefore emits ordinary wasm for the expanded statements, and the
+capability manifest remains standalone unless the expanded code itself uses a
+capability such as `console.log` / WASI stdout.
+
+Dynamic eval strings cannot be executed by pure wasm without a JavaScript
+interpreter or host eval capability. A future dynamic-eval slice must use an
+auditable Node host shim import, mark `standalone: false`, list the exact
+`host.eval.*` import in `node_host.imports`, and record the matching
+`capability_reasons` entry before backend emission.
+
 ### API 分類
 
 | 分類 | 説明 | 例 |
