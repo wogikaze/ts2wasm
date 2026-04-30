@@ -33,6 +33,7 @@ struct Resolver<'a> {
     array_locals: HashSet<LocalId>,
     static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
     static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
+    static_function_array_like_locals: HashMap<LocalId, StaticFunctionArrayLike>,
     string_literal_locals: HashMap<LocalId, String>,
     native_set_add_locals: HashSet<LocalId>,
     current_class: Option<String>,
@@ -43,6 +44,11 @@ struct Resolver<'a> {
 struct ArrowClosure {
     func_id: FuncId,
     captures: Vec<LocalId>,
+}
+
+#[derive(Debug, Clone)]
+struct StaticFunctionArrayLike {
+    elements: Vec<Option<ResolvedExpr>>,
 }
 
 impl ArrowClosure {
@@ -101,6 +107,7 @@ impl<'a> Resolver<'a> {
             array_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
+            static_function_array_like_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: None,
@@ -156,6 +163,7 @@ impl<'a> Resolver<'a> {
             array_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
+            static_function_array_like_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
@@ -308,6 +316,7 @@ impl<'a> Resolver<'a> {
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
                 self.update_static_object_literal_local_on_let(local_id, expr);
+                self.update_static_function_array_like_local_on_let(local_id, expr);
                 self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);
                 if let Some(props) = function_props {
@@ -347,6 +356,7 @@ impl<'a> Resolver<'a> {
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
                 self.update_array_local(local_id, expr);
+                self.invalidate_static_function_array_like_local(local_id);
                 self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);
                 if let Some(props) = function_props {

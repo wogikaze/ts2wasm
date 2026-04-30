@@ -155,6 +155,12 @@ impl<'a> Resolver<'a> {
                 };
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
+            ResolvedExpr::Ident(name) => {
+                let Some(elements) = self.static_function_array_like_elements(name) else {
+                    return Err(unsupported_array_map_diagnostic(Some(span)));
+                };
+                self.lower_array_map_elements(receiver, &elements, map_args, span)
+            }
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
         }
     }
@@ -1719,6 +1725,70 @@ impl<'a> Resolver<'a> {
             self.static_object_literal_locals.remove(&local_id);
             self.static_object_literal_alias_sources.remove(&local_id);
         }
+    }
+
+    pub(super) fn update_static_function_array_like_local_on_let(
+        &mut self,
+        local_id: LocalId,
+        expr: &ResolvedExpr,
+    ) {
+        let ResolvedExpr::FunctionExpr { params, .. } = expr else {
+            self.static_function_array_like_locals.remove(&local_id);
+            return;
+        };
+        if params
+            .iter()
+            .any(|param| param.default.is_some() || param.is_rest)
+        {
+            self.static_function_array_like_locals.remove(&local_id);
+            return;
+        }
+        self.static_function_array_like_locals.insert(
+            local_id,
+            StaticFunctionArrayLike {
+                elements: vec![None; params.len()],
+            },
+        );
+    }
+
+    pub(super) fn invalidate_static_function_array_like_local(&mut self, local_id: LocalId) {
+        self.static_function_array_like_locals.remove(&local_id);
+    }
+
+    pub(super) fn update_static_function_array_like_index(
+        &mut self,
+        local_id: LocalId,
+        index: &ResolvedExpr,
+        value: &ResolvedExpr,
+    ) {
+        let Some(static_receiver) = self.static_function_array_like_locals.get_mut(&local_id)
+        else {
+            return;
+        };
+        let ResolvedExpr::Number(index) = index else {
+            self.invalidate_static_function_array_like_local(local_id);
+            return;
+        };
+        let Ok(index) = usize::try_from(*index) else {
+            self.invalidate_static_function_array_like_local(local_id);
+            return;
+        };
+        if index < static_receiver.elements.len() {
+            static_receiver.elements[index] = Some(value.clone());
+        }
+    }
+
+    pub(super) fn static_function_array_like_elements(
+        &self,
+        name: &str,
+    ) -> Option<Vec<ResolvedExpr>> {
+        let local_id = self.resolve_local(name).ok()?;
+        let static_receiver = self.static_function_array_like_locals.get(&local_id)?;
+        static_receiver
+            .elements
+            .iter()
+            .cloned()
+            .collect::<Option<Vec<_>>>()
     }
 
     pub(super) fn invalidate_static_object_literal_local(&mut self, local_id: LocalId) {

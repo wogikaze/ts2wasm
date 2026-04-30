@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 207 | 131 | 76 |
+| frontend | 208 | 132 | 76 |
 | ir | 8 | 1 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 139 | 43 | 96 |
+| runtime | 140 | 43 | 97 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 400 | 181 | 219 |
+| total | 402 | 182 | 220 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -57,6 +57,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `/` and `%` with operands or results outside the signed-i64-backed helper slice report diagnostics ins... |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | implementation-ready | P1 |  | Issue 357's previous attempts to reduce the timeout did not identify whether the bottleneck is array copying, GC swee... |
 | 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
+| 388 | Runtime array-like generic call for Array.prototype.map | feature | runtime/builtins | ready | P2 | 340 | Runtime array-like generic call for Array.prototype.map |
+| 389 | Unblock Array.map generic Test262 representative with function-expression initializer | bug | frontend/parser | ready | P2 | 273, 340 | Unblock Array.map generic Test262 representative with function-expression initializer |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -208,7 +210,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | 334 | Sparse array holes handling for Array.prototype.map |
-| 340 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) | feature | runtime/builtins | 334 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) |
 | 341 | Implement core builtin API coverage (3,190 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement core builtin API coverage (3,190 test262 cases) |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: triage-needed | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
@@ -440,6 +441,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | see `issues/done/333-implement-bigint-dynamic-string-exception-parity.md` |
 | 337 | Implement test262 features directive and $262 object | feature | cli/reference | see `issues/done/337-implement-test262-features-directive.md` |
 | 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | see `issues/done/339-array-map-thisarg.md` |
+| 340 | Generic call for Array.prototype.map (static dense receiver slice) | feature | runtime/builtins | see `issues/done/340-array-map-generic-call.md` |
 | 350 | Implement derived-class private element initialization | feature | runtime/semantics | see `issues/done/350-derived-class-private-element-init.md` |
 | 352 | Implement static private field ordering with static blocks | feature | runtime/semantics | see `issues/done/352-static-private-field-static-blocks-order.md` |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |
