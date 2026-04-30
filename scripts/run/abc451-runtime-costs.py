@@ -131,12 +131,20 @@ def instrument_wat(wat: str, event_budget: int) -> str:
               (i32.add (global.get $abc451_diag_array_copy_bytes) (local.get $len)))))
         (call $abc451_diag_tick)))
 """
-    wat = replace_once(
-        wat,
-        "  (func $copy (param $src i32) (param $dst i32) (param $len i32)\n    (local $i i32)\n",
-        "  (func $copy (param $src i32) (param $dst i32) (param $len i32)\n    (local $i i32)\n"
-        + copy_probe,
-    )
+    old_copy_header = "  (func $copy (param $src i32) (param $dst i32) (param $len i32)\n    (local $i i32)\n"
+    bulk_copy_header = "  (func $copy (param $src i32) (param $dst i32) (param $len i32)\n"
+    if old_copy_header in wat:
+        wat = replace_once(
+            wat,
+            old_copy_header,
+            old_copy_header + copy_probe,
+        )
+    else:
+        wat = replace_once(
+            wat,
+            bulk_copy_header,
+            bulk_copy_header + copy_probe,
+        )
 
     alloc_probe = """
     (if (i32.eqz (global.get $abc451_diag_reported))

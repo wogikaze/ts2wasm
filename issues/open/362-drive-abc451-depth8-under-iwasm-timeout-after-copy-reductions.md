@@ -8,7 +8,7 @@ priority: P1
 depends_on: [361]
 blocks: [357, 309]
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -150,6 +150,73 @@ Follow-up issues:
 ## Notes
 
 Start from the issue 361 parent-verified baseline. The next useful result is either a passing depth-8 gate or a clearly smaller measured blocker; do not repeat broad timeout probes without diagnostic attribution.
+
+2026-05-01 child-362 progress:
+
+- Kept a mergeable `$copy` implementation change that replaces the hand-written
+  byte/word copy loop with `memory.copy` while preserving the existing `$copy`
+  helper API and call sites. The diagnostic script was updated only enough to
+  instrument both the previous local-loop helper shape and the new bulk-copy
+  helper shape.
+- Baseline reproduced before the change:
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; free_list_scan_visits=0; gc_collections=5; sweep_visits=58859; array_copy_bytes=182008; array_copy_calls=2898; all_copy_bytes=250278
+```
+
+- After bulk `$copy`, the diagnostic still reaches the same API-level workload
+  before the event-budget stop, which means the remaining blocker is not the
+  internal byte/word copy loop:
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; free_list_scan_visits=0; gc_collections=5; sweep_visits=58859; array_copy_bytes=182008; array_copy_calls=2898; all_copy_bytes=250278
+```
+
+- A larger 300000-event diagnostic narrows the remaining blocker to continued
+  allocation/array-copy volume plus sweep cost:
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 300000 --timeout 30
+result: pass; free_list_scan_visits=0; gc_collections=13; sweep_visits=241504; array_copy_bytes=858376; array_copy_calls=4132; all_copy_bytes=955420; allocation_requested_bytes=1376350
+```
+
+- The focused depth-8 gate still fails, so this issue remains open:
+
+```text
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.201s
+```
+
+- Validation that passed for the mergeable progress slice:
+
+```text
+command: cargo fmt --all --check
+result: pass
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 passed
+
+command: mise run check scripts
+result: pass
+
+command: mise run update-issue-index -- --check && mise run check issues
+result: pass
+```
+
+- Rejected probes not kept:
+
+```text
+candidate: allocation-pressure GC threshold Layout::GC_THRESHOLD * 4
+result: fail; focused depth-8 gate reached Exception: unreachable after 25.568s
+
+candidate: ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD 3072 -> 6144
+result: fail; focused depth-8 gate reached Exception: unreachable after 26.839s
+```
 
 ## Completion evidence
 
