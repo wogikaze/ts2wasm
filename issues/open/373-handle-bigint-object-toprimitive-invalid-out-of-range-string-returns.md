@@ -1,0 +1,132 @@
+---
+id: 373
+title: "Handle BigInt object ToPrimitive invalid and out-of-range string returns"
+type: feature
+area: runtime/semantics
+class: implementation-ready
+priority: P2
+depends_on: [259, 261]
+blocks: []
+created: 2026-05-01
+updated: 2026-05-01
+---
+
+## Summary
+
+Define and implement the direct object-literal/local `toString` return behavior for invalid or out-of-range BigInt string coercion in mixed BigInt comparisons.
+
+Problem: Issue 368 implemented `toString: () => <supported decimal string>` for equality and relational comparisons, but invalid strings and strings outside the current signed-i32 StringToBigInt comparison helper boundary still need explicit diagnostics or compatible behavior.
+
+## Current failure
+
+Representative source-backed shapes:
+
+```ts
+console.log(({ toString: () => "not-a-bigint" }) == 1n);
+console.log(({ toString: () => "2147483648" }) < 1n);
+console.log(1n == ({ toString: () => "9007199254740993" }));
+```
+
+These are distinct from the already implemented supported decimal-string `toString` subset.
+
+## Desired final state
+
+Direct object-literal/local `toString: () => <string literal>` mixed BigInt comparisons either produce Node-compatible equality/relational results for invalid strings and supported out-of-range forms, or emit source-backed diagnostics before lowering when the current BigInt/String runtime boundary cannot represent the required comparison safely.
+
+## Scope
+
+In scope:
+
+- [ ] Direct object literals and simple locals with no-argument arrow `toString` returning a string literal.
+- [ ] Invalid StringToBigInt strings for abstract equality and relational comparison.
+- [ ] Source-backed out-of-range string literals that exceed the current signed-i32 comparison helper boundary.
+- [ ] Node/iwasm differential coverage for any newly supported case and diagnostic coverage for intentionally rejected cases.
+
+Out of scope:
+
+- Unknown non-source-backed dynamic strings; issue 375 owns runtime-only unknown input.
+- Non-string primitive returns; issue 372 owns that category.
+- General object/prototype/Proxy/side-effectful coercion; issue 374 owns that category.
+- Broad multi-limb BigInt comparison helpers unless required by a narrowly proven safe path.
+
+## Affected paths
+
+Expected:
+
+- `crates/ir/src/`
+- `crates/cli/tests/`
+- `fixtures/core-semantics/*bigint*`
+- `docs/05-compatibility-and-semantics.md`
+- `docs/language-reference/javascript-features.md`
+- `current-state.md`
+
+Do not touch:
+
+- parser BigInt syntax
+- broad runtime ABI representation unless a compile error proves it is required
+- general BigInt builtin exception parity; issue 333 owns `BigInt(...)` unknown invalid-string exceptions
+
+## Acceptance criteria
+
+- [ ] Invalid direct `toString` string return behavior is covered by Node/iwasm differential tests or source-backed diagnostic tests with explicit issue ownership.
+- [ ] Out-of-range direct `toString` string return behavior cannot silently produce an incorrect normal boolean.
+- [ ] Existing supported decimal-string `toString` fixtures from issue 368 continue to pass.
+- [ ] Docs/current-state/issues state the invalid/out-of-range string-return boundary.
+
+## Validation
+
+Required commands:
+
+```sh
+cargo fmt --all --check
+cargo test -p ts2wasm-cli --test m2_node_diff bigint
+mise run update-issue-index -- --check
+mise run check issues
+```
+
+Impacted commands:
+
+```sh
+cargo nextest run -E 'test(bigint) or test(node_diff)'
+```
+
+Not run:
+
+- none
+
+## Docs / current-state / issue sync
+
+Final-state docs:
+
+- [ ] updated: `docs/05-compatibility-and-semantics.md`
+- [ ] updated: `docs/language-reference/javascript-features.md`
+
+Current state:
+
+- [ ] updated: `current-state.md` (repo root)
+
+Follow-up issues:
+
+- [ ] none
+
+## Notes
+
+This issue is a direct follow-up split from issue 368. Prefer source-backed diagnostics over broad runtime work when the value is statically visible and outside the current helper bounds.
+
+## Completion evidence
+
+Fill only when moving to `done/`.
+
+Commits:
+
+- none yet; issue is open
+
+Validation result:
+
+```text
+not run; issue is open
+```
+
+Remaining risks:
+
+- Runtime-only unknown strings are deliberately separate in issue 375.

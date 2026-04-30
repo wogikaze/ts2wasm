@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 124 | 34 | 90 |
+| runtime | 128 | 37 | 91 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 384 | 172 | 212 |
+| total | 388 | 175 | 213 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,10 +48,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | implementation-ready | P2 | 280 | unknown dynamic invalid/out-of-range `BigInt(string)` inputs trap at |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
-| 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Compatible object `ToPrimitive` for mixed BigInt comparisons and non-source-backed unknown out-of-range BigInt/String... |
 | 369 | Implement full multi-limb BigInt arithmetic | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | issue 260 closed the literal-folding and signed-i64-backed dynamic unary/add/sub/mul/div/rem slice, but dynamic opera... |
 | 370 | Implement BigInt arithmetic RangeError and TypeError parity | feature | runtime/semantics | design-ready | P2 | 260 | division/remainder by zero currently reaches a runtime `unreachable` trap in the signed-i64 helper slice, and mixed N... |
 | 371 | Define BigInt bitwise and exponentiation policy | feature | runtime/semantics | design-ready | P2 | 260 | issue 260 closed unary minus and binary `+`, `-`, `*`, `/`, `%` for the current supported arithmetic slice, while Big... |
+| 372 | Implement BigInt object ToPrimitive non-BigInt primitive returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Direct object-literal/local `valueOf` or `toString` methods that return booleans, supported tagged-int numbers, nulli... |
+| 373 | Handle BigInt object ToPrimitive invalid and out-of-range string returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Issue 368 implemented `toString: () => <supported decimal string>` for equality and relational comparisons, but inval... |
+| 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -220,6 +222,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | 274 | Implement dynamic object property enumeration spread |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
+| 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -440,6 +443,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 364 | Add ABC451 allocation and copy attribution diagnostic | test | runtime/performance | see `issues/done/364-add-abc451-allocation-copy-attribution-diagnostic.md` |
 | 366 | Add ABC451 ArrayPushGrow miss attribution diagnostic | test | runtime/performance | see `issues/done/366-add-arraypushgrow-miss-attribution-diagnostic.md` |
 | 367 | Extract ArrayPushGrow into a runtime helper | refactor | backend/runtime | see `issues/done/367-extract-arraypushgrow-runtime-helper.md` |
+| 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | see `issues/done/368-implement-remaining-bigint-mixed-runtime-coercion-edges.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

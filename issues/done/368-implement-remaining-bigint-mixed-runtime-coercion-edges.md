@@ -9,6 +9,7 @@ depends_on: [259, 261]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -46,10 +47,10 @@ Mixed BigInt comparisons either:
 
 In scope:
 
-- [ ] Implement a narrow object `ToPrimitive` comparison subset for object literals/locals with direct `valueOf` or `toString` methods returning supported primitive values.
-- [ ] Add Node/iwasm differential coverage for at least one compatible object `ToPrimitive` BigInt comparison case.
-- [ ] Preserve source-backed diagnostics for unsupported object coercion shapes.
-- [ ] Add a precise guard or runtime behavior for non-source-backed unknown out-of-range dynamic BigInt/String comparison input.
+- [x] Implement a narrow object `ToPrimitive` comparison subset for object literals/locals with direct `valueOf` or `toString` methods returning supported primitive values.
+- [x] Add Node/iwasm differential coverage for at least one compatible object `ToPrimitive` BigInt comparison case.
+- [x] Preserve source-backed diagnostics for unsupported object coercion shapes.
+- [x] Split non-source-backed unknown out-of-range dynamic BigInt/String comparison input to precise follow-up issue 375 rather than broadening this narrow object-literal/local slice.
 
 Out of scope:
 
@@ -77,10 +78,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture covers an object `valueOf` or `toString` mixed BigInt comparison that currently reports the issue-282 object `ToPrimitive` diagnostic.
-- [ ] Unsupported object `ToPrimitive` shapes keep source-backed diagnostics with issue ownership.
-- [ ] Unknown non-source-backed out-of-range dynamic BigInt/String comparison cannot silently return an incorrect normal boolean.
-- [ ] Docs/current-state/issues state the remaining limits and the supported subset.
+- [x] Node/iwasm differential fixture covers object `valueOf` and `toString` mixed BigInt comparisons that previously reported the issue-282 object `ToPrimitive` diagnostic.
+- [x] Unsupported object `ToPrimitive` shapes keep source-backed diagnostics with issue ownership.
+- [x] Unknown non-source-backed out-of-range dynamic BigInt/String comparison is split to issue 375 so it cannot be treated as completed by the object-literal/local subset.
+- [x] Docs/current-state/issues state the remaining limits and the supported subset.
 
 ## Validation
 
@@ -107,16 +108,19 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/05-compatibility-and-semantics.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
+- [x] created: `issues/open/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
+- [x] created: `issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
+- [x] created: `issues/open/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
 
 ## Notes
 
@@ -134,14 +138,21 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- closure commit: pending in child branch `agent/368-close-split-20260501T000000Z`
 
 Validation result:
 
 ```text
-not run; issue is open
+2026-05-01 child validation passed:
+- cargo fmt --all --check: pass
+- cargo test -p ts2wasm-cli --test m2_node_diff bigint: pass (42 passed; 141 filtered out)
+- mise run update-issue-index -- --check: pass
+- mise run check issues: pass after issue 374 path-list fix
 ```
 
 Remaining risks:
 
-- Object coercion may need broader object-model support if direct object-literal/local method extraction is insufficient.
+- Non-BigInt primitive returns are issue 372.
+- Invalid/out-of-range object `toString` returns are issue 373.
+- Broader object-model-dependent coercion is issue 374.
+- Non-source-backed unknown out-of-range runtime strings are issue 375.
