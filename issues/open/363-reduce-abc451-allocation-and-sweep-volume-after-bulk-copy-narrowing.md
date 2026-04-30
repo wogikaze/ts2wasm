@@ -251,6 +251,17 @@ mise run check issues: pass
 - Class changed to `blocked` because the child evidence shows broad allocator probes are no longer productive without allocation/copy attribution.
 - Follow-up issue 364 tracks the diagnostic attribution needed to identify the next safe implementation target.
 
+## Attribution diagnostic result
+
+Issue 364 closed the diagnostic gap and identified array growth as the next focused target:
+
+```text
+100000 events: allocation array_growth=362976 bytes/2648 calls; copy array_growth=181008 bytes/2648 calls
+300000 events: allocation array_growth=1158708 bytes/3771 calls; copy array_growth=856928 bytes/3770 calls
+```
+
+Follow-up issue 365 tracks the smaller implementation slice for reducing array-growth allocation/copy pressure. Keep this broad issue blocked until issue 365 produces a mergeable runtime-memory change or records a smaller blocker.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

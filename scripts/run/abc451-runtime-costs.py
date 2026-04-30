@@ -36,6 +36,38 @@ COUNTERS = [
     "free_list_scan_visits",
 ]
 
+COPY_ATTRIBUTION_COUNTERS = [
+    "copy_array_growth_calls",
+    "copy_array_growth_bytes",
+    "copy_concat_left_calls",
+    "copy_concat_left_bytes",
+    "copy_concat_right_calls",
+    "copy_concat_right_bytes",
+    "copy_value_to_string_calls",
+    "copy_value_to_string_bytes",
+    "copy_array_map_string_calls",
+    "copy_array_map_string_bytes",
+]
+
+ALLOC_ATTRIBUTION_COUNTERS = [
+    "alloc_array_growth_calls",
+    "alloc_array_growth_bytes",
+    "alloc_concat_calls",
+    "alloc_concat_bytes",
+    "alloc_array_map_result_calls",
+    "alloc_array_map_result_bytes",
+    "alloc_array_map_string_calls",
+    "alloc_array_map_string_bytes",
+    "alloc_number_to_string_calls",
+    "alloc_number_to_string_bytes",
+    "alloc_scratch_array_calls",
+    "alloc_scratch_array_bytes",
+    "alloc_gc_roots_calls",
+    "alloc_gc_roots_bytes",
+]
+
+ALL_COUNTERS = COUNTERS + COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS
+
 
 def run_checked(args: list[str], *, cwd: Path, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
     result = subprocess.run(
@@ -87,9 +119,305 @@ def replace_once(text: str, old: str, new: str) -> str:
     return text.replace(old, new, 1)
 
 
+def replace_expected(text: str, old: str, new: str, *, expected: int, label: str) -> str:
+    count = text.count(old)
+    if count != expected:
+        raise RuntimeError(f"expected {expected} occurrences for {label}, found {count}")
+    return text.replace(old, new)
+
+
 def insert_before_function_end(text: str, func_name: str, insertion: str) -> str:
     start, end = find_balanced_span(text, f"(func {func_name}")
     return text[: end - 1] + insertion + text[end - 1 :]
+
+
+def counter_globals(names: list[str]) -> str:
+    return "".join(f"  (global $abc451_diag_{name} (mut i32) (i32.const 0))\n" for name in names)
+
+
+def emit_counter_calls(names: list[str]) -> str:
+    return "".join(
+        f"    (call $abc451_diag_emit_counter (global.get $abc451_diag_{name}))\n" for name in names
+    )
+
+
+def copy_attribution_wrapper(name: str) -> str:
+    return f"""
+  (func $abc451_diag_{name} (param $src i32) (param $dst i32) (param $len i32)
+    (if (i32.eqz (global.get $abc451_diag_reported))
+      (then
+        (global.set $abc451_diag_{name}_calls
+          (i32.add (global.get $abc451_diag_{name}_calls) (i32.const 1)))
+        (global.set $abc451_diag_{name}_bytes
+          (i32.add (global.get $abc451_diag_{name}_bytes) (local.get $len)))))
+    (call $copy (local.get $src) (local.get $dst) (local.get $len)))
+"""
+
+
+def alloc_attribution_wrapper(name: str) -> str:
+    return f"""
+  (func $abc451_diag_{name} (param $size i32) (result i32)
+    (if (i32.eqz (global.get $abc451_diag_reported))
+      (then
+        (global.set $abc451_diag_{name}_calls
+          (i32.add (global.get $abc451_diag_{name}_calls) (i32.const 1)))
+        (global.set $abc451_diag_{name}_bytes
+          (i32.add (global.get $abc451_diag_{name}_bytes) (local.get $size)))))
+    (call $alloc_heap (local.get $size)))
+"""
+
+
+def attribution_wrappers() -> str:
+    return (
+        copy_attribution_wrapper("copy_array_growth")
+        + copy_attribution_wrapper("copy_concat_left")
+        + copy_attribution_wrapper("copy_concat_right")
+        + copy_attribution_wrapper("copy_value_to_string")
+        + copy_attribution_wrapper("copy_array_map_string")
+        + alloc_attribution_wrapper("alloc_array_growth")
+        + alloc_attribution_wrapper("alloc_concat")
+        + alloc_attribution_wrapper("alloc_array_map_result")
+        + alloc_attribution_wrapper("alloc_array_map_string")
+        + alloc_attribution_wrapper("alloc_number_to_string")
+        + alloc_attribution_wrapper("alloc_scratch_array")
+        + alloc_attribution_wrapper("alloc_gc_roots")
+    )
+
+
+def instrument_callsite_attribution(wat: str) -> str:
+    wat = replace_expected(
+        wat,
+        "        (call $copy (i32.const 300) (local.get $ptr) (i32.const 9))",
+        "        (call $abc451_diag_copy_value_to_string (i32.const 300) (local.get $ptr) (i32.const 9))",
+        expected=1,
+        label="value_to_string undefined copy",
+    )
+    wat = replace_expected(
+        wat,
+        "        (call $copy (i32.const 284) (local.get $ptr) (i32.const 4))",
+        "        (call $abc451_diag_copy_value_to_string (i32.const 284) (local.get $ptr) (i32.const 4))",
+        expected=1,
+        label="value_to_string true copy",
+    )
+    wat = replace_expected(
+        wat,
+        "        (call $copy (i32.const 268) (local.get $ptr) (i32.const 5))",
+        "        (call $abc451_diag_copy_value_to_string (i32.const 268) (local.get $ptr) (i32.const 5))",
+        expected=1,
+        label="value_to_string false copy",
+    )
+    wat = replace_expected(
+        wat,
+        "        (call $copy (i32.const 292) (local.get $ptr) (i32.const 4))",
+        "        (call $abc451_diag_copy_value_to_string (i32.const 292) (local.get $ptr) (i32.const 4))",
+        expected=1,
+        label="value_to_string null copy",
+    )
+    wat = replace_expected(
+        wat,
+        "        (call $copy (i32.add (local.get $obj) (i32.const 4)) (local.get $ptr) (local.get $len))",
+        "        (call $abc451_diag_copy_value_to_string (i32.add (local.get $obj) (i32.const 4)) (local.get $ptr) (local.get $len))",
+        expected=1,
+        label="value_to_string inline string copy",
+    )
+    wat = replace_expected(
+        wat,
+        """            (call $copy
+              (i32.add (local.get $obj) (i32.const 20))
+              (local.get $ptr)
+              (local.get $len))""",
+        """            (call $abc451_diag_copy_value_to_string
+              (i32.add (local.get $obj) (i32.const 20))
+              (local.get $ptr)
+              (local.get $len))""",
+        expected=1,
+        label="value_to_string bigint copy",
+    )
+    wat = replace_expected(
+        wat,
+        """            (call $copy
+              (i32.add (local.get $obj) (i32.const 12))
+              (local.get $ptr)
+              (local.get $len))""",
+        """            (call $abc451_diag_copy_value_to_string
+              (i32.add (local.get $obj) (i32.const 12))
+              (local.get $ptr)
+              (local.get $len))""",
+        expected=1,
+        label="value_to_string heap string copy",
+    )
+
+    wat = replace_expected(
+        wat,
+        "    (call $copy (local.get $src_a) (local.get $data_ptr) (local.get $len_a))",
+        "    (call $abc451_diag_copy_concat_left (local.get $src_a) (local.get $data_ptr) (local.get $len_a))",
+        expected=1,
+        label="concat left copy",
+    )
+    wat = replace_expected(
+        wat,
+        """    (call $copy
+      (local.get $src_b)
+      (i32.add (local.get $data_ptr) (local.get $len_a))
+      (local.get $len_b))""",
+        """    (call $abc451_diag_copy_concat_right
+      (local.get $src_b)
+      (i32.add (local.get $data_ptr) (local.get $len_a))
+      (local.get $len_b))""",
+        expected=1,
+        label="concat right copy",
+    )
+    wat = replace_expected(
+        wat,
+        """        (call $copy
+          (i32.const 1500)
+          (i32.add (local.get $mapped_ptr) (i32.const 4))
+          (local.get $mapped_len))""",
+        """        (call $abc451_diag_copy_array_map_string
+          (i32.const 1500)
+          (i32.add (local.get $mapped_ptr) (i32.const 4))
+          (local.get $mapped_len))""",
+        expected=1,
+        label="array_map string copy",
+    )
+    wat = replace_expected(
+        wat,
+        """            (call $copy
+              (i32.add (i32.and (local.get 8) (i32.const -8)) (i32.const 4))
+              (i32.add (local.get 10) (i32.const 4))
+              (i32.shl (local.get 11) (i32.const 2)))""",
+        """            (call $abc451_diag_copy_array_growth
+              (i32.add (i32.and (local.get 8) (i32.const -8)) (i32.const 4))
+              (i32.add (local.get 10) (i32.const 4))
+              (i32.shl (local.get 11) (i32.const 2)))""",
+        expected=1,
+        label="array growth copy local 8/10/11 outer",
+    )
+    wat = replace_expected(
+        wat,
+        """                (call $copy
+                  (i32.add (i32.and (local.get 8) (i32.const -8)) (i32.const 4))
+                  (i32.add (local.get 10) (i32.const 4))
+                  (i32.shl (local.get 11) (i32.const 2)))""",
+        """                (call $abc451_diag_copy_array_growth
+                  (i32.add (i32.and (local.get 8) (i32.const -8)) (i32.const 4))
+                  (i32.add (local.get 10) (i32.const 4))
+                  (i32.shl (local.get 11) (i32.const 2)))""",
+        expected=1,
+        label="array growth copy local 8/10/11 inner",
+    )
+    wat = replace_expected(
+        wat,
+        """            (call $copy
+              (i32.add (i32.and (local.get 4) (i32.const -8)) (i32.const 4))
+              (i32.add (local.get 6) (i32.const 4))
+              (i32.shl (local.get 7) (i32.const 2)))""",
+        """            (call $abc451_diag_copy_array_growth
+              (i32.add (i32.and (local.get 4) (i32.const -8)) (i32.const 4))
+              (i32.add (local.get 6) (i32.const 4))
+              (i32.shl (local.get 7) (i32.const 2)))""",
+        expected=1,
+        label="array growth copy local 4/6/7",
+    )
+
+    wat = replace_expected(
+        wat,
+        """      (call $alloc_heap
+        (i32.add (i32.const 12) (local.get $str_len)))""",
+        """      (call $abc451_diag_alloc_number_to_string
+        (i32.add (i32.const 12) (local.get $str_len)))""",
+        expected=1,
+        label="number_to_string allocation",
+    )
+    wat = replace_expected(
+        wat,
+        """      (call $alloc_heap
+        (i32.add
+          (i32.const 4)
+          (i32.add (local.get $len_a) (local.get $len_b))))""",
+        """      (call $abc451_diag_alloc_concat
+        (i32.add
+          (i32.const 4)
+          (i32.add (local.get $len_a) (local.get $len_b))))""",
+        expected=1,
+        label="concat allocation",
+    )
+    wat = replace_expected(
+        wat,
+        """      (call $alloc_heap
+        (i32.add
+          (i32.const 4)
+          (i32.shl (local.get $len) (i32.const 2))))""",
+        """      (call $abc451_diag_alloc_array_map_result
+        (i32.add
+          (i32.const 4)
+          (i32.shl (local.get $len) (i32.const 2))))""",
+        expected=1,
+        label="array_map result allocation",
+    )
+    wat = replace_expected(
+        wat,
+        """          (call $alloc_heap
+            (i32.add (i32.const 4) (local.get $mapped_len)))""",
+        """          (call $abc451_diag_alloc_array_map_string
+            (i32.add (i32.const 4) (local.get $mapped_len)))""",
+        expected=1,
+        label="array_map string allocation",
+    )
+    wat = replace_expected(
+        wat,
+        "(call $alloc_heap (i32.const 4))",
+        "(call $abc451_diag_alloc_scratch_array (i32.const 4))",
+        expected=2,
+        label="scratch array allocation",
+    )
+    wat = replace_expected(
+        wat,
+        "(call $alloc_heap (i32.const 16448))",
+        "(call $abc451_diag_alloc_gc_roots (i32.const 16448))",
+        expected=1,
+        label="gc roots allocation",
+    )
+    wat = replace_expected(
+        wat,
+        """                  (call $alloc_heap
+                    (i32.add
+                      (i32.const 4)
+                      (i32.shl (local.get 13) (i32.const 2))))""",
+        """                  (call $abc451_diag_alloc_array_growth
+                    (i32.add
+                      (i32.const 4)
+                      (i32.shl (local.get 13) (i32.const 2))))""",
+        expected=1,
+        label="array growth allocation local 13 outer",
+    )
+    wat = replace_expected(
+        wat,
+        """                      (call $alloc_heap
+                        (i32.add
+                          (i32.const 4)
+                          (i32.shl (local.get 13) (i32.const 2))))""",
+        """                      (call $abc451_diag_alloc_array_growth
+                        (i32.add
+                          (i32.const 4)
+                          (i32.shl (local.get 13) (i32.const 2))))""",
+        expected=1,
+        label="array growth allocation local 13 inner",
+    )
+    wat = replace_expected(
+        wat,
+        """                  (call $alloc_heap
+                    (i32.add
+                      (i32.const 4)
+                      (i32.shl (local.get 9) (i32.const 2))))""",
+        """                  (call $abc451_diag_alloc_array_growth
+                    (i32.add
+                      (i32.const 4)
+                      (i32.shl (local.get 9) (i32.const 2))))""",
+        expected=1,
+        label="array growth allocation local 9",
+    )
+    return wat
 
 
 def instrument_wat(wat: str, event_budget: int) -> str:
@@ -106,10 +434,12 @@ def instrument_wat(wat: str, event_budget: int) -> str:
   (global $abc451_diag_events (mut i32) (i32.const 0))
   (global $abc451_diag_reported (mut i32) (i32.const 0))
 """
+    globals_wat += counter_globals(COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS)
     first_data = wat.find("  (data ")
     if first_data < 0:
         raise RuntimeError("missing data segment insertion point")
     wat = wat[:first_data] + globals_wat + wat[first_data:]
+    wat = instrument_callsite_attribution(wat)
 
     copy_probe = f"""
     (if (i32.eqz (global.get $abc451_diag_reported))
@@ -223,7 +553,8 @@ def instrument_wat(wat: str, event_budget: int) -> str:
     (call $abc451_diag_emit_counter (global.get $abc451_diag_alloc_requested_bytes))
     (call $abc451_diag_emit_counter (global.get $abc451_diag_gc_collections))
     (call $abc451_diag_emit_counter (global.get $abc451_diag_sweep_visits))
-    (call $abc451_diag_emit_counter (global.get $abc451_diag_free_list_scan_visits)))
+    (call $abc451_diag_emit_counter (global.get $abc451_diag_free_list_scan_visits))
+{emit_counter_calls(COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS).rstrip()})
 
   (func $abc451_diag_tick
     (global.set $abc451_diag_events
@@ -239,7 +570,7 @@ def instrument_wat(wat: str, event_budget: int) -> str:
     start_marker = "  (func $_start"
     if start_marker not in wat:
         raise RuntimeError("missing $_start insertion point")
-    wat = wat.replace(start_marker, report_fn + start_marker, 1)
+    wat = wat.replace(start_marker, attribution_wrappers() + report_fn + start_marker, 1)
     wat = insert_before_function_end(wat, "$_start", "\n    (call $abc451_diag_report)\n")
     return wat
 
@@ -250,12 +581,81 @@ def parse_counter_lines(stdout: str) -> dict[str, int]:
         stripped = line.strip()
         if stripped.lstrip("-").isdigit():
             numeric_lines.append(int(stripped))
-    if len(numeric_lines) < len(COUNTERS):
+    if len(numeric_lines) < len(ALL_COUNTERS):
         raise RuntimeError(
-            f"expected at least {len(COUNTERS)} numeric counter lines, got {len(numeric_lines)}"
+            f"expected at least {len(ALL_COUNTERS)} numeric counter lines, got {len(numeric_lines)}"
         )
-    values = numeric_lines[-len(COUNTERS) :]
-    return dict(zip(COUNTERS, values))
+    values = numeric_lines[-len(ALL_COUNTERS) :]
+    return dict(zip(ALL_COUNTERS, values))
+
+
+def pair_entries(counters: dict[str, int], prefix: str) -> list[dict[str, int | str]]:
+    entries: list[dict[str, int | str]] = []
+    suffix = "_calls"
+    for name, calls in counters.items():
+        if not name.startswith(prefix) or not name.endswith(suffix):
+            continue
+        category = name[len(prefix) : -len(suffix)]
+        bytes_name = f"{prefix}{category}_bytes"
+        entries.append(
+            {
+                "category": category,
+                "calls": calls,
+                "bytes": counters.get(bytes_name, 0),
+            }
+        )
+    return sorted(entries, key=lambda entry: (int(entry["bytes"]), int(entry["calls"])), reverse=True)
+
+
+def build_attribution(counters: dict[str, int]) -> dict[str, Any]:
+    copy_categories = pair_entries(counters, "copy_")
+    alloc_categories = pair_entries(counters, "alloc_")
+    copy_attributed_calls = sum(int(entry["calls"]) for entry in copy_categories)
+    copy_attributed_bytes = sum(int(entry["bytes"]) for entry in copy_categories)
+    alloc_attributed_calls = sum(int(entry["calls"]) for entry in alloc_categories)
+    alloc_attributed_bytes = sum(int(entry["bytes"]) for entry in alloc_categories)
+    copy_unattributed = {
+        "category": "unattributed",
+        "calls": counters["all_copy_calls"] - copy_attributed_calls,
+        "bytes": counters["all_copy_bytes"] - copy_attributed_bytes,
+    }
+    alloc_unattributed = {
+        "category": "unattributed",
+        "calls": counters["allocation_attempts"] - alloc_attributed_calls,
+        "bytes": counters["allocation_requested_bytes"] - alloc_attributed_bytes,
+    }
+    return {
+        "copy": {
+            "top": copy_categories[:5],
+            "unattributed": copy_unattributed,
+        },
+        "allocation": {
+            "top": alloc_categories[:5],
+            "unattributed": alloc_unattributed,
+        },
+        "top_targets": sorted(
+            [
+                {
+                    "kind": "copy",
+                    "category": str(entry["category"]),
+                    "calls": int(entry["calls"]),
+                    "bytes": int(entry["bytes"]),
+                }
+                for entry in copy_categories
+            ]
+            + [
+                {
+                    "kind": "allocation",
+                    "category": str(entry["category"]),
+                    "calls": int(entry["calls"]),
+                    "bytes": int(entry["bytes"]),
+                }
+                for entry in alloc_categories
+            ],
+            key=lambda entry: (entry["bytes"], entry["calls"]),
+            reverse=True,
+        )[:8],
+    }
 
 
 def run_iwasm(args: list[str], *, cwd: Path, timeout: int) -> subprocess.CompletedProcess[str]:
@@ -297,6 +697,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
         timed_out = True
 
     counters = parse_counter_lines(iwasm.stdout)
+    attribution = build_attribution(counters)
     return {
         "fixture": str(fixture.relative_to(REPO_ROOT) if fixture.is_relative_to(REPO_ROOT) else fixture),
         "diagnostic": "abc451-runtime-costs",
@@ -305,6 +706,7 @@ def build_payload(args: argparse.Namespace) -> dict[str, Any]:
         "diagnostic_stop": iwasm.returncode != 0 and not timed_out,
         "timed_out": timed_out,
         "counters": counters,
+        "attribution": attribution,
         "runtime_exit": {
             "code": iwasm.returncode,
             "stderr_tail": iwasm.stderr[-500:],
