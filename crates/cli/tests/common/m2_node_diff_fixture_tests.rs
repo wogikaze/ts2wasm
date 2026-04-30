@@ -282,6 +282,11 @@ fn bigint_large_mul_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_large_mul_local_flow_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-large-mul-local-flow.ts");
+}
+
+#[test]
 fn bigint_runtime_div_zero_traps_after_successful_build() {
     assert_fixture_node_rangeerror_and_iwasm_traps(
         "fixtures/core-semantics/bigint-runtime-div-zero-trap.ts",
