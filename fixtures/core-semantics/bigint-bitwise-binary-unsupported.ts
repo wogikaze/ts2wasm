@@ -1,1 +1,1 @@
-console.log(1n & 3n);
+console.log(1n & 1);

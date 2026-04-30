@@ -56,7 +56,7 @@ pub(super) fn bigint_exponentiation_diagnostic(span: Span) -> Diagnostic {
 pub(super) fn bigint_bitwise_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented"
+        message: "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented"
             .to_owned(),
         span: Some(span),
     }
@@ -444,8 +444,53 @@ pub(super) fn fold_bigint_binary(
                 digits: remainder,
             })
         }
+        BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor => {
+            let Some(left) = bigint_to_runtime_i64(&left) else {
+                return Err(bigint_bitwise_diagnostic(span));
+            };
+            let Some(right) = bigint_to_runtime_i64(&right) else {
+                return Err(bigint_bitwise_diagnostic(span));
+            };
+            let result = match op {
+                BinaryOp::BitwiseAnd => left & right,
+                BinaryOp::BitwiseOr => left | right,
+                BinaryOp::BitwiseXor => left ^ right,
+                _ => unreachable!("checked above"),
+            };
+            bigint_from_runtime_i64(result, span)
+        }
         _ => unreachable!("non-arithmetic BigInt operator reached literal fold"),
     }
+}
+
+pub(super) fn fold_bigint_unary_bitwise_not(
+    value: BigIntConst,
+    span: Span,
+) -> Result<BigIntConst, Diagnostic> {
+    let Some(value) = bigint_to_runtime_i64(&value) else {
+        return Err(bigint_bitwise_diagnostic(span));
+    };
+    bigint_from_runtime_i64(!value, span)
+}
+
+fn bigint_to_runtime_i64(value: &BigIntConst) -> Option<i64> {
+    let magnitude = decimal_digits_to_u64(&value.digits)?;
+    if magnitude > i64::MAX as u64 {
+        return None;
+    }
+    let magnitude = magnitude as i64;
+    Some(match value.sign.cmp(&0) {
+        std::cmp::Ordering::Less => -magnitude,
+        std::cmp::Ordering::Equal => 0,
+        std::cmp::Ordering::Greater => magnitude,
+    })
+}
+
+fn bigint_from_runtime_i64(value: i64, span: Span) -> Result<BigIntConst, Diagnostic> {
+    if value == i64::MIN {
+        return Err(bigint_bitwise_diagnostic(span));
+    }
+    Ok(bigint_from_i64(value))
 }
 
 pub(super) fn bigint_add(left: BigIntConst, right: BigIntConst) -> BigIntConst {
@@ -595,7 +640,7 @@ pub(super) fn div_rem_abs(left: &[u8], right: &[u8]) -> (Vec<u8>, Vec<u8>) {
 pub(super) fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
     match op {
         UnaryOp::BitwiseNot => {
-            Some("issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented")
+            Some("issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented")
         }
         UnaryOp::Negate
         | UnaryOp::Plus

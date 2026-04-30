@@ -715,6 +715,31 @@ mod tests {
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntBitwiseNot".to_owned(),
+                    args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntBitwiseAnd".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntBitwiseOr".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntBitwiseXor".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntFromValue".to_owned(),
                     args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
                 }),
@@ -763,6 +788,22 @@ mod tests {
         assert!(
             plan.required_runtime_functions()
                 .contains(&RuntimeFn::BigIntRem)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntBitwiseNot)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntBitwiseAnd)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntBitwiseOr)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntBitwiseXor)
         );
         assert!(
             plan.required_runtime_functions()

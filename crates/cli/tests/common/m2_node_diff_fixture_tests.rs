@@ -151,6 +151,13 @@ fn array_map_generic_call_object_literal_fixture_matches_node_output_under_iwasm
 }
 
 #[test]
+fn array_map_generic_call_function_receiver_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/array-map-generic-call-function-receiver.ts",
+    );
+}
+
+#[test]
 fn array_sort_numeric_comparator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/array-sort-numeric-comparator.ts");
 }
@@ -288,18 +295,28 @@ fn bigint_mixed_arithmetic_reports_issue_370() {
 }
 
 #[test]
-fn bigint_bitwise_unary_reports_issue_377() {
+fn bigint_bitwise_literal_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-bitwise-literal-runtime.ts");
+}
+
+#[test]
+fn bigint_bitwise_runtime_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-bitwise-runtime.ts");
+}
+
+#[test]
+fn bigint_bitwise_unary_out_of_slice_reports_issue_387() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-unary-minus-unsupported.ts",
-        "issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented",
+        "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented",
     );
 }
 
 #[test]
-fn bigint_bitwise_binary_reports_issue_377() {
+fn bigint_bitwise_mixed_reports_issue_387() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-bitwise-binary-unsupported.ts",
-        "issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented",
+        "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented",
     );
 }
 

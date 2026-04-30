@@ -56,6 +56,10 @@ pub(crate) enum RuntimeFn {
     BigIntPow,
     BigIntDiv,
     BigIntRem,
+    BigIntBitwiseNot,
+    BigIntBitwiseAnd,
+    BigIntBitwiseOr,
+    BigIntBitwiseXor,
     BigIntCompare,
     StringEqual,
     Concat,
@@ -398,6 +402,10 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntPow" => Some(RuntimeFn::BigIntPow),
         "BigIntDiv" => Some(RuntimeFn::BigIntDiv),
         "BigIntRem" => Some(RuntimeFn::BigIntRem),
+        "BigIntBitwiseNot" => Some(RuntimeFn::BigIntBitwiseNot),
+        "BigIntBitwiseAnd" => Some(RuntimeFn::BigIntBitwiseAnd),
+        "BigIntBitwiseOr" => Some(RuntimeFn::BigIntBitwiseOr),
+        "BigIntBitwiseXor" => Some(RuntimeFn::BigIntBitwiseXor),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
         "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
@@ -707,6 +715,7 @@ const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_DIV_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 // String method dependencies
 const STRING_CHAR_AT_DEPS: &[RuntimeFn] =

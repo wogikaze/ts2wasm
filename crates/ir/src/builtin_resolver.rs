@@ -1214,6 +1214,17 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         expr: Box::new(resolved),
                     });
                 }
+                if *op == UnaryOp::BitwiseNot {
+                    if let Some(value) = bigint_from_resolved(&resolved) {
+                        return Ok(bigint_to_resolved(fold_bigint_unary_bitwise_not(
+                            value, *span,
+                        )?));
+                    }
+                    return Ok(ResolvedExpr::Unary {
+                        op: *op,
+                        expr: Box::new(resolved),
+                    });
+                }
                 if let Some(message) = bigint_unary_op_issue(*op) {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -1275,6 +1286,23 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                             right: Box::new(right_resolved),
                         });
                     }
+                }
+                if matches!(
+                    op,
+                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                ) {
+                    if let (Some(left_value), Some(right_value)) = (
+                        bigint_from_resolved(&left_resolved),
+                        bigint_from_resolved(&right_resolved),
+                    ) {
+                        let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
+                        return Ok(bigint_to_resolved(result));
+                    }
+                    return Ok(ResolvedExpr::Binary {
+                        left: Box::new(left_resolved),
+                        op: *op,
+                        right: Box::new(right_resolved),
+                    });
                 }
                 let diagnostic = match op {
                     BinaryOp::Add

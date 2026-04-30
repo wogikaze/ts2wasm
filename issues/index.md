@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 138 | 43 | 95 |
+| runtime | 139 | 43 | 96 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 399 | 181 | 218 |
+| total | 400 | 181 | 219 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -49,7 +49,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 372 | Implement BigInt object ToPrimitive non-BigInt primitive returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Direct object-literal/local `valueOf` or `toString` methods that return booleans, supported tagged-int numbers, nulli... |
 | 373 | Handle BigInt object ToPrimitive invalid and out-of-range string returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Issue 368 implemented `toString: () => <supported decimal string>` for equality and relational comparisons, but inval... |
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
-| 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt bitwise NOT/AND/OR/XOR currently report issue-377 diagnostics and must not reuse ordinary number bitwise lower... |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
 | 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt `/ 0n` and `% 0n` currently reach a runtime `unreachable` trap in the signed-i64 helper slice, while Node thro... |
 | 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | implementation-ready | P2 | 260 | Mixed Number/BigInt arithmetic currently reports issue-linked diagnostics instead of throwing compatible `TypeError` ... |
@@ -57,6 +56,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 383 | Multi-limb BigInt multiplication | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `*` with operands or results outside the signed-i64-backed helper slice report diagnostics instead of ... |
 | 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `/` and `%` with operands or results outside the signed-i64-backed helper slice report diagnostics ins... |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | implementation-ready | P1 |  | Issue 357's previous attempts to reduce the timeout did not identify whether the bottleneck is array copying, GC swee... |
+| 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -454,6 +454,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | see `issues/done/368-implement-remaining-bigint-mixed-runtime-coercion-edges.md` |
 | 371 | Define BigInt bitwise and exponentiation policy | feature | runtime/semantics | see `issues/done/371-define-bigint-bitwise-and-exponentiation-policy.md` |
 | 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | see `issues/done/376-implement-dynamic-bigint-exponentiation.md` |
+| 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | see `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md` |
 | 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | see `issues/done/379-validate-array-map-thisarg-test262.md` |
 <!-- generated:done:end -->
 

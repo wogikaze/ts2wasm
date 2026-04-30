@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/376-implement-dynamic-bigint-exponentiation.md`, `issues/open/377-implement-bigint-bitwise-not-and-or-xor.md`, `issues/open/378-implement-bigint-shift-operators.md`
+- [x] created: `issues/done/376-implement-dynamic-bigint-exponentiation.md`, `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md`, `issues/open/378-implement-bigint-shift-operators.md`
 
 ## Notes
 
@@ -140,6 +140,6 @@ mise run check issues: pass
 Remaining risks:
 
 - Dynamic BigInt exponentiation remains issue 376.
-- BigInt bitwise NOT/AND/OR/XOR remains issue 377.
+- BigInt bitwise NOT/AND/OR/XOR signed-i64 slice is closed by issue 377; out-of-slice bitwise remains issue 387.
 - BigInt shift operators and BigInt >>> TypeError policy remain issue 378.
 - Negative BigInt exponent compatible RangeError throwing remains issue 370.

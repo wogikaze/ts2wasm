@@ -1002,21 +1002,41 @@ impl BigIntRuntimeGuard {
             })),
             Expr::Unary { op, expr, span } => {
                 let info = self.expr_bigint_info(expr)?;
-                if let Some(info) = info
-                    && *op == UnaryOp::Negate
-                {
-                    let value = info.value.map(BigIntConst::negated);
-                    let helper_safe = value
-                        .as_ref()
-                        .is_some_and(BigIntConst::fits_runtime_signed_i64);
-                    if info.runtime_needed && !helper_safe {
-                        return Err(bigint_dynamic_runtime_diagnostic(*span));
+                if let Some(info) = info {
+                    if *op == UnaryOp::Negate {
+                        let value = info.value.map(BigIntConst::negated);
+                        let helper_safe = value
+                            .as_ref()
+                            .is_some_and(BigIntConst::fits_runtime_signed_i64);
+                        if info.runtime_needed && !helper_safe {
+                            return Err(bigint_dynamic_runtime_diagnostic(*span));
+                        }
+                        return Ok(Some(BigIntStaticInfo {
+                            value,
+                            helper_safe,
+                            runtime_needed: info.runtime_needed,
+                        }));
                     }
-                    return Ok(Some(BigIntStaticInfo {
-                        value,
-                        helper_safe,
-                        runtime_needed: info.runtime_needed,
-                    }));
+                    if *op == UnaryOp::BitwiseNot {
+                        let value = match info.value {
+                            Some(value) => Some(fold_bigint_unary_bitwise_not(value, *span)?),
+                            None if info.runtime_needed => {
+                                return Err(bigint_bitwise_diagnostic(*span));
+                            }
+                            None => None,
+                        };
+                        let helper_safe = value
+                            .as_ref()
+                            .is_some_and(BigIntConst::fits_runtime_signed_i64);
+                        if info.runtime_needed && !helper_safe {
+                            return Err(bigint_bitwise_diagnostic(*span));
+                        }
+                        return Ok(Some(BigIntStaticInfo {
+                            value,
+                            helper_safe,
+                            runtime_needed: info.runtime_needed,
+                        }));
+                    }
                 }
                 Ok(None)
             }
@@ -1093,6 +1113,12 @@ impl BigIntRuntimeGuard {
                     return Ok(None);
                 }
                 let (Some(left_info), Some(right_info)) = (left_info, right_info) else {
+                    if matches!(
+                        op,
+                        BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                    ) {
+                        return Err(bigint_bitwise_diagnostic(*span));
+                    }
                     return Err(bigint_mixed_runtime_diagnostic(*span));
                 };
                 if !matches!(
@@ -1103,6 +1129,9 @@ impl BigIntRuntimeGuard {
                         | BinaryOp::Divide
                         | BinaryOp::Modulo
                         | BinaryOp::Power
+                        | BinaryOp::BitwiseAnd
+                        | BinaryOp::BitwiseOr
+                        | BinaryOp::BitwiseXor
                 ) {
                     return Ok(None);
                 }
@@ -1124,12 +1153,26 @@ impl BigIntRuntimeGuard {
                             if *op == BinaryOp::Power {
                                 return Err(bigint_exponentiation_diagnostic(*span));
                             }
+                            if matches!(
+                                op,
+                                BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                            ) {
+                                return Err(bigint_bitwise_diagnostic(*span));
+                            }
                             return Err(bigint_dynamic_runtime_diagnostic(*span));
                         }
                         Some(result)
                     }
                     _ if runtime_needed && *op == BinaryOp::Power => {
                         return Err(bigint_exponentiation_diagnostic(*span));
+                    }
+                    _ if runtime_needed
+                        && matches!(
+                            op,
+                            BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                        ) =>
+                    {
+                        return Err(bigint_bitwise_diagnostic(*span));
                     }
                     _ if runtime_needed => return Err(bigint_dynamic_runtime_diagnostic(*span)),
                     _ => None,

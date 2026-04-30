@@ -70,6 +70,12 @@ impl<'a> Resolver<'a> {
                         });
                     }
                 }
+                if *op == UnaryOp::BitwiseNot && self.resolved_expr_is_bigint(expr) {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntBitwiseNot".to_owned(),
+                        args: vec![self.lower_expr(expr)?],
+                    });
+                }
                 if *op == UnaryOp::Delete {
                     // Lower delete to PropertyDelete or PropertyDeleteDynamic
                     match expr.as_ref() {
@@ -190,6 +196,22 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "BigIntPow".to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     })
+                } else if matches!(
+                    op,
+                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                ) && self.resolved_expr_is_bigint(left)
+                    && self.resolved_expr_is_bigint(right)
+                {
+                    let runtime_fn = match op {
+                        BinaryOp::BitwiseAnd => "BigIntBitwiseAnd",
+                        BinaryOp::BitwiseOr => "BigIntBitwiseOr",
+                        BinaryOp::BitwiseXor => "BigIntBitwiseXor",
+                        _ => unreachable!("checked above"),
+                    };
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: runtime_fn.to_owned(),
+                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    })
                 } else if *op == BinaryOp::Power
                     && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
                 {
@@ -209,6 +231,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::Assign { name, expr } => {
                 let local = self.resolve_local(name)?;
                 self.invalidate_static_object_literal_local(local);
+                self.invalidate_static_function_array_like_local(local);
                 let expr = Box::new(self.lower_expr(expr)?);
                 if self.env_cell_locals.contains(&local) {
                     Ok(LoweredExpr::EnvCellSet { cell: local, expr })
@@ -219,6 +242,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::LogicalAssign { name, op, expr } => {
                 let local = self.resolve_local(name)?;
                 self.invalidate_static_object_literal_local(local);
+                self.invalidate_static_function_array_like_local(local);
                 Ok(LoweredExpr::LogicalAssign {
                     local,
                     op: lower_logical_assign_op(*op),
@@ -1340,6 +1364,7 @@ impl<'a> Resolver<'a> {
                     && let Ok(local_id) = self.resolve_local(name)
                 {
                     self.invalidate_static_object_literal_local(local_id);
+                    self.update_static_function_array_like_index(local_id, key, value);
                 }
                 if self.expr_has_private_progress_storage(object) {
                     return Err(private_storage_observable_access_diagnostic(None));

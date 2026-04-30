@@ -930,6 +930,54 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(super) fn emit_bigint_bitwise_not(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_bitwise_not (param $v i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.xor
+        (call $bigint_signed_i64 (local.get $v))
+        (i64.const -1))))
+"#,
+        );
+    }
+
+    pub(super) fn emit_bigint_bitwise_and(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_bitwise_and (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.and
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
+    pub(super) fn emit_bigint_bitwise_or(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_bitwise_or (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.or
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
+    pub(super) fn emit_bigint_bitwise_xor(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_bitwise_xor (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.xor
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
     pub(super) fn emit_bigint_from_value(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

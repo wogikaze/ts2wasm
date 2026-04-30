@@ -3,12 +3,13 @@ id: 377
 title: "Implement BigInt bitwise NOT/AND/OR/XOR"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [260]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -47,9 +48,9 @@ Supported BigInt bitwise NOT/AND/OR/XOR forms produce Node/iwasm-matching output
 
 In scope:
 
-- [ ] Define the first supported BigInt bitwise NOT/AND/OR/XOR slice.
-- [ ] Add Node/iwasm differential fixtures for implemented operators.
-- [ ] Preserve diagnostics for unsupported dynamic, out-of-slice, or mixed Number/BigInt cases.
+- [x] Define the first supported BigInt bitwise NOT/AND/OR/XOR slice.
+- [x] Add Node/iwasm differential fixtures for implemented operators.
+- [x] Preserve diagnostics for unsupported dynamic, out-of-slice, or mixed Number/BigInt cases; remaining out-of-slice forms are tracked by issue 387.
 
 Out of scope:
 
@@ -75,10 +76,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Implemented BigInt bitwise NOT/AND/OR/XOR forms have Node/iwasm differential fixtures.
-- [ ] Unsupported forms keep source-backed issue diagnostics.
-- [ ] No BigInt bitwise path lowers through ordinary number bitwise operators.
-- [ ] Docs/current-state/issues are synchronized.
+- [x] Implemented BigInt bitwise NOT/AND/OR/XOR forms have Node/iwasm differential fixtures.
+- [x] Unsupported forms keep source-backed issue diagnostics through issue 387.
+- [x] No BigInt bitwise path lowers through ordinary number bitwise operators.
+- [x] Docs/current-state/issues are synchronized.
 
 ## Validation
 
@@ -105,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update if runtime ABI or supported subset changes
+- [x] updated for the signed-i64-safe helper slice
 
 Current state:
 
-- [ ] update `current-state.md` when behavior changes
+- [x] updated `current-state.md` for the signed-i64-safe helper slice
 
 Follow-up issues:
 
-- [ ] none yet
+- [x] created issue 387 for out-of-slice BigInt bitwise
 
 ## Notes
 
@@ -125,4 +126,4 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- pending final commit hash

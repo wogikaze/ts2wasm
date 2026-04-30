@@ -180,14 +180,14 @@ BigInt を扱う runtime helper は論理 `jsval` を入出力に使う。現行
 | `bigint_mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260/263; future issue 369/370 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction, including known-local/literal operand pairs. Full multi-limb fallback is issue 369; division/remainder by zero currently trap and RangeError parity is issue 370 |
 | `bigint_unary_minus` | `(jsval) -> jsval` | issue 260; future issue 369 | Progress slice implemented through signed-i64-backed first-limb reconstruction; full multi-limb fallback is issue 369. `-0n` は `0n` |
 | `bigint_pow` | `(jsval, jsval) -> jsval` | issue 376; future issue 369/370 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction. Negative exponent RangeError parity remains issue 370; full multi-limb fallback remains issue 369; out-of-slice dynamic exponentiation remains issue 376. |
-| `bigint_bitwise_not` / `and` / `or` / `xor` | `(jsval[, jsval]) -> jsval` | future issue 377 | Runtime helpers are not implemented. BigInt bitwise operators stay diagnosed instead of lowering through number bitwise operators. |
+| `bigint_bitwise_not` / `and` / `or` / `xor` | `(jsval[, jsval]) -> jsval` | issue 387; future issue 369/370 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction. Mixed Number/BigInt, unproved dynamic values, and results outside the current signed-i64 constructor boundary stay diagnosed; operators never lower through ordinary number bitwise helpers. |
 | `bigint_shl` / `shr` | `(jsval, jsval) -> jsval` | future issue 378 | Runtime helpers are not implemented. BigInt `>>>` is an ECMAScript TypeError path, not a coercion to Number. |
 
 IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
 - Parser/frontend: BigInt syntax classification only。invalid literal syntax は issue 244 の diagnostics を維持する
 - Resolver/BuiltinResolver: BigInt literal node を runtime-capable expression として残し、未実装 operation は該当 implementation issue ID を含む source diagnostic にする
-- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus and `+`, `-`, `*`, `/`, `%`, and signed-i64-safe `**` currently lower to runtime helpers when pre-lowering proof keeps them inside the signed-i64 helper slice. Literal BigInt `**` is folded before lowering only for non-negative exponent literals in `0..=64`; dynamic BigInt exponentiation outside the signed-i64-safe proof boundary remains issue 376. BigInt operation mixed Number/BigInt TypeError parity is split to issue 370; current statically visible mixes remain issue-linked diagnostics
+- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus, `+`, `-`, `*`, `/`, `%`, signed-i64-safe `**`, and signed-i64-safe BigInt-specific `~` / `&` / `|` / `^` currently lower to runtime helpers when pre-lowering proof keeps them inside the signed-i64 helper slice. Literal BigInt `**` is folded before lowering only for non-negative exponent literals in `0..=64`; dynamic BigInt exponentiation outside the signed-i64-safe proof boundary remains issue 376. BigInt bitwise helpers do not share ordinary number bitwise lowering. BigInt operation mixed Number/BigInt TypeError parity is split to issue 370; current statically visible mixes remain issue-linked diagnostics
 - Backend/runtime link plan: BigInt helper は `RuntimeFn` catalog で deps/imports/capabilities/runtime strings を持つ。BigInt だけでは host import を要求しない
 
 Unsupported boundary:
@@ -196,7 +196,7 @@ Unsupported boundary:
 - Full multi-limb BigInt arithmetic beyond the issue-260 signed-i64-backed progress slice: `unsupported-bigint-arithmetic` / issue 369
 - BigInt arithmetic RangeError/TypeError parity: `unsupported-bigint-arithmetic-exception` / issue 370
 - Dynamic BigInt exponentiation outside the signed-i64-safe helper proof boundary: `unsupported-bigint-exponentiation` / issue 376
-- BigInt bitwise NOT/AND/OR/XOR operators: `unsupported-bigint-bitwise` / issue 377
+- BigInt bitwise NOT/AND/OR/XOR beyond the signed-i64-safe helper slice: `unsupported-bigint-bitwise` / issue 387
 - BigInt shift operators and unsigned-right-shift TypeError policy: `unsupported-bigint-shift` / issue 378
 - BigInt equality, relational comparison, and coercion until issue 261: `unsupported-bigint-comparison` / issue 261
 - BigInt builtin functions and string conversion until issue 262: `unsupported-bigint-builtin` / issue 262
