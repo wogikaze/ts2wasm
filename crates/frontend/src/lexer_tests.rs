@@ -1,7 +1,6 @@
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::{Parser, Stmt};
+    use crate::{DiagCode, Diagnostic, Lexer, Parser, Stmt, Token};
 
     fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {
         let tokens = Lexer::new(source).tokenize()?;

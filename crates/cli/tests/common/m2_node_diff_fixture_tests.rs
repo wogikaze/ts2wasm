@@ -1030,6 +1030,9 @@ fn function_this_receiver_fixture_matches_node_output_under_iwasm() {
 fn function_arguments_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/function-arguments.ts");
     assert_fixture_matches_node("fixtures/core-semantics/arguments-object-property-call.ts");
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/arguments-out-of-range-index-assignment.ts",
+    );
 }
 
 #[test]
