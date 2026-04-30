@@ -25,7 +25,7 @@ Problem: General iterator protocol is not implemented for spread operator.
 before runtime iterator protocol lowering. `function* gen()` is rejected at the
 generator `*`, and an object literal with `[Symbol.iterator]` is rejected at the
 computed property key. Runtime iterator protocol integration should resume after
-issues 401 and 402 provide those prerequisites.
+issue 401 is complete; issue 402 provides the remaining custom-iterator prerequisite.
 
 ## Current failure
 
@@ -154,7 +154,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created/updated: `issues/open/401-generator-function-syntax-prerequisite-for-iterator-spread.md`
+- [x] created/updated: `issues/done/401-generator-function-syntax-prerequisite-for-iterator-spread.md`
 - [x] created/updated: `issues/open/402-computed-symbol-iterator-prerequisite-for-spread.md`
 
 ## Notes

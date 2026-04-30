@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 213 | 133 | 80 |
+| frontend | 213 | 132 | 81 |
 | ir | 8 | 1 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 415 | 176 | 239 |
+| total | 415 | 175 | 240 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -48,7 +48,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
 | 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 380 cannot produce a compatible catchable `RangeError`... |
-| 401 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | implementation-ready | P2 |  | Generator function declarations are rejected before iterator spread can be tested. |
 | 402 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | design-ready | P2 |  | Computed `[Symbol.iterator]` object members are rejected before custom iterable spread can be tested. |
 <!-- generated:ready:end -->
 
@@ -471,6 +470,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 398 | Track control-flow-assigned BigInt div/rem locals | feature | runtime/semantics | see `issues/done/398-track-control-flow-assigned-bigint-div-rem.md` |
 | 399 | Define TypeScript parse, erase, and emit boundary contract | spike | frontend | see `issues/done/399-define-typescript-parse-erase-emit-boundary.md` |
 | 400 | Implement ambient declaration erasure and rejection boundary | feature | frontend/syntax | see `issues/done/400-implement-ambient-declaration-erasure-boundary.md` |
+| 401 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | see `issues/done/401-generator-function-syntax-prerequisite-for-iterator-spread.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

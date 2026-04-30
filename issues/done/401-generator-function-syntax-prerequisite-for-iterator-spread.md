@@ -3,12 +3,13 @@ id: 401
 title: "Implement generator function syntax prerequisite for iterator spread"
 type: feature
 area: frontend/syntax
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: [353]
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -57,9 +58,9 @@ iterator diagnostic instead of failing at `function*` parsing.
 
 In scope:
 
-- [ ] Parse generator function declarations used by `function* gen() { yield ... }`
-- [ ] Preserve enough generator metadata for later iterator protocol lowering
-- [ ] Add a regression fixture that reaches issue 353's iterator spread boundary
+- [x] Parse generator function declarations used by `function* gen() { yield ... }`
+- [x] Preserve enough generator metadata for later iterator protocol lowering
+- [x] Add a regression fixture that reaches issue 353's iterator spread boundary
 
 Out of scope:
 
@@ -83,10 +84,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `function* gen() { yield 1; yield 2; }` no longer fails with `expected identifier` at `*`
-- [ ] A generator spread fixture reaches either Node/iwasm parity or a source-backed issue 353 iterator diagnostic
-- [ ] Existing supported spread slices remain passing
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] `function* gen() { yield 1; yield 2; }` no longer fails with `expected identifier` at `*`
+- [x] A generator spread fixture reaches either Node/iwasm parity or a source-backed issue 353 iterator diagnostic
+- [x] Existing supported spread slices remain passing
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -113,15 +114,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root) if generator support changes
+- [x] updated: `current-state.md` (repo root) if generator support changes
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -131,20 +132,38 @@ smallest safe slice.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed: 2026-05-01
+
+Outcome:
+
+- `function* gen() { yield 1; yield 2; }` no longer fails with the previous `expected identifier` diagnostic at `*`.
+- `fixtures/core-semantics/spread-generator-unsupported.ts` now reaches the explicit `issue-353` iterator/generator boundary.
+- Existing supported spread slices remain passing under the targeted parent gate.
 
 Commits:
 
-- `...`
+- `14cae148 issue-401: diagnose generator function syntax`
+- `9a05c6d1 issue-402: accept Symbol.iterator object keys`
+- `c2f73110 issue-402: fix symbol iterator integration`
+- `2eb69e53 issue-402: preserve generator prerequisite tracking`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+
+command: cargo test -p ts2wasm-cli spread_operator_generator_fixture_reports_issue_353
+result: pass
+
+command: cargo test -p ts2wasm-cli spread
+result: pass; 22 spread tests passed
+
+command: mise run update-issue-index -- --check && mise run check issues
+result: pass
 ```
 
 Remaining risks:
 
-- none
+- Full generator object execution and iterator protocol integration remain issue 353 scope.
+- The broader `cargo nextest run -E 'test(spread) or test(node_diff)'` gate still intersects known unrelated BigInt/GC node-diff baseline failures, so closure uses the focused spread gate evidence above.

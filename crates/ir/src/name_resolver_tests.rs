@@ -138,6 +138,7 @@ mod tests {
                 name: "foo".to_string(),
                 params: vec![],
                 body: vec![],
+                is_generator: false,
                 span: Span { start: 10, end: 25 },
             },
         ];
@@ -233,6 +234,7 @@ mod tests {
                         span: Span { start: 30, end: 31 },
                     },
                 ],
+                is_generator: false,
                 span: Span { start: 10, end: 40 },
             },
         ];
@@ -270,6 +272,7 @@ mod tests {
                     },
                     span: Span { start: 28, end: 54 },
                 }],
+                is_generator: false,
                 span: Span { start: 19, end: 56 },
             },
         ];
