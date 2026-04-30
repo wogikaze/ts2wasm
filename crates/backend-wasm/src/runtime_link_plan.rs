@@ -798,6 +798,10 @@ mod tests {
         );
         assert!(
             plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntDivisionByZeroRangeError)
+        );
+        assert!(
+            plan.required_runtime_functions()
                 .contains(&RuntimeFn::BigIntMixedArithmeticTypeError)
         );
         assert!(

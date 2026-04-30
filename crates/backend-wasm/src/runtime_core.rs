@@ -1306,9 +1306,6 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_bigint_div(&self, wat: &mut String) {
-        let division_by_zero = self
-            .string_offset(RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR)
-            + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
   (func $bigint_decimal_trim (param $ptr i32) (param $len i32) (result i32)
@@ -1443,8 +1440,7 @@ impl WatEmitter<'_> {
     (local.set $b_sign (i32.load (i32.add (local.get $b_obj) (i32.const {bigint_sign_offset}))))
     (if (i32.eqz (local.get $b_sign))
       (then
-        (call $write (i32.const {division_by_zero}) (i32.const {division_by_zero_len}))
-        (unreachable)))
+        (call $bigint_division_by_zero_range_error)))
     (local.set $a_ptr (i32.add (local.get $a_obj) (i32.const {bigint_decimal_data_offset})))
     (local.set $b_ptr (i32.add (local.get $b_obj) (i32.const {bigint_decimal_data_offset})))
     (local.set $a_len (i32.load (i32.add (local.get $a_obj) (i32.const {bigint_decimal_len_offset}))))
@@ -1560,8 +1556,6 @@ impl WatEmitter<'_> {
             bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
             bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
             bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
-            division_by_zero = division_by_zero,
-            division_by_zero_len = RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR.len() as i32,
         ));
     }
 
@@ -1572,6 +1566,20 @@ impl WatEmitter<'_> {
     (call $bigint_div_rem_decimal (local.get $a) (local.get $b) (i32.const 1)))
 "#,
         );
+    }
+
+    pub(super) fn emit_bigint_division_by_zero_range_error(&self, wat: &mut String) {
+        let message = self.string_offset(RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR)
+            + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_division_by_zero_range_error
+    (call $write (i32.const {message}) (i32.const {message_len}))
+    (unreachable))
+"#,
+            message = message,
+            message_len = RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR.len() as i32,
+        ));
     }
 
     pub(super) fn emit_bigint_mixed_arithmetic_type_error(&self, wat: &mut String) {

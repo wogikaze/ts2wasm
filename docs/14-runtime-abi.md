@@ -225,6 +225,10 @@ Issue 396 starts this substrate for mixed Number/BigInt arithmetic:
 - `bigint_mixed_arithmetic_type_error(jsval, jsval) -> jsval` evaluates both operands
   before entering the helper, writes `TypeError: Cannot mix BigInt and other types, use explicit conversions`,
   and aborts.
+- `bigint_division_by_zero_range_error() -> never` writes `RangeError: Division by zero`
+  and aborts. `bigint_div` / `bigint_rem` depend on this helper instead of inlining
+  their diagnostic path, so RangeError uses the same cataloged runtime-string and `$write`
+  dependency substrate as TypeError.
 - The helper declares its `$write` dependency and runtime string through the `RuntimeFn`
   catalog, so capabilities and string interning remain link-plan driven.
 - This is intentionally not yet full ECMAScript `throw` / `try` / `catch` propagation;
@@ -234,7 +238,7 @@ Unsupported boundary:
 
 - literal runtime values: implemented by issue 259 for decimal/binary/octal/hex literal construction, `console.log`, `typeof`, literal `String(...)`, and truthiness
 - Full multi-limb BigInt arithmetic beyond the issue-260 signed-i64-backed progress slice, excluding the issue-382/397 known/supported-branch BigInt `+` / `-` slice, the issue-383 known/control-flow-BigInt `*` slice, and issue-384 known-BigInt `/` and `%` slice: `unsupported-bigint-arithmetic` / issue 369
-- BigInt arithmetic exception parity: mixed Number/BigInt TypeError now has a runtime diagnostic/abort surface through issue 396; catchable Error-object propagation and RangeError parity remain `unsupported-bigint-arithmetic-exception` / issue 370
+- BigInt arithmetic exception parity: mixed Number/BigInt TypeError and division/remainder-by-zero RangeError now have runtime diagnostic/abort surfaces through issue 396; catchable Error-object propagation remains `unsupported-bigint-arithmetic-exception` / issue 370
 - Dynamic BigInt exponentiation outside the signed-i64-safe helper proof boundary: `unsupported-bigint-exponentiation` / issue 376
 - BigInt dynamic bitwise NOT and binary AND/OR/XOR beyond the signed-i64-safe helper slice: `unsupported-bigint-bitwise` / issue 387
 - Dynamic/out-of-slice BigInt shift operators and unsigned-right-shift TypeError policy: `unsupported-bigint-shift` / issue 378

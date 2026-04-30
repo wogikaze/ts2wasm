@@ -56,6 +56,7 @@ pub(crate) enum RuntimeFn {
     BigIntPow,
     BigIntDiv,
     BigIntRem,
+    BigIntDivisionByZeroRangeError,
     BigIntMixedArithmeticTypeError,
     BigIntBitwiseNot,
     BigIntBitwiseAnd,
@@ -405,6 +406,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntPow" => Some(RuntimeFn::BigIntPow),
         "BigIntDiv" => Some(RuntimeFn::BigIntDiv),
         "BigIntRem" => Some(RuntimeFn::BigIntRem),
+        "BigIntDivisionByZeroRangeError" => Some(RuntimeFn::BigIntDivisionByZeroRangeError),
         "BigIntMixedArithmeticTypeError" => Some(RuntimeFn::BigIntMixedArithmeticTypeError),
         "BigIntBitwiseNot" => Some(RuntimeFn::BigIntBitwiseNot),
         "BigIntBitwiseAnd" => Some(RuntimeFn::BigIntBitwiseAnd),
@@ -719,8 +721,12 @@ const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_DIV_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral, RuntimeFn::Write];
+const BIGINT_DIV_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::MakeBigIntLiteral,
+    RuntimeFn::BigIntDivisionByZeroRangeError,
+];
 const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntDiv];
+const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR];

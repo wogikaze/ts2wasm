@@ -36,6 +36,9 @@ impl WatEmitter<'_> {
                 RuntimeFn::BigIntPow => self.emit_bigint_pow(wat),
                 RuntimeFn::BigIntDiv => self.emit_bigint_div(wat),
                 RuntimeFn::BigIntRem => self.emit_bigint_rem(wat),
+                RuntimeFn::BigIntDivisionByZeroRangeError => {
+                    self.emit_bigint_division_by_zero_range_error(wat)
+                }
                 RuntimeFn::BigIntMixedArithmeticTypeError => {
                     self.emit_bigint_mixed_arithmetic_type_error(wat)
                 }

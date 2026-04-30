@@ -105,3 +105,18 @@ Validation result:
 ```text
 not run; issue is open
 ```
+
+2026-05-01 child-396 RangeError substrate progress:
+
+- Extracted the BigInt division/remainder-by-zero diagnostic into a named runtime helper, `bigint_division_by_zero_range_error`.
+- `BigIntDiv` now depends on that helper through the `RuntimeFn` catalog, so the RangeError message and `$write` dependency are declared by the runtime exception substrate instead of being inline inside the arithmetic helper.
+- `BigIntRem` continues to share the same path through `BigIntDiv`, preserving the existing operand evaluation and division/remainder helper behavior.
+- Updated the runtime ABI documentation to name both current diagnostic/abort helpers and leave catchable Error-object propagation open.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff rangeerror: pass (2 passed; 201 filtered out)
+mise run update-issue-index -- --check && mise run check issues: pass
+```
