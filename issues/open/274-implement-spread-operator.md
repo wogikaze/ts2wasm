@@ -130,3 +130,9 @@ Child issues:
 - 2026-04-30: Added a known Set local call-spread slice:
   - fixed-arity direct calls such as `join(...letters)`, where `letters` is a known `Set` local, lower each formal argument through the existing `SetValuesArray` plus `ArrayGet` path and preserve insertion order under Node/iwasm differential coverage;
   - rest/`arguments`-observing callees, receiver-dependent calls, Map/custom iterator/general iterator protocol, sparse arrays, and dynamic non-Set iterable call spread remain guarded by existing issue-274 diagnostics.
+- 2026-05-01: Added the smallest direct function-expression `this` IIFE slice needed by the Test262 harness:
+  - exact calls of the form `(function() { return this; })()` now lower to a global-like object value and match Node for `typeof`;
+  - `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` now advances past the prior issue-274 span at harness line 49 and reaches the next blocker, `UnresolvedName: assert`;
+  - targeted regression `cargo nextest run function_expression_return_this_iife_fixture_matches_node_output_under_iwasm` passed, and `mise run update-issue-index -- --check` plus `mise run check issues` passed;
+  - `cargo fmt --all --check` is `BLOCKED_BY_UNRELATED_FORMAT` in `crates/ir/src/builtin_resolver.rs`, which is outside this issue-274 slice;
+  - broader direct ordinary-function `this` binding, top-level `this`, `arguments`, parameters, spread/rest arguments, and receiver-dependent function-expression calls remain guarded by existing issue-062d/issue-274 diagnostics.

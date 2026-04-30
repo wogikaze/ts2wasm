@@ -1033,6 +1033,9 @@ impl<'a> Resolver<'a> {
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
+        if Self::is_direct_return_this_iife(params, body, args) {
+            return Ok(LoweredExpr::ObjectNew { props: Vec::new() });
+        }
         if params.iter().any(|param| param.is_rest) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
@@ -1074,6 +1077,16 @@ impl<'a> Resolver<'a> {
             kind: FunctionCallKind::User(func_id),
             args: lowered_args,
         })
+    }
+
+    fn is_direct_return_this_iife(
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        args: &[ResolvedExpr],
+    ) -> bool {
+        params.is_empty()
+            && args.is_empty()
+            && matches!(body, [ResolvedStmt::Return(ResolvedExpr::This { .. })])
     }
 
     pub(super) fn function_props_for_object_expr(

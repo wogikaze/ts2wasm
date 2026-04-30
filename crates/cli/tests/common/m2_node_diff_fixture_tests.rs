@@ -354,7 +354,12 @@ fn bigint_bitwise_mixed_reports_issue_387() {
 }
 
 #[test]
-fn bigint_shift_reports_issue_378() {
+fn bigint_shift_literal_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-shift-literal-runtime.ts");
+}
+
+#[test]
+fn bigint_unsigned_right_shift_reports_issue_378() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-shift-unsupported.ts",
         "issue-378: BigInt shift operators and unsigned right shift TypeError policy are not implemented",
@@ -1347,6 +1352,11 @@ fn spread_operator_string_local_call_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn spread_operator_literal_iife_call_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-call-iife-literal-array.ts");
+}
+
+#[test]
+fn function_expression_return_this_iife_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/function-expression-iife-return-this.ts");
 }
 
 #[test]
