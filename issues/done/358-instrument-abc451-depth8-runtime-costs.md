@@ -128,7 +128,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `pending child-358 commit`
+- `a689b6ab`
 
 Diagnostic command:
 
