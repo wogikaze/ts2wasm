@@ -123,10 +123,16 @@ impl BigIntStaticBuiltinFolder {
                         span: *span,
                     };
                 }
-                let then_body = self.fork().fold_stmts(then_body);
-                let else_body = self.fork().fold_stmts(else_body);
-                self.invalidate_assigned_in_stmts(then_body.as_slice());
-                self.invalidate_assigned_in_stmts(else_body.as_slice());
+                let mut then_folder = self.fork();
+                let then_body = then_folder.fold_stmts(then_body);
+                let mut else_folder = self.fork();
+                let else_body = else_folder.fold_stmts(else_body);
+                self.merge_if_branch_facts(
+                    then_body.as_slice(),
+                    &then_folder,
+                    else_body.as_slice(),
+                    &else_folder,
+                );
                 Stmt::If {
                     condition,
                     then_body,
@@ -690,6 +696,35 @@ impl BigIntStaticBuiltinFolder {
         for name in assigned_names_in_expr(expr) {
             self.locals.remove(&name);
             self.object_toprimitive_locals.remove(&name);
+        }
+    }
+
+    fn merge_if_branch_facts(
+        &mut self,
+        then_body: &[Stmt],
+        then_folder: &Self,
+        else_body: &[Stmt],
+        else_folder: &Self,
+    ) {
+        let mut assigned = assigned_names_in_stmts(then_body);
+        assigned.extend(assigned_names_in_stmts(else_body));
+        for name in assigned {
+            self.locals.remove(&name);
+            self.object_toprimitive_locals.remove(&name);
+            if let (Some(then_expr), Some(else_expr)) =
+                (then_folder.locals.get(&name), else_folder.locals.get(&name))
+                && bigint_expr_const_value(then_expr) == bigint_expr_const_value(else_expr)
+            {
+                self.locals.insert(name.clone(), then_expr.clone());
+            }
+            if let (Some(then_expr), Some(else_expr)) = (
+                then_folder.object_toprimitive_locals.get(&name),
+                else_folder.object_toprimitive_locals.get(&name),
+            ) && then_expr == else_expr
+            {
+                self.object_toprimitive_locals
+                    .insert(name.clone(), then_expr.clone());
+            }
         }
     }
 
