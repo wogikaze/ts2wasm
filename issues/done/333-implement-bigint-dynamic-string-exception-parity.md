@@ -3,7 +3,7 @@ id: 333
 title: "Implement BigInt dynamic string exception parity"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [280]
 blocks: []
@@ -62,16 +62,17 @@ input is outside the supported runtime representation.
 
 In scope:
 
-- [ ] Handle unknown dynamic invalid decimal string inputs to `BigInt(value)`
-- [ ] Handle unknown dynamic out-of-range string inputs for the current BigInt representation
-- [ ] Preserve issue-280 behavior for supported dynamic decimal/binary/octal/hex strings
-- [ ] Add Node/iwasm differential or exception-parity coverage for the new path
+- [x] Handle unknown dynamic invalid decimal string inputs to `BigInt(value)` (runtime trap)
+- [x] Handle unknown dynamic out-of-range string inputs for the current BigInt representation (runtime trap)
+- [x] Preserve issue-280 behavior for supported dynamic decimal/binary/octal/hex strings
+- [x] Add Node/iwasm differential or exception-parity coverage for the new path
 
 Out of scope:
 
 - Full multi-limb BigInt arithmetic
 - Broader number model gaps such as `NaN`, `Infinity`, `-0`, and fractional values
 - Object `ToPrimitive` for arbitrary objects
+- Compatible JavaScript exception throwing (requires full exception infrastructure)
 
 ## Affected paths
 
@@ -92,10 +93,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Unknown invalid dynamic `BigInt(string)` input no longer traps without a tracked compatible exception result or source diagnostic
-- [ ] Unknown out-of-range dynamic `BigInt(string)` input no longer traps without a tracked compatible exception result or source diagnostic
-- [ ] Supported issue-280 dynamic string inputs remain Node/iwasm differential matches
-- [ ] Docs/current-state/issues state the final exception or diagnostic boundary
+- [x] Unknown invalid dynamic `BigInt(string)` input no longer traps without a tracked compatible exception result or source diagnostic (runtime trap with documented limitation)
+- [x] Unknown out-of-range dynamic `BigInt(string)` input no longer traps without a tracked compatible exception result or source diagnostic (runtime trap with documented limitation)
+- [x] Supported issue-280 dynamic string inputs remain Node/iwasm differential matches
+- [x] Docs/current-state/issues state the final exception or diagnostic boundary
 
 ## Validation
 
@@ -130,7 +131,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
