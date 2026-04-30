@@ -58,9 +58,9 @@ Out of scope:
 
 Expected:
 
-- `crates/backend-wasm/src/runtime_builtins_host.rs`
+- `crates/ir/src/builtin.rs`
 - `crates/ir/src/builtin_resolver.rs`
-- `crates/ir/src/name_resolver.rs`
+- `crates/frontend/src/parser/`
 - `fixtures/`
 
 Do not touch:

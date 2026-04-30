@@ -53,7 +53,7 @@ Out of scope:
 Expected:
 
 - `crates/ir/src/name_resolver.rs`
-- `crates/ir/src/name_resolver_tests.rs`
+- `crates/frontend/src/parser/`
 - `fixtures/`
 
 Do not touch:
