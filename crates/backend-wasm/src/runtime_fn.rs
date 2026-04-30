@@ -53,6 +53,7 @@ pub(crate) enum RuntimeFn {
     BigIntAdd,
     BigIntSub,
     BigIntMul,
+    BigIntPow,
     BigIntDiv,
     BigIntRem,
     BigIntCompare,
@@ -394,6 +395,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntAdd" => Some(RuntimeFn::BigIntAdd),
         "BigIntSub" => Some(RuntimeFn::BigIntSub),
         "BigIntMul" => Some(RuntimeFn::BigIntMul),
+        "BigIntPow" => Some(RuntimeFn::BigIntPow),
         "BigIntDiv" => Some(RuntimeFn::BigIntDiv),
         "BigIntRem" => Some(RuntimeFn::BigIntRem),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
@@ -702,6 +704,7 @@ const BIGINT_UNARY_MINUS_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_DIV_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 

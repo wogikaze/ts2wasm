@@ -33,6 +33,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::BigIntAdd => self.emit_bigint_add(wat),
                 RuntimeFn::BigIntSub => self.emit_bigint_sub(wat),
                 RuntimeFn::BigIntMul => self.emit_bigint_mul(wat),
+                RuntimeFn::BigIntPow => self.emit_bigint_pow(wat),
                 RuntimeFn::BigIntDiv => self.emit_bigint_div(wat),
                 RuntimeFn::BigIntRem => self.emit_bigint_rem(wat),
                 RuntimeFn::BigIntCompare => self.emit_bigint_compare(wat),

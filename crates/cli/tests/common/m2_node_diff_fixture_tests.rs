@@ -221,6 +221,11 @@ fn bigint_runtime_mul_div_rem_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_runtime_pow_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-pow.ts");
+}
+
+#[test]
 fn bigint_runtime_large_add_reports_issue_369() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-runtime-large-unsupported.ts",
@@ -451,6 +456,14 @@ fn bigint_dynamic_exponentiation_reports_issue_376() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-exponentiation-unsupported.ts",
         "issue-376: BigInt exponentiation beyond literal non-negative exponent folding is not implemented",
+    );
+}
+
+#[test]
+fn bigint_negative_runtime_exponent_reports_issue_370() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-exponentiation-negative-unsupported.ts",
+        "issue-370: BigInt negative exponent RangeError parity is not implemented in this literal-folding slice",
     );
 }
 

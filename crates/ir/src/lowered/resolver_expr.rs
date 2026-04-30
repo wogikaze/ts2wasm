@@ -183,11 +183,19 @@ impl<'a> Resolver<'a> {
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     })
                 } else if *op == BinaryOp::Power
+                    && self.resolved_expr_is_bigint(left)
+                    && self.resolved_expr_is_bigint(right)
+                {
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntPow".to_owned(),
+                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    })
+                } else if *op == BinaryOp::Power
                     && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
                 {
                     Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "issue-376: BigInt exponentiation beyond literal non-negative exponent folding is not implemented".to_owned(),
+                        message: "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the dynamic BigInt runtime slice".to_owned(),
                         span: None,
                     })
                 } else {

@@ -1267,6 +1267,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                             | BinaryOp::Multiply
                             | BinaryOp::Divide
                             | BinaryOp::Modulo
+                            | BinaryOp::Power
                     ) {
                         return Ok(ResolvedExpr::Binary {
                             left: Box::new(left_resolved),

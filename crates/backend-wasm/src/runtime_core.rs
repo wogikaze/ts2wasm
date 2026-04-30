@@ -865,6 +865,29 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(super) fn emit_bigint_pow(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_pow (param $a i32) (param $b i32) (result i32)
+    (local $base i64)
+    (local $exponent i64)
+    (local $result i64)
+    (local.set $base (call $bigint_signed_i64 (local.get $a)))
+    (local.set $exponent (call $bigint_signed_i64 (local.get $b)))
+    (if (i64.lt_s (local.get $exponent) (i64.const 0))
+      (then (unreachable)))
+    (local.set $result (i64.const 1))
+    (block $done
+      (loop $pow
+        (br_if $done (i64.eqz (local.get $exponent)))
+        (local.set $result (i64.mul (local.get $result) (local.get $base)))
+        (local.set $exponent (i64.sub (local.get $exponent) (i64.const 1)))
+        (br $pow)))
+    (call $bigint_from_signed_i64 (local.get $result)))
+"#,
+        );
+    }
+
     pub(super) fn emit_bigint_div(&self, wat: &mut String) {
         wat.push_str(
             r#"

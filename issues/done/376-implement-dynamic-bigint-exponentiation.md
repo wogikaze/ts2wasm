@@ -9,6 +9,7 @@ depends_on: [260]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -46,10 +47,10 @@ Supported BigInt exponentiation operands produce Node/iwasm-matching output thro
 
 In scope:
 
-- [ ] Define the runtime/static proof boundary for dynamic BigInt `**`.
-- [ ] Preserve `RangeError` ownership for negative BigInt exponents through issue 370 unless this issue implements compatible throwing.
-- [ ] Add Node/iwasm differential coverage for each implemented exponentiation slice.
-- [ ] Keep non-implemented exponentiation forms diagnosed as issue 376 or a narrower child issue.
+- [x] Define the runtime/static proof boundary for dynamic BigInt `**`.
+- [x] Preserve `RangeError` ownership for negative BigInt exponents through issue 370 unless this issue implements compatible throwing.
+- [x] Add Node/iwasm differential coverage for each implemented exponentiation slice.
+- [x] Keep non-implemented exponentiation forms diagnosed as issue 376 or a narrower child issue.
 
 Out of scope:
 
@@ -76,10 +77,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Implemented BigInt `**` forms have Node/iwasm differential fixtures.
-- [ ] Unsupported BigInt `**` forms do not lower through `Math.pow` or ordinary number helpers.
-- [ ] Negative exponent behavior is either compatible with Node `RangeError` or explicitly remains tracked by issue 370.
-- [ ] Docs/current-state/issues are synchronized.
+- [x] Implemented BigInt `**` forms have Node/iwasm differential fixtures.
+- [x] Unsupported BigInt `**` forms do not lower through `Math.pow` or ordinary number helpers.
+- [x] Negative exponent behavior is either compatible with Node `RangeError` or explicitly remains tracked by issue 370.
+- [x] Docs/current-state/issues are synchronized.
 
 ## Validation
 
@@ -106,15 +107,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] update if runtime ABI or supported subset changes
+- [x] update if runtime ABI or supported subset changes
 
 Current state:
 
-- [ ] update `current-state.md` when behavior changes
+- [x] update `current-state.md` when behavior changes
 
 Follow-up issues:
 
-- [ ] none yet
+- [x] none yet
 
 ## Notes
 
@@ -122,8 +123,21 @@ Issue 371 added the narrow literal-folding slice for non-negative literal expone
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Implemented the signed-i64-safe dynamic BigInt exponentiation slice:
+
+- Known BigInt local/literal `**` operands lower through the BigInt-specific `BigIntPow` runtime helper.
+- Implemented forms have Node/iwasm differential coverage in `fixtures/core-semantics/bigint-runtime-pow.ts`.
+- Out-of-slice dynamic exponentiation remains diagnosed as issue 376.
+- Negative exponent RangeError parity remains tracked by issue 370 and is covered by `fixtures/core-semantics/bigint-exponentiation-negative-unsupported.ts`.
+- Runtime helper is cataloged through `RuntimeFn`, has no host imports, and is covered by the runtime link plan test path.
+
+Validation:
+
+- `cargo fmt --all --check`: pass
+- `cargo test -p ts2wasm-cli --test m2_node_diff bigint`: pass (46 passed; 0 failed; 141 filtered out)
+- `mise run update-issue-index -- --check`: pass
+- `mise run check issues`: pass
 
 Commits:
 
-- none yet; issue is open
+- pending final commit hash

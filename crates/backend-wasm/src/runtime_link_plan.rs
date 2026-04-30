@@ -694,6 +694,13 @@ mod tests {
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntPow".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntDiv".to_owned(),
                     args: vec![
                         LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
@@ -744,6 +751,10 @@ mod tests {
         assert!(
             plan.required_runtime_functions()
                 .contains(&RuntimeFn::BigIntMul)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntPow)
         );
         assert!(
             plan.required_runtime_functions()

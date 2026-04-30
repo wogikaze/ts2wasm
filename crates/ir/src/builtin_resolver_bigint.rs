@@ -1102,6 +1102,7 @@ impl BigIntRuntimeGuard {
                         | BinaryOp::Multiply
                         | BinaryOp::Divide
                         | BinaryOp::Modulo
+                        | BinaryOp::Power
                 ) {
                     return Ok(None);
                 }
@@ -1120,9 +1121,15 @@ impl BigIntRuntimeGuard {
                         }
                         let result = fold_bigint_binary(left, *op, right, *span)?;
                         if runtime_needed && !result.fits_runtime_signed_i64() {
+                            if *op == BinaryOp::Power {
+                                return Err(bigint_exponentiation_diagnostic(*span));
+                            }
                             return Err(bigint_dynamic_runtime_diagnostic(*span));
                         }
                         Some(result)
+                    }
+                    _ if runtime_needed && *op == BinaryOp::Power => {
+                        return Err(bigint_exponentiation_diagnostic(*span));
                     }
                     _ if runtime_needed => return Err(bigint_dynamic_runtime_diagnostic(*span)),
                     _ => None,
