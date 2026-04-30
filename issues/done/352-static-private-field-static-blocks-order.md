@@ -3,12 +3,14 @@ id: 352
 title: "Implement static private field ordering with static blocks"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [255]
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30
+status: done
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -39,10 +41,10 @@ Static private fields and static blocks execute in source order. A static block 
 
 In scope:
 
-- [ ] Class-body static element ordering (public fields, private fields, blocks, methods)
-- [ ] Static block lowering that can access static private fields
-- [ ] TDZ enforcement for static private fields accessed before declaration in a static block
-- [ ] Node/iwasm differential fixtures for static field/block ordering
+- [x] Class-body static element ordering (public fields, private fields, blocks, methods)
+- [x] Static block lowering that can access static private fields
+- [x] TDZ enforcement for static private fields accessed before declaration in a static block
+- [x] Node/iwasm differential fixtures for static field/block ordering
 
 Out of scope:
 
@@ -65,10 +67,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture proves static private field and block source ordering
-- [ ] Node/iwasm differential fixture proves static block can read preceding static private field
-- [ ] Diagnostic fixture proves TDZ violation for forward-referenced static private field in static block
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] Node/iwasm differential fixture proves static private field and block source ordering
+- [x] Node/iwasm differential fixture proves static block can read preceding static private field
+- [x] Diagnostic fixture proves TDZ violation for forward-referenced static private field in static block
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Validation
 
@@ -91,15 +93,15 @@ cargo test -p ts2wasm-cli private
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md` for static element ordering
+- [x] updated: `docs/language-reference/javascript-features.md` for static element ordering
 
 Current state:
 
-- [ ] updated: `current-state.md` if static element capability changes
+- [x] updated: `current-state.md` if static element capability changes
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -158,3 +160,39 @@ date:
 Remaining risks:
 
 - Static block lowering may need IR changes to represent class-body-level sequential execution
+
+## Parent close evidence
+
+Parent closed issue 352 because the issue-specific implementation and acceptance evidence are complete. The remaining broad validation failure is the unrelated issue-357 ABC451 timeout, already tracked outside the static-private/static-block scope.
+
+```text
+command: cargo test -p ts2wasm-cli private
+result: pass; 12 selected private tests passed
+
+command: cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+result: 196 passed; 1 failed only on abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timeout, tracked by issue 357
+
+command: mise run update-issue-index -- --check
+result: pass
+
+command: mise run check issues
+result: pass
+```
+
+## Parent close evidence
+
+Parent closed issue 352 because the issue-specific implementation and acceptance evidence are complete. The remaining broad validation failure is the unrelated issue-357 ABC451 timeout, already tracked outside the static-private/static-block scope.
+
+```text
+command: cargo test -p ts2wasm-cli private
+result: pass; 12 selected private tests passed
+
+command: cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+result: 196 passed; 1 failed only on abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timeout, tracked by issue 357
+
+command: mise run update-issue-index -- --check
+result: pass
+
+command: mise run check issues
+result: pass
+```
