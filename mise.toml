@@ -177,7 +177,7 @@ run = "python scripts/manager.py check-issue-health"
 [tasks."check-issue-readiness"]
 description = "Score open issues for actionability and measurement quality"
 hide = true
-run = "python scripts/manager.py check-issue-readiness -- --fail-test-estimate-above 40 --fail-work-units-above 10"
+run = "python scripts/manager.py check-issue-readiness -- --warn-size-band M --fail-size-band L"
 
 [tasks."check-test-records-schema"]
 description = "Validate TestRecord JSONL lines (stdin or file)"

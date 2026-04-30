@@ -39,6 +39,8 @@ PLACEHOLDER_PHRASES = (
     "none",
 )
 
+SIZE_BAND_RANK = {"S": 0, "M": 1, "L": 2, "XL": 3}
+
 EXACT_COMMAND_RE = re.compile(
     r"\b(cargo|mise run|node|iwasm|wasm-tools|python|TS2WASM_REFERENCE_ROOT=)"
 )
@@ -47,6 +49,29 @@ METHOD_LIKE_RE = re.compile(r"\b(method|opcode|instruction|builtin|runtime helpe
 METHOD_NAME_RE = re.compile(r"`[^`]*(?:\.\w+|\([^`]*\)|::\w+)`")
 DATA_MODEL_LIKE_RE = re.compile(r"\b(data model|データ構造|schema|ast|ir|manifest|representation|type|struct|enum)\b", re.I)
 ABI_LIKE_RE = re.compile(r"\b(abi|component|runtime-abi|imports?|exports?|table|memory|global|func type)\b", re.I)
+CASE_COUNT_RE = re.compile(
+    r"\b(?P<count>[0-9][0-9_,]*)\s+(?:test262|tsc)\s+cases?\b",
+    re.I,
+)
+CASES_RE = re.compile(r"\b(?P<count>[0-9][0-9_,]*)\s+cases?\b", re.I)
+LARGE_LITERAL_RE = re.compile(r"\b(?P<number>[0-9][0-9_,.]*)\b")
+
+
+def normalize_size_band(value: str) -> str:
+    band = value.strip().upper()
+    if band not in SIZE_BAND_RANK:
+        raise argparse.ArgumentTypeError(f"invalid size band: {value}")
+    return band
+
+
+def to_size_band(score: int) -> str:
+    if score >= 32:
+        return "XL"
+    if score >= 24:
+        return "L"
+    if score >= 16:
+        return "M"
+    return "S"
 
 
 def _tokenize_command(command: str) -> list[str]:
@@ -145,6 +170,79 @@ def estimate_issue_test_load(issue: Issue) -> tuple[int, list[str]]:
     return max(1, total), reasons
 
 
+def estimate_reference_case_count(text: str) -> int:
+    max_count = 0
+    for match in CASE_COUNT_RE.finditer(text):
+        raw = match.group("count").replace("_", "").replace(",", "")
+        try:
+            max_count = max(max_count, int(raw))
+        except ValueError:
+            continue
+
+    for match in CASES_RE.finditer(text):
+        raw = match.group("count").replace("_", "").replace(",", "")
+        try:
+            max_count = max(max_count, int(raw))
+        except ValueError:
+            continue
+
+    return max_count
+
+
+def estimate_reference_case_bonus(case_count: int) -> int:
+    if case_count >= 3000:
+        return 12
+    if case_count >= 1500:
+        return 10
+    if case_count >= 500:
+        return 8
+    if case_count >= 200:
+        return 6
+    if case_count >= 80:
+        return 1
+    return 0
+
+
+def has_large_numeric_literal(text: str) -> bool:
+    for match in LARGE_LITERAL_RE.finditer(text):
+        raw = match.group("number").replace("_", "").replace(",", "")
+        try:
+            value = int(raw)
+        except ValueError:
+            continue
+        if value >= 1_000_000:
+            return True
+    return False
+
+
+def estimate_issue_size_score(issue: Issue, findings: list[str]) -> tuple[int, int]:
+    test_estimate, _ = estimate_issue_test_load(issue)
+    work_units, _method_units, _abi_units, _data_model_units, _unmatched_units = estimate_issue_work_units(issue)
+
+    if issue.orch_class == "triage-needed":
+        base_size = min(test_estimate, 14) + min(work_units, 3)
+    else:
+        base_size = test_estimate + min(work_units, 8)
+
+    if issue.orch_class == "blocked":
+        base_size += 8
+    elif issue.orch_class == "triage-needed":
+        base_size += 2
+
+    if issue.depends:
+        base_size += len(issue.depends) * 3
+
+    case_count = estimate_reference_case_count(issue.text)
+    base_size += estimate_reference_case_bonus(case_count)
+    if case_count >= 80:
+        findings.append(f"reference-case scale indicates larger implementation slice ({case_count} cases)")
+
+    if issue.orch_class in {"blocked", "triage-needed"} and has_large_numeric_literal(issue.text):
+        base_size += 2
+
+    return base_size, case_count
+
+
 def estimate_issue_work_units(issue: Issue) -> tuple[int, int, int, int, int]:
     scope = section(issue.text, "Scope")
     acceptance = section(issue.text, "Acceptance criteria")
@@ -188,6 +286,8 @@ class IssueReadiness:
     acceptance: int
     validation: int
     size: int
+    size_score: int
+    size_band: str
     work_units: int
     method_units: int
     abi_units: int
@@ -397,6 +497,7 @@ def measure(issue: Issue) -> IssueReadiness:
     acceptance = score_acceptance(issue, findings)
     validation = score_validation(issue, findings)
     size = score_size(issue, findings)
+    size_score, case_count = estimate_issue_size_score(issue, findings)
     test_estimate, _test_reasons = estimate_issue_test_load(issue)
     work_units, method_units, abi_units, data_model_units, unmatched_units = estimate_issue_work_units(issue)
     if work_units == 0:
@@ -407,6 +508,10 @@ def measure(issue: Issue) -> IssueReadiness:
         findings.append(
             f"work units ({work_units}) suggests splitting this issue across data-model/ABI/method slices"
         )
+    if case_count >= 5000:
+        findings.append("estimated reference-case count suggests oversized implementation slice")
+    if to_size_band(size_score) in {"L", "XL"}:
+        findings.append(f"estimated implementation size is {to_size_band(size_score)}")
     if test_estimate >= 40:
         findings.append("estimated test load suggests oversized implementation slice")
     total = round((metadata * 0.5) + problem + scope + acceptance + validation + (size * 0.5))
@@ -436,6 +541,8 @@ def measure(issue: Issue) -> IssueReadiness:
         acceptance=acceptance,
         validation=validation,
         size=size,
+        size_score=size_score,
+        size_band=to_size_band(size_score),
         work_units=work_units,
         method_units=method_units,
         abi_units=abi_units,
@@ -448,13 +555,16 @@ def measure(issue: Issue) -> IssueReadiness:
 def render_text(rows: list[IssueReadiness], limit: int) -> str:
     by_band: dict[str, int] = {"ready": 0, "needs-refinement": 0, "not-ready": 0}
     by_class: dict[str, int] = {}
+    by_size_band: dict[str, int] = {"S": 0, "M": 0, "L": 0, "XL": 0}
     for row in rows:
         by_band[row.band] += 1
         by_class[row.issue_class] = by_class.get(row.issue_class, 0) + 1
+        by_size_band[row.size_band] = by_size_band.get(row.size_band, 0) + 1
 
     lines = [
         f"open issues: {len(rows)}",
         "readiness bands: " + ", ".join(f"{k}={v}" for k, v in by_band.items()),
+        "size bands: " + ", ".join(f"{k}={v}" for k, v in by_size_band.items()),
         "classes: " + ", ".join(f"{k or 'missing'}={v}" for k, v in sorted(by_class.items())),
         "",
         "lowest scoring issues:",
@@ -462,7 +572,8 @@ def render_text(rows: list[IssueReadiness], limit: int) -> str:
     for row in sorted(rows, key=lambda r: (r.score, r.issue_id))[:limit]:
         first = row.findings[0] if row.findings else "no findings"
         lines.append(
-            f"- {row.issue_id} [{row.score:03d} {row.band}] "
+            f"- {row.issue_id} [readiness={row.score:03d} {row.band}] "
+            f"[size={row.size_score} {row.size_band}] "
             f"[test={row.test_estimate}] {row.title} ({row.issue_class}): {first}"
         )
     return "\n".join(lines)
@@ -470,15 +581,16 @@ def render_text(rows: list[IssueReadiness], limit: int) -> str:
 
 def render_markdown(rows: list[IssueReadiness], limit: int) -> str:
     lines = [
-        "| ID | Score | Band | Class | Priority | Test estimate | Work units (M/A/D) | Title | Top finding |",
-        "|---:|---:|---|---|---|---:|---:|---|---|",
+        "| ID | Score | Band | Size score | Size band | Class | Priority | Test estimate | Work units (M/A/D) | Title | Top finding |",
+        "|---:|---:|---|---:|---|---|---|---:|---:|---|---|",
     ]
     for row in sorted(rows, key=lambda r: (r.score, r.issue_id))[:limit]:
         top = row.findings[0] if row.findings else ""
         title = row.title.replace("|", "\\|")
         top = top.replace("|", "\\|")
         lines.append(
-            f"| {row.issue_id} | {row.score} | {row.band} | {row.issue_class} | "
+            f"| {row.issue_id} | {row.score} | {row.band} | {row.size_score} | {row.size_band} | "
+            f"{row.issue_class} | "
             f"{row.priority} | {row.test_estimate} | "
             f"{row.method_units}/{row.abi_units}/{row.data_model_units} ({row.work_units}) | "
             f"{title} | {top} |"
@@ -487,6 +599,9 @@ def render_markdown(rows: list[IssueReadiness], limit: int) -> str:
 
 
 def parse_args(argv: list[str]) -> argparse.Namespace:
+    if argv and argv[0] == "--":
+        argv = argv[1:]
+
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--format", choices=["text", "json", "markdown"], default="text")
     parser.add_argument("--limit", type=int, default=20, help="number of lowest-scoring rows to show")
@@ -508,7 +623,29 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         default=0,
         help="fail if any non-blocked open issue has too many scope/acceptance work units",
     )
+    parser.add_argument(
+        "--warn-size-band",
+        type=normalize_size_band,
+        default="M",
+        help="warn if any non-blocked issue reaches or exceeds this implementation-size band",
+    )
+    parser.add_argument(
+        "--fail-size-band",
+        type=normalize_size_band,
+        default="L",
+        help="fail if any non-blocked issue reaches or exceeds this implementation-size band",
+    )
     return parser.parse_args(argv)
+
+
+def filter_offenders_by_size_band(rows: list[IssueReadiness], min_band: str) -> list[IssueReadiness]:
+    min_rank = SIZE_BAND_RANK[min_band]
+    return [
+        row
+        for row in rows
+        if row.issue_class not in {"blocked", "triage-needed"}
+        and SIZE_BAND_RANK.get(row.size_band, 0) >= min_rank
+    ]
 
 
 def main(argv: list[str]) -> int:
@@ -560,6 +697,35 @@ def main(argv: list[str]) -> int:
                 file=sys.stderr,
             )
             return 1
+
+    warn_offenders = filter_offenders_by_size_band(rows, args.warn_size_band)
+    fail_offenders = filter_offenders_by_size_band(rows, args.fail_size_band)
+
+    warn_only = [row for row in warn_offenders if row not in fail_offenders]
+    if warn_only:
+        warn_only = sorted(
+            warn_only,
+            key=lambda row: (SIZE_BAND_RANK.get(row.size_band, 0), row.size_score, row.issue_id),
+            reverse=True,
+        )
+        print(
+            f"issue-readiness: {len(warn_only)} non-blocked issue(s) at-or-above {args.warn_size_band}: "
+            + ", ".join(f"{row.issue_id}({row.size_band})" for row in warn_only),
+            file=sys.stderr,
+        )
+
+    if fail_offenders:
+        fail_offenders = sorted(
+            fail_offenders,
+            key=lambda row: (SIZE_BAND_RANK.get(row.size_band, 0), row.size_score, row.issue_id),
+            reverse=True,
+        )
+        print(
+            f"issue-readiness: {len(fail_offenders)} non-blocked issue(s) at-or-above {args.fail_size_band} (fail): "
+            + ", ".join(f"{row.issue_id}({row.size_band})" for row in fail_offenders),
+            file=sys.stderr,
+        )
+        return 1
     return 0
 
 
