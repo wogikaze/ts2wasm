@@ -163,3 +163,27 @@ date:
 Remaining risks:
 
 - none
+
+## Parent review of child attempt: 2026-04-30
+
+Status: `REJECTED_FOR_MERGE`.
+
+The child commit reduced the targeted `array_growth` counters by giving empty array literals a small spare backing store while committed memory had headroom, but the parent rejected the production runtime change because total allocation pressure worsened and late free-list scans reappeared.
+
+Useful evidence from the rejected attempt:
+
+```text
+100000 events before: alloc_array_growth=362976 bytes/2648 calls; copy_array_growth=181008 bytes/2648 calls; allocation_requested_bytes=521193; sweep_visits=58859; free_list_scan_visits=0
+100000 events after:  alloc_array_growth=326920 bytes/1096 calls; copy_array_growth=173552 bytes/1096 calls; allocation_requested_bytes=609546; sweep_visits=64303; free_list_scan_visits=0
+```
+
+```text
+300000 events before: alloc_array_growth=1158708 bytes/3771 calls; copy_array_growth=856928 bytes/3770 calls; allocation_requested_bytes=1376350; sweep_visits=241504; free_list_scan_visits=0
+300000 events after:  alloc_array_growth=1082272 bytes/1688 calls; copy_array_growth=808092 bytes/1687 calls; allocation_requested_bytes=1503147; sweep_visits=231032; free_list_scan_visits=14657
+```
+
+Parent decision:
+
+```text
+Do not merge the empty-array spare backing-store runtime change as-is. A valid follow-up must reduce array-growth pressure without increasing total allocation pressure or reintroducing free-list scans at the diagnostic budgets.
+```
