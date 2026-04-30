@@ -1,5 +1,6 @@
 mod dump;
 mod module_graph;
+mod test262_preprocessor;
 
 use std::collections::{BTreeMap, HashMap};
 use std::fs;
@@ -51,6 +52,7 @@ pub fn build_file_with_host_deny(
         message: format!("failed to read {}: {error}", input.display()),
         span: None,
     })?;
+    let source = test262_preprocessor::process_test262_includes(input, &source)?;
     validate_type_reference_directives(&source)?;
     let tokens = Lexer::new(&source).tokenize()?;
     let program = Parser::new(tokens).parse_program()?;

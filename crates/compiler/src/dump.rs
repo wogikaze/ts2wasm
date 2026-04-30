@@ -13,7 +13,7 @@ use ts2wasm_ir::lowered::LoweredProgram;
 use ts2wasm_ir::optimizer::{OptimizationLevel, OptimizedHirProgram};
 use ts2wasm_ir::semantic::{HirExpr, HirProgram, HirRelationalOp, HirStmt};
 
-use super::{backend, builtin_resolver, lowered, name_resolver};
+use super::{backend, builtin_resolver, lowered, name_resolver, test262_preprocessor};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DumpPhase {
@@ -87,6 +87,7 @@ pub fn dump_file_with_options(input: &Path, options: DumpOptions) -> Result<Stri
         message: format!("failed to read {}: {error}", input.display()),
         span: None,
     })?;
+    let source = test262_preprocessor::process_test262_includes(input, &source)?;
     validate_type_reference_directives(&source)?;
 
     if matches!(options.phase, DumpPhase::Tokens) {
