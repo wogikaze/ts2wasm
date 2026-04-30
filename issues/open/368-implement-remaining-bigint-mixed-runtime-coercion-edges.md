@@ -122,6 +122,8 @@ Follow-up issues:
 
 Issue 282 closed the implemented primitive mixed BigInt coercion slice and retained source-backed diagnostics for object `ToPrimitive` boundaries. This issue owns changing those diagnostics into compatible behavior for a deliberately narrow object subset and handling unknown out-of-range runtime strings without silent boolean corruption.
 
+Progress 2026-05-01: implemented the first narrow object `ToPrimitive` slice for direct object-literal/local `valueOf: () => <bigint literal>` mixed BigInt comparisons by folding the object operand to the returned BigInt primitive before lowering. Added Node/iwasm differential coverage in `fixtures/core-semantics/bigint-runtime-mixed-object-valueof-bigint.ts`. Remaining issue 368 work: `toString` object coercion, non-BigInt primitive returns, non-arrow/function-body/prototype/Proxy/side-effectful coercion shapes, and non-source-backed unknown out-of-range dynamic BigInt/String runtime input.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

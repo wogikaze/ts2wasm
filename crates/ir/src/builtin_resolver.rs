@@ -45,6 +45,7 @@ pub fn resolve_builtins(program: &[Stmt]) -> Result<Vec<ResolvedStmt>, Diagnosti
 #[derive(Default)]
 struct BigIntStaticBuiltinFolder {
     locals: HashMap<String, Expr>,
+    object_toprimitive_locals: HashMap<String, Expr>,
 }
 
 impl BigIntStaticBuiltinFolder {
@@ -61,6 +62,11 @@ impl BigIntStaticBuiltinFolder {
                 } else {
                     self.locals.remove(name);
                 }
+                if let Some(value) = object_valueof_bigint_primitive_expr(&expr) {
+                    self.object_toprimitive_locals.insert(name.clone(), value);
+                } else {
+                    self.object_toprimitive_locals.remove(name);
+                }
                 Stmt::Let {
                     name: name.clone(),
                     expr,
@@ -73,6 +79,11 @@ impl BigIntStaticBuiltinFolder {
                     self.locals.insert(name.clone(), value);
                 } else {
                     self.locals.remove(name);
+                }
+                if let Some(value) = object_valueof_bigint_primitive_expr(&expr) {
+                    self.object_toprimitive_locals.insert(name.clone(), value);
+                } else {
+                    self.object_toprimitive_locals.remove(name);
                 }
                 Stmt::Assign {
                     name: name.clone(),
@@ -255,8 +266,10 @@ impl BigIntStaticBuiltinFolder {
                 let iter = self.fold_expr(iter);
                 let mut body_folder = self.fork();
                 body_folder.locals.remove(var);
+                body_folder.object_toprimitive_locals.remove(var);
                 let body = body_folder.fold_stmts(body);
                 self.locals.remove(var);
+                self.object_toprimitive_locals.remove(var);
                 self.invalidate_assigned_in_stmts(body.as_slice());
                 Stmt::ForIn {
                     var: var.clone(),
@@ -274,8 +287,10 @@ impl BigIntStaticBuiltinFolder {
                 let iter = self.fold_expr(iter);
                 let mut body_folder = self.fork();
                 body_folder.locals.remove(var);
+                body_folder.object_toprimitive_locals.remove(var);
                 let body = body_folder.fold_stmts(body);
                 self.locals.remove(var);
+                self.object_toprimitive_locals.remove(var);
                 self.invalidate_assigned_in_stmts(body.as_slice());
                 Stmt::ForOf {
                     var: var.clone(),
@@ -365,12 +380,38 @@ impl BigIntStaticBuiltinFolder {
                 op,
                 right,
                 span,
-            } => Expr::Binary {
-                left: Box::new(self.fold_expr(left)),
-                op: *op,
-                right: Box::new(self.fold_expr(right)),
-                span: *span,
-            },
+            } => {
+                let left = self.fold_expr(left);
+                let right = self.fold_expr(right);
+                let left_toprimitive = self.object_toprimitive_primitive_expr(&left);
+                let right_toprimitive = self.object_toprimitive_primitive_expr(&right);
+                let should_fold = matches!(
+                    op,
+                    BinaryOp::EqualEqual
+                        | BinaryOp::BangEqual
+                        | BinaryOp::Less
+                        | BinaryOp::LessEqual
+                        | BinaryOp::Greater
+                        | BinaryOp::GreaterEqual
+                ) && (expr_contains_bigint(&left)
+                    || expr_contains_bigint(&right)
+                    || left_toprimitive.as_ref().is_some_and(expr_contains_bigint)
+                    || right_toprimitive.as_ref().is_some_and(expr_contains_bigint));
+                Expr::Binary {
+                    left: Box::new(if should_fold {
+                        left_toprimitive.unwrap_or(left)
+                    } else {
+                        left
+                    }),
+                    op: *op,
+                    right: Box::new(if should_fold {
+                        right_toprimitive.unwrap_or(right)
+                    } else {
+                        right
+                    }),
+                    span: *span,
+                }
+            }
             Expr::Member {
                 object,
                 property,
@@ -396,6 +437,11 @@ impl BigIntStaticBuiltinFolder {
                 } else {
                     self.locals.remove(name);
                 }
+                if let Some(value) = object_valueof_bigint_primitive_expr(&folded) {
+                    self.object_toprimitive_locals.insert(name.clone(), value);
+                } else {
+                    self.object_toprimitive_locals.remove(name);
+                }
                 Expr::Assign {
                     name: name.clone(),
                     expr: Box::new(folded),
@@ -409,6 +455,7 @@ impl BigIntStaticBuiltinFolder {
                 span,
             } => {
                 self.locals.remove(name);
+                self.object_toprimitive_locals.remove(name);
                 Expr::LogicalAssign {
                     name: name.clone(),
                     op: *op,
@@ -558,18 +605,28 @@ impl BigIntStaticBuiltinFolder {
     fn fork(&self) -> Self {
         Self {
             locals: self.locals.clone(),
+            object_toprimitive_locals: self.object_toprimitive_locals.clone(),
         }
     }
 
     fn invalidate_assigned_in_stmts(&mut self, stmts: &[Stmt]) {
         for name in assigned_names_in_stmts(stmts) {
             self.locals.remove(&name);
+            self.object_toprimitive_locals.remove(&name);
         }
     }
 
     fn invalidate_assigned_in_expr(&mut self, expr: &Expr) {
         for name in assigned_names_in_expr(expr) {
             self.locals.remove(&name);
+            self.object_toprimitive_locals.remove(&name);
+        }
+    }
+
+    fn object_toprimitive_primitive_expr(&self, expr: &Expr) -> Option<Expr> {
+        match expr {
+            Expr::Ident { name, .. } => self.object_toprimitive_locals.get(name).cloned(),
+            _ => object_valueof_bigint_primitive_expr(expr),
         }
     }
 }
@@ -579,6 +636,22 @@ fn static_bigint_builtin_const_expr(expr: &Expr) -> Option<Expr> {
         Expr::Number { .. } | Expr::BigInt { .. } => Some(expr.clone()),
         _ => None,
     }
+}
+
+fn object_valueof_bigint_primitive_expr(expr: &Expr) -> Option<Expr> {
+    let Expr::Object { props, .. } = expr else {
+        return None;
+    };
+    props
+        .iter()
+        .find(|(key, _)| key == "valueOf")
+        .and_then(|(_, value)| match value {
+            Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
+                Expr::BigInt { .. } => Some((**body).clone()),
+                _ => None,
+            },
+            _ => None,
+        })
 }
 
 fn is_bigint_static_builtin_callee(callee: &Expr) -> bool {

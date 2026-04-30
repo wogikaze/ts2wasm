@@ -477,6 +477,13 @@ fn bigint_runtime_mixed_object_string_out_of_range_reports_issue_282() {
 }
 
 #[test]
+fn bigint_runtime_mixed_object_valueof_bigint_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-object-valueof-bigint.ts",
+    );
+}
+
+#[test]
 fn bigint_runtime_mixed_object_toprimitive_reports_issue_282() {
     for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
