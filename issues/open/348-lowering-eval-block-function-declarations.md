@@ -110,6 +110,42 @@ Parent issue: 225
 
 The Annex B hoisting semantics are: when a block-level function declaration appears inside eval code, the binding is created in the VariableEnvironment (function scope) of the eval code, not the LexicalEnvironment (block scope). This is observable when the enclosing block ends but the function remains accessible.
 
+2026-05-01 child progress:
+
+- Added an IR lowering regression that proves a supported static-string direct
+  eval block-level function declaration is lowered as an enclosing-function
+  local closure before a later `return f();`, rather than staying block-local.
+- Added a non-eval block-function regression proving the same block-level
+  function name is not visible from the enclosing scope outside direct eval.
+- Added
+  `fixtures/core-semantics/direct-eval-block-function-function-scope.ts` to the
+  Node/iwasm direct-eval differential set, covering
+  `function outer() { eval('{ function f() { ... } }'); return f(); }`.
+- `current-state.md` now records the IR lowering fact for the supported
+  static-string direct eval slice.
+- Did not move issue 348 to `done/` because full `cargo nextest run` is still
+  red on unrelated BigInt differential tests outside the assigned eval/IR area.
+
+Progress validation:
+
+```text
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test ir_lowering eval -- --nocapture
+result: pass; 2 tests passed
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli eval -- --nocapture
+result: pass; 5 eval-focused tests passed across ir_lowering and m2_node_diff
+date: 2026-05-01
+
+command: cargo nextest run
+result: fail outside issue 348; BigInt differential failures in bigint-builtins-string-conversion.ts and bigint-builtin-dynamic-as-int-n.ts
+date: 2026-05-01
+```
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

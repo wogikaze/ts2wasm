@@ -151,6 +151,65 @@ fn lowering_splits_functions_and_resolves_ids() {
 }
 
 #[test]
+fn lowering_hoists_direct_eval_block_function_to_enclosing_function_scope() {
+    use ts2wasm_ir::lowered::{
+        ClosureRepresentation, FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt,
+    };
+
+    let program = parse_and_resolve(
+        r#"
+        function outer() {
+          eval('{ function f() { return 1; } }');
+          return f();
+        }
+        console.log(outer());
+        "#,
+    );
+
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let outer = &lowered.functions[0];
+    assert_eq!(outer.locals, vec![LocalId(0)]);
+    assert!(matches!(
+        outer.body.as_slice(),
+        [
+            LoweredStmt::Let(
+                LocalId(0),
+                LoweredExpr::ArrowFn {
+                    func_id: FuncId(1),
+                    captures,
+                    representation: ClosureRepresentation::DirectLocalToken,
+                },
+            ),
+            LoweredStmt::Return(LoweredExpr::Call {
+                kind: FunctionCallKind::User(FuncId(1)),
+                args,
+            }),
+        ] if captures.is_empty() && args.is_empty()
+    ));
+    assert!(matches!(
+        lowered.functions[1].body.as_slice(),
+        [LoweredStmt::Return(LoweredExpr::Number(1))]
+    ));
+}
+
+#[test]
+fn lowering_keeps_non_eval_block_function_out_of_enclosing_scope() {
+    let program = parse_and_resolve(
+        r#"
+        if (true) {
+          function f() { return 1; }
+        }
+        console.log(f());
+        "#,
+    );
+
+    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
+    assert_eq!(err.code, DiagCode::UnresolvedFunction);
+    assert!(err.message.contains("`f`"), "{err}");
+}
+
+#[test]
 fn lowering_rejects_unresolved_name() {
     let program = parse_and_resolve("let x = y;");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
