@@ -120,7 +120,8 @@ Completed 2026-05-01.
 
 Commits:
 
-- `pending-close`: static-string direct eval is documented as compile-time eval-code
+- `adfbbd07`: close static direct eval execution slice
+- current manifest strategy sync commit: static-string direct eval is documented as compile-time eval-code
   expansion into caller-scope lowered wasm, with manifest evidence that the
   selected first slice stays standalone and does not request `host.eval.*`.
 
