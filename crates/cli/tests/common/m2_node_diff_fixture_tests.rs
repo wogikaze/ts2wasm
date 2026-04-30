@@ -1098,6 +1098,7 @@ fn ordinary_function_direct_call_fixtures_match_node_output_under_iwasm() {
 #[test]
 fn direct_eval_block_function_fixture_matches_node_output_under_iwasm() {
     for fixture in [
+        "fixtures/core-semantics/direct-eval-caller-local.ts",
         "fixtures/core-semantics/direct-eval-block-function.ts",
         "fixtures/core-semantics/direct-eval-block-function-init.ts",
         "fixtures/core-semantics/direct-eval-block-function-iife-init.ts",
@@ -1114,6 +1115,14 @@ fn direct_eval_block_function_shadowed_eval_reports_issue_302() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/direct-eval-block-function-shadowed-unsupported.ts",
         "issue-302: static direct eval block-function lowering requires a provably unshadowed eval binding",
+    );
+}
+
+#[test]
+fn indirect_eval_fixture_reports_issue_347() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/direct-eval-indirect-unsupported.ts",
+        "issue-347: indirect eval calls are not supported",
     );
 }
 

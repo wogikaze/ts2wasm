@@ -263,7 +263,7 @@ BigInt/Number comparison の number-model diagnostic boundary: `NaN` / `Infinity
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
-| `eval` | ES1 | dynamic code evaluation | 未実装 (unsupported-dynamic-code) | P3 | - |
+| `eval` | ES1 | dynamic code evaluation | 部分実装 (static string direct `eval(...)` expression statements are expanded in the parser/resolver slice; indirect/dynamic runtime eval remains unsupported) | P3 | 347, 349 |
 | `with` | ES1 | scope extension | 未実装 (unsupported-dynamic-code) | P3 | - |
 | `Proxy` | ES6 | meta-programming | 未実装 | P3 | - |
 | `Reflect` | ES6 | reflection API | 未実装 | P3 | - |

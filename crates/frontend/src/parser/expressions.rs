@@ -1315,6 +1315,12 @@ impl Parser {
                 if allow_call && self.consume(TokenKind::LeftParen) {
                     let (args, end) = self.finish_call_args()?;
                     let start = expr.span().start;
+                    if matches!(expr, Expr::Ident { ref name, .. } if name == "eval") {
+                        return Err(Self::indirect_eval_call_diagnostic(Span { start, end }));
+                    }
+                    if let Some(span) = Self::indirect_eval_callee_span(&expr, end) {
+                        return Err(Self::indirect_eval_call_diagnostic(span));
+                    }
                     expr = Expr::OptionalCall {
                         callee: Box::new(expr),
                         args,
@@ -1354,6 +1360,9 @@ impl Parser {
             if allow_call && self.consume(TokenKind::LeftParen) {
                 let (args, end) = self.finish_call_args()?;
                 let start = expr.span().start;
+                if let Some(span) = Self::indirect_eval_callee_span(&expr, end) {
+                    return Err(Self::indirect_eval_call_diagnostic(span));
+                }
                 expr = Expr::Call {
                     callee: Box::new(expr),
                     args,
@@ -1364,6 +1373,36 @@ impl Parser {
             break;
         }
         Ok(expr)
+    }
+
+    fn indirect_eval_callee_span(expr: &Expr, call_end: usize) -> Option<Span> {
+        match expr {
+            Expr::Member { property, span, .. } | Expr::OptionalMember { property, span, .. }
+                if property == "eval" =>
+            {
+                Some(Span {
+                    start: span.start,
+                    end: call_end,
+                })
+            }
+            Expr::Index { index, span, .. } | Expr::OptionalIndex { index, span, .. }
+                if matches!(index.as_ref(), Expr::String { value, .. } if value == "eval") =>
+            {
+                Some(Span {
+                    start: span.start,
+                    end: call_end,
+                })
+            }
+            _ => None,
+        }
+    }
+
+    fn indirect_eval_call_diagnostic(span: Span) -> Diagnostic {
+        Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "issue-347: indirect eval calls are not supported; use syntactic eval(...) with a string literal in this parser/resolver slice".to_owned(),
+            span: Some(span),
+        }
     }
 
     fn finish_call_args(&mut self) -> Result<(Vec<Expr>, usize), Diagnostic> {

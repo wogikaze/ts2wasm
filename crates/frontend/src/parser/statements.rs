@@ -682,7 +682,7 @@ impl Parser {
         {
             return Err(self.invalid_optional_chain_target(expr.span()));
         }
-        if let Some(mut statements) = self.direct_eval_static_block_function_statements(&expr)? {
+        if let Some(mut statements) = self.direct_eval_literal_statements(&expr)? {
             self.pending_statements.extend(statements.drain(1..));
             return Ok(statements.remove(0));
         }
@@ -696,17 +696,11 @@ impl Parser {
         })
     }
 
-    fn direct_eval_static_block_function_statements(
-        &self,
-        expr: &Expr,
-    ) -> Result<Option<Vec<Stmt>>, Diagnostic> {
-        let Expr::Call { callee, args, span } = expr else {
+    fn direct_eval_literal_statements(&self, expr: &Expr) -> Result<Option<Vec<Stmt>>, Diagnostic> {
+        let Expr::Call { span, .. } = expr else {
             return Ok(None);
         };
-        if !matches!(callee.as_ref(), Expr::Ident { name, .. } if name == "eval") {
-            return Ok(None);
-        }
-        let [Expr::String { value: source, .. }] = args.as_slice() else {
+        let Some(source) = expr.direct_eval_literal_source() else {
             return Ok(None);
         };
         if self.possible_eval_shadowing {
@@ -718,7 +712,14 @@ impl Parser {
         }
 
         let Some(expansion) = self.static_block_function_eval_expansion(source, *span)? else {
-            return Ok(None);
+            let statements = self.parse_static_eval_fragment(source, *span)?;
+            if statements.is_empty() {
+                return Ok(Some(vec![Stmt::Expr {
+                    expr: Expr::Undefined { span: *span },
+                    span: *span,
+                }]));
+            }
+            return Ok(Some(statements));
         };
         Ok(Some(expansion))
     }

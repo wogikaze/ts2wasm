@@ -498,6 +498,27 @@ impl Stmt {
 }
 
 impl Expr {
+    pub fn is_direct_eval_call(&self) -> bool {
+        matches!(
+            self,
+            Self::Call { callee, .. }
+                if matches!(callee.as_ref(), Self::Ident { name, .. } if name == "eval")
+        )
+    }
+
+    pub fn direct_eval_literal_source(&self) -> Option<&str> {
+        let Self::Call { args, .. } = self else {
+            return None;
+        };
+        if !self.is_direct_eval_call() {
+            return None;
+        }
+        let [Self::String { value, .. }] = args.as_slice() else {
+            return None;
+        };
+        Some(value)
+    }
+
     pub fn span(&self) -> Span {
         match self {
             Self::Number { span, .. }

@@ -207,6 +207,45 @@ mod tests {
     }
 
     #[test]
+    fn marks_syntactic_direct_eval_calls() {
+        let program = parse_program("let result = eval(\"x\");").unwrap();
+        let Stmt::Let { expr, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        assert!(expr.is_direct_eval_call());
+        assert_eq!(expr.direct_eval_literal_source(), Some("x"));
+    }
+
+    #[test]
+    fn expands_direct_eval_literal_statements_in_caller_scope() {
+        let program = parse_program(
+            "function f() { let x = \"before\"; eval('x = \"after\";'); return x; }",
+        )
+        .unwrap();
+        let Stmt::Function { body, .. } = &program[0] else {
+            panic!("expected function statement");
+        };
+        assert!(matches!(body[1], Stmt::Assign { ref name, .. } if name == "x"));
+    }
+
+    #[test]
+    fn rejects_indirect_eval_calls_with_issue_347() {
+        for source in [
+            "globalThis.eval(\"x\");",
+            "globalThis[\"eval\"](\"x\");",
+            "eval?.(\"x\");",
+        ] {
+            let err = parse_program(source).unwrap_err();
+            assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+            assert!(
+                err.message.contains("issue-347: indirect eval calls are not supported"),
+                "unexpected diagnostic for {source}: {err:?}"
+            );
+            assert!(err.span.is_some(), "diagnostic should preserve a span");
+        }
+    }
+
+    #[test]
     fn parses_typescript_const_assertions_as_erased_syntax() {
         let source = r#"
             let value = { x: 3 } as const;
