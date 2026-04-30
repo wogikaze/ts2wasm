@@ -8,7 +8,7 @@ priority: P2
 depends_on: [274]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -116,6 +116,15 @@ Progress 2026-04-30:
 - Added Node/iwasm differential fixtures for function-return object spread, dynamic local object spread, and mutated object spread.
 - Validation passed for `cargo fmt --all --check`, `cargo test -p ts2wasm-cli spread`, `mise run update-issue-index -- --check`, and `mise run check issues`.
 - `cargo nextest run -E 'test(spread) or test(node_diff)'` passed all spread-selected tests but failed on unrelated `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` iwasm timeout; retrying that single test reproduced the timeout. Issue remains open until the required nextest gate can pass or the unrelated blocker is dispositioned.
+
+Progress 2026-05-01:
+
+- Re-verified existing issue-355 coverage. The function-return, dynamic-local, and mutated-object spread fixtures exist under `fixtures/core-semantics/spread-object-function-return.ts`, `fixtures/core-semantics/spread-object-dynamic-local.ts`, and `fixtures/core-semantics/spread-object-mutated.ts`, and the spread-only nextest selector passed all 26 selected tests, including static object-literal/local/alias spread regressions.
+- Validation passed for `cargo fmt --all --check`, `cargo test -p ts2wasm-cli spread`, `cargo nextest run -E 'test(spread)'`, `mise run update-issue-index -- --check`, and `mise run check issues`.
+- Required close gate `cargo nextest run -E 'test(spread) or test(node_diff)'` is still blocked by unrelated BigInt node-diff failures before any spread failure:
+  - `bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm`: iwasm traps after printing `TypeError: Cannot mix BigInt and other types, use explicit conversions`.
+  - `bigint_dynamic_builtin_fixtures_match_node_output_under_iwasm`: stdout mismatch for `fixtures/core-semantics/bigint-builtin-dynamic-as-int-n.ts` (`0n/0n/-1n/0n` vs Node `-1n/127n/-1n/-1n`).
+- No issue-355 implementation gap was found in this verification pass. Follow-up needed: assign a separate BigInt node-diff blocker issue or disposition the existing BigInt regression before closing issue 355 under the current required close gate.
 
 ## Completion evidence
 
