@@ -100,8 +100,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential or explicit exception-parity fixture covers mixed Number/BigInt arithmetic as `TypeError` for the supported runtime path.
-- [ ] No mixed Number/BigInt arithmetic path silently lowers to ordinary number arithmetic.
+- [ ] Node/iwasm differential fixture covers mixed Number/BigInt arithmetic as TypeError, with no silent lowering to number arithmetic.
 - [ ] Existing issue-260 signed-i64 arithmetic success fixtures continue to pass.
 - [ ] Docs/current-state/issues state the mixed arithmetic exception boundary.
 
@@ -111,7 +110,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed
 mise run update-issue-index -- --check
 mise run check issues
 ```

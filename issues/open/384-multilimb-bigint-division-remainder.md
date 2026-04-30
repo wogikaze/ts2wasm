@@ -92,8 +92,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic BigInt div/rem with operands or results outside signed i64.
-- [ ] Branch/loop/switch/try-assigned BigInt locals no longer lose correctness when the assigned value is a valid multi-limb BigInt.
+- [ ] Node/iwasm differential fixtures cover dynamic BigInt div/rem with operands or results outside signed i64, including branch-assigned locals.
 - [ ] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
 - [ ] Runtime linker structure tests cover any new multi-limb helper deps.
 - [ ] Docs/current-state/issues state the new division/remainder boundary.
@@ -104,7 +103,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_div_rem
 mise run update-issue-index -- --check
 mise run check issues
 ```

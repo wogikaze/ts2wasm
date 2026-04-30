@@ -29,7 +29,22 @@ Representative fixtures:
 
 ```sh
 cargo test -p ts2wasm-cli --test m2_node_diff bigint_bitwise_unary_out_of_slice_reports_issue_387
+```
+
+Result:
+
+```text
+error: issue-387: BigInt bitwise NOT outside signed-i64 helper slice
+```
+
+```sh
 cargo test -p ts2wasm-cli --test m2_node_diff bigint_bitwise_mixed_reports_issue_387
+```
+
+Result:
+
+```text
+error: issue-387: BigInt bitwise AND/OR/XOR outside signed-i64 helper slice
 ```
 
 Current result: source-backed `issue-387` diagnostics for unsupported bitwise forms.
@@ -42,9 +57,7 @@ BigInt bitwise NOT/AND/OR/XOR operate on the canonical heap BigInt representatio
 
 In scope:
 
-- [ ] Implement multi-limb/two's-complement semantics for BigInt `~`.
-- [ ] Implement multi-limb/two's-complement semantics for BigInt `&`, `|`, and `^`.
-- [ ] Preserve TypeError ownership for mixed Number/BigInt arithmetic/bitwise behavior unless this issue implements compatible throwing.
+- [ ] Implement multi-limb/two's-complement semantics for BigInt bitwise NOT/AND/OR/XOR, preserving TypeError ownership for mixed Number/BigInt behavior.
 - [ ] Add Node/iwasm differential fixtures outside the signed-i64 helper slice.
 - [ ] Update runtime ABI docs and current-state.
 
@@ -72,8 +85,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] BigInt bitwise NOT/AND/OR/XOR fixtures outside signed i64 match Node/iwasm.
-- [ ] No BigInt bitwise path lowers through ordinary number bitwise helpers.
+- [ ] BigInt bitwise NOT/AND/OR/XOR fixtures outside signed i64 match Node/iwasm, with no lowering through ordinary number bitwise helpers.
 - [ ] Unsupported mixed or exception forms have source-backed diagnostics or compatible TypeError behavior.
 - [ ] Docs/current-state/issues are synchronized.
 
@@ -83,7 +95,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_bitwise
 mise run update-issue-index -- --check
 mise run check issues
 ```
