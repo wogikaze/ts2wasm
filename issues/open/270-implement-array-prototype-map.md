@@ -3,9 +3,10 @@ id: 270
 title: Implement Array.prototype.map
 type: feature
 area: runtime/builtins
-class: done
+class: implementation-ready
 priority: P2
 tracking: feature:array-prototype-methods
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -116,3 +117,32 @@ date: 2026-04-29
 - thisArg parameter support not implemented
 - Sparse array handling not implemented
 - Full Test262 Array.prototype.map coverage not achieved
+
+## Reopened by audit
+
+Date: 2026-04-30
+
+Classification: false-done / unchecked acceptance.
+
+Reason: the issue was under `issues/done/` with unchecked acceptance criteria
+for sparse arrays, `thisArg`, and Test262 `Array.prototype.map` coverage. Issue
+295 closed the later arrow-callback/chained-receiver subset, but explicitly left
+sparse arrays, `thisArg`, `Array.prototype.map.call(...)`, async callbacks, and
+generic callback allocation out of scope. The remaining unchecked criteria are
+not fully covered by an open issue.
+
+Evidence:
+
+- This file's acceptance criteria still include unchecked sparse array,
+  `thisArg`, and Test262 items.
+- `issues/done/295-support-array-map-arrow-and-chained-receivers.md` lists
+  sparse arrays and `thisArg` as out of scope.
+- `crates/cli/tests/m2_node_diff.rs` still contains issue-270 unsupported
+  diagnostics coverage for Array.prototype.map forms.
+
+Next close bar:
+
+- Either narrow this issue title/scope to the actually completed named-callback
+  subset and create separate open trackers for sparse/`thisArg`/Test262 map
+  semantics, or complete the remaining criteria and record Node/Test262
+  validation.
