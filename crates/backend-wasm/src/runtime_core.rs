@@ -16,6 +16,9 @@ const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
+const PRIVATE_FIELD_COUNT_MASK: u32 = 0xffff;
+const BIGINT_FROM_STRING_ABORT_MESSAGE: &str =
+    "issue-333: BigInt(string) runtime invalid or out-of-range input\n";
 
 impl WatEmitter<'_> {
     pub(super) fn emit_read_stdin_bytes(&self, wat: &mut String) {

@@ -314,6 +314,7 @@ pub enum LoweredExpr {
         prototype: ClassPrototypeRef,
         args: Vec<LoweredExpr>,
         base_local: LocalId,
+        private_brand: Option<u32>,
         private_slot_count: usize,
     },
     ClassPrototype(ClassPrototypeRef),

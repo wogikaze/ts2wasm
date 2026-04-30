@@ -400,22 +400,22 @@ fn validate_expr(
                 });
             }
             if runtime_fn == "PrivateFieldGet"
-                && !matches!(args.as_slice(), [_, LoweredExpr::Number(slot)] if *slot >= 0)
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand), LoweredExpr::Number(slot)] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
-                    message: "PrivateFieldGet must include an object and non-negative private slot"
+                    message: "PrivateFieldGet must include an object, positive private brand, and non-negative private slot"
                         .to_owned(),
                     span: None,
                 });
             }
             if runtime_fn == "PrivateFieldSet"
-                && !matches!(args.as_slice(), [_, LoweredExpr::Number(slot), _] if *slot >= 0)
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand), LoweredExpr::Number(slot), _] if *brand > 0 && *slot >= 0)
             {
                 errors.push(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message:
-                        "PrivateFieldSet must include an object, non-negative private slot, and value"
+                        "PrivateFieldSet must include an object, positive private brand, non-negative private slot, and value"
                             .to_owned(),
                     span: None,
                 });
@@ -466,7 +466,8 @@ fn validate_expr(
             prototype,
             args,
             base_local,
-            private_slot_count: _,
+            private_brand,
+            private_slot_count,
         } => {
             check_func_id(*constructor, num_funcs, errors);
             check_func_id(prototype.constructor, num_funcs, errors);
@@ -474,6 +475,20 @@ fn validate_expr(
                 check_func_id(*parent, num_funcs, errors);
             }
             check_local_id(*base_local, local_count, errors);
+            if *private_slot_count > 0 && !private_brand.is_some_and(|brand| brand > 0) {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "class instances with private slots must include a positive private brand".to_owned(),
+                    span: None,
+                });
+            }
+            if *private_slot_count > u16::MAX as usize {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "class private slot count exceeds runtime metadata capacity".to_owned(),
+                    span: None,
+                });
+            }
             validate_constructor_arity(*constructor, args, num_funcs, program, errors);
             for arg in args {
                 validate_expr(arg, local_count, num_funcs, program, errors, true);

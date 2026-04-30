@@ -569,10 +569,14 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
-                    let slot = self.private_field_slot(object, key, *span)?;
+                    let (brand, slot) = self.private_field_brand_and_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateFieldGet".to_owned(),
-                        args: vec![self.lower_expr(object)?, LoweredExpr::Number(slot as i32)],
+                        args: vec![
+                            self.lower_expr(object)?,
+                            LoweredExpr::Number(brand as i32),
+                            LoweredExpr::Number(slot as i32),
+                        ],
                     });
                 }
                 if let ResolvedExpr::Ident(name) = object.as_ref()
@@ -1343,11 +1347,12 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
-                    let slot = self.private_field_slot(object, key, *span)?;
+                    let (brand, slot) = self.private_field_brand_and_slot(object, key, *span)?;
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateFieldSet".to_owned(),
                         args: vec![
                             self.lower_expr(object)?,
+                            LoweredExpr::Number(brand as i32),
                             LoweredExpr::Number(slot as i32),
                             self.lower_expr(value)?,
                         ],
@@ -1458,13 +1463,28 @@ impl<'a> Resolver<'a> {
                     .iter()
                     .map(|arg| self.lower_expr(arg))
                     .collect::<Result<Vec<_>, _>>()?;
+                let private_slot_count = self.private_slot_count(class_name);
+                let private_brand = if private_slot_count > 0 {
+                    Some(u32::try_from(prototype.constructor.0.saturating_add(1)).map_err(
+                        |_| Diagnostic {
+                            code: DiagCode::InvariantViolation,
+                            message: format!(
+                                "private field brand for class `{class_name}` exceeds u32"
+                            ),
+                            span: None,
+                        },
+                    )?)
+                } else {
+                    None
+                };
 
                 Ok(LoweredExpr::New {
                     constructor: prototype.constructor,
                     prototype,
                     args: lowered_args,
                     base_local: self.alloc_temp(),
-                    private_slot_count: self.private_slot_count(class_name),
+                    private_brand,
+                    private_slot_count,
                 })
             }
             ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {

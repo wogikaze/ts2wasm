@@ -1120,10 +1120,12 @@ impl WatEmitter<'_> {
         (local.set $i (i32.add (local.get $i) (i32.const 1)))
         (br $scan)))
     (local.set $private_count
-      (i32.load
-        (i32.add
-          (i32.sub (local.get $payload) (i32.const {gc_header_size}))
-          (i32.const {gc_reserved_offset}))))
+      (i32.and
+        (i32.load
+          (i32.add
+            (i32.sub (local.get $payload) (i32.const {gc_header_size}))
+            (i32.const {gc_reserved_offset})))
+        (i32.const {private_slot_count_mask})))
     (local.set $i (i32.const 0))
     (block $private_done
       (loop $private_scan
@@ -1262,6 +1264,7 @@ impl WatEmitter<'_> {
             private_slots_offset = Layout::OBJECT_HEADER_SIZE
                 + (CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY * Layout::OBJECT_ENTRY_SIZE),
             private_slot_size = PRIVATE_FIELD_SLOT_SIZE,
+            private_slot_count_mask = PRIVATE_FIELD_COUNT_MASK,
             heap_number_sentinel = -1,
             closure_sentinel = CLOSURE_SENTINEL,
             closure_capture_count_offset = CLOSURE_CAPTURE_COUNT_OFFSET,

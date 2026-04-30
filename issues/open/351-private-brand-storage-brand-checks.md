@@ -120,6 +120,30 @@ Fill only when moving to `done/`.
 
 2026-05-01 child slice:
 
+- Added per-class private brand operands to lowered/backend `PrivateFieldGet` and `PrivateFieldSet` calls.
+- Packed class-instance private metadata as `brand << 16 | private_slot_count` in the GC reserved word and masked the slot count during GC scanning.
+- Added backend regression coverage proving a mismatched brand cannot overwrite the same slot index on a branded class instance.
+- Updated `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md` to record the current packed brand/slot-count ABI and remaining non-DONE blockers.
+
+Validation result:
+
+```text
+cargo test -p ts2wasm-backend-wasm private_field_runtime_calls -- --nocapture: pass (2 passed)
+cargo test -p ts2wasm-cli private_field -- --nocapture: pass (2 matched private-field lowering tests passed)
+cargo fmt --all --check: pass after cargo fmt --all
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)': 205 passed, 1 failed; only failure abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timed out after 30.519s, matching the assignment's known unrelated residual risk
+mise run update-issue-index -- --check: pass after mise trust
+mise run check issues: pass after mise trust
+```
+
+Remaining blockers:
+
+- External private access still reports an issue-255 source diagnostic instead of lowering to runtime brand-check calls.
+- Runtime TypeError throwing on brand mismatch remains blocked on compatible JS exception object/throw support for this path.
+- Extracted private methods/accessors and broader receiver forms still need issue-255/351 lowering work.
+
+2026-05-01 earlier child slice:
+
 - Added backend private slot-count guards for lowered `PrivateFieldGet` and `PrivateFieldSet`.
 - Added backend regression coverage proving lowered private field runtime calls on an ordinary object do not create or read private storage; `PrivateFieldSet(o, 0, 7)` followed by `PrivateFieldGet(o, 0)` now prints `undefined`.
 - Updated `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md` to record that the reserved heap header word is the ordinary-object private slot count and that full per-class brand IDs / TypeError throwing remain open.

@@ -733,9 +733,14 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
         LoweredStmt::Let(
             LocalId(0),
             LoweredExpr::New {
-                private_slot_count, ..
+                private_brand,
+                private_slot_count,
+                ..
             },
-        ) => assert_eq!(*private_slot_count, 1),
+        ) => {
+            assert_eq!(*private_brand, Some(1));
+            assert_eq!(*private_slot_count, 1);
+        }
         other => panic!("unexpected private class instance binding: {other:?}"),
     }
 
@@ -747,6 +752,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
                 args.as_slice(),
                 [
                     LoweredExpr::Local(LocalId(0)),
+                    LoweredExpr::Number(1),
                     LoweredExpr::Number(0),
                     LoweredExpr::Number(7)
                 ]
@@ -761,7 +767,11 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
             assert_eq!(runtime_fn, "PrivateFieldGet");
             assert!(matches!(
                 args.as_slice(),
-                [LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(0)]
+                [
+                    LoweredExpr::Local(LocalId(0)),
+                    LoweredExpr::Number(1),
+                    LoweredExpr::Number(0)
+                ]
             ));
         }
         other => panic!("unexpected private field read lowering: {other:?}"),

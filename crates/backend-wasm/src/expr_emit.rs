@@ -28,6 +28,8 @@ const ENV_CELL_VALUE_OFFSET: u32 = Layout::ARRAY_HEADER_SIZE;
 const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
+const PRIVATE_FIELD_COUNT_MASK: u32 = 0xffff;
+const PRIVATE_FIELD_BRAND_SHIFT: u32 = 16;
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
         match expr {
@@ -775,6 +777,7 @@ impl WatEmitter<'_> {
                 prototype,
                 args,
                 base_local,
+                private_brand,
                 private_slot_count,
             } => {
                 // Pre-allocate an object with room for constructor property writes.
@@ -798,12 +801,16 @@ impl WatEmitter<'_> {
                     class_prototype_global(prototype.constructor),
                 ));
                 if *private_slot_count > 0 {
+                    let metadata = private_field_metadata(
+                        private_brand.unwrap_or(0),
+                        *private_slot_count as u32,
+                    );
                     wat.push_str(&format!(
                         "{pad}(i32.store (i32.add (i32.sub (local.get {}) (i32.const {})) (i32.const {})) (i32.const {}))\n",
                         local_index(*base_local),
                         Layout::GC_HEADER_SIZE,
                         Layout::GC_RESERVED_OFFSET,
-                        private_slot_count,
+                        metadata,
                     ));
                 }
 
@@ -1050,12 +1057,18 @@ impl WatEmitter<'_> {
         frame: &LocalFrame,
     ) {
         let pad = " ".repeat(indent);
-        let [object, LoweredExpr::Number(slot)] = args else {
+        let [
+            object,
+            LoweredExpr::Number(brand),
+            LoweredExpr::Number(slot),
+        ] = args
+        else {
             wat.push_str(&format!("{pad}(unreachable)\n"));
             return;
         };
         let object_value = frame.heap_base_tmp();
         let slot_offset = private_field_slot_offset(*slot as u32);
+        let brand_marker = (*brand as u32) << PRIVATE_FIELD_BRAND_SHIFT;
 
         self.emit_expr(wat, object, indent, frame);
         wat.push_str(&format!("{pad}(local.set {object_value})\n"));
@@ -1069,10 +1082,15 @@ impl WatEmitter<'_> {
         wat.push_str(&format!("{pad}  (then\n"));
         wat.push_str(&format!("{pad}    (if (result i32)\n"));
         wat.push_str(&format!(
-            "{pad}      (i32.gt_u\n{pad}        (i32.load\n{pad}          (i32.add\n{pad}            (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}            (i32.const {})))\n{pad}        (i32.const {slot}))\n",
+            "{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot})))\n",
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
             Layout::GC_RESERVED_OFFSET,
+            !PRIVATE_FIELD_COUNT_MASK,
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_RESERVED_OFFSET,
+            PRIVATE_FIELD_COUNT_MASK,
             slot = *slot as u32,
         ));
         wat.push_str(&format!("{pad}      (then\n"));
@@ -1100,13 +1118,20 @@ impl WatEmitter<'_> {
         frame: &LocalFrame,
     ) {
         let pad = " ".repeat(indent);
-        let [object, LoweredExpr::Number(slot), value] = args else {
+        let [
+            object,
+            LoweredExpr::Number(brand),
+            LoweredExpr::Number(slot),
+            value,
+        ] = args
+        else {
             wat.push_str(&format!("{pad}(unreachable)\n"));
             return;
         };
         let object_value = frame.heap_base_tmp();
         let stored_value = frame.heap_value_tmp();
         let slot_offset = private_field_slot_offset(*slot as u32);
+        let brand_marker = (*brand as u32) << PRIVATE_FIELD_BRAND_SHIFT;
 
         self.emit_expr(wat, object, indent, frame);
         wat.push_str(&format!("{pad}(local.set {object_value})\n"));
@@ -1122,10 +1147,15 @@ impl WatEmitter<'_> {
         wat.push_str(&format!("{pad}  (then\n"));
         wat.push_str(&format!("{pad}    (if\n"));
         wat.push_str(&format!(
-            "{pad}      (i32.gt_u\n{pad}        (i32.load\n{pad}          (i32.add\n{pad}            (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}            (i32.const {})))\n{pad}        (i32.const {slot}))\n",
+            "{pad}      (i32.and\n{pad}        (i32.eq\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {brand_marker}))\n{pad}        (i32.gt_u\n{pad}          (i32.and\n{pad}            (i32.load\n{pad}              (i32.add\n{pad}                (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}                (i32.const {})))\n{pad}            (i32.const {}))\n{pad}          (i32.const {slot})))\n",
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
             Layout::GC_RESERVED_OFFSET,
+            !PRIVATE_FIELD_COUNT_MASK,
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_RESERVED_OFFSET,
+            PRIVATE_FIELD_COUNT_MASK,
             slot = *slot as u32,
         ));
         wat.push_str(&format!("{pad}      (then\n"));

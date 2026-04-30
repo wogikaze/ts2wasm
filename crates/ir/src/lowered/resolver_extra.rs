@@ -1526,12 +1526,12 @@ impl<'a> Resolver<'a> {
             .copied()
     }
 
-    pub(super) fn private_field_slot(
+    pub(super) fn private_field_brand_and_slot(
         &self,
         object: &ResolvedExpr,
         key: &str,
         span: Span,
-    ) -> Result<usize, Diagnostic> {
+    ) -> Result<(u32, usize), Diagnostic> {
         let Some(field_name) = key.strip_prefix('#') else {
             return Err(Diagnostic {
                 code: DiagCode::InvariantViolation,
@@ -1570,7 +1570,23 @@ impl<'a> Resolver<'a> {
                 span: Some(span),
             });
         };
-        Ok(slot)
+        let constructor = self
+            .class_constructor_ids
+            .get(class_name)
+            .copied()
+            .ok_or_else(|| Diagnostic {
+                code: DiagCode::InvariantViolation,
+                message: format!(
+                    "private field brand lookup requires constructor for class `{class_name}`"
+                ),
+                span: Some(span),
+            })?;
+        let brand = u32::try_from(constructor.0.saturating_add(1)).map_err(|_| Diagnostic {
+            code: DiagCode::InvariantViolation,
+            message: format!("private field brand for class `{class_name}` exceeds u32"),
+            span: Some(span),
+        })?;
+        Ok((brand, slot))
     }
 
     pub(super) fn private_slot_count(&self, class_name: &str) -> usize {

@@ -733,6 +733,7 @@ mod tests {
                     runtime_fn: "PrivateFieldSet".to_owned(),
                     args: vec![
                         LoweredExpr::Local(LocalId(0)),
+                        LoweredExpr::Number(1),
                         LoweredExpr::Number(0),
                         LoweredExpr::Number(7),
                     ],
@@ -741,7 +742,11 @@ mod tests {
                     kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
                     args: vec![LoweredExpr::RuntimeCall {
                         runtime_fn: "PrivateFieldGet".to_owned(),
-                        args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(0)],
+                        args: vec![
+                            LoweredExpr::Local(LocalId(0)),
+                            LoweredExpr::Number(1),
+                            LoweredExpr::Number(0),
+                        ],
                     }],
                 }),
             ],
@@ -773,6 +778,92 @@ mod tests {
         );
 
         assert_eq!(run_iwasm(&wasm_path), "undefined\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
+    fn private_field_runtime_calls_require_matching_brand() {
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::New {
+                        constructor: FuncId(0),
+                        prototype: ClassPrototypeRef {
+                            constructor: FuncId(0),
+                            parent_constructors: vec![],
+                        },
+                        args: vec![],
+                        base_local: LocalId(1),
+                        private_brand: Some(1),
+                        private_slot_count: 1,
+                    },
+                ),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "PrivateFieldSet".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0)),
+                        LoweredExpr::Number(2),
+                        LoweredExpr::Number(0),
+                        LoweredExpr::Number(7),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::RuntimeCall {
+                        runtime_fn: "PrivateFieldGet".to_owned(),
+                        args: vec![
+                            LoweredExpr::Local(LocalId(0)),
+                            LoweredExpr::Number(1),
+                            LoweredExpr::Number(0),
+                        ],
+                    }],
+                }),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1)],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![LocalId(0)],
+                uses_receiver: true,
+                min_required_params: 1,
+                rest_param_index: None,
+                locals: vec![],
+                body: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "PrivateFieldSet".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0)),
+                        LoweredExpr::Number(1),
+                        LoweredExpr::Number(0),
+                        LoweredExpr::Number(3),
+                    ],
+                })],
+            }],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("private field brand fixture should emit WAT");
+        assert!(wat.contains("(i32.const 65537)"));
+
+        let temp_dir = unique_temp_dir("private-field-brand-guard");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wat_path = temp_dir.join("guard.wat");
+        let wasm_path = temp_dir.join("guard.wasm");
+        fs::write(&wat_path, wat).expect("WAT should be written");
+
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+
+        assert_eq!(run_iwasm(&wasm_path), "3\n");
         let _ = fs::remove_dir_all(temp_dir);
     }
 

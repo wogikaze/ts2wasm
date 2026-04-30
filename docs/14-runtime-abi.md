@@ -127,6 +127,24 @@ payload を倍増させた新 array に copy して local を差し替える。e
 として `push` の戻り値を観測する broader path や array-like object receiver は、
 既存の `Array.prototype.push` runtime boundary に従う。
 
+### Private class field metadata
+
+Class instances with lowered private fields use the GC header reserved word as packed
+private metadata:
+
+```text
+bits 0..15   : private slot count
+bits 16..31  : per-class private brand token
+```
+
+`PrivateFieldGet` / `PrivateFieldSet` lowered runtime calls carry both the brand token
+and the slot index. The backend checks that the value is an object, the packed brand
+matches, and the masked slot count is greater than the requested slot before reading or
+writing private slot payload after the public property capacity.
+
+This is current progress toward ECMAScript private brands. Compatible `TypeError`
+throwing on mismatch and external `o.#x` lowering remain issue 351 / issue 255 work.
+
 ### BigInt value representation (accepted design)
 
 BigInt は **heap object representation** を採用する。現行 `RawValue` の下位 3bit tag はすでに immediate / array / string / object で使い切っているため、BigInt 専用 immediate tag は追加しない。BigInt `RawValue` は `object` tag (`ptr | 0b111`) を使い、GC heap header の object kind で BigInt payload として判別する。
