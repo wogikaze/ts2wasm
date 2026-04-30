@@ -126,3 +126,19 @@ date:
 Remaining risks:
 
 - Array-like object handling may require broader property access changes
+
+## Progress evidence
+
+2026-04-30 child-338-340:
+
+- Implemented static lowering for `Array.prototype.map.call(...)` when the receiver is an array literal or dense object literal with `"0"..."length - 1"` properties and numeric `length`.
+- Added `fixtures/core-semantics/array-map-generic-call-object-literal.ts`.
+- Promoted `fixtures/builtins-and-io/array-map-call-unsupported.ts` to a positive fixture path and extended it to check mapped values.
+- `cargo fmt --all --check`: pass.
+- `cargo check -p ts2wasm-ir`: pass.
+- `cargo nextest run -p ts2wasm-cli array_map`: blocked before running tests by pre-existing compile error in unmodified `crates/backend-wasm/src/expr_emit.rs` (`array_push_grow_linear_growth_threshold` name mismatch and unused format argument).
+
+Remaining:
+
+- Not DONE. Generic map is currently static/dense only; arbitrary runtime array-like objects and sparse/missing indexed properties still require broader property iteration/runtime support.
+- The requested representative Test262 path `reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` is absent in this worktree, so it could not be validated here.

@@ -121,40 +121,149 @@ impl<'a> Resolver<'a> {
         Ok(combined)
     }
 
-    pub(super) fn lower_array_literal_map_arrow(
+    pub(super) fn lower_array_literal_map(
         &mut self,
+        array_expr: &ResolvedExpr,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let ResolvedExpr::Array(elements) = array_expr else {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        };
+        self.lower_array_map_elements(array_expr, elements, args, span)
+    }
+
+    pub(super) fn lower_array_prototype_map_call(
+        &mut self,
+        args: &[ResolvedExpr],
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let Some((receiver, map_args)) = args.split_first() else {
+            return Err(Diagnostic {
+                code: DiagCode::ArityMismatch,
+                message: "Array.prototype.map.call expects a receiver argument".to_owned(),
+                span: Some(span),
+            });
+        };
+        match receiver {
+            ResolvedExpr::Array(elements) => {
+                self.lower_array_map_elements(receiver, elements, map_args, span)
+            }
+            ResolvedExpr::Object(props) => {
+                let Some(elements) = dense_array_like_object_elements(props) else {
+                    return Err(unsupported_array_map_diagnostic(Some(span)));
+                };
+                self.lower_array_map_elements(receiver, &elements, map_args, span)
+            }
+            _ => Err(unsupported_array_map_diagnostic(Some(span))),
+        }
+    }
+
+    fn lower_array_map_elements(
+        &mut self,
+        array_expr: &ResolvedExpr,
         elements: &[ResolvedExpr],
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
-        let [callback] = args else {
+        let ([callback] | [callback, _]) = args else {
             return Err(unsupported_array_map_diagnostic(Some(span)));
         };
-        let ResolvedExpr::ArrowFn { params, body } = callback else {
-            return Err(unsupported_array_map_diagnostic(Some(span)));
-        };
-        if params.len() != 1 {
-            return Err(unsupported_array_map_diagnostic(Some(span)));
-        }
-
-        let LoweredExpr::ArrowFn {
-            func_id, captures, ..
-        } = self.lower_arrow_fn(params, body)?
-        else {
-            return Err(unsupported_array_map_diagnostic(Some(span)));
-        };
-
         let mut mapped = Vec::with_capacity(elements.len());
-        for element in elements {
-            let mut call_args = vec![self.lower_expr(element)?];
-            call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
-            mapped.push(LoweredExpr::Call {
-                kind: FunctionCallKind::User(func_id),
-                args: call_args,
-            });
+        for (index, element) in elements.iter().enumerate() {
+            let element = self.lower_expr(element)?;
+            mapped.push(self.lower_array_map_callback_call(
+                callback,
+                args.get(1),
+                element,
+                index,
+                array_expr,
+                span,
+            )?);
         }
-
         Ok(LoweredExpr::ArrayNew { elements: mapped })
+    }
+
+    fn lower_array_map_callback_call(
+        &mut self,
+        callback: &ResolvedExpr,
+        this_arg: Option<&ResolvedExpr>,
+        element: LoweredExpr,
+        index: usize,
+        array_expr: &ResolvedExpr,
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        match callback {
+            ResolvedExpr::ArrowFn { params, body } => {
+                if params.len() > 3 {
+                    return Err(unsupported_array_map_diagnostic(Some(span)));
+                }
+                let LoweredExpr::ArrowFn {
+                    func_id, captures, ..
+                } = self.lower_arrow_fn(params, body)?
+                else {
+                    return Err(unsupported_array_map_diagnostic(Some(span)));
+                };
+                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32)];
+                explicit_args.push(self.lower_expr(array_expr)?);
+                let mut call_args = explicit_args
+                    .into_iter()
+                    .take(params.len())
+                    .collect::<Vec<_>>();
+                call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::User(func_id),
+                    args: call_args,
+                })
+            }
+            ResolvedExpr::Ident(name) => {
+                let func_id = self.resolve_func(name)?;
+                let receiver = match this_arg {
+                    Some(expr) => self.lower_expr(expr)?,
+                    None => LoweredExpr::Undefined,
+                };
+                let signature = self
+                    .function_signatures
+                    .get(&func_id)
+                    .copied()
+                    .unwrap_or_default();
+                let mut explicit_args = vec![element, LoweredExpr::Number(index as i32)];
+                explicit_args.push(self.lower_expr(array_expr)?);
+                let argument_props = explicit_args
+                    .iter()
+                    .cloned()
+                    .enumerate()
+                    .map(|(index, arg)| (index.to_string(), arg))
+                    .chain(std::iter::once((
+                        "length".to_owned(),
+                        LoweredExpr::Number(explicit_args.len() as i32),
+                    )))
+                    .collect::<Vec<_>>();
+                let mut call_args = Vec::new();
+                if signature.needs_receiver {
+                    call_args.push(receiver);
+                }
+                if signature.has_rest {
+                    call_args.extend(explicit_args);
+                } else {
+                    let explicit_len = explicit_args.len();
+                    call_args.extend(explicit_args.into_iter().take(signature.explicit_params));
+                    for _ in explicit_len..signature.explicit_params {
+                        call_args.push(LoweredExpr::Undefined);
+                    }
+                }
+                if signature.needs_arguments {
+                    call_args.push(LoweredExpr::ObjectNew {
+                        props: argument_props,
+                    });
+                }
+                Ok(LoweredExpr::Call {
+                    kind: FunctionCallKind::User(func_id),
+                    args: call_args,
+                })
+            }
+            _ => Err(unsupported_array_map_diagnostic(Some(span))),
+        }
     }
 
     pub(super) fn lower_array_literal_elements(
@@ -1661,4 +1770,27 @@ impl<'a> Resolver<'a> {
             _ => None,
         }
     }
+}
+
+fn dense_array_like_object_elements(props: &[(String, ResolvedExpr)]) -> Option<Vec<ResolvedExpr>> {
+    let len = props.iter().find_map(|(key, value)| {
+        if key == "length" {
+            if let ResolvedExpr::Number(len) = value {
+                usize::try_from(*len).ok()
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    })?;
+    let mut elements = Vec::with_capacity(len);
+    for index in 0..len {
+        let key = index.to_string();
+        let value = props
+            .iter()
+            .find_map(|(prop_key, prop_value)| (prop_key == &key).then(|| prop_value.clone()))?;
+        elements.push(value);
+    }
+    Some(elements)
 }

@@ -912,10 +912,7 @@ fn annex_b_string_anchor_fixture_reports_issue_067() {
 
 #[test]
 fn array_map_fixtures_report_issue_270() {
-    for fixture in [
-        "fixtures/builtins-and-io/array-map-unsupported.ts",
-        "fixtures/builtins-and-io/array-map-call-unsupported.ts",
-    ] {
+    for fixture in ["fixtures/builtins-and-io/array-map-unsupported.ts"] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-270: Array.prototype.map");
     }
 }

@@ -651,6 +651,9 @@ impl<'a> Resolver<'a> {
                         args: lowered_args,
                     });
                 }
+                if is_array_prototype_map_call_receiver(object, method) {
+                    return self.lower_array_prototype_map_call(args, *span);
+                }
                 if method == "call" && is_set_prototype_property_expr(object, "originalAdd") {
                     return self.lower_native_set_add_call(args, *span);
                 }
@@ -992,9 +995,9 @@ impl<'a> Resolver<'a> {
                     }
 
                     if method == "map"
-                        && let ResolvedExpr::Array(elements) = object.as_ref()
+                        && let ResolvedExpr::Array(_) = object.as_ref()
                     {
-                        return self.lower_array_literal_map_arrow(elements, args, *span);
+                        return self.lower_array_literal_map(object, args, *span);
                     }
 
                     if method == "map"

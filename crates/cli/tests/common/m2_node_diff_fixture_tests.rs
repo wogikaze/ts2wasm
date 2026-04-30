@@ -131,6 +131,21 @@ fn array_map_arrow_pushed_local_string_constructor_fixture_matches_node_output_u
 }
 
 #[test]
+fn array_map_thisarg_named_callback_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-map-thisarg-named-callback.ts");
+}
+
+#[test]
+fn array_map_generic_call_array_receiver_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-map-call-unsupported.ts");
+}
+
+#[test]
+fn array_map_generic_call_object_literal_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-map-generic-call-object-literal.ts");
+}
+
+#[test]
 fn array_sort_numeric_comparator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/array-sort-numeric-comparator.ts");
 }

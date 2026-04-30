@@ -4,3 +4,5 @@ function callback(value, index, array) {
 
 const result = Array.prototype.map.call([1, 2], callback);
 console.log(result.length);
+console.log(result[0]);
+console.log(result[1]);

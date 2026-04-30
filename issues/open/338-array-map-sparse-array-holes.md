@@ -124,3 +124,15 @@ date:
 Remaining risks:
 
 - Sparse array representation changes may affect other array operations
+
+## Blocked evidence
+
+2026-04-30 child-338-340:
+
+- BLOCKED for this cycle. The frontend array literal parser stores `Expr::Array { elements: Vec<Expr> }` and expects an expression after each comma; it has no hole/elision node that could preserve `[1, , 3]`.
+- Lowered arrays are dense `ArrayNew { elements }` values, and current backend array layout stores only length plus contiguous element values. There is no per-index presence bitmap/sentinel contract to preserve holes.
+- Implementing sparse map correctly would require broader array representation/parser contract work outside this child slice.
+
+Remaining:
+
+- Not DONE. Needs a separate sparse array representation design before map can skip callback invocation for holes and preserve holes in results.

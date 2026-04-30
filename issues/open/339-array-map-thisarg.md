@@ -124,3 +124,19 @@ date:
 Remaining risks:
 
 - Arrow function lexical `this` may complicate thisArg implementation
+
+## Progress evidence
+
+2026-04-30 child-338-340:
+
+- Implemented static array-literal map lowering for top-level named function callbacks with `thisArg` receiver binding.
+- Added `fixtures/core-semantics/array-map-thisarg-named-callback.ts`.
+- Also permits arrow callbacks to receive `value`, `index`, and `array`; map `thisArg` is ignored for arrows per JS lexical-this semantics.
+- `cargo fmt --all --check`: pass.
+- `cargo check -p ts2wasm-ir`: pass.
+- `cargo nextest run -p ts2wasm-cli array_map`: blocked before running tests by pre-existing compile error in unmodified `crates/backend-wasm/src/expr_emit.rs` (`array_push_grow_linear_growth_threshold` name mismatch and unused format argument).
+
+Remaining:
+
+- Not DONE. Inline `function (x) { return this... }` callbacks still hit the existing nested-function `this` restriction in `lower_nested_function`.
+- Full CLI/iwasm fixture validation is blocked until the backend compile error is fixed.
