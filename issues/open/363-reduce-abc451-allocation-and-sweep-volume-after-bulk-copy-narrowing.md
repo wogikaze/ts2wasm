@@ -262,6 +262,18 @@ Issue 364 closed the diagnostic gap and identified array growth as the next focu
 
 Follow-up issue 365 tracks the smaller implementation slice for reducing array-growth allocation/copy pressure. Keep this broad issue blocked until issue 365 produces a mergeable runtime-memory change or records a smaller blocker.
 
+## Issue 365 helper-level blocker result
+
+Issue 365 child v4 tested helper-local non-top `ArrayPushGrow` reductions after issue 367 extracted `$array_push_grow`.
+
+Result:
+
+```text
+status: BLOCKED
+evidence: adjacent free-block expansion and zero-length copy skipping were neutral; bounded growth-factor probes violated either `allocation_requested_bytes` or `sweep_visits` at 100000 events
+next: representation-level append strategy or deeper attribution for why non-top result arrays miss heap-top growth
+```
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

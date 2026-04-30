@@ -3,7 +3,7 @@ id: 365
 title: "Reduce ABC451 array-growth allocation and copy pressure"
 type: bug
 area: runtime/memory
-class: implementation-ready
+class: blocked
 priority: P1
 depends_on: [364, 366, 367]
 blocks: [363, 357, 309]
@@ -359,3 +359,78 @@ focused ABC451 depth-8 gate: still times out after 30.199s
 ```
 
 Next implementation slice should change behavior inside `$array_push_grow`, not by editing the former inline expression template.
+
+## Child v4 blocker evidence: 2026-05-01
+
+Status: `BLOCKED`.
+
+This child did not keep runtime code changes. The tested helper-level candidates either produced no diagnostic improvement or violated the parent mergeability constraint at the 100000-event diagnostic budget.
+
+Baseline reproduced:
+
+```text
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; alloc_array_growth_bytes=362976; alloc_array_growth_calls=2648; copy_array_growth_bytes=181008; copy_array_growth_calls=2648; allocation_requested_bytes=521193; sweep_visits=58859; free_list_scan_visits=0
+```
+
+Rejected candidates:
+
+```text
+candidate: expand non-top `$array_push_grow` into an immediately adjacent swept free-list block when present
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass, but neutral counters; alloc_array_growth_bytes=362976; copy_array_growth_bytes=181008; allocation_requested_bytes=521193; sweep_visits=58859; free_list_scan_visits=0
+decision: not kept because it produced no measurable pressure reduction
+```
+
+```text
+candidate: skip fallback `$copy` when `old_len == 0`
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass, but neutral counters; copy_array_growth_calls remained 2648 and copy_array_growth_bytes remained 181008
+decision: not kept because the measured non-top fallback copies all had nonzero `old_len`
+```
+
+```text
+candidate: post-threshold linear growth spare of one slot (`old_len + 2`)
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass, but violates mergeability; allocation_requested_bytes 521193 -> 521197; alloc_array_growth_bytes 362976 -> 362980; sweep_visits stayed 58859
+decision: not kept
+```
+
+```text
+candidate: pre-threshold 1.5x growth factor
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass, but violates mergeability; alloc_array_growth_bytes 362976 -> 344044 and allocation_requested_bytes 521193 -> 499238, but sweep_visits 58859 -> 58980 and copy_array_growth_bytes 181008 -> 222112
+decision: not kept
+```
+
+```text
+candidate: pre-threshold 1.75x growth factor
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass, but violates mergeability; sweep_visits 58859 -> 58663, but allocation_requested_bytes 521193 -> 527764 and copy_array_growth_bytes 181008 -> 203656
+decision: not kept
+```
+
+```text
+candidate: pre-threshold 1.625x growth factor
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass, but violates mergeability; sweep_visits 58859 -> 58063, but allocation_requested_bytes 521193 -> 548877 and copy_array_growth_bytes 181008 -> 237984
+decision: not kept
+```
+
+Remaining blocker:
+
+```text
+The dedicated `$array_push_grow` helper made local experimentation safer, but the remaining non-top fallback pressure does not have a safe local policy change under the current contiguous-array representation. The next executable slice should either implement a representation-level append strategy with explicit alias semantics, or add deeper attribution for why non-top result arrays are separated from the heap top before growth.
+```
+
+Validation for the final evidence-only state:
+
+```text
+cargo fmt --all --check: pass
+mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30: pass; baseline counters reproduced before rejected probes
+cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm: fail; known iwasm timeout
+cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm: pass
+cargo test -p ts2wasm-backend-wasm --lib -- --nocapture: pass
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
