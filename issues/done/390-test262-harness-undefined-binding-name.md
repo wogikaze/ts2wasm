@@ -3,12 +3,13 @@ id: 390
 title: "Allow or rewrite Test262 harness undefined binding name"
 type: bug
 area: frontend/parser
-class: ready
+class: done
 priority: P2
 depends_on: [389]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -65,9 +66,9 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` no longer reports issue 247 at `var undefined = void 0;`.
-- [ ] Any newly exposed blocker is represented by an open issue with evidence.
-- [ ] `cargo nextest run -p ts2wasm-cli array_map` still passes.
+- [x] `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` no longer reports issue 247 at `var undefined = void 0;`.
+- [x] Any newly exposed blocker is represented by an open issue with evidence.
+- [x] `cargo nextest run -p ts2wasm-cli array_map` still passes.
 
 ## Validation
 
