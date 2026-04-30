@@ -19,9 +19,7 @@ Problem: Mixed Number/BigInt arithmetic currently reports issue-linked diagnosti
 
 ## Problem
 
-Issue 260 proved the arithmetic slice without silent coercion, but it did not add broad JS exception throwing machinery. Node throws `TypeError` for mixed Number/BigInt arithmetic where the expression reaches runtime.
-
-Problem: Mixed Number/BigInt arithmetic error paths are not compatible JS throws yet.
+Issue 260 proved the arithmetic slice without silent coercion, but it did not add broad JS exception throwing machinery. Node throws `TypeError` for mixed Number/BigInt arithmetic where the expression reaches runtime, but the compiler currently reports diagnostics instead of throwing compatible TypeError at runtime.
 
 ## Current failure
 

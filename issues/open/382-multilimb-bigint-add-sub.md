@@ -19,9 +19,7 @@ Problem: Dynamic BigInt `+` and `-` with operands or results outside the signed-
 
 ## Problem
 
-The current dynamic helpers reconstruct operands through signed i64 and the issue-259 first-limb/cached-decimal constructor. This is safe only when the resolver proves operands and results fit the signed-i64 helper slice.
-
-Problem: Dynamic BigInt addition/subtraction outside the signed-i64-backed helper slice is rejected with issue-369 diagnostics instead of matching Node for arbitrary BigInt magnitudes.
+The current dynamic helpers reconstruct operands through signed i64 and the issue-259 first-limb/cached-decimal constructor. This is safe only when the resolver proves operands and results fit the signed-i64 helper slice, but dynamic BigInt addition/subtraction outside that slice is rejected with issue-369 diagnostics instead of matching Node for arbitrary BigInt magnitudes.
 
 ## Current failure
 
