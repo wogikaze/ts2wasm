@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 209 | 132 | 77 |
+| frontend | 209 | 131 | 78 |
 | ir | 8 | 1 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 43 | 105 |
+| runtime | 148 | 41 | 107 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 411 | 182 | 229 |
+| total | 411 | 179 | 232 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -53,8 +53,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt `/ 0n` and `% 0n` currently reach a runtime `unreachable` trap in the signed-i64 helper slice, while Node thro... |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | implementation-ready | P1 |  | Issue 357's previous attempts to reduce the timeout did not identify whether the bottleneck is array copying, GC swee... |
 | 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
-| 390 | Allow or rewrite Test262 harness undefined binding name | bug | frontend/parser | ready | P2 | 389 | Allow or rewrite Test262 harness undefined binding name |
-| 393 | Multi-limb BigInt addition | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `+` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
 | 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 381 cannot produce a compatible `TypeError` object for... |
 <!-- generated:ready:end -->
 
@@ -229,7 +227,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | class: blocked | Mixed Number/BigInt arithmetic TypeError |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
-| 394 | Multi-limb BigInt subtraction | feature | runtime/semantics | 259, 260, 393 | Multi-limb BigInt subtraction |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -462,8 +459,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | see `issues/done/384-multilimb-bigint-division-remainder.md` |
 | 388 | Runtime array-like generic call for Array.prototype.map | feature | runtime/builtins | see `issues/done/388-array-map-generic-runtime-array-like.md` |
 | 389 | Unblock Array.map generic Test262 representative with function-expression initializer | bug | frontend/parser | see `issues/done/389-array-map-generic-test262-function-expression-blocker.md` |
+| 390 | Allow or rewrite Test262 harness undefined binding name | bug | frontend/parser | see `issues/done/390-test262-harness-undefined-binding-name.md` |
 | 391 | Multi-limb BigInt division | feature | runtime/semantics | see `issues/done/391-multilimb-bigint-division.md` |
 | 392 | Multi-limb BigInt remainder | feature | runtime/semantics | see `issues/done/392-multilimb-bigint-remainder.md` |
+| 393 | Multi-limb BigInt addition | feature | runtime/semantics | see `issues/done/393-multilimb-bigint-addition.md` |
+| 394 | Multi-limb BigInt subtraction | feature | runtime/semantics | see `issues/done/394-multilimb-bigint-subtraction.md` |
 | 395 | Runtime array-like Array.prototype.map callback dispatch | feature | runtime/builtins | see `issues/done/395-array-map-runtime-array-like-callback-dispatch.md` |
 | 397 | BigInt add/sub branch-assigned operands | feature | runtime/semantics | see `issues/done/397-bigint-add-sub-branch-assigned-operands.md` |
 | 398 | Track control-flow-assigned BigInt div/rem locals | feature | runtime/semantics | see `issues/done/398-track-control-flow-assigned-bigint-div-rem.md` |

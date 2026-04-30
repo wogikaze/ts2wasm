@@ -85,7 +85,7 @@ Outcome:
 - Parent validation showed the remaining blocker is a harness-shim parser issue:
   `var undefined = void 0;` is tokenized as keyword `Undefined` and rejected as
   a binding name with a closed `issue-247` diagnostic.
-- `issues/open/390-test262-harness-undefined-binding-name.md` records the
+- `issues/done/390-test262-harness-undefined-binding-name.md` records the
   actual remaining blocker with source-backed evidence.
 
 Validation result:

@@ -3,12 +3,13 @@ id: 390
 title: "Allow or rewrite Test262 harness undefined binding name"
 type: bug
 area: frontend/parser
-class: ready
+class: done
 priority: P2
 depends_on: [389]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -83,16 +84,40 @@ mise run check issues
 
 ## Completion evidence
 
-Fill when moving to `done/`.
+Completed: 2026-05-01
 
-## Reopen evidence
+Outcome:
 
-2026-05-01 parent validation after child DONE claim:
+- The representative Test262 Array.map path no longer reports closed
+  `issue-247` at the harness shim binding `var undefined = void 0;`.
+- `reference-triage` now shows `undefined` in the visible binding list before
+  failure, proving the harness binding advanced through parsing.
+- The newly exposed blocker is already represented by open issue 274:
+  `direct function-expression spread calls with this or arguments` at
+  `1088..1118`.
+- The validation required a non-metadata tooling fix: reference scripts now
+  select the newest workspace-built `target/{release,debug}/ts2wasm` binary
+  after explicit `TS2WASM_BINARY`, preventing a stale release binary from
+  masking current parser behavior.
+
+Validation result:
 
 ```text
-command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js
-result: still reports UnsupportedSyntax / issue-247 at `var undefined = void 0;`
-```
+command: cargo fmt --all --check
+result: pass
 
-The issue remains open because the representative Test262 harness input has not
-advanced beyond the `undefined` binding-name parser blocker.
+command: cargo test -p ts2wasm-frontend parses_undefined_as_binding_identifier_in_declaration -- --nocapture
+result: pass
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass; 15 passed
+
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js
+result: pass for issue 390; no issue-247 at `var undefined = void 0;`; next blocker is open issue 274 at `return (function() { return this; })();`
+
+command: mise run update-issue-index -- --check
+result: pass
+
+command: mise run check issues
+result: pass
+```
