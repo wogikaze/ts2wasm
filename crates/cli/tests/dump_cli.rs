@@ -284,7 +284,7 @@ fn dump_ast_unparse_erases_typescript_interface_declarations() {
 fn dump_ast_unparse_erases_typescript_type_alias_declarations() {
     let output = run_dump(
         &["--ast", "--unparse"],
-        "type Id = number;\ntype Box<T> = { value: T };\nexport type Point<T extends string | number = number> = { x: number; y: number; format: (value: T) => string; };\nlet x: Point = { x: 1, y: 2 };\n",
+        "type Id = number;\ntype Box<T> = { value: T };\nexport type Point<T extends string | number = number> = { x: number; y: number; format: (value: T) => string; };\ntype EndAlias<T extends Missing> = {}\ntype InlineAlias = { value: number }\nlet x: Point = { x: 1, y: 2 };\n",
     );
 
     assert_eq!(output, "let x = {x: 1, y: 2};\n");

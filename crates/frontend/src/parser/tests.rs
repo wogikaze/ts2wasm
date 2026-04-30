@@ -89,6 +89,8 @@ mod tests {
                 meta: { created: number };
                 translate: (dx: number, dy: number) => Point;
             };
+            type EndAlias<T extends Missing> = {}
+            type InlineAlias = { value: number }
             function read(point: Point): number { return point.x; }
             let origin: Point = { x: 1 };
         "#;

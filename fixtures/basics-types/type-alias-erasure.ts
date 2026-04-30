@@ -14,6 +14,9 @@ export type Point = {
   translate: (dx: number, dy: number) => number;
 };
 
+type EndAlias<T extends Missing> = {}
+type InlineAlias = { value: number }
+
 function sum(point: Point): Id {
   return point.x + point.y;
 }

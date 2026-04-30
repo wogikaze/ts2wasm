@@ -129,14 +129,112 @@ impl Parser {
         self.expect_ident()?;
         self.consume_typescript_generic_parameter_list()?;
         self.expect(TokenKind::Equal)?;
-        self.skip_type_annotation_until(&[TokenKind::Semicolon])
-            .map_err(|_| Diagnostic {
+        self.skip_typescript_type_alias_body(type_span)?;
+        self.consume(TokenKind::Semicolon);
+        Ok(())
+    }
+
+    fn skip_typescript_type_alias_body(&mut self, type_span: Span) -> Result<(), Diagnostic> {
+        let mut paren_depth = 0usize;
+        let mut bracket_depth = 0usize;
+        let mut brace_depth = 0usize;
+        let mut consumed_type_token = false;
+        let mut previous_token_can_end_body = false;
+
+        while !self.is_at_end() {
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            if at_top_level
+                && consumed_type_token
+                && self.peek().is_some_and(|token| {
+                    TokenKind::Semicolon.matches(token)
+                        || (previous_token_can_end_body
+                            && self.is_typescript_type_alias_declaration_boundary(token))
+                })
+            {
+                return Ok(());
+            }
+
+            let current_token_can_end_body = self
+                .peek()
+                .is_some_and(Self::is_typescript_type_alias_body_end_token);
+            match self.peek() {
+                Some(Token::LeftParen) => paren_depth += 1,
+                Some(Token::LeftBracket) => bracket_depth += 1,
+                Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::RightParen) => {
+                    if paren_depth == 0 {
+                        return Ok(());
+                    }
+                    paren_depth -= 1;
+                }
+                Some(Token::RightBracket) => {
+                    if bracket_depth == 0 {
+                        return Ok(());
+                    }
+                    bracket_depth -= 1;
+                }
+                Some(Token::RightBrace) => {
+                    if brace_depth == 0 {
+                        return Ok(());
+                    }
+                    brace_depth -= 1;
+                }
+                None => break,
+                _ => {}
+            }
+            self.advance();
+            consumed_type_token = true;
+            previous_token_can_end_body = current_token_can_end_body;
+        }
+
+        if consumed_type_token {
+            Ok(())
+        } else {
+            Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "unterminated TypeScript type alias declaration".to_owned(),
                 span: Some(type_span),
-            })?;
-        self.expect(TokenKind::Semicolon)?;
-        Ok(())
+            })
+        }
+    }
+
+    fn is_typescript_type_alias_body_end_token(token: &Token) -> bool {
+        matches!(
+            token,
+            Token::Ident(_)
+                | Token::PrivateIdentifier(_)
+                | Token::Number(_)
+                | Token::BigIntLiteral(_)
+                | Token::String(_)
+                | Token::TemplateLiteral(_)
+                | Token::True
+                | Token::False
+                | Token::Null
+                | Token::Undefined
+                | Token::This
+                | Token::Void
+                | Token::RightParen
+                | Token::RightBracket
+                | Token::RightBrace
+        )
+    }
+
+    fn is_typescript_type_alias_declaration_boundary(&self, token: &Token) -> bool {
+        match token {
+            Token::Export
+            | Token::Import
+            | Token::Let
+            | Token::Const
+            | Token::Var
+            | Token::Function
+            | Token::Class
+            | Token::Async => true,
+            Token::Ident(name) => matches!(
+                name.as_str(),
+                "type" | "interface" | "declare" | "namespace" | "module" | "enum"
+            ),
+            _ => false,
+        }
     }
 
     fn try_consume_interface_keyword(&mut self) -> Option<(Span, bool)> {

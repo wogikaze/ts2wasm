@@ -149,3 +149,35 @@ command: mise run reference-coverage -- tsc --limit 6419 --no-web-ui
 result: pass; denominator=6419, build_pass=993, unsupported=5408, type-alias=41
 date: 2026-05-01
 ```
+
+2026-05-01 child slice `agent-345-type-alias-20260430T231258Z`:
+
+- Implemented a parser-only erasure slice for semicolonless TypeScript type
+  aliases that end at EOF or before the next declaration boundary. This keeps
+  type aliases compile-time-only and does not widen into module/runtime
+  semantics.
+- Added frontend, dump/unparse, and build fixture coverage for forms such as
+  `type EndAlias<T extends Missing> = {}` and `type InlineAlias = { value: number }`
+  without a trailing semicolon.
+- Representative tsc case
+  `reference/typescript/tests/cases/compiler/declarationEmitTypeAliasTypeParameterExtendingUnknownSymbol.ts`
+  changed from `UnsupportedTypeScriptSyntax: unterminated TypeScript type alias
+  declaration` to `build_pass` / `semantic_pass` in the focused coverage run.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-frontend type -- --nocapture: pass (17 passed)
+cargo test -p ts2wasm-cli type_alias -- --nocapture: pass (2 passed)
+target/debug/ts2wasm build reference/typescript/tests/cases/compiler/declarationEmitTypeAliasTypeParameterExtendingUnknownSymbol.ts -o /tmp/ts2wasm-345-type-alias-representative.wasm: pass
+mise run reference-coverage -- tsc --path-filter declarationEmitTypeAliasTypeParameterExtendingUnknownSymbol.ts --detail --no-web-ui: pass; build_pass=1, semantic_pass=1
+mise run reference-coverage -- tsc --limit 6419 --no-web-ui: pass; denominator=6419, build_pass=1035, semantic_pass=919, unsupported=5368, blocked=124, type-alias=2541
+```
+
+Remaining:
+
+- Not DONE. Full tsc coverage still has nonzero `type-alias`-classified
+  unsupported cases in this branch's classifier output, and many remaining
+  alias-named cases overlap module, declaration emit, parser syntax, and name
+  resolution boundaries.
