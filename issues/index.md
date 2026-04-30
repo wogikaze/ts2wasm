@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 121 | 34 | 87 |
+| runtime | 121 | 33 | 88 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 381 | 172 | 209 |
+| total | 381 | 171 | 210 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,9 +45,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
-| 280 | Implement dynamic BigInt builtin inputs | feature | runtime/builtins | verification-ready | P2 | 259, 262 | `BigInt(...)`, `BigInt.asIntN(...)`, and `BigInt.asUintN(...)` currently work for documented static inputs, but dynam... |
 | 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 folds representable tagged-int number literals such as `1n == 1`, but the current number model does not yet... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
+| 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | implementation-ready | P2 | 280 | unknown dynamic invalid/out-of-range `BigInt(string)` inputs trap at |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
 | 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Compatible object `ToPrimitive` for mixed BigInt comparisons and non-source-backed unknown out-of-range BigInt/String... |
@@ -199,7 +199,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 313 | Implement array-builtin support | spike | runtime/builtins | class: triage-needed | Implement array-builtin support |
 | 314 | Implement string-builtin support | spike | runtime/builtins | class: triage-needed | Implement string-builtin support |
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: triage-needed | Fix Object.keys backend-io error |
-| 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | 280 | Implement BigInt dynamic string exception parity |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | 334 | Sparse array holes handling for Array.prototype.map |
@@ -399,6 +398,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 277 | Implement Set SameValueZero identity | feature | runtime/builtins | see `issues/done/277-implement-set-samevaluezero-identity.md` |
 | 278 | Implement Set iteration | feature | runtime/builtins | see `issues/done/278-implement-set-iteration.md` |
 | 279 | Implement observable Set constructor add dispatch | feature | runtime/builtins | see `issues/done/279-implement-observable-set-constructor-add-dispatch.md` |
+| 280 | Implement dynamic BigInt builtin inputs | feature | runtime/builtins | see `issues/done/280-implement-dynamic-bigint-builtin-inputs.md` |
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | see `issues/done/282-implement-dynamic-bigint-mixed-coercion.md` |
 | 283 | Implement assigned arrow recursion | feature | runtime/semantics | see `issues/done/283-implement-assigned-arrow-recursion.md` |
 | 284 | Support test262 async flag in reference coverage | test | reference/tests | see `issues/done/284-support-test262-async-flag-runner-coverage.md` |

@@ -105,7 +105,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created narrower follow-up for broader dynamic BigInt builtin inputs: `issues/open/280-implement-dynamic-bigint-builtin-inputs.md`
+- [x] created narrower follow-up for broader dynamic BigInt builtin inputs: `issues/done/280-implement-dynamic-bigint-builtin-inputs.md`
 
 ## Notes
 

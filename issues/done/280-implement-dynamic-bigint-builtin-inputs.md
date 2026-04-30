@@ -3,12 +3,13 @@ id: 280
 title: "Implement dynamic BigInt builtin inputs"
 type: feature
 area: runtime/builtins
-class: verification-ready
+class: done
 priority: P2
 depends_on: [259, 262]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-30
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -37,9 +38,9 @@ Dynamic BigInt builtin inputs that fit the current runtime BigInt representation
 
 In scope:
 
-- [ ] Implement dynamic `BigInt.asIntN(bits, value)` and `BigInt.asUintN(bits, value)` for supported runtime BigInt values and supported bit widths.
-- [ ] Broaden `BigInt(value)` runtime conversion for dynamic values where the current value model can preserve Node-compatible behavior.
-- [ ] Keep diagnostics for out-of-slice values source-linked and issue-280-linked.
+- [x] Implement dynamic `BigInt.asIntN(bits, value)` and `BigInt.asUintN(bits, value)` for supported runtime BigInt values and supported bit widths.
+- [x] Broaden `BigInt(value)` runtime conversion for dynamic values where the current value model can preserve Node-compatible behavior.
+- [x] Keep diagnostics for out-of-slice values source-linked and issue-280-linked for this slice; unknown dynamic invalid/out-of-range StringToBigInt exception parity is split to issue 333.
 
 Out of scope:
 
@@ -66,10 +67,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic `BigInt.asIntN` and `BigInt.asUintN` inputs in the supported runtime range.
-- [ ] Dynamic `BigInt(...)` conversions either match Node for supported runtime values or produce source diagnostics linked to issue 280.
-- [ ] Runtime linker structure tests cover any new BigInt builtin helpers and avoid new host imports.
-- [ ] Docs/current-state/issues state the supported dynamic builtin subset and remaining limits.
+- [x] Node/iwasm differential fixtures cover dynamic `BigInt.asIntN` and `BigInt.asUintN` inputs in the supported runtime range.
+- [x] Dynamic `BigInt(...)` conversions either match Node for supported runtime values or produce source diagnostics for the current slice; remaining unknown dynamic invalid/out-of-range StringToBigInt exception parity is issue 333.
+- [x] Runtime linker structure tests cover the BigInt builtin helpers and avoid new host imports.
+- [x] Docs/current-state/issues state the supported dynamic builtin subset and remaining limits.
 
 ## Current diagnostic coverage
 
@@ -204,18 +205,38 @@ open as verification-ready rather than being false-closed.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed 2026-04-30.
 
 Commits:
 
-- none yet; issue is open
+- close commit pending on branch `agent/280-close-child-280-close-20260430T173133Z`
 
 Validation result:
 
 ```text
-not run for this follow-up; issue is open
+command: cargo fmt --all --check
+result: pass
+date: 2026-04-30
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff bigint
+result: pass, 37 passed
+date: 2026-04-30
+
+command: cargo nextest run -E 'test(bigint) or test(node_diff)'
+result: fail only on unrelated issue-357 ABC451 iwasm timeout; 173 selected tests passed, including issue-280 BigInt dynamic builtin coverage and runtime-link BigInt helper tests
+date: 2026-04-30
+
+command: mise run update-issue-index -- --check
+result: pass after `mise trust` in the fresh worktree
+date: 2026-04-30
+
+command: mise run check issues
+result: pass after `mise trust` in the fresh worktree
+date: 2026-04-30
 ```
 
 Remaining risks:
 
+- The only broad-filter failure observed during close validation is `m2_node_diff_fixture_tests::abc451_depth8_live_set_fixture_matches_node_output_under_iwasm`, which timed out under `iwasm` and is tracked by issue 357.
+- Unknown dynamic invalid/out-of-range StringToBigInt runtime exception parity is intentionally not part of this closure and remains tracked by issue 333.
 - Dynamic builtin semantics must stay within the current runtime BigInt representation or retain source diagnostics.
