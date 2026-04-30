@@ -176,9 +176,14 @@ date: 2026-05-01
 command: mise run update-issue-index -- --check && mise run check issues
 result: pass
 date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-frontend -p ts2wasm-cli
+result: fail; ambient/frontend/CLI diagnostics reached pass, but the broad run still fails in unrelated tracked runtime cases: BigInt builtin runtime output mismatches and ABC451 depth-8 iwasm timeout.
+date: 2026-05-01
 ```
 
 Remaining risks:
 
+- Full `cargo nextest run` is not claimed green in the current repository baseline.
 - Full ambient module semantics remain out of scope and route to `UnsupportedModule`.
 - Full `.d.ts` declaration emit remains tracked by issue 346.
