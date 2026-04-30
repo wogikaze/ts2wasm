@@ -152,11 +152,13 @@ impl BigIntStaticBuiltinFolder {
                 name,
                 params,
                 body,
+                is_generator,
                 span,
             } => Stmt::Function {
                 name: name.clone(),
                 params: params.clone(),
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
+                is_generator: *is_generator,
                 span: *span,
             },
             Stmt::Return { expr, span } => Stmt::Return {
@@ -932,6 +934,7 @@ fn resolve_stmt_with_outer_bindings(
             name,
             params,
             body,
+            is_generator,
             span,
         } => {
             let resolved_params = params
@@ -952,6 +955,7 @@ fn resolve_stmt_with_outer_bindings(
                     .iter()
                     .map(resolve_stmt)
                     .collect::<Result<Vec<_>, _>>()?,
+                is_generator: *is_generator,
             })
         }
         Stmt::ClassDecl {
@@ -994,6 +998,7 @@ fn resolve_stmt_with_outer_bindings(
                         params,
                         body: method_body,
                         span,
+                        ..
                     } if method_name == "constructor" => {
                         reject_class_method_outer_local_references(
                             name,
@@ -1040,6 +1045,7 @@ fn resolve_stmt_with_outer_bindings(
                         params,
                         body: method_body,
                         span,
+                        ..
                     } => {
                         let captures = class_method_outer_local_captures(
                             name,

@@ -12,6 +12,8 @@ impl<'a> Resolver<'a> {
                         }
                     } else if let Some(value) = self.static_string_spread_value(spread_expr) {
                         lowered_args.extend(Self::lower_ascii_string_spread_chars(&value)?);
+                    } else if self.is_generator_call_spread_operand(spread_expr) {
+                        return Err(Self::unsupported_generator_spread_diagnostic());
                     } else if self.resolved_expr_has_symbol_iterator_property(spread_expr) {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
@@ -94,6 +96,10 @@ impl<'a> Resolver<'a> {
                         Self::flush_array_segment(&mut segments, &mut pending_dense);
                         segments.push(set_array);
                         continue;
+                    }
+
+                    if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
+                        return Err(Self::unsupported_generator_spread_diagnostic());
                     }
 
                     if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
@@ -440,6 +446,8 @@ impl<'a> Resolver<'a> {
                         lowered.extend(self.lower_array_literal_elements(spread_elements)?);
                     } else if let Some(value) = self.static_string_spread_value(spread_expr) {
                         lowered.extend(Self::lower_ascii_string_spread_chars(&value)?);
+                    } else if self.is_generator_call_spread_operand(spread_expr) {
+                        return Err(Self::unsupported_generator_spread_diagnostic());
                     } else if self.resolved_expr_has_symbol_iterator_property(spread_expr) {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
@@ -1788,6 +1796,29 @@ impl<'a> Resolver<'a> {
                 .ok()
                 .is_some_and(|local_id| self.symbol_iterator_object_locals.contains(&local_id)),
             _ => false,
+        }
+    }
+
+    pub(super) fn is_generator_call_spread_operand(&self, expr: &ResolvedExpr) -> bool {
+        let ResolvedExpr::Call { callee, args, .. } = expr else {
+            return false;
+        };
+        if !args.is_empty() {
+            return false;
+        }
+        let ResolvedExpr::Ident(name) = callee.as_ref() else {
+            return false;
+        };
+        self.generator_function_names.contains(name)
+    }
+
+    pub(super) fn unsupported_generator_spread_diagnostic() -> Diagnostic {
+        Diagnostic {
+            code: DiagCode::UnsupportedRuntimeSubset,
+            message:
+                "issue-353: generator result spread requires iterator protocol runtime lowering in this milestone"
+                    .to_owned(),
+            span: None,
         }
     }
 

@@ -95,6 +95,24 @@ mod tests {
     }
 
     #[test]
+    fn parses_generator_function_declaration_metadata() {
+        let program = parse_program("function* gen() { yield 1; yield 2; }").unwrap();
+        assert_eq!(program.len(), 1);
+        let Stmt::Function {
+            name,
+            is_generator,
+            body,
+            ..
+        } = &program[0]
+        else {
+            panic!("expected generator function declaration");
+        };
+        assert_eq!(name, "gen");
+        assert!(*is_generator);
+        assert!(body.is_empty());
+    }
+
+    #[test]
     fn parses_ambient_function_declarations_as_erased_syntax() {
         let source = r#"
             declare function consume(value: number): void;

@@ -968,11 +968,16 @@ impl Parser {
 
         match statements.pop().unwrap() {
             Stmt::Function {
-                name, params, body, ..
+                name,
+                params,
+                body,
+                is_generator,
+                ..
             } => Ok(Some(Stmt::Function {
                 name,
                 params,
                 body,
+                is_generator,
                 span: eval_span,
             })),
             _ => Ok(None),
@@ -1309,6 +1314,7 @@ impl Parser {
             name,
             params,
             body,
+            is_generator: false,
             span: Span {
                 start: start.start,
                 end,
@@ -1812,6 +1818,7 @@ impl Parser {
                 name: parsed_name,
                 params,
                 body: method_body,
+                is_generator: false,
                 span: Span {
                     start: method_span.start,
                     end: method_end,

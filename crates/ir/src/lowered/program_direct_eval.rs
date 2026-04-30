@@ -93,6 +93,7 @@ pub(super) fn collect_direct_eval_block_function_iife_env(
             name,
             params,
             body: function_body,
+            ..
         } = stmt
         else {
             continue;

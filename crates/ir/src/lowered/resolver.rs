@@ -39,6 +39,7 @@ struct Resolver<'a> {
     static_function_array_like_locals: HashMap<LocalId, StaticFunctionArrayLike>,
     string_literal_locals: HashMap<LocalId, String>,
     native_set_add_locals: HashSet<LocalId>,
+    generator_function_names: HashSet<String>,
     current_class: Option<String>,
     in_constructor: bool,
 }
@@ -75,6 +76,7 @@ impl<'a> Resolver<'a> {
         class_parents: HashMap<String, Option<String>>,
         class_private_fields: ClassPrivateFieldSlots,
         class_static_private_fields: ClassStaticPrivateFields,
+        generator_function_names: HashSet<String>,
         next_func_id: usize,
     ) -> Self {
         let (class_constructor_ids, class_method_ids, class_static_method_ids) =
@@ -116,6 +118,7 @@ impl<'a> Resolver<'a> {
             static_function_array_like_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
+            generator_function_names,
             current_class: None,
             in_constructor: false,
         }
@@ -175,6 +178,7 @@ impl<'a> Resolver<'a> {
             static_function_array_like_locals: HashMap::new(),
             string_literal_locals: HashMap::new(),
             native_set_add_locals: HashSet::new(),
+            generator_function_names: HashSet::new(),
             current_class: current_class.map(ToOwned::to_owned),
             in_constructor,
         };
@@ -486,7 +490,9 @@ impl<'a> Resolver<'a> {
                 }
                 Ok(LoweredStmt::Return(self.lower_expr(expr)?))
             }
-            ResolvedStmt::Function { name, params, body } => {
+            ResolvedStmt::Function {
+                name, params, body, ..
+            } => {
                 let local_id = self.declare_local(name)?;
                 if self.env_cell_names.contains(name) {
                     self.env_cell_locals.insert(local_id);

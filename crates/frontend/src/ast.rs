@@ -239,6 +239,7 @@ pub enum Stmt {
         name: String,
         params: Vec<(String, Option<Expr>, bool)>,
         body: Vec<Stmt>,
+        is_generator: bool,
         span: Span,
     },
     Return {

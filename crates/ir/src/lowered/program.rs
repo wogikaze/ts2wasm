@@ -9,6 +9,7 @@ use program_captures::*;
 use program_direct_eval::*;
 pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnostic> {
     let function_ids = collect_function_ids(program)?;
+    let generator_function_names = collect_generator_function_names(program);
     let function_signatures = collect_function_signatures(program, &function_ids);
     let class_method_captures = collect_class_method_captures(program, &function_ids);
     let class_method_mutable_captures =
@@ -28,7 +29,9 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
 
     for stmt in program {
         match stmt {
-            ResolvedStmt::Function { name, params, body } => {
+            ResolvedStmt::Function {
+                name, params, body, ..
+            } => {
                 let func_id = function_ids[name];
                 let lowered = lower_function(
                     func_id,
@@ -168,6 +171,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         class_parents.clone(),
         class_private_fields,
         class_static_private_fields,
+        generator_function_names,
         next_func_id,
     );
     let mut top_level_statements = Vec::new();
@@ -333,6 +337,20 @@ fn collect_function_ids(program: &[ResolvedStmt]) -> Result<HashMap<String, Func
     Ok(function_ids)
 }
 
+fn collect_generator_function_names(program: &[ResolvedStmt]) -> HashSet<String> {
+    program
+        .iter()
+        .filter_map(|stmt| match stmt {
+            ResolvedStmt::Function {
+                name,
+                is_generator: true,
+                ..
+            } => Some(name.clone()),
+            _ => None,
+        })
+        .collect()
+}
+
 fn class_constructor_key(class_name: &str) -> String {
     format!("class::{class_name}::constructor")
 }
@@ -407,7 +425,9 @@ fn collect_function_signatures(
 
     for stmt in program {
         match stmt {
-            ResolvedStmt::Function { name, params, body } => {
+            ResolvedStmt::Function {
+                name, params, body, ..
+            } => {
                 signatures.insert(
                     function_ids[name],
                     FunctionSignature {
