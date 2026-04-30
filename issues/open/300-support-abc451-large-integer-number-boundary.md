@@ -8,7 +8,7 @@ priority: P1
 depends_on: [308, 309]
 blocks: [294]
 created: 2026-04-29
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -756,3 +756,13 @@ Remaining risks:
 - Issue 309 did not claim ABC451 sample compatibility. The official samples
   `10`, `69`, and `1099898` were not rerun under a passing depth-8/depth-9
   runtime policy. Issue 300 remains open.
+
+2026-05-01 child `child/309-abc451-depth9-20260501-061232` dependency note:
+
+- Issue 309 tested a growth-boundary-only allocation-pressure GC policy using
+  issue 385's sweep-dominance evidence. The probe reduced sweep visits at the
+  100000-event diagnostic budget (`58859 -> 40554`) and preserved the OOM
+  smoke, but the required depth-8 gate still timed out and array-growth
+  allocation/copy volume increased. No official ABC451 sample compatibility is
+  claimed; issue 300 remains blocked on a live/copy-volume reduction rather
+  than a GC-cadence-only change.
