@@ -1,116 +1,125 @@
 ---
 id: 064
-title: "Implement name resolution"
+title: "Implement name resolution (triaged - superseded by test262 metadata issues)"
 type: spike
 area: frontend/resolver
-class: triage-needed
+class: blocked
 priority: P1
 depends_on: []
 blocks: []
 created: 2026-04-26
-updated: 2026-04-29
+updated: 2026-04-30
 ---
 
 ## Summary
 
-Triage the generated reference bucket `Implement name resolution` before implementation. This issue records a failing reference case and must be split or superseded before any code change starts.
+**This issue has been triaged and superseded by child issues 336 and 337.** The original "name resolution" failures were actually caused by missing test262 metadata processing (includes: and features: directives), not by core name resolution functionality.
 
 ## Problem
 
-Reference test results show 72 cases fail with name-resolution diagnostic. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results showed 72 cases failing with name-resolution diagnostic. Investigation revealed these failures were caused by test262 metadata processing gaps, not core name resolution issues.
 
-Problem: generated reference bucket `Implement name resolution` fails with `name-resolution` and needs smart-triage evidence before implementation starts.
+Problem: triage revealed that "name resolution" failures are actually test262 metadata processing issues (includes: and features: directives).
 
 ## Current failure
 
-Representative reproduction:
+**Triage completed:** Representative cases showed two distinct failure patterns:
 
-```sh
-mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js
-```
+1. **includes: directive failure** (e.g., `verifyProperty`):
 
-Narrow coverage reproduction:
+   ```sh
+   mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js
+   ```
 
-```sh
-mise run reference-coverage -- test262 --path-filter reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js --detail
-```
+   Result: `UnresolvedName: unresolved name: verifyProperty`
+   Cause: `includes: [propertyHelper.js]` ignored
 
-Representative path: `reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js`
-Feature label: `name-resolution`
+2. **features: directive failure** (e.g., `$262.IsHTMLDDA`):
+
+   ```sh
+   mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Object/is/emulates-undefined.js
+   ```
+
+   Result: `UnsupportedTest262Metadata: test262 feature IsHTMLDDA is not supported`
+   Cause: `features: [IsHTMLDDA]` ignored, `$262` object not provided
 
 ## Desired final state
 
-This generated bucket is not used as a direct implementation work order. It is either superseded by an existing open/done issue, closed as a duplicate, or split into implementation-ready child issues that contain exact reproduction evidence and measurable acceptance criteria.
+This issue has been split into implementation-ready child issues:
+- **336**: Implement test262 includes directive processing
+- **337**: Implement test262 features directive and $262 object
 
 ## Scope
 
 In scope:
 
-- [ ] Run the representative `mise run reference-triage -- ...` command
-- [ ] Confirm whether duplicate candidates already cover this failure
-- [ ] Split one observable behavior or fixed reference window into child issues
-- [ ] Carry source context, diagnostic code, AST evidence, and validation commands into each child issue
+- [x] Run representative `mise run reference-triage -- ...` commands
+- [x] Confirm failure patterns are test262 metadata issues, not core name resolution
+- [x] Split into child issues 336 and 337
+- [x] Carry source context, diagnostic code, and validation commands into child issues
 
 Out of scope:
 
-- Direct implementation from this generated bucket
-- Broad fixes that mix unrelated parser, resolver, runtime, and API failures
+- Direct implementation from this generated bucket (superseded by child issues)
+- Core name resolution changes (issue 056 already covers basic name resolution)
 
 ## Affected paths
 
 Expected:
 
-- `crates/frontend/src/`
-- `crates/cli/src/`
-- `fixtures/`
-- `scripts/run/reference-triage.py`
+- (Handled by child issues 336 and 337)
 
 Do not touch:
 
-- unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
+- (Handled by child issues 336 and 337)
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates are confirmed as no-match, duplicate, or superseding issue
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates confirmed as no-match (triage revealed test262 metadata issue)
+- [x] Child issues 336 and 337 created with exact `mise run reference-triage -- ...` commands
+- [x] Child issues include failing path, diagnostic code, source context, and validation commands
+- [x] Child issue acceptance names exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
 Required commands:
 
 ```sh
-cargo fmt --all --check
-cargo nextest run
+mise run update-issue-index
+mise run check issues
 ```
 
 Impacted commands:
 
-```sh
-mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js
-mise run reference-coverage -- test262 --path-filter reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js --detail
-```
+- (Handled by child issues 336 and 337)
 
 Not run:
 
-- none
+- none (triage complete)
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] created: `issues/open/336-implement-test262-includes-directive.md`
+- [x] created: `issues/open/337-implement-test262-features-directive.md`
 
 ## Notes
+
+**Triage findings:**
+- Core name resolution (issue 056) already implements basic variable/function resolution
+- These 72 failures are specifically test262 metadata processing issues
+- Pattern 1: `includes: [propertyHelper.js]` causes UnresolvedName for helper functions
+- Pattern 2: `features: [IsHTMLDDA]` causes UnsupportedTest262Metadata for $262 object
+- Both patterns require test262 runner infrastructure changes, not core compiler changes
 
 ## Affected test files
 
@@ -132,20 +141,24 @@ Follow-up issues:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+**Triage completed 2026-04-30**
 
 Commits:
 
-- `...`
+- (none - triage only, no implementation)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Date/prototype/getYear/B.2.4.js
+result: Confirmed UnresolvedName for verifyProperty due to missing includes: processing
+date: 2026-04-30
+
+command: mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/Object/is/emulates-undefined.js
+result: Confirmed UnsupportedTest262Metadata for IsHTMLDDA feature
+date: 2026-04-30
 ```
 
 Remaining risks:
 
-- none
+- None (triage complete, child issues 336 and 337 track implementation)

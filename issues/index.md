@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
 | backend | 5 | 1 | 4 |
-| cli | 3 | 0 | 3 |
+| cli | 5 | 2 | 3 |
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 348 | 152 | 196 |
+| total | 350 | 154 | 196 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,6 +50,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Complete Array.prototype.map sparse thisArg and Test262 semantics | feature | runtime/builtins | implementation-ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
+| 336 | Implement test262 includes directive processing | feature | cli/reference | implementation-ready | P1 |  | test262 `includes:` directive is ignored, causing UnresolvedName for helper functions like `verifyProperty`. |
+| 337 | Implement test262 features directive and $262 object | feature | cli/reference | implementation-ready | P1 |  | test262 `features:` directive is ignored and `$262` object is not provided, causing UnsupportedTest262Metadata. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -62,7 +64,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
 | 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics |
-| 064 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
+| 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
 | 066 | Implement RegExp literal support | spike | runtime/builtins | class: triage-needed | Implement RegExp literal support |
 | 067 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 068 | Implement unsupported expression types | spike | frontend/semantics | class: triage-needed | Implement unsupported expression types |
