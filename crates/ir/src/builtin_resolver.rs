@@ -1275,20 +1275,18 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         });
                     }
                 }
-                let issue = match op {
+                let diagnostic = match op {
                     BinaryOp::Add
                     | BinaryOp::Subtract
                     | BinaryOp::Multiply
                     | BinaryOp::Divide
-                    | BinaryOp::Modulo
-                    | BinaryOp::Power
-                    | BinaryOp::BitwiseAnd
-                    | BinaryOp::BitwiseOr
-                    | BinaryOp::BitwiseXor
-                    | BinaryOp::LeftShift
-                    | BinaryOp::RightShift
-                    | BinaryOp::UnsignedRightShift => {
-                        "issue-371: BigInt bitwise and exponentiation policy is tracked separately from literal runtime values"
+                    | BinaryOp::Modulo => Some(bigint_dynamic_runtime_diagnostic(*span)),
+                    BinaryOp::Power => Some(bigint_exponentiation_diagnostic(*span)),
+                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor => {
+                        Some(bigint_bitwise_diagnostic(*span))
+                    }
+                    BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift => {
+                        Some(bigint_shift_diagnostic(*span))
                     }
                     BinaryOp::Less
                     | BinaryOp::LessEqual
@@ -1312,17 +1310,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                             right: Box::new(right_resolved),
                         });
                     }
-                    BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => "",
-                    BinaryOp::InstanceOf | BinaryOp::In => {
-                        "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values"
-                    }
-                };
-                if !issue.is_empty() {
-                    return Err(Diagnostic {
+                    BinaryOp::And | BinaryOp::Or | BinaryOp::NullishCoalesce => None,
+                    BinaryOp::InstanceOf | BinaryOp::In => Some(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: issue.to_owned(),
+                        message: "issue-261: BigInt object/coercion operator boundaries are tracked separately from literal runtime values".to_owned(),
                         span: Some(*span),
-                    });
+                    }),
+                };
+                if let Some(diagnostic) = diagnostic {
+                    return Err(diagnostic);
                 }
             }
             Ok(ResolvedExpr::Binary {

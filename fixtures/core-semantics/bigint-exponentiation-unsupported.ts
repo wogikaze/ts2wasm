@@ -1,1 +1,2 @@
-console.log(2n ** 3n);
+let base = 2n;
+console.log(base ** 3n);

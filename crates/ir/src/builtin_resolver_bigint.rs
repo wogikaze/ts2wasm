@@ -589,6 +589,7 @@ pub(super) fn bigint_arithmetic_op(op: BinaryOp) -> bool {
         BinaryOp::Add
             | BinaryOp::Subtract
             | BinaryOp::Multiply
+            | BinaryOp::Power
             | BinaryOp::Divide
             | BinaryOp::Modulo
     )

@@ -43,6 +43,34 @@ pub(super) fn bigint_comparison_runtime_diagnostic(span: Span) -> Diagnostic {
     }
 }
 
+pub(super) fn bigint_exponentiation_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message:
+            "issue-376: BigInt exponentiation beyond literal non-negative exponent folding is not implemented"
+                .to_owned(),
+        span: Some(span),
+    }
+}
+
+pub(super) fn bigint_bitwise_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented"
+            .to_owned(),
+        span: Some(span),
+    }
+}
+
+pub(super) fn bigint_shift_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-378: BigInt shift operators and unsigned right shift TypeError policy are not implemented"
+            .to_owned(),
+        span: Some(span),
+    }
+}
+
 pub(super) fn bigint_equality_or_comparison_op(op: BinaryOp) -> bool {
     matches!(
         op,
@@ -373,6 +401,22 @@ pub(super) fn fold_bigint_binary(
         BinaryOp::Add => Ok(bigint_add(left, right)),
         BinaryOp::Subtract => Ok(bigint_add(left, right.negated())),
         BinaryOp::Multiply => Ok(bigint_mul(left, right)),
+        BinaryOp::Power if right.sign < 0 => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "issue-370: BigInt negative exponent RangeError parity is not implemented in this literal-folding slice"
+                    .to_owned(),
+            span: Some(span),
+        }),
+        BinaryOp::Power => {
+            let Some(exponent) = decimal_digits_to_u64(&right.digits) else {
+                return Err(bigint_exponentiation_diagnostic(span));
+            };
+            if exponent > 64 {
+                return Err(bigint_exponentiation_diagnostic(span));
+            }
+            Ok(bigint_pow(left, exponent))
+        }
         BinaryOp::Divide | BinaryOp::Modulo if right.sign == 0 => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:
@@ -438,6 +482,14 @@ pub(super) fn bigint_mul(left: BigIntConst, right: BigIntConst) -> BigIntConst {
         sign: left.sign * right.sign,
         digits: mul_abs(&left.digits, &right.digits),
     }
+}
+
+pub(super) fn bigint_pow(base: BigIntConst, exponent: u64) -> BigIntConst {
+    let mut result = BigIntConst::from_decimal(1, "1");
+    for _ in 0..exponent {
+        result = bigint_mul(result, base.clone());
+    }
+    result
 }
 
 pub(super) fn cmp_abs(left: &[u8], right: &[u8]) -> std::cmp::Ordering {
@@ -542,14 +594,16 @@ pub(super) fn div_rem_abs(left: &[u8], right: &[u8]) -> (Vec<u8>, Vec<u8>) {
 
 pub(super) fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
     match op {
+        UnaryOp::BitwiseNot => {
+            Some("issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented")
+        }
         UnaryOp::Negate
         | UnaryOp::Plus
-        | UnaryOp::BitwiseNot
         | UnaryOp::Increment
         | UnaryOp::Decrement
         | UnaryOp::PreIncrement
         | UnaryOp::PreDecrement => Some(
-            "issue-371: BigInt bitwise and exponentiation policy is tracked separately from literal runtime values",
+            "issue-369: dynamic BigInt runtime arithmetic outside the signed-i64-backed first-limb slice is not implemented",
         ),
         UnaryOp::Not | UnaryOp::TypeOf | UnaryOp::Delete | UnaryOp::Void => None,
     }

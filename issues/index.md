@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 128 | 37 | 91 |
+| runtime | 131 | 40 | 91 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 388 | 175 | 213 |
+| total | 391 | 178 | 213 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -54,6 +54,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 372 | Implement BigInt object ToPrimitive non-BigInt primitive returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Direct object-literal/local `valueOf` or `toString` methods that return booleans, supported tagged-int numbers, nulli... |
 | 373 | Handle BigInt object ToPrimitive invalid and out-of-range string returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Issue 368 implemented `toString: () => <supported decimal string>` for equality and relational comparisons, but inval... |
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
+| 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt exponentiation where either operand is not a literal-foldable BigInt expression still reports issue-376 diagno... |
+| 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt bitwise NOT/AND/OR/XOR currently report issue-377 diagnostics and must not reuse ordinary number bitwise lower... |
+| 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
