@@ -50,7 +50,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
-| 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
 <!-- generated:ready:end -->
 
@@ -212,6 +211,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 344 | Implement legacy global builtin bindings (8 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement legacy global builtin bindings (8 test262 cases) |
 | 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
+| 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | class: blocked | Parser and resolver support for direct eval and eval-code scope |
 | 348 | Lowering block-level function declarations in direct eval code | feature | ir | 347 | Lowering block-level function declarations in direct eval code |
 | 349 | Runtime helper or shim JavaScript emission for direct eval execution | feature | backend | 347, 348 | Runtime helper or shim JavaScript emission for direct eval execution |
 | 350 | Implement derived-class private element initialization | feature | runtime/semantics | 255 | Implement derived-class private element initialization |

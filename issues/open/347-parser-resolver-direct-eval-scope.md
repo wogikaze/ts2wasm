@@ -3,12 +3,12 @@ id: 347
 title: "Parser and resolver support for direct eval and eval-code scope"
 type: feature
 area: frontend/semantics
-class: implementation-ready
+class: blocked
 priority: P3
-depends_on: []
+depends_on: [336,357]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -171,3 +171,34 @@ result: pass
 Remaining risks:
 
 - Full DONE close is deferred until `cargo nextest run` can pass in an environment with `reference/test262/harness` available or the pre-existing harness requirement is otherwise resolved.
+
+2026-05-01 child-347-direct-eval-close:
+
+- Re-validated the existing parser/resolver direct-eval slice from parent base `a883f49d`.
+- Focused eval gates pass, including parser recognition, caller-local eval expansion, Annex B block-function eval fixtures, and issue-347 indirect-eval diagnostics.
+- Kept issue 347 open and reclassified it as blocked because the required broad `cargo nextest run` close gate still fails on unrelated open blockers, not on direct-eval parser/resolver behavior.
+
+Validation:
+
+```text
+command: cargo fmt --all --check
+result: pass
+
+command: cargo test -p ts2wasm-frontend eval
+result: pass (3 passed)
+
+command: cargo test -p ts2wasm-cli eval
+result: pass (3 passed)
+
+command: cargo nextest run
+result: fail; 447 passed, 2 failed, 4 skipped, 173 not run due fail-fast
+failure 1: ts2wasm-compiler test262_preprocessor::tests::test_process_includes_and_features_inject_stubs
+  BackendIo: test262 harness directory not found at /tmp/ts2wasm-347-direct-eval-close-20260430T164835Z/crates/compiler/../../reference/test262/harness
+failure 2: ts2wasm-cli::m2_node_diff m2_node_diff_fixture_tests::abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+  iwasm timed out for fixtures/core-semantics/abc451-depth8-live-set.ts after 30.501s
+```
+
+Remaining blockers:
+
+- issue 336 / its dependency chain or environment must make `reference/test262/harness` available for the broad preprocessor test.
+- issue 357 must resolve the unrelated ABC451 depth-8 iwasm timeout.
