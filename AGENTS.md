@@ -68,6 +68,7 @@ mise run reference-triage -- test262 reference/test262/test/path/to/case.js
 - 整形: cargo fmt --all --check
 - docs更新: 番号付きドキュメント優先
 - commit/push: docs/16-commit-and-push-policy.md
+- push hook / pre-push gate は `--no-verify` 等で bypass しない（理由: 既知 baseline 失敗でも gate を迂回すると監査不能な push になるため、失敗時は修正または blocker 報告で止める）
 
 ## Autonomous development loop
 
