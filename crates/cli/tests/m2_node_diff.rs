@@ -121,7 +121,7 @@ fn assert_fixture_iwasm_traps(fixture: &str) {
     );
 }
 
-fn assert_fixture_iwasm_issue333_abort(fixture: &str) {
+fn assert_fixture_iwasm_trap(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -162,16 +162,12 @@ fn assert_fixture_iwasm_issue333_abort(fixture: &str) {
     )
     .to_ascii_lowercase();
     assert!(
-        output_text.contains("issue-333") && output_text.contains("bigint(string)"),
-        "expected issue-333 BigInt(string) runtime abort marker for {fixture}, got:\n{output_text}"
-    );
-    assert!(
-        output_text.contains("unreachable"),
-        "expected intentional abort trap after issue-333 marker for {fixture}, got:\n{output_text}"
+        output_text.contains("unreachable") || output_text.contains("trap"),
+        "expected trap for {fixture}, got:\n{output_text}"
     );
 }
 
-fn assert_fixture_node_bigint_syntaxerror_and_iwasm_issue333_abort(fixture: &str) {
+fn assert_fixture_node_bigint_syntaxerror_and_iwasm_trap(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -188,7 +184,7 @@ fn assert_fixture_node_bigint_syntaxerror_and_iwasm_issue333_abort(fixture: &str
         "expected Node BigInt SyntaxError for {fixture}, got:\n{node_stderr}"
     );
 
-    assert_fixture_iwasm_issue333_abort(fixture);
+    assert_fixture_iwasm_trap(fixture);
 }
 
 fn assert_fixture_node_rangeerror_and_iwasm_traps(fixture: &str) {

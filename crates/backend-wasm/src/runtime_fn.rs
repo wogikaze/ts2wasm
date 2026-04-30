@@ -649,11 +649,7 @@ const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const OR_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
 const MAKE_BIGINT_LITERAL_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const BIGINT_TO_STRING_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const BIGINT_FROM_STRING_ABORT_MESSAGE: &str =
-    "issue-333: BigInt(string) runtime invalid or out-of-range input\n";
-const BIGINT_FROM_VALUE_RUNTIME_STRINGS: &[&str] = &[BIGINT_FROM_STRING_ABORT_MESSAGE];
-const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] =
-    &[RuntimeFn::BigIntAdd, RuntimeFn::IsString, RuntimeFn::Write];
+const BIGINT_FROM_VALUE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
 const BIGINT_AS_INT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::IsString];
 const BIGINT_AS_UINT_N_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd, RuntimeFn::BigIntAsIntN];
 
