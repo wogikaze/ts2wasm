@@ -3,12 +3,13 @@ id: 371
 title: "Define BigInt bitwise and exponentiation policy"
 type: feature
 area: runtime/semantics
-class: design-ready
+class: done
 priority: P2
 depends_on: [260]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -42,11 +43,11 @@ BigInt bitwise and exponentiation operators are either implemented with Node/iwa
 
 In scope:
 
-- [ ] Decide the implementation order for BigInt `~`, `&`, `|`, `^`, `<<`, `>>`, unsupported `>>>`, and `**`.
-- [ ] Implement at least one mergeable operator slice or split precise implementation-ready child issues.
-- [ ] Preserve diagnostics for operators not implemented in the selected slice.
-- [ ] Add Node/iwasm differential coverage for implemented operators and negative coverage for intentionally unsupported operators.
-- [ ] Update docs/current-state/issues with the policy and supported subset.
+- [x] Decide the implementation order for BigInt `~`, `&`, `|`, `^`, `<<`, `>>`, unsupported `>>>`, and `**`.
+- [x] Implement at least one mergeable operator slice or split precise implementation-ready child issues.
+- [x] Preserve diagnostics for operators not implemented in the selected slice.
+- [x] Add Node/iwasm differential coverage for implemented operators and negative coverage for intentionally unsupported operators.
+- [x] Update docs/current-state/issues with the policy and supported subset.
 
 Out of scope:
 
@@ -74,11 +75,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The BigInt bitwise/exponentiation policy is documented in `current-state.md` and the language reference.
-- [ ] Implemented operators have Node/iwasm differential fixtures.
-- [ ] Unsupported operators have source-backed diagnostics that reference issue 371 or narrower child issues.
-- [ ] No BigInt bitwise or exponentiation path silently lowers to ordinary number arithmetic.
-- [ ] Follow-up issues are created if this remains a policy-only split.
+- [x] The BigInt bitwise/exponentiation policy is documented in `current-state.md` and the language reference.
+- [x] Implemented operators have Node/iwasm differential fixtures.
+- [x] Unsupported operators have source-backed diagnostics that reference narrower child issues 376, 377, and 378.
+- [x] No BigInt bitwise or exponentiation path silently lowers to ordinary number arithmetic.
+- [x] Follow-up issues 376, 377, and 378 own the remaining unsupported operators.
 
 ## Validation
 
@@ -105,15 +106,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none yet
+- [x] created: `issues/open/376-implement-dynamic-bigint-exponentiation.md`, `issues/open/377-implement-bigint-bitwise-not-and-or-xor.md`, `issues/open/378-implement-bigint-shift-operators.md`
 
 ## Notes
 
@@ -125,14 +126,20 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- `ca42ba2b` implements literal BigInt exponentiation folding, retargets unsupported diagnostics, adds follow-up issues, and updates docs/fixtures.
 
 Validation result:
 
 ```text
-not run; issue is open
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint: pass (44 passed; 141 filtered out)
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
 ```
 
 Remaining risks:
 
-- Exponentiation compatibility may need issue 370's exception work for negative BigInt exponents.
+- Dynamic BigInt exponentiation remains issue 376.
+- BigInt bitwise NOT/AND/OR/XOR remains issue 377.
+- BigInt shift operators and BigInt >>> TypeError policy remain issue 378.
+- Negative BigInt exponent compatible RangeError throwing remains issue 370.
