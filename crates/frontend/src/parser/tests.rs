@@ -189,6 +189,24 @@ mod tests {
     }
 
     #[test]
+    fn rejects_typescript_namespace_declarations_as_module_owned() {
+        for source in [
+            "namespace M { export namespace N { } }",
+            "export namespace M { }",
+            "module M { }",
+        ] {
+            let err = parse_program(source)
+                .expect_err("namespace/internal module declarations are module-owned");
+            assert_eq!(err.code, DiagCode::UnsupportedModule);
+            assert!(
+                err.message.contains("namespace/internal module declarations"),
+                "unexpected diagnostic for {source}: {err:?}"
+            );
+            assert!(err.span.is_some(), "diagnostic should preserve a span");
+        }
+    }
+
+    #[test]
     fn rejects_unsupported_typescript_ambient_forms_with_source_span() {
         let err = parse_program("declare global { interface Window { value: string; } }")
             .expect_err("declare global is outside the erasure slice");

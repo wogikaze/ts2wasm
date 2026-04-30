@@ -109,7 +109,6 @@ impl Parser {
         type_span: Span,
     ) -> Result<(), Diagnostic> {
         self.expect_ident()?;
-        self.consume_typescript_generic_parameter_list()?;
         self.expect(TokenKind::Equal)?;
         self.skip_type_annotation_until(&[TokenKind::Semicolon])
             .map_err(|_| Diagnostic {
