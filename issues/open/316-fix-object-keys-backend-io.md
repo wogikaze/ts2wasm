@@ -3,7 +3,7 @@ id: 316
 title: "Fix Object.keys backend-io error"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: triage-needed
 priority: P0
 depends_on: []
 blocks: []
@@ -13,41 +13,68 @@ updated: 2026-04-30
 
 ## Summary
 
-Fix backend-io error for Object.keys test case that is currently blocked.
+Normalize the Object.keys test262 reproduction before assigning a runtime fix.
+The original issue pointed at a built-ins test path, but the current
+`scripts/run/test262.py` runner only scans `test/language/**/*.js`, so the
+representative built-ins path is not currently selectable through that runner.
 
 ## Problem
 
-One test262 test case for Object.keys is blocked with backend-io error:
+The intended Object.keys case exists in the local reference checkout:
 
 - `reference/test262/test/built-ins/Object/keys/15.2.3.14-3-4.js`
 
-This case fails with `BackendIo: wat2wasm failed` during WASM generation, preventing compilation.
+However, clean repository worktrees only track `reference/README.md`; the local
+reference suite must be supplied separately through `TS2WASM_REFERENCE_ROOT`.
+Even with that reference checkout, the current test262 runner does not scan
+`built-ins` tests, so this issue cannot yet be validated with the documented
+focused runner command.
 
-## Current failure
+## Current status
 
-Reproduction:
+Direct build with the local reference checkout on 2026-04-30:
 
 ```sh
-cargo run -q -- build reference/test262/test/built-ins/Object/keys/15.2.3.14-3-4.js -o /tmp/object-keys.wasm --host-deny
+cargo run -q -- build /home/wogikaze/wgkz/ts2wasm/reference/test262/test/built-ins/Object/keys/15.2.3.14-3-4.js -o /tmp/object-keys.wasm --host-deny
 ```
 
-Current result:
+Result:
 
 ```text
-error: [BackendIo] wat2wasm failed
+error: [UnresolvedName] unresolved name: `assert` at 946..952
+```
+
+Focused test262 runner attempt on 2026-04-30:
+
+```sh
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference \
+  python3 scripts/run/test262.py \
+  --path-filter built-ins/Object/keys/15.2.3.14-3-4.js \
+  --jobs 1
+```
+
+Result:
+
+```text
+ERROR: --path-filter selected no files: built-ins/Object/keys/15.2.3.14-3-4.js
 ```
 
 ## Desired final state
 
-The Object.keys test case compiles successfully and produces correct runtime output under iwasm.
+The Object.keys case has a valid harness-backed reproduction path before a
+runtime/backend fix is assigned. Once the runner can execute the built-ins case,
+reclassify or split a child implementation issue with exact current failure
+evidence.
 
 ## Scope
 
 In scope:
 
-- [ ] Fix backend-io error for Object.keys in the specific test case
-- [ ] Ensure correct behavior for the edge case in the test
-- [ ] Add regression coverage for Object.keys edge case
+- [ ] Establish a harness-backed reproduction for the Object.keys built-ins
+      case.
+- [ ] Reconfirm whether the current failure is `BackendIo`, `UnresolvedName`,
+      semantic mismatch, or unsupported.
+- [ ] Split a child implementation issue only after the failure mode is known.
 
 Out of scope:
 
@@ -56,7 +83,7 @@ Out of scope:
 
 ## Affected paths
 
-Expected:
+Expected for the eventual implementation child issue:
 
 - `crates/ir/src/lowered/program_builtins.rs`
 - `crates/backend-wasm/src/runtime_builder.rs`
@@ -72,10 +99,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The test case compiles without backend-io errors
-- [ ] Runtime output matches Node.js behavior
-- [ ] Existing tests still pass
-- [ ] No regression in other Object built-in methods
+- [ ] The Object.keys built-ins case is selectable by the focused reference
+      runner or an equivalent documented harness command.
+- [ ] The current failure mode is recorded with exact command output.
+- [ ] If the current failure is still a product bug, a child issue owns the
+      smallest implementation slice.
 
 ## Validation
 
@@ -83,7 +111,6 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo nextest run
 mise run update-issue-index -- --check
 mise run check issues
 ```
@@ -91,8 +118,8 @@ mise run check issues
 Impacted commands:
 
 ```sh
-cargo run -q -- build reference/test262/test/built-ins/Object/keys/15.2.3.14-3-4.js -o /tmp/object-keys.wasm --host-deny
-printf '' | iwasm /tmp/object-keys.wasm
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/test262.py --path-filter built-ins/Object/keys/15.2.3.14-3-4.js --jobs 1
+cargo run -q -- build /home/wogikaze/wgkz/ts2wasm/reference/test262/test/built-ins/Object/keys/15.2.3.14-3-4.js -o /tmp/object-keys.wasm --host-deny
 ```
 
 Not run:
@@ -112,7 +139,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [ ] create an implementation child after harness-backed reproduction exists
 
 ## Notes
 

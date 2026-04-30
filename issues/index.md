@@ -50,7 +50,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | verification-ready | P0 |  | arguments object out-of-range index assignment fails semantic comparison |
-| 316 | Fix Object.keys backend-io error | feature | runtime/builtins | implementation-ready | P0 |  | Fix Object.keys backend-io error |
 | 334 | Complete Array.prototype.map sparse thisArg and Test262 semantics | feature | runtime/builtins | implementation-ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 <!-- generated:ready:end -->
 
@@ -198,6 +197,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
 | 313 | Implement array-builtin support | spike | runtime/builtins | class: triage-needed | Implement array-builtin support |
 | 314 | Implement string-builtin support | spike | runtime/builtins | class: triage-needed | Implement string-builtin support |
+| 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: triage-needed | Fix Object.keys backend-io error |
 | 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | 280 | Implement BigInt dynamic string exception parity |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 <!-- generated:blocked:end -->
