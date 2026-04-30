@@ -85,7 +85,35 @@ cargo nextest run -E 'test(bigint) or test(node_diff) or test(exception)'
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed 2026-05-01.
+
+Commits:
+
+- `5f660298` issue-396: add catchable runtime bigint errors
+- `715c12f2` issue-396: close runtime exception substrate
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-backend-wasm bigint_runtime_arithmetic_selects_helper_deps -- --nocapture: pass (1 passed)
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed -- --nocapture: pass (11 passed)
+cargo test -p ts2wasm-cli --test m2_node_diff rangeerror -- --nocapture: pass (3 passed)
+mise run update-issue-index -- --check && mise run check issues: pass
+```
+
+Impacted validation:
+
+```text
+cargo nextest run -E 'test(bigint) or test(node_diff) or test(exception)': fail after 13 passed / 2 failed / 190 not run due fail-fast.
+Resolved in follow-up: runtime_link_plan::tests::bigint_runtime_arithmetic_selects_helper_deps expected no host imports, but issue-396 uncaught diagnostic helpers now correctly require `FdWrite`.
+Remaining unrelated failure: abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timed out after 30.366s.
+```
+
+Remaining risks:
+
+- Full ECMAScript completion-record propagation beyond the selected statement-boundary `try/catch` runtime-helper path remains out of scope.
+- Broader runtime helper adoption is left to the issues unblocked by this substrate.
 
 ## Progress evidence
 

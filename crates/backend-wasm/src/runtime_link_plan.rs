@@ -618,7 +618,7 @@ mod tests {
         LoweredBinaryOp, LoweredExpr, LoweredProgram, LoweredStmt, ModuleInfo,
     };
 
-    use super::{RuntimeFn, RuntimeLinkPlan};
+    use super::{HostImport, RuntimeFn, RuntimeLinkPlan};
 
     #[test]
     fn empty_module_metadata_does_not_select_es_module_export_helpers() {
@@ -849,8 +849,8 @@ mod tests {
                 .contains(&RuntimeFn::MakeBigIntLiteral)
         );
         assert!(
-            plan.required_imports().is_empty(),
-            "dynamic BigInt builtin helpers must not add host imports"
+            plan.required_imports().contains(&HostImport::FdWrite),
+            "dynamic BigInt arithmetic error helpers must declare their uncaught diagnostic import"
         );
     }
 
