@@ -283,10 +283,9 @@ fn bigint_runtime_rem_zero_traps_after_successful_build() {
 }
 
 #[test]
-fn bigint_runtime_branch_large_assignment_reports_issue_370() {
-    assert_build_fails_with_unsupported_syntax(
+fn bigint_runtime_branch_large_assignment_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
         "fixtures/core-semantics/bigint-runtime-branch-large-unsupported.ts",
-        "issue-370:",
     );
 }
 

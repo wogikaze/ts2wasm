@@ -410,11 +410,24 @@ impl<'a> Resolver<'a> {
                 condition,
                 then_body,
                 else_body,
-            } => Ok(LoweredStmt::If {
-                condition: self.lower_expr(condition)?,
-                then_body: self.lower_nested_block(then_body)?,
-                else_body: self.lower_nested_block(else_body)?,
-            }),
+            } => {
+                let condition = self.lower_expr(condition)?;
+                let entry_bigint_locals = self.bigint_locals.clone();
+                let then_body = self.lower_nested_block(then_body)?;
+                let then_bigint_locals = self.bigint_locals.clone();
+                self.bigint_locals = entry_bigint_locals;
+                let else_body = self.lower_nested_block(else_body)?;
+                let else_bigint_locals = self.bigint_locals.clone();
+                self.bigint_locals = then_bigint_locals
+                    .intersection(&else_bigint_locals)
+                    .copied()
+                    .collect();
+                Ok(LoweredStmt::If {
+                    condition,
+                    then_body,
+                    else_body,
+                })
+            }
             ResolvedStmt::While { condition, body } => Ok(LoweredStmt::While {
                 condition: self.lower_expr(condition)?,
                 body: self.lower_nested_block(body)?,

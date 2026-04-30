@@ -11,3 +11,5 @@ if (true) {
   branch = one;
 }
 console.log(branch);
+branch = branch - 2n;
+console.log(branch);

@@ -613,6 +613,23 @@ impl BigIntStaticInfo {
     }
 }
 
+fn merge_bigint_static_info(
+    then_info: &BigIntStaticInfo,
+    else_info: &BigIntStaticInfo,
+) -> BigIntStaticInfo {
+    let value = if then_info.value == else_info.value {
+        then_info.value.clone()
+    } else {
+        None
+    };
+    let runtime_needed = then_info.runtime_needed || else_info.runtime_needed || value.is_none();
+    BigIntStaticInfo {
+        value,
+        helper_safe: then_info.helper_safe && else_info.helper_safe,
+        runtime_needed,
+    }
+}
+
 #[derive(Default)]
 pub(super) struct BigIntRuntimeGuard {
     locals: HashMap<String, BigIntStaticInfo>,
@@ -684,10 +701,11 @@ impl BigIntRuntimeGuard {
                 ..
             } => {
                 self.expr_bigint_info(condition)?;
-                self.fork().visit_stmts(then_body)?;
-                self.fork().visit_stmts(else_body)?;
-                self.invalidate_assigned_in_stmts(then_body);
-                self.invalidate_assigned_in_stmts(else_body);
+                let mut then_guard = self.fork();
+                then_guard.visit_stmts(then_body)?;
+                let mut else_guard = self.fork();
+                else_guard.visit_stmts(else_body)?;
+                self.merge_if_branch_facts(then_body, &then_guard, else_body, &else_guard);
                 Ok(())
             }
             Stmt::While {
@@ -819,27 +837,45 @@ impl BigIntRuntimeGuard {
         }
     }
 
+    pub(super) fn merge_if_branch_facts(
+        &mut self,
+        then_body: &[Stmt],
+        then_guard: &Self,
+        else_body: &[Stmt],
+        else_guard: &Self,
+    ) {
+        let mut assigned = assigned_names_in_stmts(then_body);
+        assigned.extend(assigned_names_in_stmts(else_body));
+        for name in assigned {
+            self.clear_tracked_name(&name);
+            if let (Some(then_info), Some(else_info)) =
+                (then_guard.locals.get(&name), else_guard.locals.get(&name))
+            {
+                self.locals
+                    .insert(name, merge_bigint_static_info(then_info, else_info));
+            }
+        }
+    }
+
+    pub(super) fn clear_tracked_name(&mut self, name: &str) {
+        self.locals.remove(name);
+        self.string_locals.remove(name);
+        self.string_values.remove(name);
+        self.object_string_values.remove(name);
+        self.object_bigint_props.remove(name);
+        self.nullish_locals.remove(name);
+        self.object_toprimitive_locals.remove(name);
+    }
+
     pub(super) fn invalidate_assigned_in_stmts(&mut self, stmts: &[Stmt]) {
         for name in assigned_names_in_stmts(stmts) {
-            self.locals.remove(&name);
-            self.string_locals.remove(&name);
-            self.string_values.remove(&name);
-            self.object_string_values.remove(&name);
-            self.object_bigint_props.remove(&name);
-            self.nullish_locals.remove(&name);
-            self.object_toprimitive_locals.remove(&name);
+            self.clear_tracked_name(&name);
         }
     }
 
     pub(super) fn invalidate_assigned_in_expr(&mut self, expr: &Expr) {
         for name in assigned_names_in_expr(expr) {
-            self.locals.remove(&name);
-            self.string_locals.remove(&name);
-            self.string_values.remove(&name);
-            self.object_string_values.remove(&name);
-            self.object_bigint_props.remove(&name);
-            self.nullish_locals.remove(&name);
-            self.object_toprimitive_locals.remove(&name);
+            self.clear_tracked_name(&name);
         }
     }
 

@@ -3,12 +3,13 @@ id: 397
 title: "BigInt add/sub branch-assigned operands"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [382]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -53,11 +54,11 @@ signed-i64 helper slice.
 
 In scope:
 
-- [ ] Preserve BigInt local tracking through the supported control-flow
+- [x] Preserve BigInt local tracking through the supported control-flow
       assignment shape.
-- [ ] Add a Node/iwasm differential fixture where a branch-assigned large
+- [x] Add a Node/iwasm differential fixture where a branch-assigned large
       BigInt local is used as a later `+` or `-` operand.
-- [ ] Keep mixed Number/BigInt TypeError parity owned by issue 381.
+- [x] Keep mixed Number/BigInt TypeError parity owned by issue 381.
 
 Out of scope:
 
@@ -81,11 +82,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A branch-assigned large BigInt local used as a later `+` or `-` operand
+- [x] A branch-assigned large BigInt local used as a later `+` or `-` operand
       matches Node output under `iwasm`.
-- [ ] `fixtures/core-semantics/bigint-runtime-large-add-sub.ts` includes the
+- [x] `fixtures/core-semantics/bigint-runtime-large-add-sub.ts` includes the
       branch-assigned operand case or an equivalent dedicated fixture.
-- [ ] Existing issue 382 add/sub progress fixture continues to pass.
+- [x] Existing issue 382 add/sub progress fixture continues to pass.
 
 ## Validation
 
@@ -112,15 +113,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -134,10 +135,15 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- pending child commit: branch/control-flow-assigned BigInt add/sub local tracking is preserved for the supported if/else shape.
 
 Validation result:
 
 ```text
-not run; issue is open
+cargo fmt --all --check
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_add_sub
+mise run update-issue-index -- --check
+mise run check issues
+
+All required validation passed in child worktree child-397-20260501-051807.
 ```

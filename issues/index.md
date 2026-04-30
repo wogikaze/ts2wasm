@@ -233,7 +233,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 | 394 | Multi-limb BigInt subtraction | feature | runtime/semantics | 259, 260, 393 | Multi-limb BigInt subtraction |
-| 397 | BigInt add/sub branch-assigned operands | feature | runtime/semantics | 382 | BigInt add/sub branch-assigned operands |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -467,6 +466,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 389 | Unblock Array.map generic Test262 representative with function-expression initializer | bug | frontend/parser | see `issues/done/389-array-map-generic-test262-function-expression-blocker.md` |
 | 391 | Multi-limb BigInt division | feature | runtime/semantics | see `issues/done/391-multilimb-bigint-division.md` |
 | 395 | Runtime array-like Array.prototype.map callback dispatch | feature | runtime/builtins | see `issues/done/395-array-map-runtime-array-like-callback-dispatch.md` |
+| 397 | BigInt add/sub branch-assigned operands | feature | runtime/semantics | see `issues/done/397-bigint-add-sub-branch-assigned-operands.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
