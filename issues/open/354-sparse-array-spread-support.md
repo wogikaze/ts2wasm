@@ -143,6 +143,21 @@ Targeted validation: `cargo fmt --all --check`; `cargo nextest run -E 'test(spre
 - Required nextest selector is also blocked before running tests by a frontend lib-test compile error in `crates/frontend/src/parser/tests.rs`: `use of undeclared type ArrayLiteralElement`.
 - Issue remains open until the required broad gates pass or those unrelated blockers are dispositioned.
 
+2026-05-01 parent follow-up:
+
+- Fixed the Set spread regression behind the broad spread blocker by making
+  `$set_values_array` initialize the sparse-capable dense array header,
+  including capacity, elements offset, presence word count, and presence mask.
+- Validation passed:
+  `cargo test -p ts2wasm-cli spread_operator_set -- --nocapture`.
+- Validation passed:
+  `cargo test -p ts2wasm-cli spread -- --nocapture` (24 spread-focused tests).
+- Required `cargo nextest run -E 'test(spread) or test(node_diff)'` is still not
+  a close gate for issue 354 because the selector includes unrelated node_diff
+  failures outside spread: `array_push_multi_argument_fixture_matches_node_output_under_iwasm`
+  and the known `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm`
+  timeout.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

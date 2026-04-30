@@ -837,9 +837,29 @@ impl WatEmitter<'_> {
     (local.set $array_base
       (call $alloc_heap
         (i32.add
-          (i32.const 20)
+          (i32.const {array_header})
           (i32.shl (local.get $len) (i32.const 2)))))
     (i32.store (local.get $array_base) (local.get $len))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_capacity_offset}))
+      (local.get $len))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_presence_word_count_offset}))
+      (i32.const 1))
+    (i32.store
+      (i32.add (local.get $array_base) (i32.const {array_elements_offset_offset}))
+      (i32.const {array_header}))
+    (if (i32.ge_u (local.get $len) (i32.const 32))
+      (then
+        (i32.store
+          (i32.add (local.get $array_base) (i32.const {array_presence_words_offset}))
+          (i32.const -1)))
+      (else
+        (i32.store
+          (i32.add (local.get $array_base) (i32.const {array_presence_words_offset}))
+          (i32.sub
+            (i32.shl (i32.const 1) (local.get $len))
+            (i32.const 1)))))
     (local.set $i (i32.const {zero}))
     (block $done
       (loop $copy
@@ -854,7 +874,7 @@ impl WatEmitter<'_> {
           (i32.add
             (local.get $array_base)
             (i32.add
-              (i32.const 20)
+              (i32.const {array_header})
               (i32.shl (local.get $i) (i32.const 2))))
           (i32.load (local.get $entry_base)))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
@@ -865,6 +885,11 @@ impl WatEmitter<'_> {
             object_tag = ValueTag::OBJECT,
             array_tag = ValueTag::ARRAY,
             heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            array_capacity_offset = Layout::ARRAY_CAPACITY_OFFSET,
+            array_presence_word_count_offset = Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+            array_elements_offset_offset = Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            array_presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
             zero = RuntimeConst::ZERO,

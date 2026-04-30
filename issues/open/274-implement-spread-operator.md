@@ -140,6 +140,12 @@ Child issues:
   - Node/iwasm differential fixtures now cover `[...sparse]` materializing a hole as present `undefined`, `0 in arr`/`1 in arr`/`2 in arr`, length, and sparse call spread mapping the hole argument to `undefined`;
   - `cargo test -p ts2wasm-cli spread_operator_sparse -- --nocapture` passed both sparse fixtures;
   - issue 354 remains open because required broad validation is blocked by existing Set spread failures and a frontend lib-test compile error in the nextest selector.
+- 2026-05-01: Restored Set spread after sparse-capable array headers:
+  - `$set_values_array` now initializes dense array presence metadata, so
+    existing `spread-array-set.ts` and `spread-call-set-local.ts` again match
+    Node/iwasm output;
+  - `cargo test -p ts2wasm-cli spread -- --nocapture` passed 24 spread-focused
+    tests, including sparse spread and Set spread.
 - 2026-05-01: Added the smallest Test262 wasm harness/assert slice for the Array.map representative:
   - `scripts/lib/test262_harness.py` now emits a lightweight wasm-side harness shim instead of compiling the full self-referential `assert.js` implementation;
   - direct `assert(false)` and unsupported wasm harness hooks report the existing `__TS2WASM_TEST262_ASSERT_FAIL__` sentinel, while `assert.sameValue`/`assert.notSameValue` statements continue to use the compiler-side Test262 assertion lowering;
