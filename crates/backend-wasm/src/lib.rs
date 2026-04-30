@@ -725,6 +725,58 @@ mod tests {
     }
 
     #[test]
+    fn private_field_runtime_calls_do_not_create_slots_on_plain_objects() {
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(LocalId(0), LoweredExpr::ObjectNew { props: vec![] }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "PrivateFieldSet".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(LocalId(0)),
+                        LoweredExpr::Number(0),
+                        LoweredExpr::Number(7),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::RuntimeCall {
+                        runtime_fn: "PrivateFieldGet".to_owned(),
+                        args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(0)],
+                    }],
+                }),
+            ],
+            top_level_locals: vec![LocalId(0)],
+            functions: vec![],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("private field guard fixture should emit WAT");
+        assert!(wat.contains(&format!("(i32.const {})", Layout::GC_RESERVED_OFFSET)));
+
+        let temp_dir = unique_temp_dir("private-field-plain-object-guard");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wat_path = temp_dir.join("guard.wat");
+        let wasm_path = temp_dir.join("guard.wasm");
+        fs::write(&wat_path, wat).expect("WAT should be written");
+
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+
+        assert_eq!(run_iwasm(&wasm_path), "undefined\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn math_random_imports_wasi_random_get() {
         let program = math_random_program();
 

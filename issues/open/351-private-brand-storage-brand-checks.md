@@ -8,7 +8,7 @@ priority: P2
 depends_on: [255]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -115,6 +115,30 @@ The current implementation rejects external private access at compile time. Movi
 ## Completion evidence
 
 Fill only when moving to `done/`.
+
+## Progress evidence
+
+2026-05-01 child slice:
+
+- Added backend private slot-count guards for lowered `PrivateFieldGet` and `PrivateFieldSet`.
+- Added backend regression coverage proving lowered private field runtime calls on an ordinary object do not create or read private storage; `PrivateFieldSet(o, 0, 7)` followed by `PrivateFieldGet(o, 0)` now prints `undefined`.
+- Updated `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md` to record that the reserved heap header word is the ordinary-object private slot count and that full per-class brand IDs / TypeError throwing remain open.
+
+Validation result:
+
+```text
+cargo test -p ts2wasm-backend-wasm private_field_runtime_calls_do_not_create_slots_on_plain_objects -- --nocapture: pass (1 passed)
+cargo fmt --all --check: pass
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)': 197 passed, 1 failed; only failure abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timed out after 30.443s
+mise run update-issue-index && mise run update-issue-index -- --check: pass after mise trust
+mise run check issues: pass after mise trust
+```
+
+Remaining blockers:
+
+- This is not full ECMAScript brand semantics: two classes with the same private slot index still cannot be distinguished without a per-class brand token in lowered private access IR.
+- Runtime TypeError throwing on brand mismatch remains blocked on compatible JS exception object/throw support for this path.
+- External private access still reports an issue-255 source diagnostic instead of lowering to runtime brand-check calls.
 
 Commits:
 

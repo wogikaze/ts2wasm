@@ -1067,9 +1067,23 @@ impl WatEmitter<'_> {
             ValueTag::OBJECT_TAG,
         ));
         wat.push_str(&format!("{pad}  (then\n"));
+        wat.push_str(&format!("{pad}    (if (result i32)\n"));
         wat.push_str(&format!(
-            "{pad}    (i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n",
+            "{pad}      (i32.gt_u\n{pad}        (i32.load\n{pad}          (i32.add\n{pad}            (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}            (i32.const {})))\n{pad}        (i32.const {slot}))\n",
             ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_RESERVED_OFFSET,
+            slot = *slot as u32,
+        ));
+        wat.push_str(&format!("{pad}      (then\n"));
+        wat.push_str(&format!(
+            "{pad}        (i32.load (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})))\n",
+            ValueTag::HEAP_MASK,
+        ));
+        wat.push_str(&format!("{pad}      )\n"));
+        wat.push_str(&format!(
+            "{pad}      (else\n{pad}        (i32.const {})\n{pad}      ))\n",
+            ValueTag::UNDEFINED,
         ));
         wat.push_str(&format!("{pad}  )\n"));
         wat.push_str(&format!(
@@ -1106,10 +1120,20 @@ impl WatEmitter<'_> {
             ValueTag::OBJECT_TAG,
         ));
         wat.push_str(&format!("{pad}  (then\n"));
+        wat.push_str(&format!("{pad}    (if\n"));
         wat.push_str(&format!(
-            "{pad}    (i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n",
+            "{pad}      (i32.gt_u\n{pad}        (i32.load\n{pad}          (i32.add\n{pad}            (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}            (i32.const {})))\n{pad}        (i32.const {slot}))\n",
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_RESERVED_OFFSET,
+            slot = *slot as u32,
+        ));
+        wat.push_str(&format!("{pad}      (then\n"));
+        wat.push_str(&format!(
+            "{pad}        (i32.store (i32.add (i32.and (local.get {object_value}) (i32.const {})) (i32.const {slot_offset})) (local.get {stored_value}))\n",
             ValueTag::HEAP_MASK,
         ));
+        wat.push_str(&format!("{pad}      ))\n"));
         wat.push_str(&format!("{pad}  ))\n"));
         wat.push_str(&format!("{pad}(local.get {stored_value})\n"));
     }

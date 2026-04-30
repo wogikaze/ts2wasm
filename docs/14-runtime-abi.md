@@ -426,7 +426,7 @@ large allocation fixture は引き続き `unreachable` で trap し、OOM 境界
 payload_ptr - 16 .. -12 : i32 flags_and_type    ; mark bit + heap kind
 payload_ptr - 12 .. -8  : i32 body_size_bytes   ; aligned payload size
 payload_ptr - 8  .. -4  : i32 sweep_next        ; free-list linkage
-payload_ptr - 4  ..  0  : i32 reserved          ; future generation/finalizer/private count
+payload_ptr - 4  ..  0  : i32 reserved          ; ordinary object private-slot count, 0 otherwise
 payload_ptr             : type-specific payload
 ```
 
