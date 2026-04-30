@@ -155,6 +155,7 @@ pub(crate) enum RuntimeFn {
     ArrayMapUnaryPlus,
     ArrayMapStringSplit,
     ArrayMapArrayLikeIdentity,
+    ArrayMapArrayLikeDouble,
     ArraySortNumeric,
     ArrayJoin,
     ArrayReverse,
@@ -437,6 +438,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayMapUnaryPlus" => Some(RuntimeFn::ArrayMapUnaryPlus),
         "ArrayMapStringSplit" => Some(RuntimeFn::ArrayMapStringSplit),
         "ArrayMapArrayLikeIdentity" => Some(RuntimeFn::ArrayMapArrayLikeIdentity),
+        "ArrayMapArrayLikeDouble" => Some(RuntimeFn::ArrayMapArrayLikeDouble),
         "ArraySortNumeric" => Some(RuntimeFn::ArraySortNumeric),
         "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
         "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
@@ -768,6 +770,12 @@ const ARRAY_MAP_UNARY_PLUS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeF
 const ARRAY_MAP_STRING_SPLIT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::StringSplit];
 const ARRAY_MAP_ARRAY_LIKE_IDENTITY_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::GetLength, RuntimeFn::Index];
+const ARRAY_MAP_ARRAY_LIKE_DOUBLE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::GetLength,
+    RuntimeFn::Index,
+    RuntimeFn::Mul,
+];
 const ARRAY_SORT_NUMERIC_DEPS: &[RuntimeFn] = &[RuntimeFn::NumberToI32];
 const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::ValueToStringInto,

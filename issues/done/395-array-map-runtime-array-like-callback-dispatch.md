@@ -3,12 +3,13 @@ id: 395
 title: "Runtime array-like Array.prototype.map callback dispatch"
 type: feature
 area: runtime/builtins
-class: ready
+class: done
 priority: P2
 depends_on: [388]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -46,10 +47,10 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] A non-identity runtime array-like generic map fixture matches Node output
+- [x] A non-identity runtime array-like generic map fixture matches Node output
       under `iwasm`.
-- [ ] Existing issue 388 runtime identity fixture still passes.
-- [ ] Existing issue 340 static dense generic-call fixtures still pass.
+- [x] Existing issue 388 runtime identity fixture still passes.
+- [x] Existing issue 340 static dense generic-call fixtures still pass.
 
 ## Validation
 
@@ -64,4 +65,18 @@ mise run check issues
 
 ## Completion evidence
 
-Fill when moving to `done/`.
+2026-05-01 progress slice:
+
+- Implemented the narrow runtime array-like callback family
+  `value => value * 2` for `Array.prototype.map.call(receiver, callback)`.
+- Added `fixtures/core-semantics/array-map-generic-call-runtime-array-like-double.ts`
+  as Node/iwasm differential coverage for the non-identity callback family.
+- Preserved the issue 388 identity runtime fixture and issue 340 static dense
+  generic-call fixtures in the required `array_map` validation target.
+
+Validation:
+
+- `cargo fmt --all --check`: pass
+- `cargo nextest run -p ts2wasm-cli array_map`: pass, 15/15 selected tests
+- `mise run update-issue-index -- --check`: pass
+- `mise run check issues`: pass

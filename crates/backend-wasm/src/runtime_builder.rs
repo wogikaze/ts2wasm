@@ -124,6 +124,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayMapArrayLikeIdentity => {
                     self.emit_array_map_array_like_identity(wat)
                 }
+                RuntimeFn::ArrayMapArrayLikeDouble => self.emit_array_map_array_like_double(wat),
                 RuntimeFn::ArraySortNumeric => self.emit_array_sort_numeric(wat),
                 RuntimeFn::ArrayJoin => self.emit_array_join(wat),
                 RuntimeFn::ArrayReverse => self.emit_array_reverse(wat),

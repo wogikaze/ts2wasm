@@ -802,6 +802,32 @@ fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
     matches!(body.as_ref(), ResolvedExpr::Ident(name) if name == param)
 }
 
+fn is_number_double_arrow_callback(args: &[ResolvedExpr]) -> bool {
+    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+        return false;
+    };
+    let [param] = params.as_slice() else {
+        return false;
+    };
+    let ResolvedExpr::Binary {
+        left,
+        op: BinaryOp::Multiply,
+        right,
+    } = body.as_ref()
+    else {
+        return false;
+    };
+    matches!(
+        (left.as_ref(), right.as_ref()),
+        (ResolvedExpr::Ident(name), ResolvedExpr::Number(2))
+            if name == param
+    ) || matches!(
+        (left.as_ref(), right.as_ref()),
+        (ResolvedExpr::Number(2), ResolvedExpr::Ident(name))
+            if name == param
+    )
+}
+
 fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> {
     let [ResolvedExpr::ArrowFn { params, body }] = args else {
         return None;

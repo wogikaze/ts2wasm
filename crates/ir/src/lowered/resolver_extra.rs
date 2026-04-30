@@ -163,12 +163,22 @@ impl<'a> Resolver<'a> {
                             args: vec![self.lower_expr(receiver)?],
                         });
                     }
+                    if is_number_double_arrow_callback(map_args) {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
+                            args: vec![self.lower_expr(receiver)?],
+                        });
+                    }
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
             _ if is_identity_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
                 runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
+                args: vec![self.lower_expr(receiver)?],
+            }),
+            _ if is_number_double_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
+                runtime_fn: "ArrayMapArrayLikeDouble".to_owned(),
                 args: vec![self.lower_expr(receiver)?],
             }),
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
