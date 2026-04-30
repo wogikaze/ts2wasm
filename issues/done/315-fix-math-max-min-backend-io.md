@@ -47,10 +47,10 @@ Both Math.max and Math.min test cases compile successfully and produce correct r
 
 In scope:
 
-- [ ] Fix backend-io error for Math.max with zero arguments
-- [ ] Fix backend-io error for Math.min with zero arguments
-- [ ] Ensure correct behavior for edge cases (zeros, no arguments)
-- [ ] Add regression coverage for Math.max/min edge cases
+- [x] Fix backend-io error for Math.max with zero arguments
+- [x] Fix backend-io error for Math.min with zero arguments
+- [x] Ensure correct behavior for edge cases (zeros, no arguments)
+- [x] Add regression coverage for Math.max/min edge cases
 
 Out of scope:
 
@@ -74,10 +74,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Both test cases compile without backend-io errors
-- [ ] Runtime output matches Node.js behavior
-- [ ] Existing tests still pass
-- [ ] No regression in other Math built-in methods
+- [x] Both test cases compile without backend-io errors
+- [x] Runtime output matches Node.js behavior
+- [x] Existing tests still pass
+- [x] No regression in other Math built-in methods
 
 ## Validation
 
@@ -107,16 +107,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/14-runtime-abi.md` if Math built-in ABI changes
+- [x] not affected
+- [x] updated: `docs/14-runtime-abi.md` if Math built-in ABI changes
 
 Current state:
 
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 

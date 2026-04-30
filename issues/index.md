@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 97 | 21 | 76 |
+| runtime | 98 | 21 | 77 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 347 | 152 | 195 |
+| total | 348 | 152 | 196 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,14 +45,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
 | 274 | Implement spread operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement spread operator |
-| 280 | Implement dynamic BigInt builtin inputs | feature | runtime/builtins | implementation-ready | P2 | 259, 262 | `BigInt(...)`, `BigInt.asIntN(...)`, and `BigInt.asUintN(...)` currently work for documented static inputs, but dynam... |
+| 280 | Implement dynamic BigInt builtin inputs | feature | runtime/builtins | verification-ready | P2 | 259, 262 | `BigInt(...)`, `BigInt.asIntN(...)`, and `BigInt.asUintN(...)` currently work for documented static inputs, but dynam... |
 | 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 folds representable tagged-int number literals such as `1n == 1`, but the current number model does not yet... |
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | implementation-ready | P0 |  | arguments object out-of-range index assignment fails semantic comparison |
-| 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | implementation-ready | P0 |  | Fix Math.max/min backend-io errors |
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | implementation-ready | P0 |  | Fix Object.keys backend-io error |
-| 318 | Complete Array.prototype.map sparse thisArg and Test262 semantics | feature | runtime/builtins | implementation-ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
+| 334 | Complete Array.prototype.map sparse thisArg and Test262 semantics | feature | runtime/builtins | implementation-ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -199,7 +198,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
 | 313 | Implement array-builtin support | spike | runtime/builtins | class: triage-needed | Implement array-builtin support |
 | 314 | Implement string-builtin support | spike | runtime/builtins | class: triage-needed | Implement string-builtin support |
-| 317 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
+| 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | 280 | Implement BigInt dynamic string exception parity |
+| 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -403,6 +403,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 306 | Implement mutable direct eval block-function environments | feature | frontend/ir/runtime | see `issues/done/306-implement-mutable-direct-eval-block-function-environments.md` |
 | 307 | Investigate ABC451 depth-9 allocation performance | spike | runtime/performance | see `issues/done/307-investigate-abc451-depth9-allocation-performance.md` |
 | 310 | Fix activation-frame root liveness depth-8 regression | feature | runtime/memory | see `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md` |
+| 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
