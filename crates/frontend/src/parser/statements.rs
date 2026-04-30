@@ -1269,6 +1269,16 @@ impl Parser {
 
     fn function_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Function)?;
+        if let Some(star) = self.consume_span(TokenKind::Star) {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-353: generator function declarations require generator object and iterator protocol lowering before iterator spread can be supported".to_owned(),
+                span: Some(Span {
+                    start: start.start,
+                    end: star.end,
+                }),
+            });
+        }
         let (name, _) = self.expect_ident()?;
         let has_generic_params = self.consume_typescript_generic_parameter_list()?;
         if has_generic_params {

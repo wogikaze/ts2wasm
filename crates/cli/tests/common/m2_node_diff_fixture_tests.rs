@@ -1528,6 +1528,14 @@ fn spread_operator_unsupported_forms_report_issue_274() {
 }
 
 #[test]
+fn spread_operator_generator_fixture_reports_issue_353() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/spread-generator-unsupported.ts",
+        "issue-353",
+    );
+}
+
+#[test]
 fn parameter_property_fixtures_match_node_output_under_iwasm() {
     assert_fixture_matches_js_baseline(
         "fixtures/core-semantics/parameter-properties-defaults.ts",
