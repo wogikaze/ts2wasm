@@ -16,7 +16,7 @@ import {
   YAxis,
 } from 'recharts'
 import { useTestData, useCoverageData, useHistoricalData } from './hooks/useData'
-import type { CoverageData, HistoricalData, TestResult } from './types'
+import type { CoverageData, HistoricalData, TestResult, TestSummary } from './types'
 import './index.css'
 
 const PERF_REGRESSION_THRESHOLD = 0.2
@@ -355,8 +355,11 @@ function App() {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pass': return <CheckCircle className="w-5 h-5 text-green-500" />
+      case 'mismatch': return <XCircle className="w-5 h-5 text-orange-500" />
+      case 'runtime_error': return <AlertTriangle className="w-5 h-5 text-red-500" />
       case 'fail': return <XCircle className="w-5 h-5 text-red-500" />
-      case 'skip': return <SkipForward className="w-5 h-5 text-yellow-500" />
+      case 'unsupported': return <SkipForward className="w-5 h-5 text-yellow-500" />
+      case 'blocked': return <AlertCircle className="w-5 h-5 text-gray-500" />
       default: return <AlertCircle className="w-5 h-5 text-gray-500" />
     }
   }
@@ -364,8 +367,11 @@ function App() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pass': return 'bg-green-500/10 text-green-500 border-green-500/20'
-      case 'fail': return 'bg-red-500/10 text-red-500 border-red-500/20'
-      case 'skip': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+      case 'mismatch': return 'bg-orange-500/10 text-orange-500 border-orange-500/20'
+      case 'runtime_error': return 'bg-red-500/10 text-red-500 border-red-500/20'
+      case 'fail': return 'bg-red-700/10 text-red-400 border-red-700/20'
+      case 'unsupported': return 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'
+      case 'blocked': return 'bg-gray-500/10 text-gray-500 border-gray-500/20'
       default: return 'bg-gray-500/10 text-gray-500 border-gray-500/20'
     }
   }
@@ -495,35 +501,43 @@ function App() {
             ) : null}
 
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 mb-5">
+            <div className="grid grid-cols-2 xl:grid-cols-6 gap-3 mb-5">
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Total</span>
-                  <span className="text-2xl font-bold">{summary.total}</span>
+                  <span className="text-2xl font-bold">{
+                    summary.passed + summary.mismatch + summary.runtime_error + summary.build_error + summary.unsupported + summary.blocked
+                  }</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Passed</span>
-                  <span className="text-2xl font-bold text-green-500">
-                    {summary.passed}
-                  </span>
+                  <span className="text-2xl font-bold text-green-500">{summary.passed}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-400">Failed</span>
-                  <span className="text-2xl font-bold text-red-500">
-                    {summary.failed}
-                  </span>
+                  <span className="text-gray-400">Mismatch</span>
+                  <span className="text-2xl font-bold text-orange-500">{summary.mismatch}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-gray-400">Skipped</span>
-                  <span className="text-2xl font-bold text-yellow-500">
-                    {summary.skipped}
-                  </span>
+                  <span className="text-gray-400">Runtime</span>
+                  <span className="text-2xl font-bold text-red-500">{summary.runtime_error}</span>
+                </div>
+              </div>
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-gray-400">Build Error</span>
+                  <span className="text-2xl font-bold text-red-400">{summary.build_error}</span>
+                </div>
+              </div>
+              <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-gray-400">Unsupported</span>
+                  <span className="text-2xl font-bold text-yellow-500">{summary.unsupported}</span>
                 </div>
               </div>
             </div>
@@ -542,17 +556,19 @@ function App() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Filter className="w-4 h-4 text-gray-400" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                  className="min-w-36 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="all">All Status</option>
-                  <option value="pass">Pass</option>
-                  <option value="fail">Fail</option>
-                  <option value="skip">Skip</option>
-                  <option value="error">Error</option>
-                </select>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+                    className="min-w-44 px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="pass">Pass</option>
+                    <option value="mismatch">Mismatch</option>
+                    <option value="runtime_error">Runtime Error</option>
+                    <option value="fail">Build Error</option>
+                    <option value="unsupported">Unsupported</option>
+                    <option value="blocked">Blocked</option>
+                  </select>
                 <select
                   value={suiteFilter}
                   onChange={(e) => setSuiteFilter(e.target.value)}

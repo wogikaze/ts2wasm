@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { TestResult, CoverageData, HistoricalData, TestResultsMetadata } from '../types'
+import type { TestResult, CoverageData, HistoricalData, TestResultsMetadata, TestSummary } from '../types'
 
 const DEFAULT_LIVE_POLL_MS = 2000
 const MIN_LIVE_POLL_MS = 250
@@ -20,7 +20,7 @@ function livePollIntervalMs() {
 
 export function useTestData() {
   const [tests, setTests] = useState<TestResult[]>([])
-  const [summary, setSummary] = useState({ total: 0, passed: 0, failed: 0, skipped: 0 })
+  const [summary, setSummary] = useState<TestSummary>({ passed: 0, mismatch: 0, runtime_error: 0, build_error: 0, unsupported: 0, blocked: 0 })
   const [metadata, setMetadata] = useState<TestResultsMetadata | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -41,7 +41,7 @@ export function useTestData() {
         const data = await response.json()
         if (cancelled) return
         setTests(data.tests || [])
-        setSummary(data.summary || { total: 0, passed: 0, failed: 0, skipped: 0 })
+        setSummary(data.summary || { passed: 0, mismatch: 0, runtime_error: 0, build_error: 0, unsupported: 0, blocked: 0 })
         setMetadata(data.metadata || null)
         setError(null)
         setLastUpdated(new Date().toISOString())

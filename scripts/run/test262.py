@@ -255,7 +255,8 @@ def usage():
     print("  --path-filter TEXT  Run only files whose stable path contains TEXT (repeatable).")
     print("  --jobs N            Number of parallel workers (default: TEST262_JOBS or os.cpu_count or 4).")
     print("  --verbose           Show detailed per-test processing information.")
-    print("  --web-ui            Refresh web-ui/public/data using this run's JSONL results.")
+    print("  --web-ui            Refresh web-ui/public/data using this run's JSONL results (default).")
+    print("  --no-web-ui         Skip web UI data refresh.")
     print("  -h, --help          Show this help.")
 
 def escape_json(s):
@@ -553,7 +554,7 @@ def compile_and_run_test(test_file, tmp_dir):
         if metadata.expects_negative:
             result_status, result_diag, result_feature, result_reason = classify_completed_negative(metadata)
     else:
-        result_status = "pass" if metadata.expects_negative else "fail"
+        result_status = "pass" if metadata.expects_negative else "runtime_error"
         result_diag = f"RuntimeError:{result.returncode}"
         if metadata.expects_negative:
             result_reason = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'} rejected during execution"
@@ -612,8 +613,8 @@ def process_one_test(test_file, tmp_dir, verbose=False):
             record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_actual, source_code=source_code)
             return record, "pass"
         elif node_ok:
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "fail", expected, result_actual, "output mismatch", source_code=source_code, stderr=stderr_full)
-            return record, "fail"
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "mismatch", expected, result_actual, "output mismatch", source_code=source_code, stderr=stderr_full)
+            return record, "mismatch"
         else:
             record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", expected, result_actual, "node execution failed", source_code=source_code)
             return record, "blocked"
@@ -664,7 +665,7 @@ def main():
     path_filters = []
     jobs = int(os.environ.get("TEST262_JOBS", "")) if os.environ.get("TEST262_JOBS") else None
     verbose = False
-    web_ui = False
+    web_ui = True
     
     i = 0
     while i < len(args):
@@ -708,6 +709,9 @@ def main():
             i += 1
         elif args[i] == "--web-ui":
             web_ui = True
+            i += 1
+        elif args[i] == "--no-web-ui":
+            web_ui = False
             i += 1
         elif args[i] in ("-h", "--help"):
             usage()

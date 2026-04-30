@@ -175,7 +175,7 @@ def resolve_suite_paths(suite, path_filters=None):
 def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
-    print("      [--paths-file PATH] [--path-filter TEXT] [--web-ui]")
+    print("      [--paths-file PATH] [--path-filter TEXT] [--web-ui] [--no-web-ui]")
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
@@ -586,7 +586,7 @@ def main():
     detail_output = False
     paths_file = None
     path_filters = []
-    web_ui = False
+    web_ui = True
     
     i = 0
     while i < len(args):
@@ -624,6 +624,9 @@ def main():
         elif args[i] == "--web-ui":
             web_ui = True
             i += 1
+        elif args[i] == "--no-web-ui":
+            web_ui = False
+            i += 1
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -651,6 +654,8 @@ def main():
             "semantic_coverage_percent": "0.00",
             "build_pass": 0,
             "semantic_pass": 0,
+            "mismatch": 0,
+            "runtime_error": 0,
             "fail": 0,
             "unsupported": 0,
             "blocked": 0,
@@ -677,6 +682,8 @@ def main():
             print("semantic_coverage_percent=0.00")
             print("build_pass=0")
             print("semantic_pass=0")
+            print("mismatch=0")
+            print("runtime_error=0")
             print("fail=0")
             print("unsupported=0")
             print("blocked=0")
@@ -707,6 +714,8 @@ def main():
     
     build_pass_count = 0
     semantic_pass_count = 0
+    mismatch_count = 0
+    runtime_error_count = 0
     
     file_details = []
     
@@ -756,9 +765,14 @@ def main():
                         cwd=REPO_ROOT
                     )
                     
-                    if (node_result.returncode == 0 and wasm_result.returncode == 0 and
-                        node_result.stdout == wasm_result.stdout):
+                    if node_result.returncode != 0:
+                        blocked_count += 1
+                    elif wasm_result.returncode != 0:
+                        runtime_error_count += 1
+                    elif node_result.stdout == wasm_result.stdout:
                         semantic_pass_count += 1
+                    else:
+                        mismatch_count += 1
                 
                 if detail_output:
                     file_details.append(f"{detail_path}: build_pass")
@@ -820,6 +834,8 @@ def main():
         "semantic_coverage_percent": semantic_coverage_percent,
         "build_pass": build_pass_count,
         "semantic_pass": semantic_pass_count,
+        "mismatch": mismatch_count,
+        "runtime_error": runtime_error_count,
         "fail": fail_count,
         "unsupported": unsupported_count,
         "blocked": blocked_count,
@@ -848,6 +864,8 @@ def main():
         print(f"semantic_coverage_percent={semantic_coverage_percent}")
         print(f"build_pass={build_pass_count}")
         print(f"semantic_pass={semantic_pass_count}")
+        print(f"mismatch={mismatch_count}")
+        print(f"runtime_error={runtime_error_count}")
         print(f"fail={fail_count}")
         print(f"unsupported={unsupported_count}")
         print(f"blocked={blocked_count}")

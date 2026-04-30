@@ -18,7 +18,7 @@
       "semantic_pass": 0,
       "source": "artifacts/coverage/results/test262-summary.json",
       "suite": "test262",
-      "unsupported": 2
+      "unsupported": 10833
     },
     {
       "blocked": 44,
@@ -55,5 +55,5 @@
     }
   ],
   "total": 60030,
-  "unimplemented": 18087
+  "unimplemented": 28918
 }

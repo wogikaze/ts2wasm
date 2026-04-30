@@ -23,9 +23,11 @@ STATUS_MAP = {
     "semantic_pass": "pass",
     "fail": "fail",
     "failed": "fail",
-    "blocked": "error",
+    "mismatch": "mismatch",
+    "runtime_error": "runtime_error",
+    "blocked": "blocked",
     "error": "error",
-    "unsupported": "skip",
+    "unsupported": "unsupported",
     "skip-with-reason": "skip",
     "skip_with_reason": "skip",
     "skipped": "skip",
@@ -125,8 +127,8 @@ def aggregate_test_records(artifacts):
         buckets = [
             ("semantic-pass", "semantic_pass", "pass", "Node/iwasm semantic match"),
             ("build-pass", "build_pass", "pass", "wasm build success"),
-            ("unsupported", "unsupported", "skip", "unsupported by current compiler slice"),
-            ("blocked", "blocked", "error", "external/runtime/toolchain blocker"),
+            ("unsupported", "unsupported", "unsupported", "unsupported by current compiler slice"),
+            ("blocked", "blocked", "blocked", "external/runtime/toolchain blocker"),
             ("fail", "fail", "fail", "compiler failure"),
             ("skip-with-reason", "skip_with_reason", "skip", "explicitly skipped with reason"),
         ]
@@ -220,9 +222,25 @@ def build_test_results(artifacts, jsonl_paths, generated_at, row_limit=1000):
         record_mode = "aggregate"
 
     shown_tests = all_tests[:row_limit]
+
+    # Count by status
+    passed = sum(1 for t in all_tests if t["status"] == "pass")
+    mismatch = sum(1 for t in all_tests if t["status"] == "mismatch")
+    runtime_error = sum(1 for t in all_tests if t["status"] == "runtime_error")
+    build_error = sum(1 for t in all_tests if t["status"] == "fail")
+    unsupported = sum(1 for t in all_tests if t["status"] == "unsupported")
+    blocked = sum(1 for t in all_tests if t["status"] == "blocked")
+
     return {
         "tests": shown_tests,
-        "summary": count_summary(all_tests),
+        "summary": {
+            "passed": passed,
+            "mismatch": mismatch,
+            "runtime_error": runtime_error,
+            "build_error": build_error,
+            "unsupported": unsupported,
+            "blocked": blocked,
+        },
         "metadata": {
             "schema_version": 2,
             "generated_at": generated_at,

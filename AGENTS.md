@@ -56,13 +56,69 @@ mise run check manifest       # manifest/wasm import一致確認
 mise run reference-coverage -- test262 --limit 50  # カバレッジ計測（ramp）
 mise run update-coverage-matrix       # カバレッジ表更新
 mise run test262 -- --sample 50 --jobs 4  # test262実行
+# web-ui データ生成（test262/reference-coverage 実行時に自動生成されるが、手動でも可能）
+mise run web-ui-data                    # artifacts/coverage/results/ から web-ui JSON を再生成
+# web-ui のビルド（dev server で見るだけなら不要）
+cd web-ui && npm run build
+# web-ui 開発サーバー
+mise run serve-web-ui
+
 # Issue追加（カバレッジ結果から自動生成）
 mise run reference-coverage -- test262 --limit 500 --detail | \
   mise run gen-issues-from-coverage -- --suite test262
 mise run reference-triage -- test262 reference/test262/test/path/to/case.js
 ```
 
-## 5) 運用上の最小ルール
+## 5) web-ui と issues の更新
+
+### web-ui 自動更新
+
+- `mise run reference-coverage` および `mise run test262` は**デフォルトで** web-ui データ（`web-ui/public/data/`）を自動生成します（`--no-web-ui` でスキップ可能）。
+- ブラウザで確認するには dev server: `mise run serve-web-ui`（`http://localhost:5173`）にアクセス後、ハードリロード（Ctrl+Shift+R）。
+- `npm run build` していない場合、`dist/` のデータは古いままなので注意。
+
+### test262 結果から issue を生成する手順
+
+```bash
+# 1. カバレッジ測定（--detail で個別ケースの詳細出力）
+mise run reference-coverage -- test262 --limit 500 --detail
+
+# 2. 上記の出力を gen-issues-from-coverage にパイプ
+mise run reference-coverage -- test262 --limit 500 --detail | \
+  mise run gen-issues-from-coverage -- --suite test262
+
+# 3. issue index を更新
+mise run update-issue-index
+
+# 4. 生成された triage-needed issue を確認
+ls issues/open/
+```
+
+### 手動で issue を追加する手順
+
+```bash
+# テンプレートからコピー
+cp issues/templates/issue.md issues/open/NNN-your-title.md
+
+# ID, title, type, class, area, problem などを記入
+
+# index 更新 + 不変条件チェック
+mise run update-issue-index
+mise run check issues
+```
+
+### issue を close する手順
+
+```bash
+# done/ に移動
+mv issues/open/NNN-your-title.md issues/done/
+
+# index 更新 + チェック
+mise run update-issue-index
+mise run check issues
+```
+
+## 6) 運用上の最小ルール
 
 - テスト: cargo nextest run
 - 整形: cargo fmt --all --check

@@ -1,7 +1,9 @@
+export type TestStatus = 'pass' | 'mismatch' | 'runtime_error' | 'fail' | 'unsupported' | 'blocked';
+
 export interface TestResult {
   id: string;
   name: string;
-  status: 'pass' | 'fail' | 'skip' | 'error';
+  status: TestStatus;
   suite: string;
   duration?: number;
   error?: string;
@@ -50,6 +52,15 @@ export interface HistoricalData {
   skipped: number;
   compile_time: number;
   runtime: number;
+}
+
+export interface TestSummary {
+  passed: number;
+  mismatch: number;
+  runtime_error: number;
+  build_error: number;
+  unsupported: number;
+  blocked: number;
 }
 
 export interface CoverageSuite {
