@@ -195,6 +195,49 @@ result: fail; iwasm Exception: unreachable after 16.217s
   representation change that reduces post-3072 copying without increasing live
   capacity under the 185-page policy.
 
+2026-05-01 child-385 instrumentation evidence:
+
+- The existing default-off ABC451 diagnostic runner was used to instrument a
+  temporary WAT copy. Normal WAT/WASM output is unchanged. Wall-clock timing
+  inside wasm was not used; the evidence is deterministic operation counters,
+  so the conclusion is about dominant operation volume rather than exact
+  elapsed milliseconds.
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; diagnostic_stop=true; timed_out=false; runtime_exit.code=1 from intentional diagnostic stop
+
+counters:
+  sweep_visits=58859
+  gc_collections=5
+  free_list_scan_visits=0
+  all_copy_calls=20549
+  all_copy_bytes=250278
+  array_copy_calls=2898
+  array_copy_bytes=182008
+  array_copy_elements=45502
+  allocation_attempts=20587
+  allocation_requested_bytes=521193
+
+top attribution:
+  allocation array_growth: calls=2648 bytes=362976
+  copy array_growth: calls=2648 bytes=181008
+  allocation concat: calls=8935 bytes=104846
+  copy concat_left: calls=8935 bytes=58302
+  allocation scratch_array: calls=8936 bytes=35744
+```
+
+- Dominant operation at the 100000-event budget: GC sweep traversal
+  (`sweep_visits=58859`). Free-list scan is not active on this run
+  (`free_list_scan_visits=0`). Copy work is still material, especially
+  `array_growth` (`181008` bytes), but it is not the largest deterministic
+  counter by operation volume in this diagnostic sample.
+
+```text
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail as expected for issue 385 instrumentation-only slice; iwasm timed out after 30.330s
+```
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
