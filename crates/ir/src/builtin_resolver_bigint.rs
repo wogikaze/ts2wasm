@@ -413,6 +413,14 @@ pub(super) fn bigint_string_diagnostic(span: Span) -> Diagnostic {
     }
 }
 
+pub(super) fn bigint_dynamic_string_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support".to_owned(),
+        span: Some(span),
+    }
+}
+
 pub(super) fn bigint_builtin_unsupported_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
@@ -1148,9 +1156,10 @@ impl BigIntRuntimeGuard {
                 if self.expr_is_definitely_string(arg)
                     && let Some(value) = self.expr_static_string_value(arg)
                 {
-                    let parsed = bigint_from_string_builtin(&value, *span)?;
+                    let parsed = bigint_from_string_builtin(&value, *span)
+                        .map_err(|_| bigint_dynamic_string_diagnostic(*span))?;
                     if !bigint_fits_runtime_from_string(&parsed) {
-                        return Err(bigint_string_diagnostic(*span));
+                        return Err(bigint_dynamic_string_diagnostic(*span));
                     }
                 }
                 if self.expr_is_definitely_nullish(arg) {
