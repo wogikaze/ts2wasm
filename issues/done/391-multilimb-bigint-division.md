@@ -122,12 +122,15 @@ This issue is not closed by hiding remaining work. The known-BigInt division imp
 
 Commits:
 
-- pending child commit for this lifecycle/evidence close
+- `3672eee7` issue-391: close superseded bigint division split
 
 Validation result:
 
 ```text
-pending validation in child worktree
+PASS: cargo fmt --all --check
+PASS: cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_div_rem
+PASS: mise run update-issue-index -- --check
+PASS: mise run check issues
 ```
 
 Close note (2026-05-01): issue 391 is superseded by issue 384 for the validated known-BigInt dynamic division slice. The only residual division-specific gap named in the issue is branch/control-flow-assigned local tracking, which is tracked by issue 398.
