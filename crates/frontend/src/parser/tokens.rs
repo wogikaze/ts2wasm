@@ -78,6 +78,7 @@ impl Parser {
 
     fn parse_object_key(&mut self) -> Result<String, Diagnostic> {
         match self.peek() {
+            Some(Token::LeftBracket) => self.parse_computed_object_key(),
             Some(Token::Ident(name)) => {
                 let key = name.clone();
                 self.advance();
@@ -95,6 +96,29 @@ impl Parser {
                 ),
                 span: self.peek_span(),
             }),
+        }
+    }
+
+    fn parse_computed_object_key(&mut self) -> Result<String, Diagnostic> {
+        let start = self.expect(TokenKind::LeftBracket)?;
+        let (object, _) = self.expect_ident()?;
+        self.expect(TokenKind::Dot)?;
+        let (property, _) = self.expect_ident()?;
+        let end = self.expect(TokenKind::RightBracket)?;
+
+        if object == "Symbol" && property == "iterator" {
+            Ok(SYMBOL_ITERATOR_OBJECT_KEY.to_owned())
+        } else {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message:
+                    "issue-402: only computed [Symbol.iterator] object keys are supported in this milestone"
+                        .to_owned(),
+                span: Some(Span {
+                    start: start.start,
+                    end: end.end,
+                }),
+            })
         }
     }
 

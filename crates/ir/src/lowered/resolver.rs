@@ -33,6 +33,7 @@ struct Resolver<'a> {
     control_flow_bigint_div_rem_locals: HashSet<LocalId>,
     control_flow_mixed_bigint_locals: HashSet<LocalId>,
     array_locals: HashSet<LocalId>,
+    symbol_iterator_object_locals: HashSet<LocalId>,
     static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
     static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
     static_function_array_like_locals: HashMap<LocalId, StaticFunctionArrayLike>,
@@ -109,6 +110,7 @@ impl<'a> Resolver<'a> {
             control_flow_bigint_div_rem_locals: HashSet::new(),
             control_flow_mixed_bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            symbol_iterator_object_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),
@@ -167,6 +169,7 @@ impl<'a> Resolver<'a> {
             control_flow_bigint_div_rem_locals: HashSet::new(),
             control_flow_mixed_bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            symbol_iterator_object_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
             static_function_array_like_locals: HashMap::new(),
@@ -322,6 +325,7 @@ impl<'a> Resolver<'a> {
                 self.update_bigint_local(local_id, expr);
                 self.update_control_flow_bigint_assignment(local_id);
                 self.update_array_local(local_id, expr);
+                self.update_symbol_iterator_object_local(local_id, expr);
                 self.update_static_object_literal_local_on_let(local_id, expr);
                 self.update_static_function_array_like_local_on_let(local_id, expr);
                 self.update_string_literal_local(local_id, expr);
@@ -364,6 +368,7 @@ impl<'a> Resolver<'a> {
                 self.update_bigint_local(local_id, expr);
                 self.update_control_flow_bigint_assignment(local_id);
                 self.update_array_local(local_id, expr);
+                self.update_symbol_iterator_object_local(local_id, expr);
                 self.invalidate_static_function_array_like_local(local_id);
                 self.update_string_literal_local(local_id, expr);
                 self.update_native_set_add_local(local_id, expr);

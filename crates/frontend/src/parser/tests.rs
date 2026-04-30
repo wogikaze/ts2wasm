@@ -943,6 +943,24 @@ mod tests {
     }
 
     #[test]
+    fn parses_symbol_iterator_computed_object_key() {
+        let program = parse_program("let iterable = { [Symbol.iterator]: function() { return {}; } };")
+            .unwrap();
+
+        match &program[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 1);
+                assert_eq!(props[0].0, SYMBOL_ITERATOR_OBJECT_KEY);
+                assert!(matches!(props[0].1, Expr::FunctionExpr { .. }));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_optional_chaining_expression_forms() {
         let program = parse_program("let a = obj?.x; let b = obj?.[key]; let c = fn?.(1);").unwrap();
 

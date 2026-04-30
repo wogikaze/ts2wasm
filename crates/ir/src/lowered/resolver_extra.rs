@@ -12,6 +12,8 @@ impl<'a> Resolver<'a> {
                         }
                     } else if let Some(value) = self.static_string_spread_value(spread_expr) {
                         lowered_args.extend(Self::lower_ascii_string_spread_chars(&value)?);
+                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr) {
+                        return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -92,6 +94,10 @@ impl<'a> Resolver<'a> {
                         Self::flush_array_segment(&mut segments, &mut pending_dense);
                         segments.push(set_array);
                         continue;
+                    }
+
+                    if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
+                        return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     }
 
                     return Err(Diagnostic {
@@ -434,6 +440,8 @@ impl<'a> Resolver<'a> {
                         lowered.extend(self.lower_array_literal_elements(spread_elements)?);
                     } else if let Some(value) = self.static_string_spread_value(spread_expr) {
                         lowered.extend(Self::lower_ascii_string_spread_chars(&value)?);
+                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr) {
+                        return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1755,6 +1763,41 @@ impl<'a> Resolver<'a> {
             self.array_locals.insert(local_id);
         } else {
             self.array_locals.remove(&local_id);
+        }
+    }
+
+    pub(super) fn update_symbol_iterator_object_local(
+        &mut self,
+        local_id: LocalId,
+        expr: &ResolvedExpr,
+    ) {
+        if self.resolved_expr_has_symbol_iterator_property(expr) {
+            self.symbol_iterator_object_locals.insert(local_id);
+        } else {
+            self.symbol_iterator_object_locals.remove(&local_id);
+        }
+    }
+
+    pub(super) fn resolved_expr_has_symbol_iterator_property(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Object(props) => props
+                .iter()
+                .any(|(key, _)| key == SYMBOL_ITERATOR_OBJECT_KEY),
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .is_some_and(|local_id| self.symbol_iterator_object_locals.contains(&local_id)),
+            _ => false,
+        }
+    }
+
+    pub(super) fn unsupported_symbol_iterator_spread_diagnostic() -> Diagnostic {
+        Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "issue-353: custom iterable spread via Symbol.iterator requires iterator protocol runtime support in this milestone"
+                    .to_owned(),
+            span: None,
         }
     }
 

@@ -1,6 +1,7 @@
 use crate::Span;
 
 pub const OBJECT_SPREAD_SENTINEL: &str = "\0ts2wasm_object_spread";
+pub const SYMBOL_ITERATOR_OBJECT_KEY: &str = "\0ts2wasm_symbol_iterator";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum BinaryOp {
