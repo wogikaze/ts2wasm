@@ -120,7 +120,7 @@ Follow-up issues:
 - [x] created: `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
 - [x] created: `issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
 - [x] created: `issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
-- [x] created: `issues/open/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
+- [x] created: `issues/done/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
 
 ## Notes
 

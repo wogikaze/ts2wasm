@@ -38,10 +38,10 @@ Unknown non-source-backed BigInt/String comparison input either compares compati
 
 In scope:
 
-- [ ] Runtime-only dynamic strings where the compiler cannot source-prove the StringToBigInt value.
-- [ ] Abstract equality and relational BigInt/String comparisons.
-- [ ] Explicit runtime marker/trap or compatible comparison behavior for out-of-range values.
-- [ ] Node/iwasm differential coverage for supported runtime values and trap/diagnostic coverage for out-of-range unknown values.
+- [x] Runtime-only dynamic strings where the compiler cannot source-prove the StringToBigInt value.
+- [x] Abstract equality and relational BigInt/String comparisons.
+- [x] Explicit runtime marker/trap or compatible comparison behavior for out-of-range values.
+- [x] Node/iwasm differential coverage for supported runtime values and trap/diagnostic coverage for out-of-range unknown values.
 
 Out of scope:
 
@@ -70,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A non-source-backed unknown dynamic string comparison reproducer is added or documented.
-- [ ] Out-of-range unknown dynamic BigInt/String comparison cannot silently return an incorrect normal boolean.
-- [ ] Supported in-range unknown dynamic BigInt/String comparisons continue to match Node under iwasm.
-- [ ] Docs/current-state/issues state the runtime-only unknown out-of-range boundary.
+- [x] A non-source-backed unknown dynamic string comparison reproducer is added or documented.
+- [x] Out-of-range unknown dynamic BigInt/String comparison cannot silently return an incorrect normal boolean.
+- [x] Supported in-range unknown dynamic BigInt/String comparisons continue to match Node under iwasm.
+- [x] Docs/current-state/issues state the runtime-only unknown out-of-range boundary.
 
 ## Validation
 
@@ -100,16 +100,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/05-compatibility-and-semantics.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -126,18 +126,41 @@ This issue is a direct follow-up split from issue 368. It is intentionally separ
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed: 2026-05-01
 
 Commits:
 
-- none yet; issue is open
+- `a5cd2bfa` issue-375: catalog bigint string boundary diagnostic
+- `fc095c49` issue-375: trap out-of-range dynamic bigint string comparisons
 
 Validation result:
 
 ```text
-not run; issue is open
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_stdin_string
+result: pass; stdin-backed in-range BigInt/String equality and relational fixtures match Node under iwasm, and out-of-range equality/relational fixtures emit the issue-375 runtime marker before trapping
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_string_abstract
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_relational_matches
+result: pass
+date: 2026-05-01
+
+command: mise run update-issue-index -- --check && mise run check issues
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff bigint
+result: fail; issue-375 tests passed, but the broad filter remains red in unrelated tracked BigInt builtin baseline cases (`bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm`, `bigint_dynamic_builtin_fixtures_match_node_output_under_iwasm`) plus older unsupported diagnostic expectation buckets outside this slice
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- Compatible comparison for all out-of-range values may require broader BigInt representation work; a marker/trap is acceptable if documented and tested.
+- Compatible comparison for all out-of-range values may require broader BigInt representation work; this issue closes the no-silent-normal-boolean boundary with an explicit runtime marker/trap.

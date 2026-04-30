@@ -64,7 +64,7 @@ Expected:
 - `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
 - `issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
 - `issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
-- `issues/open/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
+- `issues/done/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
 - `crates/cli/tests/` only for diagnostic characterization if needed
 - `fixtures/core-semantics/*bigint*` only for diagnostic characterization if needed
 
