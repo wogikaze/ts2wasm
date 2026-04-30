@@ -3,12 +3,13 @@ id: 396
 title: "Runtime JS exception object throwing substrate"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: [380, 381]
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -27,12 +28,12 @@ Issue 380 now proves BigInt `/ 0n` and `% 0n` can reach a runtime helper that re
 
 In scope:
 
-- [ ] Define a minimal runtime exception ABI for runtime helpers to raise a builtin Error object.
-- [ ] Support `RangeError` for BigInt division/remainder by zero and at least `TypeError` for mixed Number/BigInt arithmetic, while keeping `SyntaxError` extensible for existing trap parity gaps.
-- [ ] Preserve operand evaluation order before throwing.
-- [ ] Add Node/iwasm evidence that a runtime-generated `TypeError` is observable through the project's supported exception surface.
-- [ ] Add Node/iwasm evidence that a runtime-generated `RangeError: Division by zero` is observable through the project's supported exception surface.
-- [ ] Document the boundary in `docs/14-runtime-abi.md` and `current-state.md`.
+- [x] Define a minimal runtime exception ABI for runtime helpers to raise a builtin Error object.
+- [x] Support `RangeError` for BigInt division/remainder by zero and at least `TypeError` for mixed Number/BigInt arithmetic, while keeping `SyntaxError` extensible for existing trap parity gaps.
+- [x] Preserve operand evaluation order before throwing.
+- [x] Add Node/iwasm evidence that a runtime-generated `TypeError` is observable through the project's supported exception surface.
+- [x] Add Node/iwasm evidence that a runtime-generated `RangeError: Division by zero` is observable through the project's supported exception surface.
+- [x] Document the boundary in `docs/14-runtime-abi.md` and `current-state.md`.
 
 Out of scope:
 
@@ -59,11 +60,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Runtime helpers can raise at least one builtin Error object without relying on an `unreachable` trap as the only observable behavior.
-- [ ] BigInt division/remainder by zero can use that substrate to produce compatible catchable `RangeError` parity for the issue 380 fixture slice.
-- [ ] Mixed Number/BigInt arithmetic can use that substrate to produce compatible `TypeError` parity for the issue 381 fixture slice.
-- [ ] Existing runtime trap parity tests are either migrated to the new substrate or explicitly left with issue references.
-- [ ] Documentation names the remaining exception boundary.
+- [x] Runtime helpers can raise at least one builtin Error object without relying on an `unreachable` trap as the only observable behavior.
+- [x] BigInt division/remainder by zero can use that substrate to produce compatible catchable `RangeError` parity for the issue 380 fixture slice.
+- [x] Mixed Number/BigInt arithmetic can use that substrate to produce compatible `TypeError` parity for the issue 381 fixture slice.
+- [x] Existing runtime trap parity tests are either migrated to the new substrate or explicitly left with issue references.
+- [x] Documentation names the remaining exception boundary.
 
 ## Validation
 
