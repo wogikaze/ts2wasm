@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: [308, 300]
 created: 2026-04-29
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -301,3 +301,55 @@ large-array growth):
 command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
 result: fail; iwasm timed out after 30.235s
 ```
+
+2026-05-01 child `child/309-abc451-depth9-20260501-061232` blocker evidence:
+
+- Used issue 385's deterministic counter evidence (`sweep_visits=58859`,
+  `free_list_scan_visits=0`, `all_copy_calls=20549` at the
+  `abc451-runtime-costs --event-budget 100000` diagnostic budget) to test a
+  growth-boundary-only allocation-pressure GC policy. The candidate delayed
+  allocation-pressure GC until the bump allocation would exceed currently
+  committed memory, while preserving max-cap last-chance GC and the explicit
+  OOM guard.
+- The candidate did reduce the targeted sweep counter, but it was not
+  mergeable because the required depth-8 runtime gate still timed out and
+  array-growth allocation/copy volume increased:
+
+```text
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; diagnostic_stop=true; timed_out=false
+date: 2026-05-01
+counter delta versus issue 385:
+  gc_collections: 5 -> 3
+  sweep_visits: 58859 -> 40554
+  free_list_scan_visits: 0 -> 0
+  allocation_attempts: 20587 -> 29741
+  allocation_requested_bytes: 521193 -> 1485703
+  array_copy_bytes: 182008 -> 1012776
+  alloc_array_growth_bytes: 362976 -> 1264808
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.233s
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: fail; allocator/GC contract tests passed, but pre-existing/out-of-scope
+  runtime_link_plan::tests::bigint_runtime_arithmetic_selects_helper_deps failed
+  in forbidden BigInt area
+date: 2026-05-01
+```
+
+- Conclusion: issue 385's sweep-dominance signal is real, but simply reducing
+  headroom-triggered sweeps shifts pressure into array-growth allocation/copy
+  and does not recover the depth-8 timeout. The next smaller blocker is a
+  representation or lifetime slice that reduces live/copy volume without
+  increasing `allocation_requested_bytes`, not another GC-cadence-only policy.
+- No runtime implementation from this rejected candidate was left in the tree.

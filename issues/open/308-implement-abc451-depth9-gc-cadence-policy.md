@@ -8,7 +8,7 @@ priority: P1
 depends_on: [309]
 blocks: [300]
 created: 2026-04-29
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -243,6 +243,15 @@ date: 2026-04-29
 ```
 
 - Issue 300 remains open. No official ABC451 sample compatibility is claimed.
+
+2026-05-01 child `child/309-abc451-depth9-20260501-061232` follow-up:
+
+- A growth-boundary-only allocation-pressure GC probe, motivated by issue 385
+  sweep-dominance evidence, reduced depth-8 diagnostic sweep visits
+  (`58859 -> 40554`) and preserved the OOM smoke, but was rejected because the
+  required depth-8 fixture still timed out and allocation/copy volume rose
+  sharply. This confirms issue 308's remaining blocker is not safely solved by
+  a GC-cadence-only change under the committed 185-page cap.
 
 2026-04-29 child `308-alloc-pattern-20260429T203035Z` progress:
 
