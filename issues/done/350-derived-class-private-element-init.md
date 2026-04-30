@@ -3,12 +3,14 @@ id: 350
 title: "Implement derived-class private element initialization"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [255]
 blocks: []
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-04-30
+status: done
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -71,7 +73,7 @@ Do not touch:
 - [x] Node/iwasm differential fixture for derived class with private method
 - [x] Node/iwasm differential fixture for derived class with private getter/setter
 - [x] Regression fixture proving private initialization order (after super, before constructor body)
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Progress evidence
 
@@ -117,15 +119,15 @@ cargo test -p ts2wasm-cli private
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md` if derived private element semantics are documented
+- [x] updated: `docs/language-reference/javascript-features.md` if derived private element semantics are documented
 
 Current state:
 
-- [ ] updated: `current-state.md` if runtime private element capability changes
+- [x] updated: `current-state.md` if runtime private element capability changes
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -152,3 +154,21 @@ date:
 Remaining risks:
 
 - Constructor execution order may interact with existing super() lowering in non-trivial ways
+
+## Parent close evidence
+
+Parent closed issue 350 because issue-specific derived-class private element initialization acceptance is complete. The remaining broad validation failure is the unrelated issue-357 ABC451 timeout.
+
+```text
+command: cargo test -p ts2wasm-cli private
+result: pass
+
+command: cargo nextest run -E 'test(private) or test(class) or test(node_diff)'
+result: 196 passed; 1 failed only on abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timeout, tracked by issue 357
+
+command: mise run update-issue-index -- --check
+result: pass
+
+command: mise run check issues
+result: pass
+```

@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 120 | 35 | 85 |
+| runtime | 120 | 34 | 86 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 380 | 173 | 207 |
+| total | 380 | 172 | 208 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -214,7 +214,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | class: blocked | Parser and resolver support for direct eval and eval-code scope |
 | 348 | Lowering block-level function declarations in direct eval code | feature | ir | 347 | Lowering block-level function declarations in direct eval code |
 | 349 | Runtime helper or shim JavaScript emission for direct eval execution | feature | backend | 347, 348 | Runtime helper or shim JavaScript emission for direct eval execution |
-| 350 | Implement derived-class private element initialization | feature | runtime/semantics | 255 | Implement derived-class private element initialization |
 | 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | 255 | Implement full private brand storage and brand-checking semantics |
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | 274 | Implement iterator protocol integration for spread operator |
 | 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
@@ -426,6 +425,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 310 | Fix activation-frame root liveness depth-8 regression | feature | runtime/memory | see `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md` |
 | 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
 | 337 | Implement test262 features directive and $262 object | feature | cli/reference | see `issues/done/337-implement-test262-features-directive.md` |
+| 350 | Implement derived-class private element initialization | feature | runtime/semantics | see `issues/done/350-derived-class-private-element-init.md` |
 | 352 | Implement static private field ordering with static blocks | feature | runtime/semantics | see `issues/done/352-static-private-field-static-blocks-order.md` |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |
 | 358 | Instrument ABC451 depth-8 runtime costs | test | runtime/performance | see `issues/done/358-instrument-abc451-depth8-runtime-costs.md` |
