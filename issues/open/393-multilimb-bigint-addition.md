@@ -45,8 +45,7 @@ Dynamic BigInt `+` operates on the canonical heap BigInt limb representation for
 
 In scope:
 
-- [ ] Implement canonical limb addition for dynamic BigInt operands and results.
-- [ ] Preserve canonical zero and sign behavior for addition.
+- [ ] Implement canonical limb addition for dynamic BigInt operands and results, preserving canonical zero and sign behavior.
 - [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
 - [ ] Add Node/iwasm differential fixtures for values larger than signed i64.
 - [ ] Update runtime linker structure tests if new helpers/deps are added.
@@ -91,7 +90,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_add
+cargo test -p ts2wasm-cli bigint_large_add_reports_issue_369
 mise run update-issue-index -- --check
 mise run check issues
 ```

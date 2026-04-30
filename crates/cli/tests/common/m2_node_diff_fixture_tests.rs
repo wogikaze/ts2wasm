@@ -235,6 +235,18 @@ fn bigint_runtime_mul_div_rem_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_large_div_rem_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-large-div-rem.ts");
+}
+
+#[test]
+fn bigint_large_div_rem_local_flow_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-large-div-rem-local-flow.ts",
+    );
+}
+
+#[test]
 fn bigint_runtime_pow_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-pow.ts");
 }

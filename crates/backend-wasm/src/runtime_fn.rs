@@ -717,8 +717,8 @@ const BIGINT_ADD_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
 const BIGINT_SUB_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_MUL_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 const BIGINT_POW_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_DIV_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
-const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_DIV_DEPS: &[RuntimeFn] = &[RuntimeFn::MakeBigIntLiteral];
+const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntDiv];
 const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 // String method dependencies

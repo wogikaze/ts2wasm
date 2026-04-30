@@ -1164,33 +1164,263 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_bigint_div(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
-  (func $bigint_div (param $a i32) (param $b i32) (result i32)
-    (local $rhs i64)
-    (local.set $rhs (call $bigint_signed_i64 (local.get $b)))
-    (if (i64.eqz (local.get $rhs))
+  (func $bigint_decimal_trim (param $ptr i32) (param $len i32) (result i32)
+    (local $skip i32)
+    (local $i i32)
+    (block $scan_done
+      (loop $scan
+        (br_if $scan_done
+          (i32.or
+            (i32.ge_u (i32.add (local.get $skip) (i32.const 1)) (local.get $len))
+            (i32.ne
+              (i32.load8_u (i32.add (local.get $ptr) (local.get $skip)))
+              (i32.const {ascii_zero}))))
+        (local.set $skip (i32.add (local.get $skip) (i32.const 1)))
+        (br $scan)))
+    (if (i32.gt_u (local.get $skip) (i32.const 0))
+      (then
+        (block $shift_done
+          (loop $shift
+            (br_if $shift_done (i32.ge_u (local.get $i) (i32.sub (local.get $len) (local.get $skip))))
+            (i32.store8
+              (i32.add (local.get $ptr) (local.get $i))
+              (i32.load8_u
+                (i32.add
+                  (local.get $ptr)
+                  (i32.add (local.get $i) (local.get $skip)))))
+            (local.set $i (i32.add (local.get $i) (i32.const 1)))
+            (br $shift)))
+        (return (i32.sub (local.get $len) (local.get $skip)))))
+    (local.get $len))
+
+  (func $bigint_decimal_cmp (param $left i32) (param $left_len i32) (param $right i32) (param $right_len i32) (result i32)
+    (local $i i32)
+    (local $ld i32)
+    (local $rd i32)
+    (if (i32.gt_u (local.get $left_len) (local.get $right_len))
+      (then (return (i32.const 1))))
+    (if (i32.lt_u (local.get $left_len) (local.get $right_len))
+      (then (return (i32.const -1))))
+    (block $done
+      (loop $digits
+        (br_if $done (i32.ge_u (local.get $i) (local.get $left_len)))
+        (local.set $ld (i32.load8_u (i32.add (local.get $left) (local.get $i))))
+        (local.set $rd (i32.load8_u (i32.add (local.get $right) (local.get $i))))
+        (if (i32.gt_u (local.get $ld) (local.get $rd))
+          (then (return (i32.const 1))))
+        (if (i32.lt_u (local.get $ld) (local.get $rd))
+          (then (return (i32.const -1))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $digits)))
+    (i32.const 0))
+
+  (func $bigint_decimal_sub_in_place (param $left i32) (param $left_len i32) (param $right i32) (param $right_len i32) (result i32)
+    (local $li i32)
+    (local $ri i32)
+    (local $borrow i32)
+    (local $ld i32)
+    (local $rd i32)
+    (local.set $li (i32.sub (local.get $left_len) (i32.const 1)))
+    (local.set $ri (i32.sub (local.get $right_len) (i32.const 1)))
+    (block $done
+      (loop $digits
+        (local.set $ld
+          (i32.sub
+            (i32.sub
+              (i32.load8_u (i32.add (local.get $left) (local.get $li)))
+              (i32.const {ascii_zero}))
+            (local.get $borrow)))
+        (local.set $rd
+          (if (result i32) (i32.ge_s (local.get $ri) (i32.const 0))
+            (then
+              (i32.sub
+                (i32.load8_u (i32.add (local.get $right) (local.get $ri)))
+                (i32.const {ascii_zero})))
+            (else (i32.const 0))))
+        (if (i32.lt_s (local.get $ld) (local.get $rd))
+          (then
+            (local.set $ld (i32.add (local.get $ld) (i32.const 10)))
+            (local.set $borrow (i32.const 1)))
+          (else
+            (local.set $borrow (i32.const 0))))
+        (i32.store8
+          (i32.add (local.get $left) (local.get $li))
+          (i32.add (i32.sub (local.get $ld) (local.get $rd)) (i32.const {ascii_zero})))
+        (br_if $done (i32.eqz (local.get $li)))
+        (local.set $li (i32.sub (local.get $li) (i32.const 1)))
+        (local.set $ri (i32.sub (local.get $ri) (i32.const 1)))
+        (br $digits)))
+    (call $bigint_decimal_trim (local.get $left) (local.get $left_len)))
+
+  (func $bigint_decimal_u64 (param $ptr i32) (param $len i32) (result i64)
+    (local $i i32)
+    (local $value i64)
+    (block $done
+      (loop $digits
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $value
+          (i64.add
+            (i64.mul (local.get $value) (i64.const 10))
+            (i64.extend_i32_u
+              (i32.sub
+                (i32.load8_u (i32.add (local.get $ptr) (local.get $i)))
+                (i32.const {ascii_zero})))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $digits)))
+    (local.get $value))
+
+  (func $bigint_div_rem_decimal (param $a i32) (param $b i32) (param $mode i32) (result i32)
+    (local $a_obj i32)
+    (local $b_obj i32)
+    (local $a_sign i32)
+    (local $b_sign i32)
+    (local $a_ptr i32)
+    (local $b_ptr i32)
+    (local $a_len i32)
+    (local $b_len i32)
+    (local $q_buf i32)
+    (local $q_ptr i32)
+    (local $q_len i32)
+    (local $r_buf i32)
+    (local $r_ptr i32)
+    (local $r_len i32)
+    (local $i i32)
+    (local $q_digit i32)
+    (local $result_sign i32)
+    (local $result_ptr i32)
+    (local $result_len i32)
+    (local $limb i64)
+    (local.set $a_obj (i32.and (local.get $a) (i32.const {heap_mask})))
+    (local.set $b_obj (i32.and (local.get $b) (i32.const {heap_mask})))
+    (local.set $a_sign (i32.load (i32.add (local.get $a_obj) (i32.const {bigint_sign_offset}))))
+    (local.set $b_sign (i32.load (i32.add (local.get $b_obj) (i32.const {bigint_sign_offset}))))
+    (if (i32.eqz (local.get $b_sign))
       (then (unreachable)))
-    (call $bigint_from_signed_i64
-      (i64.div_s
-        (call $bigint_signed_i64 (local.get $a))
-        (local.get $rhs))))
+    (local.set $a_ptr (i32.add (local.get $a_obj) (i32.const {bigint_decimal_data_offset})))
+    (local.set $b_ptr (i32.add (local.get $b_obj) (i32.const {bigint_decimal_data_offset})))
+    (local.set $a_len (i32.load (i32.add (local.get $a_obj) (i32.const {bigint_decimal_len_offset}))))
+    (local.set $b_len (i32.load (i32.add (local.get $b_obj) (i32.const {bigint_decimal_len_offset}))))
+    (if (i32.lt_s (local.get $a_sign) (i32.const 0))
+      (then
+        (local.set $a_ptr (i32.add (local.get $a_ptr) (i32.const 1)))
+        (local.set $a_len (i32.sub (local.get $a_len) (i32.const 1)))))
+    (if (i32.lt_s (local.get $b_sign) (i32.const 0))
+      (then
+        (local.set $b_ptr (i32.add (local.get $b_ptr) (i32.const 1)))
+        (local.set $b_len (i32.sub (local.get $b_len) (i32.const 1)))))
+    (local.set $q_buf (call $alloc_heap (i32.add (local.get $a_len) (i32.const 1))))
+    (local.set $q_ptr (i32.add (local.get $q_buf) (i32.const 1)))
+    (local.set $r_buf (call $alloc_heap (i32.add (local.get $a_len) (i32.const 1))))
+    (local.set $r_ptr (i32.add (local.get $r_buf) (i32.const 1)))
+    (i32.store8 (local.get $r_ptr) (i32.const {ascii_zero}))
+    (local.set $r_len (i32.const 1))
+    (block $division_done
+      (loop $division
+        (br_if $division_done (i32.ge_u (local.get $i) (local.get $a_len)))
+        (if
+          (i32.and
+            (i32.eq (local.get $r_len) (i32.const 1))
+            (i32.eq (i32.load8_u (local.get $r_ptr)) (i32.const {ascii_zero})))
+          (then
+            (i32.store8
+              (local.get $r_ptr)
+              (i32.load8_u (i32.add (local.get $a_ptr) (local.get $i)))))
+          (else
+            (i32.store8
+              (i32.add (local.get $r_ptr) (local.get $r_len))
+              (i32.load8_u (i32.add (local.get $a_ptr) (local.get $i))))
+            (local.set $r_len (i32.add (local.get $r_len) (i32.const 1)))))
+        (local.set $r_len (call $bigint_decimal_trim (local.get $r_ptr) (local.get $r_len)))
+        (local.set $q_digit (i32.const 0))
+        (block $subtract_done
+          (loop $subtract
+            (br_if $subtract_done
+              (i32.lt_s
+                (call $bigint_decimal_cmp
+                  (local.get $r_ptr)
+                  (local.get $r_len)
+                  (local.get $b_ptr)
+                  (local.get $b_len))
+                (i32.const 0)))
+            (local.set $r_len
+              (call $bigint_decimal_sub_in_place
+                (local.get $r_ptr)
+                (local.get $r_len)
+                (local.get $b_ptr)
+                (local.get $b_len)))
+            (local.set $q_digit (i32.add (local.get $q_digit) (i32.const 1)))
+            (br $subtract)))
+        (i32.store8
+          (i32.add (local.get $q_ptr) (local.get $q_len))
+          (i32.add (local.get $q_digit) (i32.const {ascii_zero})))
+        (local.set $q_len (i32.add (local.get $q_len) (i32.const 1)))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $division)))
+    (local.set $q_len (call $bigint_decimal_trim (local.get $q_ptr) (local.get $q_len)))
+    (local.set $r_len (call $bigint_decimal_trim (local.get $r_ptr) (local.get $r_len)))
+    (if (i32.eqz (local.get $mode))
+      (then
+        (local.set $result_ptr (local.get $q_ptr))
+        (local.set $result_len (local.get $q_len))
+        (local.set $result_sign
+          (if (result i32)
+            (i32.and
+              (i32.eq (local.get $q_len) (i32.const 1))
+              (i32.eq (i32.load8_u (local.get $q_ptr)) (i32.const {ascii_zero})))
+            (then (i32.const 0))
+            (else (i32.mul (local.get $a_sign) (local.get $b_sign))))))
+      (else
+        (local.set $result_ptr (local.get $r_ptr))
+        (local.set $result_len (local.get $r_len))
+        (local.set $result_sign
+          (if (result i32)
+            (i32.and
+              (i32.eq (local.get $r_len) (i32.const 1))
+              (i32.eq (i32.load8_u (local.get $r_ptr)) (i32.const {ascii_zero})))
+            (then (i32.const 0))
+            (else (local.get $a_sign))))))
+    (if (i32.lt_s (local.get $result_sign) (i32.const 0))
+      (then
+        (local.set $result_ptr (i32.sub (local.get $result_ptr) (i32.const 1)))
+        (i32.store8 (local.get $result_ptr) (i32.const {ascii_minus}))
+        (local.set $result_len (i32.add (local.get $result_len) (i32.const 1)))))
+    (local.set $limb
+      (call $bigint_decimal_u64
+        (if (result i32) (i32.lt_s (local.get $result_sign) (i32.const 0))
+          (then (i32.add (local.get $result_ptr) (i32.const 1)))
+          (else (local.get $result_ptr)))
+        (if (result i32) (i32.lt_s (local.get $result_sign) (i32.const 0))
+          (then (i32.sub (local.get $result_len) (i32.const 1)))
+          (else (local.get $result_len)))))
+    (call $make_bigint_literal
+      (local.get $result_sign)
+      (if (result i32) (i32.eqz (local.get $result_sign))
+        (then (i32.const 0))
+        (else (i32.const 1)))
+      (i32.wrap_i64 (local.get $limb))
+      (i32.wrap_i64 (i64.shr_u (local.get $limb) (i64.const 32)))
+      (local.get $result_ptr)
+      (local.get $result_len)))
+
+  (func $bigint_div (param $a i32) (param $b i32) (result i32)
+    (call $bigint_div_rem_decimal (local.get $a) (local.get $b) (i32.const 0)))
 "#,
-        );
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            heap_mask = ValueTag::HEAP_MASK,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
+        ));
     }
 
     pub(super) fn emit_bigint_rem(&self, wat: &mut String) {
         wat.push_str(
             r#"
   (func $bigint_rem (param $a i32) (param $b i32) (result i32)
-    (local $rhs i64)
-    (local.set $rhs (call $bigint_signed_i64 (local.get $b)))
-    (if (i64.eqz (local.get $rhs))
-      (then (unreachable)))
-    (call $bigint_from_signed_i64
-      (i64.rem_s
-        (call $bigint_signed_i64 (local.get $a))
-        (local.get $rhs))))
+    (call $bigint_div_rem_decimal (local.get $a) (local.get $b) (i32.const 1)))
 "#,
         );
     }

@@ -19,9 +19,7 @@ Problem: issue 377 added BigInt-specific helpers for known operands/results that
 
 ## Problem
 
-BigInt bitwise operators use arbitrary-width two's-complement semantics. The current helper slice converts through signed i64 and is intentionally rejected when the resolver cannot prove the operand/result stays inside that boundary.
-
-Problem: Out-of-slice BigInt bitwise NOT/AND/OR/XOR remain unsupported and need canonical multi-limb/two's-complement semantics.
+BigInt bitwise operators use arbitrary-width two's-complement semantics. The current helper slice converts through signed i64 and is intentionally rejected when the resolver cannot prove the operand/result stays inside that boundary. Problem: out-of-slice BigInt bitwise NOT/AND/OR/XOR remain unsupported and need canonical multi-limb/two's-complement semantics.
 
 ## Current failure
 
@@ -95,7 +93,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint_bitwise_out_of_slice
+cargo test -p ts2wasm-cli bigint_bitwise_unary_out_of_slice_reports_issue_387
 mise run update-issue-index -- --check
 mise run check issues
 ```

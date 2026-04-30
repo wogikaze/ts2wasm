@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 147 | 49 | 98 |
+| runtime | 148 | 50 | 98 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 410 | 188 | 222 |
+| total | 411 | 189 | 222 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -59,6 +59,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 393 | Multi-limb BigInt addition | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `+` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
 | 395 | Runtime array-like Array.prototype.map callback dispatch | feature | runtime/builtins | ready | P2 | 388 | Runtime array-like Array.prototype.map callback dispatch |
 | 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 381 cannot produce a compatible `TypeError` object for... |
+| 398 | Track control-flow-assigned BigInt div/rem locals | feature | runtime/semantics | implementation-ready | P2 |  | Issue 384 implements known-BigInt cached-decimal division/remainder, but locals assigned inside branches, loops, swit... |
 <!-- generated:ready:end -->
 
 ## Blocked queue

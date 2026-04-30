@@ -19,7 +19,7 @@ Problem: Dynamic BigInt `-` with operands or results outside the signed-i64-back
 
 ## Problem
 
-The current dynamic helpers reconstruct operands through signed i64 and the issue-259 first-limb/cached-decimal constructor. This is safe only when the resolver proves operands and results fit the signed-i64 helper slice, but dynamic BigInt subtraction outside that slice is rejected with issue-369 diagnostics instead of matching Node for arbitrary BigInt magnitudes.
+The current dynamic helpers reconstruct operands through signed i64 and the issue-259 first-limb/cached-decimal constructor. This is safe only when the resolver proves operands and results fit the signed-i64 helper slice. Problem: dynamic BigInt subtraction outside that slice is rejected with issue-369 diagnostics instead of matching Node for arbitrary BigInt magnitudes.
 
 ## Current failure
 
@@ -79,8 +79,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic BigInt sub with operands or results outside signed i64.
-- [ ] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
+- [ ] Node/iwasm differential fixtures cover dynamic BigInt sub with operands or results outside signed i64, and existing signed-i64 slice fixtures from issue 260 continue to match Node.
 - [ ] Runtime linker structure tests cover any new multi-limb helper deps.
 - [ ] Docs/current-state/issues state the new subtraction boundary.
 
@@ -90,7 +89,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_sub
+cargo test -p ts2wasm-cli bigint_large_sub_reports_issue_369
 mise run update-issue-index -- --check
 mise run check issues
 ```

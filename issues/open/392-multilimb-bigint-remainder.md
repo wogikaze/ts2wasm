@@ -19,7 +19,7 @@ Problem: Dynamic BigInt `%` with operands or results outside the signed-i64-back
 
 ## Problem
 
-The current dynamic helpers reconstruct operands through signed i64 and the issue-259 first-limb/cached-decimal constructor. This is safe only when the resolver proves operands and results fit the signed-i64 helper slice, but dynamic BigInt remainder outside that slice is rejected with issue-369 diagnostics instead of matching Node for arbitrary BigInt magnitudes.
+The current dynamic helpers reconstruct operands through signed i64 and the issue-259 first-limb/cached-decimal constructor. This is safe only when the resolver proves operands and results fit the signed-i64 helper slice. Problem: dynamic BigInt remainder outside that slice is rejected with issue-369 diagnostics instead of matching Node for arbitrary BigInt magnitudes.
 
 ## Current failure
 
@@ -45,8 +45,7 @@ Dynamic BigInt `%` operates on the canonical heap BigInt limb representation for
 
 In scope:
 
-- [ ] Implement canonical remainder for dynamic BigInt operands and results.
-- [ ] Preserve canonical zero and sign behavior for remainder.
+- [ ] Implement canonical remainder for dynamic BigInt operands and results, preserving canonical zero and sign behavior.
 - [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
 - [ ] Add Node/iwasm differential fixtures for values larger than signed i64.
 - [ ] Update runtime linker structure tests if new helpers/deps are added.
@@ -91,7 +90,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_rem
+cargo test -p ts2wasm-cli bigint_large_rem_reports_issue_369
 mise run update-issue-index -- --check
 mise run check issues
 ```

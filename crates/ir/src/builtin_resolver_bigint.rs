@@ -1160,7 +1160,10 @@ impl BigIntRuntimeGuard {
                             }));
                         }
                         let result = fold_bigint_binary(left, *op, right, *span)?;
-                        if runtime_needed && !result.fits_runtime_signed_i64() {
+                        if runtime_needed
+                            && !result.fits_runtime_signed_i64()
+                            && !matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
+                        {
                             if *op == BinaryOp::Power {
                                 return Err(bigint_exponentiation_diagnostic(*span));
                             }
@@ -1186,6 +1189,9 @@ impl BigIntRuntimeGuard {
                         ) =>
                     {
                         return Err(bigint_bitwise_diagnostic(*span));
+                    }
+                    _ if runtime_needed && matches!(op, BinaryOp::Divide | BinaryOp::Modulo) => {
+                        None
                     }
                     _ if runtime_needed && !matches!(op, BinaryOp::Add | BinaryOp::Subtract) => {
                         return Err(bigint_dynamic_runtime_diagnostic(*span));
