@@ -221,7 +221,7 @@ impl RuntimeFn {
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
                 runtime_strings: BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_RUNTIME_STRINGS,
-                result: RuntimeResult::EffectOnly,
+                result: RuntimeResult::Value,
             },
             Self::BigIntMixedArithmeticTypeError => RuntimeSpec {
                 symbol: "$bigint_mixed_arithmetic_type_error",
@@ -1201,6 +1201,9 @@ impl RuntimeFn {
     pub(crate) const fn globals(self) -> &'static [RuntimeGlobal] {
         match self {
             Self::AllocHeap => GLOBALS_ALLOC_HEAP,
+            Self::BigIntDivisionByZeroRangeError | Self::BigIntMixedArithmeticTypeError => {
+                super::GLOBALS_EXCEPTION_RUNTIME
+            }
             Self::ModuleRequire | Self::ModuleExportsSet | Self::ModuleExportsAssign => {
                 GLOBALS_MODULE_RUNTIME
             }

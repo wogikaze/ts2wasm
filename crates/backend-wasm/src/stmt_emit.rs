@@ -475,18 +475,39 @@ impl WatEmitter<'_> {
 
                 wat.push_str(&format!("{pad}(block ${}\n", try_exit));
                 wat.push_str(&format!("{pad}  (block ${}\n", catch_entry));
+                wat.push_str(&format!(
+                    "{pad}    (global.set $exception_handler_depth (i32.add (global.get $exception_handler_depth) (i32.const 1)))\n",
+                ));
 
-                self.emit_statements(wat, try_body, indent + 4, loop_ctx, frame);
+                for statement in try_body {
+                    self.emit_statement(wat, statement, indent + 4, loop_ctx, frame);
+                    self.emit_gc_backend_temp_roots_clear(wat, &format!("{pad}    "), frame);
+                    wat.push_str(&format!(
+                        "{pad}    (br_if ${} (global.get $exception_pending))\n",
+                        catch_entry
+                    ));
+                }
 
+                wat.push_str(&format!(
+                    "{pad}    (global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))\n",
+                ));
                 wat.push_str(&format!("{pad}    (br ${})\n", try_exit));
                 wat.push_str(&format!("{pad}  )\n"));
 
                 // Catch block (for now, just a placeholder)
+                wat.push_str(&format!(
+                    "{pad}  (global.set $exception_handler_depth (i32.sub (global.get $exception_handler_depth) (i32.const 1)))\n",
+                ));
                 if let Some(body) = catch_body {
                     if let Some(var) = catch_var {
-                        wat.push_str(&format!("{pad}  (i32.const {})\n", ValueTag::UNDEFINED));
+                        wat.push_str(&format!("{pad}  (global.get $exception_pending)\n"));
                         wat.push_str(&format!("{pad}  (local.set {})\n", local_index(*var)));
+                        self.emit_gc_root_mirror(wat, &format!("{pad}  "), *var, frame);
                     }
+                    wat.push_str(&format!(
+                        "{pad}  (global.set $exception_pending (i32.const {}))\n",
+                        ValueTag::UNDEFINED
+                    ));
                     self.emit_statements(wat, body, indent + 4, loop_ctx, frame);
                 }
 

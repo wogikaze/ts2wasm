@@ -296,6 +296,13 @@ fn bigint_runtime_div_zero_reports_rangeerror_after_successful_build() {
 }
 
 #[test]
+fn bigint_runtime_div_zero_rangeerror_catch_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-div-zero-rangeerror-catch.ts",
+    );
+}
+
+#[test]
 fn bigint_runtime_rem_zero_reports_rangeerror_after_successful_build() {
     assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(
         "fixtures/core-semantics/bigint-runtime-rem-zero-trap.ts",
@@ -314,6 +321,11 @@ fn bigint_mixed_runtime_add_reports_typeerror_after_successful_build() {
     assert_fixture_node_typeerror_and_iwasm_reports_typeerror(
         "fixtures/core-semantics/bigint-runtime-mixed-typeerror-trap.ts",
     );
+}
+
+#[test]
+fn bigint_mixed_runtime_typeerror_catch_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-mixed-typeerror-catch.ts");
 }
 
 #[test]

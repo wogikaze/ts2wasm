@@ -215,29 +215,41 @@ IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
 ### Runtime exception diagnostic substrate
 
-Runtime-generated JavaScript exceptions currently have a staged ABI. The minimal
-implemented substrate can emit the JavaScript error class/name and message through
-the same WASI `$write` path used by runtime diagnostics, then abort execution. This
-means the observable failure is no longer only an `unreachable` trap; tests can assert
-the exception class/message surface while catchable exception object propagation remains
-out of scope.
+Runtime-generated JavaScript exceptions currently have a staged ABI. The implemented
+substrate has two layers:
+
+- Uncaught runtime exceptions emit the JavaScript error class/name and message through
+  the same WASI `$write` path used by runtime diagnostics, then abort execution. This
+  preserves the existing observable failure mode for top-level uncaught helper errors.
+- When a supported `try/catch` is active, selected runtime helpers allocate an Error-like
+  heap object with the matching builtin prototype and `message` property, store it in
+  `$exception_pending`, return a dummy `undefined`, and let `TryCatch` bind and clear the
+  pending object before executing the catch body.
+
+This is not full ECMAScript completion-record propagation. The catchable slice is limited
+to statement-boundary propagation through the current `TryCatch` emitter; nested
+expression unwinding, `finally` interactions beyond the existing emitter shape, and
+broader runtime helper adoption remain open issue-396 work.
 
 Issue 396 keeps these helpers cataloged behind one backend diagnostic-abort emitter:
 
 - `bigint_mixed_arithmetic_type_error(jsval, jsval) -> jsval` evaluates both operands
-  before entering the helper, writes `TypeError: Cannot mix BigInt and other types, use explicit conversions`,
-  and aborts.
-- `bigint_division_by_zero_range_error() -> never` writes `RangeError: Division by zero`
-  and aborts. `bigint_div` / `bigint_rem` depend on this helper instead of inlining
-  their diagnostic path, so RangeError uses the same cataloged runtime-string and `$write`
-  dependency substrate as TypeError.
+  before entering the helper. Without an active handler it writes `TypeError: Cannot mix BigInt and other types, use explicit conversions`
+  and aborts; with an active handler it raises a catchable TypeError-like object whose
+  `message` property contains the Node-compatible message text without the `TypeError:`
+  diagnostic prefix.
+- `bigint_division_by_zero_range_error() -> jsval` writes `RangeError: Division by zero`
+  and aborts when uncaught; with an active handler it raises a catchable RangeError-like
+  object whose `message` property is `Division by zero`. `bigint_div` / `bigint_rem`
+  depend on this helper instead of inlining their diagnostic path, so RangeError uses
+  the same cataloged runtime-string and `$write` dependency substrate as TypeError.
 - `private_brand_type_error() -> jsval` writes `TypeError: Cannot read private member from an object whose class did not declare it`
   and aborts for private-field brand mismatches. This shares the same runtime string
   and `$write` diagnostic boundary as the BigInt TypeError and RangeError helpers.
-- Each helper declares its `$write` dependency and runtime string through the `RuntimeFn`
-  catalog, so capabilities and string interning remain link-plan driven. The shared
-  backend emitter is only a diagnostic/abort ABI boundary; it does not allocate or
-  propagate a catchable JavaScript object.
+- Each helper declares its dependencies and runtime strings through the `RuntimeFn`
+  catalog, so capabilities, exception globals, and string interning remain link-plan
+  driven. The catchable helper path allocates only the minimal Error-like object shape
+  needed by the current `e.message` differential fixtures.
 - This is intentionally not yet full ECMAScript `throw` / `try` / `catch` propagation;
   catchable Error objects and completion-record unwinding remain the next substrate step.
 

@@ -536,6 +536,8 @@ pub(crate) enum RuntimeGlobal {
     ModuleCache,
     CurrentModuleId,
     SetPrototypeAdd,
+    ExceptionPending,
+    ExceptionHandlerDepth,
 }
 
 impl RuntimeGlobal {
@@ -554,6 +556,8 @@ impl RuntimeGlobal {
             Self::ModuleCache => "$module_cache",
             Self::CurrentModuleId => "$current_module_id",
             Self::SetPrototypeAdd => "$set_prototype_add",
+            Self::ExceptionPending => "$exception_pending",
+            Self::ExceptionHandlerDepth => "$exception_handler_depth",
         }
     }
 
@@ -571,6 +575,7 @@ impl RuntimeGlobal {
             | Self::GcCallFrameCurrent => 0,
             Self::ModuleCache | Self::CurrentModuleId => 0,
             Self::SetPrototypeAdd => NATIVE_SET_ADD_SENTINEL,
+            Self::ExceptionPending | Self::ExceptionHandlerDepth => 0,
         }
     }
 }
@@ -605,6 +610,10 @@ const GLOBALS_ALLOC_HEAP: &[RuntimeGlobal] = &[
 const GLOBALS_MODULE_RUNTIME: &[RuntimeGlobal] =
     &[RuntimeGlobal::ModuleCache, RuntimeGlobal::CurrentModuleId];
 const GLOBALS_SET_PROTOTYPE_ADD: &[RuntimeGlobal] = &[RuntimeGlobal::SetPrototypeAdd];
+pub(crate) const GLOBALS_EXCEPTION_RUNTIME: &[RuntimeGlobal] = &[
+    RuntimeGlobal::ExceptionPending,
+    RuntimeGlobal::ExceptionHandlerDepth,
+];
 
 const READ_STDIN_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const WRITE_DEPS: &[RuntimeFn] = &[];
@@ -736,14 +745,22 @@ const BIGINT_DIV_DEPS: &[RuntimeFn] = &[
     RuntimeFn::BigIntDivisionByZeroRangeError,
 ];
 const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntDiv];
-const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
-const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
+const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Write];
+const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Write];
 const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const PRIVATE_BRAND_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
-const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS: &[&str] =
-    &[RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR];
-const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_RUNTIME_STRINGS: &[&str] =
-    &[RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR];
+const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
+    RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR,
+    "Cannot mix BigInt and other types, use explicit conversions",
+    "message",
+];
+const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_RUNTIME_STRINGS: &[&str] = &[
+    RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR,
+    "Division by zero",
+    "message",
+];
 const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR];
 const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] =

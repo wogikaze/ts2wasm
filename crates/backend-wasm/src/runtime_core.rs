@@ -1440,7 +1440,7 @@ impl WatEmitter<'_> {
     (local.set $b_sign (i32.load (i32.add (local.get $b_obj) (i32.const {bigint_sign_offset}))))
     (if (i32.eqz (local.get $b_sign))
       (then
-        (call $bigint_division_by_zero_range_error)))
+        (return (call $bigint_division_by_zero_range_error))))
     (local.set $a_ptr (i32.add (local.get $a_obj) (i32.const {bigint_decimal_data_offset})))
     (local.set $b_ptr (i32.add (local.get $b_obj) (i32.const {bigint_decimal_data_offset})))
     (local.set $a_len (i32.load (i32.add (local.get $a_obj) (i32.const {bigint_decimal_len_offset}))))
@@ -1582,19 +1582,74 @@ impl WatEmitter<'_> {
         ));
     }
 
+    fn emit_runtime_catchable_error(
+        &self,
+        wat: &mut String,
+        signature: &str,
+        prototype_global: &str,
+        diagnostic_message: &str,
+        object_message: &str,
+    ) {
+        let message_offset = self.string_offset(diagnostic_message) + Layout::STRING_HEADER_SIZE;
+        let message_value = self.string_value(object_message);
+        let message_key = self.string_value("message");
+        let object_size = Layout::OBJECT_HEADER_SIZE + Layout::OBJECT_ENTRY_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func {signature}
+    (local $error_obj i32)
+    (if (i32.eqz (global.get $exception_handler_depth))
+      (then
+        (call $write (i32.const {message_offset}) (i32.const {message_len}))
+        (unreachable)))
+    (local.set $error_obj (call $alloc_heap (i32.const {object_size})))
+    (i32.store (local.get $error_obj) (i32.const 1))
+    (i32.store
+      (i32.add (local.get $error_obj) (i32.const {object_prototype_offset}))
+      (global.get ${prototype_global}))
+    (i32.store
+      (i32.add (local.get $error_obj) (i32.const {object_entries_offset}))
+      (i32.const {message_key}))
+    (i32.store
+      (i32.add (local.get $error_obj) (i32.const {message_value_offset}))
+      (i32.const {message_value}))
+    (global.set $exception_pending (i32.or (local.get $error_obj) (i32.const {object_tag})))
+    (i32.const {undefined_tag}))
+"#,
+            signature = signature,
+            message_offset = message_offset,
+            message_len = diagnostic_message.len() as i32,
+            object_size = object_size,
+            object_prototype_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
+            object_entries_offset = Layout::OBJECT_ENTRIES_OFFSET,
+            message_value_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,
+            message_key = message_key,
+            message_value = message_value,
+            prototype_global = prototype_global,
+            object_tag = ValueTag::OBJECT_TAG,
+            undefined_tag = ValueTag::UNDEFINED,
+        ));
+    }
+
     pub(super) fn emit_bigint_division_by_zero_range_error(&self, wat: &mut String) {
-        self.emit_runtime_diagnostic_abort(
+        self.emit_runtime_catchable_error(
             wat,
-            "$bigint_division_by_zero_range_error",
+            "$bigint_division_by_zero_range_error (result i32)",
+            builtin_error_prototype_global(
+                ts2wasm_ir::lowered::BuiltinErrorConstructor::RangeError,
+            ),
             RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR,
+            "Division by zero",
         );
     }
 
     pub(super) fn emit_bigint_mixed_arithmetic_type_error(&self, wat: &mut String) {
-        self.emit_runtime_diagnostic_abort(
+        self.emit_runtime_catchable_error(
             wat,
             "$bigint_mixed_arithmetic_type_error (param $left i32) (param $right i32) (result i32)",
+            builtin_error_prototype_global(ts2wasm_ir::lowered::BuiltinErrorConstructor::TypeError),
             RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR,
+            "Cannot mix BigInt and other types, use explicit conversions",
         );
     }
 

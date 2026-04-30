@@ -30,6 +30,7 @@ pub struct ClassPrototypeRef {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum BuiltinErrorConstructor {
     Error,
+    RangeError,
     TypeError,
     ReferenceError,
     SyntaxError,
@@ -39,6 +40,7 @@ impl BuiltinErrorConstructor {
     pub fn from_name(name: &str) -> Option<Self> {
         match name {
             "Error" => Some(Self::Error),
+            "RangeError" => Some(Self::RangeError),
             "TypeError" => Some(Self::TypeError),
             "ReferenceError" => Some(Self::ReferenceError),
             "SyntaxError" => Some(Self::SyntaxError),
@@ -49,7 +51,9 @@ impl BuiltinErrorConstructor {
     pub fn parent(self) -> Option<Self> {
         match self {
             Self::Error => None,
-            Self::TypeError | Self::ReferenceError | Self::SyntaxError => Some(Self::Error),
+            Self::RangeError | Self::TypeError | Self::ReferenceError | Self::SyntaxError => {
+                Some(Self::Error)
+            }
         }
     }
 }

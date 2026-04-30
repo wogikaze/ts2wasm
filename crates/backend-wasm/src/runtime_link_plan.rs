@@ -6,7 +6,9 @@ use ts2wasm_ir::lowered::{
 };
 use ts2wasm_runtime_abi::ValueTag;
 
-use super::runtime_fn::{Capability, HostAbi, HostImport, RuntimeFn, RuntimeGlobal};
+use super::runtime_fn::{
+    Capability, GLOBALS_EXCEPTION_RUNTIME, HostAbi, HostImport, RuntimeFn, RuntimeGlobal,
+};
 
 #[derive(Debug, Clone)]
 pub(crate) struct RuntimeLinkPlan {
@@ -105,6 +107,12 @@ impl RuntimeLinkPlan {
         }
     }
 
+    fn add_required_globals(&mut self, globals: &'static [RuntimeGlobal]) {
+        for global in globals {
+            self.required_globals.insert(*global);
+        }
+    }
+
     fn populate_derived_sets(&mut self) {
         // Collect capability reasons first to avoid borrow conflicts
         let mut capability_reasons_to_add: Vec<(String, String)> = Vec::new();
@@ -194,6 +202,7 @@ impl RuntimeLinkPlan {
                     catch_body,
                     finally_body,
                 } => {
+                    self.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
                     self.collect_required_runtime_stmts(try_body);
                     if let Some(body) = catch_body {
                         self.collect_required_runtime_stmts(body);

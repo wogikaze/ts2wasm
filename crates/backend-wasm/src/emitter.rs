@@ -726,6 +726,20 @@ impl<'a> WatEmitter<'a> {
 
     pub(super) fn builtin_error_prototypes(&self) -> BTreeSet<BuiltinErrorConstructor> {
         let mut prototypes = BTreeSet::new();
+        if self
+            .link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::BigIntDivisionByZeroRangeError)
+        {
+            add_builtin_error_prototype_ref(BuiltinErrorConstructor::RangeError, &mut prototypes);
+        }
+        if self
+            .link_plan
+            .required_runtime_functions()
+            .contains(&RuntimeFn::BigIntMixedArithmeticTypeError)
+        {
+            add_builtin_error_prototype_ref(BuiltinErrorConstructor::TypeError, &mut prototypes);
+        }
         Self::collect_builtin_error_prototypes_from_stmts(
             &self.program.top_level_statements,
             &mut prototypes,
@@ -1546,6 +1560,7 @@ pub(super) fn class_prototype_global(id: FuncId) -> String {
 pub(super) fn builtin_error_prototype_global(constructor: BuiltinErrorConstructor) -> &'static str {
     match constructor {
         BuiltinErrorConstructor::Error => "error_proto_error",
+        BuiltinErrorConstructor::RangeError => "error_proto_range_error",
         BuiltinErrorConstructor::TypeError => "error_proto_type_error",
         BuiltinErrorConstructor::ReferenceError => "error_proto_reference_error",
         BuiltinErrorConstructor::SyntaxError => "error_proto_syntax_error",
@@ -1555,6 +1570,7 @@ pub(super) fn builtin_error_prototype_global(constructor: BuiltinErrorConstructo
 pub(super) fn builtin_error_stack_prefix(constructor: BuiltinErrorConstructor) -> &'static str {
     match constructor {
         BuiltinErrorConstructor::Error => "Error: ",
+        BuiltinErrorConstructor::RangeError => "RangeError: ",
         BuiltinErrorConstructor::TypeError => "TypeError: ",
         BuiltinErrorConstructor::ReferenceError => "ReferenceError: ",
         BuiltinErrorConstructor::SyntaxError => "SyntaxError: ",

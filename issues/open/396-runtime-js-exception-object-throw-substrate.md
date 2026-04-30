@@ -136,3 +136,22 @@ cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed: failed in existing i
 cargo test -p ts2wasm-backend-wasm private_field_runtime_calls: pass (3 passed; 28 filtered out)
 mise run update-issue-index -- --check && mise run check issues: pass
 ```
+
+2026-05-01 child-396 catchable runtime Error-like object progress:
+
+- Added a minimal pending-exception runtime state (`$exception_pending` plus `$exception_handler_depth`) used only by selected runtime helper errors and the current `TryCatch` emitter.
+- `bigint_mixed_arithmetic_type_error` now preserves the existing uncaught diagnostic/abort behavior when no handler is active, but inside supported `try/catch` it allocates a TypeError-like heap object with the builtin TypeError prototype and `message` property, stores it as pending, and returns `undefined` for statement-boundary catch propagation.
+- `bigint_division_by_zero_range_error` now uses the same active-handler path for a RangeError-like heap object with `message = "Division by zero"`; uncaught division/remainder by zero remains the existing diagnostic/abort surface.
+- Added Node/iwasm differential fixtures for `catch (e) { console.log(e.message); }` over mixed Number/BigInt arithmetic and BigInt division by zero.
+- Full ECMAScript completion-record propagation, nested expression unwinding, and broader helper adoption remain open, so this issue is PROGRESS rather than DONE.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed: failed on pre-existing issue-281 diagnostic-kind expectation; new bigint_mixed_runtime_typeerror_catch fixture passed in the same run (10 passed, 1 failed)
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed_runtime_typeerror_catch: pass (1 passed; 208 filtered out)
+cargo test -p ts2wasm-cli --test m2_node_diff rangeerror: pass (3 passed; 206 filtered out)
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
