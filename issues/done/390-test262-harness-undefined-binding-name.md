@@ -3,12 +3,13 @@ id: 390
 title: "Allow or rewrite Test262 harness undefined binding name"
 type: bug
 area: frontend/parser
-class: ready
+class: done
 priority: P2
 depends_on: [389]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -83,7 +84,18 @@ mise run check issues
 
 ## Completion evidence
 
-Fill when moving to `done/`.
+2026-05-01 child validation confirms the representative Test262 harness input
+now advances beyond `var undefined = void 0;` without reporting issue 247.
+
+Evidence:
+
+```text
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js
+result: no issue-247 diagnostic at `var undefined = void 0`; visible symbols include binding `undefined`; next blocker is open issue 274 at `return (function() { return this; })();`
+```
+
+The newly exposed blocker is represented by `issues/open/274-implement-spread-operator.md`.
+
 
 ## Reopen evidence
 
