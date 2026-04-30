@@ -1274,15 +1274,8 @@ impl Parser {
 
     fn function_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let start = self.expect(TokenKind::Function)?;
-        if let Some(star) = self.consume_span(TokenKind::Star) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-353: generator function declarations require generator object and iterator protocol lowering before iterator spread can be supported".to_owned(),
-                span: Some(Span {
-                    start: start.start,
-                    end: star.end,
-                }),
-            });
+        if self.consume(TokenKind::Star) {
+            return self.finish_generator_function_statement(start);
         }
         let (name, _) = self.expect_ident()?;
         let has_generic_params = self.consume_typescript_generic_parameter_list()?;
@@ -1315,6 +1308,41 @@ impl Parser {
             params,
             body,
             is_generator: false,
+            span: Span {
+                start: start.start,
+                end,
+            },
+        })
+    }
+
+    fn finish_generator_function_statement(&mut self, start: Span) -> Result<Stmt, Diagnostic> {
+        let (name, _) = self.expect_ident()?;
+        self.expect(TokenKind::LeftParen)?;
+        let mut params = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self.parse_param(false)?;
+                let is_rest = param.is_rest;
+                params.push((param.name, param.default, is_rest));
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
+                self.expect(TokenKind::Comma)?;
+            }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+        }
+        self.skip_balanced_brace_block(start)?;
+        let end = self.peek_span().map(|span| span.start).unwrap_or(start.end);
+        Ok(Stmt::Function {
+            name,
+            params,
+            body: Vec::new(),
+            is_generator: true,
             span: Span {
                 start: start.start,
                 end,
