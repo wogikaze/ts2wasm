@@ -356,12 +356,9 @@ fn bigint_bitwise_mixed_reports_issue_387() {
 }
 
 #[test]
-fn bigint_bitwise_dynamic_out_of_signed_i64_reports_issue_387() {
-    assert_build_fails_with_diagnostic(
+fn bigint_bitwise_dynamic_out_of_signed_i64_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
         "fixtures/core-semantics/bigint-bitwise-dynamic-out-of-signed-i64-unsupported.ts",
-        "[UnsupportedRuntimeSubset]",
-        "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented",
-        true,
     );
 }
 
