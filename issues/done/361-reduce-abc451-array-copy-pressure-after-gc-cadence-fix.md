@@ -3,12 +3,14 @@ id: 361
 title: "Reduce ABC451 array copy pressure after GC cadence fix"
 type: bug
 area: runtime/memory
-class: implementation-ready
+class: done
 priority: P1
 depends_on: [360]
 blocks: [357, 309]
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-04-30
+status: done
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -68,11 +70,11 @@ The depth-8 ABC451 live-set fixture completes under `iwasm` within the test time
 
 In scope:
 
-- [ ] Reduce array/copy pressure, allocation count, or residual sweep pressure using a general runtime-memory improvement.
-- [ ] Preserve the committed 185-page memory policy.
-- [ ] Preserve explicit OOM failure behavior.
-- [ ] Record before/after diagnostic evidence with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30`.
-- [ ] If the depth-8 fixture now completes, close issue 357 in the same merge or request parent close after verification.
+- [x] Reduce array/copy pressure, allocation count, or residual sweep pressure using a general runtime-memory improvement.
+- [x] Preserve the committed 185-page memory policy.
+- [x] Preserve explicit OOM failure behavior.
+- [x] Record before/after diagnostic evidence with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30`.
+- [x] Depth-8 did not complete; issue 357 remains open and issue 362 tracks the remaining blocker.
 
 Out of scope:
 
@@ -88,7 +90,7 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
-- `issues/open/361-reduce-abc451-array-copy-pressure-after-gc-cadence-fix.md`
+- `issues/done/361-reduce-abc451-array-copy-pressure-after-gc-cadence-fix.md`
 - `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
@@ -102,12 +104,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records reduced remaining pressure versus the issue 360 parent-verified baseline, or records a justified replacement metric if the runtime structure changes.
-- [ ] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes, or the issue records quantified progress and the remaining blocker.
-- [ ] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
-- [ ] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes if backend runtime code changes.
-- [ ] `cargo fmt --all --check` passes.
-- [ ] `mise run update-issue-index -- --check` and `mise run check issues` pass.
+- [x] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records reduced remaining pressure versus the issue 360 parent-verified baseline.
+- [x] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` still times out, and this issue records quantified progress plus follow-up issue 362.
+- [x] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
+- [x] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes.
+- [x] `cargo fmt --all --check` passes.
+- [x] `mise run update-issue-index -- --check` and `mise run check issues` pass.
 
 ## Validation
 
@@ -145,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] create only if this slice isolates a smaller remaining blocker
+- [x] created issue 362 for remaining post-copy timeout pressure
 
 ## Notes
 
@@ -254,3 +256,14 @@ date:
 Remaining risks:
 
 - none
+
+## Parent close evidence
+
+Parent verified and closed this focused issue after integrating child progress.
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; array_copy_bytes=182008; allocation_requested_bytes=521193; gc_collections=5; sweep_visits=58859; timed_out=false
+
+action: created issue 362 for remaining post-copy timeout pressure because issue 357 still times out.
+```

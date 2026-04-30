@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 115 | 35 | 80 |
+| runtime | 116 | 35 | 81 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 374 | 173 | 201 |
+| total | 375 | 173 | 202 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
-| 361 | Reduce ABC451 array copy pressure after GC cadence fix | bug | runtime/memory | implementation-ready | P1 | 360 | the depth-8 fixture still times out after free-list scans and some sweep pressure were reduced. The remaining measure... |
+| 362 | Drive ABC451 depth-8 under iwasm timeout after copy reductions | bug | runtime/memory | implementation-ready | P1 | 361 | `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` still times out around 30 seconds even after free-li... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -430,6 +430,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 358 | Instrument ABC451 depth-8 runtime costs | test | runtime/performance | see `issues/done/358-instrument-abc451-depth8-runtime-costs.md` |
 | 359 | Reduce ABC451 free-list scan cost | bug | runtime/memory | see file |
 | 360 | Reduce ABC451 sweep and copy pressure after free-list fix | bug | runtime/memory | see `issues/done/360-reduce-abc451-sweep-and-copy-pressure-after-free-list-fix.md` |
+| 361 | Reduce ABC451 array copy pressure after GC cadence fix | bug | runtime/memory | see `issues/done/361-reduce-abc451-array-copy-pressure-after-gc-cadence-fix.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
