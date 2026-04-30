@@ -207,7 +207,7 @@ fn assert_fixture_node_rangeerror_and_iwasm_traps(fixture: &str) {
     assert_fixture_iwasm_traps(fixture);
 }
 
-fn assert_fixture_node_typeerror_and_iwasm_traps(fixture: &str) {
+fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
@@ -224,7 +224,45 @@ fn assert_fixture_node_typeerror_and_iwasm_traps(fixture: &str) {
         "expected Node mixed BigInt TypeError for {fixture}, got:\n{node_stderr}"
     );
 
-    assert_fixture_iwasm_traps(fixture);
+    let output = temp_wasm_path(fixture);
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        !iwasm.output.status.success(),
+        "iwasm unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    let iwasm_output = format!(
+        "{}{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    )
+    .to_ascii_lowercase();
+    assert!(
+        iwasm_output.contains("typeerror") && iwasm_output.contains("cannot mix bigint"),
+        "expected iwasm mixed BigInt TypeError diagnostic for {fixture}, got:\n{iwasm_output}"
+    );
 }
 
 fn assert_live_time_fixture_in_host_window(fixture: &str) {

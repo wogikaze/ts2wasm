@@ -294,15 +294,15 @@ fn bigint_runtime_branch_large_assignment_reports_issue_370() {
 }
 
 #[test]
-fn bigint_mixed_runtime_add_typeerror_traps_after_successful_build() {
-    assert_fixture_node_typeerror_and_iwasm_traps(
+fn bigint_mixed_runtime_add_reports_typeerror_after_successful_build() {
+    assert_fixture_node_typeerror_and_iwasm_reports_typeerror(
         "fixtures/core-semantics/bigint-runtime-mixed-typeerror-trap.ts",
     );
 }
 
 #[test]
-fn bigint_mixed_arithmetic_typeerror_traps_after_successful_build() {
-    assert_fixture_node_typeerror_and_iwasm_traps(
+fn bigint_mixed_arithmetic_reports_typeerror_after_successful_build() {
+    assert_fixture_node_typeerror_and_iwasm_reports_typeerror(
         "fixtures/core-semantics/bigint-mixed-arithmetic-typeerror-trap.ts",
     );
 }

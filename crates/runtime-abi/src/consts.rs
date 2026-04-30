@@ -18,4 +18,6 @@ impl RuntimeString {
     pub const TRUE: &'static str = "true";
     pub const NEWLINE: &'static str = "\n";
     pub const JSON_PARSE_SYNTAX_ERROR: &'static str = "SyntaxError: JSON.parse invalid JSON\n";
+    pub const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR: &'static str =
+        "TypeError: Cannot mix BigInt and other types, use explicit conversions\n";
 }

@@ -217,10 +217,10 @@ impl RuntimeFn {
             },
             Self::BigIntMixedArithmeticTypeError => RuntimeSpec {
                 symbol: "$bigint_mixed_arithmetic_type_error",
-                deps: NO_DEPS,
+                deps: BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::BigIntBitwiseNot => RuntimeSpec {

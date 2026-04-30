@@ -84,6 +84,16 @@ cargo nextest run -E 'test(bigint) or test(node_diff) or test(exception)'
 
 Fill only when moving to `done/`.
 
+## Progress evidence
+
+2026-05-01 child-396 progress:
+
+- Added the first runtime exception diagnostic substrate slice for mixed Number/BigInt arithmetic.
+- `BigIntMixedArithmeticTypeError` now declares a `$write` dependency and runtime TypeError string through the `RuntimeFn` catalog.
+- The runtime helper now writes `TypeError: Cannot mix BigInt and other types, use explicit conversions` before aborting, so the observable iwasm failure is not just a bare `unreachable` trap.
+- Updated Node/iwasm mixed arithmetic tests to assert the TypeError diagnostic surface after successful build.
+- Full catchable JavaScript Error-object propagation remains open, so this issue is PROGRESS rather than DONE.
+
 Commits:
 
 - none yet; issue is open

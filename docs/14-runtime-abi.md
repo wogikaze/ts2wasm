@@ -211,11 +211,30 @@ IR は BigInt literal と BigInt operations を phase-specific に扱う。
 - Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus, `+`, `-`, `*`, signed-i64-safe `**`, and signed-i64-safe BigInt-specific `~` / `&` / `|` / `^` currently lower to runtime helpers when pre-lowering proof keeps them inside the signed-i64 helper slice. Known BigInt `/` and `%` lower to cached-decimal runtime helpers for values outside signed i64 when operands remain tracked as BigInt. Literal BigInt `**` is folded before lowering only for non-negative exponent literals in `0..=64`; dynamic BigInt exponentiation outside the signed-i64-safe proof boundary remains issue 376. BigInt bitwise helpers do not share ordinary number bitwise lowering. BigInt operation mixed Number/BigInt TypeError parity is split to issue 370; current statically visible mixes remain issue-linked diagnostics
 - Backend/runtime link plan: BigInt helper は `RuntimeFn` catalog で deps/imports/capabilities/runtime strings を持つ。BigInt だけでは host import を要求しない
 
+### Runtime exception diagnostic substrate
+
+Runtime-generated JavaScript exceptions currently have a staged ABI. The minimal
+implemented substrate can emit the JavaScript error class/name and message through
+the same WASI `$write` path used by runtime diagnostics, then abort execution. This
+means the observable failure is no longer only an `unreachable` trap; tests can assert
+the exception class/message surface while catchable exception object propagation remains
+out of scope.
+
+Issue 396 starts this substrate for mixed Number/BigInt arithmetic:
+
+- `bigint_mixed_arithmetic_type_error(jsval, jsval) -> jsval` evaluates both operands
+  before entering the helper, writes `TypeError: Cannot mix BigInt and other types, use explicit conversions`,
+  and aborts.
+- The helper declares its `$write` dependency and runtime string through the `RuntimeFn`
+  catalog, so capabilities and string interning remain link-plan driven.
+- This is intentionally not yet full ECMAScript `throw` / `try` / `catch` propagation;
+  catchable Error objects and completion-record unwinding remain the next substrate step.
+
 Unsupported boundary:
 
 - literal runtime values: implemented by issue 259 for decimal/binary/octal/hex literal construction, `console.log`, `typeof`, literal `String(...)`, and truthiness
 - Full multi-limb BigInt arithmetic beyond the issue-260 signed-i64-backed progress slice, excluding the issue-384 known-BigInt `/` and `%` slice: `unsupported-bigint-arithmetic` / issue 369
-- BigInt arithmetic RangeError/TypeError parity: `unsupported-bigint-arithmetic-exception` / issue 370
+- BigInt arithmetic exception parity: mixed Number/BigInt TypeError now has a runtime diagnostic/abort surface through issue 396; catchable Error-object propagation and RangeError parity remain `unsupported-bigint-arithmetic-exception` / issue 370
 - Dynamic BigInt exponentiation outside the signed-i64-safe helper proof boundary: `unsupported-bigint-exponentiation` / issue 376
 - BigInt dynamic bitwise NOT and binary AND/OR/XOR beyond the signed-i64-safe helper slice: `unsupported-bigint-bitwise` / issue 387
 - BigInt shift operators and unsigned-right-shift TypeError policy: `unsupported-bigint-shift` / issue 378

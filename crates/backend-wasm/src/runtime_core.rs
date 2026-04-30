@@ -1426,12 +1426,17 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_bigint_mixed_arithmetic_type_error(&self, wat: &mut String) {
-        wat.push_str(
+        let message = self.string_offset(RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR)
+            + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
             r#"
   (func $bigint_mixed_arithmetic_type_error (param $left i32) (param $right i32) (result i32)
+    (call $write (i32.const {message}) (i32.const {message_len}))
     (unreachable))
 "#,
-        );
+            message = message,
+            message_len = RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR.len() as i32,
+        ));
     }
 
     pub(super) fn emit_bigint_unary_minus(&self, wat: &mut String) {
