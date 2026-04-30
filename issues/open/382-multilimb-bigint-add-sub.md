@@ -141,6 +141,15 @@ This issue has been split into:
 
 This is a focused split from issue 369, covering only addition and subtraction. Do not implement this by widening the signed-i64 conversion path. The compatibility target is the canonical heap BigInt limb representation.
 
+## Progress evidence
+
+2026-05-01 child progress slice:
+
+- Implemented cached-decimal runtime `bigint_add` / `bigint_sub` for selected known BigInt operands and results outside signed-i64.
+- Added `fixtures/core-semantics/bigint-runtime-large-add-sub.ts` with Node/iwasm differential coverage for large add/sub and a branch-assigned large result local.
+- Validation passed: `cargo fmt --all --check`; `cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_add_sub`; `mise run update-issue-index -- --check`; `mise run check issues`.
+- Remaining branch-assigned local reused as a later add/sub operand is split to issue 397.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

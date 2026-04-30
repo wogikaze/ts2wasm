@@ -1170,7 +1170,9 @@ impl BigIntRuntimeGuard {
                             ) {
                                 return Err(bigint_bitwise_diagnostic(*span));
                             }
-                            return Err(bigint_dynamic_runtime_diagnostic(*span));
+                            if !matches!(op, BinaryOp::Add | BinaryOp::Subtract) {
+                                return Err(bigint_dynamic_runtime_diagnostic(*span));
+                            }
                         }
                         Some(result)
                     }
@@ -1185,7 +1187,9 @@ impl BigIntRuntimeGuard {
                     {
                         return Err(bigint_bitwise_diagnostic(*span));
                     }
-                    _ if runtime_needed => return Err(bigint_dynamic_runtime_diagnostic(*span)),
+                    _ if runtime_needed && !matches!(op, BinaryOp::Add | BinaryOp::Subtract) => {
+                        return Err(bigint_dynamic_runtime_diagnostic(*span));
+                    }
                     _ => None,
                 };
                 Ok(Some(BigIntStaticInfo {

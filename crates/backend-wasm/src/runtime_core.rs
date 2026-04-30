@@ -828,11 +828,281 @@ impl WatEmitter<'_> {
       (then (i64.sub (i64.const 0) (local.get $mag)))
       (else (local.get $mag))))
 
+  (func $bigint_abs_data (param $v i32) (result i32)
+    (local $obj i32)
+    (local $ptr i32)
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $ptr (i32.add (local.get $obj) (i32.const {bigint_decimal_data_offset})))
+    (if (i32.lt_s
+          (i32.load (i32.add (local.get $obj) (i32.const {bigint_sign_offset})))
+          (i32.const 0))
+      (then (return (i32.add (local.get $ptr) (i32.const 1)))))
+    (local.get $ptr))
+
+  (func $bigint_abs_len (param $v i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $len (i32.load (i32.add (local.get $obj) (i32.const {bigint_decimal_len_offset}))))
+    (if (i32.lt_s
+          (i32.load (i32.add (local.get $obj) (i32.const {bigint_sign_offset})))
+          (i32.const 0))
+      (then (return (i32.sub (local.get $len) (i32.const 1)))))
+    (local.get $len))
+
+  (func $bigint_from_decimal_slice (param $sign i32) (param $src i32) (param $len i32) (result i32)
+    (call $make_bigint_literal
+      (local.get $sign)
+      (if (result i32) (i32.eqz (local.get $sign))
+        (then (i32.const 0))
+        (else (i32.const 1)))
+      (i32.const 0)
+      (i32.const 0)
+      (local.get $src)
+      (local.get $len)))
+
+  (func $bigint_copy_with_sign (param $v i32) (param $sign i32) (result i32)
+    (local $src i32)
+    (local $len i32)
+    (if (i32.eqz (local.get $sign))
+      (then
+        (i32.store8 (i32.const {scratch}) (i32.const {ascii_zero}))
+        (return
+          (call $bigint_from_decimal_slice
+            (i32.const 0)
+            (i32.const {scratch})
+            (i32.const 1)))))
+    (local.set $src (call $bigint_abs_data (local.get $v)))
+    (local.set $len (call $bigint_abs_len (local.get $v)))
+    (if (i32.lt_s (local.get $sign) (i32.const 0))
+      (then
+        (i32.store8 (i32.const {scratch}) (i32.const {ascii_minus}))
+        (call $copy
+          (local.get $src)
+          (i32.add (i32.const {scratch}) (i32.const 1))
+          (local.get $len))
+        (return
+          (call $bigint_from_decimal_slice
+            (i32.const -1)
+            (i32.const {scratch})
+            (i32.add (local.get $len) (i32.const 1))))))
+    (call $bigint_from_decimal_slice
+      (i32.const 1)
+      (local.get $src)
+      (local.get $len)))
+
+  (func $bigint_decimal_abs_cmp (param $a i32) (param $b i32) (result i32)
+    (local $a_len i32)
+    (local $b_len i32)
+    (local $a_ptr i32)
+    (local $b_ptr i32)
+    (local $i i32)
+    (local $a_digit i32)
+    (local $b_digit i32)
+    (local.set $a_len (call $bigint_abs_len (local.get $a)))
+    (local.set $b_len (call $bigint_abs_len (local.get $b)))
+    (if (i32.lt_u (local.get $a_len) (local.get $b_len))
+      (then (return (i32.const -1))))
+    (if (i32.gt_u (local.get $a_len) (local.get $b_len))
+      (then (return (i32.const 1))))
+    (local.set $a_ptr (call $bigint_abs_data (local.get $a)))
+    (local.set $b_ptr (call $bigint_abs_data (local.get $b)))
+    (block $done
+      (loop $digits
+        (br_if $done (i32.ge_u (local.get $i) (local.get $a_len)))
+        (local.set $a_digit (i32.load8_u (i32.add (local.get $a_ptr) (local.get $i))))
+        (local.set $b_digit (i32.load8_u (i32.add (local.get $b_ptr) (local.get $i))))
+        (if (i32.lt_u (local.get $a_digit) (local.get $b_digit))
+          (then (return (i32.const -1))))
+        (if (i32.gt_u (local.get $a_digit) (local.get $b_digit))
+          (then (return (i32.const 1))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $digits)))
+    (i32.const 0))
+
+  (func $bigint_add_abs_decimal (param $a i32) (param $b i32) (param $sign i32) (result i32)
+    (local $a_ptr i32)
+    (local $b_ptr i32)
+    (local $a_i i32)
+    (local $b_i i32)
+    (local $max_len i32)
+    (local $write i32)
+    (local $end i32)
+    (local $sum i32)
+    (local $carry i32)
+    (local $len i32)
+    (local.set $a_ptr (call $bigint_abs_data (local.get $a)))
+    (local.set $b_ptr (call $bigint_abs_data (local.get $b)))
+    (local.set $a_i (call $bigint_abs_len (local.get $a)))
+    (local.set $b_i (call $bigint_abs_len (local.get $b)))
+    (local.set $max_len
+      (if (result i32) (i32.gt_u (local.get $a_i) (local.get $b_i))
+        (then (local.get $a_i))
+        (else (local.get $b_i))))
+    (local.set $end (i32.add (i32.const {scratch}) (i32.add (local.get $max_len) (i32.const 1))))
+    (local.set $write (local.get $end))
+    (block $done
+      (loop $digits
+        (br_if $done
+          (i32.and
+            (i32.and (i32.eqz (local.get $a_i)) (i32.eqz (local.get $b_i)))
+            (i32.eqz (local.get $carry))))
+        (local.set $sum (local.get $carry))
+        (if (i32.gt_u (local.get $a_i) (i32.const 0))
+          (then
+            (local.set $a_i (i32.sub (local.get $a_i) (i32.const 1)))
+            (local.set $sum
+              (i32.add
+                (local.get $sum)
+                (i32.sub
+                  (i32.load8_u (i32.add (local.get $a_ptr) (local.get $a_i)))
+                  (i32.const {ascii_zero}))))))
+        (if (i32.gt_u (local.get $b_i) (i32.const 0))
+          (then
+            (local.set $b_i (i32.sub (local.get $b_i) (i32.const 1)))
+            (local.set $sum
+              (i32.add
+                (local.get $sum)
+                (i32.sub
+                  (i32.load8_u (i32.add (local.get $b_ptr) (local.get $b_i)))
+                  (i32.const {ascii_zero}))))))
+        (local.set $write (i32.sub (local.get $write) (i32.const 1)))
+        (i32.store8
+          (local.get $write)
+          (i32.add
+            (i32.rem_u (local.get $sum) (i32.const 10))
+            (i32.const {ascii_zero})))
+        (local.set $carry (i32.div_u (local.get $sum) (i32.const 10)))
+        (br $digits)))
+    (local.set $len (i32.sub (local.get $end) (local.get $write)))
+    (if (i32.lt_s (local.get $sign) (i32.const 0))
+      (then
+        (local.set $write (i32.sub (local.get $write) (i32.const 1)))
+        (i32.store8 (local.get $write) (i32.const {ascii_minus}))
+        (local.set $len (i32.add (local.get $len) (i32.const 1)))))
+    (call $bigint_from_decimal_slice (local.get $sign) (local.get $write) (local.get $len)))
+
+  (func $bigint_sub_abs_decimal (param $large i32) (param $small i32) (param $sign i32) (result i32)
+    (local $large_ptr i32)
+    (local $small_ptr i32)
+    (local $large_i i32)
+    (local $small_i i32)
+    (local $write i32)
+    (local $end i32)
+    (local $digit i32)
+    (local $borrow i32)
+    (local $len i32)
+    (local.set $large_ptr (call $bigint_abs_data (local.get $large)))
+    (local.set $small_ptr (call $bigint_abs_data (local.get $small)))
+    (local.set $large_i (call $bigint_abs_len (local.get $large)))
+    (local.set $small_i (call $bigint_abs_len (local.get $small)))
+    (local.set $end (i32.add (i32.const {scratch}) (local.get $large_i)))
+    (local.set $write (local.get $end))
+    (block $done
+      (loop $digits
+        (br_if $done (i32.eqz (local.get $large_i)))
+        (local.set $large_i (i32.sub (local.get $large_i) (i32.const 1)))
+        (local.set $digit
+          (i32.sub
+            (i32.sub
+              (i32.load8_u (i32.add (local.get $large_ptr) (local.get $large_i)))
+              (i32.const {ascii_zero}))
+            (local.get $borrow)))
+        (local.set $borrow (i32.const 0))
+        (if (i32.gt_u (local.get $small_i) (i32.const 0))
+          (then
+            (local.set $small_i (i32.sub (local.get $small_i) (i32.const 1)))
+            (local.set $digit
+              (i32.sub
+                (local.get $digit)
+                (i32.sub
+                  (i32.load8_u (i32.add (local.get $small_ptr) (local.get $small_i)))
+                  (i32.const {ascii_zero}))))))
+        (if (i32.lt_s (local.get $digit) (i32.const 0))
+          (then
+            (local.set $digit (i32.add (local.get $digit) (i32.const 10)))
+            (local.set $borrow (i32.const 1))))
+        (local.set $write (i32.sub (local.get $write) (i32.const 1)))
+        (i32.store8
+          (local.get $write)
+          (i32.add (local.get $digit) (i32.const {ascii_zero})))
+        (br $digits)))
+    (local.set $len (i32.sub (local.get $end) (local.get $write)))
+    (block $trim_done
+      (loop $trim
+        (br_if $trim_done (i32.le_u (local.get $len) (i32.const 1)))
+        (br_if $trim_done
+          (i32.ne (i32.load8_u (local.get $write)) (i32.const {ascii_zero})))
+        (local.set $write (i32.add (local.get $write) (i32.const 1)))
+        (local.set $len (i32.sub (local.get $len) (i32.const 1)))
+        (br $trim)))
+    (if (i32.and
+          (i32.eq (local.get $len) (i32.const 1))
+          (i32.eq (i32.load8_u (local.get $write)) (i32.const {ascii_zero})))
+      (then
+        (return
+          (call $bigint_from_decimal_slice
+            (i32.const 0)
+            (local.get $write)
+            (local.get $len)))))
+    (if (i32.lt_s (local.get $sign) (i32.const 0))
+      (then
+        (local.set $write (i32.sub (local.get $write) (i32.const 1)))
+        (i32.store8 (local.get $write) (i32.const {ascii_minus}))
+        (local.set $len (i32.add (local.get $len) (i32.const 1)))))
+    (call $bigint_from_decimal_slice (local.get $sign) (local.get $write) (local.get $len)))
+
+  (func $bigint_add_core (param $a i32) (param $b i32) (param $b_sign_factor i32) (result i32)
+    (local $a_obj i32)
+    (local $b_obj i32)
+    (local $a_sign i32)
+    (local $b_sign i32)
+    (local $cmp i32)
+    (local.set $a_obj (i32.and (local.get $a) (i32.const {heap_mask})))
+    (local.set $b_obj (i32.and (local.get $b) (i32.const {heap_mask})))
+    (local.set $a_sign (i32.load (i32.add (local.get $a_obj) (i32.const {bigint_sign_offset}))))
+    (local.set $b_sign
+      (i32.mul
+        (i32.load (i32.add (local.get $b_obj) (i32.const {bigint_sign_offset})))
+        (local.get $b_sign_factor)))
+    (if (i32.eqz (local.get $a_sign))
+      (then (return (call $bigint_copy_with_sign (local.get $b) (local.get $b_sign)))))
+    (if (i32.eqz (local.get $b_sign))
+      (then (return (call $bigint_copy_with_sign (local.get $a) (local.get $a_sign)))))
+    (if (i32.eq (local.get $a_sign) (local.get $b_sign))
+      (then
+        (return
+          (call $bigint_add_abs_decimal
+            (local.get $a)
+            (local.get $b)
+            (local.get $a_sign)))))
+    (local.set $cmp (call $bigint_decimal_abs_cmp (local.get $a) (local.get $b)))
+    (if (i32.eqz (local.get $cmp))
+      (then
+        (i32.store8 (i32.const {scratch}) (i32.const {ascii_zero})
+        )
+        (return
+          (call $bigint_from_decimal_slice
+            (i32.const 0)
+            (i32.const {scratch})
+            (i32.const 1)))))
+    (if (i32.gt_s (local.get $cmp) (i32.const 0))
+      (then
+        (return
+          (call $bigint_sub_abs_decimal
+            (local.get $a)
+            (local.get $b)
+            (local.get $a_sign)))))
+    (call $bigint_sub_abs_decimal
+      (local.get $b)
+      (local.get $a)
+      (local.get $b_sign)))
+
   (func $bigint_add (param $a i32) (param $b i32) (result i32)
-    (call $bigint_from_signed_i64
-      (i64.add
-        (call $bigint_signed_i64 (local.get $a))
-        (call $bigint_signed_i64 (local.get $b)))))
+    (call $bigint_add_core
+      (local.get $a)
+      (local.get $b)
+      (i32.const 1)))
 "#,
             scratch = Layout::SCRATCH_OFFSET,
             heap_mask = ValueTag::HEAP_MASK,
@@ -841,6 +1111,8 @@ impl WatEmitter<'_> {
             bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
             bigint_limb0_low_offset = Layout::BIGINT_LIMB0_LOW_OFFSET,
             bigint_limb0_high_offset = Layout::BIGINT_LIMB0_HIGH_OFFSET,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
         ));
     }
 
@@ -848,10 +1120,10 @@ impl WatEmitter<'_> {
         wat.push_str(
             r#"
   (func $bigint_sub (param $a i32) (param $b i32) (result i32)
-    (call $bigint_from_signed_i64
-      (i64.sub
-        (call $bigint_signed_i64 (local.get $a))
-        (call $bigint_signed_i64 (local.get $b)))))
+    (call $bigint_add_core
+      (local.get $a)
+      (local.get $b)
+      (i32.const -1)))
 "#,
         );
     }

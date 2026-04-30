@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 146 | 48 | 98 |
+| runtime | 147 | 49 | 98 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 409 | 187 | 222 |
+| total | 410 | 188 | 222 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -235,6 +235,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 | 392 | Multi-limb BigInt remainder | feature | runtime/semantics | 259, 260, 391 | Multi-limb BigInt remainder |
 | 394 | Multi-limb BigInt subtraction | feature | runtime/semantics | 259, 260, 393 | Multi-limb BigInt subtraction |
+| 397 | BigInt add/sub branch-assigned operands | feature | runtime/semantics | 382 | BigInt add/sub branch-assigned operands |
 <!-- generated:blocked:end -->
 
 ## Done queue
