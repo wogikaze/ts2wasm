@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 110 | 33 | 77 |
+| runtime | 111 | 34 | 77 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 369 | 171 | 198 |
+| total | 370 | 172 | 198 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,6 +51,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
+| 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
