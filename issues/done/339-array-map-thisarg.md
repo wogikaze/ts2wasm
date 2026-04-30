@@ -104,7 +104,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/379-validate-array-map-thisarg-test262.md`
+- [x] created and closed: `issues/done/379-validate-array-map-thisarg-test262.md`
 
 ## Notes
 

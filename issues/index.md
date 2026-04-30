@@ -19,13 +19,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 8 | 1 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 8 | 4 | 4 |
+| reference | 8 | 3 | 5 |
 | runtime | 131 | 36 | 95 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 392 | 175 | 217 |
+| total | 392 | 174 | 218 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -54,7 +54,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt bitwise NOT/AND/OR/XOR currently report issue-377 diagnostics and must not reuse ordinary number bitwise lower... |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
-| 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | verification-ready | P2 | 339 | selected Test262 `Array.prototype.map` thisArg evidence cannot be recorded in the current child worktree because the ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -448,6 +447,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | see `issues/done/368-implement-remaining-bigint-mixed-runtime-coercion-edges.md` |
 | 371 | Define BigInt bitwise and exponentiation policy | feature | runtime/semantics | see `issues/done/371-define-bigint-bitwise-and-exponentiation-policy.md` |
 | 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | see `issues/done/376-implement-dynamic-bigint-exponentiation.md` |
+| 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | see `issues/done/379-validate-array-map-thisarg-test262.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
