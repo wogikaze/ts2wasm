@@ -670,6 +670,22 @@ mod tests {
     }
 
     #[test]
+    fn parses_undefined_as_binding_identifier_in_declaration() {
+        // `undefined` is not a reserved word in ECMA-262 and can be used as
+        // a binding identifier (test262 WASM globals shim uses
+        // `var undefined = void 0;`).
+        let program = parse_program("var undefined = void 0;").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Let { name, expr, .. } => {
+                assert_eq!(name, "undefined");
+                assert!(matches!(expr, Expr::Unary { op: UnaryOp::Void, .. }));
+            }
+            other => panic!("expected Let statement, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_destructuring_assignment_patterns() {
         let program = parse_program(
             "({ x, y: target.value = 3, nested: [a, , b], ...rest } = obj); [first, , second = fallback, ...tail] = arr;",

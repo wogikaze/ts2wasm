@@ -64,6 +64,20 @@ impl Parser {
                     is_identifier: true,
                 })
             }
+            // `undefined` is not a reserved word in ECMA-262; it can be used
+            // as a binding identifier (e.g. `var undefined = void 0;` in the
+            // test262 WASM globals shim).
+            Some(Token::Undefined) => {
+                let span = self
+                    .advance()
+                    .expect("peek() returned Some(Token::Undefined) so advance() must succeed")
+                    .span;
+                Ok(ParsedBindingPattern {
+                    text: "undefined".to_owned(),
+                    span,
+                    is_identifier: true,
+                })
+            }
             Some(Token::LeftBracket) => self.parse_array_binding_pattern(),
             Some(Token::LeftBrace) => self.parse_object_binding_pattern(),
             other => Err(Diagnostic {
