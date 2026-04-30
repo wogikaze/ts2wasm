@@ -74,6 +74,10 @@ git worktree add ../ts2wasm-devin-<issue-id>-<short>-<yyyymmddhhmm> \
 
 git worktree add ../ts2wasm-opencode-<issue-id>-<short>-<yyyymmddhhmm> \
   -b agent/opencode-<issue-id>-<short>-<yyyymmddhhmm> origin/master
+
+mise run link-reference -- \
+  ../ts2wasm-devin-<issue-id>-<short>-<yyyymmddhhmm> \
+  ../ts2wasm-opencode-<issue-id>-<short>-<yyyymmddhhmm>
 ```
 
 If `git worktree add` races on `.git/config`, do not guess. Inspect
@@ -85,6 +89,7 @@ worktree or set upstream with `git branch --set-upstream-to=origin/master`.
 ```bash
 git worktree add ../ts2wasm-agent-merge-<yyyymmddhhmm> \
   -b agent/integration-3auto-<yyyymmddhhmm> origin/master
+mise run link-reference -- ../ts2wasm-agent-merge-<yyyymmddhhmm>
 ```
 
 The parent may cherry-pick into this integration branch first, then cherry-pick

@@ -153,7 +153,10 @@ Branch naming:
 
 ```bash
 git worktree add ../ts2wasm-<issue-id>-<short-title>-<timestamp> -b agent/<issue-id>-<short-title>-<timestamp>
+mise run link-reference -- ../ts2wasm-<issue-id>-<short-title>-<timestamp>
 ```
+
+1. Link the ignored reference corpus into the worktree with `mise run link-reference -- <worktree-path>` so `reference/test262` and other external suites are available without copying.
 
 1. Write an assignment file:
 

@@ -48,6 +48,10 @@ run = "python scripts/manager.py gen-issues-from-coverage"
 description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath"
 run = "python scripts/manager.py install-hooks"
 
+[tasks."link-reference"]
+description = "Symlink ignored reference/ corpus into worktrees"
+run = "python scripts/manager.py link-reference"
+
 [tasks."check-coverage-gate"]
 description = "Compare two coverage matrix documents (see script for args)"
 hide = true
