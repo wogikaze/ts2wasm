@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 218 | 142 | 76 |
+| frontend | 203 | 127 | 76 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 90 | 16 | 74 |
+| runtime | 91 | 17 | 74 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 355 | 162 | 193 |
+| total | 341 | 148 | 193 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,6 +51,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 folds representable tagged-int number literals such as `1n == 1`, but the current number model does not yet... |
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
+| 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | implementation-ready | P0 |  | arguments object out-of-range index assignment fails semantic comparison |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -194,22 +195,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | class: blocked | Implement ABC451 depth-9 GC cadence policy |
-| 311 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
-| 312 | Implement array-builtin support | spike | frontend/syntax | class: triage-needed | Implement array-builtin support |
-| 313 | Implement built-in API support | spike | frontend/syntax | class: triage-needed | Implement built-in API support |
-| 314 | Implement Date object support | spike | frontend/syntax | class: triage-needed | Implement Date object support |
-| 315 | Implement declaration-emit support | spike | frontend/syntax | class: triage-needed | Implement declaration-emit support |
-| 316 | Implement enum support | spike | frontend/syntax | class: triage-needed | Implement enum support |
-| 317 | Implement eval support | spike | frontend/syntax | class: triage-needed | Implement eval support |
-| 318 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
-| 319 | Implement html-comment support | spike | frontend/syntax | class: triage-needed | Implement html-comment support |
-| 320 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
-| 321 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
-| 322 | Implement negative-parse-syntaxerror support | spike | reference/triage | class: triage-needed | Implement negative-parse-syntaxerror support |
-| 323 | Implement object-builtin support | spike | frontend/syntax | class: triage-needed | Implement object-builtin support |
-| 324 | Implement parser syntax extensions | spike | frontend/syntax | class: triage-needed | Implement parser syntax extensions |
-| 325 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 326 | Implement string-builtin support | spike | frontend/syntax | class: triage-needed | Implement string-builtin support |
+| 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
 <!-- generated:blocked:end -->
 
 ## Done queue
