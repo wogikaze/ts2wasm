@@ -51,7 +51,7 @@ Already completed (not tracked by child issues):
 
 Child issues:
 - [ ] Issue 353: Implement iterator protocol integration for spread operator
-- [ ] Issue 354: Implement sparse array spread support
+- [x] Issue 354: Implement sparse array spread support
 - [x] Issue 355: Implement dynamic object property enumeration spread
 
 Remaining acceptance criteria:

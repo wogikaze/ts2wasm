@@ -86,7 +86,7 @@ Expected:
 
 Do not touch:
 
-- `issues/open/354-sparse-array-spread-support.md`
+- `issues/done/354-sparse-array-spread-support.md`
 - `issues/done/355-dynamic-object-enumeration-spread.md`
 
 ## Acceptance criteria
