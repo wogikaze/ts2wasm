@@ -9,6 +9,8 @@ depends_on: [207]
 blocks: [338]
 created: 2026-05-01
 updated: 2026-05-01
+status: done
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -49,11 +51,11 @@ unsupported construct while preserving assertion semantics.
 
 In scope:
 
-- [ ] Support the minimal `instanceof` RHS form used by the Test262 harness for
+- [x] Support the minimal `instanceof` RHS form used by the Test262 harness for
       the selected representative, or replace it in the wasm-side harness shim
       with equivalent supported assertion logic.
-- [ ] Keep issue 207 ordinary class-constructor semantics intact.
-- [ ] Rerun the selected Array.map representative and update issue 338 with the
+- [x] Keep issue 207 ordinary class-constructor semantics intact.
+- [x] Rerun the selected Array.map representative and update issue 338 with the
       next concrete blocker or pass evidence.
 
 Out of scope:
@@ -78,12 +80,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The selected representative no longer reports the issue-207 harness
+- [x] The selected representative no longer reports the issue-207 harness
       `instanceof` RHS diagnostic.
-- [ ] A focused regression or harness test covers the supported path.
-- [ ] Issue 338 is updated with the next concrete Test262 blocker or pass
+- [x] A focused regression or harness test covers the supported path.
+- [x] Issue 338 is updated with the next concrete Test262 blocker or pass
       evidence.
-- [ ] `cargo fmt --all --check` and `mise run check issues` pass.
+- [x] `cargo fmt --all --check` and `mise run check issues` pass.
 
 ## Validation
 
@@ -132,16 +134,33 @@ Fill only when moving to `done`.
 
 Commits:
 
-- `...`
+- `pending child-405 retry commit`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js
+result: pass; reports BuildPass / pass and no issue-207 `instanceof Array` blocker
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass
+date: 2026-05-01
+
+command: mise run update-issue-index -- --check
+result: pass
+date: 2026-05-01
+
+command: mise run check issues
+result: pass
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- none
+- Parent should use the committed hash from the final child report; this file
+  was filled before the validation commit hash existed.

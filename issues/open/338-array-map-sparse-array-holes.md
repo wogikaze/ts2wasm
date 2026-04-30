@@ -219,3 +219,19 @@ Remaining:
   `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
   still reports `[UnsupportedSyntax] issue-207: instanceof right-hand side must
   be a supported class constructor`Array``. Issue 405 remains open.
+
+2026-05-01 child-405-retry-20260430T235223Z:
+
+- Added `fixtures/core-semantics/array-map-test262-same-value-shim.ts` as a
+  focused regression for the selected Test262 Array.map sparse-holes source
+  shape with a wasm-side `assert.sameValue` harness object pattern.
+- Validation evidence:
+  `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
+  now reports `BuildPass` / `pass`; the exact issue-207 `instanceof Array`
+  blocker no longer appears.
+- Additional harness execution evidence:
+  `scripts.lib.test262_harness.process_one_test(...)` returned `status: pass`
+  with empty Node and iwasm output for the same representative.
+- Issue 405 closes the harness `instanceof` RHS blocker. This issue remains
+  open for parent-level final disposition of the broader Array.map sparse-holes
+  workstream.
