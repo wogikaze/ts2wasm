@@ -1,3 +1,4 @@
+use crate::builtin_resolved::ResolvedArrayElement;
 use super::*;
 
 pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], captures: &mut Vec<String>) {
@@ -49,7 +50,9 @@ pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], cap
         }
         ResolvedExpr::Array(elements) => {
             for element in elements {
-                collect_arrow_captures(element, params, captures);
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_arrow_captures(expr, params, captures);
+                }
             }
         }
         ResolvedExpr::Object(props) => {
@@ -393,9 +396,10 @@ pub(super) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
                 || expr_assigns_any_name(key, names)
                 || expr_assigns_any_name(expr, names)
         }
-        ResolvedExpr::Array(elements) => {
-            elements.iter().any(|expr| expr_assigns_any_name(expr, names))
-        }
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => expr_assigns_any_name(expr, names),
+            ResolvedArrayElement::Hole => false,
+        }),
         ResolvedExpr::Object(props) => props
             .iter()
             .any(|(_, value)| expr_assigns_any_name(value, names)),

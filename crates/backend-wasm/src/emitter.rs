@@ -544,6 +544,13 @@ impl<'a> WatEmitter<'a> {
                     self.collect_expr_strings(elem);
                 }
             }
+            LoweredExpr::ArrayNewSparse { slots } => {
+                for slot in slots {
+                    if let ts2wasm_ir::lowered::LoweredArraySlot::Present(elem) = slot {
+                        self.collect_expr_strings(elem);
+                    }
+                }
+            }
             LoweredExpr::ArrayGet { arr, index } => {
                 self.collect_expr_strings(arr);
                 self.collect_expr_strings(index);
@@ -1000,6 +1007,13 @@ impl<'a> WatEmitter<'a> {
                     Self::collect_class_prototypes_from_expr(elem, prototypes);
                 }
             }
+            LoweredExpr::ArrayNewSparse { slots } => {
+                for slot in slots {
+                    if let ts2wasm_ir::lowered::LoweredArraySlot::Present(elem) = slot {
+                        Self::collect_class_prototypes_from_expr(elem, prototypes);
+                    }
+                }
+            }
             LoweredExpr::ObjectNew { props } => {
                 for (_, value) in props {
                     Self::collect_class_prototypes_from_expr(value, prototypes);
@@ -1130,6 +1144,13 @@ impl<'a> WatEmitter<'a> {
             LoweredExpr::ArrayNew { elements } => {
                 for elem in elements {
                     Self::collect_builtin_error_prototypes_from_expr(elem, prototypes);
+                }
+            }
+            LoweredExpr::ArrayNewSparse { slots } => {
+                for slot in slots {
+                    if let ts2wasm_ir::lowered::LoweredArraySlot::Present(elem) = slot {
+                        Self::collect_builtin_error_prototypes_from_expr(elem, prototypes);
+                    }
                 }
             }
             LoweredExpr::ObjectNew { props } => {

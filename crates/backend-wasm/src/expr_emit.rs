@@ -5,8 +5,8 @@ use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
 use expr_emit_helpers::*;
 use ts2wasm_ir::lowered::{
-    ClosureRepresentation, FunctionCallKind, InferredType, LocalId, LoweredBinaryOp, LoweredExpr,
-    LoweredLogicalAssignOp, LoweredUnaryOp,
+    ClosureRepresentation, FunctionCallKind, InferredType, LocalId, LoweredArraySlot,
+    LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredUnaryOp,
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
@@ -30,6 +30,17 @@ const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
 const PRIVATE_FIELD_COUNT_MASK: u32 = 0xffff;
 const PRIVATE_FIELD_BRAND_SHIFT: u32 = 16;
+
+fn array_presence_mask(len: usize) -> i32 {
+    if len >= 32 {
+        -1
+    } else if len == 0 {
+        0
+    } else {
+        ((1u32 << len) - 1) as i32
+    }
+}
+
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
         match expr {
@@ -509,6 +520,9 @@ impl WatEmitter<'_> {
             },
             LoweredExpr::ArrayNew { elements } => {
                 self.emit_array_literal(wat, elements, indent, frame);
+            }
+            LoweredExpr::ArrayNewSparse { slots } => {
+                self.emit_sparse_array_literal(wat, slots, indent, frame);
             }
             LoweredExpr::ArrayGet { arr, index } => {
                 self.emit_expr(wat, arr, indent, frame);
@@ -1247,6 +1261,29 @@ impl WatEmitter<'_> {
             frame.heap_base_tmp(),
             elem_count,
         ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_CAPACITY_OFFSET,
+            elem_count,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 1))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            Layout::ARRAY_HEADER_SIZE,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            array_presence_mask(elem_count),
+        ));
         let child_frame = frame.child_temp_frame();
         for (i, elem) in elements.iter().enumerate() {
             let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
@@ -1254,6 +1291,84 @@ impl WatEmitter<'_> {
             wat.push_str(&format!(
                 "{pad}(local.set {})\n",
                 child_frame.heap_value_tmp(),
+            ));
+            wat.push_str(&format!(
+                "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",
+                frame.heap_base_tmp(),
+                offset,
+                child_frame.heap_value_tmp(),
+            ));
+        }
+        wat.push_str(&format!(
+            "{pad}(i32.or (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            ValueTag::ARRAY_TAG,
+        ));
+    }
+
+    fn emit_sparse_array_literal(
+        &self,
+        wat: &mut String,
+        slots: &[LoweredArraySlot],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let elem_count = slots.len();
+        let size = Layout::ARRAY_HEADER_SIZE + (elem_count as u32) * 4;
+        wat.push_str(&format!(
+            "{pad}(local.set {} (call {} (i32.const {})))\n",
+            frame.heap_base_tmp(),
+            RuntimeFn::AllocHeap.symbol(),
+            size,
+        ));
+        self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+        wat.push_str(&format!(
+            "{pad}(i32.store (local.get {}) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            elem_count,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_CAPACITY_OFFSET,
+            elem_count,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 1))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_PRESENCE_WORD_COUNT_OFFSET,
+        ));
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_ELEMENTS_OFFSET_OFFSET,
+            Layout::ARRAY_HEADER_SIZE,
+        ));
+        let mut mask = 0u32;
+        for (i, slot) in slots.iter().enumerate() {
+            if matches!(slot, LoweredArraySlot::Present(_)) && i < 32 {
+                mask |= 1u32 << i;
+            }
+        }
+        wat.push_str(&format!(
+            "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const {}))\n",
+            frame.heap_base_tmp(),
+            Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+            mask as i32,
+        ));
+        let child_frame = frame.child_temp_frame();
+        for (i, slot) in slots.iter().enumerate() {
+            let offset = Layout::ARRAY_HEADER_SIZE + (i as u32) * 4;
+            match slot {
+                LoweredArraySlot::Present(elem) => self.emit_expr(wat, elem, indent, &child_frame),
+                LoweredArraySlot::Hole => {
+                    wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED))
+                }
+            }
+            wat.push_str(&format!(
+                "{pad}(local.set {})\n",
+                child_frame.heap_value_tmp()
             ));
             wat.push_str(&format!(
                 "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (local.get {}))\n",

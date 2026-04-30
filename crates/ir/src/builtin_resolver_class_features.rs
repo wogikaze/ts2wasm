@@ -532,7 +532,17 @@ pub(super) fn validate_static_block_expr(expr: &Expr) -> Result<(), Diagnostic> 
             validate_static_block_expr(index)?;
             validate_static_block_expr(value)
         }
-        Expr::Array { elements, .. } => validate_static_block_exprs(elements),
+        Expr::Array { elements, .. } => {
+            for element in elements {
+                match element {
+                    ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
+                        validate_static_block_expr(expr)?;
+                    }
+                    ArrayLiteralElement::Hole(_) => {}
+                }
+            }
+            Ok(())
+        }
         Expr::Object { props, .. } => {
             for (_, value) in props {
                 validate_static_block_expr(value)?;

@@ -18,10 +18,16 @@ impl WatEmitter<'_> {
     (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
     (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {undefined}))))
     (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {undefined}))))
+    (if
+      (i32.eqz
+        (i32.and
+          (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+          (i32.shl (i32.const 1) (local.get $i))))
+      (then (return (i32.const {undefined}))))
     (i32.load
       (i32.add
         (local.get $base)
-        (i32.add (i32.const {header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (i32.add (i32.const {header}) (i32.shl (local.get $i) (i32.const 2))))))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
@@ -31,7 +37,40 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             undefined = ValueTag::UNDEFINED,
             header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_array_index_present(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_index_present (param $arr i32) (param $idx i32) (result i32)
+    (local $base i32)
+    (local $i i32)
+    (if (i32.ne (i32.and (local.get $arr) (i32.const {tag_mask})) (i32.const {array_tag}))
+      (then (return (i32.const {false}))))
+    (if (i32.ne (i32.and (local.get $idx) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then (return (i32.const {false}))))
+    (local.set $base (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $i) (i32.const {zero})) (then (return (i32.const {false}))))
+    (if (i32.ge_u (local.get $i) (i32.load (local.get $base))) (then (return (i32.const {false}))))
+    (if
+      (i32.and
+        (i32.load (i32.add (local.get $base) (i32.const {presence_words_offset})))
+        (i32.shl (i32.const 1) (local.get $i)))
+      (then (return (i32.const {true}))))
+    (i32.const {false}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            number_tag = ValueTag::NUMBER,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            false = ValueTag::FALSE,
+            true = ValueTag::TRUE,
+            presence_words_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
         ));
     }
 
@@ -79,15 +118,7 @@ impl WatEmitter<'_> {
                 (local.get $key_len)))))
         ;; Array indexing
         (if (i32.ne (local.get $obj_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
-        (if (i32.ge_u (local.get $i) (i32.load (local.get $base)))
-          (then (return (i32.const {undefined}))))
-        (return
-          (i32.load
-            (i32.add
-              (local.get $base)
-              (i32.add
-                (i32.const {array_header})
-                (i32.shl (local.get $i) (i32.const {elem_shift})))))))
+        (return (call $array_get (local.get $obj) (local.get $idx))))
         (else
           (local.set $key_len (call $value_to_string_into
             (local.get $idx)
@@ -109,8 +140,6 @@ impl WatEmitter<'_> {
             zero = RuntimeConst::ZERO,
             undefined = ValueTag::UNDEFINED,
             string_header = Layout::STRING_HEADER_SIZE,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
             scratch_offset = Layout::SCRATCH_OFFSET,
         ));
     }
@@ -274,7 +303,7 @@ impl WatEmitter<'_> {
               (then (return (i32.const {undefined}))))
             (i32.store
               (i32.add (local.get $base)
-                (i32.add (i32.const {array_header}) (i32.shl (local.get $count) (i32.const {elem_shift}))))
+                (i32.add (i32.const 20) (i32.shl (local.get $count) (i32.const 2))))
               (local.get $value))
             (return (local.get $value))))
         (return (i32.const {undefined}))))
@@ -322,9 +351,7 @@ impl WatEmitter<'_> {
             array_tag = ValueTag::ARRAY,
             heap_mask = ValueTag::HEAP_MASK,
             obj_header = Layout::OBJECT_HEADER_SIZE,
-            array_header = Layout::ARRAY_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
             str_header = Layout::STRING_HEADER_SIZE,
             value_off = Layout::OBJECT_VALUE_OFFSET,
             zero = RuntimeConst::ZERO,
@@ -758,8 +785,8 @@ impl WatEmitter<'_> {
             (i32.add
               (local.get $array_base)
               (i32.add
-                (i32.const {array_header})
-                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+                (i32.const 20)
+                (i32.shl (local.get $i) (i32.const 2))))))
         (drop (call $set_add_dispatch (local.get $set) (local.get $value)))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $values)))
@@ -768,8 +795,6 @@ impl WatEmitter<'_> {
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
             heap_mask = ValueTag::HEAP_MASK,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
@@ -812,8 +837,8 @@ impl WatEmitter<'_> {
     (local.set $array_base
       (call $alloc_heap
         (i32.add
-          (i32.const {array_header})
-          (i32.shl (local.get $len) (i32.const {elem_shift})))))
+          (i32.const 20)
+          (i32.shl (local.get $len) (i32.const 2)))))
     (i32.store (local.get $array_base) (local.get $len))
     (local.set $i (i32.const {zero}))
     (block $done
@@ -829,8 +854,8 @@ impl WatEmitter<'_> {
           (i32.add
             (local.get $array_base)
             (i32.add
-              (i32.const {array_header})
-              (i32.shl (local.get $i) (i32.const {elem_shift}))))
+              (i32.const 20)
+              (i32.shl (local.get $i) (i32.const 2))))
           (i32.load (local.get $entry_base)))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $copy)))
@@ -842,8 +867,6 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             obj_header = Layout::OBJECT_HEADER_SIZE,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
-            array_header = Layout::ARRAY_HEADER_SIZE,
-            elem_shift = Layout::ARRAY_ELEM_SHIFT,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,

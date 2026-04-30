@@ -1,3 +1,4 @@
+use crate::builtin_resolved::ResolvedArrayElement;
 #[path = "program_builtins.rs"]
 mod program_builtins;
 #[path = "program_captures.rs"]
@@ -932,7 +933,10 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         ResolvedExpr::LogicalComputedMemberAssign {
             object, key, expr, ..
         } => expr_contains_this(object) || expr_contains_this(key) || expr_contains_this(expr),
-        ResolvedExpr::Array(elements) => elements.iter().any(expr_contains_this),
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => expr_contains_this(expr),
+            ResolvedArrayElement::Hole => false,
+        }),
         ResolvedExpr::Object(props) => props.iter().any(|(_, value)| expr_contains_this(value)),
         ResolvedExpr::ComputedIndex { object, index } => {
             expr_contains_this(object) || expr_contains_this(index)
@@ -1132,7 +1136,10 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
                 || expr_contains_arguments(key)
                 || expr_contains_arguments(expr)
         }
-        ResolvedExpr::Array(elements) => elements.iter().any(expr_contains_arguments),
+        ResolvedExpr::Array(elements) => elements.iter().any(|element| match element {
+            ResolvedArrayElement::Present(expr) => expr_contains_arguments(expr),
+            ResolvedArrayElement::Hole => false,
+        }),
         ResolvedExpr::Object(props) => {
             props.iter().any(|(_, value)| expr_contains_arguments(value))
         }

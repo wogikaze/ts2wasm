@@ -45,8 +45,14 @@ impl Layout {
     pub const STDIN_NREAD_OFFSET: u32 = 24;
 
     // ---- Array heap layout ------------------------------------------------
-    /// Bytes before the element payload: i32 length.
-    pub const ARRAY_HEADER_SIZE: u32 = 4;
+    /// Bytes before the element payload for the current sparse-capable array slice:
+    /// i32 length, i32 capacity, i32 presence_word_count,
+    /// i32 elements_offset_from_payload_start, and one u32 presence word.
+    pub const ARRAY_HEADER_SIZE: u32 = 20;
+    pub const ARRAY_CAPACITY_OFFSET: u32 = 4;
+    pub const ARRAY_PRESENCE_WORD_COUNT_OFFSET: u32 = 8;
+    pub const ARRAY_ELEMENTS_OFFSET_OFFSET: u32 = 12;
+    pub const ARRAY_PRESENCE_WORDS_OFFSET: u32 = 16;
     /// Shift to compute element byte offset from index (each element is 4 bytes).
     pub const ARRAY_ELEM_SHIFT: u32 = 2;
 

@@ -1,4 +1,5 @@
 use super::*;
+use ts2wasm_frontend::ArrayLiteralElement;
 
 pub(super) fn collect_top_level_bindings(program: &[Stmt]) -> Result<HashSet<String>, Diagnostic> {
     let mut bindings = HashSet::new();
@@ -364,8 +365,11 @@ pub(super) fn first_outer_local_reference_in_expr(
                 })
             })
             .or_else(|| first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)),
-        Expr::Array { elements, .. } => elements.iter().find_map(|element| {
-            first_outer_local_reference_in_expr(element, outer_bindings, method_locals)
+        Expr::Array { elements, .. } => elements.iter().find_map(|element| match element {
+            ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
+                first_outer_local_reference_in_expr(expr, outer_bindings, method_locals)
+            }
+            ArrayLiteralElement::Hole(_) => None,
         }),
         Expr::Object { props, .. } => props.iter().find_map(|(_, value)| {
             first_outer_local_reference_in_expr(value, outer_bindings, method_locals)

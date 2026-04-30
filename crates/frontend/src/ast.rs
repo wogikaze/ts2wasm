@@ -310,6 +310,22 @@ pub enum Stmt {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ArrayLiteralElement {
+    Present(Expr),
+    Hole(Span),
+    Spread(Expr),
+}
+
+impl ArrayLiteralElement {
+    pub fn span(&self) -> Span {
+        match self {
+            Self::Present(expr) | Self::Spread(expr) => expr.span(),
+            Self::Hole(span) => *span,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Expr {
     Number {
         value: i32,
@@ -393,7 +409,7 @@ pub enum Expr {
         span: Span,
     },
     Array {
-        elements: Vec<Expr>,
+        elements: Vec<ArrayLiteralElement>,
         span: Span,
     },
     Object {

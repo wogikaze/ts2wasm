@@ -1,3 +1,4 @@
+use crate::builtin_resolved::ResolvedArrayElement;
 use super::*;
 
 pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) -> Option<String> {
@@ -218,12 +219,17 @@ pub(super) fn is_json_stringify_primitive_space_arg(arg: &ResolvedExpr) -> bool 
 }
 
 pub(super) fn is_supported_json_stringify_replacer_array(
-    elements: &[ResolvedExpr],
+    elements: &[ResolvedArrayElement],
     function_ids: &HashMap<String, FuncId>,
 ) -> bool {
     elements
         .iter()
-        .all(|element| json_stringify_replacer_entry(element, function_ids).is_some())
+        .all(|element| match element {
+            ResolvedArrayElement::Present(expr) => {
+                json_stringify_replacer_entry(expr, function_ids).is_some()
+            }
+            ResolvedArrayElement::Hole => true,
+        })
 }
 
 pub(super) enum JsonStringifyReplacerEntry {
@@ -310,7 +316,10 @@ pub(super) fn json_stringify_replacer_keys(
         Some(ResolvedExpr::Array(elements)) => {
             let mut keys = Vec::new();
             for element in elements {
-                match json_stringify_replacer_entry(element, function_ids)? {
+                let ResolvedArrayElement::Present(expr) = element else {
+                    continue;
+                };
+                match json_stringify_replacer_entry(expr, function_ids)? {
                     JsonStringifyReplacerEntry::Key(key) => keys.push(key),
                     JsonStringifyReplacerEntry::Ignored => {}
                 }
@@ -345,9 +354,10 @@ pub(super) fn is_json_stringify_side_effect_free_static_value(value: &ResolvedEx
         ResolvedExpr::Object(props) => props
             .iter()
             .all(|(_, value)| is_json_stringify_side_effect_free_static_value(value)),
-        ResolvedExpr::Array(elements) => elements
-            .iter()
-            .all(is_json_stringify_side_effect_free_static_value),
+        ResolvedExpr::Array(elements) => elements.iter().all(|element| match element {
+            ResolvedArrayElement::Present(expr) => is_json_stringify_side_effect_free_static_value(expr),
+            ResolvedArrayElement::Hole => true,
+        }),
         _ => false,
     }
 }

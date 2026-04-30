@@ -308,7 +308,7 @@ mod tests {
         else {
             panic!("expected array literal let statement");
         };
-        assert!(matches!(elements[1], Expr::Spread { .. }));
+        assert!(matches!(elements[1], ArrayLiteralElement::Spread(_)));
 
         let Stmt::Let {
             expr: Expr::Object { props, .. },

@@ -348,7 +348,11 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
         }
         Expr::Array { elements, .. } => {
             for element in elements {
-                collect_assigned_names_in_expr(element, names);
+                if let ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) =
+                    element
+                {
+                    collect_assigned_names_in_expr(expr, names);
+                }
             }
         }
         Expr::Object { props, .. } => {
@@ -827,7 +831,12 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
                 || computed_key.as_deref().is_some_and(expr_contains_bigint)
                 || expr_contains_bigint(expr)
         }
-        Expr::Array { elements, .. } => elements.iter().any(expr_contains_bigint),
+        Expr::Array { elements, .. } => elements.iter().any(|element| match element {
+            ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
+                expr_contains_bigint(expr)
+            }
+            ArrayLiteralElement::Hole(_) => false,
+        }),
         Expr::Object { props, .. } => props.iter().any(|(_, value)| expr_contains_bigint(value)),
         Expr::New { args, .. } => args.iter().any(expr_contains_bigint),
         Expr::Ternary {

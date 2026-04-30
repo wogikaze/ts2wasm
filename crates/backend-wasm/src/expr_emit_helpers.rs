@@ -20,6 +20,7 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         | LoweredExpr::RuntimeCall { .. }
         | LoweredExpr::BigIntLiteral { .. }
         | LoweredExpr::ArrayNew { .. }
+        | LoweredExpr::ArrayNewSparse { .. }
         | LoweredExpr::ObjectNew { .. }
         | LoweredExpr::ErrorNew { .. }
         | LoweredExpr::New { .. } => true,
@@ -95,6 +96,7 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
 pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
     match expr {
         LoweredExpr::ArrayNew { .. }
+        | LoweredExpr::ArrayNewSparse { .. }
         | LoweredExpr::BigIntLiteral { .. }
         | LoweredExpr::ObjectNew { .. }
         | LoweredExpr::ErrorNew { .. }

@@ -161,3 +161,14 @@ Remaining:
   cover callback call count, `0 in mapped`, `1 in mapped`, `2 in mapped`, mapped
   values, and `mapped.length`.
 - Targeted validation: `cargo fmt --all --check`; `cargo nextest run -p ts2wasm-cli array_map`; `mise run update-issue-index -- --check`; `mise run check issues`.
+
+## Progress evidence
+
+2026-05-01 child/338-sparse-map-20260501-074015:
+
+- Implemented parser/AST slot preservation for sparse array literal holes.
+- Added sparse lowered/backend path for hole-bearing array literals and sparse map results.
+- Added `fixtures/core-semantics/array-map-sparse-holes.ts`; it covers callback call count through `thisArg`, `0 in mapped`, `1 in mapped`, `2 in mapped`, mapped values, and `mapped.length`.
+- Validation passed: `cargo fmt --all --check`.
+- Validation passed: `cargo nextest run -p ts2wasm-cli array_map` (16/16 passed, including the new sparse holes fixture and existing dense map fixtures).
+- Selected Test262 sparse map validation was not run in this worktree because `reference/` contains no checked-out Test262 cases. Issue remains open until a Test262 representative can be run or the close requirement is explicitly waived by parent.

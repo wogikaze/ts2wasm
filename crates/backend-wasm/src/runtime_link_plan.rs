@@ -493,6 +493,14 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(elem);
                 }
             }
+            LoweredExpr::ArrayNewSparse { slots } => {
+                self.add_required_runtime(RuntimeFn::AllocHeap);
+                for slot in slots {
+                    if let ts2wasm_ir::lowered::LoweredArraySlot::Present(elem) = slot {
+                        self.collect_required_runtime_expr(elem);
+                    }
+                }
+            }
             LoweredExpr::ArrayGet { arr, index } => {
                 self.add_required_runtime(RuntimeFn::ArrayGet);
                 self.collect_required_runtime_expr(arr);

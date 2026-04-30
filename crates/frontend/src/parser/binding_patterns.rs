@@ -264,7 +264,15 @@ impl Parser {
                 "[{}]",
                 elements
                     .iter()
-                    .map(|expr| self.binding_default_expr_text(expr))
+                    .map(|element| match element {
+                        crate::ArrayLiteralElement::Present(expr) => {
+                            self.binding_default_expr_text(expr)
+                        }
+                        crate::ArrayLiteralElement::Spread(expr) => {
+                            self.binding_default_expr_text(expr)
+                        }
+                        crate::ArrayLiteralElement::Hole(_) => String::new(),
+                    })
                     .collect::<Vec<_>>()
                     .join(", ")
             ),

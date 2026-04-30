@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
+use ts2wasm_frontend::{ArrayLiteralElement, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
 
 use crate::binding_pattern::{is_binding_pattern_text, parse_binding_pattern};
 
@@ -722,7 +722,15 @@ impl NameResolver {
             Expr::Array { elements, span } => Ok(Expr::Array {
                 elements: elements
                     .iter()
-                    .map(|e| self.resolve_expr(e))
+                    .map(|element| match element {
+                        ArrayLiteralElement::Present(expr) => {
+                            Ok(ArrayLiteralElement::Present(self.resolve_expr(expr)?))
+                        }
+                        ArrayLiteralElement::Spread(expr) => {
+                            Ok(ArrayLiteralElement::Spread(self.resolve_expr(expr)?))
+                        }
+                        ArrayLiteralElement::Hole(span) => Ok(ArrayLiteralElement::Hole(*span)),
+                    })
                     .collect::<Result<Vec<_>, _>>()?,
                 span: *span,
             }),
@@ -1157,7 +1165,12 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
                     .is_some_and(expr_contains_bigint_literal)
                 || expr_contains_bigint_literal(expr)
         }
-        Expr::Array { elements, .. } => elements.iter().any(expr_contains_bigint_literal),
+        Expr::Array { elements, .. } => elements.iter().any(|element| match element {
+            ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) => {
+                expr_contains_bigint_literal(expr)
+            }
+            ArrayLiteralElement::Hole(_) => false,
+        }),
         Expr::Object { props, .. } => props
             .iter()
             .any(|(_, value)| expr_contains_bigint_literal(value)),

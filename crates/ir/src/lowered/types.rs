@@ -176,6 +176,12 @@ pub enum ClosureRepresentation {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LoweredArraySlot {
+    Present(LoweredExpr),
+    Hole,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LoweredExpr {
     Number(i32),
     BigIntLiteral {
@@ -251,6 +257,9 @@ pub enum LoweredExpr {
     },
     ArrayNew {
         elements: Vec<LoweredExpr>,
+    },
+    ArrayNewSparse {
+        slots: Vec<LoweredArraySlot>,
     },
     ArrayGet {
         arr: Box<LoweredExpr>,

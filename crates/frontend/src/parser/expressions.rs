@@ -1744,23 +1744,33 @@ impl Parser {
                 let mut elements = Vec::new();
                 if !self.consume(TokenKind::RightBracket) {
                     loop {
+                        if let Some(hole_span) = self.consume_span(TokenKind::Comma) {
+                            elements.push(crate::ArrayLiteralElement::Hole(hole_span));
+                            if self.consume(TokenKind::RightBracket) {
+                                break;
+                            }
+                            continue;
+                        }
                         if let Some(spread_span) = self.consume_span(TokenKind::DotDotDot) {
                             let spread_expr = self.assignment()?;
                             let end = spread_expr.span().end;
-                            elements.push(Expr::Spread {
+                            elements.push(crate::ArrayLiteralElement::Spread(Expr::Spread {
                                 expr: Box::new(spread_expr),
                                 span: Span {
                                     start: spread_span.start,
                                     end,
                                 },
-                            });
+                            }));
                         } else {
-                            elements.push(self.expression()?);
+                            elements.push(crate::ArrayLiteralElement::Present(self.expression()?));
                         }
                         if self.consume(TokenKind::RightBracket) {
                             break;
                         }
                         self.expect(TokenKind::Comma)?;
+                        if self.consume(TokenKind::RightBracket) {
+                            break;
+                        }
                     }
                 }
                 let end = self.prev_span().map(|span| span.end).unwrap_or(start.end);

@@ -156,6 +156,10 @@ impl<'a> Resolver<'a> {
                     // Lower in to PropertyIn or PropertyInDynamic
                     // key in object -> check if key exists in object
                     match left.as_ref() {
+                        ResolvedExpr::Number(index) => Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayIndexPresent".to_owned(),
+                            args: vec![self.lower_expr(right)?, LoweredExpr::Number(*index)],
+                        }),
                         ResolvedExpr::String(key) => Ok(LoweredExpr::PropertyIn {
                             obj: Box::new(self.lower_expr(right)?),
                             key: key.clone(),
@@ -678,7 +682,10 @@ impl<'a> Resolver<'a> {
                         index: Box::new(lowered_index),
                     })
                 } else if matches!(object.as_ref(), ResolvedExpr::Array(_))
-                    || matches!(lowered_object, LoweredExpr::ArrayNew { .. })
+                    || matches!(
+                        lowered_object,
+                        LoweredExpr::ArrayNew { .. } | LoweredExpr::ArrayNewSparse { .. }
+                    )
                 {
                     Ok(LoweredExpr::ArrayGet {
                         arr: Box::new(lowered_object),

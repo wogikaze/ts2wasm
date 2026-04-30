@@ -82,6 +82,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::AllocHeap => self.emit_alloc_heap(wat),
                 RuntimeFn::MemEqual => self.emit_mem_equal(wat),
                 RuntimeFn::ArrayGet => self.emit_array_get(wat),
+                RuntimeFn::ArrayIndexPresent => self.emit_array_index_present(wat),
                 RuntimeFn::Index => self.emit_index(wat),
                 RuntimeFn::GetLength => self.emit_get_length(wat),
                 RuntimeFn::PropertyGet => self.emit_property_get(wat),

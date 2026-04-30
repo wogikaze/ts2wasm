@@ -18,15 +18,17 @@ use builtin_resolver_outer::*;
 use std::collections::{HashMap, HashSet};
 
 use ts2wasm_frontend::{
-    BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic, Expr, Span, Stmt,
-    UnaryOp,
+    ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic,
+    Expr, Span, Stmt, UnaryOp,
 };
 use ts2wasm_runtime_abi::ValueTag;
 
 use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
 use super::builtin::BuiltinPropertyId;
-use super::builtin_resolved::{ClassMethod, ResolvedExpr, ResolvedParam, ResolvedStmt};
+use super::builtin_resolved::{
+    ClassMethod, ResolvedArrayElement, ResolvedExpr, ResolvedParam, ResolvedStmt,
+};
 
 const BIGINT_FROM_VALUE_RUNTIME_CALL: &str = "__ts2wasm_bigint_from_value";
 const BIGINT_AS_INT_N_RUNTIME_CALL: &str = "__ts2wasm_bigint_as_int_n";
@@ -563,7 +565,15 @@ impl BigIntStaticBuiltinFolder {
             Expr::Array { elements, span } => Expr::Array {
                 elements: elements
                     .iter()
-                    .map(|element| self.fold_expr(element))
+                    .map(|element| match element {
+                        ArrayLiteralElement::Present(expr) => {
+                            ArrayLiteralElement::Present(self.fold_expr(expr))
+                        }
+                        ArrayLiteralElement::Spread(expr) => {
+                            ArrayLiteralElement::Spread(self.fold_expr(expr))
+                        }
+                        ArrayLiteralElement::Hole(span) => ArrayLiteralElement::Hole(*span),
+                    })
                     .collect(),
                 span: *span,
             },
@@ -1698,7 +1708,15 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         Expr::Array { elements, .. } => Ok(ResolvedExpr::Array(
             elements
                 .iter()
-                .map(resolve_expr)
+                .map(|element| match element {
+                    ArrayLiteralElement::Present(expr) => {
+                        Ok(ResolvedArrayElement::Present(resolve_expr(expr)?))
+                    }
+                    ArrayLiteralElement::Spread(expr) => {
+                        Ok(ResolvedArrayElement::Present(resolve_expr(expr)?))
+                    }
+                    ArrayLiteralElement::Hole(_) => Ok(ResolvedArrayElement::Hole),
+                })
                 .collect::<Result<Vec<_>, _>>()?,
         )),
         Expr::Object { props, .. } => Ok(ResolvedExpr::Object(

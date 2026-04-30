@@ -99,6 +99,8 @@ pub(crate) enum RuntimeFn {
     MemEqual,
     /// Load an element from a heap array by tagged-int index.
     ArrayGet,
+    /// Check sparse-capable array indexed-property presence.
+    ArrayIndexPresent,
     /// Generic indexing that handles both arrays and strings.
     Index,
     /// Read the `.length` of a string or array (i32 at offset 0 of heap ptr).
@@ -439,6 +441,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
         "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
+        "ArrayIndexPresent" => Some(RuntimeFn::ArrayIndexPresent),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArraySlice" => Some(RuntimeFn::ArraySlice),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
@@ -841,7 +844,11 @@ const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
-const INDEX_DEPS: &[RuntimeFn] = &[RuntimeFn::PropertyGet, RuntimeFn::ValueToStringInto];
+const INDEX_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::PropertyGet,
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::ArrayGet,
+];
 const MAP_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const MAP_GET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyGet];
 const MAP_SET_DEPS: &[RuntimeFn] = &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertySet];

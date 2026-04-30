@@ -1,3 +1,4 @@
+use crate::builtin_resolved::ResolvedArrayElement;
 use super::*;
 
 impl<'a> Resolver<'a> {
@@ -8,13 +9,20 @@ impl<'a> Resolver<'a> {
                 ResolvedExpr::Spread(spread_expr) => {
                     if let ResolvedExpr::Array(elements) = spread_expr.as_ref() {
                         for elem in elements {
-                            lowered_args.push(self.lower_expr(elem)?);
+                            match elem {
+                                ResolvedArrayElement::Present(expr) => {
+                                    lowered_args.push(self.lower_expr(expr)?);
+                                }
+                                ResolvedArrayElement::Hole => {
+                                    lowered_args.push(LoweredExpr::Undefined);
+                                }
+                            }
                         }
-                    } else if let Some(value) = self.static_string_spread_value(spread_expr) {
+                    } else if let Some(value) = self.static_string_spread_value(spread_expr.as_ref()) {
                         lowered_args.extend(Self::lower_ascii_string_spread_chars(&value)?);
-                    } else if self.is_generator_call_spread_operand(spread_expr) {
+                    } else if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
                         return Err(Self::unsupported_generator_spread_diagnostic());
-                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr) {
+                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
                         return Err(Diagnostic {
@@ -54,12 +62,24 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn lower_array_literal(
         &mut self,
-        elements: &[ResolvedExpr],
+        elements: &[ResolvedArrayElement],
     ) -> Result<LoweredExpr, Diagnostic> {
+        if elements.iter().any(|element| matches!(element, ResolvedArrayElement::Hole)) {
+            let mut slots = Vec::with_capacity(elements.len());
+            for element in elements {
+                match element {
+                    ResolvedArrayElement::Present(expr) => {
+                        slots.push(LoweredArraySlot::Present(self.lower_expr(expr)?));
+                    }
+                    ResolvedArrayElement::Hole => slots.push(LoweredArraySlot::Hole),
+                }
+            }
+            return Ok(LoweredExpr::ArrayNewSparse { slots });
+        }
         if !elements.iter().any(|element| {
             matches!(
                 element,
-                ResolvedExpr::Spread(spread_expr)
+                ResolvedArrayElement::Present(ResolvedExpr::Spread(spread_expr))
                     if self.is_known_set_local_spread_operand(spread_expr.as_ref())
                         || self.is_known_dense_array_local_spread_operand(spread_expr.as_ref())
             )
@@ -73,13 +93,13 @@ impl<'a> Resolver<'a> {
 
         for element in elements {
             match element {
-                ResolvedExpr::Spread(spread_expr) => {
+                ResolvedArrayElement::Present(ResolvedExpr::Spread(spread_expr)) => {
                     if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
                         pending_dense.extend(self.lower_array_literal_elements(spread_elements)?);
                         continue;
                     }
 
-                    if let Some(value) = self.static_string_spread_value(spread_expr) {
+                    if let Some(value) = self.static_string_spread_value(spread_expr.as_ref()) {
                         pending_dense.extend(Self::lower_ascii_string_spread_chars(&value)?);
                         continue;
                     }
@@ -114,7 +134,8 @@ impl<'a> Resolver<'a> {
                         span: None,
                     });
                 }
-                _ => pending_dense.push(self.lower_expr(element)?),
+                ResolvedArrayElement::Present(expr) => pending_dense.push(self.lower_expr(expr)?),
+                ResolvedArrayElement::Hole => pending_dense.push(LoweredExpr::Undefined),
             }
         }
 
@@ -165,6 +186,10 @@ impl<'a> Resolver<'a> {
                 let Some(elements) = dense_array_like_object_elements(props) else {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
+                let elements = elements
+                    .into_iter()
+                    .map(ResolvedArrayElement::Present)
+                    .collect::<Vec<_>>();
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
             ResolvedExpr::Ident(name) => {
@@ -183,6 +208,10 @@ impl<'a> Resolver<'a> {
                     }
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
+                let elements = elements
+                    .into_iter()
+                    .map(ResolvedArrayElement::Present)
+                    .collect::<Vec<_>>();
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
             _ if is_identity_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
@@ -200,26 +229,44 @@ impl<'a> Resolver<'a> {
     fn lower_array_map_elements(
         &mut self,
         array_expr: &ResolvedExpr,
-        elements: &[ResolvedExpr],
+        elements: &[ResolvedArrayElement],
         args: &[ResolvedExpr],
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         let ([callback] | [callback, _]) = args else {
             return Err(unsupported_array_map_diagnostic(Some(span)));
         };
+        let is_sparse = elements.iter().any(|element| matches!(element, ResolvedArrayElement::Hole));
         let mut mapped = Vec::with_capacity(elements.len());
         for (index, element) in elements.iter().enumerate() {
-            let element = self.lower_expr(element)?;
-            mapped.push(self.lower_array_map_callback_call(
-                callback,
-                args.get(1),
-                element,
-                index,
-                array_expr,
-                span,
-            )?);
+            match element {
+                ResolvedArrayElement::Present(expr) => {
+                    let element = self.lower_expr(expr)?;
+                    mapped.push(LoweredArraySlot::Present(self.lower_array_map_callback_call(
+                        callback,
+                        args.get(1),
+                        element,
+                        index,
+                        array_expr,
+                        span,
+                    )?));
+                }
+                ResolvedArrayElement::Hole => mapped.push(LoweredArraySlot::Hole),
+            }
         }
-        Ok(LoweredExpr::ArrayNew { elements: mapped })
+        if is_sparse {
+            Ok(LoweredExpr::ArrayNewSparse { slots: mapped })
+        } else {
+            Ok(LoweredExpr::ArrayNew {
+                elements: mapped
+                    .into_iter()
+                    .map(|slot| match slot {
+                        LoweredArraySlot::Present(expr) => expr,
+                        LoweredArraySlot::Hole => LoweredExpr::Undefined,
+                    })
+                    .collect(),
+            })
+        }
     }
 
     fn lower_array_map_callback_call(
@@ -436,19 +483,19 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn lower_array_literal_elements(
         &mut self,
-        elements: &[ResolvedExpr],
+        elements: &[ResolvedArrayElement],
     ) -> Result<Vec<LoweredExpr>, Diagnostic> {
         let mut lowered = Vec::new();
         for element in elements {
             match element {
-                ResolvedExpr::Spread(spread_expr) => {
+                ResolvedArrayElement::Present(ResolvedExpr::Spread(spread_expr)) => {
                     if let ResolvedExpr::Array(spread_elements) = spread_expr.as_ref() {
                         lowered.extend(self.lower_array_literal_elements(spread_elements)?);
-                    } else if let Some(value) = self.static_string_spread_value(spread_expr) {
+                    } else if let Some(value) = self.static_string_spread_value(spread_expr.as_ref()) {
                         lowered.extend(Self::lower_ascii_string_spread_chars(&value)?);
-                    } else if self.is_generator_call_spread_operand(spread_expr) {
+                    } else if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
                         return Err(Self::unsupported_generator_spread_diagnostic());
-                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr) {
+                    } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
                     } else {
                         return Err(Diagnostic {
@@ -460,7 +507,8 @@ impl<'a> Resolver<'a> {
                         });
                     }
                 }
-                _ => lowered.push(self.lower_expr(element)?),
+                ResolvedArrayElement::Present(expr) => lowered.push(self.lower_expr(expr)?),
+                ResolvedArrayElement::Hole => lowered.push(LoweredExpr::Undefined),
             }
         }
         Ok(lowered)

@@ -280,10 +280,20 @@ impl WatEmitter<'_> {
       (then
         (local.set $result_ptr (call $alloc_heap (i32.const {array_header})))
         (i32.store (local.get $result_ptr) (i32.const {zero}))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (i32.const {zero}))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+        (i32.store (i32.add (local.get $result_ptr) (i32.const 16)) (i32.const {zero}))
         (return (i32.or (local.get $result_ptr) (i32.const {array_tag})))))
     (local.set $result_len (i32.sub (local.get $e_pos) (local.get $s_pos)))
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $result_len) (i32.const {elem_shift})))))
     (i32.store (local.get $result_ptr) (local.get $result_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $result_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $result_len)) (i32.const 1)))
     (call $copy
       (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $s_pos) (i32.const {elem_shift}))))
       (i32.add (local.get $result_ptr) (i32.const {array_header}))
@@ -324,6 +334,12 @@ impl WatEmitter<'_> {
     (local.set $result_len (i32.add (local.get $a_len) (local.get $b_len)))
     (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {array_header}) (i32.shl (local.get $result_len) (i32.const {elem_shift})))))
     (i32.store (local.get $result_ptr) (local.get $result_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $result_len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $result_len)) (i32.const 1)))
     (call $copy
       (i32.add (local.get $a_obj) (i32.const {array_header}))
       (i32.add (local.get $result_ptr) (i32.const {array_header}))
@@ -364,6 +380,12 @@ impl WatEmitter<'_> {
           (i32.const {array_header})
           (i32.shl (local.get $len) (i32.const {elem_shift})))))
     (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1)))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
@@ -427,6 +449,12 @@ impl WatEmitter<'_> {
           (i32.const {array_header})
           (i32.shl (local.get $len) (i32.const {elem_shift})))))
     (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1)))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
@@ -478,6 +506,12 @@ impl WatEmitter<'_> {
           (i32.const {array_header})
           (i32.shl (local.get $len) (i32.const {elem_shift})))))
     (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1)))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
@@ -534,6 +568,12 @@ impl WatEmitter<'_> {
           (i32.const {array_header})
           (i32.shl (local.get $len) (i32.const {elem_shift})))))
     (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1)))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
@@ -590,6 +630,12 @@ impl WatEmitter<'_> {
           (i32.const {array_header})
           (i32.shl (local.get $len) (i32.const {elem_shift})))))
     (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1)))
     (block $done
       (loop $scan
         (br_if $done (i32.ge_u (local.get $i) (local.get $len)))

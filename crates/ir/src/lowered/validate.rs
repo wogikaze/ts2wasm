@@ -426,6 +426,13 @@ fn validate_expr(
                 validate_expr(elem, local_count, num_funcs, program, errors, true);
             }
         }
+        LoweredExpr::ArrayNewSparse { slots } => {
+            for slot in slots {
+                if let LoweredArraySlot::Present(elem) = slot {
+                    validate_expr(elem, local_count, num_funcs, program, errors, true);
+                }
+            }
+        }
         LoweredExpr::ArrayGet { arr, index } => {
             validate_expr(arr, local_count, num_funcs, program, errors, true);
             validate_expr(index, local_count, num_funcs, program, errors, true);

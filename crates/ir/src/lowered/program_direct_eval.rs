@@ -1,3 +1,4 @@
+use crate::builtin_resolved::ResolvedArrayElement;
 use super::*;
 
 pub(super) fn collect_direct_eval_block_function_env(program: &[ResolvedStmt]) -> DirectEvalBlockFunctionEnv {
@@ -234,7 +235,9 @@ pub(super) fn collect_direct_eval_function_assignment_expr(
         }
         ResolvedExpr::Array(elements) => {
             for element in elements {
-                collect_direct_eval_function_assignment_expr(function_name, element, env);
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_direct_eval_function_assignment_expr(function_name, expr, env);
+                }
             }
         }
         ResolvedExpr::Object(props) => {

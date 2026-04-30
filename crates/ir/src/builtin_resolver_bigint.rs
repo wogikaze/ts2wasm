@@ -1429,7 +1429,11 @@ impl BigIntRuntimeGuard {
             }
             Expr::Array { elements, .. } => {
                 for element in elements {
-                    self.expr_bigint_info(element)?;
+                    if let ArrayLiteralElement::Present(expr) | ArrayLiteralElement::Spread(expr) =
+                        element
+                    {
+                        self.expr_bigint_info(expr)?;
+                    }
                 }
                 Ok(None)
             }

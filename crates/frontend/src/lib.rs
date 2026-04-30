@@ -7,8 +7,8 @@ pub mod typescript_oracle;
 
 // Re-export commonly used types for convenience
 pub use ast::{
-    BinaryOp, ClassPrivateElement, ClassStaticBlock, ExportNamedSpecifier, Expr,
-    ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp,
+    ArrayLiteralElement, BinaryOp, ClassPrivateElement, ClassStaticBlock, ExportNamedSpecifier,
+    Expr, ImportDefaultSpecifier, ImportNamedSpecifier, ImportNamespaceSpecifier, LogicalAssignOp,
     ModuleSpecifier, OBJECT_SPREAD_SENTINEL, ReExportNamedSpecifier, SYMBOL_ITERATOR_OBJECT_KEY,
     Stmt, UnaryOp,
 };

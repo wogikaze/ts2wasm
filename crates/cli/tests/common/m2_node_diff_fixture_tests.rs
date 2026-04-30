@@ -172,6 +172,11 @@ fn array_map_generic_call_runtime_array_like_double_fixture_matches_node_output_
 }
 
 #[test]
+fn array_map_sparse_holes_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-map-sparse-holes.ts");
+}
+
+#[test]
 fn array_sort_numeric_comparator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/array-sort-numeric-comparator.ts");
 }

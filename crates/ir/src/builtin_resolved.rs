@@ -170,7 +170,7 @@ pub enum ResolvedExpr {
         op: LogicalAssignOp,
         expr: Box<ResolvedExpr>,
     },
-    Array(Vec<ResolvedExpr>),
+    Array(Vec<ResolvedArrayElement>),
     Object(Vec<(String, ResolvedExpr)>),
     ComputedIndex {
         object: Box<ResolvedExpr>,
@@ -240,4 +240,10 @@ pub enum ResolvedExpr {
         params: Vec<ResolvedParam>,
         body: Vec<ResolvedStmt>,
     },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ResolvedArrayElement {
+    Present(ResolvedExpr),
+    Hole,
 }
