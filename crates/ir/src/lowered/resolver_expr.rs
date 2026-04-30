@@ -27,27 +27,48 @@ impl<'a> Resolver<'a> {
                     span: Some(*span),
                 }),
             },
-            ResolvedExpr::Ident(name) => match self.resolve_local(name) {
-                Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local)),
-                Ok(local) => Ok(LoweredExpr::Local(local)),
-                Err(_) if name == "arguments" => Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone".to_owned(),
-                    span: None,
-                }),
-                Err(err) => Err(err),
-            },
+            ResolvedExpr::Ident(name) => {
+                // Handle special global constants Infinity and NaN
+                // Note: These are approximated as max/min representable numbers due to small-int number model
+                // Proper Infinity/NaN support requires broader number-model support (issue-281)
+                if name == "Infinity" {
+                    use ts2wasm_runtime_abi::ValueTag;
+                    return Ok(LoweredExpr::Number(ValueTag::NUMBER_PAYLOAD_MAX));
+                }
+                if name == "NaN" {
+                    // NaN is approximated as 0 for now (not spec-compliant but pragmatic)
+                    // Proper NaN support requires broader number-model support (issue-281)
+                    return Ok(LoweredExpr::Number(0));
+                }
+                match self.resolve_local(name) {
+                    Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local)),
+                    Ok(local) => Ok(LoweredExpr::Local(local)),
+                    Err(_) if name == "arguments" => Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone".to_owned(),
+                        span: None,
+                    }),
+                    Err(err) => Err(err),
+                }
+            }
             ResolvedExpr::Spread(_) => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-274: spread expressions are only supported in call arguments over literal arrays in this milestone".to_owned(),
                 span: None,
             }),
             ResolvedExpr::Unary { op, expr } => {
-                if *op == UnaryOp::Negate && self.resolved_expr_is_bigint(expr) {
-                    return Ok(LoweredExpr::RuntimeCall {
-                        runtime_fn: "BigIntUnaryMinus".to_owned(),
-                        args: vec![self.lower_expr(expr)?],
-                    });
+                // Handle -Infinity specially to ensure it returns the minimum representable number
+                if *op == UnaryOp::Negate {
+                    if let ResolvedExpr::Ident(name) = expr.as_ref() && name == "Infinity" {
+                        use ts2wasm_runtime_abi::ValueTag;
+                        return Ok(LoweredExpr::Number(ValueTag::NUMBER_PAYLOAD_MIN));
+                    }
+                    if self.resolved_expr_is_bigint(expr) {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "BigIntUnaryMinus".to_owned(),
+                            args: vec![self.lower_expr(expr)?],
+                        });
+                    }
                 }
                 if *op == UnaryOp::Delete {
                     // Lower delete to PropertyDelete or PropertyDeleteDynamic
@@ -897,6 +918,21 @@ impl<'a> Resolver<'a> {
                             };
                         }
                         return Ok(result);
+                    }
+                    // Handle zero-argument case for Math.max/min
+                    // Math.max() with no arguments returns -Infinity (approximated as NUMBER_PAYLOAD_MIN)
+                    // Math.min() with no arguments returns +Infinity (approximated as NUMBER_PAYLOAD_MAX)
+                    // Note: Proper Infinity support requires broader number-model support (issue-281)
+                    if (runtime_fn == "MathMax" || runtime_fn == "MathMin") && args.is_empty() {
+                        use ts2wasm_runtime_abi::ValueTag;
+                        let infinity_value = if runtime_fn == "MathMax" {
+                            // -Infinity approximated as minimum representable number
+                            ValueTag::NUMBER_PAYLOAD_MIN
+                        } else {
+                            // +Infinity approximated as maximum representable number
+                            ValueTag::NUMBER_PAYLOAD_MAX
+                        };
+                        return Ok(LoweredExpr::Number(infinity_value));
                     }
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
