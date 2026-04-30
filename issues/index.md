@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 50 | 98 |
+| runtime | 148 | 49 | 99 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 411 | 189 | 222 |
+| total | 411 | 188 | 223 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -232,7 +232,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
 | 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | class: blocked | Mixed Number/BigInt arithmetic TypeError |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
-| 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | class: blocked | Multi-limb BigInt division and remainder |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 | 392 | Multi-limb BigInt remainder | feature | runtime/semantics | 259, 260, 391 | Multi-limb BigInt remainder |
 | 394 | Multi-limb BigInt subtraction | feature | runtime/semantics | 259, 260, 393 | Multi-limb BigInt subtraction |
@@ -465,6 +464,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | see `issues/done/376-implement-dynamic-bigint-exponentiation.md` |
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | see `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md` |
 | 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | see `issues/done/379-validate-array-map-thisarg-test262.md` |
+| 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | see `issues/done/384-multilimb-bigint-division-remainder.md` |
 | 388 | Runtime array-like generic call for Array.prototype.map | feature | runtime/builtins | see `issues/done/388-array-map-generic-runtime-array-like.md` |
 | 389 | Unblock Array.map generic Test262 representative with function-expression initializer | bug | frontend/parser | see `issues/done/389-array-map-generic-test262-function-expression-blocker.md` |
 <!-- generated:done:end -->

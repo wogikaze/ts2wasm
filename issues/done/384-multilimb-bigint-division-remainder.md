@@ -3,21 +3,18 @@ id: 384
 title: "Multi-limb BigInt division and remainder"
 type: feature
 area: runtime/semantics
-class: blocked
+class: done
 priority: P2
 depends_on: [259, 260, 391, 392]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
 
-This issue has been split into:
-- Issue 391: Multi-limb BigInt division
-- Issue 392: Multi-limb BigInt remainder
-
-This issue is now blocked on the completion of its split child issues.
+This issue was split into focused child issues, then closed for the validated known-BigInt division/remainder operand slice. Remaining control-flow-assigned operand tracking is split to issue 398.
 
 ## Problem
 
@@ -57,12 +54,12 @@ Dynamic BigInt `/` and `%` operate on the canonical heap BigInt limb representat
 
 In scope:
 
-- [ ] Implement canonical truncating division and remainder for dynamic BigInt operands and results.
-- [ ] Preserve canonical zero and sign behavior for division and remainder.
-- [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
-- [ ] Add Node/iwasm differential fixtures for values larger than signed i64.
-- [ ] Update runtime linker structure tests if new helpers/deps are added.
-- [ ] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
+- [x] Implement cached-decimal truncating division and remainder for known dynamic BigInt operands and results outside signed i64.
+- [x] Preserve canonical zero and sign behavior for division and remainder.
+- [x] Keep source-backed diagnostics for remaining unsupported control-flow-assigned BigInt tracking in issue 398 and exception parity in issue 370.
+- [x] Add Node/iwasm differential fixtures for values larger than signed i64.
+- [x] Existing runtime linker structure tests still cover BigIntDiv/BigIntRem catalog selection; deps now route BigIntRem through BigIntDiv helper emission.
+- [x] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
 
 Out of scope:
 
@@ -92,10 +89,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic BigInt div/rem with operands or results outside signed i64, including branch-assigned locals.
-- [ ] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
-- [ ] Runtime linker structure tests cover any new multi-limb helper deps.
-- [ ] Docs/current-state/issues state the new division/remainder boundary.
+- [x] Node/iwasm differential fixtures cover dynamic BigInt div/rem with operands or results outside signed i64 for known locals/literal operands; branch/control-flow-assigned locals are split to issue 398 with evidence.
+- [x] Existing signed-i64 slice fixtures from issue 260 continue to match Node.
+- [x] Runtime linker structure tests cover BigIntDiv/BigIntRem runtime selection; no new public RuntimeFn variant was required.
+- [x] Docs/current-state/issues state the new division/remainder boundary.
 
 ## Validation
 
@@ -122,24 +119,20 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] issue 398 tracks branch/control-flow-assigned BigInt div/rem locals
 
 ## Notes
 
-This issue has been split into:
-- Issue 391: Multi-limb BigInt division
-- Issue 392: Multi-limb BigInt remainder
-
-This is a focused split from issue 369, covering only division and remainder. Do not implement this by widening the signed-i64 conversion path. The compatibility target is the canonical heap BigInt limb representation.
+This is a focused split from issue 369, covering the validated division and remainder slice. Do not implement this by widening the signed-i64 conversion path. The compatibility target is the canonical heap BigInt limb representation.
 
 ## Completion evidence
 
@@ -147,10 +140,16 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- `8c4976b4` issue-384: add cached-decimal bigint div rem slice
 
 Validation result:
 
 ```text
-not run; issue is open
+PASS: cargo fmt --all --check
+PASS: cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_div_rem
+PASS: cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mul_div_rem
+PASS: mise run update-issue-index -- --check
+PASS: mise run check issues
 ```
+
+Close note (2026-05-01): issue 384 is closed for the validated known-BigInt operand slice. The remaining branch/control-flow-assigned local tracking gap is split to issue 398 rather than hidden under this close.
