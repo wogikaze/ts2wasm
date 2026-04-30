@@ -132,3 +132,20 @@ Remaining:
 - Not DONE. The required `mise run reference-coverage -- tsc --limit 6419`
   evidence has not yet been refreshed, so the tsc `type-alias` unsupported count
   is not verified as reduced to zero.
+
+2026-05-01 parent coverage refresh:
+
+- Full tsc limit coverage was refreshed after the generic alias erasure slice.
+- Result: `type-alias` is still present with 41 unsupported cases in the
+  `--limit 6419` window, so issue 345 remains open.
+- The broader unsupported mix shows the next work is not only generic alias
+  syntax; remaining cases overlap parser syntax, import/export, type-system, and
+  declaration/module-shape boundaries.
+
+Validation result:
+
+```text
+command: mise run reference-coverage -- tsc --limit 6419 --no-web-ui
+result: pass; denominator=6419, build_pass=993, unsupported=5408, type-alias=41
+date: 2026-05-01
+```
