@@ -1610,6 +1610,20 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_private_brand_type_error(&self, wat: &mut String) {
+        let message =
+            self.string_offset(RuntimeString::PRIVATE_BRAND_TYPE_ERROR) + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $private_brand_type_error (result i32)
+    (call $write (i32.const {message}) (i32.const {message_len}))
+    (unreachable))
+"#,
+            message = message,
+            message_len = RuntimeString::PRIVATE_BRAND_TYPE_ERROR.len() as i32,
+        ));
+    }
+
     pub(super) fn emit_bigint_unary_minus(&self, wat: &mut String) {
         wat.push_str(
             r#"

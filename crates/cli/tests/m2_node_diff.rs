@@ -603,6 +603,45 @@ fn assert_build_fails_with_diagnostic(
     }
 }
 
+fn assert_build_fails_with_issue_diagnostic(fixture: &str, expected: &str, require_span: bool) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "invalid fixture should not build successfully: {fixture}"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedSyntax]")
+            || stderr.contains("[UnsupportedRuntimeSubset]")
+            || stderr.contains("[UnsupportedBuiltin]"),
+        "expected issue-linked unsupported diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains(expected),
+        "expected diagnostic containing {expected:?} for {fixture}, got:\n{stderr}"
+    );
+    if require_span {
+        assert!(
+            stderr_has_source_span(&stderr, "[UnsupportedSyntax]")
+                || stderr_has_source_span(&stderr, "[UnsupportedRuntimeSubset]")
+                || stderr_has_source_span(&stderr, "[UnsupportedBuiltin]"),
+            "expected diagnostic with source span for {fixture}, got:\n{stderr}"
+        );
+    }
+}
+
 fn stderr_has_source_span(stderr: &str, expected_code: &str) -> bool {
     stderr
         .lines()

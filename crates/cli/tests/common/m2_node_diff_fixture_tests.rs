@@ -1190,19 +1190,39 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
 fn private_class_field_unsupported_forms_report_issue_255() {
     for fixture in [
         "fixtures/core-semantics/private-class-field-external-unsupported.ts",
-        "fixtures/core-semantics/private-class-delete-unsupported.ts",
-        "fixtures/core-semantics/private-class-field-backing-key-unsupported.ts",
-        "fixtures/core-semantics/private-class-field-object-keys-unsupported.ts",
         "fixtures/core-semantics/private-class-method-external-unsupported.ts",
-        "fixtures/core-semantics/private-class-method-extracted-unsupported.ts",
         "fixtures/core-semantics/private-class-static-method-external-unsupported.ts",
         "fixtures/core-semantics/private-class-getter-external-unsupported.ts",
         "fixtures/core-semantics/private-class-static-accessor-unsupported.ts",
         "fixtures/core-semantics/private-class-setter-unsupported.ts",
         "fixtures/core-semantics/private-class-setter-external-unsupported.ts",
     ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-255:");
+        assert_build_fails_with_issue_diagnostic(fixture, "issue-255:", true);
     }
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/private-class-delete-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
+        "issue-255: private member `#value` cannot be deleted in this private class runtime slice",
+        true,
+    );
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/private-class-method-extracted-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
+        "issue-255: private method `#m` extraction is not supported in this private method runtime slice; call it directly as `this.#m(...)`",
+        true,
+    );
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/private-class-field-backing-key-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
+        "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice",
+        true,
+    );
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/private-class-field-object-keys-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
+        "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice",
+        true,
+    );
 }
 
 #[test]
@@ -1215,9 +1235,11 @@ fn private_class_static_field_static_block_tdz_reports_issue_352() {
 
 #[test]
 fn private_class_delete_backing_key_reports_issue_255() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/private-class-delete-backing-key-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-255: private field backing storage is not accessible through ordinary property access in this private field runtime slice",
+        true,
     );
 }
 

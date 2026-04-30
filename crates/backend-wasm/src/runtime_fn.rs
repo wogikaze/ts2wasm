@@ -59,6 +59,7 @@ pub(crate) enum RuntimeFn {
     BigIntDivisionByZeroRangeError,
     BigIntMixedArithmeticTypeError,
     BigIntStringComparisonBoundaryError,
+    PrivateBrandTypeError,
     BigIntBitwiseNot,
     BigIntBitwiseAnd,
     BigIntBitwiseOr,
@@ -412,6 +413,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntStringComparisonBoundaryError" => {
             Some(RuntimeFn::BigIntStringComparisonBoundaryError)
         }
+        "PrivateBrandTypeError" => Some(RuntimeFn::PrivateBrandTypeError),
         "BigIntBitwiseNot" => Some(RuntimeFn::BigIntBitwiseNot),
         "BigIntBitwiseAnd" => Some(RuntimeFn::BigIntBitwiseAnd),
         "BigIntBitwiseOr" => Some(RuntimeFn::BigIntBitwiseOr),
@@ -737,12 +739,15 @@ const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntDiv];
 const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
+const PRIVATE_BRAND_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR];
 const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR];
 const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR];
+const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] =
+    &[RuntimeString::PRIVATE_BRAND_TYPE_ERROR];
 const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 // String method dependencies

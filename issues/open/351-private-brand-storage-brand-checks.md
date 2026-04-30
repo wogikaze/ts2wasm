@@ -118,6 +118,30 @@ Fill only when moving to `done/`.
 
 ## Progress evidence
 
+2026-05-01 child diagnostic slice:
+
+- Added a cataloged `private_brand_type_error` runtime diagnostic helper using the existing runtime exception diagnostic substrate.
+- Changed backend `PrivateFieldGet` / `PrivateFieldSet` brand guards so non-object receivers, wrong brands, or out-of-range private slots emit `TypeError: Cannot access private member from an object whose class did not declare it` and abort instead of returning `undefined` or silently skipping writes.
+- Updated backend regression coverage for lowered private field runtime calls on an ordinary object to require the TypeError diagnostic.
+- Updated `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md` to record the diagnostic/abort surface and the remaining catchable-TypeError/external-lowering blockers.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-backend-wasm private_field_runtime_calls -- --nocapture: pass (3 passed)
+cargo test -p ts2wasm-cli private: 2 private semantic/lowering tests passed, then 2 existing unsupported-diagnostic code expectation failures in private_class_field_unsupported_forms_report_issue_255 and private_class_delete_backing_key_reports_issue_255 (`UnsupportedRuntimeSubset` vs helper expecting `UnsupportedSyntax`)
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)': failed after 63 passed / 3 failed / 160 not run; failures were existing/out-of-slice node_diff cases bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm, bigint_dynamic_builtin_fixtures_match_node_output_under_iwasm, and abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timeout
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
+
+Remaining blockers:
+
+- The TypeError path is a runtime diagnostic/abort, not catchable ECMAScript exception-object propagation through `try`/`catch`.
+- External top-level private access still reports issue-255 diagnostics because parser/frontend/lowering changes are out of this child slice and `crates/frontend/src/` is forbidden.
+- Extracted private methods/accessors and broader receiver forms still need issue-255/351 lowering work.
+
 2026-05-01 child resume slice:
 
 - Relaxed instance private field lowering so same-class `other.#field` read/write inside the declaring class lowers to `PrivateFieldGet` / `PrivateFieldSet` with the declaring class brand token and slot index, rather than requiring the receiver expression to be exactly `this`.

@@ -142,11 +142,13 @@ and the slot index. Same-class private field reads/writes, including non-`this`
 receivers inside the declaring class, lower to these calls. The backend checks that the
 value is an object, the packed brand matches, and the masked slot count is greater than
 the requested slot before reading or writing private slot payload after the public
-property capacity.
+property capacity. A mismatch now routes through the cataloged
+`private_brand_type_error` runtime diagnostic, which writes a `TypeError` message and
+aborts instead of returning `undefined` or silently skipping a write.
 
-This is current progress toward ECMAScript private brands. Compatible `TypeError`
-throwing on mismatch and private accessor/method external lowering remain issue 351 /
-issue 255 work.
+This is current progress toward ECMAScript private brands. Compatible catchable
+`TypeError` object propagation on mismatch and private accessor/method external
+lowering remain issue 351 / issue 255 work.
 
 ### BigInt value representation (accepted design)
 
