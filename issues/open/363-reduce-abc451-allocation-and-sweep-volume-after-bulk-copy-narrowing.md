@@ -3,12 +3,12 @@ id: 363
 title: "Reduce ABC451 allocation and sweep volume after bulk copy narrowing"
 type: bug
 area: runtime/memory
-class: implementation-ready
+class: blocked
 priority: P1
-depends_on: [362]
+depends_on: [362, 364]
 blocks: [357, 309]
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -243,6 +243,13 @@ cargo test -p ts2wasm-backend-wasm --lib -- --nocapture: pass; 27 passed
 mise run update-issue-index -- --check: pass
 mise run check issues: pass
 ```
+
+## Parent blocker classification
+
+2026-04-30 parent classification:
+
+- Class changed to `blocked` because the child evidence shows broad allocator probes are no longer productive without allocation/copy attribution.
+- Follow-up issue 364 tracks the diagnostic attribution needed to identify the next safe implementation target.
 
 ## Completion evidence
 
