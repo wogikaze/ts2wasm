@@ -19,6 +19,8 @@ Implement general object property enumeration for the spread operator in object 
 
 The current object spread implementation only flattens known static object literals and simple aliases. It cannot spread runtime-computed objects that require enumerating own enumerable properties at runtime, such as function return values or mutated object locals.
 
+Problem: Dynamic object property enumeration is not implemented for spread.
+
 ## Current failure
 
 ```sh

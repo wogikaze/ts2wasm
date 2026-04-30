@@ -19,6 +19,8 @@ Implement the backend emission path for direct eval code: either through a wasm 
 
 Direct eval requires executing a string as JavaScript code with access to the caller's scope. Pure wasm compilation cannot execute arbitrary strings at runtime without a JavaScript interpreter or host eval capability.
 
+Problem: No wasm runtime helper or shim JS emission exists for direct eval execution.
+
 ## Current failure
 
 ```sh
@@ -87,8 +89,7 @@ mise run check manifest
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limit 300
-cargo test -p ts2wasm-cli eval
+mise run check issues
 ```
 
 ## Docs / current-state / issue sync

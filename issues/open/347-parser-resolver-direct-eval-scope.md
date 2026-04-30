@@ -19,6 +19,8 @@ Add parser and resolver support to detect direct `eval` calls and model the spec
 
 Direct `eval` requires the compiler to recognize `eval(...)` as a special form (not an ordinary call), and eval code must have access to the caller's local scope. Annex B block-level function declarations inside eval have special hoisting and binding rules that differ from ordinary block-scoped functions.
 
+Problem: Parser and resolver do not detect direct eval calls or model eval-code scope.
+
 ## Current failure
 
 ```sh

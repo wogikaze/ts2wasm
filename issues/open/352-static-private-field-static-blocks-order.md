@@ -19,6 +19,8 @@ Implement correct evaluation ordering for static private fields and static block
 
 Static private fields (`static #x = 1`) and static blocks (`static { ... }`) must execute in class body source order. The current implementation supports individual static private fields and static blocks separately, but their relative ordering and interaction are not guaranteed. This is observable when a static block reads or writes a static private field.
 
+Problem: Static private field and static block execution order is unverified.
+
 ## Current failure
 
 ```sh

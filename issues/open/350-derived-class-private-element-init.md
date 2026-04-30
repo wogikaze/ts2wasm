@@ -19,6 +19,8 @@ Implement runtime initialization and storage for private class elements (fields,
 
 Private elements in derived classes must be initialized after the super constructor completes but before the derived class constructor body runs. The current implementation only supports non-derived classes. Attempting to use private elements in a derived class fails with an issue-255 diagnostic.
 
+Problem: Derived-class private elements are rejected with an unsupported diagnostic.
+
 ## Current failure
 
 ```sh

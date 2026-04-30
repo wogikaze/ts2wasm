@@ -86,7 +86,7 @@ mise run check issues
 Impacted commands:
 
 ```sh
-cargo test -p ts2wasm-cli bigint
+# covered by required nextest filter
 ```
 
 ## Notes

@@ -51,7 +51,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | partially-complete | P1 |  | test262 `includes:` directive is ignored, causing UnresolvedName for helper functions like `verifyProperty`. |
-| 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver support for direct eval and eval-code scope |
+| 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
 <!-- generated:ready:end -->
 
 ## Blocked queue

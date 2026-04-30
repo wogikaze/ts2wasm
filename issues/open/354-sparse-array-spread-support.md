@@ -19,6 +19,8 @@ Implement spread operator behavior for sparse arrays, ensuring that holes are co
 
 The current spread implementation only supports dense arrays. When spreading a sparse array (e.g., `const sparse = [1, , 3]; const arr = [...sparse];`), the hole must be preserved in the resulting array. The current implementation either produces incorrect dense arrays or rejects sparse array spread.
 
+Problem: Sparse array hole preservation is unsupported in spread operator.
+
 ## Current failure
 
 ```sh

@@ -19,6 +19,8 @@ Implement the ECMAScript iterator protocol so the spread operator can expand any
 
 The current spread implementation handles dense array literals, ASCII string literals, Set locals, and known dense array locals. It does not implement the general iterator protocol (`Symbol.iterator`, `.next()`, `{value, done}`), so custom iterables, generators, and Map spread silently fail or trap.
 
+Problem: General iterator protocol is not implemented for spread operator.
+
 ## Current failure
 
 ```sh

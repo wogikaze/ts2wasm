@@ -19,6 +19,8 @@ Replace the current internal-slot private storage with full private brand storag
 
 The current implementation uses internal slots appended to class instances for private field storage. This lacks the ECMAScript brand concept: in Node, `class C { #x; } let o = {}; o.#x` throws TypeError because `o` lacks C's brand. The current implementation would either silently fail or access the wrong slot.
 
+Problem: No runtime brand storage or brand-checking semantics for private elements.
+
 ## Current failure
 
 ```sh

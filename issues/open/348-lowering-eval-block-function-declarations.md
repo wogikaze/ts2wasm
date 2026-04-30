@@ -19,6 +19,8 @@ Lower Annex B block-level function declarations inside direct eval code to IR, p
 
 Inside direct eval code, a block-level `function f() {}` declaration creates a hoisted binding in the enclosing function scope (not merely the block scope) per Annex B.3.3. The IR lowering must represent this special binding behavior.
 
+Problem: IR lowering lacks eval-code block function declaration hoisting.
+
 ## Current failure
 
 ```sh
@@ -85,8 +87,7 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-cargo test -p ts2wasm-cli eval
-cargo test -p ts2wasm-ir eval
+cargo test -p ts2wasm-cli -- eval
 ```
 
 ## Docs / current-state / issue sync
