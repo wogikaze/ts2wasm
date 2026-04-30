@@ -111,7 +111,15 @@ pub(super) fn is_static_bigint_boolean_abstract_equality(
     right: &Expr,
     right_info: Option<&BigIntStaticInfo>,
 ) -> bool {
-    if !matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual) {
+    if !matches!(
+        op,
+        BinaryOp::EqualEqual
+            | BinaryOp::BangEqual
+            | BinaryOp::Less
+            | BinaryOp::LessEqual
+            | BinaryOp::Greater
+            | BinaryOp::GreaterEqual
+    ) {
         return false;
     }
     let left_static_bigint = left_info.is_some_and(|info| {

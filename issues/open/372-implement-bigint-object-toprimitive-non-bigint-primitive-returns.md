@@ -130,3 +130,25 @@ not run; issue is open
 Remaining risks:
 
 - Broader object coercion remains tracked separately by issue 374.
+
+## Progress evidence
+
+2026-05-01:
+
+- Implemented direct object-literal/local no-argument arrow `valueOf` / `toString` primitive-return folding for boolean, supported tagged-int number, nullish equality, and supported StringToBigInt string returns in mixed BigInt comparison contexts.
+- Added Node/iwasm differential fixture `fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-primitive.ts`.
+- Updated docs/current-state wording for the supported primitive-return subset and remaining issue 373-375 exclusions.
+
+Validation:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_object_toprimitive_primitive_matches_node_output_under_iwasm: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint: fail, 43 passed / 12 failed; added issue-372 fixture passes, remaining failures are existing broader BigInt baseline failures outside this slice
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
+
+Close status:
+
+- Not closed because the required broad `cargo test -p ts2wasm-cli --test m2_node_diff bigint` validation is not green in this worktree.
