@@ -799,12 +799,16 @@ impl WatEmitter<'_> {
 
     ;; Reuse a swept block when one is large enough for this payload.
     ;; Skip the linear free-list scan when sweep proved no free block is large
-    ;; enough for the aligned request.
+    ;; enough for the aligned request. Prefer bump allocation while the current
+    ;; committed memory can satisfy it; scan reclaimed blocks only when the bump
+    ;; path would need to grow memory or hit the cap.
     (local.set $free_header (global.get $gc_free_list))
     (if
       (i32.and
-        (i32.ne (local.get $free_header) (i32.const 0))
-        (i32.ge_u (global.get $gc_free_list_max_body_size) (local.get $payload_size)))
+        (i32.and
+          (i32.ne (local.get $free_header) (i32.const 0))
+          (i32.ge_u (global.get $gc_free_list_max_body_size) (local.get $payload_size)))
+        (i32.gt_u (local.get $new_heap) (local.get $memory_bytes)))
       (then
         (block $free_not_found
           (loop $free_scan
