@@ -849,15 +849,9 @@ fn resolve_stmt_with_outer_bindings(
             }
             methods.extend(private_methods);
             if !static_private_fields.is_empty() {
-                if !static_blocks.is_empty() {
-                    return Err(unsupported_private_element(
-                        "static private fields with static blocks require ordered class element initialization support",
-                        static_blocks[0].span,
-                    ));
-                }
                 let static_private_capture_names = static_private_fields
                     .iter()
-                    .map(|(field, _)| static_private_field_local_name(name, field))
+                    .map(|(field, _, _)| static_private_field_local_name(name, field))
                     .collect::<Vec<_>>();
                 for method in &mut methods {
                     if method.name.starts_with("static::") {
@@ -879,11 +873,14 @@ fn resolve_stmt_with_outer_bindings(
                 .iter()
                 .map(|block| {
                     validate_static_block_supported(block)?;
-                    block
-                        .body
-                        .iter()
-                        .map(resolve_stmt)
-                        .collect::<Result<Vec<_>, _>>()
+                    Ok((
+                        block.span,
+                        block
+                            .body
+                            .iter()
+                            .map(resolve_stmt)
+                            .collect::<Result<Vec<_>, _>>()?,
+                    ))
                 })
                 .collect::<Result<Vec<_>, _>>()?;
 

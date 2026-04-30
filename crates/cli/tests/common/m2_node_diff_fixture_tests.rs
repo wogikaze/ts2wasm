@@ -959,6 +959,7 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/private-class-method-call.ts",
         "fixtures/core-semantics/private-class-static-method-call.ts",
         "fixtures/core-semantics/private-class-static-field-direct.ts",
+        "fixtures/core-semantics/private-class-static-field-static-block-order.ts",
         "fixtures/core-semantics/private-class-static-accessor-direct.ts",
         "fixtures/core-semantics/private-class-getter-direct.ts",
         "fixtures/core-semantics/private-class-setter-direct.ts",
@@ -988,6 +989,14 @@ fn private_class_field_unsupported_forms_report_issue_255() {
     ] {
         assert_build_fails_with_unsupported_syntax(fixture, "issue-255:");
     }
+}
+
+#[test]
+fn private_class_static_field_static_block_tdz_reports_issue_352() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/private-class-static-field-static-block-tdz-unsupported.ts",
+        "issue-352:",
+    );
 }
 
 #[test]

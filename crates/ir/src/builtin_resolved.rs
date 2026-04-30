@@ -91,9 +91,9 @@ pub enum ResolvedStmt {
         constructor: Option<ResolvedConstructor>,
         methods: Vec<ClassMethod>,
         statics: Vec<(String, ResolvedExpr)>,
-        static_blocks: Vec<Vec<ResolvedStmt>>,
+        static_blocks: Vec<(Span, Vec<ResolvedStmt>)>,
         private_fields: Vec<String>,
-        static_private_fields: Vec<(String, ResolvedExpr)>,
+        static_private_fields: Vec<(String, ResolvedExpr, Span)>,
     },
 }
 

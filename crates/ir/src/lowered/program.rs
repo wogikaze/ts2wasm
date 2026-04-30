@@ -180,14 +180,35 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 static_blocks,
                 ..
             } => {
-                for (field, initializer) in static_private_fields {
-                    top_level_statements.push(resolver.lower_stmt(&ResolvedStmt::Let(
-                        crate::builtin_resolver::static_private_field_local_name(name, field),
-                        initializer.clone(),
-                    ))?);
+                let mut initializers = Vec::new();
+                for (field, initializer, span) in static_private_fields {
+                    initializers.push(ClassStaticInitializer::PrivateField {
+                        span_start: span.start,
+                        field,
+                        initializer,
+                    });
                 }
-                for block in static_blocks {
-                    top_level_statements.extend(resolver.lower_nested_block(block)?);
+                for (span, block) in static_blocks {
+                    initializers.push(ClassStaticInitializer::Block {
+                        span_start: span.start,
+                        block,
+                    });
+                }
+                initializers.sort_by_key(ClassStaticInitializer::span_start);
+                for initializer in initializers {
+                    match initializer {
+                        ClassStaticInitializer::PrivateField {
+                            field, initializer, ..
+                        } => {
+                            top_level_statements.push(
+                                resolver.lower_class_static_private_field(name, field, initializer)?,
+                            );
+                        }
+                        ClassStaticInitializer::Block { block, .. } => {
+                            top_level_statements
+                                .extend(resolver.lower_class_static_block(name, block)?);
+                        }
+                    }
                 }
             }
             _ => top_level_statements.push(resolver.lower_stmt(stmt)?),
@@ -212,6 +233,26 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
         functions,
         modules: resolver.modules,
     })
+}
+
+enum ClassStaticInitializer<'a> {
+    PrivateField {
+        span_start: usize,
+        field: &'a str,
+        initializer: &'a ResolvedExpr,
+    },
+    Block {
+        span_start: usize,
+        block: &'a [ResolvedStmt],
+    },
+}
+
+impl ClassStaticInitializer<'_> {
+    fn span_start(&self) -> usize {
+        match self {
+            Self::PrivateField { span_start, .. } | Self::Block { span_start, .. } => *span_start,
+        }
+    }
 }
 
 struct FunctionLowering {
@@ -345,7 +386,7 @@ fn collect_class_static_private_fields(program: &[ResolvedStmt]) -> ClassStaticP
                 name.clone(),
                 static_private_fields
                     .iter()
-                    .map(|(field, _)| {
+                    .map(|(field, _, _)| {
                         (
                             field.clone(),
                             crate::builtin_resolver::static_private_field_local_name(name, field),

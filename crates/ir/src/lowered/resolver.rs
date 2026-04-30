@@ -586,6 +586,37 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    pub(super) fn lower_class_static_private_field(
+        &mut self,
+        class_name: &str,
+        field: &str,
+        initializer: &ResolvedExpr,
+    ) -> Result<LoweredStmt, Diagnostic> {
+        let local_name = crate::builtin_resolver::static_private_field_local_name(class_name, field);
+        self.with_current_class(class_name, |resolver| {
+            resolver.lower_stmt(&ResolvedStmt::Let(local_name, initializer.clone()))
+        })
+    }
+
+    pub(super) fn lower_class_static_block(
+        &mut self,
+        class_name: &str,
+        block: &[ResolvedStmt],
+    ) -> Result<Vec<LoweredStmt>, Diagnostic> {
+        self.with_current_class(class_name, |resolver| resolver.lower_nested_block(block))
+    }
+
+    fn with_current_class<T>(
+        &mut self,
+        class_name: &str,
+        f: impl FnOnce(&mut Self) -> Result<T, Diagnostic>,
+    ) -> Result<T, Diagnostic> {
+        let previous = self.current_class.replace(class_name.to_owned());
+        let result = f(self);
+        self.current_class = previous;
+        result
+    }
+
 }
 
 fn class_maps(

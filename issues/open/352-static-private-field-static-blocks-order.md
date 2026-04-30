@@ -111,6 +111,21 @@ ECMAScript class evaluation order for static elements: class heritage, class bod
 
 Fill only when moving to `done/`.
 
+## Progress evidence
+
+2026-04-30 child-352:
+
+- Implemented IR/lowering support for source-ordered static private field initializers and static blocks without touching frontend/parser or runtime-memory/ABC451 files.
+- Added Node/iwasm differential fixture `fixtures/core-semantics/private-class-static-field-static-block-order.ts` proving a static block can read a preceding static private field and that field/block execution follows source order.
+- Added diagnostic fixture `fixtures/core-semantics/private-class-static-field-static-block-tdz-unsupported.ts` proving forward static-block access to a later static private field reports `issue-352:`.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo test -p ts2wasm-cli private`
+  - `mise run update-issue-index -- --check`
+  - `mise run check issues`
+- Validation blocked for close:
+  - `cargo nextest run -E 'test(private) or test(class) or test(node_diff)'` ran 197 selected tests; 196 passed and `m2_node_diff_fixture_tests::abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` failed by iwasm timeout at 30s. That failure is in the forbidden runtime-memory/ABC451 area and is tracked separately by issue 357, so issue 352 remains open as validated progress rather than done.
+
 Commits:
 
 - `...`

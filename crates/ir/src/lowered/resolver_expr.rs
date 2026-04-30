@@ -466,7 +466,13 @@ impl<'a> Resolver<'a> {
                 if key.starts_with('#') {
                     if let Some(local_name) = self.current_static_private_field_local_name(key) {
                         if self.is_same_class_static_private_receiver(object) {
-                            let local = self.resolve_local(&local_name)?;
+                            let local = self.resolve_local(&local_name).map_err(|_| Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
+                                ),
+                                span: Some(*span),
+                            })?;
                             return Ok(if self.env_cell_locals.contains(&local) {
                                 LoweredExpr::EnvCellGet(local)
                             } else {
@@ -1239,7 +1245,13 @@ impl<'a> Resolver<'a> {
                 if key.starts_with('#') {
                     if let Some(local_name) = self.current_static_private_field_local_name(key) {
                         if self.is_same_class_static_private_receiver(object) {
-                            let local = self.resolve_local(&local_name)?;
+                            let local = self.resolve_local(&local_name).map_err(|_| Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-352: static private field `{key}` cannot be accessed before its declaration in class static initialization order"
+                                ),
+                                span: Some(*span),
+                            })?;
                             let expr = Box::new(self.lower_expr(value)?);
                             return Ok(if self.env_cell_locals.contains(&local) {
                                 LoweredExpr::EnvCellSet { cell: local, expr }

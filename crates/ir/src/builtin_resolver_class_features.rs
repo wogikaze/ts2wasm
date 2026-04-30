@@ -7,7 +7,7 @@ pub(super) fn resolve_private_elements(
 ) -> Result<
     (
         Vec<String>,
-        Vec<(String, ResolvedExpr)>,
+        Vec<(String, ResolvedExpr, Span)>,
         Vec<ResolvedStmt>,
         Vec<ClassMethod>,
     ),
@@ -45,6 +45,7 @@ pub(super) fn resolve_private_elements(
                             .map(resolve_expr)
                             .transpose()?
                             .unwrap_or(ResolvedExpr::Undefined),
+                        *span,
                     ));
                     continue;
                 }
