@@ -10,7 +10,7 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
-| backend | 6 | 2 | 4 |
+| backend | 7 | 3 | 4 |
 | cli | 5 | 1 | 4 |
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 368 | 171 | 197 |
+| total | 369 | 172 | 197 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,6 +52,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | partially-complete | P1 |  | test262 `includes:` directive is ignored, causing UnresolvedName for helper functions like `verifyProperty`. |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
+| 356 | Fix array-push growth WAT format compile blocker | bug | backend | implementation-ready | P1 |  | `cargo nextest run -E 'test(bigint) or test(node_diff)'` stops before executing target tests due to `expr_emit.rs` ar... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
