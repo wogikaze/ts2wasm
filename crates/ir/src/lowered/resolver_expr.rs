@@ -1504,15 +1504,7 @@ impl<'a> Resolver<'a> {
                     .collect::<Result<Vec<_>, _>>()?;
                 let private_slot_count = self.private_slot_count(class_name);
                 let private_brand = if private_slot_count > 0 {
-                    Some(u32::try_from(prototype.constructor.0.saturating_add(1)).map_err(
-                        |_| Diagnostic {
-                            code: DiagCode::InvariantViolation,
-                            message: format!(
-                                "private field brand for class `{class_name}` exceeds u32"
-                            ),
-                            span: None,
-                        },
-                    )?)
+                    Some(self.private_brand_for_class(class_name, None)?)
                 } else {
                     None
                 };

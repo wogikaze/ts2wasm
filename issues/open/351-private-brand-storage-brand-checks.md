@@ -277,3 +277,26 @@ Remaining blockers:
   method-only/accessor-only classes need an explicit brand without private field
   slots, and assignment/call evaluation order needs to be preserved before
   replacing the current issue-255 diagnostics.
+
+2026-05-01 method/accessor brand-check blocker slice:
+
+- Added backend/IR validation support for a `PrivateBrandCheck(receiver, brand)` runtime-call primitive.
+- Added backend regression coverage for a zero-slot branded receiver success path and mismatched-brand TypeError path through the helper.
+- Reproduced and avoided an unsafe lowering strategy for same-class non-`this` private method/accessor receivers: using `PrivateBrandCheck` as a call argument lets the private method/accessor body run before supported `try/catch` statement-boundary propagation handles the exception object.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli private -- --nocapture: pass
+cargo test -p ts2wasm-backend-wasm private_field_runtime_calls -- --nocapture: pass (4 passed)
+cargo test -p ts2wasm-backend-wasm private_brand_check -- --nocapture: pass (1 passed)
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)': failed with out-of-scope node_diff failures: array_push_multi_argument stdout mismatch and known abc451_depth8_live_set timeout; private/backend tests in this slice passed before the broader failure.
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
+
+Remaining blockers:
+
+- Same-class non-`this` private method/accessor receiver brand checks need expression-level exception short-circuiting or statement-sequence lowering before replacing issue-255 diagnostics.
+- Top-level external private syntax such as `c.#m()` / `c.#x` and extracted private method/accessor values remain diagnostic-only pending that lowering model.

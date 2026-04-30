@@ -173,7 +173,7 @@ payload を倍増させた新 array に copy して local を差し替える。e
 として `push` の戻り値を観測する broader path や array-like object receiver は、
 既存の `Array.prototype.push` runtime boundary に従う。
 
-### Private class field metadata
+### Private class private metadata
 
 Class instances with lowered private fields use the GC header reserved word as packed
 private metadata:
@@ -194,10 +194,13 @@ writes a `TypeError` message and aborts instead of returning `undefined` or sile
 skipping a write; with an active handler it raises a catchable TypeError-like object
 and lets the current `TryCatch` statement-boundary propagation bind it.
 
+`PrivateBrandCheck(receiver, brand)` is available as a backend runtime-call primitive for future private method/accessor receiver checks. It validates the object tag and packed brand, returns the checked receiver on success, and uses the same `private_brand_type_error` path on mismatch. It is not yet wired into method/accessor lowering because private method/accessor calls currently need expression-level exception short-circuiting rather than statement-boundary-only propagation.
+
 This is current progress toward ECMAScript private brands. Compatible catchable
 `TypeError` propagation now covers lowered private field brand mismatches that occur
-inside the supported `try/catch` statement shape. Private accessor/method external
-lowering and broader external syntax lowering remain issue 351 / issue 255 work.
+inside the supported `try/catch` statement shape. Private method/accessor receiver
+checks remain issue 351 / issue 255 work until expression-level exception propagation
+can short-circuit method/accessor body execution.
 
 ### BigInt value representation (accepted design)
 
@@ -293,7 +296,7 @@ Issue 396 implemented these helpers behind one backend diagnostic/catchable-erro
   depend on this helper instead of inlining their diagnostic path, so RangeError uses
   the same cataloged runtime-string and `$write` dependency substrate as TypeError.
 - `private_brand_type_error() -> jsval` writes `TypeError: Cannot read private member from an object whose class did not declare it`
-  and aborts for uncaught private-field brand mismatches; with an active handler it
+  and aborts for uncaught private brand mismatches; with an active handler it
   raises a catchable TypeError-like object whose `message` property contains the same
   generic private-member message without the `TypeError:` diagnostic prefix. This shares
   the same runtime string, `$write`, Error-like allocation, and TypeError prototype

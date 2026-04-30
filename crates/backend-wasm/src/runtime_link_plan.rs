@@ -588,7 +588,10 @@ impl RuntimeLinkPlan {
                 if runtime_fn == "ArrayPushGrow" {
                     self.add_required_runtime(RuntimeFn::ArrayPushGrow);
                 }
-                if runtime_fn == "PrivateFieldGet" || runtime_fn == "PrivateFieldSet" {
+                if runtime_fn == "PrivateFieldGet"
+                    || runtime_fn == "PrivateFieldSet"
+                    || runtime_fn == "PrivateBrandCheck"
+                {
                     self.add_required_runtime(RuntimeFn::PrivateBrandTypeError);
                 }
                 if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(runtime_fn) {

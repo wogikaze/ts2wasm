@@ -420,6 +420,16 @@ fn validate_expr(
                     span: None,
                 });
             }
+            if runtime_fn == "PrivateBrandCheck"
+                && !matches!(args.as_slice(), [_, LoweredExpr::Number(brand)] if *brand > 0)
+            {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "PrivateBrandCheck must include an object and positive private brand"
+                        .to_owned(),
+                    span: None,
+                });
+            }
         }
         LoweredExpr::ArrayNew { elements } => {
             for elem in elements {

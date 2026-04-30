@@ -1704,6 +1704,15 @@ impl<'a> Resolver<'a> {
                 span: Some(span),
             });
         };
+        let brand = self.private_brand_for_class(class_name, Some(span))?;
+        Ok((brand, slot))
+    }
+
+    pub(super) fn private_brand_for_class(
+        &self,
+        class_name: &str,
+        span: Option<Span>,
+    ) -> Result<u32, Diagnostic> {
         let constructor = self
             .class_constructor_ids
             .get(class_name)
@@ -1711,16 +1720,15 @@ impl<'a> Resolver<'a> {
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::InvariantViolation,
                 message: format!(
-                    "private field brand lookup requires constructor for class `{class_name}`"
+                    "private brand lookup requires constructor for class `{class_name}`"
                 ),
-                span: Some(span),
+                span,
             })?;
-        let brand = u32::try_from(constructor.0.saturating_add(1)).map_err(|_| Diagnostic {
+        u32::try_from(constructor.0.saturating_add(1)).map_err(|_| Diagnostic {
             code: DiagCode::InvariantViolation,
-            message: format!("private field brand for class `{class_name}` exceeds u32"),
-            span: Some(span),
-        })?;
-        Ok((brand, slot))
+            message: format!("private brand for class `{class_name}` exceeds u32"),
+            span,
+        })
     }
 
     pub(super) fn private_slot_count(&self, class_name: &str) -> usize {

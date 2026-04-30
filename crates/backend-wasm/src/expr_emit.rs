@@ -735,6 +735,10 @@ impl WatEmitter<'_> {
                     self.emit_private_field_set(wat, args, indent, frame);
                     return;
                 }
+                if runtime_fn == "PrivateBrandCheck" {
+                    self.emit_private_brand_check(wat, args, indent, frame);
+                    return;
+                }
                 for arg in args {
                     self.emit_expr(wat, arg, indent, frame);
                 }
@@ -814,7 +818,7 @@ impl WatEmitter<'_> {
                     Layout::OBJECT_PROTOTYPE_OFFSET,
                     class_prototype_global(prototype.constructor),
                 ));
-                if *private_slot_count > 0 {
+                if private_brand.is_some() {
                     let metadata = private_field_metadata(
                         private_brand.unwrap_or(0),
                         *private_slot_count as u32,
@@ -1182,6 +1186,50 @@ impl WatEmitter<'_> {
             ValueTag::HEAP_MASK,
         ));
         wat.push_str(&format!("{pad}  (local.get {stored_value})\n"));
+        wat.push_str(&format!("{pad})\n"));
+    }
+
+    fn emit_private_brand_check(
+        &self,
+        wat: &mut String,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+    ) {
+        let pad = " ".repeat(indent);
+        let [object, LoweredExpr::Number(brand)] = args else {
+            wat.push_str(&format!("{pad}(unreachable)\n"));
+            return;
+        };
+        let object_value = frame.heap_base_tmp();
+        let brand_marker = (*brand as u32) << PRIVATE_FIELD_BRAND_SHIFT;
+
+        self.emit_expr(wat, object, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {object_value})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, object_value, frame);
+        wat.push_str(&format!("{pad}(block (result i32)\n"));
+        wat.push_str(&format!(
+            "{pad}  (if (i32.ne (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n",
+            ValueTag::TAG_MASK,
+            ValueTag::OBJECT_TAG,
+        ));
+        wat.push_str(&format!(
+            "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
+            RuntimeFn::PrivateBrandTypeError.symbol(),
+        ));
+        wat.push_str(&format!("{pad}  (if\n"));
+        wat.push_str(&format!(
+            "{pad}    (i32.eqz\n{pad}      (i32.eq\n{pad}        (i32.and\n{pad}          (i32.load\n{pad}            (i32.add\n{pad}              (i32.sub (i32.and (local.get {object_value}) (i32.const {})) (i32.const {}))\n{pad}              (i32.const {})))\n{pad}          (i32.const {}))\n{pad}        (i32.const {brand_marker})))\n",
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_RESERVED_OFFSET,
+            !PRIVATE_FIELD_COUNT_MASK,
+        ));
+        wat.push_str(&format!(
+            "{pad}    (then\n{pad}      (br 0 (call {}))\n{pad}    ))\n",
+            RuntimeFn::PrivateBrandTypeError.symbol(),
+        ));
+        wat.push_str(&format!("{pad}  (local.get {object_value})\n"));
         wat.push_str(&format!("{pad})\n"));
     }
 

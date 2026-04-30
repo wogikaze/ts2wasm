@@ -1008,6 +1008,84 @@ mod tests {
     }
 
     #[test]
+    fn private_brand_check_runtime_call_checks_zero_slot_brand() {
+        let program = LoweredProgram {
+            top_level_statements: vec![
+                LoweredStmt::Let(
+                    LocalId(0),
+                    LoweredExpr::New {
+                        constructor: FuncId(0),
+                        prototype: ClassPrototypeRef {
+                            constructor: FuncId(0),
+                            parent_constructors: vec![],
+                        },
+                        args: vec![],
+                        base_local: LocalId(2),
+                        private_brand: Some(1),
+                        private_slot_count: 0,
+                    },
+                ),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "PrivateBrandCheck".to_owned(),
+                    args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(1)],
+                }),
+                LoweredStmt::TryCatch {
+                    try_body: vec![LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                        runtime_fn: "PrivateBrandCheck".to_owned(),
+                        args: vec![LoweredExpr::Local(LocalId(0)), LoweredExpr::Number(2)],
+                    })],
+                    catch_var: Some(LocalId(1)),
+                    catch_body: Some(vec![LoweredStmt::Expr(LoweredExpr::Call {
+                        kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+                        args: vec![LoweredExpr::String("caught".to_owned())],
+                    })]),
+                    finally_body: None,
+                },
+                LoweredStmt::Expr(LoweredExpr::Call {
+                    kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
+                    args: vec![LoweredExpr::String("after".to_owned())],
+                }),
+            ],
+            top_level_locals: vec![LocalId(0), LocalId(1), LocalId(2)],
+            functions: vec![LoweredFunction {
+                id: FuncId(0),
+                params: vec![LocalId(0)],
+                uses_receiver: true,
+                min_required_params: 1,
+                rest_param_index: None,
+                locals: vec![],
+                body: vec![],
+            }],
+            modules: vec![],
+        };
+
+        let wat = emit_wat(&program).expect("private brand check should emit WAT");
+        assert!(wat.contains("(i32.const 65536)"));
+
+        let temp_dir = unique_temp_dir("private-brand-check-zero-slot");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wat_path = temp_dir.join("guard.wat");
+        let wasm_path = temp_dir.join("guard.wasm");
+        fs::write(&wat_path, wat).expect("WAT should be written");
+
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+
+        assert_eq!(run_iwasm(&wasm_path), "caught\nafter\n");
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn math_random_imports_wasi_random_get() {
         let program = math_random_program();
 
