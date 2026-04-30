@@ -868,6 +868,7 @@ fn for_loop_increment_update_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/for-loop-post-increment.ts",
         "fixtures/core-semantics/for-loop-post-decrement.ts",
         "fixtures/core-semantics/for-loop-prefix-inc-dec.ts",
+        "fixtures/core-semantics/increment-expression-statement.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -1208,6 +1209,7 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/private-class-setter-direct.ts",
         "fixtures/core-semantics/private-class-derived-field-order.ts",
         "fixtures/core-semantics/private-class-derived-field-implicit.ts",
+        "fixtures/core-semantics/private-class-derived-no-inherited-brand.ts",
         "fixtures/core-semantics/private-class-derived-method-call.ts",
         "fixtures/core-semantics/private-class-derived-accessor-direct.ts",
     ] {

@@ -3,9 +3,9 @@ id: 338
 title: "Sparse array holes handling for Array.prototype.map"
 type: feature
 area: runtime/builtins
-class: implementation-ready
+class: blocked
 priority: P2
-depends_on: []
+depends_on: [404]
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01
@@ -178,3 +178,19 @@ Remaining:
   still reports `UnsupportedSyntax` through the existing issue-268
   increment/decrement diagnostic before it can validate sparse-map semantics.
   This keeps issue 338 open even though the curated sparse holes fixture passes.
+
+2026-05-01 parent-cycle:
+
+- Implemented identifier increment/decrement expression statements for the
+  supported assignment-compatible subset and added
+  `fixtures/core-semantics/increment-expression-statement.ts`.
+- Validation passed:
+  `cargo test -p ts2wasm-cli increment -- --nocapture`.
+- Parent Test262 triage rerun:
+  `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
+  now advances past the previous issue-268 increment/decrement diagnostic and
+  reaches `UnresolvedName: unresolved name: callCnt`.
+- Issue remains open: the selected Test262 sparse map representative now needs
+  mutable outer local capture/name-resolution support for callback-local
+  mutation before sparse-map semantics can be fully validated against Test262.
+  Follow-up issue 404 tracks that blocker.

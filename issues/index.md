@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
 | frontend | 213 | 130 | 83 |
-| ir | 8 | 0 | 8 |
+| ir | 9 | 1 | 8 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 416 | 166 | 250 |
+| total | 417 | 167 | 250 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,7 +45,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
-| 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
+| 404 | Support mutable outer local captures in callback functions | feature | ir/runtime | implementation-ready | P2 |  | a function callback that mutates an outer local currently loses the |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -197,6 +197,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: triage-needed | Fix Object.keys backend-io error |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
+| 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | class: blocked | Sparse array holes handling for Array.prototype.map |
 | 341 | Implement core builtin API coverage (3,190 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement core builtin API coverage (3,190 test262 cases) |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: triage-needed | Implement DuplicateLocal diagnostic detection (66 test262 cases) |

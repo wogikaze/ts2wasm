@@ -947,7 +947,7 @@ fn resolve_stmt_with_outer_bindings(
                     });
                 }
             }
-            Ok(ResolvedStmt::Expr(resolve_expr(expr)?))
+            Ok(ResolvedStmt::Expr(resolve_update_expr_statement(expr)?))
         }
         Stmt::If {
             condition,
@@ -1843,7 +1843,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     }
 }
 
-fn resolve_for_update_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
+fn resolve_update_expr_statement(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
     match expr {
         Expr::Unary {
             op:
@@ -1873,6 +1873,10 @@ fn resolve_for_update_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
         }
         _ => resolve_expr(expr),
     }
+}
+
+fn resolve_for_update_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
+    resolve_update_expr_statement(expr)
 }
 
 fn increment_update_diagnostic(span: Span) -> Diagnostic {
