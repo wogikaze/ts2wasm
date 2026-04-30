@@ -303,6 +303,13 @@ fn bigint_runtime_div_zero_rangeerror_catch_fixture_matches_node_output_under_iw
 }
 
 #[test]
+fn bigint_runtime_rem_zero_rangeerror_catch_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-rem-zero-rangeerror-catch.ts",
+    );
+}
+
+#[test]
 fn bigint_runtime_rem_zero_reports_rangeerror_after_successful_build() {
     assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(
         "fixtures/core-semantics/bigint-runtime-rem-zero-trap.ts",

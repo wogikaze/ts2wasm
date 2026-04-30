@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 34 | 114 |
+| runtime | 148 | 32 | 116 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 415 | 172 | 243 |
+| total | 415 | 170 | 245 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -216,8 +216,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 369 | Implement full multi-limb BigInt arithmetic | feature | runtime/semantics | class: blocked | Implement full multi-limb BigInt arithmetic |
 | 370 | Implement BigInt arithmetic RangeError and TypeError parity | feature | runtime/semantics | class: blocked | Implement BigInt arithmetic RangeError and TypeError parity |
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
-| 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | class: blocked | BigInt division/remainder by zero RangeError |
-| 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | class: blocked | Mixed Number/BigInt arithmetic TypeError |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 <!-- generated:blocked:end -->
@@ -452,6 +450,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | see `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md` |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | see `issues/done/378-implement-bigint-shift-operators.md` |
 | 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | see `issues/done/379-validate-array-map-thisarg-test262.md` |
+| 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | see `issues/done/380-bigint-division-remainder-zero-rangeerror.md` |
+| 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | see `issues/done/381-mixed-number-bigint-arithmetic-typeerror.md` |
 | 383 | Multi-limb BigInt multiplication | feature | runtime/semantics | see `issues/done/383-multilimb-bigint-multiplication.md` |
 | 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | see `issues/done/384-multilimb-bigint-division-remainder.md` |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | see `issues/done/385-instrument-abc451-depth8-copy-vs-gc-time.md` |
