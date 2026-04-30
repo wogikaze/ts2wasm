@@ -172,3 +172,9 @@ Remaining:
 - Validation passed: `cargo fmt --all --check`.
 - Validation passed: `cargo nextest run -p ts2wasm-cli array_map` (16/16 passed, including the new sparse holes fixture and existing dense map fixtures).
 - Selected Test262 sparse map validation was not run in this worktree because `reference/` contains no checked-out Test262 cases. Issue remains open until a Test262 representative can be run or the close requirement is explicitly waived by parent.
+- Parent validation also ran
+  `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
+  from the main worktree with `reference/test262` present. The representative
+  still reports `UnsupportedSyntax` through the existing issue-268
+  increment/decrement diagnostic before it can validate sparse-map semantics.
+  This keeps issue 338 open even though the curated sparse holes fixture passes.
