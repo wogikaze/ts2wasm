@@ -1173,7 +1173,10 @@ impl BigIntRuntimeGuard {
                             ) {
                                 return Err(bigint_bitwise_diagnostic(*span));
                             }
-                            if !matches!(op, BinaryOp::Add | BinaryOp::Subtract) {
+                            if !matches!(
+                                op,
+                                BinaryOp::Add | BinaryOp::Subtract | BinaryOp::Multiply
+                            ) {
                                 return Err(bigint_dynamic_runtime_diagnostic(*span));
                             }
                         }
@@ -1193,7 +1196,12 @@ impl BigIntRuntimeGuard {
                     _ if runtime_needed && matches!(op, BinaryOp::Divide | BinaryOp::Modulo) => {
                         None
                     }
-                    _ if runtime_needed && !matches!(op, BinaryOp::Add | BinaryOp::Subtract) => {
+                    _ if runtime_needed
+                        && !matches!(
+                            op,
+                            BinaryOp::Add | BinaryOp::Subtract | BinaryOp::Multiply
+                        ) =>
+                    {
                         return Err(bigint_dynamic_runtime_diagnostic(*span));
                     }
                     _ => None,

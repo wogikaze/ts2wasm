@@ -122,6 +122,15 @@ Follow-up issues:
 
 This is a focused split from issue 369, covering only multiplication. Do not implement this by widening the signed-i64 conversion path. The compatibility target is the canonical heap BigInt limb representation.
 
+## Progress evidence
+
+2026-05-01 progress slice:
+
+- Implemented cached-decimal schoolbook multiplication in `$bigint_mul` for known BigInt local/literal operands outside signed i64.
+- Converted `fixtures/core-semantics/bigint-runtime-large-mul.ts` to Node/iwasm differential coverage for large positive, negative, and zero multiplication.
+- Remaining open acceptance: branch/loop/switch/try-assigned BigInt locals whose static value is not tracked still require resolver/control-flow tracking before this issue can move to done.
+- Validation target: `cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_mul`.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

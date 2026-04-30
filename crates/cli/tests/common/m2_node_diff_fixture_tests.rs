@@ -264,11 +264,8 @@ fn bigint_large_add_sub_runtime_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn bigint_runtime_large_mul_reports_issue_369() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-runtime-large-mul-unsupported.ts",
-        "issue-369: dynamic BigInt runtime arithmetic outside the signed-i64-backed first-limb slice is not implemented",
-    );
+fn bigint_large_mul_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-large-mul.ts");
 }
 
 #[test]

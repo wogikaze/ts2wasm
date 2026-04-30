@@ -1129,15 +1129,157 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_bigint_mul(&self, wat: &mut String) {
-        wat.push_str(
+        wat.push_str(&format!(
             r#"
   (func $bigint_mul (param $a i32) (param $b i32) (result i32)
-    (call $bigint_from_signed_i64
-      (i64.mul
-        (call $bigint_signed_i64 (local.get $a))
-        (call $bigint_signed_i64 (local.get $b)))))
+    (local $a_obj i32)
+    (local $b_obj i32)
+    (local $a_sign i32)
+    (local $b_sign i32)
+    (local $sign i32)
+    (local $a_ptr i32)
+    (local $b_ptr i32)
+    (local $a_len i32)
+    (local $b_len i32)
+    (local $buf i32)
+    (local $result_ptr i32)
+    (local $result_len i32)
+    (local $i i32)
+    (local $a_idx i32)
+    (local $b_idx i32)
+    (local $idx i32)
+    (local $a_digit i32)
+    (local $b_digit i32)
+    (local $prod i32)
+    (local $carry i32)
+    (local $limb i64)
+    (local.set $a_obj (i32.and (local.get $a) (i32.const {heap_mask})))
+    (local.set $b_obj (i32.and (local.get $b) (i32.const {heap_mask})))
+    (local.set $a_sign (i32.load (i32.add (local.get $a_obj) (i32.const {bigint_sign_offset}))))
+    (local.set $b_sign (i32.load (i32.add (local.get $b_obj) (i32.const {bigint_sign_offset}))))
+    (if (i32.or (i32.eqz (local.get $a_sign)) (i32.eqz (local.get $b_sign)))
+      (then
+        (i32.store8 (i32.const {scratch}) (i32.const {ascii_zero}))
+        (return
+          (call $make_bigint_literal
+            (i32.const 0)
+            (i32.const 0)
+            (i32.const 0)
+            (i32.const 0)
+            (i32.const {scratch})
+            (i32.const 1)))))
+    (local.set $sign (i32.mul (local.get $a_sign) (local.get $b_sign)))
+    (local.set $a_ptr (i32.add (local.get $a_obj) (i32.const {bigint_decimal_data_offset})))
+    (local.set $b_ptr (i32.add (local.get $b_obj) (i32.const {bigint_decimal_data_offset})))
+    (local.set $a_len (i32.load (i32.add (local.get $a_obj) (i32.const {bigint_decimal_len_offset}))))
+    (local.set $b_len (i32.load (i32.add (local.get $b_obj) (i32.const {bigint_decimal_len_offset}))))
+    (if (i32.lt_s (local.get $a_sign) (i32.const 0))
+      (then
+        (local.set $a_ptr (i32.add (local.get $a_ptr) (i32.const 1)))
+        (local.set $a_len (i32.sub (local.get $a_len) (i32.const 1)))))
+    (if (i32.lt_s (local.get $b_sign) (i32.const 0))
+      (then
+        (local.set $b_ptr (i32.add (local.get $b_ptr) (i32.const 1)))
+        (local.set $b_len (i32.sub (local.get $b_len) (i32.const 1)))))
+    (local.set $result_len (i32.add (local.get $a_len) (local.get $b_len)))
+    (local.set $buf (call $alloc_heap (i32.add (local.get $result_len) (i32.const 1))))
+    (local.set $result_ptr (i32.add (local.get $buf) (i32.const 1)))
+    (block $zero_done
+      (loop $zero
+        (br_if $zero_done (i32.ge_u (local.get $i) (local.get $result_len)))
+        (i32.store8
+          (i32.add (local.get $result_ptr) (local.get $i))
+          (i32.const {ascii_zero}))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $zero)))
+    (local.set $a_idx (local.get $a_len))
+    (block $mul_done
+      (loop $mul_a
+        (br_if $mul_done (i32.eqz (local.get $a_idx)))
+        (local.set $a_idx (i32.sub (local.get $a_idx) (i32.const 1)))
+        (local.set $a_digit
+          (i32.sub
+            (i32.load8_u (i32.add (local.get $a_ptr) (local.get $a_idx)))
+            (i32.const {ascii_zero})))
+        (local.set $b_idx (local.get $b_len))
+        (block $mul_b_done
+          (loop $mul_b
+            (br_if $mul_b_done (i32.eqz (local.get $b_idx)))
+            (local.set $b_idx (i32.sub (local.get $b_idx) (i32.const 1)))
+            (local.set $b_digit
+              (i32.sub
+                (i32.load8_u (i32.add (local.get $b_ptr) (local.get $b_idx)))
+                (i32.const {ascii_zero})))
+            (local.set $idx
+              (i32.add
+                (i32.add (local.get $a_idx) (local.get $b_idx))
+                (i32.const 1)))
+            (local.set $prod
+              (i32.add
+                (i32.mul (local.get $a_digit) (local.get $b_digit))
+                (i32.sub
+                  (i32.load8_u (i32.add (local.get $result_ptr) (local.get $idx)))
+                  (i32.const {ascii_zero}))))
+            (i32.store8
+              (i32.add (local.get $result_ptr) (local.get $idx))
+              (i32.add (i32.rem_u (local.get $prod) (i32.const 10)) (i32.const {ascii_zero})))
+            (local.set $carry (i32.div_u (local.get $prod) (i32.const 10)))
+            (i32.store8
+              (i32.add (local.get $result_ptr) (i32.sub (local.get $idx) (i32.const 1)))
+              (i32.add
+                (i32.add
+                  (i32.sub
+                    (i32.load8_u
+                      (i32.add
+                        (local.get $result_ptr)
+                        (i32.sub (local.get $idx) (i32.const 1))))
+                    (i32.const {ascii_zero}))
+                  (local.get $carry))
+                (i32.const {ascii_zero})))
+            (br $mul_b)))
+        (br $mul_a)))
+    (block $trim_done
+      (loop $trim
+        (br_if $trim_done (i32.le_u (local.get $result_len) (i32.const 1)))
+        (br_if $trim_done
+          (i32.ne (i32.load8_u (local.get $result_ptr)) (i32.const {ascii_zero})))
+        (local.set $result_ptr (i32.add (local.get $result_ptr) (i32.const 1)))
+        (local.set $result_len (i32.sub (local.get $result_len) (i32.const 1)))
+        (br $trim)))
+    (local.set $i (i32.const 0))
+    (block $limb_done
+      (loop $limb_digits
+        (br_if $limb_done (i32.ge_u (local.get $i) (local.get $result_len)))
+        (local.set $limb
+          (i64.add
+            (i64.mul (local.get $limb) (i64.const 10))
+            (i64.extend_i32_u
+              (i32.sub
+                (i32.load8_u (i32.add (local.get $result_ptr) (local.get $i)))
+                (i32.const {ascii_zero})))))
+        (local.set $i (i32.add (local.get $i) (i32.const 1)))
+        (br $limb_digits)))
+    (if (i32.lt_s (local.get $sign) (i32.const 0))
+      (then
+        (local.set $result_ptr (i32.sub (local.get $result_ptr) (i32.const 1)))
+        (i32.store8 (local.get $result_ptr) (i32.const {ascii_minus}))
+        (local.set $result_len (i32.add (local.get $result_len) (i32.const 1)))))
+    (call $make_bigint_literal
+      (local.get $sign)
+      (i32.const 1)
+      (i32.wrap_i64 (local.get $limb))
+      (i32.wrap_i64 (i64.shr_u (local.get $limb) (i64.const 32)))
+      (local.get $result_ptr)
+      (local.get $result_len)))
 "#,
-        );
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_minus = RuntimeConst::ASCII_MINUS,
+            scratch = Layout::SCRATCH_OFFSET,
+            heap_mask = ValueTag::HEAP_MASK,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
+            bigint_decimal_len_offset = Layout::BIGINT_DECIMAL_LEN_OFFSET,
+            bigint_decimal_data_offset = Layout::BIGINT_DECIMAL_DATA_OFFSET,
+        ));
     }
 
     pub(super) fn emit_bigint_pow(&self, wat: &mut String) {
