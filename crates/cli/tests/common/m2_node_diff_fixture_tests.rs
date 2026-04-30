@@ -1471,6 +1471,18 @@ fn spread_operator_array_alias_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_sparse_array_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/spread-sparse-array-materializes-undefined.ts",
+    );
+}
+
+#[test]
+fn spread_operator_sparse_call_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-sparse-call-undefined.ts");
+}
+
+#[test]
 fn spread_operator_string_literal_call_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/spread-call-string-literal.ts");
 }
