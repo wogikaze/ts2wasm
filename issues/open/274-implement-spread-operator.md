@@ -1,11 +1,12 @@
 ---
 id: 274
 title: Implement spread operator
-type: feature
+type: meta
 area: frontend/semantics
-class: implementation-ready
+class: ready
 priority: P2
 tracking: feature:spread-operator
+blocks: [353, 354, 355]
 ---
 
 ## Summary
@@ -40,13 +41,23 @@ Current behavior: UnsupportedSyntax error for spread operator.
 
 ## Acceptance criteria
 
+This meta issue is complete when all child issues are moved to `done/`.
+
+Already completed (not tracked by child issues):
 1. Parser accepts spread operator syntax
-2. Spread in function arguments works
-3. Spread in array literals works
-4. Spread in object literals works
-5. Iterator protocol integration
-6. Handles sparse arrays correctly
-7. Test262 spread operator tests pass
+2. Spread in function arguments works (literal arrays, dense array locals, ASCII strings, Set locals)
+3. Spread in array literals works (dense array literals, Set locals, dense array locals, ASCII strings)
+4. Spread in object literals works (static object literals, known object-literal locals)
+
+Child issues:
+- [ ] Issue 353: Implement iterator protocol integration for spread operator
+- [ ] Issue 354: Implement sparse array spread support
+- [ ] Issue 355: Implement dynamic object property enumeration spread
+
+Remaining acceptance criteria:
+5. Iterator protocol integration (issue 353)
+6. Handles sparse arrays correctly (issue 354)
+7. Test262 spread operator tests pass (all child issues)
 
 ## Validation
 
@@ -58,9 +69,14 @@ cargo fmt --all --check
 ## Notes
 
 - Spread operator is part of ES6 specification
-- Requires iterator protocol implementation
+- Requires iterator protocol implementation (issue 353)
 - Should work with Array, Set, Map, and custom iterables
 - Consider rest parameter syntax in parallel (related feature)
+
+Child issues:
+- Issue 353: General iterator protocol (`Symbol.iterator`, `.next()`, `{value, done}`)
+- Issue 354: Sparse array hole preservation in array and call spread
+- Issue 355: Runtime object property enumeration for dynamic object spread
 
 ## Progress
 

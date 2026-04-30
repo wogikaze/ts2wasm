@@ -1,14 +1,14 @@
 ---
 id: 225
 title: "Implement eval and Annex B function declaration semantics"
-type: feature
+type: meta
 area: frontend/semantics
-class: implementation-ready
+class: ready
 priority: P3
 depends_on: []
-blocks: []
+blocks: [347, 348, 349]
 created: 2026-04-28
-updated: 2026-04-28
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -33,17 +33,17 @@ Accepted decisions:
 
 ## Scope
 
-In scope:
+This meta issue tracks child issues for completing eval and Annex B function declaration semantics.
 
-- [ ] Design the first implementation slice for direct `eval` with Annex B block-level function declarations.
-- [ ] Implement direct `eval` via wasm/runtime helper or emitted shim JavaScript for the selected slice.
-- [ ] Add fixtures for direct eval and block-level function declaration behavior.
-- [ ] Preserve existing function, scope, and name-resolution behavior for non-eval code.
+Child issues:
+- [ ] Issue 347: Parser and resolver support for direct eval and eval-code scope
+- [ ] Issue 348: Lowering block-level function declarations in direct eval code
+- [ ] Issue 349: Runtime helper or shim JavaScript emission for direct eval execution
 
 Out of scope:
 
-- [ ] Broad indirect eval or full host-specific global environment behavior beyond the selected direct-eval slice.
-- [ ] General function feature work tracked by issue 062.
+- Broad indirect eval or full host-specific global environment behavior beyond the selected direct-eval slice.
+- General function feature work tracked by issue 062.
 
 ## Affected paths
 
@@ -61,9 +61,12 @@ Do not touch:
 
 ## Acceptance criteria
 
+This meta issue is complete when all child issues are moved to `done/`.
+
+- [ ] Issue 347 closed: parser/resolver direct eval detection and eval-code scope analysis
+- [ ] Issue 348 closed: IR lowering for block-level function declarations in eval code
+- [ ] Issue 349 closed: runtime helper or shim JavaScript emission for direct eval execution
 - [ ] test262 direct eval Annex B function-declaration cases in the classified window no longer report `eval`.
-- [ ] If shim JavaScript is emitted, its required capabilities are reflected in manifest/link planning.
-- [ ] Regression fixtures cover direct eval, block-level function declarations inside eval code, and existing non-eval function behavior.
 - [ ] `cargo fmt --all --check` and `cargo nextest run` pass.
 
 ## Validation

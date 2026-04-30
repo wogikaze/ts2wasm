@@ -1,14 +1,14 @@
 ---
 id: 255
 title: "Implement private class element runtime semantics"
-type: feature
+type: meta
 area: runtime/semantics
-class: implementation-ready
+class: ready
 priority: P2
 depends_on: ["248"]
-blocks: []
+blocks: [350, 351, 352]
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -37,22 +37,29 @@ Supported private class fields and methods behave like Node for construction, ac
 
 ## Scope
 
-In scope:
+This meta issue tracks child issues for completing private class element runtime semantics.
 
+Already completed (not tracked by child issues):
 - [x] Define an internal slot representation for the supported non-derived instance private field subset.
-- [ ] Define full private-name representation and class brand storage.
-- [ ] Lower private methods, getters, setters, static private elements, and derived private initialization.
+- [x] Lower instance private methods, getters, setters for non-derived classes.
+- [x] Lower static private methods, accessors, and fields for non-derived classes.
 - [x] Reject unsupported private access forms with issue-linked diagnostics.
 - [x] Add Node/iwasm differential fixtures for supported private element behavior.
+
+Child issues:
+- [ ] Issue 350: Implement derived-class private element initialization
+- [ ] Issue 351: Implement full private brand storage and brand-checking semantics
+- [ ] Issue 352: Implement static private field ordering with static blocks
 
 Out of scope:
 
 - Decorators.
 - Optional chaining of private fields unless coordinated with issue 253.
+- External/extracted private element access (remains diagnostic-only until brand checks are implemented).
 
 ## Affected paths
 
-Expected:
+Child issues define their own affected paths. This meta issue spans:
 
 - `crates/ir/src/`
 - `crates/backend-wasm/src/`

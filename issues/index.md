@@ -10,22 +10,22 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
-| backend | 5 | 1 | 4 |
+| backend | 6 | 2 | 4 |
 | cli | 5 | 1 | 4 |
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 206 | 130 | 76 |
-| ir | 7 | 0 | 7 |
+| frontend | 207 | 131 | 76 |
+| ir | 8 | 1 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 104 | 27 | 77 |
+| runtime | 110 | 33 | 77 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 359 | 162 | 197 |
+| total | 368 | 171 | 197 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -41,16 +41,17 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 225 | Implement eval and Annex B function declaration semantics | feature | frontend/semantics | implementation-ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
-| 255 | Implement private class element runtime semantics | feature | runtime/semantics | implementation-ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
+| 225 | Implement eval and Annex B function declaration semantics | meta | frontend/semantics | ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
+| 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
-| 274 | Implement spread operator | feature | frontend/semantics | implementation-ready | P2 |  | Implement spread operator |
+| 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 280 | Implement dynamic BigInt builtin inputs | feature | runtime/builtins | verification-ready | P2 | 259, 262 | `BigInt(...)`, `BigInt.asIntN(...)`, and `BigInt.asUintN(...)` currently work for documented static inputs, but dynam... |
 | 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 folds representable tagged-int number literals such as `1n == 1`, but the current number model does not yet... |
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | partially-complete | P1 |  | test262 `includes:` directive is ignored, causing UnresolvedName for helper functions like `verifyProperty`. |
+| 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver support for direct eval and eval-code scope |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -210,6 +211,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 344 | Implement legacy global builtin bindings (8 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement legacy global builtin bindings (8 test262 cases) |
 | 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
+| 348 | Lowering block-level function declarations in direct eval code | feature | ir | 347 | Lowering block-level function declarations in direct eval code |
+| 349 | Runtime helper or shim JavaScript emission for direct eval execution | feature | backend | 347, 348 | Runtime helper or shim JavaScript emission for direct eval execution |
+| 350 | Implement derived-class private element initialization | feature | runtime/semantics | 255 | Implement derived-class private element initialization |
+| 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | 255 | Implement full private brand storage and brand-checking semantics |
+| 352 | Implement static private field ordering with static blocks | feature | runtime/semantics | 255 | Implement static private field ordering with static blocks |
+| 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | 274 | Implement iterator protocol integration for spread operator |
+| 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
+| 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | 274 | Implement dynamic object property enumeration spread |
 <!-- generated:blocked:end -->
 
 ## Done queue
