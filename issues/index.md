@@ -10,7 +10,7 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
-| backend | 7 | 3 | 4 |
+| backend | 7 | 2 | 5 |
 | cli | 5 | 1 | 4 |
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 369 | 172 | 197 |
+| total | 369 | 171 | 198 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,7 +51,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
-| 356 | Fix array-push growth WAT format compile blocker | bug | backend | implementation-ready | P1 |  | `cargo nextest run -E 'test(bigint) or test(node_diff)'` stops before executing target tests due to `expr_emit.rs` ar... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -425,6 +424,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 310 | Fix activation-frame root liveness depth-8 regression | feature | runtime/memory | see `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md` |
 | 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
 | 337 | Implement test262 features directive and $262 object | feature | cli/reference | see `issues/done/337-implement-test262-features-directive.md` |
+| 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
