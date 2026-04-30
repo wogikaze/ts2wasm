@@ -353,3 +353,61 @@ date: 2026-05-01
   representation or lifetime slice that reduces live/copy volume without
   increasing `allocation_requested_bytes`, not another GC-cadence-only policy.
 - No runtime implementation from this rejected candidate was left in the tree.
+
+2026-05-01 child `child/309-depth9-live-allocation-20260501-065708` blocker evidence:
+
+- Tested a heap-tail `ArrayPushGrow` allocation-shape candidate: when a local
+  array payload was already at the current heap end, grow the array in place
+  across bounded `memory.grow` instead of allocating a second array and copying
+  old elements. This directly targeted the issue-309 old/new live-array
+  overlap without raising `MEMORY_MAX_PAGES`.
+- The first candidate preserved the explicit OOM smoke but was not mergeable
+  because the required depth-8 gate timed out:
+
+```text
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.310s
+date: 2026-05-01
+```
+
+- A second variant restored allocator-style allocation-pressure GC before the
+  in-place page grow so the tail-growth path would not starve collections. It
+  still failed the same required depth-8 gate:
+
+```text
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.242s
+date: 2026-05-01
+```
+
+- The required backend lib command was also rerun while the helper contract
+  test covered the candidate WAT shape. The candidate-specific backend tests
+  passed, but the command still failed on the existing forbidden/out-of-scope
+  BigInt runtime-link assertion already noted in this issue:
+
+```text
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: fail; 30 passed, 1 failed; failing test was runtime_link_plan::tests::bigint_runtime_arithmetic_selects_helper_deps
+date: 2026-05-01
+```
+
+- Conclusion: avoiding old/new live-array overlap only at heap-tail page-growth
+  boundaries is not sufficient; under the required depth-8 timeout it behaves
+  like the earlier array-growth probes and remains non-mergeable. The next
+  smaller blocker is still a representation or lifetime reduction that lowers
+  live/copy volume without making depth-8 exceed its runtime budget.
+- No runtime implementation from these rejected candidates was left in the
+  tree. Issue 300 remains open; no official ABC451 sample compatibility is
+  claimed.

@@ -253,6 +253,16 @@ date: 2026-04-29
   sharply. This confirms issue 308's remaining blocker is not safely solved by
   a GC-cadence-only change under the committed 185-page cap.
 
+2026-05-01 child `child/309-depth9-live-allocation-20260501-065708` follow-up:
+
+- Issue 309 tested heap-tail `ArrayPushGrow` in-place page growth to avoid
+  old/new live-array overlap, plus a variant that restored allocation-pressure
+  GC before the in-place grow. Both variants were rejected because the required
+  depth-8 gate still timed out (`30.310s` and `30.242s` respectively). This
+  further confirms issue 308's remaining blocker is not another GC trigger
+  cadence adjustment; it requires a representation or lifetime reduction that
+  lowers live/copy volume without violating the depth-8 runtime budget.
+
 2026-04-29 child `308-alloc-pattern-20260429T203035Z` progress:
 
 - Committed a max-cap last-chance GC policy in `$alloc_heap`: when
