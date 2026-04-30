@@ -372,9 +372,11 @@ fn bigint_shift_literal_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn bigint_unsigned_right_shift_reports_issue_378() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-shift-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-378: BigInt shift operators and unsigned right shift TypeError policy are not implemented",
+        true,
     );
 }
 

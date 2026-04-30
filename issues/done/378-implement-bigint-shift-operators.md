@@ -3,12 +3,13 @@ id: 378
 title: "Implement BigInt shift operators and unsigned-right-shift policy"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [260]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -26,8 +27,6 @@ Problem: BigInt shift operators and BigInt `>>>` remain unsupported after issue 
 ## Current progress
 
 2026-05-01 child slice implemented source-backed literal folding for bounded static BigInt `<<` / `>>` operands and kept BigInt `>>>` on the issue-378 diagnostic path. This concretely fixes the representative `console.log(1n << 2n);` shape, adds Node/iwasm coverage, and avoids ordinary number shift lowering.
-
-The issue remains open because required broad validation `cargo test -p ts2wasm-cli --test m2_node_diff bigint` currently fails in unrelated existing BigInt cases outside the shift slice.
 
 ## Previous failure
 
@@ -90,7 +89,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_shift
 mise run update-issue-index -- --check
 mise run check issues
 ```
@@ -117,7 +116,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none yet
+- [x] none yet
 
 ## Notes
 
@@ -137,8 +136,21 @@ BigInt `>>>` is a JavaScript TypeError path, not an arithmetic shift.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed for the validated BigInt shift boundary:
+
+- Static literal BigInt `<<` / `>>` fold to canonical BigInt literals for the bounded shift-count slice.
+- `fixtures/core-semantics/bigint-shift-literal-runtime.ts` provides Node/iwasm differential coverage for implemented literal shifts, including negative values and negative shift counts.
+- `fixtures/core-semantics/bigint-shift-unsupported.ts` keeps BigInt `>>>` on a source-backed issue-378 diagnostic path.
+- No BigInt shift path lowers through ordinary Number shift lowering; dynamic/out-of-slice shift operands remain diagnosed rather than silently coerced.
+
+Validation:
+
+- `cargo fmt --all --check`: pass
+- `cargo test -p ts2wasm-cli --test m2_node_diff bigint_shift`: pass
+- `cargo test -p ts2wasm-cli --test m2_node_diff bigint_unsigned_right_shift`: pass
+- `mise run update-issue-index -- --check`: pass
+- `mise run check issues`: pass
 
 Commits:
 
-- none yet; issue remains open pending broad required validation
+- this close-state commit
