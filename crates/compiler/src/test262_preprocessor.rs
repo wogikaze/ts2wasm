@@ -183,17 +183,17 @@ fn parse_yaml_list(value: &str) -> Vec<String> {
 /// diagnostic for unsupported metadata values.
 fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
     let mut unsupported_feature = None;
-    let mut has_262 = false;
+    let mut needs_262 = false;
     let mut stubs = String::new();
 
     for feature in features {
         match feature.as_str() {
             "IsHTMLDDA" => {
-                has_262 = true;
+                needs_262 = true;
                 stubs.push_str("$262.IsHTMLDDA = {};\n");
             }
             "createRealm" => {
-                has_262 = true;
+                needs_262 = true;
                 stubs.push_str("$262.createRealm = function createRealm() { return {}; };\n");
             }
             "tail-call-optimization" => {
@@ -224,7 +224,7 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
         });
     }
 
-    if has_262 && !stubs.starts_with("$262") {
+    if needs_262 {
         stubs.insert_str(0, "var $262 = {};\n");
     }
 
@@ -368,6 +368,22 @@ var IsHTMLDDA = $262.IsHTMLDDA;"#;
         assert!(processed.contains("$262.IsHTMLDDA = {};"));
         assert!(processed.contains("function assert() {}"));
         assert!(processed.contains("if (typeof Symbol === 'object'"));
+    }
+
+    #[test]
+    fn test_process_features_includes_262_declaration() {
+        let source = r#"/*---
+features: [createRealm]
+---*/
+
+var realm = $262.createRealm();"#;
+        let input = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../reference/test262/test/language/expressions/call-expression-eval.js");
+        let processed = process_test262_includes(&input, source)
+            .expect("feature/inclusion processing should succeed");
+
+        assert!(processed.contains("var $262 = {};"));
+        assert!(processed.contains("$262.createRealm = function createRealm()"));
     }
 
     #[test]
