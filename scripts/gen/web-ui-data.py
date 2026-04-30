@@ -88,6 +88,8 @@ def load_coverage_artifacts(coverage_dir):
         return artifacts
 
     for path in sorted(coverage_dir.glob("*.json")):
+        if path.name.endswith("-summary.json"):
+            continue
         with path.open("r", encoding="utf-8") as handle:
             data = json.load(handle)
         data["_source_path"] = path.relative_to(REPO_ROOT).as_posix()

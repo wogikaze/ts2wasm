@@ -10,17 +10,6 @@
   "implemented": 235,
   "suites": [
     {
-      "blocked": 0,
-      "build_pass": 0,
-      "denominator": 0,
-      "executed": 0,
-      "fail": 0,
-      "semantic_pass": 0,
-      "source": "artifacts/coverage/results/test262-summary.json",
-      "suite": "test262",
-      "unsupported": 10833
-    },
-    {
       "blocked": 44,
       "build_pass": 209,
       "denominator": 53445,
@@ -55,5 +44,5 @@
     }
   ],
   "total": 60030,
-  "unimplemented": 28918
+  "unimplemented": 18085
 }

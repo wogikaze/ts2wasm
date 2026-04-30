@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-04-30T09:11:13Z",
+  "generated_at": "2026-04-30T09:30:49Z",
   "generator": "scripts/gen/web-ui-data.py",
   "notes": [
     "Coverage totals are derived from artifacts/coverage/results/*.json.",
@@ -13,7 +13,6 @@
   ],
   "schema_version": 1,
   "sources": [
-    "artifacts/coverage/results/test262-summary.json",
     "artifacts/coverage/results/test262.json",
     "artifacts/coverage/results/tsc.json",
     "artifacts/coverage/results/tsgo.json",
