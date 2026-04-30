@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 36 | 112 |
+| runtime | 148 | 35 | 113 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 415 | 174 | 241 |
+| total | 415 | 173 | 242 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,7 +46,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
-| 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
 | 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 380 cannot produce a compatible catchable `RangeError`... |
 <!-- generated:ready:end -->
 
@@ -457,6 +456,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 383 | Multi-limb BigInt multiplication | feature | runtime/semantics | see `issues/done/383-multilimb-bigint-multiplication.md` |
 | 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | see `issues/done/384-multilimb-bigint-division-remainder.md` |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | see `issues/done/385-instrument-abc451-depth8-copy-vs-gc-time.md` |
+| 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | see `issues/done/387-implement-bigint-bitwise-outside-signed-i64-slice.md` |
 | 388 | Runtime array-like generic call for Array.prototype.map | feature | runtime/builtins | see `issues/done/388-array-map-generic-runtime-array-like.md` |
 | 389 | Unblock Array.map generic Test262 representative with function-expression initializer | bug | frontend/parser | see `issues/done/389-array-map-generic-test262-function-expression-blocker.md` |
 | 390 | Allow or rewrite Test262 harness undefined binding name | bug | frontend/parser | see `issues/done/390-test262-harness-undefined-binding-name.md` |

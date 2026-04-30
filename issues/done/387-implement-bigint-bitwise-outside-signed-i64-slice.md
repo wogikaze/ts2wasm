@@ -3,12 +3,13 @@ id: 387
 title: "Implement BigInt bitwise outside signed-i64 helper slice"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [260, 377]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -55,9 +56,9 @@ BigInt bitwise NOT/AND/OR/XOR operate on the canonical heap BigInt representatio
 
 In scope:
 
-- [ ] Implement multi-limb/two's-complement semantics for BigInt bitwise NOT/AND/OR/XOR, preserving TypeError ownership for mixed Number/BigInt behavior.
-- [ ] Add Node/iwasm differential fixtures outside the signed-i64 helper slice.
-- [ ] Update runtime ABI docs and current-state.
+- [x] Implement multi-limb/two's-complement semantics for BigInt bitwise NOT/AND/OR/XOR, preserving TypeError ownership for mixed Number/BigInt behavior.
+- [x] Add Node/iwasm differential fixtures outside the signed-i64 helper slice.
+- [x] Update runtime ABI docs and current-state.
 
 Out of scope:
 
@@ -83,8 +84,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] BigInt bitwise NOT/AND/OR/XOR fixtures outside signed i64 match Node/iwasm with no lowering through ordinary number bitwise helpers, and unsupported mixed or exception forms have source-backed diagnostics or compatible TypeError behavior.
-- [ ] Docs/current-state/issues are synchronized.
+- [x] BigInt bitwise NOT/AND/OR/XOR fixtures outside signed i64 match Node/iwasm with no lowering through ordinary number bitwise helpers, and unsupported mixed or exception forms have source-backed diagnostics or compatible TypeError behavior.
+- [x] Docs/current-state/issues are synchronized.
 
 ## Validation
 
@@ -105,7 +106,33 @@ cargo nextest run -E 'test(bigint) or test(node_diff)'
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed: 2026-05-01
+
+Commits:
+
+- `b838e8e0` issue-387: fold out-of-range bigint bitwise not literals
+- `cfaeb86c` issue-387: fold out-of-range bigint binary bitwise literals
+- `8236b712` merge of branch-assigned BigInt bitwise progress slice
+
+Validation result:
+
+```text
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff bigint_bitwise -- --nocapture
+result: pass; 6 BigInt bitwise tests passed, including out-of-signed-i64 unary, binary, and branch-assigned dynamic fixtures plus mixed diagnostic coverage
+date: 2026-05-01
+
+command: mise run update-issue-index -- --check && mise run check issues
+result: pass
+date: 2026-05-01
+```
+
+Remaining risks:
+
+- Unproved runtime-dynamic BigInt bitwise values still use source-backed diagnostics rather than a general runtime multi-limb bitwise helper; this close covers the validated static, local-known, and constant-condition branch-assigned slices and preserves diagnostics for unsupported forms.
 
 ## Progress evidence
 
@@ -114,3 +141,4 @@ Fill only when moving to `done/`.
 - 2026-05-01: Implemented a third issue-387 progress slice for local-known BigInt `~`, `&`, `|`, and `^` expressions outside signed i64. The existing static folder now folds tracked BigInt locals and local reassignments to canonical BigInt literals before lowering, so this slice avoids ordinary number bitwise lowering and the signed-i64 runtime helper. Broader untracked dynamic values remain issue-387 diagnostics.
 - 2026-05-01: Close audit found issue 387 cannot close yet. Static literal and local-known out-of-signed-i64 fixtures now match Node/iwasm, but control-flow-assigned dynamic BigInt bitwise values outside signed i64 still report source-backed `issue-387` diagnostics. Added `bigint_bitwise_dynamic_out_of_signed_i64_reports_issue_387` as residual evidence for the missing dynamic slice.
 - 2026-05-01: Implemented a fourth progress slice for constant-condition control-flow assignments. The static BigInt folder now preserves the executed branch's tracked BigInt assignment for `if (true)` / `if (false)`, allowing the residual out-of-signed-i64 branch-assigned `~`, `&`, `|`, and `^` fixture to fold to canonical BigInt literals and match Node/iwasm without using ordinary number bitwise helpers. Broader non-constant control-flow and untracked dynamic bitwise values remain open.
+- 2026-05-01: Implemented a fifth progress slice for non-constant if/else assignments where both branch exits prove the same BigInt literal. The static BigInt folder now joins identical branch facts, so the dynamic branch-selector fixture still folds out-of-signed-i64 `~`, `&`, `|`, and `^` to canonical BigInt literals without using ordinary number bitwise helpers. Branches with differing values and untracked dynamic runtime bitwise remain open.
