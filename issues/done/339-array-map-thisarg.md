@@ -117,7 +117,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- pending branch commit
+- `dc2d7b93`
 
 Validation result:
 
