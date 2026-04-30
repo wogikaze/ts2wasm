@@ -123,6 +123,7 @@ This issue is not closed by hiding remaining work. The known-BigInt division imp
 Commits:
 
 - `3672eee7` issue-391: close superseded bigint division split
+- `45f4380a` issue-391: record close evidence
 
 Validation result:
 
