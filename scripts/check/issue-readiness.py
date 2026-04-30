@@ -12,6 +12,7 @@ import argparse
 import json
 import re
 import sys
+import shlex
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -41,6 +42,135 @@ PLACEHOLDER_PHRASES = (
 EXACT_COMMAND_RE = re.compile(
     r"\b(cargo|mise run|node|iwasm|wasm-tools|python|TS2WASM_REFERENCE_ROOT=)"
 )
+TEST_FILE_RE = re.compile(r"\b[^\s`\"']+\.(?:ts|js|jsx|mjs|rs|wat|jsonl|json|toml)\b")
+METHOD_LIKE_RE = re.compile(r"\b(method|opcode|instruction|builtin|runtime helper|runtime-?|emit|lower)\b", re.I)
+METHOD_NAME_RE = re.compile(r"`[^`]*(?:\.\w+|\([^`]*\)|::\w+)`")
+DATA_MODEL_LIKE_RE = re.compile(r"\b(data model|データ構造|schema|ast|ir|manifest|representation|type|struct|enum)\b", re.I)
+ABI_LIKE_RE = re.compile(r"\b(abi|component|runtime-abi|imports?|exports?|table|memory|global|func type)\b", re.I)
+
+
+def _tokenize_command(command: str) -> list[str]:
+    try:
+        return shlex.split(command)
+    except ValueError:
+        return command.split()
+
+
+def _iter_command_lines(text: str) -> list[str]:
+    blocks = command_blocks(text)
+    lines: list[str] = []
+    for block in blocks:
+        for raw in block.splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.endswith("\\"):
+                line = line[:-1].strip()
+            lines.append(line)
+    return lines
+
+
+def _count_tests_from_command(command: str) -> int:
+    tokens = _tokenize_command(command)
+    if not tokens:
+        return 0
+    head = tokens[0]
+
+    if head == "node":
+        if any(tok.endswith((".ts", ".js", ".mjs")) for tok in tokens[1:]):
+            return 1
+        return 0
+
+    if head == "cargo":
+        if len(tokens) < 2:
+            return 0
+
+        if tokens[1] == "nextest":
+            if len(tokens) < 3 or tokens[2] != "run":
+                return 0
+            args = tokens[3:]
+            if "--" in args:
+                args = args[: args.index("--")]
+            test_like = [tok for tok in args if not tok.startswith("-")]
+            if test_like:
+                return 1 + min(3, len(set(test_like)))
+            return 6
+
+        if tokens[1] == "test":
+            args = tokens[2:]
+            if "--" in args:
+                args = args[: args.index("--")]
+            test_like = [tok for tok in args if not tok.startswith("-")]
+            if test_like:
+                return 1 + min(3, len(set(test_like)))
+            return 6
+
+    joined = " ".join(tokens)
+    if "reference-coverage" in joined:
+        sample = re.search(r"--sample\s+(\d+)", joined)
+        if sample:
+            return max(1, (int(sample.group(1)) + 29) // 30)
+        if "--path-filter" in joined:
+            return 4
+        return 3
+
+    if "reference-triage" in joined:
+        return 1
+
+    if head in {"mise", "bunx", "python", "pytest"}:
+        if "test262" in joined:
+            return 2
+        return 1 if "test" in joined else 0
+
+    return 0
+
+
+def estimate_issue_test_load(issue: Issue) -> tuple[int, list[str]]:
+    total = 0
+    reasons: list[str] = []
+    sections = [section(issue.text, "Validation"), section(issue.text, "Current failure"), section(issue.text, "Acceptance criteria")]
+    for section_text in sections:
+        for command in _iter_command_lines(section_text):
+            estimate = _count_tests_from_command(command)
+            if estimate:
+                total += estimate
+                reasons.append(f"{estimate}:{command[:40]}")
+
+    file_refs = set(TEST_FILE_RE.findall(issue.text))
+    file_bonus = min(len(file_refs), 5)
+    if file_bonus:
+        total += file_bonus
+        reasons.append(f"+{file_bonus} fixture/test refs")
+
+    return max(1, total), reasons
+
+
+def estimate_issue_work_units(issue: Issue) -> tuple[int, int, int, int, int]:
+    scope = section(issue.text, "Scope")
+    acceptance = section(issue.text, "Acceptance criteria")
+    items = unchecked_items(scope) + unchecked_items(acceptance)
+    if not items:
+        return 0, 0, 0, 0, 0
+
+    method_units = 0
+    abi_units = 0
+    data_model_units = 0
+    unmatched_units = 0
+
+    for item in items:
+        lowered = item.lower()
+        if METHOD_NAME_RE.search(item) or METHOD_LIKE_RE.search(lowered):
+            method_units += 1
+            continue
+        if DATA_MODEL_LIKE_RE.search(lowered):
+            data_model_units += 1
+            continue
+        if ABI_LIKE_RE.search(lowered):
+            abi_units += 1
+            continue
+        unmatched_units += 1
+
+    return len(items), method_units, abi_units, data_model_units, unmatched_units
 
 
 @dataclass(frozen=True)
@@ -58,6 +188,11 @@ class IssueReadiness:
     acceptance: int
     validation: int
     size: int
+    work_units: int
+    method_units: int
+    abi_units: int
+    data_model_units: int
+    test_estimate: int
     findings: list[str]
 
 
@@ -262,6 +397,18 @@ def measure(issue: Issue) -> IssueReadiness:
     acceptance = score_acceptance(issue, findings)
     validation = score_validation(issue, findings)
     size = score_size(issue, findings)
+    test_estimate, _test_reasons = estimate_issue_test_load(issue)
+    work_units, method_units, abi_units, data_model_units, unmatched_units = estimate_issue_work_units(issue)
+    if work_units == 0:
+        findings.append("work-units could not be derived from scope/acceptance checklists")
+    if unmatched_units == work_units and work_units > 0:
+        findings.append("work-units are not typed by method/ABI/data-model")
+    if work_units >= 10:
+        findings.append(
+            f"work units ({work_units}) suggests splitting this issue across data-model/ABI/method slices"
+        )
+    if test_estimate >= 40:
+        findings.append("estimated test load suggests oversized implementation slice")
     total = round((metadata * 0.5) + problem + scope + acceptance + validation + (size * 0.5))
     generated_reference_bucket = (
         issue.orch_class == "triage-needed"
@@ -289,7 +436,12 @@ def measure(issue: Issue) -> IssueReadiness:
         acceptance=acceptance,
         validation=validation,
         size=size,
+        work_units=work_units,
+        method_units=method_units,
+        abi_units=abi_units,
+        data_model_units=data_model_units,
         findings=findings,
+        test_estimate=test_estimate,
     )
 
 
@@ -309,20 +461,28 @@ def render_text(rows: list[IssueReadiness], limit: int) -> str:
     ]
     for row in sorted(rows, key=lambda r: (r.score, r.issue_id))[:limit]:
         first = row.findings[0] if row.findings else "no findings"
-        lines.append(f"- {row.issue_id} [{row.score:03d} {row.band}] {row.title} ({row.issue_class}): {first}")
+        lines.append(
+            f"- {row.issue_id} [{row.score:03d} {row.band}] "
+            f"[test={row.test_estimate}] {row.title} ({row.issue_class}): {first}"
+        )
     return "\n".join(lines)
 
 
 def render_markdown(rows: list[IssueReadiness], limit: int) -> str:
     lines = [
-        "| ID | Score | Band | Class | Priority | Title | Top finding |",
-        "|---:|---:|---|---|---|---|---|",
+        "| ID | Score | Band | Class | Priority | Test estimate | Work units (M/A/D) | Title | Top finding |",
+        "|---:|---:|---|---|---|---:|---:|---|---|",
     ]
     for row in sorted(rows, key=lambda r: (r.score, r.issue_id))[:limit]:
         top = row.findings[0] if row.findings else ""
         title = row.title.replace("|", "\\|")
         top = top.replace("|", "\\|")
-        lines.append(f"| {row.issue_id} | {row.score} | {row.band} | {row.issue_class} | {row.priority} | {title} | {top} |")
+        lines.append(
+            f"| {row.issue_id} | {row.score} | {row.band} | {row.issue_class} | "
+            f"{row.priority} | {row.test_estimate} | "
+            f"{row.method_units}/{row.abi_units}/{row.data_model_units} ({row.work_units}) | "
+            f"{title} | {top} |"
+        )
     return "\n".join(lines)
 
 
@@ -335,6 +495,18 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
         type=int,
         default=0,
         help="fail if any non-blocked open issue scores below this threshold",
+    )
+    parser.add_argument(
+        "--fail-test-estimate-above",
+        type=int,
+        default=0,
+        help="fail if any non-blocked open issue estimate exceeds this test-load threshold",
+    )
+    parser.add_argument(
+        "--fail-work-units-above",
+        type=int,
+        default=0,
+        help="fail if any non-blocked open issue has too many scope/acceptance work units",
     )
     return parser.parse_args(argv)
 
@@ -359,6 +531,32 @@ def main(argv: list[str]) -> int:
         if offenders:
             print(
                 f"issue-readiness: {len(offenders)} non-blocked issue(s) below {args.fail_ready_below}",
+                file=sys.stderr,
+            )
+            return 1
+
+    if args.fail_test_estimate_above:
+        offenders = [
+            row
+            for row in rows
+            if row.issue_class not in {"blocked", "triage-needed"} and row.test_estimate > args.fail_test_estimate_above
+        ]
+        if offenders:
+            print(
+                f"issue-readiness: {len(offenders)} non-blocked issue(s) above test-estimate threshold {args.fail_test_estimate_above}",
+                file=sys.stderr,
+            )
+            return 1
+
+    if args.fail_work_units_above:
+        offenders = [
+            row
+            for row in rows
+            if row.issue_class not in {"blocked", "triage-needed"} and row.work_units > args.fail_work_units_above
+        ]
+        if offenders:
+            print(
+                f"issue-readiness: {len(offenders)} non-blocked issue(s) above work-unit threshold {args.fail_work_units_above}",
                 file=sys.stderr,
             )
             return 1
