@@ -9,6 +9,7 @@ depends_on: [339]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -56,7 +57,7 @@ Out of scope:
 
 Expected:
 
-- `issues/open/379-validate-array-map-thisarg-test262.md`
+- `issues/done/379-validate-array-map-thisarg-test262.md`
 - `issues/index.md`
 - `current-state.md` only if new factual behavior is discovered
 
@@ -101,11 +102,11 @@ Final-state docs:
 
 Current state:
 
-- [ ] not affected unless validation changes known current behavior
+- [x] not affected unless validation changes known current behavior
 
 Follow-up issues:
 
-- [ ] none unless selected Test262 evidence exposes a new non-338/non-340 gap
+- [x] none; selected Test262 evidence only exposed existing parser/frontend blockers
 
 ## Notes
 
