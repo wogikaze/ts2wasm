@@ -139,4 +139,17 @@ Remaining risks:
 Remaining:
 
 - Not DONE. Inline `function (x) { return this... }` callbacks still hit the existing nested-function `this` restriction in `lower_nested_function`.
-- Full CLI/iwasm fixture validation is blocked until the backend compile error is fixed.
+- Full CLI/iwasm fixture validation was blocked until the backend compile error was fixed.
+
+2026-04-30 continuation after parent issue 356 close:
+
+- Rebased this branch to current master after parent closed issue 356.
+- `mise run update-issue-index -- --check`: pass.
+- `mise run check issues`: pass.
+- `cargo nextest run -p ts2wasm-cli array_map`: pass, 11/11 tests.
+- Status remains PROGRESS, not DONE.
+
+Remaining:
+
+- Inline `function (x) { return this... }` callbacks still hit the existing nested-function `this` restriction in `lower_nested_function`.
+- Selected Test262 thisArg map tests are not yet validated for closure.

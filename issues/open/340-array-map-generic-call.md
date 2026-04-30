@@ -142,3 +142,16 @@ Remaining:
 
 - Not DONE. Generic map is currently static/dense only; arbitrary runtime array-like objects and sparse/missing indexed properties still require broader property iteration/runtime support.
 - The requested representative Test262 path `reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` is absent in this worktree, so it could not be validated here.
+
+2026-04-30 continuation after parent issue 356 close:
+
+- Rebased this branch to current master after parent closed issue 356.
+- `mise run update-issue-index -- --check`: pass.
+- `mise run check issues`: pass.
+- `cargo nextest run -p ts2wasm-cli array_map`: pass, 11/11 tests.
+- Status remains PROGRESS, not DONE.
+
+Remaining:
+
+- Generic map is currently static/dense only; arbitrary runtime array-like objects and sparse/missing indexed properties still require broader property iteration/runtime support.
+- The requested representative Test262 path `reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` is absent in this worktree, so it could not be validated here.
