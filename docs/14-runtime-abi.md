@@ -138,12 +138,15 @@ bits 16..31  : per-class private brand token
 ```
 
 `PrivateFieldGet` / `PrivateFieldSet` lowered runtime calls carry both the brand token
-and the slot index. The backend checks that the value is an object, the packed brand
-matches, and the masked slot count is greater than the requested slot before reading or
-writing private slot payload after the public property capacity.
+and the slot index. Same-class private field reads/writes, including non-`this`
+receivers inside the declaring class, lower to these calls. The backend checks that the
+value is an object, the packed brand matches, and the masked slot count is greater than
+the requested slot before reading or writing private slot payload after the public
+property capacity.
 
 This is current progress toward ECMAScript private brands. Compatible `TypeError`
-throwing on mismatch and external `o.#x` lowering remain issue 351 / issue 255 work.
+throwing on mismatch and private accessor/method external lowering remain issue 351 /
+issue 255 work.
 
 ### BigInt value representation (accepted design)
 

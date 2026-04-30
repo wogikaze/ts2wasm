@@ -1528,7 +1528,7 @@ impl<'a> Resolver<'a> {
 
     pub(super) fn private_field_brand_and_slot(
         &self,
-        object: &ResolvedExpr,
+        _object: &ResolvedExpr,
         key: &str,
         span: Span,
     ) -> Result<(u32, usize), Diagnostic> {
@@ -1539,19 +1539,10 @@ impl<'a> Resolver<'a> {
                 span: Some(span),
             });
         };
-        if !matches!(object, ResolvedExpr::This { .. }) {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: format!(
-                    "issue-255: private field `#{field_name}` access is currently supported only as `this.#{field_name}` inside class methods and constructors"
-                ),
-                span: Some(span),
-            });
-        }
         let class_name = self.current_class.as_ref().ok_or_else(|| Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!(
-                "issue-255: private field `#{field_name}` access requires class context"
+                "issue-255: private field `#{field_name}` access requires declaring class context"
             ),
             span: Some(span),
         })?;

@@ -118,6 +118,27 @@ Fill only when moving to `done/`.
 
 ## Progress evidence
 
+2026-05-01 child resume slice:
+
+- Relaxed instance private field lowering so same-class `other.#field` read/write inside the declaring class lowers to `PrivateFieldGet` / `PrivateFieldSet` with the declaring class brand token and slot index, rather than requiring the receiver expression to be exactly `this`.
+- Added Node/iwasm differential coverage for same-class branded receiver reads/writes in `fixtures/core-semantics/private-class-field-same-class-receiver.ts`.
+- Added IR lowering coverage proving non-`this` same-class private field receiver access carries brand `1` and slot `0`.
+- Updated `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md` to record branded same-class receiver lowering and the remaining TypeError/accessor/method blockers.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo nextest run -E 'test(private) or test(class) or test(node_diff)': 206 passed, 1 failed; only failure abc451_depth8_live_set_fixture_matches_node_output_under_iwasm timed out after 30.514s, matching the assignment's known unrelated residual risk
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
+
+Remaining blockers:
+
+- Brand mismatch still returns `undefined` in the backend guard path instead of throwing a catchable `TypeError`, because compatible JS exception propagation is not implemented for this path.
+- Top-level `c.#x` remains a source diagnostic because the private name is outside its declaring class lexical context; private method/accessor external/extracted forms remain issue-255/351 work.
+
 2026-05-01 child slice:
 
 - Added per-class private brand operands to lowered/backend `PrivateFieldGet` and `PrivateFieldSet` calls.

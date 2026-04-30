@@ -1059,6 +1059,7 @@ fn class_static_block_fixture_matches_node_output_under_iwasm() {
 fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/private-class-field-read-write.ts",
+        "fixtures/core-semantics/private-class-field-same-class-receiver.ts",
         "fixtures/core-semantics/private-class-field-internal-slot-gc.ts",
         "fixtures/core-semantics/private-class-method-call.ts",
         "fixtures/core-semantics/private-class-static-method-call.ts",

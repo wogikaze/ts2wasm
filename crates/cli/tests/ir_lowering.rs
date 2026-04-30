@@ -787,6 +787,59 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
 }
 
 #[test]
+fn lowering_represents_same_class_private_field_receiver_as_branded_slot_call() {
+    use ts2wasm_ir::lowered::{LocalId, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class Counter {
+          #value = 7;
+          readFrom(other) { return other.#value; }
+          writeTo(other, next) { other.#value = next; return other.#value; }
+        }
+
+        let first = new Counter();
+        let second = new Counter();
+        console.log(first.readFrom(second));
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+            assert_eq!(runtime_fn, "PrivateFieldGet");
+            assert!(matches!(
+                args.as_slice(),
+                [
+                    LoweredExpr::Local(LocalId(1)),
+                    LoweredExpr::Number(1),
+                    LoweredExpr::Number(0)
+                ]
+            ));
+        }
+        other => panic!("unexpected same-class private receiver read lowering: {other:?}"),
+    }
+
+    let write_method = &lowered.functions[2];
+    match &write_method.body[0] {
+        LoweredStmt::Expr(LoweredExpr::RuntimeCall { runtime_fn, args }) => {
+            assert_eq!(runtime_fn, "PrivateFieldSet");
+            assert!(matches!(
+                args.as_slice(),
+                [
+                    LoweredExpr::Local(LocalId(1)),
+                    LoweredExpr::Number(1),
+                    LoweredExpr::Number(0),
+                    LoweredExpr::Local(LocalId(2))
+                ]
+            ));
+        }
+        other => panic!("unexpected same-class private receiver write lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_represents_direct_private_method_call_as_same_class_user_call() {
     use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LocalId, LoweredExpr, LoweredStmt};
 
