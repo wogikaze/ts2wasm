@@ -254,3 +254,50 @@ date:
 Remaining risks:
 
 - none
+
+2026-04-30 child-309 live-shape validation note:
+
+- Found the assigned worktree could not compile `ArrayPushGrow` before runtime
+  validation: `expr_emit.rs` used a Rust format placeholder
+  `{array_push_grow_linear_growth_threshold}` without a named format argument,
+  and the emitted WAT for `ArrayPushGrow` had unbalanced parentheses around the
+  generated `local.set`, capacity guard, and fast-path element store.
+- Fixed only the backend WAT-shape defects in the local candidate so the
+  reducer can build and runtime evidence can be collected.
+- The current small-shape policy remains exact-fit growth after capacity 3072.
+  With `$copy` changed from the byte loop to `memory.copy`, backend unit tests
+  pass, but the required depth-8 iwasm gate still times out:
+
+```text
+command: cargo run -q -- build fixtures/core-semantics/abc451-depth8-live-set.ts -o /tmp/abc451-depth8-live-set-309.wasm --host-deny && /usr/bin/time -f 'elapsed:%e' timeout 35s iwasm /tmp/abc451-depth8-live-set-309.wasm
+result: fail; iwasm timeout; elapsed:35.01
+```
+
+- Growth-policy probes show no safe mergeable policy in this slice:
+
+```text
+exact-fit after 3072 + byte copy: depth-8 timeout at 35.01s
+exact-fit after 3072 + memory.copy: depth-8 timeout at 35.01s
+fixed +16 slots after 3072 + byte copy: depth-8 timeout at 35.01s
+fixed +32 slots after 3072 + byte copy: depth-8 traps with Exception: unreachable after 23.25s
+fixed +128 slots after 3072 + byte copy: depth-8 traps with Exception: unreachable after 9.69s
+fixed +1024 slots after 3072 + byte copy: depth-8 traps with Exception: unreachable after 5.01s
+9/8 growth after 3072 + memory.copy: depth-8 traps with Exception: unreachable after 6.45s
+17/16 growth after 3072 + memory.copy: depth-8 traps with Exception: unreachable after 6.50s
+33/32 growth after 3072 + memory.copy: depth-8 traps with Exception: unreachable after 4.74s
+```
+
+- This narrows the next blocker: reducing the depth-9 live allocation shape via
+  array growth alone conflicts with the required depth-8 gate. Exact-fit keeps
+  allocation shape small enough but needs a stronger copy/representation change
+  to meet runtime budget; any tested slack/geometric capacity reduces copy
+  pressure but raises live allocation/capacity enough to violate the 185-page
+  cap on depth-8 before depth-9 can be claimed.
+
+Required gate result for the final local candidate (`memory.copy` plus exact-fit
+large-array growth):
+
+```text
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.235s
+```

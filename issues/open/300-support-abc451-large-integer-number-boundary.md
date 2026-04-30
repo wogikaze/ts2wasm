@@ -750,3 +750,9 @@ date:
 Remaining risks:
 
 - none
+
+2026-04-30 child-309 follow-up evidence:
+
+- Issue 309 did not claim ABC451 sample compatibility. The official samples
+  `10`, `69`, and `1099898` were not rerun under a passing depth-8/depth-9
+  runtime policy. Issue 300 remains open.

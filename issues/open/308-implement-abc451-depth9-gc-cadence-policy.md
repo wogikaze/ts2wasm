@@ -738,3 +738,12 @@ date: 2026-04-29
 - No runtime policy change was committed. Raising `MEMORY_MAX_PAGES` remains
   out of scope without official/reducer completion evidence and OOM regression
   proof. Issue 308 remains open; issue 300 remains open.
+
+2026-04-30 child-309 follow-up evidence:
+
+- Issue 309 found that the assigned branch had a pre-validation `ArrayPushGrow`
+  WAT-generation defect. After locally fixing the WAT shape, exact-fit growth
+  after capacity 3072 still times out the required depth-8 iwasm gate even when
+  `$copy` uses `memory.copy`; bounded slack/geometric growth restores some copy
+  pressure but trips the committed 185-page cap on depth-8. No GC cadence policy
+  change is justified by this slice.
