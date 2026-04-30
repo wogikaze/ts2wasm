@@ -191,6 +191,17 @@ unrelated harness blocker is resolved and the assigned broad command can run.
 The remaining unknown dynamic invalid/out-of-range StringToBigInt runtime
 exception parity has been split to issue 333 rather than broadening issue 280.
 
+2026-04-30 child-280 verification blocker: `cargo fmt --all --check` passed,
+and after `mise trust`, `mise run update-issue-index -- --check` and
+`mise run check issues` passed. The required broad close gate
+`cargo nextest run -E 'test(bigint) or test(node_diff)'` still cannot establish
+close evidence because compilation stops before issue-280 assertions run:
+`crates/backend-wasm/src/expr_emit.rs` line 1222 reports an unused formatting
+argument for `Layout::ARRAY_ELEM_SHIFT`, and the same file line 1196 reports unresolved
+`array_push_grow_linear_growth_threshold` in the array-push growth WAT format
+string. This is outside the dynamic BigInt builtin slice, so issue 280 remains
+open as verification-ready rather than being false-closed.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
