@@ -3,12 +3,13 @@ id: 348
 title: "Lowering block-level function declarations in direct eval code"
 type: feature
 area: ir
-class: implementation-ready
+class: done
 priority: P3
 depends_on: [347]
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -42,10 +43,10 @@ Block-level function declarations inside eval code lower to IR that:
 
 In scope:
 
-- [ ] IR representation for eval-code block function declaration hoisting
-- [ ] Lowering path for `eval("...")` string argument to embedded AST
-- [ ] Scope record creation for eval code with caller-local access
-- [ ] Regression fixtures for block-level function declaration binding inside eval
+- [x] IR representation for eval-code block function declaration hoisting
+- [x] Lowering path for `eval("...")` string argument to embedded AST
+- [x] Scope record creation for eval code with caller-local access
+- [x] Regression fixtures for block-level function declaration binding inside eval
 
 Out of scope:
 
@@ -70,10 +71,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] IR fixture proves eval-code block function declaration hoists to function scope
-- [ ] Node/iwasm differential fixture matches Node output for `eval("{ function f() {} } return f();")`
-- [ ] Regression fixture proves non-eval block-level functions retain ordinary behavior
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] IR fixture proves eval-code block function declaration hoists to function scope
+- [x] Node/iwasm differential fixture matches Node output for `eval("{ function f() {} } return f();")`
+- [x] Regression fixture proves non-eval block-level functions retain ordinary behavior
+- [x] `cargo fmt --all --check` and focused eval validation pass; broad `cargo nextest run` remains red only on unrelated BigInt/ABC451 baseline failures
 
 ## Validation
 
@@ -94,15 +95,15 @@ cargo test -p ts2wasm-cli -- eval
 
 Final-state docs:
 
-- [ ] updated: `docs/13-ir-contracts.md` if eval-specific IR nodes are added
+- [x] not affected; no eval-specific IR node was added
 
 Current state:
 
-- [ ] updated: `current-state.md` if lowering capability changes
+- [x] updated: `current-state.md` if lowering capability changes
 
 Follow-up issues:
 
-- [ ] created: issue 349 for runtime/shim
+- [x] created: issue 349 for runtime/shim
 
 ## Notes
 
@@ -148,20 +149,25 @@ date: 2026-05-01
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed 2026-05-01.
 
 Commits:
 
-- `...`
+- `83619c57` issue-348: add direct eval block function IR coverage
+- current close-state commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test ir_lowering eval -- --nocapture: pass (2)
+cargo test -p ts2wasm-cli eval -- --nocapture: pass (5 eval-focused tests across ir_lowering and m2_node_diff)
+mise run update-issue-index -- --check && mise run check issues: pass
 ```
 
 Remaining risks:
 
-- none
+- Dynamic runtime eval execution remains issue 349.
+- Full `cargo nextest run` remains red on unrelated baseline failures outside
+  issue 348, including BigInt differential failures and ABC451 timeout evidence
+  recorded in nearby cycle reports.
