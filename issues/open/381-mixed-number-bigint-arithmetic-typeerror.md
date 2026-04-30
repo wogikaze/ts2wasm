@@ -3,9 +3,9 @@ id: 381
 title: "Mixed Number/BigInt arithmetic TypeError"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: blocked
 priority: P2
-depends_on: [260]
+depends_on: [260, 396]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -19,7 +19,9 @@ Problem: Mixed Number/BigInt arithmetic currently reports issue-linked diagnosti
 
 ## Problem
 
-Issue 260 proved the arithmetic slice without silent coercion, but it did not add broad JS exception throwing machinery. Node throws `TypeError` for mixed Number/BigInt arithmetic where the expression reaches runtime, but the compiler currently reports diagnostics instead of throwing compatible TypeError at runtime.
+Issue 260 proved the arithmetic slice without silent coercion, but it did not add broad JS exception throwing machinery. Node throws `TypeError` for mixed Number/BigInt arithmetic where the expression reaches runtime.
+
+Problem: Mixed Number/BigInt arithmetic now has runtime trap progress for the current literal/known-local slice, but compatible JS `TypeError` object throwing is blocked on issue 396.
 
 ## Current failure
 
@@ -141,6 +143,15 @@ Follow-up issues:
 ## Notes
 
 This is a focused split from issue 370, covering only mixed Number/BigInt arithmetic `TypeError` throwing.
+
+## Progress evidence
+
+2026-05-01 child-381 progress:
+
+- Added a dedicated mixed Number/BigInt arithmetic runtime trap helper so current literal/known-local mixed `+` paths no longer silently lower to number arithmetic or fail at build time.
+- Added Node `TypeError` baseline + iwasm trap coverage for `1n + 2` and `let a = 1n; a + 2`.
+- Compatible JS `TypeError` object throwing remains blocked because the wasm runtime still lacks a general exception object throw/propagation substrate; split as issue 396.
+- Required validation for the progress commit is recorded in the child cycle report.
 
 ## Completion evidence
 

@@ -286,18 +286,16 @@ fn bigint_runtime_branch_large_assignment_reports_issue_370() {
 }
 
 #[test]
-fn bigint_runtime_mixed_add_reports_issue_370_with_span() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-runtime-mixed-unsupported.ts",
-        "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the dynamic BigInt runtime slice",
+fn bigint_mixed_runtime_add_typeerror_traps_after_successful_build() {
+    assert_fixture_node_typeerror_and_iwasm_traps(
+        "fixtures/core-semantics/bigint-runtime-mixed-typeerror-trap.ts",
     );
 }
 
 #[test]
-fn bigint_mixed_arithmetic_reports_issue_370() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-arithmetic-unsupported.ts",
-        "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the dynamic BigInt runtime slice",
+fn bigint_mixed_arithmetic_typeerror_traps_after_successful_build() {
+    assert_fixture_node_typeerror_and_iwasm_traps(
+        "fixtures/core-semantics/bigint-mixed-arithmetic-typeerror-trap.ts",
     );
 }
 

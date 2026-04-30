@@ -208,14 +208,14 @@ IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
 - Parser/frontend: BigInt syntax classification only。invalid literal syntax は issue 244 の diagnostics を維持する
 - Resolver/BuiltinResolver: BigInt literal node を runtime-capable expression として残し、未実装 operation は該当 implementation issue ID を含む source diagnostic にする
-- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus, `+`, `-`, `*`, `/`, `%`, signed-i64-safe `**`, and signed-i64-safe BigInt-specific runtime `~` / `&` / `|` / `^` currently lower to runtime helpers when pre-lowering proof keeps them inside the signed-i64 helper slice. Static literal `~` folds with arbitrary decimal magnitude before lowering, including results outside signed-i64. Literal BigInt `**` is folded before lowering only for non-negative exponent literals in `0..=64`; dynamic BigInt exponentiation outside the signed-i64-safe proof boundary remains issue 376. BigInt bitwise helpers do not share ordinary number bitwise lowering. BigInt operation mixed Number/BigInt TypeError parity is split to issue 370; current statically visible mixes remain issue-linked diagnostics
+- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus, `+`, `-`, `*`, `/`, `%`, signed-i64-safe `**`, and signed-i64-safe BigInt-specific `~` / `&` / `|` / `^` currently lower to runtime helpers when pre-lowering proof keeps them inside the signed-i64 helper slice. Literal BigInt `**` is folded before lowering only for non-negative exponent literals in `0..=64`; dynamic BigInt exponentiation outside the signed-i64-safe proof boundary remains issue 376. BigInt bitwise helpers do not share ordinary number bitwise lowering. Mixed Number/BigInt arithmetic now lowers to an operand-evaluating runtime trap for the current literal/known-local slice with Node `TypeError` baseline coverage; compatible JavaScript `TypeError` object throwing remains blocked by issue 396 and tracked by issue 381.
 - Backend/runtime link plan: BigInt helper は `RuntimeFn` catalog で deps/imports/capabilities/runtime strings を持つ。BigInt だけでは host import を要求しない
 
 Unsupported boundary:
 
 - literal runtime values: implemented by issue 259 for decimal/binary/octal/hex literal construction, `console.log`, `typeof`, literal `String(...)`, and truthiness
 - Full multi-limb BigInt arithmetic beyond the issue-260 signed-i64-backed progress slice: `unsupported-bigint-arithmetic` / issue 369
-- BigInt arithmetic RangeError/TypeError parity: `unsupported-bigint-arithmetic-exception` / issue 370
+- BigInt arithmetic RangeError/TypeError parity: `unsupported-bigint-arithmetic-exception` / issues 370, 381, and 390
 - Dynamic BigInt exponentiation outside the signed-i64-safe helper proof boundary: `unsupported-bigint-exponentiation` / issue 376
 - BigInt dynamic bitwise NOT and binary AND/OR/XOR beyond the signed-i64-safe helper slice: `unsupported-bigint-bitwise` / issue 387
 - BigInt shift operators and unsigned-right-shift TypeError policy: `unsupported-bigint-shift` / issue 378

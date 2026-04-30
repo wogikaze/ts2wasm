@@ -715,6 +715,13 @@ mod tests {
                     ],
                 }),
                 LoweredStmt::Expr(LoweredExpr::RuntimeCall {
+                    runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                    args: vec![
+                        LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0)),
+                        LoweredExpr::Number(2),
+                    ],
+                }),
+                LoweredStmt::Expr(LoweredExpr::RuntimeCall {
                     runtime_fn: "BigIntBitwiseNot".to_owned(),
                     args: vec![LoweredExpr::Local(ts2wasm_ir::lowered::LocalId(0))],
                 }),
@@ -788,6 +795,10 @@ mod tests {
         assert!(
             plan.required_runtime_functions()
                 .contains(&RuntimeFn::BigIntRem)
+        );
+        assert!(
+            plan.required_runtime_functions()
+                .contains(&RuntimeFn::BigIntMixedArithmeticTypeError)
         );
         assert!(
             plan.required_runtime_functions()

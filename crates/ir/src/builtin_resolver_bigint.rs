@@ -1115,6 +1115,17 @@ impl BigIntRuntimeGuard {
                 let (Some(left_info), Some(right_info)) = (left_info, right_info) else {
                     if matches!(
                         op,
+                        BinaryOp::Add
+                            | BinaryOp::Subtract
+                            | BinaryOp::Multiply
+                            | BinaryOp::Divide
+                            | BinaryOp::Modulo
+                            | BinaryOp::Power
+                    ) {
+                        return Ok(None);
+                    }
+                    if matches!(
+                        op,
                         BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
                     ) {
                         return Err(bigint_bitwise_diagnostic(*span));

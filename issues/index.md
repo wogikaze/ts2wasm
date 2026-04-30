@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 145 | 47 | 98 |
+| runtime | 146 | 48 | 98 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 408 | 186 | 222 |
+| total | 409 | 187 | 222 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,7 +51,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
 | 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt `/ 0n` and `% 0n` currently reach a runtime `unreachable` trap in the signed-i64 helper slice, while Node thro... |
-| 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | implementation-ready | P2 | 260 | Mixed Number/BigInt arithmetic currently reports issue-linked diagnostics instead of throwing compatible `TypeError` ... |
 | 383 | Multi-limb BigInt multiplication | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `*` with operands or results outside the signed-i64-backed helper slice report diagnostics instead of ... |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | implementation-ready | P1 |  | Issue 357's previous attempts to reduce the timeout did not identify whether the bottleneck is array copying, GC swee... |
 | 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
@@ -59,6 +58,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 391 | Multi-limb BigInt division | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `/` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
 | 393 | Multi-limb BigInt addition | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `+` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
 | 395 | Runtime array-like Array.prototype.map callback dispatch | feature | runtime/builtins | ready | P2 | 388 | Runtime array-like Array.prototype.map callback dispatch |
+| 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 381 cannot produce a compatible `TypeError` object for... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -229,6 +229,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 369 | Implement full multi-limb BigInt arithmetic | feature | runtime/semantics | class: blocked | Implement full multi-limb BigInt arithmetic |
 | 370 | Implement BigInt arithmetic RangeError and TypeError parity | feature | runtime/semantics | class: blocked | Implement BigInt arithmetic RangeError and TypeError parity |
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
+| 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | class: blocked | Mixed Number/BigInt arithmetic TypeError |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | class: blocked | Multi-limb BigInt division and remainder |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |

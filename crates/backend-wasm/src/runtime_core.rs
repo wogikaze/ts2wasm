@@ -923,6 +923,15 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(super) fn emit_bigint_mixed_arithmetic_type_error(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_mixed_arithmetic_type_error (param $left i32) (param $right i32) (result i32)
+    (unreachable))
+"#,
+        );
+    }
+
     pub(super) fn emit_bigint_unary_minus(&self, wat: &mut String) {
         wat.push_str(
             r#"

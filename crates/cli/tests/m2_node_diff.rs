@@ -207,6 +207,26 @@ fn assert_fixture_node_rangeerror_and_iwasm_traps(fixture: &str) {
     assert_fixture_iwasm_traps(fixture);
 }
 
+fn assert_fixture_node_typeerror_and_iwasm_traps(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    assert!(
+        !node.status.success(),
+        "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+    let node_stderr = String::from_utf8_lossy(&node.stderr);
+    assert!(
+        node_stderr.contains("TypeError") && node_stderr.contains("Cannot mix BigInt"),
+        "expected Node mixed BigInt TypeError for {fixture}, got:\n{node_stderr}"
+    );
+
+    assert_fixture_iwasm_traps(fixture);
+}
+
 fn assert_live_time_fixture_in_host_window(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")

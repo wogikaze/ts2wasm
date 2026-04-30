@@ -198,6 +198,20 @@ impl<'a> Resolver<'a> {
                     })
                 } else if matches!(
                     op,
+                    BinaryOp::Add
+                        | BinaryOp::Subtract
+                        | BinaryOp::Multiply
+                        | BinaryOp::Divide
+                        | BinaryOp::Modulo
+                        | BinaryOp::Power
+                ) && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
+                {
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    })
+                } else if matches!(
+                    op,
                     BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
                 ) && self.resolved_expr_is_bigint(left)
                     && self.resolved_expr_is_bigint(right)
@@ -211,14 +225,6 @@ impl<'a> Resolver<'a> {
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
-                    })
-                } else if *op == BinaryOp::Power
-                    && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
-                {
-                    Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the dynamic BigInt runtime slice".to_owned(),
-                        span: None,
                     })
                 } else {
                     Ok(LoweredExpr::Binary {
