@@ -42,6 +42,9 @@ impl WatEmitter<'_> {
                 RuntimeFn::BigIntMixedArithmeticTypeError => {
                     self.emit_bigint_mixed_arithmetic_type_error(wat)
                 }
+                RuntimeFn::BigIntStringComparisonBoundaryError => {
+                    self.emit_bigint_string_comparison_boundary_error(wat)
+                }
                 RuntimeFn::BigIntBitwiseNot => self.emit_bigint_bitwise_not(wat),
                 RuntimeFn::BigIntBitwiseAnd => self.emit_bigint_bitwise_and(wat),
                 RuntimeFn::BigIntBitwiseOr => self.emit_bigint_bitwise_or(wat),

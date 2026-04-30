@@ -1596,6 +1596,20 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_bigint_string_comparison_boundary_error(&self, wat: &mut String) {
+        let message = self.string_offset(RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR)
+            + Layout::STRING_HEADER_SIZE;
+        wat.push_str(&format!(
+            r#"
+  (func $bigint_string_comparison_boundary_error
+    (call $write (i32.const {message}) (i32.const {message_len}))
+    (unreachable))
+"#,
+            message = message,
+            message_len = RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR.len() as i32,
+        ));
+    }
+
     pub(super) fn emit_bigint_unary_minus(&self, wat: &mut String) {
         wat.push_str(
             r#"

@@ -58,6 +58,7 @@ pub(crate) enum RuntimeFn {
     BigIntRem,
     BigIntDivisionByZeroRangeError,
     BigIntMixedArithmeticTypeError,
+    BigIntStringComparisonBoundaryError,
     BigIntBitwiseNot,
     BigIntBitwiseAnd,
     BigIntBitwiseOr,
@@ -408,6 +409,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntRem" => Some(RuntimeFn::BigIntRem),
         "BigIntDivisionByZeroRangeError" => Some(RuntimeFn::BigIntDivisionByZeroRangeError),
         "BigIntMixedArithmeticTypeError" => Some(RuntimeFn::BigIntMixedArithmeticTypeError),
+        "BigIntStringComparisonBoundaryError" => {
+            Some(RuntimeFn::BigIntStringComparisonBoundaryError)
+        }
         "BigIntBitwiseNot" => Some(RuntimeFn::BigIntBitwiseNot),
         "BigIntBitwiseAnd" => Some(RuntimeFn::BigIntBitwiseAnd),
         "BigIntBitwiseOr" => Some(RuntimeFn::BigIntBitwiseOr),
@@ -660,7 +664,11 @@ const STRICT_EQUAL_DEPS: &[RuntimeFn] = &[
     RuntimeFn::BigIntCompare,
     RuntimeFn::NumberToI32,
 ];
-const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual, RuntimeFn::NumberFromI32];
+const EQUAL_EQUAL_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::StrictEqual,
+    RuntimeFn::NumberFromI32,
+    RuntimeFn::BigIntStringComparisonBoundaryError,
+];
 const BANG_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::EqualEqual];
 const STRICT_NOT_EQUAL_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const AND_DEPS: &[RuntimeFn] = &[RuntimeFn::TruthyBool];
@@ -728,10 +736,13 @@ const BIGINT_DIV_DEPS: &[RuntimeFn] = &[
 const BIGINT_REM_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntDiv];
 const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
+const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_DEPS: &[RuntimeFn] = &[RuntimeFn::Write];
 const BIGINT_MIXED_ARITHMETIC_TYPE_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR];
 const BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_RUNTIME_STRINGS: &[&str] =
     &[RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR];
+const BIGINT_STRING_COMPARISON_BOUNDARY_ERROR_RUNTIME_STRINGS: &[&str] =
+    &[RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR];
 const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 // String method dependencies
