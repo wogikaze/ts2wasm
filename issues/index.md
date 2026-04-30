@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 113 | 35 | 78 |
+| runtime | 114 | 35 | 79 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 372 | 173 | 199 |
+| total | 373 | 173 | 200 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
-| 359 | Reduce ABC451 free-list scan cost | bug | runtime/memory | implementation-ready | P1 | 358 | the current allocator repeatedly scans the free list enough times to dominate the diagnostic budget, so the ABC451 fi... |
+| 360 | Reduce ABC451 sweep and copy pressure after free-list fix | bug | runtime/memory | implementation-ready | P1 | 359 | `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` still times out around 30 seconds after free-list sc... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -428,6 +428,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 337 | Implement test262 features directive and $262 object | feature | cli/reference | see `issues/done/337-implement-test262-features-directive.md` |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |
 | 358 | Instrument ABC451 depth-8 runtime costs | test | runtime/performance | see `issues/done/358-instrument-abc451-depth8-runtime-costs.md` |
+| 359 | Reduce ABC451 free-list scan cost | bug | runtime/memory | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract
