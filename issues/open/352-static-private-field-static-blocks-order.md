@@ -113,6 +113,23 @@ Fill only when moving to `done/`.
 
 ## Progress evidence
 
+2026-05-01 child-352 follow-up:
+
+- Rechecked the existing issue-specific 352 coverage from parent base `42b9158f`; no backend/parser/runtime-memory code change was needed.
+- Acceptance coverage present:
+  - Node/iwasm differential fixture `fixtures/core-semantics/private-class-static-field-static-block-order.ts` proves source-ordered static private field and static block execution, including static block reads of preceding static private fields.
+  - Diagnostic fixture `fixtures/core-semantics/private-class-static-field-static-block-tdz-unsupported.ts` proves forward static-block access to a later static private field reports `issue-352:`.
+  - `docs/language-reference/javascript-features.md` and `current-state.md` already record direct same-class static private fields plus static blocks executing in source order with issue-352 diagnostics for forward static-block access.
+- Validation passed:
+  - `cargo fmt --all --check`
+  - `cargo test -p ts2wasm-cli private` (`12` selected private tests passed; included `private_class_field_read_write_fixture_matches_node_output_under_iwasm` and `private_class_static_field_static_block_tdz_reports_issue_352`)
+  - `mise run update-issue-index -- --check`
+  - `mise run check issues`
+- Broad validation result:
+  - `cargo nextest run -E 'test(private) or test(class) or test(node_diff)'` selected `197` tests; `196` passed and `m2_node_diff_fixture_tests::abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` failed by iwasm timeout after `30.474s`.
+  - The failing fixture is `fixtures/core-semantics/abc451-depth8-live-set.ts`, outside the issue-352 private/static-block scope and outside this assignment's allowed runtime-memory area.
+- Child recommendation: parent can close issue 352 if the unrelated ABC451 timeout is accepted as a tracked broad-gate blocker; otherwise keep 352 open only as a validation-policy blocker, not as missing issue-specific implementation.
+
 2026-04-30 child-352:
 
 - Implemented IR/lowering support for source-ordered static private field initializers and static blocks without touching frontend/parser or runtime-memory/ABC451 files.
