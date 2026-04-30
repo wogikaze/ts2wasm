@@ -39,6 +39,7 @@ struct StaticEvalFunctionBlock<'a> {
 }
 
 include!("parser/statements.rs");
+include!("parser/binding_patterns.rs");
 include!("parser/expressions.rs");
 include!("parser/tokens.rs");
 include!("parser/helpers.rs");
