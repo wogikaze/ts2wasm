@@ -669,9 +669,6 @@ def main():
             },
             "evidence": evidence,
         }
-        if web_ui:
-            write_coverage_result(summary)
-            refresh_web_ui_data()
         if json_output:
             print(json.dumps(summary, indent=2))
         else:

@@ -741,12 +741,6 @@ def main():
         print("Unsupported: 0", file=sys.stderr)
         print("Blocked: 0", file=sys.stderr)
         print("Total: 0", file=sys.stderr)
-        if web_ui:
-            results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
-            results_dir.mkdir(parents=True, exist_ok=True)
-            jsonl_file = results_dir / "test262-results.jsonl"
-            jsonl_file.write_text("", encoding="utf-8")
-            refresh_web_ui_data(jsonl_file)
         sys.exit(0)
     
     print("Starting test262 runner...", file=sys.stderr)
