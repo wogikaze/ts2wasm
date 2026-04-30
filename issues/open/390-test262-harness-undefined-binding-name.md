@@ -3,13 +3,12 @@ id: 390
 title: "Allow or rewrite Test262 harness undefined binding name"
 type: bug
 area: frontend/parser
-class: done
+class: ready
 priority: P2
 depends_on: [389]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
-completed: 2026-05-01
 ---
 
 ## Summary
@@ -85,3 +84,15 @@ mise run check issues
 ## Completion evidence
 
 Fill when moving to `done/`.
+
+## Reopen evidence
+
+2026-05-01 parent validation after child DONE claim:
+
+```text
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js
+result: still reports UnsupportedSyntax / issue-247 at `var undefined = void 0;`
+```
+
+The issue remains open because the representative Test262 harness input has not
+advanced beyond the `undefined` binding-name parser blocker.
