@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 91 | 17 | 74 |
+| runtime | 95 | 21 | 74 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 341 | 148 | 193 |
+| total | 345 | 152 | 193 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,6 +52,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | implementation-ready | P0 |  | arguments object out-of-range index assignment fails semantic comparison |
+| 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | implementation-ready | P0 |  | Fix Math.max/min backend-io errors |
+| 316 | Fix Object.keys backend-io error | feature | runtime/builtins | implementation-ready | P0 |  | Fix Object.keys backend-io error |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -196,6 +198,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | class: blocked | Implement ABC451 depth-9 GC cadence policy |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
+| 313 | Implement array-builtin support | spike | runtime/builtins | class: triage-needed | Implement array-builtin support |
+| 314 | Implement string-builtin support | spike | runtime/builtins | class: triage-needed | Implement string-builtin support |
 <!-- generated:blocked:end -->
 
 ## Done queue
