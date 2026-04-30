@@ -114,6 +114,14 @@ Object literal/local mixed BigInt comparisons support the narrow direct no-argum
 | `obj["key"]` computed property | 実装済み (basic) | object property lookup path を使う |
 | heap OOM check | 実装済み | `$alloc_heap` は memory.size を検査し、超過時に trap する |
 
+Sparse array holes are absent indexed properties, not values equal to
+`undefined`. Array elisions increase `length` while leaving the corresponding
+presence bit unset. Numeric `index in array` observes presence, `array[index]`
+reads holes as `undefined`, `Array.prototype.map` skips holes and preserves them
+in the result, and array/call spread reads holes through iterator/Get semantics as
+present `undefined` destination values. The runtime representation contract is
+defined in `docs/14-runtime-abi.md`.
+
 `$property_get` の reverse scan により、`{a:1, a:2}.a === 2` が成立する (JS 仕様準拠)。
 
 > **残タスク**: RuntimeLinkPlan と WatEmitter の分離、AST に一貫した `Span`、BuiltinResolver pass の整理、
