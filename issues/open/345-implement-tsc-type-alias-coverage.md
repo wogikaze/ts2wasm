@@ -107,3 +107,28 @@ This issue is a child implementation bucket of issue 399. Do not start broad typ
 Boundary decision after issue 399: `type-alias` maps to category 1, parse and erase before runtime lowering. Representative failures that also require module-shape handling should be split out rather than widening this issue into module resolution or runtime semantics.
 
 Type aliases should be purely erased during compilation if issue 399 confirms they have no runtime/module-shape effect for the selected cases. The main work is then in the parser to accept `type` keyword in declaration position and pass it through to the erasure pass.
+
+## Progress evidence
+
+2026-05-01 parent slice:
+
+- Commit `9091f435` extends type alias erasure parsing to generic type
+  parameter lists such as `type Box<T> = ...` and constrained/defaulted generic
+  aliases such as `type MaybePair<T extends string | number, U = T> = ...`.
+- Added parser, dump-unparse, and build fixture coverage for generic type alias
+  erasure without runtime emission.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-frontend parses_typescript_type_alias_declarations_as_erased_syntax -- --nocapture: pass
+cargo test -p ts2wasm-cli dump_ast_unparse_erases_typescript_type_alias_declarations -- --nocapture: pass
+cargo test -p ts2wasm-cli type_alias -- --nocapture: pass
+```
+
+Remaining:
+
+- Not DONE. The required `mise run reference-coverage -- tsc --limit 6419`
+  evidence has not yet been refreshed, so the tsc `type-alias` unsupported count
+  is not verified as reduced to zero.
