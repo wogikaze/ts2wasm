@@ -278,7 +278,7 @@ fn bigint_mixed_arithmetic_reports_issue_370() {
 }
 
 #[test]
-fn bigint_bitwise_unary_reports_issue_373() {
+fn bigint_bitwise_unary_reports_issue_377() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-unary-minus-unsupported.ts",
         "issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented",
@@ -286,7 +286,7 @@ fn bigint_bitwise_unary_reports_issue_373() {
 }
 
 #[test]
-fn bigint_bitwise_binary_reports_issue_373() {
+fn bigint_bitwise_binary_reports_issue_377() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-bitwise-binary-unsupported.ts",
         "issue-377: BigInt bitwise NOT/AND/OR/XOR operators are not implemented",
@@ -294,7 +294,7 @@ fn bigint_bitwise_binary_reports_issue_373() {
 }
 
 #[test]
-fn bigint_shift_reports_issue_374() {
+fn bigint_shift_reports_issue_378() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-shift-unsupported.ts",
         "issue-378: BigInt shift operators and unsigned right shift TypeError policy are not implemented",
@@ -442,7 +442,7 @@ fn bigint_new_constructor_reports_issue_262() {
 }
 
 #[test]
-fn bigint_dynamic_exponentiation_reports_issue_372() {
+fn bigint_dynamic_exponentiation_reports_issue_376() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-exponentiation-unsupported.ts",
         "issue-376: BigInt exponentiation beyond literal non-negative exponent folding is not implemented",
