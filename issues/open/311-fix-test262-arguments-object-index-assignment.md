@@ -3,7 +3,7 @@ id: 311
 title: "Fix test262 arguments object index assignment semantics"
 type: bug
 area: runtime/semantics
-class: implementation-ready
+class: verification-ready
 priority: P0
 depends_on: []
 blocks: []
@@ -13,11 +13,14 @@ updated: 2026-04-30
 
 ## Summary
 
-The previous test262 run has one P0 semantic failure in the executed window.
-The failing case reaches wasm/iwasm execution but trips the test262 assertion for
-an admitted `arguments` object index assignment.
+The original test262 run had one P0 semantic failure in the executed window.
+The local differential fixture for admitted out-of-range `arguments` index
+assignment now passes, but the representative test262 case no longer reaches
+the semantic assertion path under the focused runner.
 
-This is a semantic correctness bug, not an unsupported-feature bucket.
+This issue is now a verification cleanup item: keep the runtime fixture coverage
+and resolve or split the current test262 harness/parser classification before
+closing it.
 
 ## Problem
 
@@ -28,7 +31,7 @@ returns the test262 assertion sentinel instead.
 Problem: arguments object out-of-range index assignment fails semantic comparison
 in `reference/test262/test/language/arguments-object/10.5-7-b-2-s.js`.
 
-## Current failure
+## Current status
 
 Previous aggregate evidence:
 
@@ -49,7 +52,7 @@ TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference \
   --jobs 1
 ```
 
-Current result:
+Historical result:
 
 ```text
 Pass: 0
@@ -60,6 +63,46 @@ Total: 1
 actual: "__TS2WASM_TEST262_ASSERT_FAIL__\n"
 reason: Test262AssertionFailure: test262 assertion failed
 ```
+
+Focused verification on 2026-04-30:
+
+```sh
+cargo nextest run -E 'test(arguments) or test(node_diff)'
+```
+
+Result:
+
+```text
+156 tests run: 156 passed, 448 skipped
+```
+
+The focused fixture coverage includes
+`fixtures/core-semantics/arguments-out-of-range-index-assignment.ts` through
+`function_arguments_fixture_matches_node_output_under_iwasm`.
+
+Focused test262 status on 2026-04-30, using the local reference checkout:
+
+```sh
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference \
+  python3 scripts/run/test262.py \
+  --path-filter language/arguments-object/10.5-7-b-2-s.js \
+  --jobs 1
+```
+
+Result:
+
+```text
+Pass: 0
+Fail: 0
+Unsupported: 1
+Blocked: 0
+Total: 1
+reason: UnsupportedSyntax/feature-unsupported: [UnsupportedSyntax]
+stderr: error: [UnsupportedSyntax] issue-247: expected binding identifier or pattern, got Some(Undefined) at 124..133
+```
+
+This means the representative path is currently blocked before it can exercise
+the previous `arguments[7]` assertion.
 
 Reference source excerpt:
 
@@ -82,10 +125,10 @@ behavior for out-of-range indexes.
 
 In scope:
 
-- [ ] Implement the smallest arguments-object indexed write/read semantics
+- [x] Implement the smallest arguments-object indexed write/read semantics
       needed for `arguments[7] = 12; arguments[7]`.
-- [ ] Preserve existing supported `arguments.length` and indexed read behavior.
-- [ ] Add or update a focused fixture for out-of-range `arguments` index
+- [x] Preserve existing supported `arguments.length` and indexed read behavior.
+- [x] Add or update a focused fixture for out-of-range `arguments` index
       assignment.
 - [ ] Make the representative test262 case pass or, if a narrower blocker is
       found, split that blocker with exact evidence and keep this issue open.
@@ -116,12 +159,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Add an equivalent fixture for arguments-object out-of-range index writes
+- [x] Add an equivalent fixture for arguments-object out-of-range index writes
       and verify it matches Node output under iwasm.
 - [ ] The representative test262 runner command reports `Pass: 1`, `Fail: 0`.
-- [ ] `arguments.length` is not incorrectly extended unless the selected
+- [x] `arguments.length` is not incorrectly extended unless the selected
       fixture proves the ECMAScript behavior requires it for this slice.
-- [ ] Existing `function_arguments_fixture_matches_node_output_under_iwasm`
+- [x] Existing `function_arguments_fixture_matches_node_output_under_iwasm`
       coverage still passes.
 
 ## Validation
@@ -131,7 +174,7 @@ Required commands:
 ```sh
 cargo fmt --all --check
 cargo nextest run -E 'test(arguments) or test(node_diff)'
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/test262.py --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/arguments-object/10.5-7-b-2-s.js --jobs 1
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/test262.py --path-filter language/arguments-object/10.5-7-b-2-s.js --jobs 1
 mise run update-issue-index -- --check
 mise run check issues
 ```
@@ -158,7 +201,8 @@ Current state:
 
 Follow-up issues:
 
-- [ ] none
+- [ ] split one if the issue-247 test262 wrapper/parser classification is not
+      fixed in this issue
 
 ## Notes
 

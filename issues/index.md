@@ -49,7 +49,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 281 | Implement BigInt/Number edge equality and comparison | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 folds representable tagged-int number literals such as `1n == 1`, but the current number model does not yet... |
 | 282 | Implement dynamic BigInt mixed coercion | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | issue 261 deliberately handles statically visible literal BigInt/String, BigInt/Boolean, BigInt/tagged-int Number, an... |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
-| 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | implementation-ready | P0 |  | arguments object out-of-range index assignment fails semantic comparison |
+| 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | verification-ready | P0 |  | arguments object out-of-range index assignment fails semantic comparison |
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | implementation-ready | P0 |  | Fix Object.keys backend-io error |
 | 334 | Complete Array.prototype.map sparse thisArg and Test262 semantics | feature | runtime/builtins | implementation-ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 <!-- generated:ready:end -->
