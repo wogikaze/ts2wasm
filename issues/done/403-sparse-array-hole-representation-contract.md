@@ -149,7 +149,7 @@ Completed: 2026-05-01
 
 Commits:
 
-- `<pending>` issue-403: define sparse array hole contract
+- `61019ef4` issue-403: define sparse array hole contract
 
 Validation result:
 
