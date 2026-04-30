@@ -79,6 +79,9 @@ mod tests {
     fn parses_typescript_type_alias_declarations_as_erased_syntax() {
         let source = r#"
             type Id = number;
+            type Box<T> = { value: T };
+            export type MaybePair<T extends string | number, U = T> =
+                Box<T> | { left: T; right: U } & { tag?: "pair" };
             export type Point = {
                 x: number;
                 y?: number;

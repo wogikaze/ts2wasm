@@ -1,5 +1,12 @@
 type Id = number;
 
+type Box<T> = {
+  value: T;
+};
+
+type MaybePair<T extends string | number, U = T> =
+  Box<T> | ({ left: T; right: U } & { tag?: "pair" });
+
 export type Point = {
   x: number;
   y: number;
@@ -11,6 +18,10 @@ function sum(point: Point): Id {
   return point.x + point.y;
 }
 
+function readBox(box: Box<number>): number {
+  return box.value;
+}
+
 let origin: Point = {
   x: 2,
   y: 3,
@@ -18,3 +29,4 @@ let origin: Point = {
 };
 
 console.log(sum(origin));
+console.log(readBox({ value: 4 }));
