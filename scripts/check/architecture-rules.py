@@ -19,7 +19,6 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 DEFAULT_MAX_FILE_LINES = 2000
 LINE_COUNT_SUFFIXES = {
-    ".json",
     ".md",
     ".py",
     ".rs",

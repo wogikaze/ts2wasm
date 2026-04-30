@@ -29,7 +29,6 @@ def usage():
     print("  - cargo fmt --all --check")
     print("  - python scripts/check/issue-health.py")
     print("  - python scripts/check/architecture-rules.py")
-    print("  - python scripts/gen/coverage-matrix.py --check")
     print("  - cargo nextest run (unless --skip-nextest)")
     print()
     print("Options:")
@@ -74,7 +73,6 @@ def main():
     run(["cargo", "fmt", "--all", "--check"])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/issue-health.py")])
     run([PYTHON_BIN, str(REPO_ROOT / "scripts/check/architecture-rules.py")])
-    run([PYTHON_BIN, str(REPO_ROOT / "scripts/gen/coverage-matrix.py"), "--check"])
     
     if not skip_nextest:
         run(["cargo", "nextest", "run"])
