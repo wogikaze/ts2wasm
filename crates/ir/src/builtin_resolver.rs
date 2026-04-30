@@ -782,10 +782,11 @@ fn resolve_stmt_with_outer_bindings(
                         )?;
                         constructor = Some((
                             resolved_params,
-                            prepend_private_field_initializers(
+                            place_private_field_initializers(
                                 &private_field_initializers,
                                 resolved_body,
-                            ),
+                                extends_name.is_some(),
+                            )?,
                         ));
                     }
                     // Regular methods
@@ -866,7 +867,12 @@ fn resolve_stmt_with_outer_bindings(
             }
 
             if constructor.is_none() && !private_field_initializers.is_empty() {
-                constructor = Some((Vec::new(), private_field_initializers.clone()));
+                let body = if extends_name.is_some() {
+                    implicit_derived_private_field_constructor_body(&private_field_initializers)
+                } else {
+                    private_field_initializers.clone()
+                };
+                constructor = Some((Vec::new(), body));
             }
 
             let static_blocks = static_blocks

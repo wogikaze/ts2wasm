@@ -39,10 +39,10 @@ Derived classes with private fields, methods, getters, and setters compile and e
 
 In scope:
 
-- [ ] Derived-class constructor IR lowering with private slot allocation after super()
-- [ ] Private field initialization ordering relative to public fields and super constructor
-- [ ] Private method/accessor brand binding for derived-class instances
-- [ ] Node/iwasm differential fixtures for derived-class private elements
+- [x] Derived-class constructor IR lowering with private slot allocation after super()
+- [x] Private field initialization ordering relative to public fields and super constructor
+- [x] Private method/accessor brand binding for derived-class instances
+- [x] Node/iwasm differential fixtures for derived-class private elements
 
 Out of scope:
 
@@ -67,11 +67,25 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture for derived class with private field
-- [ ] Node/iwasm differential fixture for derived class with private method
-- [ ] Node/iwasm differential fixture for derived class with private getter/setter
-- [ ] Regression fixture proving private initialization order (after super, before constructor body)
+- [x] Node/iwasm differential fixture for derived class with private field
+- [x] Node/iwasm differential fixture for derived class with private method
+- [x] Node/iwasm differential fixture for derived class with private getter/setter
+- [x] Regression fixture proving private initialization order (after super, before constructor body)
 - [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+
+## Progress evidence
+
+2026-04-30 child-350 progress:
+
+- Implemented derived private element resolver support without parser/frontend changes.
+- Added Node/iwasm differential fixtures:
+  - `fixtures/core-semantics/private-class-derived-field-order.ts`
+  - `fixtures/core-semantics/private-class-derived-field-implicit.ts`
+  - `fixtures/core-semantics/private-class-derived-method-call.ts`
+  - `fixtures/core-semantics/private-class-derived-accessor-direct.ts`
+- `cargo fmt --all --check`: pass.
+- `cargo test -p ts2wasm-cli private`: pass.
+- `cargo nextest run -E 'test(private) or test(class) or test(node_diff)'`: 195 passed, 1 failed due existing broad-filter timeout in `fixtures/core-semantics/abc451-depth8-live-set.ts` (tracked separately as issue 357), so this issue remains open instead of done.
 
 ## Validation
 

@@ -962,6 +962,10 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/private-class-static-accessor-direct.ts",
         "fixtures/core-semantics/private-class-getter-direct.ts",
         "fixtures/core-semantics/private-class-setter-direct.ts",
+        "fixtures/core-semantics/private-class-derived-field-order.ts",
+        "fixtures/core-semantics/private-class-derived-field-implicit.ts",
+        "fixtures/core-semantics/private-class-derived-method-call.ts",
+        "fixtures/core-semantics/private-class-derived-accessor-direct.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
@@ -970,7 +974,6 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
 #[test]
 fn private_class_field_unsupported_forms_report_issue_255() {
     for fixture in [
-        "fixtures/core-semantics/private-class-field-method-unsupported.ts",
         "fixtures/core-semantics/private-class-field-external-unsupported.ts",
         "fixtures/core-semantics/private-class-delete-unsupported.ts",
         "fixtures/core-semantics/private-class-field-backing-key-unsupported.ts",

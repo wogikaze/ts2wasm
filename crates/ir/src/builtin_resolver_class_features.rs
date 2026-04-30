@@ -2,7 +2,7 @@ use super::*;
 
 pub(super) fn resolve_private_elements(
     class_name: &str,
-    extends_name: Option<&String>,
+    _extends_name: Option<&String>,
     private_elements: &[ClassPrivateElement],
 ) -> Result<
     (
@@ -48,12 +48,6 @@ pub(super) fn resolve_private_elements(
                     ));
                     continue;
                 }
-                if extends_name.is_some() {
-                    return Err(unsupported_private_element(
-                        "private fields on derived classes require coordinated super() initialization support",
-                        *span,
-                    ));
-                }
                 if !seen.insert(name.clone()) {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -85,12 +79,6 @@ pub(super) fn resolve_private_elements(
                 span,
                 ..
             } => {
-                if extends_name.is_some() {
-                    return Err(unsupported_private_element(
-                        "private methods on derived classes require full private brand semantics",
-                        *span,
-                    ));
-                }
                 if !seen.insert(name.clone()) {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -131,12 +119,6 @@ pub(super) fn resolve_private_elements(
                 span,
                 ..
             } => {
-                if extends_name.is_some() {
-                    return Err(unsupported_private_element(
-                        "private accessors on derived classes require full private brand semantics",
-                        *span,
-                    ));
-                }
                 if !seen.insert(name.clone()) {
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
@@ -168,12 +150,6 @@ pub(super) fn resolve_private_elements(
                 span,
                 ..
             } => {
-                if extends_name.is_some() {
-                    return Err(unsupported_private_element(
-                        "private accessors on derived classes require full private brand semantics",
-                        *span,
-                    ));
-                }
                 if block_contains_return_stmt(body) {
                     return Err(unsupported_private_element(
                         "private setters with explicit return are not supported in this private setter runtime slice",
@@ -216,16 +192,51 @@ pub(super) fn resolve_private_elements(
     Ok((fields, static_fields, initializers, methods))
 }
 
-pub(super) fn prepend_private_field_initializers(
+pub(super) fn place_private_field_initializers(
     initializers: &[ResolvedStmt],
-    mut body: Vec<ResolvedStmt>,
-) -> Vec<ResolvedStmt> {
+    body: Vec<ResolvedStmt>,
+    is_derived: bool,
+) -> Result<Vec<ResolvedStmt>, Diagnostic> {
     if initializers.is_empty() {
-        return body;
+        return Ok(body);
     }
+    if is_derived {
+        let Some(super_index) = body.iter().position(is_direct_super_call_stmt) else {
+            return Err(unsupported_private_element(
+                "derived classes with private instance fields require a direct top-level super() call before constructor body initialization in this runtime slice",
+                Span { start: 0, end: 0 },
+            ));
+        };
+        let mut merged = Vec::with_capacity(body.len() + initializers.len());
+        merged.extend_from_slice(&body[..=super_index]);
+        merged.extend_from_slice(initializers);
+        merged.extend_from_slice(&body[super_index + 1..]);
+        return Ok(merged);
+    }
+    let mut body = body;
     let mut merged = initializers.to_vec();
     merged.append(&mut body);
-    merged
+    Ok(merged)
+}
+
+pub(super) fn implicit_derived_private_field_constructor_body(
+    initializers: &[ResolvedStmt],
+) -> Vec<ResolvedStmt> {
+    let mut body = vec![ResolvedStmt::Expr(ResolvedExpr::Call {
+        callee: Box::new(ResolvedExpr::Ident("super".to_owned())),
+        args: Vec::new(),
+        span: Span { start: 0, end: 0 },
+    })];
+    body.extend_from_slice(initializers);
+    body
+}
+
+fn is_direct_super_call_stmt(stmt: &ResolvedStmt) -> bool {
+    matches!(
+        stmt,
+        ResolvedStmt::Expr(ResolvedExpr::Call { callee, .. })
+            if matches!(callee.as_ref(), ResolvedExpr::Ident(name) if name == "super")
+    )
 }
 
 pub(super) fn unsupported_private_element(detail: &str, span: Span) -> Diagnostic {
