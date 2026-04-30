@@ -133,7 +133,7 @@ This issue is not closed by hiding remaining work. The known-BigInt remainder im
 
 Commits:
 
-- pending child commit: close superseded bigint remainder split
+- `4e9b2fc6` issue-392: close superseded bigint remainder split
 
 Validation result:
 
