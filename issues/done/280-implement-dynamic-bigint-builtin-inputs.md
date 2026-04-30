@@ -209,7 +209,7 @@ Completed 2026-04-30.
 
 Commits:
 
-- close commit pending on branch `agent/280-close-child-280-close-20260430T173133Z`
+- `8cb466da54ca` issue-280: close dynamic bigint builtin slice
 
 Validation result:
 
