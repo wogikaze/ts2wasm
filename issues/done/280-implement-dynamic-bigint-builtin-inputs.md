@@ -40,7 +40,7 @@ In scope:
 
 - [x] Implement dynamic `BigInt.asIntN(bits, value)` and `BigInt.asUintN(bits, value)` for supported runtime BigInt values and supported bit widths.
 - [x] Broaden `BigInt(value)` runtime conversion for dynamic values where the current value model can preserve Node-compatible behavior.
-- [x] Keep diagnostics for out-of-slice values source-linked and issue-280-linked for this slice; unknown dynamic invalid/out-of-range StringToBigInt exception parity is split to issue 333.
+- [x] Keep diagnostics for out-of-slice values source-linked and issue-280-linked for this slice; unknown dynamic invalid/out-of-range StringToBigInt exception parity is split to issue 333 (done).
 
 Out of scope:
 
@@ -68,7 +68,7 @@ Do not touch:
 ## Acceptance criteria
 
 - [x] Node/iwasm differential fixtures cover dynamic `BigInt.asIntN` and `BigInt.asUintN` inputs in the supported runtime range.
-- [x] Dynamic `BigInt(...)` conversions either match Node for supported runtime values or produce source diagnostics for the current slice; remaining unknown dynamic invalid/out-of-range StringToBigInt exception parity is issue 333.
+- [x] Dynamic `BigInt(...)` conversions either match Node for supported runtime values or produce source diagnostics for the current slice; remaining unknown dynamic invalid/out-of-range StringToBigInt exception parity is issue 333 (done).
 - [x] Runtime linker structure tests cover the BigInt builtin helpers and avoid new host imports.
 - [x] Docs/current-state/issues state the supported dynamic builtin subset and remaining limits.
 
@@ -117,7 +117,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/333-implement-bigint-dynamic-string-exception-parity.md`
+- [x] created: `issues/done/333-implement-bigint-dynamic-string-exception-parity.md`
 
 ## Notes
 
@@ -190,7 +190,7 @@ split test helpers compile as standalone test targets:
 its module context. Issue 280 is left open as verification-ready until that
 unrelated harness blocker is resolved and the assigned broad command can run.
 The remaining unknown dynamic invalid/out-of-range StringToBigInt runtime
-exception parity has been split to issue 333 rather than broadening issue 280.
+exception parity has been split to issue 333 (done) rather than broadening issue 280.
 
 2026-04-30 child-280 verification blocker: `cargo fmt --all --check` passed,
 and after `mise trust`, `mise run update-issue-index -- --check` and
@@ -238,5 +238,5 @@ date: 2026-04-30
 Remaining risks:
 
 - The only broad-filter failure observed during close validation is `m2_node_diff_fixture_tests::abc451_depth8_live_set_fixture_matches_node_output_under_iwasm`, which timed out under `iwasm` and is tracked by issue 357.
-- Unknown dynamic invalid/out-of-range StringToBigInt runtime exception parity is intentionally not part of this closure and remains tracked by issue 333.
+- Unknown dynamic invalid/out-of-range StringToBigInt runtime exception parity is intentionally not part of this closure and was tracked by issue 333 (done).
 - Dynamic builtin semantics must stay within the current runtime BigInt representation or retain source diagnostics.

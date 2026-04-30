@@ -140,7 +140,7 @@ impl RuntimeFn {
                 deps: BIGINT_FROM_VALUE_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: BIGINT_FROM_VALUE_RUNTIME_STRINGS,
+                runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::BigIntAsIntN => RuntimeSpec {

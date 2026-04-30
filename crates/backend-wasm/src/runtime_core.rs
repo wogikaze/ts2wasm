@@ -16,8 +16,6 @@ const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
 const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
-const BIGINT_FROM_STRING_ABORT_MESSAGE: &str =
-    "issue-333: BigInt(string) runtime invalid or out-of-range input\n";
 
 impl WatEmitter<'_> {
     pub(super) fn emit_read_stdin_bytes(&self, wat: &mut String) {
@@ -910,8 +908,6 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_bigint_from_value(&self, wat: &mut String) {
-        let bigint_from_string_abort =
-            self.string_offset(BIGINT_FROM_STRING_ABORT_MESSAGE) + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
   (func $bigint_value_is_bigint (param $v i32) (result i32)
@@ -928,12 +924,6 @@ impl WatEmitter<'_> {
         (i32.const {gc_kind_bigint}))
       (then (i32.const {one}))
       (else (i32.const {zero}))))
-
-  (func $bigint_from_string_abort
-    (call $write
-      (i32.const {bigint_from_string_abort})
-      (i32.const {bigint_from_string_abort_len}))
-    (unreachable))
 
   (func $bigint_from_string (param $v i32) (result i32)
     (local $obj i32)
@@ -1008,7 +998,7 @@ impl WatEmitter<'_> {
             (local.set $explicit_sign (i32.const 1))
             (local.set $start (i32.add (local.get $start) (i32.const 1)))))))
     (if (i32.ge_u (local.get $start) (local.get $end))
-      (then (call $bigint_from_string_abort)))
+      (then (unreachable)))
     (if (i32.lt_u (i32.add (local.get $start) (i32.const 1)) (local.get $end))
       (then
         (local.set $ch
@@ -1039,9 +1029,9 @@ impl WatEmitter<'_> {
       (i32.and
         (local.get $explicit_sign)
         (i32.ne (local.get $radix) (i32.const 10)))
-      (then (call $bigint_from_string_abort)))
+      (then (unreachable)))
     (if (i32.ge_u (local.get $start) (local.get $end))
-      (then (call $bigint_from_string_abort)))
+      (then (unreachable)))
     (local.set $i (local.get $start))
     (block $parse_done
       (loop $parse
@@ -1077,15 +1067,15 @@ impl WatEmitter<'_> {
                       (i32.add
                         (i32.sub (local.get $ch) (i32.const {ascii_a}))
                         (i32.const 10))))
-                  (else (call $bigint_from_string_abort)))))))
+                  (else (unreachable)))))))
         (if (i32.ge_u (local.get $digit) (local.get $radix))
-          (then (call $bigint_from_string_abort)))
+          (then (unreachable)))
         (local.set $limit
           (i64.div_u
             (i64.sub (i64.const -1) (i64.extend_i32_u (local.get $digit)))
             (i64.extend_i32_u (local.get $radix))))
         (if (i64.gt_u (local.get $magnitude) (local.get $limit))
-          (then (call $bigint_from_string_abort)))
+          (then (unreachable)))
         (local.set $magnitude
           (i64.add
             (i64.mul
@@ -1097,7 +1087,7 @@ impl WatEmitter<'_> {
     (if (i32.lt_s (local.get $sign) (i32.const 0))
       (then
         (if (i64.gt_u (local.get $magnitude) (i64.const {i64_max}))
-          (then (call $bigint_from_string_abort)))
+          (then (unreachable)))
         (return
           (call $bigint_from_signed_i64
             (i64.sub (i64.const 0) (local.get $magnitude))))))
@@ -1131,8 +1121,6 @@ impl WatEmitter<'_> {
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
             string_header_size = Layout::STRING_HEADER_SIZE,
-            bigint_from_string_abort = bigint_from_string_abort,
-            bigint_from_string_abort_len = BIGINT_FROM_STRING_ABORT_MESSAGE.len(),
             ascii_tab = 9,
             ascii_cr = 13,
             ascii_space = 32,
