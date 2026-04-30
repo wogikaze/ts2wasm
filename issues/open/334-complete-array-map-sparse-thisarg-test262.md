@@ -38,6 +38,7 @@ and generic call, with Test262-backed compatibility evidence.
 - [x] Issue 339: Callback thisArg for Array.prototype.map
 - [ ] Issue 340: Generic call for Array.prototype.map (Array.prototype.map.call(...))
 - [ ] Issue 379: Test262 verification for Array.prototype.map callback thisArg
+- [ ] Issue 403: Sparse array hole representation contract (blocks issue 338)
 
 ## Acceptance criteria
 

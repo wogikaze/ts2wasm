@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 34 | 114 |
+| runtime | 149 | 35 | 114 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 415 | 172 | 243 |
+| total | 416 | 173 | 243 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,6 +45,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
+| 403 | Define sparse array hole representation contract | feature | runtime/semantics | design-ready | P2 |  | The compiler has no representation for array holes; array literals, |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -196,7 +197,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: triage-needed | Fix Object.keys backend-io error |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
-| 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | 334 | Sparse array holes handling for Array.prototype.map |
+| 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | class: blocked | Sparse array holes handling for Array.prototype.map |
 | 341 | Implement core builtin API coverage (3,190 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement core builtin API coverage (3,190 test262 cases) |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: triage-needed | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
