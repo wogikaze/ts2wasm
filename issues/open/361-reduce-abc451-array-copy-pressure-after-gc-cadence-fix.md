@@ -8,7 +8,7 @@ priority: P1
 depends_on: [360]
 blocks: [357, 309]
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -150,6 +150,90 @@ Follow-up issues:
 ## Notes
 
 Issue 357 rejected earlier broad array-growth probes that either still timed out or trapped. Start from the issue 360 parent-verified baseline and keep any array/copy change tied to diagnostic evidence plus OOM validation.
+
+2026-05-01 child-361 progress:
+
+- Implemented an aligned `$copy` fast path that copies 4-byte chunks when source, destination, and length are all 4-byte aligned, with the original byte loop retained for unaligned copies.
+- Implemented top-of-heap `ArrayPushGrow` extension for arrays whose current block is exactly at `$heap` and whose aligned expanded body already fits committed memory. The fallback remains the existing `alloc_heap` plus `$copy` path.
+- Preserved the 185-page memory policy and OOM behavior.
+
+Before diagnostic, from the issue-360 parent baseline:
+
+```json
+{
+  "free_list_scan_visits": 0,
+  "gc_collections": 6,
+  "sweep_visits": 62313,
+  "array_copy_calls": 3119,
+  "array_copy_bytes": 311932,
+  "array_copy_elements": 77983,
+  "all_copy_calls": 18821,
+  "all_copy_bytes": 372673,
+  "allocation_attempts": 18860,
+  "allocation_requested_bytes": 691283
+}
+```
+
+After diagnostic:
+
+```json
+{
+  "free_list_scan_visits": 0,
+  "gc_collections": 5,
+  "sweep_visits": 58859,
+  "array_copy_calls": 2898,
+  "array_copy_bytes": 182008,
+  "array_copy_elements": 45502,
+  "all_copy_calls": 20549,
+  "all_copy_bytes": 250278,
+  "allocation_attempts": 20587,
+  "allocation_requested_bytes": 521193
+}
+```
+
+Quantified improvement:
+
+- `array_copy_bytes`: `311932 -> 182008`
+- `array_copy_elements`: `77983 -> 45502`
+- `allocation_requested_bytes`: `691283 -> 521193`
+- `gc_collections`: `6 -> 5`
+- `sweep_visits`: `62313 -> 58859`
+
+Remaining blocker:
+
+```text
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.222s
+date: 2026-05-01
+```
+
+Validation:
+
+```text
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; counters recorded above
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-backend-wasm --lib -- --nocapture
+result: pass; 27 passed
+date: 2026-05-01
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK
+date: 2026-05-01
+
+command: mise run check issues
+result: pass; issues/index.md queue OK; check_issue_health OK
+date: 2026-05-01
+```
 
 ## Completion evidence
 

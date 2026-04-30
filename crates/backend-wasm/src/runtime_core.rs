@@ -109,6 +109,23 @@ impl WatEmitter<'_> {
             r#"
   (func $copy (param $src i32) (param $dst i32) (param $len i32)
     (local $i i32)
+    (if
+      (i32.eqz
+        (i32.and
+          (i32.or
+            (i32.or (local.get $src) (local.get $dst))
+            (local.get $len))
+          (i32.const 3)))
+      (then
+        (block $word_exit
+          (loop $word_loop
+            (br_if $word_exit (i32.ge_u (local.get $i) (local.get $len)))
+            (i32.store
+              (i32.add (local.get $dst) (local.get $i))
+              (i32.load (i32.add (local.get $src) (local.get $i))))
+            (local.set $i (i32.add (local.get $i) (i32.const 4)))
+            (br $word_loop)))
+        (return)))
     (block $exit
       (loop $loop
         (br_if $exit (i32.ge_u (local.get $i) (local.get $len)))

@@ -1202,11 +1202,80 @@ impl WatEmitter<'_> {
              {pad}    (if (i32.lt_u (local.get {new_capacity}) (i32.add (local.get {old_len}) (i32.const 1)))\n\
              {pad}      (then (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1))))\n\
              {pad}    )\n\
-             {pad}    (local.set {new_array}\n\
-             {pad}      (call {}\n\
-             {pad}        (i32.add\n\
-             {pad}          (i32.const {})\n\
-             {pad}          (i32.shl (local.get {new_capacity}) (i32.const {})))))\n",
+             {pad}    (if (result i32)\n\
+             {pad}      (i32.and\n\
+             {pad}        (i32.eq\n\
+             {pad}          (global.get $heap)\n\
+             {pad}          (i32.add\n\
+             {pad}            (i32.and (local.get {old_array}) (i32.const {}))\n\
+             {pad}            (i32.load\n\
+             {pad}              (i32.add\n\
+             {pad}                (i32.sub (i32.and (local.get {old_array}) (i32.const {})) (i32.const {}))\n\
+             {pad}                (i32.const {})))))\n\
+             {pad}        (i32.le_u\n\
+             {pad}          (i32.add\n\
+             {pad}            (i32.and (local.get {old_array}) (i32.const {}))\n\
+             {pad}            (i32.and\n\
+             {pad}              (i32.add\n\
+             {pad}                (i32.add\n\
+             {pad}                  (i32.const {})\n\
+             {pad}                  (i32.shl (local.get {new_capacity}) (i32.const {})))\n\
+             {pad}                (i32.const {}))\n\
+             {pad}              (i32.const {})))\n\
+             {pad}          (i32.mul (memory.size) (i32.const {}))))\n\
+             {pad}      (then\n\
+             {pad}        (i32.store\n\
+             {pad}          (i32.add\n\
+             {pad}            (i32.and (local.get {old_array}) (i32.const {}))\n\
+             {pad}            (i32.add (i32.const {}) (i32.shl (local.get {old_len}) (i32.const {}))))\n\
+             {pad}          (local.get {pushed_value}))\n\
+             {pad}        (i32.store\n\
+             {pad}          (i32.and (local.get {old_array}) (i32.const {}))\n\
+             {pad}          (i32.add (local.get {old_len}) (i32.const 1)))\n\
+             {pad}        (global.set $alloc_bytes_since_last_gc\n\
+             {pad}          (i32.add\n\
+             {pad}            (global.get $alloc_bytes_since_last_gc)\n\
+             {pad}            (i32.sub\n\
+             {pad}              (i32.and\n\
+             {pad}                (i32.add\n\
+             {pad}                  (i32.add\n\
+             {pad}                    (i32.const {})\n\
+             {pad}                    (i32.shl (local.get {new_capacity}) (i32.const {})))\n\
+             {pad}                  (i32.const {}))\n\
+             {pad}                (i32.const {}))\n\
+             {pad}              (i32.load\n\
+             {pad}                (i32.add\n\
+             {pad}                  (i32.sub (i32.and (local.get {old_array}) (i32.const {})) (i32.const {}))\n\
+             {pad}                  (i32.const {}))))))\n\
+             {pad}        (i32.store\n\
+             {pad}          (i32.add\n\
+             {pad}            (i32.sub (i32.and (local.get {old_array}) (i32.const {})) (i32.const {}))\n\
+             {pad}            (i32.const {}))\n\
+             {pad}          (i32.and\n\
+             {pad}            (i32.add\n\
+             {pad}              (i32.add\n\
+             {pad}                (i32.const {})\n\
+             {pad}                (i32.shl (local.get {new_capacity}) (i32.const {})))\n\
+             {pad}              (i32.const {}))\n\
+             {pad}            (i32.const {})))\n\
+             {pad}        (global.set $heap\n\
+             {pad}          (i32.add\n\
+             {pad}            (i32.and (local.get {old_array}) (i32.const {}))\n\
+             {pad}            (i32.and\n\
+             {pad}              (i32.add\n\
+             {pad}                (i32.add\n\
+             {pad}                  (i32.const {})\n\
+             {pad}                  (i32.shl (local.get {new_capacity}) (i32.const {})))\n\
+             {pad}                (i32.const {}))\n\
+             {pad}              (i32.const {}))))\n\
+             {pad}        (local.get {old_array})\n\
+             {pad}      )\n\
+             {pad}      (else\n\
+             {pad}        (local.set {new_array}\n\
+             {pad}          (call {}\n\
+             {pad}            (i32.add\n\
+             {pad}              (i32.const {})\n\
+             {pad}              (i32.shl (local.get {new_capacity}) (i32.const {})))))\n",
             ValueTag::HEAP_MASK,
             ValueTag::HEAP_MASK,
             Layout::GC_HEADER_SIZE,
@@ -1218,6 +1287,39 @@ impl WatEmitter<'_> {
             Layout::ARRAY_ELEM_SHIFT,
             ValueTag::HEAP_MASK,
             ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD,
+            ValueTag::HEAP_MASK,
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_BODY_SIZE_OFFSET,
+            ValueTag::HEAP_MASK,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            Layout::ALIGN_MASK,
+            ValueTag::HEAP_MASK,
+            Layout::WASM_PAGE_SIZE,
+            ValueTag::HEAP_MASK,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            ValueTag::HEAP_MASK,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            Layout::ALIGN_MASK,
+            ValueTag::HEAP_MASK,
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_BODY_SIZE_OFFSET,
+            ValueTag::HEAP_MASK,
+            Layout::GC_HEADER_SIZE,
+            Layout::GC_BODY_SIZE_OFFSET,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            Layout::ALIGN_MASK,
+            ValueTag::HEAP_MASK,
+            ValueTag::HEAP_MASK,
+            Layout::ARRAY_HEADER_SIZE,
+            Layout::ARRAY_ELEM_SHIFT,
+            Layout::ALIGN_MASK,
+            ValueTag::HEAP_MASK,
             RuntimeFn::AllocHeap.symbol(),
             Layout::ARRAY_HEADER_SIZE,
             Layout::ARRAY_ELEM_SHIFT,
@@ -1236,7 +1338,9 @@ impl WatEmitter<'_> {
              {pad}        (local.get {new_array})\n\
              {pad}        (i32.add (i32.const {}) (i32.shl (local.get {old_len}) (i32.const {}))))\n\
              {pad}      (local.get {pushed_value}))\n\
-             {pad}    (i32.or (local.get {new_array}) (i32.const {}))\n\
+             {pad}        (i32.or (local.get {new_array}) (i32.const {}))\n\
+             {pad}      )\n\
+             {pad}    )\n\
              {pad}  )\n\
              {pad})\n",
             RuntimeFn::Copy.symbol(),
