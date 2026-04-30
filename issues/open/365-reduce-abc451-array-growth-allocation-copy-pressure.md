@@ -3,7 +3,7 @@ id: 365
 title: "Reduce ABC451 array-growth allocation and copy pressure"
 type: bug
 area: runtime/memory
-class: blocked
+class: implementation-ready
 priority: P1
 depends_on: [364, 366, 367]
 blocks: [363, 357, 309]
@@ -345,3 +345,17 @@ Implementation target:
 ```text
 Reduce non-top array-growth allocation/copy pressure. Do not spend the next slice on committed-memory misses, because committed-memory miss count is 0 at both diagnostic budgets.
 ```
+
+## Helper boundary available: 2026-05-01
+
+Issue 367 extracted the current `ArrayPushGrow` behavior into dedicated helper `$array_push_grow` without changing runtime behavior.
+
+Validated no-regression baseline after extraction:
+
+```text
+100000 events: alloc_array_growth_bytes=362976; alloc_array_growth_calls=2648; copy_array_growth_bytes=181008; copy_array_growth_calls=2648; top_miss_reason=non_top_heap; free_list_scan_visits=0
+300000 events: alloc_array_growth_bytes=1158708; alloc_array_growth_calls=3771; copy_array_growth_bytes=856928; copy_array_growth_calls=3770; top_miss_reason=non_top_heap; free_list_scan_visits=0
+focused ABC451 depth-8 gate: still times out after 30.199s
+```
+
+Next implementation slice should change behavior inside `$array_push_grow`, not by editing the former inline expression template.

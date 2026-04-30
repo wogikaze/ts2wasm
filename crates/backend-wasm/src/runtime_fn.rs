@@ -141,6 +141,7 @@ pub(crate) enum RuntimeFn {
     RegExpMatch,
     /// M10: Array methods
     ArrayPush,
+    ArrayPushGrow,
     ArrayPop,
     ArraySlice,
     ArrayConcat,
@@ -415,6 +416,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
+        "ArrayPushGrow" => Some(RuntimeFn::ArrayPushGrow),
         "ArrayPop" => Some(RuntimeFn::ArrayPop),
         "ArraySlice" => Some(RuntimeFn::ArraySlice),
         "ArrayConcat" => Some(RuntimeFn::ArrayConcat),
@@ -737,6 +739,7 @@ const ARRAY_PUSH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertySet,
     RuntimeFn::ValueToStringInto,
 ];
+const ARRAY_PUSH_GROW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_POP_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_CONCAT_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];

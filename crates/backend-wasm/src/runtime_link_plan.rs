@@ -569,8 +569,7 @@ impl RuntimeLinkPlan {
                     self.add_required_runtime(RuntimeFn::GetLength);
                 }
                 if runtime_fn == "ArrayPushGrow" {
-                    self.add_required_runtime(RuntimeFn::AllocHeap);
-                    self.add_required_runtime(RuntimeFn::Copy);
+                    self.add_required_runtime(RuntimeFn::ArrayPushGrow);
                 }
                 if let Some(runtime_fn_enum) = super::runtime_fn::runtime_fn_from_name(runtime_fn) {
                     self.add_required_runtime(runtime_fn_enum);

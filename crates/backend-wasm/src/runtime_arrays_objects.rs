@@ -1,6 +1,8 @@
 use super::emitter::WatEmitter;
 use ts2wasm_runtime_abi::{consts::RuntimeConst, layout::Layout, value::ValueTag};
 
+const ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD: i32 = 3072;
+
 impl WatEmitter<'_> {
     pub(super) fn emit_array_push(&self, wat: &mut String) {
         wat.push_str(&format!(
@@ -82,6 +84,146 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             undefined = ValueTag::UNDEFINED,
             scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_array_push_grow(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_push_grow (param $arr i32) (param $val i32) (result i32)
+    (local $old_len i32)
+    (local $old_capacity i32)
+    (local $new_capacity i32)
+    (local $new_array i32)
+    (local.set $old_len
+      (i32.load (i32.and (local.get $arr) (i32.const {heap_mask}))))
+    (local.set $old_capacity
+      (i32.shr_u
+        (i32.sub
+          (i32.load
+            (i32.add
+              (i32.sub (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {gc_header_size}))
+              (i32.const {gc_body_size_offset})))
+          (i32.const {array_header}))
+        (i32.const {elem_shift})))
+    (if (result i32)
+      (i32.lt_u (local.get $old_len) (local.get $old_capacity))
+      (then
+        (i32.store
+          (i32.add
+            (i32.and (local.get $arr) (i32.const {heap_mask}))
+            (i32.add (i32.const {array_header}) (i32.shl (local.get $old_len) (i32.const {elem_shift}))))
+          (local.get $val))
+        (i32.store
+          (i32.and (local.get $arr) (i32.const {heap_mask}))
+          (i32.add (local.get $old_len) (i32.const {one})))
+        (local.get $arr))
+      (else
+        (local.set $new_capacity (i32.shl (local.get $old_capacity) (i32.const {one})))
+        (if (i32.gt_u (local.get $old_capacity) (i32.const {linear_growth_threshold}))
+          (then
+            (local.set $new_capacity (i32.add (local.get $old_len) (i32.const {one})))))
+        (if (i32.lt_u (local.get $new_capacity) (i32.const 4))
+          (then (local.set $new_capacity (i32.const 4))))
+        (if (i32.lt_u (local.get $new_capacity) (i32.add (local.get $old_len) (i32.const {one})))
+          (then (local.set $new_capacity (i32.add (local.get $old_len) (i32.const {one})))))
+        (if (result i32)
+          (i32.and
+            (i32.eq
+              (global.get $heap)
+              (i32.add
+                (i32.and (local.get $arr) (i32.const {heap_mask}))
+                (i32.load
+                  (i32.add
+                    (i32.sub (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {gc_header_size}))
+                    (i32.const {gc_body_size_offset})))))
+            (i32.le_u
+              (i32.add
+                (i32.and (local.get $arr) (i32.const {heap_mask}))
+                (i32.and
+                  (i32.add
+                    (i32.add
+                      (i32.const {array_header})
+                      (i32.shl (local.get $new_capacity) (i32.const {elem_shift})))
+                    (i32.const {align_mask}))
+                  (i32.const {heap_mask})))
+              (i32.mul (memory.size) (i32.const {page_size}))))
+          (then
+            (i32.store
+              (i32.add
+                (i32.and (local.get $arr) (i32.const {heap_mask}))
+                (i32.add (i32.const {array_header}) (i32.shl (local.get $old_len) (i32.const {elem_shift}))))
+              (local.get $val))
+            (i32.store
+              (i32.and (local.get $arr) (i32.const {heap_mask}))
+              (i32.add (local.get $old_len) (i32.const {one})))
+            (global.set $alloc_bytes_since_last_gc
+              (i32.add
+                (global.get $alloc_bytes_since_last_gc)
+                (i32.sub
+                  (i32.and
+                    (i32.add
+                      (i32.add
+                        (i32.const {array_header})
+                        (i32.shl (local.get $new_capacity) (i32.const {elem_shift})))
+                      (i32.const {align_mask}))
+                    (i32.const {heap_mask}))
+                  (i32.load
+                    (i32.add
+                      (i32.sub (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {gc_header_size}))
+                      (i32.const {gc_body_size_offset}))))))
+            (i32.store
+              (i32.add
+                (i32.sub (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {gc_header_size}))
+                (i32.const {gc_body_size_offset}))
+              (i32.and
+                (i32.add
+                  (i32.add
+                    (i32.const {array_header})
+                    (i32.shl (local.get $new_capacity) (i32.const {elem_shift})))
+                  (i32.const {align_mask}))
+                (i32.const {heap_mask})))
+            (global.set $heap
+              (i32.add
+                (i32.and (local.get $arr) (i32.const {heap_mask}))
+                (i32.and
+                  (i32.add
+                    (i32.add
+                      (i32.const {array_header})
+                      (i32.shl (local.get $new_capacity) (i32.const {elem_shift})))
+                    (i32.const {align_mask}))
+                  (i32.const {heap_mask}))))
+            (local.get $arr))
+          (else
+            (local.set $new_array
+              (call $alloc_heap
+                (i32.add
+                  (i32.const {array_header})
+                  (i32.shl (local.get $new_capacity) (i32.const {elem_shift})))))
+            (i32.store
+              (local.get $new_array)
+              (i32.add (local.get $old_len) (i32.const {one})))
+            (call $copy
+              (i32.add (i32.and (local.get $arr) (i32.const {heap_mask})) (i32.const {array_header}))
+              (i32.add (local.get $new_array) (i32.const {array_header}))
+              (i32.shl (local.get $old_len) (i32.const {elem_shift})))
+            (i32.store
+              (i32.add
+                (local.get $new_array)
+                (i32.add (i32.const {array_header}) (i32.shl (local.get $old_len) (i32.const {elem_shift}))))
+              (local.get $val))
+            (i32.or (local.get $new_array) (i32.const {array_tag})))))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_body_size_offset = Layout::GC_BODY_SIZE_OFFSET,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            one = RuntimeConst::ONE,
+            linear_growth_threshold = ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD,
+            align_mask = Layout::ALIGN_MASK,
+            page_size = Layout::WASM_PAGE_SIZE,
+            array_tag = ValueTag::ARRAY,
         ));
     }
 

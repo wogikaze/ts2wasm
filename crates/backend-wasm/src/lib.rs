@@ -587,6 +587,39 @@ mod tests {
     }
 
     #[test]
+    fn array_push_grow_emits_dedicated_helper_boundary() {
+        let program = lower_fixture("../../fixtures/core-semantics/array-push-recursive-growth.ts");
+        let wat = emit_wat(&program).expect("array push growth fixture should emit WAT");
+
+        assert!(wat.contains("(func $array_push_grow"));
+        assert!(wat.contains("(call $array_push_grow)"));
+        assert!(wat.contains("(local $new_capacity i32)"));
+        assert!(wat.contains("(call $alloc_heap"));
+        assert!(wat.contains("(call $copy"));
+
+        let temp_dir = unique_temp_dir("array-push-grow-helper");
+        fs::create_dir_all(&temp_dir).expect("temp dir should be created");
+        let wat_path = temp_dir.join("array-push-grow-helper.wat");
+        let wasm_path = temp_dir.join("array-push-grow-helper.wasm");
+        fs::write(&wat_path, wat).expect("wat should be written");
+
+        let wat2wasm = Command::new("wat2wasm")
+            .arg(&wat_path)
+            .arg("-o")
+            .arg(&wasm_path)
+            .output()
+            .expect("wat2wasm should run");
+        assert!(
+            wat2wasm.status.success(),
+            "wat2wasm failed\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&wat2wasm.stdout),
+            String::from_utf8_lossy(&wat2wasm.stderr)
+        );
+
+        let _ = fs::remove_dir_all(temp_dir);
+    }
+
+    #[test]
     fn module_runtime_helpers_are_not_emitted_without_module_ir() {
         let program = LoweredProgram {
             top_level_statements: vec![LoweredStmt::Expr(LoweredExpr::Number(1))],

@@ -775,6 +775,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayPushGrow => RuntimeSpec {
+                symbol: "$array_push_grow",
+                deps: ARRAY_PUSH_GROW_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ArrayPop => RuntimeSpec {
                 symbol: "$array_pop",
                 deps: ARRAY_POP_DEPS,
@@ -1221,6 +1229,7 @@ impl RuntimeFn {
             Self::RegExpTest => "regexp_test",
             Self::RegExpMatch => "regexp_match",
             Self::ArrayPush => "array_push",
+            Self::ArrayPushGrow => "array_push_grow",
             Self::ArrayPop => "array_pop",
             Self::ArraySlice => "array_slice",
             Self::ArrayConcat => "array_concat",
@@ -1362,6 +1371,7 @@ impl RuntimeFn {
             Self::RegExpMatch,
             // Array methods
             Self::ArrayPush,
+            Self::ArrayPushGrow,
             Self::ArrayPop,
             Self::ArraySlice,
             Self::ArrayConcat,
@@ -1510,6 +1520,7 @@ impl RuntimeFn {
             Self::RegExpMatch,
             // Array methods
             Self::ArrayPush,
+            Self::ArrayPushGrow,
             Self::ArrayPop,
             Self::ArraySlice,
             Self::ArrayConcat,

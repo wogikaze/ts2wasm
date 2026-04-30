@@ -106,6 +106,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::RegExpTest => self.emit_regexp_test(wat),
                 RuntimeFn::RegExpMatch => self.emit_regexp_match(wat),
                 RuntimeFn::ArrayPush => self.emit_array_push(wat),
+                RuntimeFn::ArrayPushGrow => self.emit_array_push_grow(wat),
                 RuntimeFn::ArrayPop => self.emit_array_pop(wat),
                 RuntimeFn::ArraySlice => self.emit_array_slice(wat),
                 RuntimeFn::ArrayConcat => self.emit_array_concat(wat),

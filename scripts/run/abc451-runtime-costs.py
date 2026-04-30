@@ -275,156 +275,52 @@ def array_push_grow_helpers() -> str:
 def instrument_array_push_grow_attribution(wat: str) -> str:
     wat = replace_expected(
         wat,
-        "          (i32.lt_u (local.get 11) (local.get 12))",
-        "          (call $abc451_diag_array_push_capacity_check (local.get 11) (local.get 12))",
-        expected=2,
-        label="array push capacity local 11/12",
-    )
-    wat = replace_expected(
-        wat,
-        "              (i32.lt_u (local.get 11) (local.get 12))",
-        "              (call $abc451_diag_array_push_capacity_check (local.get 11) (local.get 12))",
-        expected=0,
-        label="array push capacity local 11/12 nested",
-    )
-    wat = replace_expected(
-        wat,
-        "          (i32.lt_u (local.get 7) (local.get 8))",
-        "          (call $abc451_diag_array_push_capacity_check (local.get 7) (local.get 8))",
+        "      (i32.lt_u (local.get $old_len) (local.get $old_capacity))",
+        "      (call $abc451_diag_array_push_capacity_check (local.get $old_len) (local.get $old_capacity))",
         expected=1,
-        label="array push capacity local 7/8",
+        label="array push capacity helper",
     )
     wat = replace_expected(
         wat,
-        """            (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
-              (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
-            )
-            (if (result i32)""",
-        """            (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
-              (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
-            )
-            (call $abc451_diag_array_push_growth_capacity (local.get 11) (local.get 12) (local.get 13))
-            (if (result i32)""",
+        """        (if (i32.lt_u (local.get $new_capacity) (i32.add (local.get $old_len) (i32.const 1)))
+          (then (local.set $new_capacity (i32.add (local.get $old_len) (i32.const 1)))))
+        (if (result i32)""",
+        """        (if (i32.lt_u (local.get $new_capacity) (i32.add (local.get $old_len) (i32.const 1)))
+          (then (local.set $new_capacity (i32.add (local.get $old_len) (i32.const 1)))))
+        (call $abc451_diag_array_push_growth_capacity (local.get $old_len) (local.get $old_capacity) (local.get $new_capacity))
+        (if (result i32)""",
         expected=1,
-        label="array push growth capacity local 11/12/13",
+        label="array push growth capacity helper",
     )
     wat = replace_expected(
         wat,
-        """                (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
-                  (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
-                )
-                (if (result i32)""",
-        """                (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
-                  (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
-                )
-                (call $abc451_diag_array_push_growth_capacity (local.get 11) (local.get 12) (local.get 13))
-                (if (result i32)""",
-        expected=1,
-        label="array push growth capacity local 11/12/13 nested",
-    )
-    wat = replace_expected(
-        wat,
-        """            (if (i32.lt_u (local.get 9) (i32.add (local.get 7) (i32.const 1)))
-              (then (local.set 9 (i32.add (local.get 7) (i32.const 1))))
-            )
-            (if (result i32)""",
-        """            (if (i32.lt_u (local.get 9) (i32.add (local.get 7) (i32.const 1)))
-              (then (local.set 9 (i32.add (local.get 7) (i32.const 1))))
-            )
-            (call $abc451_diag_array_push_growth_capacity (local.get 7) (local.get 8) (local.get 9))
-            (if (result i32)""",
-        expected=1,
-        label="array push growth capacity local 7/8/9",
-    )
-    wat = replace_expected(
-        wat,
-        """              (i32.and
-                (i32.eq
-                  (global.get $heap)
+        """          (i32.and
+            (i32.eq
+              (global.get $heap)
+              (i32.add
+                (i32.and (local.get $arr) (i32.const -8))
+                (i32.load
                   (i32.add
-                    (i32.and (local.get 8) (i32.const -8))
-                    (i32.load
-                      (i32.add
-                        (i32.sub (i32.and (local.get 8) (i32.const -8)) (i32.const 16))
-                        (i32.const 4)))))
-                (i32.le_u
+                    (i32.sub (i32.and (local.get $arr) (i32.const -8)) (i32.const 16))
+                    (i32.const 4)))))
+            (i32.le_u
+              (i32.add
+                (i32.and (local.get $arr) (i32.const -8))
+                (i32.and
                   (i32.add
-                    (i32.and (local.get 8) (i32.const -8))
-                    (i32.and
-                      (i32.add
-                        (i32.add
-                          (i32.const 4)
-                          (i32.shl (local.get 13) (i32.const 2)))
-                        (i32.const 7))
-                      (i32.const -8)))
-                  (i32.mul (memory.size) (i32.const 65536))))""",
-        """              (call $abc451_diag_array_push_top_check
-                (i32.and (local.get 8) (i32.const -8))
-                (i32.add
-                  (i32.const 4)
-                  (i32.shl (local.get 13) (i32.const 2))))""",
-        expected=1,
-        label="array push top check local 8/13",
-    )
-    wat = replace_expected(
-        wat,
-        """                  (i32.and
-                    (i32.eq
-                      (global.get $heap)
-                      (i32.add
-                        (i32.and (local.get 8) (i32.const -8))
-                        (i32.load
-                          (i32.add
-                            (i32.sub (i32.and (local.get 8) (i32.const -8)) (i32.const 16))
-                            (i32.const 4)))))
-                    (i32.le_u
-                      (i32.add
-                        (i32.and (local.get 8) (i32.const -8))
-                        (i32.and
-                          (i32.add
-                            (i32.add
-                              (i32.const 4)
-                              (i32.shl (local.get 13) (i32.const 2)))
-                            (i32.const 7))
-                          (i32.const -8)))
-                      (i32.mul (memory.size) (i32.const 65536))))""",
-        """                  (call $abc451_diag_array_push_top_check
-                    (i32.and (local.get 8) (i32.const -8))
                     (i32.add
                       (i32.const 4)
-                      (i32.shl (local.get 13) (i32.const 2))))""",
+                      (i32.shl (local.get $new_capacity) (i32.const 2)))
+                    (i32.const 7))
+                  (i32.const -8)))
+              (i32.mul (memory.size) (i32.const 65536))))""",
+        """          (call $abc451_diag_array_push_top_check
+            (i32.and (local.get $arr) (i32.const -8))
+            (i32.add
+              (i32.const 4)
+              (i32.shl (local.get $new_capacity) (i32.const 2))))""",
         expected=1,
-        label="array push top check local 8/13 nested",
-    )
-    wat = replace_expected(
-        wat,
-        """              (i32.and
-                (i32.eq
-                  (global.get $heap)
-                  (i32.add
-                    (i32.and (local.get 4) (i32.const -8))
-                    (i32.load
-                      (i32.add
-                        (i32.sub (i32.and (local.get 4) (i32.const -8)) (i32.const 16))
-                        (i32.const 4)))))
-                (i32.le_u
-                  (i32.add
-                    (i32.and (local.get 4) (i32.const -8))
-                    (i32.and
-                      (i32.add
-                        (i32.add
-                          (i32.const 4)
-                          (i32.shl (local.get 9) (i32.const 2)))
-                        (i32.const 7))
-                      (i32.const -8)))
-                  (i32.mul (memory.size) (i32.const 65536))))""",
-        """              (call $abc451_diag_array_push_top_check
-                (i32.and (local.get 4) (i32.const -8))
-                (i32.add
-                  (i32.const 4)
-                  (i32.shl (local.get 9) (i32.const 2))))""",
-        expected=1,
-        label="array push top check local 4/9",
+        label="array push top check helper",
     )
     return wat
 
@@ -535,7 +431,7 @@ def instrument_callsite_attribution(wat: str) -> str:
               (i32.add (i32.and (local.get 8) (i32.const -8)) (i32.const 4))
               (i32.add (local.get 10) (i32.const 4))
               (i32.shl (local.get 11) (i32.const 2)))""",
-        expected=1,
+        expected=0,
         label="array growth copy local 8/10/11 outer",
     )
     wat = replace_expected(
@@ -548,7 +444,7 @@ def instrument_callsite_attribution(wat: str) -> str:
                   (i32.add (i32.and (local.get 8) (i32.const -8)) (i32.const 4))
                   (i32.add (local.get 10) (i32.const 4))
                   (i32.shl (local.get 11) (i32.const 2)))""",
-        expected=1,
+        expected=0,
         label="array growth copy local 8/10/11 inner",
     )
     wat = replace_expected(
@@ -561,8 +457,21 @@ def instrument_callsite_attribution(wat: str) -> str:
               (i32.add (i32.and (local.get 4) (i32.const -8)) (i32.const 4))
               (i32.add (local.get 6) (i32.const 4))
               (i32.shl (local.get 7) (i32.const 2)))""",
-        expected=1,
+        expected=0,
         label="array growth copy local 4/6/7",
+    )
+    wat = replace_expected(
+        wat,
+        """            (call $copy
+              (i32.add (i32.and (local.get $arr) (i32.const -8)) (i32.const 4))
+              (i32.add (local.get $new_array) (i32.const 4))
+              (i32.shl (local.get $old_len) (i32.const 2)))""",
+        """            (call $abc451_diag_copy_array_growth
+              (i32.add (i32.and (local.get $arr) (i32.const -8)) (i32.const 4))
+              (i32.add (local.get $new_array) (i32.const 4))
+              (i32.shl (local.get $old_len) (i32.const 2)))""",
+        expected=1,
+        label="array growth copy helper",
     )
 
     wat = replace_expected(
@@ -633,7 +542,7 @@ def instrument_callsite_attribution(wat: str) -> str:
                     (i32.add
                       (i32.const 4)
                       (i32.shl (local.get 13) (i32.const 2))))""",
-        expected=1,
+        expected=0,
         label="array growth allocation local 13 outer",
     )
     wat = replace_expected(
@@ -644,9 +553,9 @@ def instrument_callsite_attribution(wat: str) -> str:
                           (i32.shl (local.get 13) (i32.const 2))))""",
         """                      (call $abc451_diag_alloc_array_growth
                         (i32.add
-                          (i32.const 4)
-                          (i32.shl (local.get 13) (i32.const 2))))""",
-        expected=1,
+                        (i32.const 4)
+                        (i32.shl (local.get 13) (i32.const 2))))""",
+        expected=0,
         label="array growth allocation local 13 inner",
     )
     wat = replace_expected(
@@ -659,8 +568,21 @@ def instrument_callsite_attribution(wat: str) -> str:
                     (i32.add
                       (i32.const 4)
                       (i32.shl (local.get 9) (i32.const 2))))""",
-        expected=1,
+        expected=0,
         label="array growth allocation local 9",
+    )
+    wat = replace_expected(
+        wat,
+        """              (call $alloc_heap
+                (i32.add
+                  (i32.const 4)
+                  (i32.shl (local.get $new_capacity) (i32.const 2))))""",
+        """              (call $abc451_diag_alloc_array_growth
+                (i32.add
+                  (i32.const 4)
+                  (i32.shl (local.get $new_capacity) (i32.const 2))))""",
+        expected=1,
+        label="array growth allocation helper",
     )
     return wat
 
