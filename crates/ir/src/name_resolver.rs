@@ -942,18 +942,24 @@ impl NameResolver {
             {
                 Some(name.clone())
             }
+            Expr::Member {
+                object, property, ..
+            } if self.is_unshadowed_number_model_gap_member(object, property) => {
+                Some(format!("Number.{property}"))
+            }
             Expr::Unary { op, expr, .. } if matches!(op, UnaryOp::Plus | UnaryOp::Negate) => {
-                let Expr::Ident { name, .. } = expr.as_ref() else {
-                    return None;
-                };
-                if !matches!(name.as_str(), "NaN" | "Infinity") || self.is_user_declared(name) {
-                    return None;
-                }
+                let value = self.bigint_number_model_gap_value(expr.as_ref())?;
                 let sign = if *op == UnaryOp::Negate { "-" } else { "+" };
-                Some(format!("{sign}{name}"))
+                Some(format!("{sign}{value}"))
             }
             _ => None,
         }
+    }
+
+    fn is_unshadowed_number_model_gap_member(&self, object: &Expr, property: &str) -> bool {
+        matches!(object, Expr::Ident { name, .. } if name == "Number")
+            && !self.is_user_declared("Number")
+            && matches!(property, "NaN" | "POSITIVE_INFINITY" | "NEGATIVE_INFINITY")
     }
 
     fn is_unshadowed_test262_ishtmldda_member(&self, object: &Expr, property: &str) -> bool {

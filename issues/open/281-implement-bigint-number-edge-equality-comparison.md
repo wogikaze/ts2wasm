@@ -8,7 +8,7 @@ priority: P2
 depends_on: [259, 261]
 blocks: []
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -137,6 +137,26 @@ Split from issue 261 on 2026-04-29 because issue 261 already implemented BigInt/
 - Validation not green: `mise run check issues` fails before issue-281-specific
   checks on pre-existing missing test262 coverage-result artifact references
   in issue 308 and several done issues.
+- Remaining scope: compatible fractional / `NaN` / `Infinity` runtime
+  comparison semantics still require the broader number model and are not
+  closed by this slice.
+
+2026-05-01:
+
+- Extended the source-spanned issue-281 diagnostic boundary to statically
+  visible `Number.NaN`, `Number.POSITIVE_INFINITY`, and
+  `Number.NEGATIVE_INFINITY` members in mixed BigInt equality/relational
+  comparisons, including signed unary member forms such as
+  `-Number.NEGATIVE_INFINITY`.
+- Added unsupported regression coverage in
+  `fixtures/core-semantics/bigint-mixed-number-static-constant-unsupported.ts`.
+- Validation passed: `cargo fmt --all --check`; `cargo test -p
+  ts2wasm-cli bigint` (37 BigInt node-diff tests passed); `mise run
+  update-issue-index -- --check`; `mise run check issues`.
+- Validation not green: `cargo nextest run -E 'test(bigint) or
+  test(node_diff)'` ran 174 tests with 173 passed and 1 known unrelated failure,
+  `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` timing out
+  after 30.432s.
 - Remaining scope: compatible fractional / `NaN` / `Infinity` runtime
   comparison semantics still require the broader number model and are not
   closed by this slice.
