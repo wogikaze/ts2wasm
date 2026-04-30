@@ -62,7 +62,7 @@ impl Diagnostic {
             || message.contains("reference types")
             || message.contains("interface")
             || message.contains(" enum")
-            || message.contains("declare")
+            || contains_ascii_word(&message, "declare")
             || message.contains("ambient")
             || message.contains("parameter propert")
             || message.contains("type alias")
@@ -215,6 +215,11 @@ mod tests {
                 "type annotation is not supported in this parser slice",
                 DiagCode::UnsupportedTypeScriptSyntax,
                 "[UnsupportedTypeScriptSyntax]",
+            ),
+            (
+                "issue-255: private method `#m` is not declared in this class",
+                DiagCode::UnsupportedSyntax,
+                "[UnsupportedSyntax]",
             ),
             (
                 "Array.prototype.map generic calls are not supported",
