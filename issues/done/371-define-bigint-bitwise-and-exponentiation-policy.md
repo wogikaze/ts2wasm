@@ -114,7 +114,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/done/376-implement-dynamic-bigint-exponentiation.md`, `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md`, `issues/open/378-implement-bigint-shift-operators.md`
+- [x] created: `issues/done/376-implement-dynamic-bigint-exponentiation.md`, `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md`, `issues/done/378-implement-bigint-shift-operators.md`
 
 ## Notes
 

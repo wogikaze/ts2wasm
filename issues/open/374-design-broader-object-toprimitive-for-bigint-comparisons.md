@@ -62,7 +62,7 @@ Expected:
 - `docs/language-reference/javascript-features.md`
 - `current-state.md`
 - `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md`
-- `issues/open/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
+- `issues/done/373-handle-bigint-object-toprimitive-invalid-out-of-range-string-returns.md`
 - `issues/open/374-design-broader-object-toprimitive-for-bigint-comparisons.md`
 - `issues/open/375-handle-non-source-backed-out-of-range-bigint-string-comparisons.md`
 - `crates/cli/tests/` only for diagnostic characterization if needed

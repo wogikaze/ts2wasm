@@ -9,6 +9,7 @@ depends_on: [259, 261]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -37,10 +38,10 @@ Direct object-literal/local `toString: () => <string literal>` mixed BigInt comp
 
 In scope:
 
-- [ ] Direct object literals and simple locals with no-argument arrow `toString` returning a string literal.
-- [ ] Invalid StringToBigInt strings for abstract equality and relational comparison.
-- [ ] Source-backed out-of-range string literals that exceed the current signed-i32 comparison helper boundary.
-- [ ] Node/iwasm differential coverage for any newly supported case and diagnostic coverage for intentionally rejected cases.
+- [x] Direct object literals and simple locals with no-argument arrow `toString` returning a string literal.
+- [x] Invalid StringToBigInt strings for abstract equality and relational comparison.
+- [x] Source-backed out-of-range string literals that exceed the current signed-i32 comparison helper boundary.
+- [x] Node/iwasm differential coverage for any newly supported case and diagnostic coverage for intentionally rejected cases.
 
 Out of scope:
 
@@ -68,10 +69,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Invalid direct `toString` string return behavior is covered by Node/iwasm differential tests or source-backed diagnostic tests with explicit issue ownership.
-- [ ] Out-of-range direct `toString` string return behavior cannot silently produce an incorrect normal boolean.
-- [ ] Existing supported decimal-string `toString` fixtures from issue 368 continue to pass.
-- [ ] Docs/current-state/issues state the invalid/out-of-range string-return boundary.
+- [x] Invalid direct `toString` string return behavior is covered by Node/iwasm differential tests or source-backed diagnostic tests with explicit issue ownership.
+- [x] Out-of-range direct `toString` string return behavior cannot silently produce an incorrect normal boolean.
+- [x] Existing supported decimal-string `toString` fixtures from issue 368 continue to pass.
+- [x] Docs/current-state/issues state the invalid/out-of-range string-return boundary.
 
 ## Validation
 
@@ -98,16 +99,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/05-compatibility-and-semantics.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -119,14 +120,18 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- cde1b185 issues: close ts boundary and progress test262 bigint slices
 
 Validation result:
 
 ```text
-not run; issue is open
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_object_toprimitive_string_boundary_reports_issue_373: pass
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
 ```
 
 Remaining risks:
 
 - Runtime-only unknown strings are deliberately separate in issue 375.
+- Broader object/prototype/Proxy/side-effectful coercion remains deliberately separate in issue 374.
