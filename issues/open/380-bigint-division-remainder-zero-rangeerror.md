@@ -129,10 +129,24 @@ Commits:
 
 - none yet; issue is open
 
+## Progress evidence
+
+2026-05-01 progress:
+
+- Added the minimal runtime exception diagnostic substrate surface for BigInt `/ 0n` and `% 0n`.
+- `bigint_div_rem_decimal` now writes `RangeError: Division by zero` before aborting when the divisor BigInt is canonical zero.
+- Updated the existing Node/iwasm zero-divisor tests to assert Node's `RangeError: Division by zero` baseline and iwasm's matching RangeError diagnostic surface instead of only a bare `unreachable` trap.
+- Updated current-state and BigInt runtime ABI/language-reference docs to state the diagnostic/abort boundary.
+- The issue remains open because full catchable JavaScript `RangeError` object propagation is broader runtime exception substrate work.
+
 Validation result:
 
 ```text
-not run; issue is open
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_div_zero_reports_rangeerror_after_successful_build: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_rem_zero_reports_rangeerror_after_successful_build: pass
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
 ```
 
 Remaining risks:

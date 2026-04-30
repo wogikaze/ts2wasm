@@ -3,17 +3,18 @@ id: 393
 title: "Multi-limb BigInt addition"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [259, 260]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
 
-Implement canonical multi-limb BigInt addition for dynamic operands and results outside the signed-i64-backed helper slice.
+Closed as superseded/covered by the already-merged issue 382 add/sub progress slice plus issue 397 branch-assigned local tracking.
 
 Problem: Dynamic BigInt `+` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of using canonical BigInt limb arithmetic.
 
@@ -45,10 +46,10 @@ Dynamic BigInt `+` operates on the canonical heap BigInt limb representation for
 
 In scope:
 
-- [ ] Implement canonical limb addition for dynamic BigInt operands and results, preserving canonical zero and sign behavior, and add Node/iwasm differential fixtures for values larger than signed i64.
-- [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
-- [ ] Update runtime linker structure tests if new helpers/deps are added.
-- [ ] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
+- [x] Implement canonical limb addition for dynamic BigInt operands and results, preserving canonical zero and sign behavior, and add Node/iwasm differential fixtures for values larger than signed i64.
+- [x] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
+- [x] Update runtime linker structure tests if new helpers/deps are added.
+- [x] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
 
 Out of scope:
 
@@ -78,9 +79,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover dynamic BigInt add with operands or results outside signed i64, and existing signed-i64 slice fixtures from issue 260 continue to match Node.
-- [ ] Runtime linker structure tests cover any new multi-limb helper deps.
-- [ ] Docs/current-state/issues state the new addition boundary.
+- [x] Node/iwasm differential fixtures cover dynamic BigInt add with operands or results outside signed i64, and existing signed-i64 slice fixtures from issue 260 continue to match Node.
+- [x] Runtime linker structure tests cover any new multi-limb helper deps.
+- [x] Docs/current-state/issues state the new addition boundary.
 
 ## Validation
 
@@ -107,16 +108,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/14-runtime-abi.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -126,12 +127,19 @@ This is a focused split from issue 382, covering only addition. Do not implement
 
 Fill only when moving to `done/`.
 
+Close note (2026-05-01): issue 393 is superseded by issue 382's validated cached-decimal add/sub runtime slice and issue 397's supported branch-assigned local tracking. Existing coverage already includes `fixtures/core-semantics/bigint-runtime-large-add-sub.ts` for `18446744073709551616n + 1n`, plus `fixtures/core-semantics/bigint-runtime-branch-large-unsupported.ts` for a branch-assigned large BigInt local used as a later `+` operand. No new compiler or fixture change was required in this cycle.
+
 Commits:
 
-- none yet; issue is open
+- this close commit
 
 Validation result:
 
 ```text
-not run; issue is open
+cargo fmt --all --check
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_add_sub
+mise run update-issue-index -- --check
+mise run check issues
+
+All required validation passed in child worktree child/issue-393-superseded.
 ```
