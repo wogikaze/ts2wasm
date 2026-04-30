@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Link the ignored reference corpus into git worktrees.
+"""Link ignored reference corpus directories into git worktrees.
 
-The repository keeps reference/* ignored because the corpora are large external
-checkouts. Git worktrees do not share ignored files, so autonomous child
-worktrees otherwise miss reference/test262 and similar suites. This script
-creates a worktree-local `reference` symlink pointing at the parent repository's
-`reference` directory.
+The repository tracks `reference/README.md`, but ignores large external corpus
+subdirectories such as `reference/test262/`. Git worktrees share tracked files
+but not ignored directories, so child worktrees otherwise miss reference suites.
+This script creates symlinks for each ignored corpus directory under a
+worktree's existing `reference/` directory without replacing the tracked
+`reference/` directory itself.
 """
 
 from __future__ import annotations
@@ -21,7 +22,7 @@ DEFAULT_REFERENCE = REPO_ROOT / "reference"
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Symlink the repo reference/ corpus into one or more worktrees."
+        description="Symlink ignored reference corpus directories into one or more worktrees."
     )
     parser.add_argument(
         "worktrees",
@@ -38,7 +39,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--replace-broken",
         action="store_true",
-        help="Replace an existing broken reference symlink.",
+        help="Replace existing broken corpus symlinks under reference/.",
     )
     return parser.parse_args()
 
@@ -50,26 +51,60 @@ def same_path(left: Path, right: Path) -> bool:
         return False
 
 
-def replaceable_stub_reference_dir(path: Path) -> bool:
-    if not path.is_dir() or path.is_symlink():
+def reference_entries(reference_root: Path) -> list[Path]:
+    return sorted(
+        entry
+        for entry in reference_root.iterdir()
+        if entry.is_dir() and not entry.is_symlink()
+    )
+
+
+def ensure_reference_dir(worktree: Path) -> Path | None:
+    reference_dir = worktree / "reference"
+    if reference_dir.is_symlink():
+        print(
+            f"link-reference: refusing to use symlinked tracked directory: {reference_dir}",
+            file=sys.stderr,
+        )
+        return None
+    if reference_dir.exists() and not reference_dir.is_dir():
+        print(f"link-reference: reference path is not a directory: {reference_dir}", file=sys.stderr)
+        return None
+    reference_dir.mkdir(exist_ok=True)
+    return reference_dir
+
+
+def link_entry(reference_dir: Path, source: Path, replace_broken: bool) -> bool:
+    link_path = reference_dir / source.name
+    if link_path.is_symlink():
+        target = Path(os.readlink(link_path))
+        if not target.is_absolute():
+            target = (link_path.parent / target).resolve()
+        if same_path(target, source):
+            print(f"link-reference: ok existing {link_path} -> {source}")
+            return True
+        if not link_path.exists() and replace_broken:
+            link_path.unlink()
+        else:
+            print(
+                f"link-reference: refusing to replace existing symlink {link_path} -> {target}",
+                file=sys.stderr,
+            )
+            return False
+    if link_path.exists():
+        if same_path(link_path, source):
+            print(f"link-reference: ok existing directory {link_path}")
+            return True
+        print(f"link-reference: refusing to replace existing path: {link_path}", file=sys.stderr)
         return False
-    entries = list(path.iterdir())
-    if not entries:
-        return True
-    return len(entries) == 1 and entries[0].name == "README.md" and entries[0].is_file()
-
-
-def remove_stub_reference_dir(path: Path) -> None:
-    readme = path / "README.md"
-    if readme.exists():
-        readme.unlink()
-    path.rmdir()
+    os.symlink(source, link_path, target_is_directory=True)
+    print(f"link-reference: created {link_path} -> {source}")
+    return True
 
 
 def link_reference(worktree: Path, reference_root: Path, replace_broken: bool) -> bool:
     worktree = worktree.resolve()
     reference_root = reference_root.resolve()
-    link_path = worktree / "reference"
 
     if not reference_root.is_dir():
         print(f"link-reference: source reference root is missing: {reference_root}", file=sys.stderr)
@@ -78,41 +113,14 @@ def link_reference(worktree: Path, reference_root: Path, replace_broken: bool) -
         print(f"link-reference: worktree is missing: {worktree}", file=sys.stderr)
         return False
 
-    if link_path.is_symlink():
-        target = Path(os.readlink(link_path))
-        if not target.is_absolute():
-            target = (link_path.parent / target).resolve()
-        if same_path(target, reference_root):
-            print(f"link-reference: ok existing {link_path} -> {reference_root}")
-            return True
-        if not link_path.exists() and replace_broken:
-            link_path.unlink()
-        else:
-            print(
-                f"link-reference: refusing to replace existing symlink {link_path} -> {target}; "
-                "remove it or pass --replace-broken if it is broken",
-                file=sys.stderr,
-            )
-            return False
-
-    if link_path.exists():
-        if same_path(link_path, reference_root):
-            print(f"link-reference: ok existing directory {link_path}")
-            return True
-        if replaceable_stub_reference_dir(link_path):
-            remove_stub_reference_dir(link_path)
-            os.symlink(reference_root, link_path, target_is_directory=True)
-            print(f"link-reference: replaced stub {link_path} -> {reference_root}")
-            return True
-        print(
-            f"link-reference: refusing to replace existing non-symlink path: {link_path}",
-            file=sys.stderr,
-        )
+    reference_dir = ensure_reference_dir(worktree)
+    if reference_dir is None:
         return False
 
-    os.symlink(reference_root, link_path, target_is_directory=True)
-    print(f"link-reference: created {link_path} -> {reference_root}")
-    return True
+    ok = True
+    for source in reference_entries(reference_root):
+        ok = link_entry(reference_dir, source, replace_broken) and ok
+    return ok
 
 
 def main() -> int:

@@ -1,5 +1,6 @@
 # project files
-reference/*/
+reference/*
+!reference/README.md
 
 # whats this
 .codex
