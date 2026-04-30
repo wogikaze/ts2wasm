@@ -102,11 +102,11 @@ Current state:
 
 ## Notes
 
-Sparse array representation is defined by `docs/14-runtime-abi.md`. Issue 403
-accepted a presence-bitmap array contract, frontend slot representation for
-elisions, lowered present/hole slots, numeric `index in array` presence checks,
-and map/spread observability. This issue should implement map behavior without
-redefining the representation.
+Sparse array representation is defined by `docs/13-ir-contracts.md` and
+`docs/14-runtime-abi.md`. Issue 403 accepted a frontend slot representation for
+elisions, lowered present/hole slots, a presence-bitmap array contract, numeric
+`index in array` presence checks, and map/spread observability. This issue
+should implement map behavior without redefining the representation.
 
 ## Completion evidence
 
@@ -152,7 +152,8 @@ Remaining:
 
 2026-05-01 child-403-sparse-hole-contract:
 
-- READY. Issue 403 moved the representation decision to `docs/14-runtime-abi.md`.
+- READY. Issue 403 moved the representation decision to
+  `docs/13-ir-contracts.md` and `docs/14-runtime-abi.md`.
 - Implement this issue against `ArrayLiteralElement::Hole` / lowered present-hole
   slots or an equivalent `ArrayNewSparse` path, presence-bit array layout, and
   numeric `index in array` checks. Do not encode holes as ordinary `undefined`.

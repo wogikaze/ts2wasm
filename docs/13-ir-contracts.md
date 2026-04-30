@@ -107,6 +107,30 @@ Expr::Index { object: Box<Expr>, index: Box<Expr> }
 
 `console.log(x)` かどうかは BuiltinResolver だけが判断する。
 
+### Array literal elisions
+
+Array literals preserve elisions as syntax. The parser represents array literal
+slots with an array-element enum rather than `Vec<Expr>`:
+
+```rust
+enum ArrayElement {
+    Present(Expr),
+    Hole { span: Span },
+    Spread { expr: Expr, span: Span },
+}
+
+Expr::Array {
+    elements: Vec<ArrayElement>,
+    span: Span,
+}
+```
+
+A comma without an expression contributes one `Hole`. A trailing comma after a
+present element or spread element is only a separator and does not add a hole;
+a trailing comma after an elision terminates the already-counted hole. The AST
+does not lower a hole to `Expr::Undefined`, because `undefined` is a present
+value while a hole is an absent indexed property.
+
 ## IR design
 
 Generic JavaScript semantic IR は、AST の構文構造でも backend の runtime ABI でもない中間層として設計する。目的は、JavaScript の observable semantics を `backend-wasm` から切り離し、lowering/validation/optimization が同じ semantic operation を共有できるようにすることである。
@@ -209,6 +233,26 @@ pub struct LoweredFunction {
 }
 ```
 
+Array construction in `LoweredProgram` carries the same present-vs-absent
+distinction as the AST:
+
+```rust
+enum LoweredArrayElement {
+    Present(LoweredExpr),
+    Hole,
+}
+
+LoweredExpr::ArrayNew {
+    elements: Vec<LoweredArrayElement>,
+}
+```
+
+Lowering preserves literal holes into `LoweredArrayElement::Hole`. A dense array
+literal is the special case where every element is `Present`. Array spread is
+not represented as a hole-preserving copy operation: spreading an array reads
+each source index through the array get/iterator contract, so a source hole
+lowers to a present `undefined` in the destination expression list.
+
 ### 不変条件
 
 * `top_level_statements` に `LoweredStmt::Function` は含まれない。
@@ -216,6 +260,9 @@ pub struct LoweredFunction {
 * `LoweredExpr::Local(LocalId)` の `LocalId.0` は対応する関数の `locals` 以内。
 * `LoweredExpr::Call { kind: FunctionCallKind::User(FuncId) }` の `FuncId.0` は `functions` の有効インデックス。
 * 名前文字列（`Ident(String)`）は `LoweredExpr` に残らない。
+* `LoweredArrayElement::Hole` は `LoweredExpr::Undefined` に置換されない。
+  `array_get` は hole を `undefined` として読むが、`array_has_index` / `in`
+  / `Array.prototype.map` は hole の absence を観測する。
 
 ### validate_lowered の仕様
 

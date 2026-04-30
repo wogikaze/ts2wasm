@@ -117,11 +117,12 @@ Follow-up issues:
 
 Parent issue: 274
 
-Sparse array representation is defined by `docs/14-runtime-abi.md`. In
-ECMAScript, sparse array holes are not the same as `undefined` values while they
-remain array properties. When a sparse array is spread into a new array literal
-or call arguments, spread consumes iterator/Get semantics: source holes are read
-as `undefined`, and the destination element/argument is present.
+Sparse array representation is defined by `docs/13-ir-contracts.md` and
+`docs/14-runtime-abi.md`. In ECMAScript, sparse array holes are not the same as
+`undefined` values while they remain array properties. When a sparse array is
+spread into a new array literal or call arguments, spread consumes iterator/Get
+semantics: source holes are read as `undefined`, and the destination
+element/argument is present.
 
 Exact fixture targets:
 

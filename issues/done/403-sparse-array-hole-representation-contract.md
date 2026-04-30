@@ -126,6 +126,7 @@ Not run:
 Final-state docs:
 
 - [x] updated: `docs/14-runtime-abi.md` when the representation contract is accepted
+- [x] updated: `docs/13-ir-contracts.md` for AST/lowered IR sparse element shape
 
 Current state:
 
@@ -143,13 +144,13 @@ requires callback skipping and result hole preservation.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Completed: 2026-05-01
 
 Commits:
 
-- `61019ef4` issue-403: define sparse array hole contract
+- `320174cc` issue-403: define sparse array hole contract
+- `5048773d` issue-403: record completion evidence
+- current docs/13 contract sync commit
 
 Validation result:
 
@@ -168,6 +169,10 @@ date: 2026-05-01
 
 command: cargo nextest run -p ts2wasm-cli array_map
 result: pass; 15 array_map tests passed, 428 skipped
+date: 2026-05-01
+
+command: git diff --check
+result: pass
 date: 2026-05-01
 ```
 
