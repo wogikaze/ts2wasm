@@ -3,9 +3,9 @@ id: 370
 title: "Implement BigInt arithmetic RangeError and TypeError parity"
 type: feature
 area: runtime/semantics
-class: design-ready
+class: blocked
 priority: P2
-depends_on: [260]
+depends_on: [260, 380, 381]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -49,7 +49,7 @@ BigInt arithmetic error paths match Node-observable exception behavior for the s
 
 In scope:
 
-- [ ] Define the minimal runtime throw path needed by BigInt arithmetic, or depend on an existing compatible throw mechanism if available.
+- [x] Define the minimal runtime throw path needed by BigInt arithmetic, or depend on an existing compatible throw mechanism if available.
 - [ ] Convert BigInt division/remainder-by-zero traps to compatible `RangeError` throwing for supported helper paths.
 - [ ] Convert dynamic mixed Number/BigInt arithmetic diagnostics to compatible runtime `TypeError` throwing where operands can reach runtime safely.
 - [ ] Preserve source-backed diagnostics for unsupported shapes until a runtime throw path exists for them.
@@ -62,6 +62,10 @@ Out of scope:
 - BigInt bitwise/exponentiation policy; issue 371.
 - General catch/finally exception semantics unless required for a minimal throw-compatible BigInt arithmetic test.
 - BigInt builtin string exception parity; issue 333.
+
+Split from this issue:
+- Issue 380: BigInt division/remainder by zero RangeError (focused on `/ 0n` and `% 0n`)
+- Issue 381: Mixed Number/BigInt arithmetic TypeError (focused on runtime TypeError throwing)
 
 ## Affected paths
 

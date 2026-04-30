@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 131 | 36 | 95 |
+| runtime | 138 | 43 | 95 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 392 | 174 | 218 |
+| total | 399 | 181 | 218 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,14 +46,17 @@ Issue files are the source of truth for work items. The generated section below 
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
-| 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
-| 369 | Implement full multi-limb BigInt arithmetic | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | issue 260 closed the literal-folding and signed-i64-backed dynamic unary/add/sub/mul/div/rem slice, but dynamic opera... |
-| 370 | Implement BigInt arithmetic RangeError and TypeError parity | feature | runtime/semantics | design-ready | P2 | 260 | division/remainder by zero currently reaches a runtime `unreachable` trap in the signed-i64 helper slice, and mixed N... |
 | 372 | Implement BigInt object ToPrimitive non-BigInt primitive returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Direct object-literal/local `valueOf` or `toString` methods that return booleans, supported tagged-int numbers, nulli... |
 | 373 | Handle BigInt object ToPrimitive invalid and out-of-range string returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Issue 368 implemented `toString: () => <supported decimal string>` for equality and relational comparisons, but inval... |
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt bitwise NOT/AND/OR/XOR currently report issue-377 diagnostics and must not reuse ordinary number bitwise lower... |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
+| 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt `/ 0n` and `% 0n` currently reach a runtime `unreachable` trap in the signed-i64 helper slice, while Node thro... |
+| 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | implementation-ready | P2 | 260 | Mixed Number/BigInt arithmetic currently reports issue-linked diagnostics instead of throwing compatible `TypeError` ... |
+| 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `+` and `-` with operands or results outside the signed-i64-backed helper slice report diagnostics ins... |
+| 383 | Multi-limb BigInt multiplication | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `*` with operands or results outside the signed-i64-backed helper slice report diagnostics instead of ... |
+| 384 | Multi-limb BigInt division and remainder | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `/` and `%` with operands or results outside the signed-i64-backed helper slice report diagnostics ins... |
+| 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | implementation-ready | P1 |  | Issue 357's previous attempts to reduce the timeout did not identify whether the bottleneck is array copying, GC swee... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -219,9 +222,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | 274 | Implement iterator protocol integration for spread operator |
 | 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | 274 | Implement dynamic object property enumeration spread |
+| 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
+| 369 | Implement full multi-limb BigInt arithmetic | feature | runtime/semantics | class: blocked | Implement full multi-limb BigInt arithmetic |
+| 370 | Implement BigInt arithmetic RangeError and TypeError parity | feature | runtime/semantics | class: blocked | Implement BigInt arithmetic RangeError and TypeError parity |
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
+| 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 <!-- generated:blocked:end -->
 
 ## Done queue

@@ -3,12 +3,12 @@ id: 357
 title: "Fix ABC451 depth-8 iwasm timeout"
 type: bug
 area: runtime/memory
-class: implementation-ready
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [385, 386]
 blocks: [309]
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -66,6 +66,10 @@ Out of scope:
 - Skipping, ignoring, or weakening the ABC451 test.
 - BigInt, spread, eval, private-class, parser, or reference-harness work.
 - Problem-specific generated tables or source rewrites.
+
+Split from this issue:
+- Issue 385: Instrument ABC451 depth-8 copy vs GC time (focused on instrumentation to identify bottleneck)
+- Issue 386: Reduce ABC451 depth-8 array copy pressure (focused on copy optimization)
 
 ## Affected paths
 

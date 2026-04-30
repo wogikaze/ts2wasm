@@ -3,9 +3,9 @@ id: 369
 title: "Implement full multi-limb BigInt arithmetic"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: blocked
 priority: P2
-depends_on: [259, 260]
+depends_on: [259, 260, 382, 383, 384]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -43,7 +43,8 @@ Dynamic BigInt unary minus and binary `+`, `-`, `*`, `/`, and `%` operate on the
 
 In scope:
 
-- [ ] Implement canonical limb add/sub/mul for dynamic BigInt operands and results.
+- [ ] Implement canonical limb add/sub for dynamic BigInt operands and results.
+- [ ] Implement canonical limb mul for dynamic BigInt operands and results.
 - [ ] Implement canonical truncating division and remainder for dynamic BigInt operands and results.
 - [ ] Preserve canonical zero and sign behavior for all arithmetic operations.
 - [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits, not for ordinary multi-limb arithmetic.
@@ -55,9 +56,14 @@ Out of scope:
 
 - Parser BigInt literal syntax.
 - Literal-only arithmetic folding already closed by issue 260.
-- Compatible `RangeError` / `TypeError` throwing for arithmetic exceptions; issue 370.
+- Compatible `RangeError` / `TypeError` throwing for arithmetic exceptions; issue 380.
 - BigInt bitwise and exponentiation policy; issue 371.
 - BigInt equality/comparison/builtins except where tests need arithmetic setup.
+
+Split from this issue:
+- Issue 382: Multi-limb BigInt add/sub (focused on addition and subtraction)
+- Issue 383: Multi-limb BigInt multiplication (focused on multiplication)
+- Issue 384: Multi-limb BigInt division/remainder (focused on division and remainder)
 
 ## Affected paths
 
