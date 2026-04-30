@@ -1,6 +1,7 @@
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ArrayLiteralElement;
     use crate::Lexer;
 
     fn parse_program(source: &str) -> Result<Vec<Stmt>, Diagnostic> {

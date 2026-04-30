@@ -69,6 +69,24 @@ impl Parser {
             return Ok(true);
         }
 
+        if matches!(self.peek(), Some(Token::Export))
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "module" || name == "namespace")
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedModule,
+                message: "issue-399: TypeScript namespace/internal module declarations require module ownership before runtime lowering".to_owned(),
+                span: self.peek_span(),
+            });
+        }
+
+        if self.peek_contextual_keyword("module") || self.peek_contextual_keyword("namespace") {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedModule,
+                message: "issue-399: TypeScript namespace/internal module declarations require module ownership before runtime lowering".to_owned(),
+                span: self.peek_span(),
+            });
+        }
+
         if self.peek_contextual_keyword("enum") {
             let enum_span = self.peek_span().unwrap_or_else(|| Span {
                 start: self.cursor,
