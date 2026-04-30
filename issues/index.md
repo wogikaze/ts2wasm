@@ -15,8 +15,8 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 213 | 130 | 83 |
-| ir | 9 | 1 | 8 |
+| frontend | 214 | 131 | 83 |
+| ir | 9 | 0 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 417 | 166 | 251 |
+| total | 418 | 166 | 252 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,7 +45,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
-| 404 | Support mutable outer local captures in callback functions | feature | ir/runtime | implementation-ready | P2 |  | a function callback that mutates an outer local currently loses the |
+| 405 | Support Test262 harness instanceof function RHS | feature | frontend/semantics | implementation-ready | P2 | 207 | the sparse Array.map representative now advances past mutable callback |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -473,6 +473,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 401 | Implement generator function syntax prerequisite for iterator spread | feature | frontend/syntax | see `issues/done/401-generator-function-syntax-prerequisite-for-iterator-spread.md` |
 | 402 | Implement computed Symbol.iterator prerequisite for spread | feature | frontend/syntax | see `issues/done/402-computed-symbol-iterator-prerequisite-for-spread.md` |
 | 403 | Define sparse array hole representation contract | feature | runtime/semantics | see `issues/done/403-sparse-array-hole-representation-contract.md` |
+| 404 | Support mutable outer local captures in callback functions | feature | ir/runtime | see `issues/done/404-mutable-outer-local-callback-captures.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

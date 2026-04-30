@@ -3,12 +3,13 @@ id: 404
 title: "Support mutable outer local captures in callback functions"
 type: feature
 area: ir/runtime
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: [338]
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -55,13 +56,13 @@ specific issue-linked unsupported diagnostic for forms outside that subset.
 
 In scope:
 
-- [ ] Resolve outer locals referenced from known callback functions instead of
+- [x] Resolve outer locals referenced from known callback functions instead of
       falling through to raw `UnresolvedName`.
-- [ ] Preserve mutation semantics for the narrow top-level local counter pattern
+- [x] Preserve mutation semantics for the narrow top-level local counter pattern
       used by the sparse-map Test262 representative.
-- [ ] Add a focused core-semantics fixture with a callback mutating an outer
+- [x] Add a focused core-semantics fixture with a callback mutating an outer
       counter.
-- [ ] Rerun the issue 338 Test262 sparse-map representative.
+- [x] Rerun the issue 338 Test262 sparse-map representative.
 
 Out of scope:
 
@@ -86,14 +87,14 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A focused fixture like `array-map-callback-mutates-outer-counter.ts`
+- [x] A focused fixture like `array-map-callback-mutates-outer-counter.ts`
       matches Node output under `iwasm`.
-- [ ] The selected representative
+- [x] The selected representative
       `reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
       no longer reports raw `UnresolvedName: callCnt`.
-- [ ] Unsupported forms outside the implemented subset produce a specific
+- [x] Unsupported forms outside the implemented subset produce a specific
       issue-linked diagnostic rather than generic `UnresolvedName`.
-- [ ] Issue 338 is unblocked or updated with the next concrete Test262 blocker.
+- [x] Issue 338 is unblocked or updated with the next concrete Test262 blocker.
 
 ## Validation
 
@@ -144,14 +145,26 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `0ceae4bb` `Support map callback mutable outer captures`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass (17/17)
+date: 2026-05-01
+
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js
+result: no raw `UnresolvedName: callCnt`; next blocker is `[UnsupportedSyntax] issue-207: instanceof right-hand side must be a supported class constructor `Array``
+date: 2026-05-01
+
+command: mise run check issues
+result: pass
+date: 2026-05-01
 ```
 
 Remaining risks:

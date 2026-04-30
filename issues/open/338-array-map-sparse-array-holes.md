@@ -197,13 +197,11 @@ Remaining:
 
 2026-05-01 child-404-callback-captures-20260430T231258Z:
 
-- Issue 404 progress narrowed the selected Test262 sparse map representative
-  past `UnresolvedName: callCnt`.
-- Current rerun:
+- Issue 404 narrowed the selected Test262 sparse map representative past
+  `UnresolvedName: callCnt`.
+- Parent rerun after issue 404 close:
   `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
-  now reports `[UnsupportedBuiltin] issue-404: top-level Array.prototype.map
-  callback mutation of outer binding \`callCnt\` requires mutable callback
-  environment lowering`.
-- Issue 338 remains blocked for full selected-representative close evidence, but
-  the raw unresolved-name bucket is removed. Full mutable callback environment
-  lowering is still tracked by issue 404.
+  now reports `[UnsupportedSyntax] issue-207: instanceof right-hand side must be
+  a supported class constructor \`Array\`` from the Test262 assertion harness.
+- Issue 338 remains blocked for full selected-representative close evidence.
+  Follow-up issue 405 tracks the harness `instanceof` RHS blocker.
