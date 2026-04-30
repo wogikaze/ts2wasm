@@ -187,7 +187,7 @@ impl<'a> Resolver<'a> {
                 {
                     Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
-                        message: "issue-260: BigInt exponentiation is not implemented in the current BigInt arithmetic policy".to_owned(),
+                        message: "issue-371: BigInt exponentiation is not implemented in the current BigInt bitwise/exponentiation policy".to_owned(),
                         span: None,
                     })
                 } else {

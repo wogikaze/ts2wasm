@@ -22,7 +22,7 @@ pub(super) fn bigint_arithmetic_or_bitwise_op(op: BinaryOp) -> bool {
 pub(super) fn bigint_dynamic_runtime_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-260: dynamic BigInt runtime arithmetic is limited to signed-i64-backed first-limb values in this slice".to_owned(),
+        message: "issue-369: dynamic BigInt runtime arithmetic outside the signed-i64-backed first-limb slice is not implemented".to_owned(),
         span: Some(span),
     }
 }
@@ -30,7 +30,7 @@ pub(super) fn bigint_dynamic_runtime_diagnostic(span: Span) -> Diagnostic {
 pub(super) fn bigint_mixed_runtime_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-260: mixed Number/BigInt arithmetic is not implemented in the dynamic BigInt runtime slice".to_owned(),
+        message: "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the dynamic BigInt runtime slice".to_owned(),
         span: Some(span),
     }
 }
@@ -376,7 +376,7 @@ pub(super) fn fold_bigint_binary(
         BinaryOp::Divide | BinaryOp::Modulo if right.sign == 0 => Err(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message:
-                "issue-260: BigInt division by zero runtime throw is not implemented in this literal-folding slice"
+                "issue-370: BigInt division by zero RangeError parity is not implemented in this literal-folding slice"
                     .to_owned(),
             span: Some(span),
         }),
@@ -549,7 +549,7 @@ pub(super) fn bigint_unary_op_issue(op: UnaryOp) -> Option<&'static str> {
         | UnaryOp::Decrement
         | UnaryOp::PreIncrement
         | UnaryOp::PreDecrement => Some(
-            "issue-260: BigInt unary arithmetic and bitwise operators are tracked separately from literal runtime values",
+            "issue-371: BigInt bitwise and exponentiation policy is tracked separately from literal runtime values",
         ),
         UnaryOp::Not | UnaryOp::TypeOf | UnaryOp::Delete | UnaryOp::Void => None,
     }

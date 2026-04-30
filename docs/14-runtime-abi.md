@@ -137,7 +137,7 @@ BigInt は **heap object representation** を採用する。現行 `RawValue` �
 - `RawValue` の tag 空間を拡張すると既存 array/string/object wire encoding と backend helper 全体に波及する
 - GC heap object に統一すると literal / arithmetic / boxed builtin boundary / future Wasm GC backend の差し替えを同じ論理 ABI で扱える
 
-BigInt object payload は canonical little-endian limb sequence とする。Issue 259 implements the literal runtime slice for values that fit the current first-limb backend constructor path and stores a cached decimal representation after the canonical prefix for observable literal printing and `String(<literal>)`. Issue 260 has dynamic unary-minus and `+`, `-`, `*`, `/`, `%` progress slices that reconstruct through signed i64 and the same first-limb/cached-decimal constructor only when a pre-lowering guard proves the operands/results fit that helper slice; nested control-flow assignments conservatively invalidate tracked safe state. Full canonical multi-limb runtime arithmetic remains owned by issue 260 before broad compatibility can be claimed.
+BigInt object payload は canonical little-endian limb sequence とする。Issue 259 implements the literal runtime slice for values that fit the current first-limb backend constructor path and stores a cached decimal representation after the canonical prefix for observable literal printing and `String(<literal>)`. Issue 260 has dynamic unary-minus and `+`, `-`, `*`, `/`, `%` progress slices that reconstruct through signed i64 and the same first-limb/cached-decimal constructor only when a pre-lowering guard proves the operands/results fit that helper slice; nested control-flow assignments conservatively invalidate tracked safe state. Full canonical multi-limb runtime arithmetic is tracked by issue 369 before broad compatibility can be claimed.
 
 ```text
 BigInt payload:
@@ -176,21 +176,23 @@ BigInt を扱う runtime helper は論理 `jsval` を入出力に使う。現行
 | `bigint_strict_equal` | `(jsval, jsval) -> bool` | issue 261 | BigInt 同士は mathematical value 比較。Number とは常に false |
 | `bigint_abstract_equal` | `(jsval, jsval) -> bool` | issue 261 | Number/String/Boolean との ECMA-262 coercion 境界を実装する |
 | `bigint_compare` | `(op, jsval, jsval) -> jsval` | issue 261 | `< <= > >=`。成功時 bool `jsval`、例外時 pending exception |
-| `bigint_add` / `sub` | `(jsval, jsval) -> jsval` | issue 260 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction. Number 混在は TypeError boundary; statically visible and dynamically tracked mixes are issue-linked diagnostics today |
-| `bigint_mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260/263 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction, including known-local/literal operand pairs. Division/remainder by zero lower to the helper slice and currently trap instead of throwing the final runtime RangeError path |
-| `bigint_unary_minus` | `(jsval) -> jsval` | issue 260 | Progress slice implemented through signed-i64-backed first-limb reconstruction. `-0n` は `0n` |
+| `bigint_add` / `sub` | `(jsval, jsval) -> jsval` | issue 260; future issue 369/370 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction. Number 混在 is split to issue 370 for TypeError parity; full multi-limb fallback is issue 369 |
+| `bigint_mul` / `div` / `rem` | `(jsval, jsval) -> jsval` | issue 260/263; future issue 369/370 | Progress slice implemented for known BigInt operands/results proven signed-i64-safe through first-limb reconstruction, including known-local/literal operand pairs. Full multi-limb fallback is issue 369; division/remainder by zero currently trap and RangeError parity is issue 370 |
+| `bigint_unary_minus` | `(jsval) -> jsval` | issue 260; future issue 369 | Progress slice implemented through signed-i64-backed first-limb reconstruction; full multi-limb fallback is issue 369. `-0n` は `0n` |
 
 IR は BigInt literal と BigInt operations を phase-specific に扱う。
 
 - Parser/frontend: BigInt syntax classification only。invalid literal syntax は issue 244 の diagnostics を維持する
 - Resolver/BuiltinResolver: BigInt literal node を runtime-capable expression として残し、未実装 operation は該当 implementation issue ID を含む source diagnostic にする
-- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus and `+`, `-`, `*`, `/`, `%` currently lower to issue-260 runtime helpers when pre-lowering proof keeps them inside the signed-i64 helper slice. BigInt operation は mixed Number/BigInt TypeError path を runtime helper に委譲する予定だが、現在は statically visible mixes を issue-linked diagnostic にする
+- Lowering: literal は `BigIntLiteral { raw, radix, negative }` 相当の semantic/lowered node へ落とし、backend が runtime constructor を選ぶ。Known BigInt unary minus and `+`, `-`, `*`, `/`, `%` currently lower to issue-260 runtime helpers when pre-lowering proof keeps them inside the signed-i64 helper slice. BigInt operation mixed Number/BigInt TypeError parity is split to issue 370; current statically visible mixes remain issue-linked diagnostics
 - Backend/runtime link plan: BigInt helper は `RuntimeFn` catalog で deps/imports/capabilities/runtime strings を持つ。BigInt だけでは host import を要求しない
 
 Unsupported boundary:
 
 - literal runtime values: implemented by issue 259 for decimal/binary/octal/hex literal construction, `console.log`, `typeof`, literal `String(...)`, and truthiness
-- BigInt arithmetic beyond current issue-260 unary minus and `+`, `-`, `*`, `/`, `%` signed-i64-backed progress slice: `unsupported-bigint-arithmetic` / issue 260
+- Full multi-limb BigInt arithmetic beyond the issue-260 signed-i64-backed progress slice: `unsupported-bigint-arithmetic` / issue 369
+- BigInt arithmetic RangeError/TypeError parity: `unsupported-bigint-arithmetic-exception` / issue 370
+- BigInt bitwise and exponentiation policy: `unsupported-bigint-bitwise-exponentiation` / issue 371
 - BigInt equality, relational comparison, and coercion until issue 261: `unsupported-bigint-comparison` / issue 261
 - BigInt builtin functions and string conversion until issue 262: `unsupported-bigint-builtin` / issue 262
 

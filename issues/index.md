@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 121 | 32 | 89 |
+| runtime | 124 | 34 | 90 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 381 | 170 | 211 |
+| total | 384 | 172 | 212 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -43,13 +43,15 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 225 | Implement eval and Annex B function declaration semantics | meta | frontend/semantics | ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
-| 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | implementation-ready | P2 | 259 | Operators such as `1n + 2n` and `-1n` require BigInt-specific runtime helpers and must not reuse small-int `number` s... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | implementation-ready | P2 | 280 | unknown dynamic invalid/out-of-range `BigInt(string)` inputs trap at |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
 | 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Compatible object `ToPrimitive` for mixed BigInt comparisons and non-source-backed unknown out-of-range BigInt/String... |
+| 369 | Implement full multi-limb BigInt arithmetic | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | issue 260 closed the literal-folding and signed-i64-backed dynamic unary/add/sub/mul/div/rem slice, but dynamic opera... |
+| 370 | Implement BigInt arithmetic RangeError and TypeError parity | feature | runtime/semantics | design-ready | P2 | 260 | division/remainder by zero currently reaches a runtime `unreachable` trap in the signed-i64 helper slice, and mixed N... |
+| 371 | Define BigInt bitwise and exponentiation policy | feature | runtime/semantics | design-ready | P2 | 260 | issue 260 closed unary minus and binary `+`, `-`, `*`, `/`, `%` for the current supported arithmetic slice, while Big... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -377,6 +379,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 257 | Emit heap closure allocation and dispatch | feature | backend | see `issues/done/257-emit-heap-closure-allocation-and-dispatch.md` |
 | 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | see `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md` |
 | 259 | Implement BigInt literal runtime values | feature | runtime/semantics | see `issues/done/259-implement-bigint-literal-runtime-values.md` |
+| 260 | Implement BigInt arithmetic operators | feature | runtime/semantics | see `issues/done/260-implement-bigint-arithmetic-operators.md` |
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | see `issues/done/261-implement-bigint-equality-comparison-coercion.md` |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | see `issues/done/262-implement-bigint-builtins-and-string-conversion.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |

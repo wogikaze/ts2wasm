@@ -1256,7 +1256,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     if syntactic_number_mix {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
-                            message: "issue-260: mixed Number/BigInt arithmetic is not implemented in the dynamic BigInt runtime slice".to_owned(),
+                            message: "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the dynamic BigInt runtime slice".to_owned(),
                             span: Some(*span),
                         });
                     }
@@ -1288,7 +1288,7 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     | BinaryOp::LeftShift
                     | BinaryOp::RightShift
                     | BinaryOp::UnsignedRightShift => {
-                        "issue-260: BigInt arithmetic and bitwise operators are tracked separately from literal runtime values"
+                        "issue-371: BigInt bitwise and exponentiation policy is tracked separately from literal runtime values"
                     }
                     BinaryOp::Less
                     | BinaryOp::LessEqual
