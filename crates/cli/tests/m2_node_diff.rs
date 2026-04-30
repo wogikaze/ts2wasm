@@ -121,6 +121,76 @@ fn assert_fixture_iwasm_traps(fixture: &str) {
     );
 }
 
+fn assert_fixture_iwasm_issue333_abort(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
+    assert!(
+        !iwasm.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    assert!(
+        !iwasm.output.status.success(),
+        "iwasm unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    );
+    let output_text = format!(
+        "{}{}",
+        String::from_utf8_lossy(&iwasm.output.stdout),
+        String::from_utf8_lossy(&iwasm.output.stderr)
+    )
+    .to_ascii_lowercase();
+    assert!(
+        output_text.contains("issue-333") && output_text.contains("bigint(string)"),
+        "expected issue-333 BigInt(string) runtime abort marker for {fixture}, got:\n{output_text}"
+    );
+    assert!(
+        output_text.contains("unreachable"),
+        "expected intentional abort trap after issue-333 marker for {fixture}, got:\n{output_text}"
+    );
+}
+
+fn assert_fixture_node_bigint_syntaxerror_and_iwasm_issue333_abort(fixture: &str) {
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    assert!(
+        !node.status.success(),
+        "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node.stdout),
+        String::from_utf8_lossy(&node.stderr)
+    );
+    let node_stderr = String::from_utf8_lossy(&node.stderr);
+    assert!(
+        node_stderr.contains("SyntaxError") && node_stderr.contains("BigInt"),
+        "expected Node BigInt SyntaxError for {fixture}, got:\n{node_stderr}"
+    );
+
+    assert_fixture_iwasm_issue333_abort(fixture);
+}
+
 fn assert_fixture_node_rangeerror_and_iwasm_traps(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")

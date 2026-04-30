@@ -8,7 +8,7 @@ priority: P2
 depends_on: [280]
 blocks: []
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-04-30
 ---
 
 ## Summary
@@ -64,9 +64,8 @@ In scope:
 
 - [ ] Handle unknown dynamic invalid decimal string inputs to `BigInt(value)`
 - [ ] Handle unknown dynamic out-of-range string inputs for the current BigInt representation
-- [x] Preserve issue-280 behavior for supported dynamic decimal/binary/octal/hex strings
-- [x] Add source-diagnostic coverage for provable literal-derived dynamic invalid/out-of-range strings
-- [x] Add source-diagnostic coverage for provable object-member dynamic invalid/out-of-range strings
+- [ ] Preserve issue-280 behavior for supported dynamic decimal/binary/octal/hex strings
+- [ ] Add Node/iwasm differential or exception-parity coverage for the new path
 
 Out of scope:
 
@@ -95,8 +94,8 @@ Do not touch:
 
 - [ ] Unknown invalid dynamic `BigInt(string)` input no longer traps without a tracked compatible exception result or source diagnostic
 - [ ] Unknown out-of-range dynamic `BigInt(string)` input no longer traps without a tracked compatible exception result or source diagnostic
-- [x] Supported issue-280 dynamic string inputs remain Node/iwasm differential matches
-- [x] Docs/current-state/issues state the current diagnostic boundary
+- [ ] Supported issue-280 dynamic string inputs remain Node/iwasm differential matches
+- [ ] Docs/current-state/issues state the final exception or diagnostic boundary
 
 ## Validation
 
@@ -145,31 +144,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- pending progress commit in child branch
+- none yet; issue is open
 
 Progress:
 
-- Added issue-333 source diagnostics for literal-derived dynamic
-  `BigInt(string)` values that are provably invalid or outside the runtime
-  helper's current single-limb/u64 representation.
-- Extended issue-333 diagnostics to literal-derived object-member string properties, with fixtures for invalid and out-of-range `BigInt(holder.value)` inputs.
-- Added `fixtures/core-semantics/bigint-builtin-dynamic-out-of-range-string-unsupported.ts`.
-- Preserved source-spanned issue-280 diagnostics for static invalid string
-  literals and nullish dynamic inputs.
+- Added a tracked issue-333 runtime abort marker for truly unknown dynamic
+  invalid/out-of-range `BigInt(string)` paths that still lack compatible
+  JavaScript exception machinery.
+- Added regression fixtures for unknown invalid string and unknown out-of-range
+  string runtime abort marker coverage.
+- Preserved issue-280 source diagnostics for provable/literal-derived invalid
+  dynamic string inputs.
 
 Validation result:
 
 ```text
 cargo fmt --all --check: pass
-cargo nextest run -E 'test(bigint) or test(node_diff)': 173 passed, 1 failed
-  - unrelated known failure: abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
-    timed out under iwasm after 30.418s
+cargo test -p ts2wasm-cli --test m2_node_diff bigint: pass
+  - 39 passed, 0 failed, 133 filtered out
 mise run update-issue-index -- --check: pass
 mise run check issues: pass
+  - initial child-worktree run failed because gitignored
+    artifacts/coverage/results/test262-results.jsonl was absent; copied the
+    existing parent-worktree local artifact into the child worktree and reran.
 ```
 
 Remaining risks:
 
-- Truly unknown runtime invalid/out-of-range strings can still reach
-  `$bigint_from_string` and trap because compatible JavaScript exception
-  construction/throwing is not implemented in this slice.
+- Truly unknown runtime invalid/out-of-range strings still intentionally abort
+  because compatible JavaScript exception construction/throwing is not
+  implemented in this slice, but the abort is now preceded by an issue-333
+  marker instead of appearing as an unowned trap.

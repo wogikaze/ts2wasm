@@ -403,6 +403,20 @@ fn bigint_invalid_dynamic_string_diagnostics_are_source_spanned_issue_333() {
 }
 
 #[test]
+fn bigint_unknown_dynamic_invalid_string_reports_issue_333_runtime_abort() {
+    assert_fixture_node_bigint_syntaxerror_and_iwasm_issue333_abort(
+        "fixtures/core-semantics/bigint-builtin-unknown-invalid-string-runtime-abort.ts",
+    );
+}
+
+#[test]
+fn bigint_unknown_dynamic_out_of_range_string_reports_issue_333_runtime_abort() {
+    assert_fixture_iwasm_issue333_abort(
+        "fixtures/core-semantics/bigint-builtin-unknown-out-of-range-string-runtime-abort.ts",
+    );
+}
+
+#[test]
 fn bigint_new_constructor_reports_issue_262() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-new-unsupported.ts",
