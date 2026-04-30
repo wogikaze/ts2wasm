@@ -469,10 +469,15 @@ fn bigint_runtime_mixed_object_string_out_of_range_reports_issue_282() {
 
 #[test]
 fn bigint_runtime_mixed_object_toprimitive_reports_issue_282() {
-    assert_build_fails_with_unsupported_syntax(
+    for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
-        "issue-282: object ToPrimitive for mixed BigInt comparison is not implemented in this runtime coercion slice",
-    );
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-string-unsupported.ts",
+    ] {
+        assert_build_fails_with_unsupported_syntax(
+            fixture,
+            "issue-282: object ToPrimitive for mixed BigInt comparison is not implemented in this runtime coercion slice",
+        );
+    }
 }
 
 #[test]

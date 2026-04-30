@@ -186,6 +186,18 @@ Progress on 2026-04-29:
   broader unknown out-of-range dynamic string handling that is not
   source-backed by literal/local object-property values.
 
+Progress on 2026-05-01:
+
+- Added source-backed issue-282 diagnostic regression coverage for a
+  `toString`-based object `ToPrimitive` comparison boundary:
+  `fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-string-unsupported.ts`.
+- This complements the existing `valueOf` BigInt-returning object diagnostic
+  and keeps ordinary object `ToPrimitive` unsupported instead of silently
+  lowering unsupported object coercion.
+- Remaining issue-282 work: compatible object `ToPrimitive` coercion and
+  broader unknown out-of-range dynamic string handling that is not
+  source-backed by literal/local object-property values.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
