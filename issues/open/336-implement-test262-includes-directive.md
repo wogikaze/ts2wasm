@@ -125,7 +125,7 @@ Current state:
 
 Follow-up issues:
 
-- [ ] created: `issues/open/337-implement-test262-features-directive.md`
+- [x] created: `issues/done/337-implement-test262-features-directive.md`
 
 ## Notes
 

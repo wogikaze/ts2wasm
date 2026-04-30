@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
 | backend | 5 | 1 | 4 |
-| cli | 5 | 2 | 3 |
+| cli | 5 | 1 | 4 |
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 359 | 163 | 196 |
+| total | 359 | 162 | 197 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -51,7 +51,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | partially-complete | P1 |  | test262 `includes:` directive is ignored, causing UnresolvedName for helper functions like `verifyProperty`. |
-| 337 | Implement test262 features directive and $262 object | feature | cli/reference | implementation-ready | P1 |  | test262 `features:` directive is ignored and `$262` object is not provided, causing UnsupportedTest262Metadata. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -415,6 +414,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 307 | Investigate ABC451 depth-9 allocation performance | spike | runtime/performance | see `issues/done/307-investigate-abc451-depth9-allocation-performance.md` |
 | 310 | Fix activation-frame root liveness depth-8 regression | feature | runtime/memory | see `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md` |
 | 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
+| 337 | Implement test262 features directive and $262 object | feature | cli/reference | see `issues/done/337-implement-test262-features-directive.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
