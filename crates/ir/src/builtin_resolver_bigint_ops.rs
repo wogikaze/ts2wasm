@@ -465,12 +465,12 @@ pub(super) fn fold_bigint_binary(
 
 pub(super) fn fold_bigint_unary_bitwise_not(
     value: BigIntConst,
-    span: Span,
+    _span: Span,
 ) -> Result<BigIntConst, Diagnostic> {
-    let Some(value) = bigint_to_runtime_i64(&value) else {
-        return Err(bigint_bitwise_diagnostic(span));
-    };
-    bigint_from_runtime_i64(!value, span)
+    Ok(bigint_add(
+        value.negated(),
+        BigIntConst::from_decimal(-1, "1"),
+    ))
 }
 
 fn bigint_to_runtime_i64(value: &BigIntConst) -> Option<i64> {

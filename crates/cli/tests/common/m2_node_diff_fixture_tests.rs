@@ -305,10 +305,9 @@ fn bigint_bitwise_runtime_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn bigint_bitwise_unary_out_of_slice_reports_issue_387() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/bigint-unary-minus-unsupported.ts",
-        "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented",
+fn bigint_bitwise_unary_out_of_signed_i64_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-bitwise-unary-out-of-signed-i64.ts",
     );
 }
 
