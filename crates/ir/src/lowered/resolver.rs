@@ -2541,6 +2541,16 @@ impl<'a> Resolver<'a> {
                         index: Box::new(LoweredExpr::Number(index as i32)),
                     })
                     .collect()
+            } else if let Some(local_id) = self.single_set_local_spread_arg(args) {
+                (0..signature.explicit_params)
+                    .map(|index| LoweredExpr::ArrayGet {
+                        arr: Box::new(LoweredExpr::RuntimeCall {
+                            runtime_fn: "SetValuesArray".to_owned(),
+                            args: vec![LoweredExpr::Local(local_id)],
+                        }),
+                        index: Box::new(LoweredExpr::Number(index as i32)),
+                    })
+                    .collect()
             } else {
                 self.lower_call_args(args)?
             }
@@ -2584,6 +2594,23 @@ impl<'a> Resolver<'a> {
         } else {
             None
         }
+    }
+
+    fn single_set_local_spread_arg(&self, args: &[ResolvedExpr]) -> Option<LocalId> {
+        let [ResolvedExpr::Spread(spread_expr)] = args else {
+            return None;
+        };
+        let ResolvedExpr::Ident(name) = spread_expr.as_ref() else {
+            return None;
+        };
+        let local_id = self.resolve_local(name).ok()?;
+        if self.env_cell_locals.contains(&local_id) {
+            return None;
+        }
+        self.local_classes
+            .get(&local_id)
+            .is_some_and(|class_name| class_name == "Set")
+            .then_some(local_id)
     }
 
     fn append_class_method_captures(

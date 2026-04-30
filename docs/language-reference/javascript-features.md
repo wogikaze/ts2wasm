@@ -188,7 +188,7 @@ BigInt/Number comparison の number-model diagnostic boundary: `NaN` / `Infinity
 | `this` | ES1 | call site receiver | 実装済み (class constructor / instance method receiver; top-level・static・extracted method は issue-linked diagnostic) | - | 211 |
 | `arguments` | ES1 | function arguments object | 実装済み (basic `.length` / indexed reads; top-level `arguments` remains issue-linked unsupported) | - | 062d |
 | rest parameters | ES6 | variadic parameters | 実装済み (argument collection) | - | 212 |
-| spread arguments | ES6 | argument spreading | 実装済み (basic: dense literals / known dense array locals including simple aliases / ASCII literal-derived strings, including static `+` concatenation) | - | 039 |
+| spread arguments | ES6 | argument spreading | 実装済み (basic: dense literals / known dense array locals including simple aliases / known Set locals for fixed-arity direct calls / ASCII literal-derived strings, including static `+` concatenation) | - | 039 |
 | default parameters | ES6 | parameter defaults | 実装済み (basic) | - | 040 |
 | destructuring parameters | ES6 | pattern matching | Parser accepts array/object binding patterns; simple identifier-only array/object parameter runtime bindings are supported for the covered subset, including array elisions/rest, nested array/object bindings, literal element defaults, and ordinary function whole-pattern defaults; object rest remains issue-linked unsupported | P2 | 247, 251 |
 

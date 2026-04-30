@@ -111,3 +111,6 @@ cargo fmt --all --check
 - 2026-04-29: Added a simple object-spread alias slice:
   - object literals such as `{ z: 0, ...values, b: 3 }`, where `values` is a simple alias of a known static object-literal local and neither local is assigned or property-mutated before spread, lower by flattening the tracked properties and match Node/iwasm output;
   - alias-source assignment/property mutation conservatively invalidates the tracked static object-spread alias instead of copying stale properties; dynamic object enumeration and mutated object spread remain guarded by `issue-274` diagnostics.
+- 2026-04-30: Added a known Set local call-spread slice:
+  - fixed-arity direct calls such as `join(...letters)`, where `letters` is a known `Set` local, lower each formal argument through the existing `SetValuesArray` plus `ArrayGet` path and preserve insertion order under Node/iwasm differential coverage;
+  - rest/`arguments`-observing callees, receiver-dependent calls, Map/custom iterator/general iterator protocol, sparse arrays, and dynamic non-Set iterable call spread remain guarded by existing issue-274 diagnostics.
