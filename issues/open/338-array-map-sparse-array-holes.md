@@ -3,12 +3,12 @@ id: 338
 title: "Sparse array holes handling for Array.prototype.map"
 type: feature
 area: runtime/builtins
-class: ready
+class: blocked
 priority: P2
-depends_on: [334]
+depends_on: [403]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -98,7 +98,7 @@ Final-state docs:
 
 Current state:
 
-- [ ] updated: `current-state.md` when sparse array map behavior is implemented
+- [x] updated: `current-state.md` records this issue as blocked on sparse array representation work
 
 ## Notes
 
@@ -136,3 +136,13 @@ Remaining risks:
 Remaining:
 
 - Not DONE. Needs a separate sparse array representation design before map can skip callback invocation for holes and preserve holes in results.
+
+2026-05-01 child-338-sparse-array-map-blocker:
+
+- BLOCKED. Narrow reproduction:
+  `cargo run -q -p ts2wasm-cli -- build /tmp/ts2wasm-338-sparse-map.ts -o /tmp/ts2wasm-338-sparse-map.wasm`
+  fails before lowering with
+  `[UnsupportedSyntax] unsupported expression: Some(SpannedToken { kind: Comma, span: Span { start: 32, end: 33 } })`.
+- Parser evidence: `crates/frontend/src/ast.rs` represents array literals as `Expr::Array { elements: Vec<Expr> }`, and `crates/frontend/src/parser/expressions.rs` pushes `self.expression()?` for each comma-separated element. There is no elision/hole node for `[1, , 3]`.
+- IR/backend evidence: `crates/ir/src/lowered/types.rs` represents arrays as dense `LoweredExpr::ArrayNew { elements: Vec<LoweredExpr> }`; `crates/ir/src/lowered/resolver_extra.rs` maps `Array.prototype.map` by iterating every dense element and callback-lowering each one; `crates/backend-wasm/src/expr_emit.rs` emits dense array literals through `emit_array_literal`.
+- Follow-up issue 403 was created for the sparse array representation contract. Issue 338 should remain blocked until that contract defines how frontend holes, lowered IR, runtime layout, `in` checks, and map result holes are represented.
