@@ -126,16 +126,37 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `11b1180b` Fix Math.max/min zero-argument case and Infinity support
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo run -q -- build reference/test262/test/built-ins/Math/max/S15.8.2.11_A1.js -o /tmp/math-max-no-args.wasm --host-deny
+result: Exit code 0 (success)
+date: 2026-04-30
+
+command: cargo run -q -- build reference/test262/test/built-ins/Math/min/S15.8.2.12_A1.js -o /tmp/math-min-no-args.wasm --host-deny
+result: Exit code 0 (success)
+date: 2026-04-30
+
+command: cargo run -q -- build reference/test262/test/built-ins/Math/max/zeros.js -o /tmp/math-max-zeros.wasm --host-deny
+result: Exit code 0 (success)
+date: 2026-04-30
+
+command: cargo run -q -- build reference/test262/test/built-ins/Math/min/zeros.js -o /tmp/math-min-zeros.wasm --host-deny
+result: Exit code 0 (success)
+date: 2026-04-30
+
+command: cargo fmt --all --check
+result: Exit code 0 (success)
+date: 2026-04-30
+
+command: cargo build
+result: Exit code 0 (success)
+date: 2026-04-30
 ```
 
 Remaining risks:
 
-- none
+- Infinity and NaN are approximated as max/min representable numbers due to small-int number model. Proper Infinity/NaN support requires broader number-model support (issue-281).
+- The zeros.js tests mentioned in the issue description were already compiling successfully; the actual issue was with zero-argument tests (S15.8.2.11_A1.js and S15.8.2.12_A1.js) which failed with UnresolvedName errors for Infinity.
