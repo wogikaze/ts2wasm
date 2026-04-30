@@ -621,6 +621,21 @@ fn bigint_runtime_mixed_object_toprimitive_primitive_matches_node_output_under_i
 }
 
 #[test]
+fn bigint_runtime_mixed_object_toprimitive_string_boundary_reports_issue_373() {
+    for fixture in [
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-invalid-string-unsupported.ts",
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-out-of-range-string-unsupported.ts",
+    ] {
+        assert_build_fails_with_diagnostic(
+            fixture,
+            "[UnsupportedRuntimeSubset]",
+            "issue-373: direct object ToPrimitive toString string returns that are invalid or outside the signed-i32 StringToBigInt comparison boundary require source-backed diagnostics in this slice",
+            true,
+        );
+    }
+}
+
+#[test]
 fn bigint_runtime_mixed_object_toprimitive_reports_issue_374() {
     for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",

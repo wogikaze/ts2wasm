@@ -639,6 +639,7 @@ pub(super) struct BigIntRuntimeGuard {
     object_bigint_props: HashMap<String, HashSet<String>>,
     nullish_locals: HashSet<String>,
     object_toprimitive_locals: HashSet<String>,
+    object_toprimitive_string_boundary_locals: HashSet<String>,
 }
 
 impl BigIntRuntimeGuard {
@@ -688,6 +689,12 @@ impl BigIntRuntimeGuard {
                     self.object_toprimitive_locals.insert(name.clone());
                 } else {
                     self.object_toprimitive_locals.remove(name);
+                }
+                if self.expr_has_object_toprimitive_string_boundary(expr) {
+                    self.object_toprimitive_string_boundary_locals
+                        .insert(name.clone());
+                } else {
+                    self.object_toprimitive_string_boundary_locals.remove(name);
                 }
                 Ok(())
             }
@@ -798,12 +805,16 @@ impl BigIntRuntimeGuard {
                 body_guard.object_bigint_props.remove(var);
                 body_guard.nullish_locals.remove(var);
                 body_guard.object_toprimitive_locals.remove(var);
+                body_guard
+                    .object_toprimitive_string_boundary_locals
+                    .remove(var);
                 body_guard.visit_stmts(body)?;
                 self.locals.remove(var);
                 self.object_string_values.remove(var);
                 self.object_bigint_props.remove(var);
                 self.nullish_locals.remove(var);
                 self.object_toprimitive_locals.remove(var);
+                self.object_toprimitive_string_boundary_locals.remove(var);
                 self.invalidate_assigned_in_stmts(body);
                 Ok(())
             }
@@ -834,6 +845,9 @@ impl BigIntRuntimeGuard {
             object_bigint_props: self.object_bigint_props.clone(),
             nullish_locals: self.nullish_locals.clone(),
             object_toprimitive_locals: self.object_toprimitive_locals.clone(),
+            object_toprimitive_string_boundary_locals: self
+                .object_toprimitive_string_boundary_locals
+                .clone(),
         }
     }
 
@@ -865,6 +879,7 @@ impl BigIntRuntimeGuard {
         self.object_bigint_props.remove(name);
         self.nullish_locals.remove(name);
         self.object_toprimitive_locals.remove(name);
+        self.object_toprimitive_string_boundary_locals.remove(name);
     }
 
     pub(super) fn invalidate_assigned_in_stmts(&mut self, stmts: &[Stmt]) {
@@ -1023,6 +1038,18 @@ impl BigIntRuntimeGuard {
         }
     }
 
+    pub(super) fn expr_has_object_toprimitive_string_boundary(&self, expr: &Expr) -> bool {
+        match expr {
+            Expr::Ident { name, .. } => self
+                .object_toprimitive_string_boundary_locals
+                .contains(name),
+            Expr::Object { props, .. } => {
+                object_toprimitive_string_boundary_return(props).is_some()
+            }
+            _ => false,
+        }
+    }
+
     pub(super) fn expr_bigint_info(
         &mut self,
         expr: &Expr,
@@ -1135,6 +1162,15 @@ impl BigIntRuntimeGuard {
                             || static_bigint_nullish_equality
                         {
                             return Ok(None);
+                        }
+                        if (left_info.is_some()
+                            && self.expr_has_object_toprimitive_string_boundary(right))
+                            || (right_info.is_some()
+                                && self.expr_has_object_toprimitive_string_boundary(left))
+                        {
+                            return Err(bigint_object_toprimitive_string_boundary_diagnostic(
+                                *span,
+                            ));
                         }
                         if (left_info.is_some() && self.expr_is_object_toprimitive_boundary(right))
                             || (right_info.is_some()
@@ -1365,6 +1401,12 @@ impl BigIntRuntimeGuard {
                 } else {
                     self.object_toprimitive_locals.remove(name);
                 }
+                if self.expr_has_object_toprimitive_string_boundary(expr) {
+                    self.object_toprimitive_string_boundary_locals
+                        .insert(name.clone());
+                } else {
+                    self.object_toprimitive_string_boundary_locals.remove(name);
+                }
                 Ok(info)
             }
             Expr::LogicalPropertyAssign {
@@ -1522,10 +1564,37 @@ pub(super) fn bigint_comparison_string_boundary_diagnostic(span: Span) -> Diagno
     }
 }
 
+pub(super) fn bigint_object_toprimitive_string_boundary_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: "issue-373: direct object ToPrimitive toString string returns that are invalid or outside the signed-i32 StringToBigInt comparison boundary require source-backed diagnostics in this slice".to_owned(),
+        span: Some(span),
+    }
+}
+
 pub(super) fn bigint_object_toprimitive_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-374: object ToPrimitive for mixed BigInt comparison is limited to direct no-argument arrow valueOf/toString methods returning supported primitive literals".to_owned(),
         span: Some(span),
     }
+}
+
+fn object_toprimitive_string_boundary_return(props: &[(String, Expr)]) -> Option<()> {
+    if props.iter().any(|(key, _)| key == "valueOf") {
+        return None;
+    }
+    props
+        .iter()
+        .find(|(key, _)| key == "toString")
+        .and_then(|(_, value)| match value {
+            Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
+                Expr::String { value, span } => match bigint_from_string_builtin(value, *span) {
+                    Ok(parsed) if bigint_fits_runtime_mixed_string(&parsed) => None,
+                    Ok(_) | Err(_) => Some(()),
+                },
+                _ => None,
+            },
+            _ => None,
+        })
 }
