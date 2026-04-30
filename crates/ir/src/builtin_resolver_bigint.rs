@@ -1153,9 +1153,7 @@ impl BigIntRuntimeGuard {
                 if static_supported_arg {
                     return Ok(None);
                 }
-                if self.expr_is_definitely_string(arg)
-                    && let Some(value) = self.expr_static_string_value(arg)
-                {
+                if let Some(value) = self.expr_literal_derived_string_value(arg) {
                     let parsed = bigint_from_string_builtin(&value, *span)
                         .map_err(|_| bigint_dynamic_string_diagnostic(*span))?;
                     if !bigint_fits_runtime_from_string(&parsed) {

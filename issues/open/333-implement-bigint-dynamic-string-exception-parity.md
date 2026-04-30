@@ -66,6 +66,7 @@ In scope:
 - [ ] Handle unknown dynamic out-of-range string inputs for the current BigInt representation
 - [x] Preserve issue-280 behavior for supported dynamic decimal/binary/octal/hex strings
 - [x] Add source-diagnostic coverage for provable literal-derived dynamic invalid/out-of-range strings
+- [x] Add source-diagnostic coverage for provable object-member dynamic invalid/out-of-range strings
 
 Out of scope:
 
@@ -151,6 +152,7 @@ Progress:
 - Added issue-333 source diagnostics for literal-derived dynamic
   `BigInt(string)` values that are provably invalid or outside the runtime
   helper's current single-limb/u64 representation.
+- Extended issue-333 diagnostics to literal-derived object-member string properties, with fixtures for invalid and out-of-range `BigInt(holder.value)` inputs.
 - Added `fixtures/core-semantics/bigint-builtin-dynamic-out-of-range-string-unsupported.ts`.
 - Preserved source-spanned issue-280 diagnostics for static invalid string
   literals and nullish dynamic inputs.

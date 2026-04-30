@@ -392,6 +392,14 @@ fn bigint_invalid_dynamic_string_diagnostics_are_source_spanned_issue_333() {
         "fixtures/core-semantics/bigint-builtin-dynamic-out-of-range-string-unsupported.ts",
         "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support",
     );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-builtin-dynamic-object-invalid-string-unsupported.ts",
+        "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support",
+    );
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/bigint-builtin-dynamic-object-out-of-range-string-unsupported.ts",
+        "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support",
+    );
 }
 
 #[test]
