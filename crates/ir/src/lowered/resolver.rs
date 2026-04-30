@@ -5,6 +5,8 @@ mod resolver_extra;
 struct Resolver<'a> {
     function_ids: &'a HashMap<String, FuncId>,
     function_signatures: &'a HashMap<FuncId, FunctionSignature>,
+    function_captures: &'a HashMap<FuncId, Vec<String>>,
+    function_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
     class_method_captures: &'a HashMap<FuncId, Vec<String>>,
     class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
     env_cell_names: HashSet<String>,
@@ -69,6 +71,8 @@ impl<'a> Resolver<'a> {
     fn new(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
+        function_captures: &'a HashMap<FuncId, Vec<String>>,
+        function_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
         class_method_captures: &'a HashMap<FuncId, Vec<String>>,
         class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
         env_cell_names: &HashSet<String>,
@@ -84,6 +88,8 @@ impl<'a> Resolver<'a> {
         Self {
             function_ids,
             function_signatures,
+            function_captures,
+            function_mutable_captures,
             class_method_captures,
             class_method_mutable_captures,
             env_cell_names: env_cell_names.clone(),
@@ -127,6 +133,8 @@ impl<'a> Resolver<'a> {
     fn with_params(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
+        function_captures: &'a HashMap<FuncId, Vec<String>>,
+        function_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
         class_method_captures: &'a HashMap<FuncId, Vec<String>>,
         class_method_mutable_captures: &'a HashMap<FuncId, Vec<String>>,
         env_cell_names: &HashSet<String>,
@@ -144,6 +152,8 @@ impl<'a> Resolver<'a> {
         let mut resolver = Self {
             function_ids,
             function_signatures,
+            function_captures,
+            function_mutable_captures,
             class_method_captures,
             class_method_mutable_captures,
             env_cell_names: env_cell_names.clone(),

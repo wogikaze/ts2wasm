@@ -347,6 +347,7 @@ impl<'a> Resolver<'a> {
                         props: argument_props,
                     });
                 }
+                self.append_function_captures(func_id, &mut call_args)?;
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::User(func_id),
                     args: call_args,
@@ -446,6 +447,8 @@ impl<'a> Resolver<'a> {
             body,
             self.function_ids,
             &function_signatures,
+            self.function_captures,
+            self.function_mutable_captures,
             self.class_method_captures,
             self.class_method_mutable_captures,
             &self.env_cell_names,
@@ -1017,6 +1020,8 @@ impl<'a> Resolver<'a> {
             lowered_args.push(LoweredExpr::ObjectNew { props });
         }
 
+        self.append_function_captures(func_id, &mut lowered_args)?;
+
         Ok(lowered_args)
     }
 
@@ -1079,6 +1084,43 @@ impl<'a> Resolver<'a> {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
                         "issue-301: mutable class method capture `{capture}` is not available as an environment cell at this call site"
+                    ),
+                    span: None,
+                });
+            }
+            lowered_args.push(LoweredExpr::Local(local));
+        }
+
+        Ok(())
+    }
+
+    pub(super) fn append_function_captures(
+        &self,
+        func_id: FuncId,
+        lowered_args: &mut Vec<LoweredExpr>,
+    ) -> Result<(), Diagnostic> {
+        let Some(captures) = self.function_captures.get(&func_id) else {
+            return Ok(());
+        };
+        let mutable_captures = self
+            .function_mutable_captures
+            .get(&func_id)
+            .map(Vec::as_slice)
+            .unwrap_or(&[]);
+
+        for capture in captures {
+            let local = self.resolve_local(capture).map_err(|_| Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-404: callback capture `{capture}` is not available at this call site; escaped callback lexical environments require heap environment support"
+                ),
+                span: None,
+            })?;
+            if mutable_captures.contains(capture) && !self.env_cell_locals.contains(&local) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-404: mutable callback capture `{capture}` is not available as an environment cell at this call site"
                     ),
                     span: None,
                 });
@@ -1277,6 +1319,8 @@ impl<'a> Resolver<'a> {
             &body_stmts,
             self.function_ids,
             self.function_signatures,
+            self.function_captures,
+            self.function_mutable_captures,
             self.class_method_captures,
             self.class_method_mutable_captures,
             &self.env_cell_names,
@@ -1382,6 +1426,8 @@ impl<'a> Resolver<'a> {
             body,
             self.function_ids,
             self.function_signatures,
+            self.function_captures,
+            self.function_mutable_captures,
             self.class_method_captures,
             self.class_method_mutable_captures,
             &self.env_cell_names,

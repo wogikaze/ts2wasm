@@ -194,3 +194,14 @@ Remaining:
   mutable outer local capture/name-resolution support for callback-local
   mutation before sparse-map semantics can be fully validated against Test262.
   Follow-up issue 404 tracks that blocker.
+
+2026-05-01 child-404-callback-captures-20260430T231258Z:
+
+- Issue 404 progress narrowed the selected Test262 sparse map representative
+  past `UnresolvedName: callCnt`.
+- Current rerun:
+  `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
+  now reports `[UnsupportedSyntax] issue-207: instanceof right-hand side must be
+  a supported class constructor 'Array'` from the Test262 assert shim.
+- Issue 338 remains blocked for full selected-representative close evidence, but
+  its concrete next blocker is no longer callback capture/name resolution.

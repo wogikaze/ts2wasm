@@ -157,3 +157,24 @@ date:
 Remaining risks:
 
 - none
+
+## Progress evidence
+
+2026-05-01 child-404-callback-captures-20260430T231258Z:
+
+- Implemented a narrow lowering slice for named `Array.prototype.map` callbacks:
+  top-level locals captured by selected callback functions are passed as hidden
+  capture parameters, and mutable captures are lowered through existing env
+  cells so callback writes update the outer binding.
+- Added focused Node/iwasm regression fixture
+  `fixtures/core-semantics/array-map-callback-mutates-outer-counter.ts`.
+- Validation passed:
+  `cargo test -p ts2wasm-cli array_map_callback_mutates_outer_counter_fixture_matches_node_output_under_iwasm -- --nocapture`.
+- Validation passed:
+  `cargo test -p ts2wasm-cli array_map -- --nocapture` (17/17 array-map
+  tests passed).
+- Selected Test262 representative rerun:
+  `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
+  no longer reports raw `UnresolvedName: callCnt`; it now advances to
+  `[UnsupportedSyntax] issue-207: instanceof right-hand side must be a supported class constructor 'Array'`
+  in the Test262 assert shim.

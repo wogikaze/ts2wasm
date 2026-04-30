@@ -12,12 +12,27 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let function_ids = collect_function_ids(program)?;
     let generator_function_names = collect_generator_function_names(program);
     let function_signatures = collect_function_signatures(program, &function_ids);
+    let top_level_local_names = collect_top_level_local_names(program)?;
+    let map_callback_function_names = collect_array_map_callback_function_names(program);
+    let function_captures = collect_callback_function_captures(
+        program,
+        &function_ids,
+        &top_level_local_names,
+        &map_callback_function_names,
+    )?;
+    let function_mutable_captures =
+        collect_callback_function_mutable_captures(program, &function_captures);
     let class_method_captures = collect_class_method_captures(program, &function_ids);
     let class_method_mutable_captures =
         collect_class_method_mutable_captures(program, &function_ids);
     let mutable_class_capture_names = collect_mutable_class_capture_names(program);
     let direct_eval_env = collect_direct_eval_block_function_env(program);
     let env_cell_names = mutable_class_capture_names
+        .union(&collect_mutable_function_capture_names(
+            &function_mutable_captures,
+        ))
+        .cloned()
+        .collect::<HashSet<_>>()
         .union(&direct_eval_env.env_cell_names)
         .cloned()
         .collect::<HashSet<_>>();
@@ -34,15 +49,28 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 name, params, body, ..
             } => {
                 let func_id = function_ids[name];
+                let params_with_captures = function_params_with_captures(
+                    params,
+                    function_captures
+                        .get(&func_id)
+                        .map(Vec::as_slice)
+                        .unwrap_or(&[]),
+                );
+                let function_env_cell_names = function_mutable_captures
+                    .get(&func_id)
+                    .map(|names| names.iter().cloned().collect::<HashSet<_>>())
+                    .unwrap_or_default();
                 let lowered = lower_function(
                     func_id,
-                    params,
+                    &params_with_captures,
                     body,
                     &function_ids,
                     &function_signatures,
+                    &function_captures,
+                    &function_mutable_captures,
                     &class_method_captures,
                     &class_method_mutable_captures,
-                    &HashSet::new(),
+                    &function_env_cell_names,
                     &HashSet::new(),
                     class_parents.clone(),
                     class_private_fields.clone(),
@@ -87,6 +115,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                     &ctor_body,
                     &function_ids,
                     &function_signatures,
+                    &function_captures,
+                    &function_mutable_captures,
                     &class_method_captures,
                     &class_method_mutable_captures,
                     &HashSet::new(),
@@ -139,6 +169,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                         &method.body,
                         &function_ids,
                         &function_signatures,
+                        &function_captures,
+                        &function_mutable_captures,
                         &class_method_captures,
                         &class_method_mutable_captures,
                         &method_env_cell_names,
@@ -165,6 +197,8 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
     let mut resolver = Resolver::new(
         &function_ids,
         &function_signatures,
+        &function_captures,
+        &function_mutable_captures,
         &class_method_captures,
         &class_method_mutable_captures,
         &env_cell_names,
@@ -350,6 +384,344 @@ fn collect_generator_function_names(program: &[ResolvedStmt]) -> HashSet<String>
             _ => None,
         })
         .collect()
+}
+
+fn collect_top_level_local_names(program: &[ResolvedStmt]) -> Result<HashSet<String>, Diagnostic> {
+    let mut names = HashSet::new();
+    for stmt in program {
+        match stmt {
+            ResolvedStmt::Let(name, _) => {
+                if let Some(pattern) = parse_binding_pattern(name, None)? {
+                    names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
+                } else {
+                    names.insert(name.clone());
+                }
+            }
+            ResolvedStmt::DestructureLet { pattern, .. } => {
+                names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
+            }
+            _ => {}
+        }
+    }
+    Ok(names)
+}
+
+fn collect_array_map_callback_function_names(program: &[ResolvedStmt]) -> HashSet<String> {
+    let mut names = HashSet::new();
+    for stmt in program {
+        collect_array_map_callback_function_names_in_stmt(stmt, &mut names);
+    }
+    names
+}
+
+fn collect_array_map_callback_function_names_in_stmt(
+    stmt: &ResolvedStmt,
+    names: &mut HashSet<String>,
+) {
+    match stmt {
+        ResolvedStmt::Let(_, expr)
+        | ResolvedStmt::DestructureLet { expr, .. }
+        | ResolvedStmt::Assign(_, expr)
+        | ResolvedStmt::Expr(expr)
+        | ResolvedStmt::Return(expr)
+        | ResolvedStmt::Throw(expr) => {
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
+        ResolvedStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            collect_array_map_callback_function_names_in_expr(condition, names);
+            for stmt in then_body.iter().chain(else_body) {
+                collect_array_map_callback_function_names_in_stmt(stmt, names);
+            }
+        }
+        ResolvedStmt::While { condition, body } | ResolvedStmt::DoWhile { body, condition } => {
+            collect_array_map_callback_function_names_in_expr(condition, names);
+            for stmt in body {
+                collect_array_map_callback_function_names_in_stmt(stmt, names);
+            }
+        }
+        ResolvedStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            if let Some(init) = init {
+                collect_array_map_callback_function_names_in_stmt(init, names);
+            }
+            if let Some(condition) = condition {
+                collect_array_map_callback_function_names_in_expr(condition, names);
+            }
+            if let Some(update) = update {
+                collect_array_map_callback_function_names_in_expr(update, names);
+            }
+            for stmt in body {
+                collect_array_map_callback_function_names_in_stmt(stmt, names);
+            }
+        }
+        ResolvedStmt::ForIn { iter, body, .. } | ResolvedStmt::ForOf { iter, body, .. } => {
+            collect_array_map_callback_function_names_in_expr(iter, names);
+            for stmt in body {
+                collect_array_map_callback_function_names_in_stmt(stmt, names);
+            }
+        }
+        ResolvedStmt::TryCatch {
+            try_block,
+            catch_block,
+            finally_block,
+            ..
+        } => {
+            for stmt in try_block {
+                collect_array_map_callback_function_names_in_stmt(stmt, names);
+            }
+            if let Some(block) = catch_block {
+                for stmt in block {
+                    collect_array_map_callback_function_names_in_stmt(stmt, names);
+                }
+            }
+            if let Some(block) = finally_block {
+                for stmt in block {
+                    collect_array_map_callback_function_names_in_stmt(stmt, names);
+                }
+            }
+        }
+        ResolvedStmt::Switch { expr, cases } => {
+            collect_array_map_callback_function_names_in_expr(expr, names);
+            for (case_expr, body) in cases {
+                if let Some(case_expr) = case_expr {
+                    collect_array_map_callback_function_names_in_expr(case_expr, names);
+                }
+                for stmt in body {
+                    collect_array_map_callback_function_names_in_stmt(stmt, names);
+                }
+            }
+        }
+        ResolvedStmt::Labeled { body, .. } => {
+            collect_array_map_callback_function_names_in_stmt(body, names);
+        }
+        ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
+        ResolvedStmt::Function { .. }
+        | ResolvedStmt::ClassDecl { .. }
+        | ResolvedStmt::Break { .. }
+        | ResolvedStmt::Continue { .. } => {}
+    }
+}
+
+fn collect_array_map_callback_function_names_in_expr(
+    expr: &ResolvedExpr,
+    names: &mut HashSet<String>,
+) {
+    match expr {
+        ResolvedExpr::MethodCall {
+            object,
+            method,
+            args,
+            ..
+        } => {
+            collect_array_map_callback_function_names_in_expr(object, names);
+            if method == "map"
+                && let Some(ResolvedExpr::Ident(callback)) = args.first()
+            {
+                names.insert(callback.clone());
+            }
+            for arg in args {
+                collect_array_map_callback_function_names_in_expr(arg, names);
+            }
+        }
+        ResolvedExpr::Unary { expr, .. }
+        | ResolvedExpr::Spread(expr)
+        | ResolvedExpr::BuiltinProperty { object: expr, .. }
+        | ResolvedExpr::PropertyAccess { object: expr, .. }
+        | ResolvedExpr::OptionalPropertyAccess { object: expr, .. } => {
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
+        ResolvedExpr::Binary { left, right, .. }
+        | ResolvedExpr::ComputedIndex {
+            object: left,
+            index: right,
+        } => {
+            collect_array_map_callback_function_names_in_expr(left, names);
+            collect_array_map_callback_function_names_in_expr(right, names);
+        }
+        ResolvedExpr::Call { callee, args, .. }
+        | ResolvedExpr::OptionalCall { callee, args, .. } => {
+            collect_array_map_callback_function_names_in_expr(callee, names);
+            for arg in args {
+                collect_array_map_callback_function_names_in_expr(arg, names);
+            }
+        }
+        ResolvedExpr::Assign { expr, .. }
+        | ResolvedExpr::LogicalAssign { expr, .. }
+        | ResolvedExpr::LogicalPropertyAssign { expr, .. } => {
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
+        ResolvedExpr::LogicalMemberAssign { object, expr, .. } => {
+            collect_array_map_callback_function_names_in_expr(object, names);
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
+        ResolvedExpr::LogicalComputedPropertyAssign { key, expr, .. } => {
+            collect_array_map_callback_function_names_in_expr(key, names);
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
+        ResolvedExpr::LogicalComputedMemberAssign {
+            object, key, expr, ..
+        } => {
+            collect_array_map_callback_function_names_in_expr(object, names);
+            collect_array_map_callback_function_names_in_expr(key, names);
+            collect_array_map_callback_function_names_in_expr(expr, names);
+        }
+        ResolvedExpr::Array(elements) => {
+            for element in elements {
+                if let ResolvedArrayElement::Present(expr) = element {
+                    collect_array_map_callback_function_names_in_expr(expr, names);
+                }
+            }
+        }
+        ResolvedExpr::Object(props) => {
+            for (_, value) in props {
+                collect_array_map_callback_function_names_in_expr(value, names);
+            }
+        }
+        ResolvedExpr::BuiltinCall { args, .. } | ResolvedExpr::New { args, .. } => {
+            for arg in args {
+                collect_array_map_callback_function_names_in_expr(arg, names);
+            }
+        }
+        ResolvedExpr::OptionalComputedIndex { object, index, .. }
+        | ResolvedExpr::PropertyAssignDynamic {
+            object,
+            key: index,
+            ..
+        } => {
+            collect_array_map_callback_function_names_in_expr(object, names);
+            collect_array_map_callback_function_names_in_expr(index, names);
+        }
+        ResolvedExpr::PropertyAssign { object, value, .. } => {
+            collect_array_map_callback_function_names_in_expr(object, names);
+            collect_array_map_callback_function_names_in_expr(value, names);
+        }
+        ResolvedExpr::ArrowFn { body, .. } => {
+            collect_array_map_callback_function_names_in_expr(body, names);
+        }
+        ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::Number(_)
+        | ResolvedExpr::BigIntLiteral { .. }
+        | ResolvedExpr::String(_)
+        | ResolvedExpr::Bool(_)
+        | ResolvedExpr::Null
+        | ResolvedExpr::Undefined
+        | ResolvedExpr::This { .. }
+        | ResolvedExpr::Ident(_)
+        | ResolvedExpr::ModuleLoad { .. } => {}
+    }
+}
+
+fn collect_callback_function_captures(
+    program: &[ResolvedStmt],
+    function_ids: &HashMap<String, FuncId>,
+    top_level_local_names: &HashSet<String>,
+    callback_names: &HashSet<String>,
+) -> Result<HashMap<FuncId, Vec<String>>, Diagnostic> {
+    let mut captures = HashMap::new();
+    if callback_names.is_empty() || top_level_local_names.is_empty() {
+        return Ok(captures);
+    }
+
+    for stmt in program {
+        let ResolvedStmt::Function {
+            name, params, body, ..
+        } = stmt
+        else {
+            continue;
+        };
+        if !callback_names.contains(name) {
+            continue;
+        }
+
+        let mut excluded = HashSet::new();
+        excluded.insert(name.clone());
+        for param in params {
+            if let Some(pattern) = parse_binding_pattern(&param.name, param.span)? {
+                excluded.extend(pattern.names().into_iter().map(ToOwned::to_owned));
+            } else {
+                excluded.insert(param.name.clone());
+            }
+        }
+        collect_declared_names_in_stmts(body, &mut excluded);
+
+        let mut found = Vec::new();
+        collect_stmt_captures(body, &excluded, &mut found);
+        let found = found
+            .into_iter()
+            .filter(|capture| top_level_local_names.contains(capture))
+            .collect::<Vec<_>>();
+        if !found.is_empty() {
+            captures.insert(function_ids[name], found);
+        }
+    }
+
+    Ok(captures)
+}
+
+fn collect_callback_function_mutable_captures(
+    program: &[ResolvedStmt],
+    function_captures: &HashMap<FuncId, Vec<String>>,
+) -> HashMap<FuncId, Vec<String>> {
+    let mut mutable_captures = HashMap::new();
+    if function_captures.is_empty() {
+        return mutable_captures;
+    }
+
+    let function_ids = collect_function_ids(program).unwrap_or_default();
+    for stmt in program {
+        let ResolvedStmt::Function { name, body, .. } = stmt else {
+            continue;
+        };
+        let Some(func_id) = function_ids.get(name).copied() else {
+            continue;
+        };
+        let Some(captures) = function_captures.get(&func_id) else {
+            continue;
+        };
+        let mutable = captures
+            .iter()
+            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .cloned()
+            .collect::<Vec<_>>();
+        if !mutable.is_empty() {
+            mutable_captures.insert(func_id, mutable);
+        }
+    }
+
+    mutable_captures
+}
+
+fn collect_mutable_function_capture_names(
+    function_mutable_captures: &HashMap<FuncId, Vec<String>>,
+) -> HashSet<String> {
+    function_mutable_captures
+        .values()
+        .flat_map(|captures| captures.iter().cloned())
+        .collect()
+}
+
+fn function_params_with_captures(
+    params: &[ResolvedParam],
+    captures: &[String],
+) -> Vec<ResolvedParam> {
+    let mut params = params.to_vec();
+    params.extend(captures.iter().map(|capture| ResolvedParam {
+        name: capture.clone(),
+        default: None,
+        is_rest: false,
+        span: None,
+    }));
+    params
 }
 
 fn class_constructor_key(class_name: &str) -> String {
@@ -1201,6 +1573,8 @@ fn lower_function(
     body: &[ResolvedStmt],
     function_ids: &HashMap<String, FuncId>,
     function_signatures: &HashMap<FuncId, FunctionSignature>,
+    function_captures: &HashMap<FuncId, Vec<String>>,
+    function_mutable_captures: &HashMap<FuncId, Vec<String>>,
     class_method_captures: &HashMap<FuncId, Vec<String>>,
     class_method_mutable_captures: &HashMap<FuncId, Vec<String>>,
     env_cell_names: &HashSet<String>,
@@ -1240,6 +1614,8 @@ fn lower_function(
     let (mut resolver, param_ids) = Resolver::with_params(
         function_ids,
         function_signatures,
+        function_captures,
+        function_mutable_captures,
         class_method_captures,
         class_method_mutable_captures,
         env_cell_names,

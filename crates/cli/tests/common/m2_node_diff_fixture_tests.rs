@@ -177,6 +177,13 @@ fn array_map_sparse_holes_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_map_callback_mutates_outer_counter_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/array-map-callback-mutates-outer-counter.ts",
+    );
+}
+
+#[test]
 fn array_sort_numeric_comparator_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/array-sort-numeric-comparator.ts");
 }
