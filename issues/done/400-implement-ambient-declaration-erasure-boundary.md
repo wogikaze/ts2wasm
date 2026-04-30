@@ -3,7 +3,7 @@ id: 400
 title: "Implement ambient declaration erasure and rejection boundary"
 type: feature
 area: frontend/syntax
-class: implementation-ready
+class: done
 priority: P1
 depends_on: [399]
 blocks: []
@@ -49,11 +49,11 @@ Ambient declarations are handled according to the TypeScript boundary contract:
 
 In scope:
 
-- [ ] Add parser support for a narrow representative set of `declare` declarations used by the listed ambient coverage cases.
-- [ ] Add an erasure path for declaration-only ambient forms with no runtime effect.
-- [ ] Route ambient module declarations to `UnsupportedModule` when module shape is the blocker.
-- [ ] Add source-spanned `UnsupportedTypeScriptSyntax` diagnostics for ambient forms outside the slice.
-- [ ] Add parser/coverage regression tests for the representative cases selected from the generated issues above.
+- [x] Add parser support for a narrow representative set of `declare` declarations used by the listed ambient coverage cases.
+- [x] Add an erasure path for declaration-only ambient forms with no runtime effect.
+- [x] Route ambient module declarations to `UnsupportedModule` when module shape is the blocker.
+- [x] Add source-spanned `UnsupportedTypeScriptSyntax` diagnostics for ambient forms outside the slice.
+- [x] Add parser/coverage regression tests for the representative cases selected from the generated issues above.
 
 Out of scope:
 
@@ -80,12 +80,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] At least three representative `ambient-declaration` coverage cases are re-triaged from generated one-case issues into this boundary slice.
-- [ ] Declaration-only ambient forms in the selected slice parse and erase before runtime lowering.
-- [ ] Ambient module-shaped forms in the selected slice produce `UnsupportedModule` or are split into a module issue with evidence.
-- [ ] Unsupported ambient forms produce source-spanned `UnsupportedTypeScriptSyntax`.
-- [ ] Regression coverage proves no erased ambient form creates runtime bindings.
-- [ ] Docs/current-state/issues are synchronized when status or design changes.
+- [x] At least three representative `ambient-declaration` coverage cases are re-triaged from generated one-case issues into this boundary slice.
+- [x] Declaration-only ambient forms in the selected slice parse and erase before runtime lowering.
+- [x] Ambient module-shaped forms in the selected slice produce `UnsupportedModule` or are split into a module issue with evidence.
+- [x] Unsupported ambient forms produce source-spanned `UnsupportedTypeScriptSyntax`.
+- [x] Regression coverage proves no erased ambient form creates runtime bindings.
+- [x] Docs/current-state/issues are synchronized when status or design changes.
 
 ## Validation
 
@@ -112,16 +112,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated: `docs/05-compatibility-and-semantics.md` if the boundary changes
+- [x] not affected
+- [x] updated: `docs/05-compatibility-and-semantics.md` if the boundary changes
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root) when implementation status changes
+- [x] updated: `current-state.md` (repo root) when implementation status changes
 
 Follow-up issues:
 
-- [ ] created/updated for ambient module or runtime forms split out of this issue
+- [x] created/updated for ambient module or runtime forms split out of this issue
 
 ## Notes
 
@@ -146,20 +146,39 @@ Representative generated buckets re-triaged into this boundary slice:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed: 2026-05-01
 
 Commits:
 
-- `...`
+- `3ff6d1ce` issue-400: progress ambient function declarations
+- `13215631` issue-400: erase ambient variable declarations
+- `8d98aa9f` issue-400: progress ambient declaration erasure
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-frontend ambient
+result: pass; ambient parser tests passed
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test dump_cli ambient
+result: pass; ambient dump/build tests passed
+date: 2026-05-01
+
+command: mise run reference-coverage -- tsc --limit 200
+result: pass; executed=200, build_pass=32, semantic_pass=23, unsupported=168, unsupported_features includes ambient-declaration:1
+date: 2026-05-01
+
+command: mise run update-issue-index -- --check && mise run check issues
+result: pass
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- none
+- Full ambient module semantics remain out of scope and route to `UnsupportedModule`.
+- Full `.d.ts` declaration emit remains tracked by issue 346.
