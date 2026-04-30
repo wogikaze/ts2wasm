@@ -3,12 +3,14 @@ id: 334
 title: "Array.prototype.map completion: sparse array, thisArg, and generic call"
 type: meta
 area: runtime/builtins
-class: ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01
+completed: 2026-05-01
+status: done
 ---
 
 ## Summary
@@ -34,11 +36,11 @@ and generic call, with Test262-backed compatibility evidence.
 
 ## Child issues
 
-- [ ] Issue 338: Sparse array holes handling for Array.prototype.map
+- [x] Issue 338: Sparse array holes handling for Array.prototype.map
 - [x] Issue 339: Callback thisArg for Array.prototype.map
-- [ ] Issue 340: Generic call for Array.prototype.map (Array.prototype.map.call(...))
-- [ ] Issue 379: Test262 verification for Array.prototype.map callback thisArg
-- [ ] Issue 403: Sparse array hole representation contract (blocks issue 338)
+- [x] Issue 340: Generic call for Array.prototype.map (Array.prototype.map.call(...))
+- [x] Issue 379: Test262 verification for Array.prototype.map callback thisArg
+- [x] Issue 403: Sparse array hole representation contract (blocks issue 338)
 
 ## Acceptance criteria
 
@@ -63,3 +65,20 @@ Current state:
 Issue 270 is now the historical dense-array named-callback slice. Issue 295 is
 the historical arrow/chained receiver slice. This meta issue tracks the remaining
 work needed for full Array.prototype.map compatibility.
+
+## Completion evidence
+
+Closed after child issues 338, 339, 340, 379, and 403 were all moved to
+`issues/done/`.
+
+Validation result:
+
+```text
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass; 18/18
+date: 2026-05-01
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js --detail --no-web-ui
+result: pass; build_pass=1, semantic_pass=1
+date: 2026-05-01
+```

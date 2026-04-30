@@ -70,8 +70,8 @@ generic callback allocation out of scope.
 Next close bar resolution:
 
 - This issue is narrowed to the implemented dense-array named-callback slice.
-- Residual `Array.prototype.map` sparse/`thisArg`/Test262 semantics are split to
-  `issues/open/334-complete-array-map-sparse-thisarg-test262.md`.
+- Residual `Array.prototype.map` sparse/`thisArg`/Test262 semantics were split to
+  `issues/done/334-complete-array-map-sparse-thisarg-test262.md`.
 
 ## Completion evidence
 
@@ -109,6 +109,5 @@ date: 2026-04-30
 
 Remaining risks:
 
-- Full sparse-array semantics, `thisArg`, `Array.prototype.map.call(...)`, async
-  callbacks, generic callback allocation, and broad Test262 coverage remain open
-  in issue 318 or narrower future child issues.
+- Async callbacks, generic callback allocation, and broader non-selected
+  Test262 coverage remain outside this dense named-callback slice.

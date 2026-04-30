@@ -3,12 +3,14 @@ id: 405
 title: "Support Test262 harness instanceof function RHS"
 type: feature
 area: frontend/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [207]
 blocks: [338]
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
+status: done
 ---
 
 ## Summary
@@ -49,12 +51,14 @@ unsupported construct while preserving assertion semantics.
 
 In scope:
 
-- [ ] Support the minimal `instanceof` RHS form used by the Test262 harness for
-      the selected representative, or replace it in the wasm-side harness shim
-      with equivalent supported assertion logic.
-- [ ] Keep issue 207 ordinary class-constructor semantics intact.
-- [ ] Rerun the selected Array.map representative and update issue 338 with the
-      next concrete blocker or pass evidence.
+- [x] Clear the minimal issue-207 diagnostic reached by the selected
+      representative. Local reproduction showed the prepared wasm source has no
+      `instanceof` token; the issue-207 text came from the ordinary
+      `new Array(10)` source shape falling through to class-constructor
+      lowering.
+- [x] Keep issue 207 ordinary class-constructor semantics intact.
+- [x] Rerun the selected Array.map representative and update issue 338 with
+      pass evidence.
 
 Out of scope:
 
@@ -70,7 +74,7 @@ Expected:
 - `crates/ir/src/`
 - `crates/cli/tests/`
 - `scripts/lib/test262_harness.py`
-- `issues/open/338-array-map-sparse-array-holes.md`
+- `issues/done/338-array-map-sparse-array-holes.md`
 
 Do not touch:
 
@@ -78,12 +82,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The selected representative no longer reports the issue-207 harness
+- [x] The selected representative no longer reports the issue-207 harness
       `instanceof` RHS diagnostic.
-- [ ] A focused regression or harness test covers the supported path.
-- [ ] Issue 338 is updated with the next concrete Test262 blocker or pass
+- [x] A focused regression or harness test covers the supported path.
+- [x] Issue 338 is updated with the next concrete Test262 blocker or pass
       evidence.
-- [ ] `cargo fmt --all --check` and `mise run check issues` pass.
+- [x] `cargo fmt --all --check` and `mise run check issues` pass.
 
 ## Validation
 
@@ -126,22 +130,41 @@ Prefer a harness shim if the failing construct is only used to implement Test262
 assertion helpers; prefer compiler/runtime support if an ordinary source fixture
 needs the same behavior.
 
+Implementation note: the selected prepared source uses ordinary
+`var srcArr = new Array(10)` plus `srcArr[1] = undefined`. This slice therefore
+adds narrow compiler support for small `new Array(length)` sparse arrays instead
+of changing the Test262 harness shim or broadening issue 207 `instanceof`
+semantics.
+
 ## Completion evidence
 
 Fill only when moving to `done`.
 
 Commits:
 
-- `...`
+- `f65c30c3` `issue-338: add sparse new Array map progress`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo test -p ts2wasm-cli array_map_new_array_holes_fixture_matches_node_output_under_iwasm -- --nocapture
+result: pass; focused Node/iwasm fixture for `new Array(10)` sparse holes plus `Array.prototype.map` passed
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli instanceof_unsupported_rhs_fixture_reports_issue_207 -- --nocapture
+result: pass; issue 207 ordinary unsupported RHS diagnostic remains covered
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass; 18/18
+date: 2026-05-01
+
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js
+result: pass for issue-405 boundary; no longer reports `[UnsupportedSyntax] issue-207`, now reports `BuildPass`
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- none
+- `reference-triage` is build-focused for this command. Issue 338 records the
+  semantic/reference-coverage pass evidence for the sparse map representative.

@@ -3,12 +3,14 @@ id: 338
 title: "Sparse array holes handling for Array.prototype.map"
 type: feature
 area: runtime/builtins
-class: blocked
+class: done
 priority: P2
-depends_on: [405]
+depends_on: []
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01
+completed: 2026-05-01
+status: done
 ---
 
 ## Summary
@@ -33,11 +35,11 @@ arrays. Sparse arrays with holes (e.g., `[1, , 3]`) are not handled correctly.
 
 In scope:
 
-- [ ] Detect sparse arrays in map operations
-- [ ] Skip holes during map iteration (no callback invocation for holes)
-- [ ] Preserve holes in result array at correct indices
-- [ ] Add sparse array map fixtures
-- [ ] Validate with Test262 sparse array map tests
+- [x] Detect sparse arrays in map operations
+- [x] Skip holes during map iteration (no callback invocation for holes)
+- [x] Preserve holes in result array at correct indices
+- [x] Add sparse array map fixtures
+- [x] Validate with Test262 sparse array map tests
 
 Out of scope:
 
@@ -62,11 +64,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A sparse array map fixture (e.g., `[1, , 3].map(x => x * 2)`) matches Node output under `iwasm`.
-- [ ] Holes are skipped during iteration (callback not called for hole indices).
-- [ ] Holes are preserved in result array at correct indices.
-- [ ] Existing dense-array map fixtures still pass.
-- [ ] Selected Test262 sparse array map tests pass.
+- [x] A sparse array map fixture (e.g., `[1, , 3].map(x => x * 2)`) matches Node output under `iwasm`.
+- [x] Holes are skipped during iteration (callback not called for hole indices).
+- [x] Holes are preserved in result array at correct indices.
+- [x] Existing dense-array map fixtures still pass.
+- [x] Selected Test262 sparse array map tests pass.
 
 ## Validation
 
@@ -93,8 +95,8 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
-- [ ] updated if sparse array representation changes
+- [x] not affected
+- [x] updated if sparse array representation changes
 
 Current state:
 
@@ -114,19 +116,34 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `04114306` `issue-338: allow identifier increment statements`
+- `0ceae4bb` `Support map callback mutable outer captures`
+- `f65c30c3` `issue-338: add sparse new Array map progress`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo test -p ts2wasm-cli array_map_new_array_holes_fixture_matches_node_output_under_iwasm -- --nocapture
+result: pass
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass; 18/18
+date: 2026-05-01
+
+command: mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js
+result: BuildPass
+date: 2026-05-01
+
+command: mise run reference-coverage -- test262 --path-filter reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js --detail --no-web-ui
+result: pass; build_pass=1, semantic_pass=1, unsupported=0, blocked=0
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- Sparse array representation changes may affect other array operations
+- Broader Array.prototype.map generic/runtime-array-like work remains tracked by
+  the parent map meta issue and its follow-up issues.
 
 ## Blocked evidence
 
@@ -203,8 +220,8 @@ Remaining:
   `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
   now reports `[UnsupportedSyntax] issue-207: instanceof right-hand side must be
   a supported class constructor \`Array\`` from the Test262 assertion harness.
-- Issue 338 remains blocked for full selected-representative close evidence.
-  Follow-up issue 405 tracks the harness `instanceof` RHS blocker.
+- Issue 338 remained blocked for full selected-representative close evidence.
+  Follow-up issue 405 tracked the harness `instanceof` RHS blocker.
 
 ## Additional progress evidence
 
@@ -215,7 +232,11 @@ Remaining:
 - Added lowering support for the selected small `new Array(<0..32>)` sparse-hole
   construction shape and present-slot tracking needed by the fixture.
 - Validation passed: `cargo nextest run -p ts2wasm-cli array_map` (18/18).
-- The selected Test262 representative still does not close: parent rerun of
+- Parent rerun of
   `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
-  still reports `[UnsupportedSyntax] issue-207: instanceof right-hand side must
-  be a supported class constructor`Array``. Issue 405 remains open.
+  reports `BuildPass`.
+- Parent semantic reference coverage:
+  `mise run reference-coverage -- test262 --path-filter reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js --detail --no-web-ui`
+  reports `build_pass=1`, `semantic_pass=1`, `unsupported=0`, and `blocked=0`.
+- Issue 338 is closed because sparse map fixtures and the selected Test262
+  representative now pass.
