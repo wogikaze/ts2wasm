@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 111 | 34 | 77 |
+| runtime | 112 | 35 | 77 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 370 | 172 | 198 |
+| total | 371 | 173 | 198 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -220,6 +220,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | 274 | Implement iterator protocol integration for spread operator |
 | 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | 274 | Implement dynamic object property enumeration spread |
+| 358 | Instrument ABC451 depth-8 runtime costs | test | runtime/performance | 357 | Instrument ABC451 depth-8 runtime costs |
 <!-- generated:blocked:end -->
 
 ## Done queue
