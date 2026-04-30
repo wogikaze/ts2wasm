@@ -106,3 +106,8 @@ cargo nextest run -E 'test(bigint) or test(node_diff)'
 ## Completion evidence
 
 Fill only when moving to `done/`.
+
+## Progress evidence
+
+- 2026-05-01: Implemented the first issue-387 progress slice for static BigInt literal `~` outside the signed-i64 helper boundary. The fold now uses the arbitrary-decimal identity `~x == -x - 1`, preserving issue-387 diagnostics for dynamic/out-of-slice runtime bitwise and mixed Number/BigInt ownership.
+- 2026-05-01: Implemented a second issue-387 progress slice for static binary BigInt literal `&`, `|`, and `^` outside the signed-i64 helper boundary using arbitrary-width two's-complement fold logic. Added Node/iwasm differential fixture coverage and kept dynamic/mixed issue-387 diagnostics in place.

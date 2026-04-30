@@ -318,6 +318,13 @@ fn bigint_bitwise_unary_out_of_signed_i64_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_bitwise_binary_out_of_signed_i64_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-bitwise-binary-out-of-signed-i64.ts",
+    );
+}
+
+#[test]
 fn bigint_bitwise_mixed_reports_issue_387() {
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/bigint-bitwise-binary-unsupported.ts",

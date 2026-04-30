@@ -445,19 +445,7 @@ pub(super) fn fold_bigint_binary(
             })
         }
         BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor => {
-            let Some(left) = bigint_to_runtime_i64(&left) else {
-                return Err(bigint_bitwise_diagnostic(span));
-            };
-            let Some(right) = bigint_to_runtime_i64(&right) else {
-                return Err(bigint_bitwise_diagnostic(span));
-            };
-            let result = match op {
-                BinaryOp::BitwiseAnd => left & right,
-                BinaryOp::BitwiseOr => left | right,
-                BinaryOp::BitwiseXor => left ^ right,
-                _ => unreachable!("checked above"),
-            };
-            bigint_from_runtime_i64(result, span)
+            Ok(fold_bigint_binary_bitwise(left, op, right))
         }
         _ => unreachable!("non-arithmetic BigInt operator reached literal fold"),
     }
@@ -473,24 +461,95 @@ pub(super) fn fold_bigint_unary_bitwise_not(
     ))
 }
 
-fn bigint_to_runtime_i64(value: &BigIntConst) -> Option<i64> {
-    let magnitude = decimal_digits_to_u64(&value.digits)?;
-    if magnitude > i64::MAX as u64 {
-        return None;
-    }
-    let magnitude = magnitude as i64;
-    Some(match value.sign.cmp(&0) {
-        std::cmp::Ordering::Less => -magnitude,
-        std::cmp::Ordering::Equal => 0,
-        std::cmp::Ordering::Greater => magnitude,
-    })
+fn fold_bigint_binary_bitwise(left: BigIntConst, op: BinaryOp, right: BigIntConst) -> BigIntConst {
+    let width = bigint_bit_width(&left).max(bigint_bit_width(&right)) + 2;
+    let left_bits = bigint_to_twos_complement_bits(&left, width);
+    let right_bits = bigint_to_twos_complement_bits(&right, width);
+    let result_bits = left_bits
+        .iter()
+        .zip(right_bits.iter())
+        .map(|(left, right)| match op {
+            BinaryOp::BitwiseAnd => *left & *right,
+            BinaryOp::BitwiseOr => *left | *right,
+            BinaryOp::BitwiseXor => *left ^ *right,
+            _ => unreachable!("checked by caller"),
+        })
+        .collect::<Vec<_>>();
+    bigint_from_twos_complement_bits(&result_bits)
 }
 
-fn bigint_from_runtime_i64(value: i64, span: Span) -> Result<BigIntConst, Diagnostic> {
-    if value == i64::MIN {
-        return Err(bigint_bitwise_diagnostic(span));
+fn bigint_bit_width(value: &BigIntConst) -> usize {
+    let bits = decimal_digits_to_binary_bits(&value.digits);
+    bits.iter()
+        .rposition(|bit| *bit)
+        .map_or(0, |index| index + 1)
+}
+
+fn bigint_to_twos_complement_bits(value: &BigIntConst, width: usize) -> Vec<bool> {
+    let mut bits = vec![false; width];
+    let magnitude_bits = decimal_digits_to_binary_bits(&value.digits);
+    for (index, bit) in magnitude_bits.into_iter().enumerate().take(width) {
+        bits[index] = bit;
     }
-    Ok(bigint_from_i64(value))
+    if value.sign < 0 {
+        for bit in &mut bits {
+            *bit = !*bit;
+        }
+        add_one_to_bits(&mut bits);
+    }
+    bits
+}
+
+fn bigint_from_twos_complement_bits(bits: &[bool]) -> BigIntConst {
+    if bits.last().copied().unwrap_or(false) {
+        let mut magnitude_bits = bits.iter().map(|bit| !*bit).collect::<Vec<_>>();
+        add_one_to_bits(&mut magnitude_bits);
+        let digits = binary_bits_to_decimal_digits(&magnitude_bits);
+        let sign = if digits == [0] { 0 } else { -1 };
+        BigIntConst { sign, digits }
+    } else {
+        let digits = binary_bits_to_decimal_digits(bits);
+        let sign = if digits == [0] { 0 } else { 1 };
+        BigIntConst { sign, digits }
+    }
+}
+
+fn add_one_to_bits(bits: &mut [bool]) {
+    for bit in bits {
+        if *bit {
+            *bit = false;
+        } else {
+            *bit = true;
+            return;
+        }
+    }
+}
+
+fn decimal_digits_to_binary_bits(digits: &[u8]) -> Vec<bool> {
+    let mut value = digits.to_vec();
+    trim_decimal_zeroes(&mut value);
+    if value == [0] {
+        return vec![false];
+    }
+    let mut bits = Vec::new();
+    while value != [0] {
+        let (quotient, remainder) = div_rem_abs(&value, &[2]);
+        bits.push(remainder != [0]);
+        value = quotient;
+    }
+    bits
+}
+
+fn binary_bits_to_decimal_digits(bits: &[bool]) -> Vec<u8> {
+    let mut digits = vec![0_u8];
+    for bit in bits.iter().rev() {
+        digits = mul_abs(&digits, &[2]);
+        if *bit {
+            digits = add_abs(&digits, &[1]);
+        }
+    }
+    trim_decimal_zeroes(&mut digits);
+    digits
 }
 
 pub(super) fn bigint_add(left: BigIntConst, right: BigIntConst) -> BigIntConst {
