@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 144 | 47 | 97 |
+| runtime | 145 | 47 | 98 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 407 | 186 | 221 |
+| total | 408 | 186 | 222 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -55,10 +55,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 383 | Multi-limb BigInt multiplication | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `*` with operands or results outside the signed-i64-backed helper slice report diagnostics instead of ... |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | implementation-ready | P1 |  | Issue 357's previous attempts to reduce the timeout did not identify whether the bottleneck is array copying, GC swee... |
 | 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
-| 388 | Runtime array-like generic call for Array.prototype.map | feature | runtime/builtins | ready | P2 | 340 | Runtime array-like generic call for Array.prototype.map |
 | 390 | Allow or rewrite Test262 harness undefined binding name | bug | frontend/parser | ready | P2 | 389 | Allow or rewrite Test262 harness undefined binding name |
 | 391 | Multi-limb BigInt division | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `/` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
 | 393 | Multi-limb BigInt addition | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `+` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
+| 395 | Runtime array-like Array.prototype.map callback dispatch | feature | runtime/builtins | ready | P2 | 388 | Runtime array-like Array.prototype.map callback dispatch |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -462,6 +462,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | see `issues/done/376-implement-dynamic-bigint-exponentiation.md` |
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | see `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md` |
 | 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | see `issues/done/379-validate-array-map-thisarg-test262.md` |
+| 388 | Runtime array-like generic call for Array.prototype.map | feature | runtime/builtins | see `issues/done/388-array-map-generic-runtime-array-like.md` |
 | 389 | Unblock Array.map generic Test262 representative with function-expression initializer | bug | frontend/parser | see `issues/done/389-array-map-generic-test262-function-expression-blocker.md` |
 <!-- generated:done:end -->
 

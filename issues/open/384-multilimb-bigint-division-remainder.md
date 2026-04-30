@@ -3,9 +3,9 @@ id: 384
 title: "Multi-limb BigInt division and remainder"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: blocked
 priority: P2
-depends_on: [259, 260]
+depends_on: [259, 260, 391, 392]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -13,9 +13,11 @@ updated: 2026-05-01
 
 ## Summary
 
-Implement canonical multi-limb BigInt truncating division and remainder for dynamic operands and results outside the signed-i64-backed helper slice.
+This issue has been split into:
+- Issue 391: Multi-limb BigInt division
+- Issue 392: Multi-limb BigInt remainder
 
-Problem: Dynamic BigInt `/` and `%` with operands or results outside the signed-i64-backed helper slice report diagnostics instead of using canonical BigInt limb arithmetic.
+This issue is now blocked on the completion of its split child issues.
 
 ## Problem
 
@@ -132,6 +134,10 @@ Follow-up issues:
 - [ ] none
 
 ## Notes
+
+This issue has been split into:
+- Issue 391: Multi-limb BigInt division
+- Issue 392: Multi-limb BigInt remainder
 
 This is a focused split from issue 369, covering only division and remainder. Do not implement this by widening the signed-i64 conversion path. The compatibility target is the canonical heap BigInt limb representation.
 

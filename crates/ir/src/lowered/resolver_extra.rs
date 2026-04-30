@@ -157,10 +157,20 @@ impl<'a> Resolver<'a> {
             }
             ResolvedExpr::Ident(name) => {
                 let Some(elements) = self.static_function_array_like_elements(name) else {
+                    if is_identity_arrow_callback(map_args) {
+                        return Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
+                            args: vec![self.lower_expr(receiver)?],
+                        });
+                    }
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
                 self.lower_array_map_elements(receiver, &elements, map_args, span)
             }
+            _ if is_identity_arrow_callback(map_args) => Ok(LoweredExpr::RuntimeCall {
+                runtime_fn: "ArrayMapArrayLikeIdentity".to_owned(),
+                args: vec![self.lower_expr(receiver)?],
+            }),
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
         }
     }

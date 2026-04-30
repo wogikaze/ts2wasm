@@ -510,6 +510,62 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_array_map_array_like_identity(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_map_array_like_identity (param $receiver i32) (result i32)
+    (local $len_value i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local $result_ptr i32)
+    (local.set $len_value (call $get_length (local.get $receiver)))
+    (if
+      (i32.ne
+        (i32.and (local.get $len_value) (i32.const {tag_mask}))
+        (i32.const {number_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $len (i32.shr_s (local.get $len_value) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $len) (i32.const {zero}))
+      (then (return (i32.const {undefined}))))
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (call $index
+            (local.get $receiver)
+            (i32.or
+              (i32.shl (local.get $i) (i32.const {number_shift}))
+              (i32.const {number_tag}))))
+        (i32.store
+          (i32.add
+            (local.get $result_ptr)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (local.get $elem))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            array_tag = ValueTag::ARRAY,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     pub(super) fn emit_array_sort_numeric(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

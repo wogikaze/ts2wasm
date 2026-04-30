@@ -108,7 +108,7 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed_arithmetic_typeerror
 mise run update-issue-index -- --check
 mise run check issues
 ```
