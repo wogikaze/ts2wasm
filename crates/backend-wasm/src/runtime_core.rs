@@ -1611,8 +1611,8 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_private_brand_type_error(&self, wat: &mut String) {
-        let message =
-            self.string_offset(RuntimeString::PRIVATE_BRAND_TYPE_ERROR) + Layout::STRING_HEADER_SIZE;
+        let message = self.string_offset(RuntimeString::PRIVATE_BRAND_TYPE_ERROR)
+            + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
   (func $private_brand_type_error (result i32)
