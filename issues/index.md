@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 32 | 116 |
+| runtime | 148 | 31 | 117 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 415 | 170 | 245 |
+| total | 415 | 169 | 246 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -209,7 +209,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | 255 | Implement full private brand storage and brand-checking semantics |
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | class: blocked | Implement iterator protocol integration for spread operator |
 | 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
-| 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | 274 | Implement dynamic object property enumeration spread |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
 | 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
@@ -432,6 +431,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 340 | Generic call for Array.prototype.map (static dense receiver slice) | feature | runtime/builtins | see `issues/done/340-array-map-generic-call.md` |
 | 350 | Implement derived-class private element initialization | feature | runtime/semantics | see `issues/done/350-derived-class-private-element-init.md` |
 | 352 | Implement static private field ordering with static blocks | feature | runtime/semantics | see `issues/done/352-static-private-field-static-blocks-order.md` |
+| 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | see `issues/done/355-dynamic-object-enumeration-spread.md` |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |
 | 358 | Instrument ABC451 depth-8 runtime costs | test | runtime/performance | see `issues/done/358-instrument-abc451-depth8-runtime-costs.md` |
 | 359 | Reduce ABC451 free-list scan cost | bug | runtime/memory | see file |

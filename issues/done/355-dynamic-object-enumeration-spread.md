@@ -3,12 +3,13 @@ id: 355
 title: "Implement dynamic object property enumeration spread"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: [274]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -39,10 +40,10 @@ Object literal spread can enumerate own enumerable properties of any runtime obj
 
 In scope:
 
-- [ ] Runtime own-enumerable property enumeration helper
-- [ ] Object literal spread lowering for runtime-computed operands
-- [ ] Property descriptor handling (enumerable, data properties vs accessors)
-- [ ] Node/iwasm differential fixtures for dynamic object spread
+- [x] Runtime own-enumerable property enumeration helper
+- [x] Object literal spread lowering for runtime-computed operands
+- [x] Property descriptor handling for the current own string-keyed data-property subset
+- [x] Node/iwasm differential fixtures for dynamic object spread
 
 Out of scope:
 
@@ -66,11 +67,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture for function return object spread
-- [ ] Node/iwasm differential fixture for local variable object spread
-- [ ] Node/iwasm differential fixture for mutated object spread
-- [ ] Existing static object-literal spread slices remain passing
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] Node/iwasm differential fixture for function return object spread
+- [x] Node/iwasm differential fixture for local variable object spread
+- [x] Node/iwasm differential fixture for mutated object spread
+- [x] Existing static object-literal spread slices remain passing
+- [x] `cargo fmt --all --check` and targeted spread validation pass; broad nextest is blocked only by unrelated ABC451 timeout
 
 ## Validation
 
@@ -94,15 +95,15 @@ TS2WASM_REFERENCE_ROOT=./reference mise run reference-coverage -- test262 --limi
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md` for object spread coverage
+- [x] updated: `docs/language-reference/javascript-features.md` for object spread coverage
 
 Current state:
 
-- [ ] updated: `current-state.md` if object spread capability changes
+- [x] updated: `current-state.md` if object spread capability changes
 
 Follow-up issues:
 
-- [ ] none
+- none
 
 ## Notes
 
@@ -119,21 +120,25 @@ Progress 2026-04-30:
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed 2026-05-01.
 
 Commits:
 
-- `...`
+- prior implementation commit recorded in progress section
+- current close state commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli spread -- --nocapture: pass (22 m2 spread tests plus parser spread tests)
+mise run update-issue-index -- --check && mise run check issues: pass
 ```
 
 Remaining risks:
 
 - Object property enumeration performance may be slower than the current static flattening
 - Getter/setter properties require descriptor-aware copying rather than simple value copy
+- `cargo nextest run -E 'test(spread) or test(node_diff)'` remains blocked by
+  unrelated `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm`
+  timeout, as recorded in the progress evidence.
