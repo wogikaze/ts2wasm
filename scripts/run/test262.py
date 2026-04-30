@@ -268,6 +268,9 @@ def escape_json(s):
 def extract_category(path):
     """Extract category from test262 file path."""
     match = re.search(r'test/language/([^/]+)/', str(path))
+    if match:
+        return match.group(1)
+    match = re.search(r'test/([^/]+)/', str(path))
     return match.group(1) if match else "unknown"
 
 def stable_test_path(path):
@@ -752,7 +755,7 @@ def main():
         print(f"Sample mode: first {sample} files per category", file=sys.stderr)
     
     # Find test files
-    test_files = sorted((TEST262_ROOT / "test" / "language").glob("**/*.js"))
+    test_files = sorted((TEST262_ROOT / "test").glob("**/*.js"))
     
     # Filter by category
     category_seen = {}
