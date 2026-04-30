@@ -28,6 +28,7 @@ const ENV_CELL_VALUE_OFFSET: u32 = Layout::ARRAY_HEADER_SIZE;
 const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
 const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
+const ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD: i32 = 3072;
 
 impl WatEmitter<'_> {
     pub(super) fn expr_produces_value(&self, expr: &LoweredExpr) -> bool {
@@ -1167,7 +1168,7 @@ impl WatEmitter<'_> {
         wat.push_str(&format!("{pad}(local.set {pushed_value})\n"));
         self.emit_gc_root_mirror_index(wat, &pad, pushed_value, frame);
         wat.push_str(&format!(
-            "{pad}(local.set {old_len} (i32.load (i32.and (local.get {old_array}) (i32.const {}))))\n\
+            "{pad}(local.set {old_len} (i32.load (i32.and (local.get {old_array}) (i32.const {})))\n\
              {pad}(local.set {old_capacity}\n\
              {pad}  (i32.shr_u\n\
              {pad}    (i32.sub\n\
@@ -1183,7 +1184,7 @@ impl WatEmitter<'_> {
              {pad}    (i32.store\n\
              {pad}      (i32.add\n\
              {pad}        (i32.and (local.get {old_array}) (i32.const {}))\n\
-             {pad}        (i32.add (i32.const {}) (i32.shl (local.get {old_len}) (i32.const {}))))\n\
+             {pad}        (i32.add (i32.const {}) (i32.shl (local.get {old_len}) (i32.const {})))\n\
              {pad}      (local.get {pushed_value}))\n\
              {pad}    (i32.store\n\
              {pad}      (i32.and (local.get {old_array}) (i32.const {}))\n\
@@ -1192,10 +1193,12 @@ impl WatEmitter<'_> {
              {pad}  )\n\
              {pad}  (else\n\
              {pad}    (local.set {new_capacity} (i32.shl (local.get {old_capacity}) (i32.const 1)))\n\
+             {pad}    (if (i32.gt_u (local.get {old_capacity}) (i32.const {array_push_grow_linear_growth_threshold}))\n\
+             {pad}      (then\n\
+             {pad}        (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1)))))\n\
              {pad}    (if (i32.lt_u (local.get {new_capacity}) (i32.const 4))\n\
-             {pad}      (then (local.set {new_capacity} (i32.const 4))))\n\
-             {pad}    (if (i32.lt_u (local.get {new_capacity}) (i32.add (local.get {old_len}) (i32.const 1)))\n\
-             {pad}      (then (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1)))))\n\
+             {pad}      (if (i32.lt_u (local.get {new_capacity}) (i32.add (local.get {old_len}) (i32.const 1)))\n\
+             {pad}        (then (local.set {new_capacity} (i32.add (local.get {old_len}) (i32.const 1)))))\n\
              {pad}    (local.set {new_array}\n\
              {pad}      (call {}\n\
              {pad}        (i32.add\n\
@@ -1211,6 +1214,7 @@ impl WatEmitter<'_> {
             Layout::ARRAY_HEADER_SIZE,
             Layout::ARRAY_ELEM_SHIFT,
             ValueTag::HEAP_MASK,
+            ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD,
             RuntimeFn::AllocHeap.symbol(),
             Layout::ARRAY_HEADER_SIZE,
             Layout::ARRAY_ELEM_SHIFT,
