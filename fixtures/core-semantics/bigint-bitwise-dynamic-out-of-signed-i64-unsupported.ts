@@ -4,3 +4,6 @@ if (true) {
 }
 
 console.log(~dynamicWide);
+console.log(dynamicWide & 255n);
+console.log(dynamicWide | 255n);
+console.log(dynamicWide ^ 255n);

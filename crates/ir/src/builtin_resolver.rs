@@ -103,6 +103,26 @@ impl BigIntStaticBuiltinFolder {
                 span,
             } => {
                 let condition = self.fold_expr(condition);
+                if matches!(condition, Expr::Bool { value: true, .. }) {
+                    let then_body = self.fold_stmts(then_body);
+                    let else_body = self.fork().fold_stmts(else_body);
+                    return Stmt::If {
+                        condition,
+                        then_body,
+                        else_body,
+                        span: *span,
+                    };
+                }
+                if matches!(condition, Expr::Bool { value: false, .. }) {
+                    let then_body = self.fork().fold_stmts(then_body);
+                    let else_body = self.fold_stmts(else_body);
+                    return Stmt::If {
+                        condition,
+                        then_body,
+                        else_body,
+                        span: *span,
+                    };
+                }
                 let then_body = self.fork().fold_stmts(then_body);
                 let else_body = self.fork().fold_stmts(else_body);
                 self.invalidate_assigned_in_stmts(then_body.as_slice());
