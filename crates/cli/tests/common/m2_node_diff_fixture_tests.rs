@@ -1410,9 +1410,11 @@ fn function_object_metadata_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn unsupported_function_prototype_metadata_reports_issue_062f() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/function-prototype-metadata-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-062f: function `score` prototype metadata is not supported",
+        true,
     );
 }
 
