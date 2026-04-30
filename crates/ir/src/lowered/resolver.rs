@@ -35,6 +35,7 @@ struct Resolver<'a> {
     control_flow_bigint_div_rem_locals: HashSet<LocalId>,
     control_flow_mixed_bigint_locals: HashSet<LocalId>,
     array_locals: HashSet<LocalId>,
+    static_array_slots: HashMap<LocalId, Vec<ResolvedArrayElement>>,
     symbol_iterator_object_locals: HashSet<LocalId>,
     static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
     static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
@@ -118,6 +119,7 @@ impl<'a> Resolver<'a> {
             control_flow_bigint_div_rem_locals: HashSet::new(),
             control_flow_mixed_bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            static_array_slots: HashMap::new(),
             symbol_iterator_object_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
@@ -182,6 +184,7 @@ impl<'a> Resolver<'a> {
             control_flow_bigint_div_rem_locals: HashSet::new(),
             control_flow_mixed_bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
+            static_array_slots: HashMap::new(),
             symbol_iterator_object_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
@@ -411,6 +414,7 @@ impl<'a> Resolver<'a> {
                 if let Some(lowered) = self.lower_direct_iife_stmt(expr)? {
                     return Ok(lowered);
                 }
+                self.update_static_array_slot_assignment(expr);
                 if let ResolvedExpr::MethodCall {
                     object,
                     method,

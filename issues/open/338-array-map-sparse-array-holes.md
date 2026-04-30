@@ -205,3 +205,17 @@ Remaining:
   a supported class constructor \`Array\`` from the Test262 assertion harness.
 - Issue 338 remains blocked for full selected-representative close evidence.
   Follow-up issue 405 tracks the harness `instanceof` RHS blocker.
+
+## Additional progress evidence
+
+2026-05-01 parent review of child-405 implementation slice:
+
+- Added `fixtures/core-semantics/array-map-new-array-holes.ts` covering
+  `new Array(10)` sparse holes with a present `undefined` write before `map`.
+- Added lowering support for the selected small `new Array(<0..32>)` sparse-hole
+  construction shape and present-slot tracking needed by the fixture.
+- Validation passed: `cargo nextest run -p ts2wasm-cli array_map` (18/18).
+- The selected Test262 representative still does not close: parent rerun of
+  `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-8-b-1.js`
+  still reports `[UnsupportedSyntax] issue-207: instanceof right-hand side must
+  be a supported class constructor`Array``. Issue 405 remains open.

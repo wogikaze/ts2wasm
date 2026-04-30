@@ -226,7 +226,7 @@ impl<'a> Resolver<'a> {
         }
     }
 
-    fn lower_array_map_elements(
+    pub(super) fn lower_array_map_elements(
         &mut self,
         array_expr: &ResolvedExpr,
         elements: &[ResolvedArrayElement],
@@ -1869,10 +1869,15 @@ impl<'a> Resolver<'a> {
     }
 
     pub(super) fn update_array_local(&mut self, local_id: LocalId, expr: &ResolvedExpr) {
-        if self.resolved_expr_produces_dense_array(expr) {
+        if let Some(slots) = self.resolved_expr_static_array_slots(expr) {
             self.array_locals.insert(local_id);
+            self.static_array_slots.insert(local_id, slots);
+        } else if self.resolved_expr_produces_dense_array(expr) {
+            self.array_locals.insert(local_id);
+            self.static_array_slots.remove(&local_id);
         } else {
             self.array_locals.remove(&local_id);
+            self.static_array_slots.remove(&local_id);
         }
     }
 
@@ -2138,6 +2143,56 @@ impl<'a> Resolver<'a> {
                 .is_some_and(|local_id| self.array_locals.contains(&local_id)),
             _ => false,
         }
+    }
+
+    pub(super) fn resolved_expr_static_array_slots(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> Option<Vec<ResolvedArrayElement>> {
+        match expr {
+            ResolvedExpr::Array(elements) => Some(elements.clone()),
+            ResolvedExpr::New { class_name, args, .. } if class_name == "Array" => {
+                let [ResolvedExpr::Number(length)] = args.as_slice() else {
+                    return None;
+                };
+                if *length < 0 || *length > 32 {
+                    return None;
+                }
+                Some(vec![ResolvedArrayElement::Hole; *length as usize])
+            }
+            ResolvedExpr::Ident(name) => self
+                .resolve_local(name)
+                .ok()
+                .and_then(|local_id| self.static_array_slots.get(&local_id).cloned()),
+            _ => None,
+        }
+    }
+
+    pub(super) fn update_static_array_slot_assignment(&mut self, expr: &ResolvedExpr) {
+        let ResolvedExpr::PropertyAssignDynamic { object, key, value } = expr else {
+            return;
+        };
+        let ResolvedExpr::Ident(name) = object.as_ref() else {
+            return;
+        };
+        let Ok(local_id) = self.resolve_local(name) else {
+            return;
+        };
+        if !self.static_array_slots.contains_key(&local_id) {
+            return;
+        }
+        let ResolvedExpr::Number(index) = key.as_ref() else {
+            self.static_array_slots.remove(&local_id);
+            return;
+        };
+        let Some(slots) = self.static_array_slots.get_mut(&local_id) else {
+            return;
+        };
+        if *index < 0 || *index as usize >= slots.len() {
+            self.static_array_slots.remove(&local_id);
+            return;
+        }
+        slots[*index as usize] = ResolvedArrayElement::Present(value.as_ref().clone());
     }
 
     pub(super) fn expr_is_known_heap_closure(&self, expr: &ResolvedExpr) -> bool {

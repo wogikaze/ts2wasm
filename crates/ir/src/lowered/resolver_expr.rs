@@ -1081,6 +1081,15 @@ impl<'a> Resolver<'a> {
                     }
 
                     if method == "map"
+                        && let Some(elements) = self.resolved_expr_static_array_slots(object)
+                        && elements
+                            .iter()
+                            .any(|element| matches!(element, ResolvedArrayElement::Hole))
+                    {
+                        return self.lower_array_map_elements(object, &elements, args, *span);
+                    }
+
+                    if method == "map"
                         && is_string_split_result_expr(object)
                         && is_identity_arrow_callback(args)
                     {
@@ -1453,6 +1462,32 @@ impl<'a> Resolver<'a> {
                     return Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateNew".to_owned(),
                         args: vec![self.lower_expr(epoch_ms)?],
+                    });
+                }
+                if class_name == "Array" {
+                    let [length] = args.as_slice() else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-405: new Array(length) currently supports exactly one small non-negative integer length".to_owned(),
+                            span: None,
+                        });
+                    };
+                    let ResolvedExpr::Number(length) = length else {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-405: new Array(length) currently requires a small non-negative integer length literal".to_owned(),
+                            span: None,
+                        });
+                    };
+                    if *length < 0 || *length > 32 {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-405: new Array(length) currently supports lengths from 0 through 32".to_owned(),
+                            span: None,
+                        });
+                    }
+                    return Ok(LoweredExpr::ArrayNewSparse {
+                        slots: vec![LoweredArraySlot::Hole; *length as usize],
                     });
                 }
                 if class_name == "Map" || class_name == "Set" {
