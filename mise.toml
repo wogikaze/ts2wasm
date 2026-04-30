@@ -65,6 +65,10 @@ run = "python scripts/manager.py reference-coverage"
 description = "Generate rich diagnostics for one reference test path"
 run = "python scripts/manager.py reference-triage"
 
+[tasks."abc451-runtime-costs"]
+description = "Run default-off ABC451 depth-8 runtime cost diagnostic"
+run = "python scripts/manager.py abc451-runtime-costs"
+
 [tasks."repo-metrics"]
 description = "Repository line, byte, and content-kind metrics"
 run = "python scripts/manager.py repo-metrics"

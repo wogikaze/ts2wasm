@@ -133,7 +133,7 @@ Commits:
 Diagnostic command:
 
 ```sh
-python scripts/run/abc451-runtime-costs.py --event-budget 100000 --timeout 30
+mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
 ```
 
 Baseline counter output:
@@ -173,8 +173,24 @@ Interpretation:
 Validation result:
 
 ```text
-command: python scripts/run/abc451-runtime-costs.py --event-budget 100000 --timeout 30
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
 result: pass; emitted JSON counters above; diagnostic_stop=true; timed_out=false
+date: 2026-04-30
+
+command: mise tasks | rg abc451-runtime-costs
+result: pass; canonical task is listed
+date: 2026-04-30
+
+command: mise run check scripts
+result: pass
+date: 2026-04-30
+
+command: mise run check agent-state
+result: pass
+date: 2026-04-30
+
+command: mise run check
+result: pass
 date: 2026-04-30
 
 command: cargo fmt --all --check
