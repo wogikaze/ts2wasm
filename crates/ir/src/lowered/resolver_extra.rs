@@ -397,6 +397,62 @@ impl<'a> Resolver<'a> {
         Ok(lowered)
     }
 
+    pub(super) fn lower_object_literal_expr(
+        &mut self,
+        props: &[(String, ResolvedExpr)],
+    ) -> Result<LoweredExpr, Diagnostic> {
+        let mut result: Option<LoweredExpr> = None;
+        let mut pending = Vec::new();
+
+        for (key, value) in props {
+            if key == OBJECT_SPREAD_SENTINEL {
+                if let Some(spread_props) = self.static_object_literal_spread_props(value) {
+                    pending.extend(self.lower_object_literal_props(&spread_props)?);
+                    continue;
+                }
+
+                let target = result
+                    .take()
+                    .unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new() });
+                let target = if pending.is_empty() {
+                    target
+                } else {
+                    LoweredExpr::RuntimeCall {
+                        runtime_fn: "ObjectSpread".to_owned(),
+                        args: vec![
+                            target,
+                            LoweredExpr::ObjectNew {
+                                props: std::mem::take(&mut pending),
+                            },
+                        ],
+                    }
+                };
+                result = Some(LoweredExpr::RuntimeCall {
+                    runtime_fn: "ObjectSpread".to_owned(),
+                    args: vec![target, self.lower_expr(value)?],
+                });
+                continue;
+            }
+
+            if self.is_function_identifier(value) {
+                continue;
+            }
+            pending.push((key.clone(), self.lower_expr(value)?));
+        }
+
+        let target = result.unwrap_or_else(|| LoweredExpr::ObjectNew { props: Vec::new() });
+        if pending.is_empty() {
+            Ok(target)
+        } else if matches!(target, LoweredExpr::ObjectNew { ref props } if props.is_empty()) {
+            Ok(LoweredExpr::ObjectNew { props: pending })
+        } else {
+            Ok(LoweredExpr::RuntimeCall {
+                runtime_fn: "ObjectSpread".to_owned(),
+                args: vec![target, LoweredExpr::ObjectNew { props: pending }],
+            })
+        }
+    }
+
     pub(super) fn static_object_literal_spread_props(
         &self,
         value: &ResolvedExpr,

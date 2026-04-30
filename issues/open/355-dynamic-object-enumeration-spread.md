@@ -110,6 +110,13 @@ Parent issue: 274
 
 Object spread `{ ...obj }` must enumerate `obj`'s own enumerable string-keyed properties and copy them as data properties to the new object. This requires a runtime helper that can iterate over object keys. The current runtime has `Object.keys` support which can serve as the enumeration primitive.
 
+Progress 2026-04-30:
+
+- Added `ObjectSpread` runtime lowering that uses the runtime `Object.keys` helper to copy own string-keyed data properties into the target object.
+- Added Node/iwasm differential fixtures for function-return object spread, dynamic local object spread, and mutated object spread.
+- Validation passed for `cargo fmt --all --check`, `cargo test -p ts2wasm-cli spread`, `mise run update-issue-index -- --check`, and `mise run check issues`.
+- `cargo nextest run -E 'test(spread) or test(node_diff)'` passed all spread-selected tests but failed on unrelated `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` iwasm timeout; retrying that single test reproduced the timeout. Issue remains open until the required nextest gate can pass or the unrelated blocker is dispositioned.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

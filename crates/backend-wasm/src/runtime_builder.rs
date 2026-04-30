@@ -116,6 +116,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayJoin => self.emit_array_join(wat),
                 RuntimeFn::ArrayReverse => self.emit_array_reverse(wat),
                 RuntimeFn::ObjectKeys => self.emit_object_keys(wat),
+                RuntimeFn::ObjectSpread => self.emit_object_spread(wat),
                 RuntimeFn::ObjectValues => self.emit_object_values(wat),
                 RuntimeFn::ObjectEntries => self.emit_object_entries(wat),
                 RuntimeFn::ObjectGetPrototypeOf => self.emit_object_get_prototype_of(wat),

@@ -1250,12 +1250,25 @@ fn spread_operator_object_alias_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn spread_operator_object_function_return_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-object-function-return.ts");
+}
+
+#[test]
+fn spread_operator_object_dynamic_local_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-object-dynamic-local.ts");
+}
+
+#[test]
+fn spread_operator_object_mutated_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-object-mutated.ts");
+}
+
+#[test]
 fn spread_operator_unsupported_forms_report_issue_274() {
     for fixture in [
         "fixtures/core-semantics/spread-call-dynamic-unsupported.ts",
         "fixtures/core-semantics/spread-array-unsupported.ts",
-        "fixtures/core-semantics/spread-object-unsupported.ts",
-        "fixtures/core-semantics/spread-object-alias-mutated-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax_without_span(fixture, "issue-274:");
     }

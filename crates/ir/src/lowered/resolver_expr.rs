@@ -621,8 +621,7 @@ impl<'a> Resolver<'a> {
                 self.lower_array_literal(elements)
             }
             ResolvedExpr::Object(props) => {
-                let lowered = self.lower_object_literal_props(props)?;
-                Ok(LoweredExpr::ObjectNew { props: lowered })
+                self.lower_object_literal_expr(props)
             }
             ResolvedExpr::MethodCall {
                 object,

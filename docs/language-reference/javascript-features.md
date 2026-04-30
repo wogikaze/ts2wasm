@@ -201,7 +201,7 @@ BigInt/Number comparison の number-model diagnostic boundary: `NaN` / `Infinity
 | property access `obj.key` | ES1 | static property access | 実装済み | - | - |
 | method shorthand | ES2015 | object method | 未実装 | P2 | - |
 | computed property literal | ES2015 | `{[expr]: v}` | 未実装 | P2 | - |
-| spread properties `...obj` | ES2018 | object spreading | 実装済み (basic: static object literals / known static object-literal locals and simple aliases without intervening assignment/property mutation) | - | 274 |
+| spread properties `...obj` | ES2018 | object spreading | 実装済み (basic: static object literals / known static object-literal locals and simple aliases / runtime object values with own string-keyed enumerable data properties) | - | 274, 355 |
 | shorthand properties `{x}` | ES2015 | property shorthand | 未実装 | P2 | - |
 | getter / setter | ES5 | accessor properties | 未実装 | P2 | - |
 

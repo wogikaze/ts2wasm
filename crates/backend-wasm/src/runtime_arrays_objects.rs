@@ -602,6 +602,66 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_object_spread(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_spread (param $target i32) (param $source i32) (result i32)
+    (local $keys i32)
+    (local $keys_tag i32)
+    (local $keys_base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $key_raw i32)
+    (local $key_base i32)
+    (local $key_ptr i32)
+    (local $key_len i32)
+    (local $value i32)
+    (local.set $keys (call $object_keys (local.get $source)))
+    (local.set $keys_tag (i32.and (local.get $keys) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $keys_tag) (i32.const {array_tag}))
+      (then (return (local.get $target))))
+    (local.set $keys_base (i32.and (local.get $keys) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $keys_base)))
+    (local.set $i (i32.const {zero}))
+    (block $spread_done
+      (loop $spread_loop
+        (br_if $spread_done (i32.ge_u (local.get $i) (local.get $count)))
+        (local.set $key_raw
+          (i32.load
+            (i32.add
+              (local.get $keys_base)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $key_base (i32.and (local.get $key_raw) (i32.const {heap_mask})))
+        (local.set $key_ptr (i32.add (local.get $key_base) (i32.const {str_header})))
+        (local.set $key_len (i32.load (local.get $key_base)))
+        (local.set $value
+          (call $property_get
+            (local.get $source)
+            (local.get $key_ptr)
+            (local.get $key_len)))
+        (drop
+          (call $property_set
+            (local.get $target)
+            (local.get $key_ptr)
+            (local.get $key_len)
+            (local.get $value)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $spread_loop)))
+    (local.get $target))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            str_header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(super) fn emit_object_values(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

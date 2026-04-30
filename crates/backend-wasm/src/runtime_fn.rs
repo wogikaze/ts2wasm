@@ -152,6 +152,7 @@ pub(crate) enum RuntimeFn {
     ArrayReverse,
     /// M10: Object statics
     ObjectKeys,
+    ObjectSpread,
     ObjectValues,
     ObjectEntries,
     ObjectGetPrototypeOf,
@@ -395,6 +396,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntDiv" => Some(RuntimeFn::BigIntDiv),
         "BigIntRem" => Some(RuntimeFn::BigIntRem),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
+        "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
         "ObjectGetPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
@@ -755,6 +757,11 @@ const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ObjectKeys,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::PropertySet,
+];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];

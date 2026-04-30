@@ -855,6 +855,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectSpread => RuntimeSpec {
+                symbol: "$object_spread",
+                deps: OBJECT_SPREAD_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ObjectValues => RuntimeSpec {
                 symbol: "$object_values",
                 deps: OBJECT_VALUES_DEPS,
@@ -1223,6 +1231,7 @@ impl RuntimeFn {
             Self::ArrayJoin => "array_join",
             Self::ArrayReverse => "array_reverse",
             Self::ObjectKeys => "object_keys",
+            Self::ObjectSpread => "object_spread",
             Self::ObjectValues => "object_values",
             Self::ObjectEntries => "object_entries",
             Self::ObjectGetPrototypeOf => "object_get_prototype_of",
@@ -1364,6 +1373,7 @@ impl RuntimeFn {
             Self::ArrayReverse,
             // Object statics
             Self::ObjectKeys,
+            Self::ObjectSpread,
             Self::ObjectValues,
             Self::ObjectEntries,
             Self::ObjectGetPrototypeOf,
@@ -1511,6 +1521,7 @@ impl RuntimeFn {
             Self::ArrayReverse,
             // Object statics
             Self::ObjectKeys,
+            Self::ObjectSpread,
             Self::ObjectValues,
             Self::ObjectEntries,
             Self::ObjectGetPrototypeOf,
