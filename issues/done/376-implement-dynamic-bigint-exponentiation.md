@@ -140,4 +140,4 @@ Validation:
 
 Commits:
 
-- pending final commit hash
+- `0c7876f6` issue-376: implement dynamic bigint exponentiation slice
