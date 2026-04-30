@@ -204,7 +204,7 @@ impl RuntimeFn {
                 deps: BIGINT_DIV_DEPS,
                 imports: NO_IMPORTS,
                 capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
+                runtime_strings: BIGINT_DIVISION_BY_ZERO_RANGE_ERROR_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
             Self::BigIntRem => RuntimeSpec {

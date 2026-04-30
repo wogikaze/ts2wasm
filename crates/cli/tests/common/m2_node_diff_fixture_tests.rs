@@ -287,15 +287,15 @@ fn bigint_large_mul_local_flow_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
-fn bigint_runtime_div_zero_traps_after_successful_build() {
-    assert_fixture_node_rangeerror_and_iwasm_traps(
+fn bigint_runtime_div_zero_reports_rangeerror_after_successful_build() {
+    assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(
         "fixtures/core-semantics/bigint-runtime-div-zero-trap.ts",
     );
 }
 
 #[test]
-fn bigint_runtime_rem_zero_traps_after_successful_build() {
-    assert_fixture_node_rangeerror_and_iwasm_traps(
+fn bigint_runtime_rem_zero_reports_rangeerror_after_successful_build() {
+    assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(
         "fixtures/core-semantics/bigint-runtime-rem-zero-trap.ts",
     );
 }
