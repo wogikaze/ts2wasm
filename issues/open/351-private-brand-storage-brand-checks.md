@@ -252,3 +252,28 @@ Remaining blockers:
 - Issue 351 remains open: subclass/no-inherited-brand fixture coverage and
   broader extracted/external private method/accessor brand-check forms are not
   complete in this slice.
+
+2026-05-01 subclass brand coverage slice:
+
+- Added Node/iwasm differential coverage for the no-inherited-brand case:
+  `fixtures/core-semantics/private-class-derived-no-inherited-brand.ts`.
+- The fixture proves a `Derived` same-class private field read takes the success
+  path on a `Derived` instance but throws through the catchable private-brand
+  TypeError path when the receiver is only a `Base` instance, so subclassing
+  does not grant the derived class private brand to base-class instances.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli private -- --nocapture: pass
+cargo test -p ts2wasm-backend-wasm private_field_runtime_calls -- --nocapture: pass
+```
+
+Remaining blockers:
+
+- Broader extracted/external private method/accessor brand-check forms still
+  need a separate lowering/runtime slice. In particular,
+  method-only/accessor-only classes need an explicit brand without private field
+  slots, and assignment/call evaluation order needs to be preserved before
+  replacing the current issue-255 diagnostics.
