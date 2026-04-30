@@ -878,6 +878,26 @@ impl<'a> Resolver<'a> {
                             args: lowered_args,
                         });
                     }
+                    if (runtime_fn == "MathMax" || runtime_fn == "MathMin") && args.len() > 2 {
+                        let mut lowered_args = Vec::new();
+                        if !matches!(
+                            object.as_ref(),
+                            ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object" || name == "String"
+                        ) {
+                            lowered_args.push(self.lower_expr(object)?);
+                        }
+                        for arg in args {
+                            lowered_args.push(self.lower_expr(arg)?);
+                        }
+                        let mut result = lowered_args[0].clone();
+                        for arg in &lowered_args[1..] {
+                            result = LoweredExpr::RuntimeCall {
+                                runtime_fn: runtime_fn.clone(),
+                                args: vec![result, arg.clone()],
+                            };
+                        }
+                        return Ok(result);
+                    }
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
                         object.as_ref(),
