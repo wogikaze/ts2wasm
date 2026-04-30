@@ -21,6 +21,7 @@ use ts2wasm_frontend::{
     BinaryOp, ClassPrivateElement, ClassStaticBlock, DiagCode, Diagnostic, Expr, Span, Stmt,
     UnaryOp,
 };
+use ts2wasm_runtime_abi::ValueTag;
 
 use super::binding_pattern::parse_binding_pattern;
 use super::builtin::BuiltinId;
@@ -370,11 +371,25 @@ impl BigIntStaticBuiltinFolder {
                 args: args.iter().map(|arg| self.fold_expr(arg)).collect(),
                 span: *span,
             },
-            Expr::Unary { op, expr, span } => Expr::Unary {
-                op: *op,
-                expr: Box::new(self.fold_expr(expr)),
-                span: *span,
-            },
+            Expr::Unary { op, expr, span } => {
+                let expr = self.fold_expr(expr);
+                if *op == UnaryOp::Negate
+                    && let Some(value) = self.bigint_const_value(&expr)
+                {
+                    return bigint_const_to_expr(value.negated(), *span);
+                }
+                if *op == UnaryOp::BitwiseNot
+                    && let Some(value) = self.bigint_const_value(&expr)
+                    && let Ok(result) = fold_bigint_unary_bitwise_not(value, *span)
+                {
+                    return bigint_const_to_expr(result, *span);
+                }
+                Expr::Unary {
+                    op: *op,
+                    expr: Box::new(expr),
+                    span: *span,
+                }
+            }
             Expr::Binary {
                 left,
                 op,
@@ -383,6 +398,16 @@ impl BigIntStaticBuiltinFolder {
             } => {
                 let left = self.fold_expr(left);
                 let right = self.fold_expr(right);
+                if matches!(
+                    op,
+                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                ) && let (Some(left_value), Some(right_value)) = (
+                    self.bigint_const_value(&left),
+                    self.bigint_const_value(&right),
+                ) && let Ok(result) = fold_bigint_binary(left_value, *op, right_value, *span)
+                {
+                    return bigint_const_to_expr(result, *span);
+                }
                 let left_toprimitive = self.object_toprimitive_primitive_expr(&left);
                 let right_toprimitive = self.object_toprimitive_primitive_expr(&right);
                 let is_relational = matches!(
@@ -404,12 +429,12 @@ impl BigIntStaticBuiltinFolder {
                     || expr_contains_bigint(&right)
                     || left_toprimitive.as_ref().is_some_and(expr_contains_bigint)
                     || right_toprimitive.as_ref().is_some_and(expr_contains_bigint));
-                let left_can_fold_toprimitive = left_toprimitive.as_ref().is_some_and(|expr| {
-                    expr_contains_bigint(expr) || matches!(expr, Expr::String { .. })
-                });
-                let right_can_fold_toprimitive = right_toprimitive.as_ref().is_some_and(|expr| {
-                    expr_contains_bigint(expr) || matches!(expr, Expr::String { .. })
-                });
+                let left_can_fold_toprimitive = left_toprimitive
+                    .as_ref()
+                    .is_some_and(|expr| object_toprimitive_can_fold_for_bigint_op(expr, *op));
+                let right_can_fold_toprimitive = right_toprimitive
+                    .as_ref()
+                    .is_some_and(|expr| object_toprimitive_can_fold_for_bigint_op(expr, *op));
                 Expr::Binary {
                     left: Box::new(if should_fold && left_can_fold_toprimitive {
                         let expr = left_toprimitive.unwrap_or(left);
@@ -652,11 +677,40 @@ impl BigIntStaticBuiltinFolder {
             _ => object_toprimitive_supported_primitive_expr(expr),
         }
     }
+
+    fn bigint_const_value(&self, expr: &Expr) -> Option<BigIntConst> {
+        match expr {
+            Expr::Ident { name, .. } => self
+                .locals
+                .get(name)
+                .and_then(|expr| bigint_expr_const_value(expr)),
+            _ => bigint_expr_const_value(expr),
+        }
+    }
 }
 
 fn static_bigint_builtin_const_expr(expr: &Expr) -> Option<Expr> {
     match expr {
         Expr::Number { .. } | Expr::BigInt { .. } => Some(expr.clone()),
+        Expr::Unary {
+            op, expr: inner, ..
+        } if *op == UnaryOp::Negate
+            && matches!(inner.as_ref(), Expr::Number { .. } | Expr::BigInt { .. }) =>
+        {
+            Some(expr.clone())
+        }
+        _ => None,
+    }
+}
+
+fn bigint_expr_const_value(expr: &Expr) -> Option<BigIntConst> {
+    match expr {
+        Expr::BigInt { raw, span } => parse_bigint_literal(raw, *span)
+            .ok()
+            .and_then(|resolved| bigint_from_resolved(&resolved)),
+        Expr::Unary { op, expr, .. } if *op == UnaryOp::Negate => {
+            bigint_expr_const_value(expr).map(BigIntConst::negated)
+        }
         _ => None,
     }
 }
@@ -670,7 +724,7 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
     if let Some((_, value)) = value_of {
         return match value {
             Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
-                Expr::BigInt { .. } => Some((**body).clone()),
+                body if object_toprimitive_supported_return_expr(body) => Some(body.clone()),
                 _ => None,
             },
             _ => None,
@@ -682,17 +736,43 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
         .find(|(key, _)| key == "toString")
         .and_then(|(_, value)| match value {
             Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
-                Expr::String { value, span }
-                    if bigint_from_string_builtin(value, *span)
-                        .ok()
-                        .is_some_and(|parsed| bigint_fits_runtime_mixed_string(&parsed)) =>
-                {
-                    Some((**body).clone())
-                }
+                body if object_toprimitive_supported_return_expr(body) => Some(body.clone()),
                 _ => None,
             },
             _ => None,
         })
+}
+
+fn object_toprimitive_supported_return_expr(expr: &Expr) -> bool {
+    match expr {
+        Expr::BigInt { .. } | Expr::Bool { .. } | Expr::Null { .. } | Expr::Undefined { .. } => {
+            true
+        }
+        Expr::Number { value, .. } => ValueTag::can_encode_number(*value),
+        Expr::Unary { op, expr, .. } if *op == UnaryOp::Negate => {
+            let Expr::Number { value, .. } = expr.as_ref() else {
+                return false;
+            };
+            value.checked_neg().is_some_and(ValueTag::can_encode_number)
+        }
+        Expr::String { value, span } => bigint_from_string_builtin(value, *span)
+            .ok()
+            .is_some_and(|parsed| bigint_fits_runtime_mixed_string(&parsed)),
+        _ => false,
+    }
+}
+
+fn object_toprimitive_can_fold_for_bigint_op(expr: &Expr, op: BinaryOp) -> bool {
+    if !object_toprimitive_supported_return_expr(expr) {
+        return false;
+    }
+    match op {
+        BinaryOp::EqualEqual | BinaryOp::BangEqual => true,
+        BinaryOp::Less | BinaryOp::LessEqual | BinaryOp::Greater | BinaryOp::GreaterEqual => {
+            !matches!(expr, Expr::Null { .. } | Expr::Undefined { .. })
+        }
+        _ => false,
+    }
 }
 
 fn object_toprimitive_relational_expr(expr: Expr) -> Expr {
@@ -1293,6 +1373,22 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         op: *op,
                         right: Box::new(right_resolved),
                     });
+                }
+                if matches!(
+                    op,
+                    BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift
+                ) {
+                    if *op == BinaryOp::UnsignedRightShift {
+                        return Err(bigint_shift_diagnostic(*span));
+                    }
+                    if let (Some(left_value), Some(right_value)) = (
+                        bigint_from_resolved(&left_resolved),
+                        bigint_from_resolved(&right_resolved),
+                    ) {
+                        let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
+                        return Ok(bigint_to_resolved(result));
+                    }
+                    return Err(bigint_shift_diagnostic(*span));
                 }
                 let diagnostic = match op {
                     BinaryOp::Add

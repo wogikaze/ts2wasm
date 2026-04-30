@@ -209,6 +209,16 @@ def parse_diagnostic(returncode: int, stderr: str, source: str, path: Path) -> D
 
     if code == "UnsupportedSyntax":
         error_type = "parser-or-frontend-unsupported"
+    elif code in {
+        "UnsupportedBuiltin",
+        "UnsupportedDate",
+        "UnsupportedRegExp",
+        "UnsupportedModule",
+        "UnsupportedEval",
+        "UnsupportedTypeScriptSyntax",
+        "UnsupportedRuntimeSubset",
+    }:
+        error_type = "unsupported-feature-boundary"
     elif code in {"UnresolvedName", "UnresolvedFunction"}:
         error_type = "resolver-symbol"
     elif code == "BackendIo":

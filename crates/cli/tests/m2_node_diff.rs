@@ -559,6 +559,10 @@ fn assert_build_fails_with_unsupported_syntax_impl(
     assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax]", expected, require_span);
 }
 
+fn assert_build_fails_with_unsupported_builtin(fixture: &str, expected: &str) {
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedBuiltin]", expected, true);
+}
+
 fn assert_build_fails_with_diagnostic(
     fixture: &str,
     expected_code: &str,
@@ -1022,8 +1026,8 @@ fn regexp_unsupported_flag_fixture_reports_issue_202() {
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains("[UnsupportedSyntax]"),
-        "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
+        stderr.contains("[UnsupportedRegExp]"),
+        "expected UnsupportedRegExp diagnostic, got:\n{stderr}"
     );
     assert!(
         stderr.contains("issue-202: unsupported RegExp flag `d`"),
@@ -1053,8 +1057,8 @@ fn regexp_compile_fixture_reports_issue_051() {
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains("[UnsupportedSyntax]"),
-        "expected UnsupportedSyntax diagnostic, got:\n{stderr}"
+        stderr.contains("[UnsupportedRegExp]"),
+        "expected UnsupportedRegExp diagnostic, got:\n{stderr}"
     );
     assert!(
         stderr.contains("issue-051: RegExp.prototype.compile is not supported"),
@@ -1065,7 +1069,7 @@ fn regexp_compile_fixture_reports_issue_051() {
 #[test]
 fn annex_b_string_anchor_fixture_reports_issue_067() {
     let fixture = "fixtures/builtins-and-io/string-anchor-annexb-unsupported.ts";
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_unsupported_builtin(
         fixture,
         "issue-067: Annex B String.prototype.anchor is not supported yet",
     );
@@ -1074,13 +1078,13 @@ fn annex_b_string_anchor_fixture_reports_issue_067() {
 #[test]
 fn array_map_fixtures_report_issue_270() {
     for fixture in ["fixtures/builtins-and-io/array-map-unsupported.ts"] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-270: Array.prototype.map");
+        assert_build_fails_with_unsupported_builtin(fixture, "issue-270: Array.prototype.map");
     }
 }
 
 #[test]
 fn array_sort_unsupported_forms_report_issue_299() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_unsupported_builtin(
         "fixtures/core-semantics/array-sort-default-unsupported.ts",
         "issue-299: Array.prototype.sort",
     );
@@ -1088,7 +1092,7 @@ fn array_sort_unsupported_forms_report_issue_299() {
 
 #[test]
 fn object_get_own_property_descriptor_reports_issue_291() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_unsupported_builtin(
         "fixtures/builtins-and-io/object-get-own-property-descriptor-unsupported.ts",
         "issue-291: Object.getOwnPropertyDescriptor is not implemented in the current Object global binding slice",
     );
@@ -1128,8 +1132,8 @@ fn assert_build_fails_with_issue_062_function_constructor(fixture: &str) {
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
     assert!(
-        stderr.contains("[UnsupportedSyntax]"),
-        "expected UnsupportedSyntax diagnostic for {fixture}, got:\n{stderr}"
+        stderr.contains("[UnsupportedEval]"),
+        "expected UnsupportedEval diagnostic for {fixture}, got:\n{stderr}"
     );
     assert!(
         stderr.contains("issue-062: dynamic Function constructor is not supported"),

@@ -347,9 +347,11 @@ fn bigint_bitwise_binary_out_of_signed_i64_matches_node_output_under_iwasm() {
 
 #[test]
 fn bigint_bitwise_mixed_reports_issue_387() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-bitwise-binary-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-387: BigInt bitwise outside the signed-i64 helper slice is not implemented",
+        true,
     );
 }
 
@@ -602,14 +604,21 @@ fn bigint_runtime_mixed_object_tostring_relational_matches_node_output_under_iwa
 }
 
 #[test]
-fn bigint_runtime_mixed_object_toprimitive_reports_issue_282() {
+fn bigint_runtime_mixed_object_toprimitive_primitive_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-primitive.ts",
+    );
+}
+
+#[test]
+fn bigint_runtime_mixed_object_toprimitive_reports_issue_374() {
     for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-unsupported.ts",
         "fixtures/core-semantics/bigint-runtime-mixed-object-toprimitive-string-unsupported.ts",
     ] {
         assert_build_fails_with_unsupported_syntax(
             fixture,
-            "issue-282: object ToPrimitive for mixed BigInt comparison is not implemented in this runtime coercion slice",
+            "issue-374: object ToPrimitive for mixed BigInt comparison is limited to direct no-argument arrow valueOf/toString methods returning supported primitive literals",
         );
     }
 }

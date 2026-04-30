@@ -447,6 +447,8 @@ pub(super) fn fold_bigint_binary(
         BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor => {
             Ok(fold_bigint_binary_bitwise(left, op, right))
         }
+        BinaryOp::LeftShift | BinaryOp::RightShift => fold_bigint_binary_shift(left, op, right, span),
+        BinaryOp::UnsignedRightShift => Err(bigint_shift_diagnostic(span)),
         _ => unreachable!("non-arithmetic BigInt operator reached literal fold"),
     }
 }
@@ -476,6 +478,72 @@ fn fold_bigint_binary_bitwise(left: BigIntConst, op: BinaryOp, right: BigIntCons
         })
         .collect::<Vec<_>>();
     bigint_from_twos_complement_bits(&result_bits)
+}
+
+const MAX_LITERAL_BIGINT_SHIFT_BITS: u32 = 4096;
+
+fn fold_bigint_binary_shift(
+    left: BigIntConst,
+    op: BinaryOp,
+    right: BigIntConst,
+    span: Span,
+) -> Result<BigIntConst, Diagnostic> {
+    let bits = bigint_shift_amount_bits(&right, span)?;
+    let effective_op = if right.sign < 0 {
+        match op {
+            BinaryOp::LeftShift => BinaryOp::RightShift,
+            BinaryOp::RightShift => BinaryOp::LeftShift,
+            _ => unreachable!("checked by caller"),
+        }
+    } else {
+        op
+    };
+    Ok(match effective_op {
+        BinaryOp::LeftShift => bigint_shift_left(left, bits),
+        BinaryOp::RightShift => bigint_shift_right(left, bits),
+        _ => unreachable!("checked by caller"),
+    })
+}
+
+fn bigint_shift_amount_bits(value: &BigIntConst, span: Span) -> Result<u32, Diagnostic> {
+    let Some(bits) = decimal_digits_to_u64(&value.digits) else {
+        return Err(bigint_shift_diagnostic(span));
+    };
+    if bits > u64::from(MAX_LITERAL_BIGINT_SHIFT_BITS) {
+        return Err(bigint_shift_diagnostic(span));
+    }
+    Ok(bits as u32)
+}
+
+fn bigint_shift_left(value: BigIntConst, bits: u32) -> BigIntConst {
+    if value.sign == 0 || bits == 0 {
+        return value;
+    }
+    BigIntConst {
+        sign: value.sign,
+        digits: mul_abs(&value.digits, &decimal_power_of_two(bits)),
+    }
+}
+
+fn bigint_shift_right(value: BigIntConst, bits: u32) -> BigIntConst {
+    if value.sign == 0 || bits == 0 {
+        return value;
+    }
+    let divisor = decimal_power_of_two(bits);
+    let (mut quotient, remainder) = div_rem_abs(&value.digits, &divisor);
+    if value.sign > 0 {
+        return BigIntConst {
+            sign: if quotient == [0] { 0 } else { 1 },
+            digits: quotient,
+        };
+    }
+    if remainder != [0] {
+        quotient = add_abs(&quotient, &[1]);
+    }
+    BigIntConst {
+        sign: if quotient == [0] { 0 } else { -1 },
+        digits: quotient,
+    }
 }
 
 fn bigint_bit_width(value: &BigIntConst) -> usize {

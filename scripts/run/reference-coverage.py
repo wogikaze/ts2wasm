@@ -428,6 +428,20 @@ def feature_label(diag_code, err_file, file_path):
         return "arity"
     elif diag_code == "InvalidTopLevelReturn":
         return "top-level-return"
+    elif diag_code == "UnsupportedBuiltin":
+        return "builtin-api"
+    elif diag_code == "UnsupportedDate":
+        return "date"
+    elif diag_code == "UnsupportedRegExp":
+        return "regexp-literal"
+    elif diag_code == "UnsupportedModule":
+        return "import-export"
+    elif diag_code == "UnsupportedEval":
+        return "eval"
+    elif diag_code == "UnsupportedTypeScriptSyntax":
+        return "parser-syntax"
+    elif diag_code == "UnsupportedRuntimeSubset":
+        return "runtime-subset"
     
     # Check file path for feature detection
     path_lc = file_path.lower() if file_path else ""

@@ -410,6 +410,13 @@ pub struct Diagnostic {
 
 ```text
 UnsupportedSyntax
+UnsupportedBuiltin
+UnsupportedDate
+UnsupportedRegExp
+UnsupportedModule
+UnsupportedEval
+UnsupportedTypeScriptSyntax
+UnsupportedRuntimeSubset
 UnresolvedName
 UnresolvedFunction
 DuplicateLocal
@@ -443,6 +450,13 @@ Span::generated("lowered implicit undefined return")
 
 ```text
 UnsupportedSyntax
+UnsupportedBuiltin
+UnsupportedDate
+UnsupportedRegExp
+UnsupportedModule
+UnsupportedEval
+UnsupportedTypeScriptSyntax
+UnsupportedRuntimeSubset
 UnresolvedName
 UnresolvedFunction
 DuplicateLocal

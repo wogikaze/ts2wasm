@@ -39,7 +39,7 @@ fn missing_reference_types_directive_reports_issue_227() {
         "missing type directive fixture should not build successfully"
     );
     let stderr = String::from_utf8_lossy(&build.stderr);
-    assert!(stderr.contains("[UnsupportedSyntax]"), "{stderr}");
+    assert!(stderr.contains("[UnsupportedTypeScriptSyntax]"), "{stderr}");
     assert!(stderr.contains("issue-227"), "{stderr}");
     assert!(stderr.contains("cookie-session"), "{stderr}");
 }

@@ -73,6 +73,7 @@ pub fn validate_ast(ast: &[Stmt]) -> Result<(), Vec<Diagnostic>>
 | top-level `return` が `_start` に入らないか | `InvalidTopLevelReturn` | 予定 |
 | 関数定義の重複 | `DuplicateFunction` | 予定 |
 | サポート外構文（for, class, try 等） | `UnsupportedSyntax` | 現状 |
+| サポート外 builtin / Date / RegExp / module / eval / TS 構文 / runtime subset | `UnsupportedBuiltin` / `UnsupportedDate` / `UnsupportedRegExp` / `UnsupportedModule` / `UnsupportedEval` / `UnsupportedTypeScriptSyntax` / `UnsupportedRuntimeSubset` | `UnsupportedSyntax` に集約せず、表示診断と coverage 集計で原因を分ける |
 
 ### BuiltinResolved AST
 

@@ -1525,7 +1525,7 @@ pub(super) fn bigint_comparison_string_boundary_diagnostic(span: Span) -> Diagno
 pub(super) fn bigint_object_toprimitive_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
-        message: "issue-282: object ToPrimitive for mixed BigInt comparison is not implemented in this runtime coercion slice".to_owned(),
+        message: "issue-374: object ToPrimitive for mixed BigInt comparison is limited to direct no-argument arrow valueOf/toString methods returning supported primitive literals".to_owned(),
         span: Some(span),
     }
 }

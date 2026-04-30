@@ -73,7 +73,6 @@ function print(message) {
 WASM_GLOBALS = r"""
 var NaN = 0/0;
 var Infinity = 1/0;
-var undefined = void 0;
 """
 
 WASM_HARNESS_SHIM = r"""
@@ -460,6 +459,13 @@ def feature_label(diag_code, stderr, test_file):
     feature_map = {
         "ExpectedNegativeSyntax": "negative-parse-syntaxerror",
         "UnsupportedSyntax": "feature-unsupported",
+        "UnsupportedBuiltin": "builtin-api",
+        "UnsupportedDate": "date",
+        "UnsupportedRegExp": "regexp-literal",
+        "UnsupportedModule": "import-export",
+        "UnsupportedEval": "eval",
+        "UnsupportedTypeScriptSyntax": "parser-syntax",
+        "UnsupportedRuntimeSubset": "runtime-subset",
         "UnresolvedName": "feature-resolution",
         "UnresolvedFunction": "feature-resolution",
         "TypeError": "type-system",
@@ -540,7 +546,7 @@ def compile_and_run_test(test_file, tmp_dir):
         result_status = "unsupported"
         stderr_content = result.stderr
         result_stderr_full = stderr_content
-        diag_match = re.search(r'(UnsupportedSyntax|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError)', stderr_content)
+        diag_match = re.search(r'(UnsupportedSyntax|UnsupportedBuiltin|UnsupportedDate|UnsupportedRegExp|UnsupportedModule|UnsupportedEval|UnsupportedTypeScriptSyntax|UnsupportedRuntimeSubset|UnresolvedName|UnresolvedFunction|TypeError|RuntimeError|InvariantViolation|BackendIo|CompilationError)', stderr_content)
         result_diag = diag_match.group(1) if diag_match else "CompilationError"
 
         # Try to extract line number from error message

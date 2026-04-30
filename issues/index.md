@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 209 | 131 | 78 |
+| frontend | 210 | 132 | 78 |
 | ir | 8 | 1 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 411 | 179 | 232 |
+| total | 412 | 180 | 232 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -50,10 +50,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 373 | Handle BigInt object ToPrimitive invalid and out-of-range string returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Issue 368 implemented `toString: () => <supported decimal string>` for equality and relational comparisons, but inval... |
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
-| 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt `/ 0n` and `% 0n` currently reach a runtime `unreachable` trap in the signed-i64 helper slice, while Node thro... |
 | 385 | Instrument ABC451 depth-8 copy vs GC time | feature | runtime/memory | implementation-ready | P1 |  | Issue 357's previous attempts to reduce the timeout did not identify whether the bottleneck is array copying, GC swee... |
 | 387 | Implement BigInt bitwise outside signed-i64 helper slice | feature | runtime/semantics | implementation-ready | P2 | 260, 377 | issue 377 added BigInt-specific helpers for known operands/results that fit the signed-i64-backed first-limb construc... |
-| 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 381 cannot produce a compatible `TypeError` object for... |
+| 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 380 cannot produce a compatible catchable `RangeError`... |
+| 399 | Define TypeScript parse, erase, and emit boundary contract | spike | frontend | design-ready | P1 |  | TypeScript parse/erase/emit failures do not have a single boundary contract, so generated issues can be misread as ma... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -224,6 +224,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 369 | Implement full multi-limb BigInt arithmetic | feature | runtime/semantics | class: blocked | Implement full multi-limb BigInt arithmetic |
 | 370 | Implement BigInt arithmetic RangeError and TypeError parity | feature | runtime/semantics | class: blocked | Implement BigInt arithmetic RangeError and TypeError parity |
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
+| 380 | BigInt division/remainder by zero RangeError | feature | runtime/semantics | class: blocked | BigInt division/remainder by zero RangeError |
 | 381 | Mixed Number/BigInt arithmetic TypeError | feature | runtime/semantics | class: blocked | Mixed Number/BigInt arithmetic TypeError |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |

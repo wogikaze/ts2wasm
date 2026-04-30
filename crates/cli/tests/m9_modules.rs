@@ -122,11 +122,11 @@ fn assert_build_fails_with_diagnostic_span_at(
 }
 
 fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
-    assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax]", expected);
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedModule]", expected);
 }
 
 fn assert_build_fails_with_module_graph_diagnostic(fixture: &str, expected: &str) {
-    assert_build_fails_with_diagnostic(fixture, "[UnsupportedSyntax]", expected);
+    assert_build_fails_with_diagnostic(fixture, "[UnsupportedModule]", expected);
 }
 
 #[test]
@@ -173,7 +173,7 @@ fn static_module_named_import_repeated_source_build_smoke() {
 fn static_module_named_import_missing_export_reports_issue_233_at_imported_name() {
     assert_build_fails_with_diagnostic_span_at(
         "module-system/static-missing-named-export.ts",
-        "[UnsupportedSyntax]",
+        "[UnsupportedModule]",
         "issue-233: module `./static-entry-source` does not export named binding `missing`",
         "missing",
     );

@@ -3,9 +3,9 @@ id: 380
 title: "BigInt division/remainder by zero RangeError"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: blocked
 priority: P2
-depends_on: [260]
+depends_on: [260, 396]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
@@ -17,22 +17,24 @@ Implement compatible JavaScript `RangeError` throwing for BigInt division and re
 
 Problem: BigInt `/ 0n` and `% 0n` currently reach a runtime `unreachable` trap in the signed-i64 helper slice, while Node throws `RangeError: Division by zero`.
 
+Current split status: the diagnostic/abort surface is implemented and covered, but catchable JavaScript `RangeError` object propagation depends on issue 396.
+
 ## Problem
 
 Issue 260 proved the arithmetic slice without silent coercion, but it did not add JS exception throwing machinery. Node throws `RangeError: Division by zero` for BigInt `/` and `%` by zero, while iwasm currently traps.
 
-Problem: BigInt division/remainder by zero error paths are not compatible JS throws yet.
+Problem: BigInt division/remainder by zero error paths are not compatible JS throws yet. They now report `RangeError: Division by zero` before aborting, but that is not a catchable JS `RangeError` object.
 
 ## Current failure
 
-Representative current evidence:
+Original representative evidence:
 
 ```sh
 cargo test -p ts2wasm-cli bigint_runtime_div_zero_traps_after_successful_build
 cargo test -p ts2wasm-cli bigint_runtime_rem_zero_traps_after_successful_build
 ```
 
-The zero-division fixtures prove Node reports `RangeError: Division by zero`, while iwasm currently traps.
+Current evidence proves Node reports `RangeError: Division by zero` and iwasm emits the matching diagnostic text before aborting. Catchable exception object propagation remains blocked on issue 396.
 
 ## Desired final state
 
@@ -42,7 +44,8 @@ BigInt division/remainder by zero throw a compatible `RangeError` object matchin
 
 In scope:
 
-- [ ] Define the minimal runtime throw path for `RangeError`, or depend on an existing compatible throw mechanism if available.
+- [x] Add the interim runtime diagnostic/abort surface for `RangeError: Division by zero`.
+- [ ] After issue 396 lands, use its runtime exception substrate for a catchable `RangeError` object.
 - [ ] Convert BigInt division-by-zero trap to compatible `RangeError` throwing for supported helper paths.
 - [ ] Convert BigInt remainder-by-zero trap to compatible `RangeError` throwing for supported helper paths.
 - [ ] Add Node/iwasm differential or exception-parity fixture for `BigInt / 0n` as `RangeError: Division by zero`.
@@ -87,7 +90,8 @@ Required commands:
 
 ```sh
 cargo fmt --all --check
-cargo test -p ts2wasm-cli --test m2_node_diff bigint
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_div_zero_reports_rangeerror_after_successful_build
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_rem_zero_reports_rangeerror_after_successful_build
 mise run update-issue-index -- --check
 mise run check issues
 ```
@@ -152,3 +156,9 @@ mise run check issues: pass
 Remaining risks:
 
 - This may need a small cross-cutting runtime exception primitive before BigInt-specific helpers can throw compatibly.
+
+2026-05-01 split/update:
+
+- Reclassified the issue as blocked on issue 396 instead of leaving it as directly implementation-ready.
+- Diagnostic/abort behavior is treated as progress only, not DONE: the required catchable `RangeError` object still does not exist.
+- The remaining acceptance slice is precise: after issue 396 provides a runtime JS exception object substrate, migrate `/ 0n` and `% 0n` from diagnostic abort to catchable `RangeError: Division by zero` and add the corresponding catch/exception parity test.
