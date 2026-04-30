@@ -62,6 +62,8 @@ impl NameResolver {
             "ReferenceError",
             "SyntaxError",
             "RangeError",
+            "Infinity",
+            "NaN",
         ]
         .iter()
         .map(|s| s.to_string())
