@@ -1231,7 +1231,7 @@ impl WatEmitter<'_> {
             heap_start = Layout::HEAP_START,
             gc_header_size = Layout::GC_HEADER_SIZE,
             gc_header_size_plus_min_payload = Layout::GC_HEADER_SIZE + Layout::ALIGN,
-            gc_threshold = Layout::GC_THRESHOLD,
+            gc_threshold = Layout::GC_THRESHOLD * 2,
             gc_headroom_bytes = Layout::GC_HEADROOM_PAGES * Layout::WASM_PAGE_SIZE,
             heap_grow_min_pages = Layout::HEAP_GROW_MIN_PAGES,
             memory_max_pages = Layout::MEMORY_MAX_PAGES,
