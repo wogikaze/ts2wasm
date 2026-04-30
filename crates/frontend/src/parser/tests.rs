@@ -121,24 +121,71 @@ mod tests {
     }
 
     #[test]
-    fn rejects_unsupported_ambient_declarations_with_typescript_diagnostic() {
-        let err = parse_program("declare enum Value { A }").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert_eq!(err.span, Some(Span { start: 0, end: 7 }));
+    fn parses_ambient_declarations_as_erased_syntax() {
+        let source = r#"
+            declare class AmbientBase { }
+            declare class AmbientDerived extends AmbientBase {
+                value: number;
+                read(): number;
+            }
+            declare function readAmbient(value: string): number;
+            declare const ambientValue: string;
+            declare enum AmbientEnum {
+                A,
+                B = 2
+            }
+            class RuntimeBox {
+                declare prop: string;
+                read() { return 1; }
+            }
+            let runtimeValue = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(matches!(program[0], Stmt::ClassDecl { .. }));
+        assert!(matches!(program[1], Stmt::Let { .. }));
+
+        let Stmt::ClassDecl { body, .. } = &program[0] else {
+            panic!("expected class declaration");
+        };
+        assert_eq!(body.len(), 1);
     }
 
     #[test]
-    fn rejects_ambient_variable_initializers_with_typescript_diagnostic() {
-        let err = parse_program("declare const value = 1;").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert_eq!(err.span, Some(Span { start: 0, end: 7 }));
-    }
-
-    #[test]
-    fn routes_ambient_module_declarations_to_module_diagnostic() {
-        let err = parse_program("declare module \"fs\" { var x: string; }").unwrap_err();
+    fn rejects_ambient_module_declarations_as_module_owned() {
+        let err = parse_program(r#"declare module "fs" { export var value: string; }"#)
+            .expect_err("ambient external module should remain module-owned");
         assert_eq!(err.code, DiagCode::UnsupportedModule);
-        assert_eq!(err.span, Some(Span { start: 0, end: 7 }));
+        assert!(err.message.contains("issue-400"));
+        assert!(err.message.contains("ambient module"));
+        assert_eq!(err.span, Some(Span { start: 8, end: 14 }));
+
+        let err = parse_program("declare namespace Foo.Bar { export var foo; };")
+            .expect_err("ambient namespace should remain module-owned");
+        assert_eq!(err.code, DiagCode::UnsupportedModule);
+        assert!(err.message.contains("ambient namespace"));
+        assert_eq!(err.span, Some(Span { start: 8, end: 17 }));
+    }
+
+    #[test]
+    fn rejects_unsupported_typescript_ambient_forms_with_source_span() {
+        let err = parse_program("declare global { interface Window { value: string; } }")
+            .expect_err("declare global is outside the erasure slice");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("issue-400"));
+        assert_eq!(err.span, Some(Span { start: 8, end: 14 }));
+
+        let err = parse_program("enum RuntimeEnum { A }")
+            .expect_err("runtime enum lowering requires an explicit transform");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("enum declarations"));
+        assert_eq!(err.span, Some(Span { start: 0, end: 4 }));
+
+        let err = parse_program("declare const runtimeValue = 1;")
+            .expect_err("ambient declarations with initializers are not erased");
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert!(err.message.contains("initializers"));
+        assert_eq!(err.span, Some(Span { start: 27, end: 28 }));
     }
 
     #[test]

@@ -291,6 +291,31 @@ fn dump_ast_unparse_erases_typescript_type_alias_declarations() {
 }
 
 #[test]
+fn dump_ast_unparse_erases_ambient_declarations() {
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "declare class Ambient { value: number; }\ndeclare function read(value: Ambient): number;\ndeclare const ambientName: string;\ndeclare enum AmbientEnum { A, B = 2 }\nclass Runtime { declare prop: string; read() { return 1; } }\nlet value: number = 1;\n",
+    );
+
+    assert_eq!(
+        output,
+        "class Runtime {\n  function read() {\n    return 1;\n  }\n}\nlet value = 1;\n"
+    );
+}
+
+#[test]
+fn dump_ast_reports_ambient_module_as_module_unsupported() {
+    let stderr = run_dump_error(
+        &["--ast", "--unparse"],
+        "declare module \"fs\" { export var value: string; }",
+    );
+
+    assert!(stderr.contains("[UnsupportedModule]"), "{stderr}");
+    assert!(stderr.contains("issue-400"), "{stderr}");
+    assert!(stderr.contains("ambient module declarations"), "{stderr}");
+}
+
+#[test]
 fn dump_ast_unparse_erases_typescript_generics() {
     let output = run_dump(
         &["--ast", "--unparse"],
@@ -352,6 +377,11 @@ fn build_accepts_erasable_typescript_interface_declarations() {
 #[test]
 fn build_accepts_erasable_typescript_type_alias_declarations() {
     build_fixture("basics-types/type-alias-erasure.ts");
+}
+
+#[test]
+fn build_accepts_erasable_typescript_ambient_declarations() {
+    build_fixture("basics-types/ambient-declaration-erasure.ts");
 }
 
 #[test]

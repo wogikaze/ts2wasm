@@ -129,10 +129,20 @@ This issue is the third concrete TypeScript-only child bucket created from issue
 
 Progress 2026-05-01:
 
+- Added parser erasure for declaration-only ambient function declarations: top-level `declare function` and `export declare function`.
 - Added parser erasure for declaration-only ambient variable declarations: `declare const`, `declare let`, `declare var`, and `export declare const`.
 - Added regression coverage that erased ambient variable declarations leave only the following runtime `let value = 1;` binding in the AST.
-- Kept ambient variable initializers and ambient enum declarations on the `UnsupportedTypeScriptSyntax` boundary.
-- Kept ambient module declarations on the existing `UnsupportedModule` boundary.
+- Added parser erasure for representative declaration-only ambient class declarations, ambient enum declarations, and class-element `declare` fields.
+- Kept ambient variable/class-element initializers and runtime `enum` declarations on the `UnsupportedTypeScriptSyntax` boundary.
+- Kept ambient module and namespace declarations on the `UnsupportedModule` boundary.
+
+Representative generated buckets re-triaged into this boundary slice:
+
+- `issues/open/140-implement-ambientClassDeclarationWithExtends.md`: `declare class A { }` / `declare class B extends A { }` is declaration-only and now parses/erases before runtime lowering.
+- `issues/open/145-implement-ambientEnum.md`: `declare enum E1 { ... }` is declaration-only and now parses/erases before runtime lowering.
+- `issues/open/150-implement-ambientExternalModuleReopen.md`: `declare module "fs" { ... }` is module-shaped and now routes to `UnsupportedModule` instead of a generic parser error.
+- `issues/open/160-implement-ambientModules.md`: `declare namespace Foo.Bar { ... }` is module-shaped and now routes to `UnsupportedModule`.
+- `issues/open/162-implement-ambientPropertyDeclarationInJs.md`: `declare prop: string;` inside a class is declaration-only and now parses/erases without adding a runtime class element.
 
 ## Completion evidence
 

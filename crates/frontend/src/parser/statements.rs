@@ -49,11 +49,6 @@ impl Parser {
 
     fn consume_erasable_typescript_declaration(&mut self) -> Result<bool, Diagnostic> {
         let start = self.cursor;
-        if let Some(declare_span) = self.try_consume_declare_keyword() {
-            return self.consume_typescript_declare_declaration(declare_span);
-        }
-        self.cursor = start;
-
         if let Some((interface_span, exported)) = self.try_consume_interface_keyword() {
             if exported && !matches!(self.peek(), Some(Token::Ident(_))) {
                 self.cursor = start;
@@ -69,112 +64,23 @@ impl Parser {
             return Ok(true);
         }
 
-        Ok(false)
-    }
-
-    fn consume_typescript_declare_declaration(
-        &mut self,
-        declare_span: Span,
-    ) -> Result<bool, Diagnostic> {
-        match self.peek() {
-            Some(Token::Function) => {
-                self.consume_typescript_declare_function_declaration(declare_span)?;
-                Ok(true)
-            }
-            Some(Token::Const | Token::Let | Token::Var) => {
-                self.consume_typescript_declare_variable_declaration(declare_span)?;
-                Ok(true)
-            }
-            Some(Token::Ident(name)) if name == "module" || name == "namespace" => {
-                Err(Diagnostic {
-                    code: DiagCode::UnsupportedModule,
-                    message: "ambient module declarations are not supported in this module graph slice"
-                        .to_owned(),
-                    span: Some(declare_span),
-                })
-            }
-            _ => Err(Diagnostic {
-                code: DiagCode::UnsupportedTypeScriptSyntax,
-                message: "unsupported ambient declaration form in this TypeScript erasure slice"
-                    .to_owned(),
-                span: Some(declare_span),
-            }),
+        if let Some(declare_span) = self.try_consume_declare_keyword() {
+            self.consume_typescript_ambient_declaration(declare_span)?;
+            return Ok(true);
         }
-    }
 
-    fn consume_typescript_declare_function_declaration(
-        &mut self,
-        declare_span: Span,
-    ) -> Result<(), Diagnostic> {
-        self.expect(TokenKind::Function)?;
-        self.expect_ident()?;
-        while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftParen)) {
-            self.advance();
-        }
-        if self.is_at_end() {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedTypeScriptSyntax,
-                message: "unterminated ambient function declaration".to_owned(),
-                span: Some(declare_span),
+        if self.peek_contextual_keyword("enum") {
+            let enum_span = self.peek_span().unwrap_or_else(|| Span {
+                start: self.cursor,
+                end: self.cursor,
             });
+            return Err(self.unsupported_typescript_syntax(
+                enum_span,
+                "TypeScript enum declarations require an explicit frontend transform before runtime lowering",
+            ));
         }
 
-        self.expect(TokenKind::LeftParen)?;
-        self.skip_type_annotation_until(&[TokenKind::RightParen])
-            .map_err(|_| Diagnostic {
-                code: DiagCode::UnsupportedTypeScriptSyntax,
-                message: "unterminated ambient function parameter list".to_owned(),
-                span: Some(declare_span),
-            })?;
-        self.expect(TokenKind::RightParen)?;
-        if self.consume(TokenKind::Colon) {
-            self.skip_type_annotation_until(&[TokenKind::Semicolon])
-                .map_err(|_| Diagnostic {
-                    code: DiagCode::UnsupportedTypeScriptSyntax,
-                    message: "unterminated ambient function return type".to_owned(),
-                    span: Some(declare_span),
-                })?;
-        }
-        self.expect(TokenKind::Semicolon)?;
-        Ok(())
-    }
-
-    fn consume_typescript_declare_variable_declaration(
-        &mut self,
-        declare_span: Span,
-    ) -> Result<(), Diagnostic> {
-        self.advance();
-        loop {
-            self.expect_ident().map_err(|_| Diagnostic {
-                code: DiagCode::UnsupportedTypeScriptSyntax,
-                message: "expected ambient variable declaration name".to_owned(),
-                span: Some(declare_span),
-            })?;
-            if self.consume(TokenKind::Colon) {
-                self.skip_type_annotation_until(&[TokenKind::Comma, TokenKind::Semicolon])
-                    .map_err(|_| Diagnostic {
-                        code: DiagCode::UnsupportedTypeScriptSyntax,
-                        message: "unterminated ambient variable declaration type".to_owned(),
-                        span: Some(declare_span),
-                    })?;
-            }
-            if self.consume(TokenKind::Equal) {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedTypeScriptSyntax,
-                    message: "ambient variable initializers are not supported in this TypeScript erasure slice".to_owned(),
-                    span: Some(declare_span),
-                });
-            }
-            if self.consume(TokenKind::Comma) {
-                continue;
-            }
-            self.expect(TokenKind::Semicolon).map_err(|_| Diagnostic {
-                code: DiagCode::UnsupportedTypeScriptSyntax,
-                message: "unterminated ambient variable declaration".to_owned(),
-                span: Some(declare_span),
-            })?;
-            return Ok(());
-        }
+        Ok(false)
     }
 
     fn consume_typescript_interface_declaration(
@@ -235,25 +141,6 @@ impl Parser {
         Some((span, exported))
     }
 
-    fn try_consume_declare_keyword(&mut self) -> Option<Span> {
-        let start = self.cursor;
-        if matches!(self.peek(), Some(Token::Export))
-            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "declare")
-        {
-            self.advance();
-        }
-
-        let span = match self.peek() {
-            Some(Token::Ident(name)) if name == "declare" => self.peek_span()?,
-            _ => {
-                self.cursor = start;
-                return None;
-            }
-        };
-        self.advance();
-        Some(span)
-    }
-
     fn try_consume_type_alias_keyword(&mut self) -> Option<Span> {
         let start = self.cursor;
         if matches!(self.peek(), Some(Token::Export))
@@ -275,6 +162,170 @@ impl Parser {
         } else {
             self.cursor = start;
             None
+        }
+    }
+
+    fn try_consume_declare_keyword(&mut self) -> Option<Span> {
+        let start = self.cursor;
+        if matches!(self.peek(), Some(Token::Export))
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "declare")
+        {
+            self.advance();
+        }
+
+        if self.peek_contextual_keyword("declare") {
+            let span = self.peek_span()?;
+            self.advance();
+            Some(span)
+        } else {
+            self.cursor = start;
+            None
+        }
+    }
+
+    fn consume_typescript_ambient_declaration(
+        &mut self,
+        declare_span: Span,
+    ) -> Result<(), Diagnostic> {
+        if self.peek_contextual_keyword("module") || self.peek_contextual_keyword("namespace") {
+            let kind = if self.peek_contextual_keyword("module") {
+                "module"
+            } else {
+                "namespace"
+            };
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedModule,
+                message: format!(
+                    "issue-400: ambient {kind} declarations require module ownership before runtime lowering"
+                ),
+                span: self.peek_span().or(Some(declare_span)),
+            });
+        }
+
+        if self.peek_contextual_keyword("global") {
+            return Err(self.unsupported_typescript_syntax(
+                self.peek_span().unwrap_or(declare_span),
+                "issue-400: ambient global declarations are not supported in this erasure slice",
+            ));
+        }
+
+        if let Some((interface_span, _)) = self.try_consume_interface_keyword() {
+            self.consume_typescript_interface_declaration(interface_span)?;
+            return Ok(());
+        }
+
+        if let Some(type_span) = self.try_consume_type_alias_keyword() {
+            self.consume_typescript_type_alias_declaration(type_span)?;
+            return Ok(());
+        }
+
+        match self.peek() {
+            Some(Token::Class) => self.consume_ambient_class_declaration(declare_span),
+            Some(Token::Function) => self.consume_ambient_function_declaration(declare_span),
+            Some(Token::Const | Token::Let | Token::Var) => {
+                self.consume_ambient_variable_declaration(declare_span)
+            }
+            Some(Token::Ident(name)) if name == "enum" => {
+                self.consume_ambient_enum_declaration(declare_span)
+            }
+            _ => Err(self.unsupported_typescript_syntax(
+                self.peek_span().unwrap_or(declare_span),
+                "issue-400: unsupported ambient declaration form",
+            )),
+        }
+    }
+
+    fn consume_ambient_class_declaration(&mut self, declare_span: Span) -> Result<(), Diagnostic> {
+        self.expect(TokenKind::Class)?;
+        self.expect_ident()?;
+        if self.consume(TokenKind::Extends) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])
+                .map_err(|_| {
+                    self.unsupported_typescript_syntax(
+                        declare_span,
+                        "issue-400: unterminated ambient class extends clause",
+                    )
+                })?;
+        }
+        self.skip_balanced_brace_block(declare_span)?;
+        self.consume(TokenKind::Semicolon);
+        Ok(())
+    }
+
+    fn consume_ambient_function_declaration(
+        &mut self,
+        declare_span: Span,
+    ) -> Result<(), Diagnostic> {
+        self.expect(TokenKind::Function)?;
+        self.expect_ident()?;
+        self.skip_type_annotation_until(&[TokenKind::Semicolon])
+            .map_err(|_| {
+                self.unsupported_typescript_syntax(
+                    declare_span,
+                    "issue-400: unterminated ambient function declaration",
+                )
+            })?;
+        self.expect(TokenKind::Semicolon)?;
+        Ok(())
+    }
+
+    fn consume_ambient_variable_declaration(
+        &mut self,
+        declare_span: Span,
+    ) -> Result<(), Diagnostic> {
+        self.advance();
+        loop {
+            self.expect_ident().map_err(|_| {
+                self.unsupported_typescript_syntax(
+                    declare_span,
+                    "issue-400: expected ambient variable declaration name",
+                )
+            })?;
+            if self.consume(TokenKind::Colon) {
+                self.skip_type_annotation_until(&[
+                    TokenKind::Equal,
+                    TokenKind::Comma,
+                    TokenKind::Semicolon,
+                ])
+                .map_err(|_| {
+                    self.unsupported_typescript_syntax(
+                        declare_span,
+                        "issue-400: unterminated ambient variable declaration type",
+                    )
+                })?;
+            }
+            if let Some(equal_span) = self.consume_span(TokenKind::Equal) {
+                return Err(self.unsupported_typescript_syntax(
+                    equal_span,
+                    "issue-400: ambient variable declarations with initializers would affect runtime bindings",
+                ));
+            }
+            if self.consume(TokenKind::Comma) {
+                continue;
+            }
+            self.expect(TokenKind::Semicolon).map_err(|_| {
+                self.unsupported_typescript_syntax(
+                    declare_span,
+                    "issue-400: unterminated ambient variable declaration",
+                )
+            })?;
+            return Ok(());
+        }
+    }
+
+    fn consume_ambient_enum_declaration(&mut self, declare_span: Span) -> Result<(), Diagnostic> {
+        self.expect_contextual_keyword("enum")?;
+        self.expect_ident()?;
+        self.skip_balanced_brace_block(declare_span)?;
+        self.consume(TokenKind::Semicolon);
+        Ok(())
+    }
+
+    fn unsupported_typescript_syntax(&self, span: Span, message: &str) -> Diagnostic {
+        Diagnostic {
+            code: DiagCode::UnsupportedTypeScriptSyntax,
+            message: message.to_owned(),
+            span: Some(span),
         }
     }
 
@@ -1679,6 +1730,12 @@ impl Parser {
                 continue;
             }
 
+            if self.peek_contextual_keyword("declare") {
+                let declare_span = self.expect_contextual_keyword("declare")?;
+                self.consume_ambient_class_element(declare_span)?;
+                continue;
+            }
+
             if matches!(self.peek(), Some(Token::Static))
                 && matches!(self.peek_n(1), Some(Token::LeftBrace))
             {
@@ -1765,6 +1822,25 @@ impl Parser {
                 end,
             },
         })
+    }
+
+    fn consume_ambient_class_element(&mut self, declare_span: Span) -> Result<(), Diagnostic> {
+        self.consume(TokenKind::Static);
+        self.skip_type_annotation_until(&[TokenKind::Equal, TokenKind::Semicolon])
+            .map_err(|_| {
+                self.unsupported_typescript_syntax(
+                    declare_span,
+                    "issue-400: unterminated ambient class element declaration",
+                )
+            })?;
+        if let Some(equal_span) = self.consume_span(TokenKind::Equal) {
+            return Err(self.unsupported_typescript_syntax(
+                equal_span,
+                "issue-400: ambient class element initializers would affect runtime bindings",
+            ));
+        }
+        self.expect(TokenKind::Semicolon)?;
+        Ok(())
     }
 
     fn class_static_block(&mut self) -> Result<ClassStaticBlock, Diagnostic> {

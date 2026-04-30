@@ -38,7 +38,7 @@ impl Diagnostic {
             return DiagCode::UnsupportedModule;
         }
 
-        if message.contains("date") {
+        if message.contains("issue-050") || contains_ascii_word(&message, "date") {
             return DiagCode::UnsupportedDate;
         }
 
@@ -104,6 +104,19 @@ impl Diagnostic {
 
         DiagCode::UnsupportedSyntax
     }
+}
+
+fn contains_ascii_word(haystack: &str, needle: &str) -> bool {
+    haystack.match_indices(needle).any(|(start, _)| {
+        let before_is_boundary = start == 0
+            || !haystack.as_bytes()[start - 1].is_ascii_alphanumeric()
+                && haystack.as_bytes()[start - 1] != b'_';
+        let end = start + needle.len();
+        let after_is_boundary = end == haystack.len()
+            || !haystack.as_bytes()[end].is_ascii_alphanumeric()
+                && haystack.as_bytes()[end] != b'_';
+        before_is_boundary && after_is_boundary
+    })
 }
 
 /// Error codes for compiler diagnostics. See `docs/12-coding-standard.md` §2.
@@ -179,6 +192,11 @@ mod tests {
                 "issue-050: Date.prototype.toString() requires timezone/host formatting policy",
                 DiagCode::UnsupportedDate,
                 "[UnsupportedDate]",
+            ),
+            (
+                "issue-246: optional chaining cannot be used as an assignment or update target",
+                DiagCode::UnsupportedSyntax,
+                "[UnsupportedSyntax]",
             ),
             (
                 "issue-051: RegExp.prototype.compile is not supported in this subset",
