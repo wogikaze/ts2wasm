@@ -222,7 +222,7 @@ means the observable failure is no longer only an `unreachable` trap; tests can 
 the exception class/message surface while catchable exception object propagation remains
 out of scope.
 
-Issue 396 starts this substrate for mixed Number/BigInt arithmetic:
+Issue 396 keeps these helpers cataloged behind one backend diagnostic-abort emitter:
 
 - `bigint_mixed_arithmetic_type_error(jsval, jsval) -> jsval` evaluates both operands
   before entering the helper, writes `TypeError: Cannot mix BigInt and other types, use explicit conversions`,
@@ -231,8 +231,13 @@ Issue 396 starts this substrate for mixed Number/BigInt arithmetic:
   and aborts. `bigint_div` / `bigint_rem` depend on this helper instead of inlining
   their diagnostic path, so RangeError uses the same cataloged runtime-string and `$write`
   dependency substrate as TypeError.
-- The helper declares its `$write` dependency and runtime string through the `RuntimeFn`
-  catalog, so capabilities and string interning remain link-plan driven.
+- `private_brand_type_error() -> jsval` writes `TypeError: Cannot read private member from an object whose class did not declare it`
+  and aborts for private-field brand mismatches. This shares the same runtime string
+  and `$write` diagnostic boundary as the BigInt TypeError and RangeError helpers.
+- Each helper declares its `$write` dependency and runtime string through the `RuntimeFn`
+  catalog, so capabilities and string interning remain link-plan driven. The shared
+  backend emitter is only a diagnostic/abort ABI boundary; it does not allocate or
+  propagate a catchable JavaScript object.
 - This is intentionally not yet full ECMAScript `throw` / `try` / `catch` propagation;
   catchable Error objects and completion-record unwinding remain the next substrate step.
 

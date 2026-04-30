@@ -1568,60 +1568,50 @@ impl WatEmitter<'_> {
         );
     }
 
-    pub(super) fn emit_bigint_division_by_zero_range_error(&self, wat: &mut String) {
-        let message = self.string_offset(RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR)
-            + Layout::STRING_HEADER_SIZE;
+    fn emit_runtime_diagnostic_abort(&self, wat: &mut String, signature: &str, message: &str) {
+        let message_offset = self.string_offset(message) + Layout::STRING_HEADER_SIZE;
         wat.push_str(&format!(
             r#"
-  (func $bigint_division_by_zero_range_error
-    (call $write (i32.const {message}) (i32.const {message_len}))
+  (func {signature}
+    (call $write (i32.const {message_offset}) (i32.const {message_len}))
     (unreachable))
 "#,
-            message = message,
-            message_len = RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR.len() as i32,
+            signature = signature,
+            message_offset = message_offset,
+            message_len = message.len() as i32,
         ));
+    }
+
+    pub(super) fn emit_bigint_division_by_zero_range_error(&self, wat: &mut String) {
+        self.emit_runtime_diagnostic_abort(
+            wat,
+            "$bigint_division_by_zero_range_error",
+            RuntimeString::BIGINT_DIVISION_BY_ZERO_RANGE_ERROR,
+        );
     }
 
     pub(super) fn emit_bigint_mixed_arithmetic_type_error(&self, wat: &mut String) {
-        let message = self.string_offset(RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR)
-            + Layout::STRING_HEADER_SIZE;
-        wat.push_str(&format!(
-            r#"
-  (func $bigint_mixed_arithmetic_type_error (param $left i32) (param $right i32) (result i32)
-    (call $write (i32.const {message}) (i32.const {message_len}))
-    (unreachable))
-"#,
-            message = message,
-            message_len = RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR.len() as i32,
-        ));
+        self.emit_runtime_diagnostic_abort(
+            wat,
+            "$bigint_mixed_arithmetic_type_error (param $left i32) (param $right i32) (result i32)",
+            RuntimeString::BIGINT_MIXED_ARITHMETIC_TYPE_ERROR,
+        );
     }
 
     pub(super) fn emit_bigint_string_comparison_boundary_error(&self, wat: &mut String) {
-        let message = self.string_offset(RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR)
-            + Layout::STRING_HEADER_SIZE;
-        wat.push_str(&format!(
-            r#"
-  (func $bigint_string_comparison_boundary_error
-    (call $write (i32.const {message}) (i32.const {message_len}))
-    (unreachable))
-"#,
-            message = message,
-            message_len = RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR.len() as i32,
-        ));
+        self.emit_runtime_diagnostic_abort(
+            wat,
+            "$bigint_string_comparison_boundary_error",
+            RuntimeString::BIGINT_STRING_COMPARISON_BOUNDARY_ERROR,
+        );
     }
 
     pub(super) fn emit_private_brand_type_error(&self, wat: &mut String) {
-        let message = self.string_offset(RuntimeString::PRIVATE_BRAND_TYPE_ERROR)
-            + Layout::STRING_HEADER_SIZE;
-        wat.push_str(&format!(
-            r#"
-  (func $private_brand_type_error (result i32)
-    (call $write (i32.const {message}) (i32.const {message_len}))
-    (unreachable))
-"#,
-            message = message,
-            message_len = RuntimeString::PRIVATE_BRAND_TYPE_ERROR.len() as i32,
-        ));
+        self.emit_runtime_diagnostic_abort(
+            wat,
+            "$private_brand_type_error (result i32)",
+            RuntimeString::PRIVATE_BRAND_TYPE_ERROR,
+        );
     }
 
     pub(super) fn emit_bigint_unary_minus(&self, wat: &mut String) {

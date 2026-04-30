@@ -120,3 +120,19 @@ cargo fmt --all --check: pass
 cargo test -p ts2wasm-cli --test m2_node_diff rangeerror: pass (2 passed; 201 filtered out)
 mise run update-issue-index -- --check && mise run check issues: pass
 ```
+
+2026-05-01 child-396 diagnostic ABI factoring progress:
+
+- Factored the backend WAT emission for runtime diagnostic/abort helpers into a shared `emit_runtime_diagnostic_abort` boundary.
+- `bigint_mixed_arithmetic_type_error`, `bigint_division_by_zero_range_error`, `bigint_string_comparison_boundary_error`, and `private_brand_type_error` now share the same backend emission path while retaining their `RuntimeFn` catalog entries, runtime strings, and `$write` dependencies.
+- Documented the cataloged TypeError/RangeError/private-brand diagnostic helpers in `docs/14-runtime-abi.md` and clarified that catchable JavaScript Error-object propagation remains the issue-396 blocker.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff rangeerror: pass (2 passed; 203 filtered out)
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_mixed: failed in existing issue-281 diagnostic-kind expectation; the touched TypeError cases passed (9 passed, 1 failed: bigint_mixed_number_model_gap_reports_issue_281 expected UnsupportedSyntax but got UnsupportedBuiltin for Number.NaN)
+cargo test -p ts2wasm-backend-wasm private_field_runtime_calls: pass (3 passed; 28 filtered out)
+mise run update-issue-index -- --check && mise run check issues: pass
+```
