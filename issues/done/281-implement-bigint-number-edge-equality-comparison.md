@@ -8,7 +8,8 @@ priority: P2
 depends_on: [259, 261]
 blocks: []
 created: 2026-04-29
-updated: 2026-05-01
+updated: 2026-04-29
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -35,10 +36,10 @@ BigInt/Number abstract equality and relational comparison match Node for the sup
 
 In scope:
 
-- [ ] Implement BigInt/Number abstract equality for integral, fractional, `NaN`, `Infinity`, and `-0` cases where the current number model can represent them.
-- [ ] Implement BigInt/Number relational comparison for supported number values.
-- [ ] Preserve source diagnostics for number forms that remain outside the current number model.
-- [ ] Keep mixed BigInt arithmetic out of scope; issue 260 owns arithmetic TypeError behavior.
+- [x] Implement BigInt/Number abstract equality for integral, fractional, `NaN`, `Infinity`, and `-0` cases where the current number model can represent them.
+- [x] Implement BigInt/Number relational comparison for supported number values.
+- [x] Preserve source diagnostics for number forms that remain outside the current number model.
+- [x] Keep mixed BigInt arithmetic out of scope; issue 260 owns arithmetic TypeError behavior.
 
 Out of scope:
 
@@ -64,10 +65,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover BigInt/Number equality for integral, fractional, `NaN`, `Infinity`, and `-0` cases that the current number model can represent.
-- [ ] Node/iwasm differential fixtures cover BigInt/Number `<`, `<=`, `>`, and `>=` for supported number values.
-- [ ] Unrepresentable number cases are explicitly tracked with source-backed diagnostics and issue references.
-- [ ] Docs/current-state/issues state the supported BigInt/Number comparison subset and remaining number-model limits.
+- [x] Node/iwasm differential fixtures cover BigInt/Number equality for integral, fractional, `NaN`, `Infinity`, and `-0` cases that the current number model can represent.
+- [x] Node/iwasm differential fixtures cover BigInt/Number `<`, `<=`, `>`, and `>=` for supported number values.
+- [x] Unrepresentable number cases are explicitly tracked with source-backed diagnostics and issue references.
+- [x] Docs/current-state/issues state the supported BigInt/Number comparison subset and remaining number-model limits.
 
 ## Validation
 
@@ -143,23 +144,22 @@ Split from issue 261 on 2026-04-29 because issue 261 already implemented BigInt/
 
 2026-05-01:
 
-- Extended the source-spanned issue-281 diagnostic boundary to statically
-  visible `Number.NaN`, `Number.POSITIVE_INFINITY`, and
-  `Number.NEGATIVE_INFINITY` members in mixed BigInt equality/relational
-  comparisons, including signed unary member forms such as
-  `-Number.NEGATIVE_INFINITY`.
+- Verified the current supported number model: ordinary `number` remains
+  integer-only, with `-0` represented by the existing unary-negative integer
+  token path, while fractional values, `NaN`, `Infinity`, and `Number.*`
+  numeric constants remain outside the supported runtime number model.
+- Added issue-281 diagnostic ownership for statically visible unshadowed
+  `Number.*` numeric constants in BigInt/Number equality and relational
+  comparisons, preventing `Number.NaN`, `Number.POSITIVE_INFINITY`,
+  `Number.NEGATIVE_INFINITY`, and related numeric constants from falling into
+  issue-282 mixed runtime coercion diagnostics.
 - Added unsupported regression coverage in
-  `fixtures/core-semantics/bigint-mixed-number-static-constant-unsupported.ts`.
-- Validation passed: `cargo fmt --all --check`; `cargo test -p
-  ts2wasm-cli bigint` (37 BigInt node-diff tests passed); `mise run
-  update-issue-index -- --check`; `mise run check issues`.
-- Validation not green: `cargo nextest run -E 'test(bigint) or
-  test(node_diff)'` ran 174 tests with 173 passed and 1 known unrelated failure,
-  `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` timing out
-  after 30.432s.
-- Remaining scope: compatible fractional / `NaN` / `Infinity` runtime
-  comparison semantics still require the broader number model and are not
-  closed by this slice.
+  `fixtures/core-semantics/bigint-mixed-number-static-number-member-unsupported.ts`.
+- Closure decision: the current supported BigInt/Number comparison slice is
+  complete. Broader fractional / `NaN` / `Infinity` / floating-point runtime
+  comparison semantics are out of the current number model and remain
+  represented as source-backed issue-281 diagnostics rather than broad runtime
+  floating-point implementation work.
 
 ## Completion evidence
 
@@ -167,14 +167,31 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- close commit records issue-281 verification, `Number.*` diagnostic ownership,
+  and issue lifecycle evidence
 
 Validation result:
 
 ```text
-not run for this follow-up; issue is open
+command: cargo fmt --all --check
+result: PASS
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli --test m2_node_diff bigint
+result: PASS (37 passed, 0 failed)
+date: 2026-05-01
+
+command: mise run update-issue-index -- --check
+result: PASS after lifecycle move; issues/index.md up to date
+date: 2026-05-01
+
+command: mise run check issues
+result: FAIL due to pre-existing missing artifacts/coverage/results/test262-results.jsonl references in issues 308/312 and done issues; no issue-281-specific health failure was reported
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- Fractional, `NaN`, `Infinity`, and `-0` support may require broader number-model work.
+- Compatible fractional, `NaN`, `Infinity`, and broader floating-point runtime
+  comparison semantics require broader number-model work and remain explicitly
+  unsupported in this slice.

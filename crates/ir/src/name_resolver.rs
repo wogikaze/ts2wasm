@@ -959,7 +959,7 @@ impl NameResolver {
     fn is_unshadowed_number_model_gap_member(&self, object: &Expr, property: &str) -> bool {
         matches!(object, Expr::Ident { name, .. } if name == "Number")
             && !self.is_user_declared("Number")
-            && matches!(property, "NaN" | "POSITIVE_INFINITY" | "NEGATIVE_INFINITY")
+            && is_number_model_gap_property(property)
     }
 
     fn is_unshadowed_test262_ishtmldda_member(&self, object: &Expr, property: &str) -> bool {
@@ -1193,4 +1193,18 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
         | Expr::This { .. }
         | Expr::Ident { .. } => false,
     }
+}
+
+fn is_number_model_gap_property(property: &str) -> bool {
+    matches!(
+        property,
+        "NaN"
+            | "POSITIVE_INFINITY"
+            | "NEGATIVE_INFINITY"
+            | "MAX_VALUE"
+            | "MIN_VALUE"
+            | "EPSILON"
+            | "MAX_SAFE_INTEGER"
+            | "MIN_SAFE_INTEGER"
+    )
 }
