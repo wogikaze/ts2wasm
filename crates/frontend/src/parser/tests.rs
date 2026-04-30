@@ -95,6 +95,32 @@ mod tests {
     }
 
     #[test]
+    fn parses_ambient_function_declarations_as_erased_syntax() {
+        let source = r#"
+            declare function consume(value: number): void;
+            export declare function identity<T = unknown>(value: T): T;
+            let value = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { .. }));
+    }
+
+    #[test]
+    fn rejects_unsupported_ambient_declarations_with_typescript_diagnostic() {
+        let err = parse_program("declare const value: number;").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert_eq!(err.span, Some(Span { start: 0, end: 7 }));
+    }
+
+    #[test]
+    fn routes_ambient_module_declarations_to_module_diagnostic() {
+        let err = parse_program("declare module \"fs\" { var x: string; }").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedModule);
+        assert_eq!(err.span, Some(Span { start: 0, end: 7 }));
+    }
+
+    #[test]
     fn parses_typescript_generic_functions_and_calls_as_erased_syntax() {
         let source = r#"
             function id<T>(value: T): T { return value; }

@@ -79,6 +79,7 @@ Compile-only tests for class/module/Node API are explicitly marked as build_smok
 ## TypeScript parse / erase / emit boundary
 
 `docs/05-compatibility-and-semantics.md` defines the final-state TypeScript boundary for parse-and-erase, module/emit-shape preservation, TypeScript transform ownership, and TypeScript-specific unsupported diagnostics. Current implementation does not yet cover the full contract. Concrete follow-up ownership is tracked by issue 345 (`type-alias` erasure), issue 346 (`declaration-emit`), and issue 400 (`ambient-declaration` erasure/rejection).
+Issue 400 has a narrow implemented parser slice for declaration-only ambient functions: top-level `declare function ...;` and `export declare function ...;` parse and erase before runtime binding creation. Other top-level `declare` forms still remain open under issue 400; module-shaped ambient declarations route to `UnsupportedModule`, and unsupported non-module ambient forms route to source-spanned `UnsupportedTypeScriptSyntax`.
 
 ## Reference coverage（測定の正本）
 

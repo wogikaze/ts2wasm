@@ -49,6 +49,11 @@ impl Parser {
 
     fn consume_erasable_typescript_declaration(&mut self) -> Result<bool, Diagnostic> {
         let start = self.cursor;
+        if let Some(declare_span) = self.try_consume_declare_keyword() {
+            return self.consume_typescript_declare_declaration(declare_span);
+        }
+        self.cursor = start;
+
         if let Some((interface_span, exported)) = self.try_consume_interface_keyword() {
             if exported && !matches!(self.peek(), Some(Token::Ident(_))) {
                 self.cursor = start;
@@ -65,6 +70,69 @@ impl Parser {
         }
 
         Ok(false)
+    }
+
+    fn consume_typescript_declare_declaration(
+        &mut self,
+        declare_span: Span,
+    ) -> Result<bool, Diagnostic> {
+        match self.peek() {
+            Some(Token::Function) => {
+                self.consume_typescript_declare_function_declaration(declare_span)?;
+                Ok(true)
+            }
+            Some(Token::Ident(name)) if name == "module" || name == "namespace" => {
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedModule,
+                    message: "ambient module declarations are not supported in this module graph slice"
+                        .to_owned(),
+                    span: Some(declare_span),
+                })
+            }
+            _ => Err(Diagnostic {
+                code: DiagCode::UnsupportedTypeScriptSyntax,
+                message: "unsupported ambient declaration form in this TypeScript erasure slice"
+                    .to_owned(),
+                span: Some(declare_span),
+            }),
+        }
+    }
+
+    fn consume_typescript_declare_function_declaration(
+        &mut self,
+        declare_span: Span,
+    ) -> Result<(), Diagnostic> {
+        self.expect(TokenKind::Function)?;
+        self.expect_ident()?;
+        while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftParen)) {
+            self.advance();
+        }
+        if self.is_at_end() {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedTypeScriptSyntax,
+                message: "unterminated ambient function declaration".to_owned(),
+                span: Some(declare_span),
+            });
+        }
+
+        self.expect(TokenKind::LeftParen)?;
+        self.skip_type_annotation_until(&[TokenKind::RightParen])
+            .map_err(|_| Diagnostic {
+                code: DiagCode::UnsupportedTypeScriptSyntax,
+                message: "unterminated ambient function parameter list".to_owned(),
+                span: Some(declare_span),
+            })?;
+        self.expect(TokenKind::RightParen)?;
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::Semicolon])
+                .map_err(|_| Diagnostic {
+                    code: DiagCode::UnsupportedTypeScriptSyntax,
+                    message: "unterminated ambient function return type".to_owned(),
+                    span: Some(declare_span),
+                })?;
+        }
+        self.expect(TokenKind::Semicolon)?;
+        Ok(())
     }
 
     fn consume_typescript_interface_declaration(
@@ -123,6 +191,25 @@ impl Parser {
         };
         self.advance();
         Some((span, exported))
+    }
+
+    fn try_consume_declare_keyword(&mut self) -> Option<Span> {
+        let start = self.cursor;
+        if matches!(self.peek(), Some(Token::Export))
+            && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "declare")
+        {
+            self.advance();
+        }
+
+        let span = match self.peek() {
+            Some(Token::Ident(name)) if name == "declare" => self.peek_span()?,
+            _ => {
+                self.cursor = start;
+                return None;
+            }
+        };
+        self.advance();
+        Some(span)
     }
 
     fn try_consume_type_alias_keyword(&mut self) -> Option<Span> {
