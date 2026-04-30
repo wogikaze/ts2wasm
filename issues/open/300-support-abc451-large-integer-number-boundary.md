@@ -766,3 +766,7 @@ Remaining risks:
   allocation/copy volume increased. No official ABC451 sample compatibility is
   claimed; issue 300 remains blocked on a live/copy-volume reduction rather
   than a GC-cadence-only change.
+
+2026-05-01 child `child/309-depth9-live-allocation-20260501-065708` dependency note:
+
+- Issue 309 tested heap-tail `ArrayPushGrow` in-place page growth to avoid old/new live-array overlap during local-array growth, plus a variant with allocation-pressure GC restored before the in-place grow. Both variants failed the required depth-8 live-set iwasm gate by timeout (`30.310s` and `30.242s`), so neither was committed. After restoring the original runtime code, the child worktree still timed out on the same depth-8 gate at `30.311s`. No official ABC451 sample compatibility is claimed; issue 300 remains open for a live/copy-volume or representation reduction that preserves the depth-8 budget first.
