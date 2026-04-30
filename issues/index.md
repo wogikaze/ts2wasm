@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 120 | 37 | 83 |
+| runtime | 120 | 36 | 84 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 379 | 175 | 204 |
+| total | 379 | 174 | 205 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,6 +52,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
+| 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | implementation-ready | P1 | 364 | the focused ABC451 depth-8 gate still times out, and array growth is now the highest measured implementation target. ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -221,8 +222,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | 274 | Implement dynamic object property enumeration spread |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
-| 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
-| 366 | Add ABC451 ArrayPushGrow miss attribution diagnostic | test | runtime/performance | 365 | Add ABC451 ArrayPushGrow miss attribution diagnostic |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -435,6 +434,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 361 | Reduce ABC451 array copy pressure after GC cadence fix | bug | runtime/memory | see `issues/done/361-reduce-abc451-array-copy-pressure-after-gc-cadence-fix.md` |
 | 362 | Drive ABC451 depth-8 under iwasm timeout after copy reductions | bug | runtime/memory | see `issues/done/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md` |
 | 364 | Add ABC451 allocation and copy attribution diagnostic | test | runtime/performance | see `issues/done/364-add-abc451-allocation-copy-attribution-diagnostic.md` |
+| 366 | Add ABC451 ArrayPushGrow miss attribution diagnostic | test | runtime/performance | see `issues/done/366-add-arraypushgrow-miss-attribution-diagnostic.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

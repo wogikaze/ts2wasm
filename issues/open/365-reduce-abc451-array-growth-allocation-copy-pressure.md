@@ -3,9 +3,9 @@ id: 365
 title: "Reduce ABC451 array-growth allocation and copy pressure"
 type: bug
 area: runtime/memory
-class: blocked
+class: implementation-ready
 priority: P1
-depends_on: [364, 366]
+depends_on: [364]
 blocks: [363, 357, 309]
 created: 2026-05-01
 updated: 2026-05-01
@@ -49,7 +49,7 @@ Issue 364 added callsite attribution to `mise run abc451-runtime-costs`. The dia
 }
 ```
 
-Problem: the focused ABC451 depth-8 gate still times out, and array growth is now the highest measured implementation target.
+Problem: the focused ABC451 depth-8 gate still times out, and array growth is now the highest measured implementation target. Issue 366 narrowed the dominant `ArrayPushGrow` miss reason to non-top arrays, not committed-memory misses.
 
 ## Desired final state
 
@@ -241,4 +241,52 @@ cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm: pass
 cargo test -p ts2wasm-backend-wasm --lib -- --nocapture: pass; 27 passed
 mise run update-issue-index -- --check: pass
 mise run check issues: pass
+```
+
+## Issue 366 ArrayPushGrow miss attribution: 2026-05-01
+
+Status: `READY_FOR_IMPLEMENTATION`.
+
+Issue 366 added default-off `ArrayPushGrow` hit/miss attribution to `mise run abc451-runtime-costs`.
+
+100000-event result:
+
+```json
+{
+  "capacity_hits": 49087,
+  "capacity_misses": 4160,
+  "top_heap_hits": 1512,
+  "top_heap_misses": 2648,
+  "top_miss_reason": "non_top_heap",
+  "miss_reasons": [
+    {"reason": "non_top_heap", "calls": 2648},
+    {"reason": "committed_memory", "calls": 0}
+  ],
+  "fallback_allocation": {"calls": 2648, "bytes": 362976},
+  "fallback_copy": {"calls": 2648, "bytes": 181008}
+}
+```
+
+300000-event result:
+
+```json
+{
+  "capacity_hits": 67439,
+  "capacity_misses": 7880,
+  "top_heap_hits": 4109,
+  "top_heap_misses": 3771,
+  "top_miss_reason": "non_top_heap",
+  "miss_reasons": [
+    {"reason": "non_top_heap", "calls": 3771},
+    {"reason": "committed_memory", "calls": 0}
+  ],
+  "fallback_allocation": {"calls": 3771, "bytes": 1158708},
+  "fallback_copy": {"calls": 3770, "bytes": 856928}
+}
+```
+
+Implementation target:
+
+```text
+Reduce non-top array-growth allocation/copy pressure. Do not spend the next slice on committed-memory misses, because committed-memory miss count is 0 at both diagnostic budgets.
 ```

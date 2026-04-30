@@ -66,7 +66,19 @@ ALLOC_ATTRIBUTION_COUNTERS = [
     "alloc_gc_roots_bytes",
 ]
 
-ALL_COUNTERS = COUNTERS + COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS
+ARRAY_PUSH_GROW_COUNTERS = [
+    "array_push_capacity_hits",
+    "array_push_capacity_misses",
+    "array_push_top_heap_hits",
+    "array_push_top_heap_miss_non_top",
+    "array_push_top_heap_miss_memory",
+    "array_push_growth_double_capacity",
+    "array_push_growth_linear_capacity",
+    "array_push_growth_min_capacity",
+    "array_push_growth_required_capacity",
+]
+
+ALL_COUNTERS = COUNTERS + COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS + ARRAY_PUSH_GROW_COUNTERS
 
 
 def run_checked(args: list[str], *, cwd: Path, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
@@ -182,6 +194,239 @@ def attribution_wrappers() -> str:
         + alloc_attribution_wrapper("alloc_scratch_array")
         + alloc_attribution_wrapper("alloc_gc_roots")
     )
+
+
+def array_push_grow_helpers() -> str:
+    return """
+  (func $abc451_diag_array_push_capacity_check (param $len i32) (param $cap i32) (result i32)
+    (if (i32.lt_u (local.get $len) (local.get $cap))
+      (then
+        (if (i32.eqz (global.get $abc451_diag_reported))
+          (then
+            (global.set $abc451_diag_array_push_capacity_hits
+              (i32.add (global.get $abc451_diag_array_push_capacity_hits) (i32.const 1))))))
+      (else
+        (if (i32.eqz (global.get $abc451_diag_reported))
+          (then
+            (global.set $abc451_diag_array_push_capacity_misses
+              (i32.add (global.get $abc451_diag_array_push_capacity_misses) (i32.const 1)))))))
+    (i32.lt_u (local.get $len) (local.get $cap)))
+
+  (func $abc451_diag_array_push_growth_capacity (param $len i32) (param $old_cap i32) (param $new_cap i32)
+    (if (i32.eqz (global.get $abc451_diag_reported))
+      (then
+        (if (i32.gt_u (local.get $old_cap) (i32.const 3072))
+          (then
+            (global.set $abc451_diag_array_push_growth_linear_capacity
+              (i32.add (global.get $abc451_diag_array_push_growth_linear_capacity) (i32.const 1))))
+          (else
+            (global.set $abc451_diag_array_push_growth_double_capacity
+              (i32.add (global.get $abc451_diag_array_push_growth_double_capacity) (i32.const 1)))))
+        (if (i32.eq (local.get $new_cap) (i32.const 4))
+          (then
+            (global.set $abc451_diag_array_push_growth_min_capacity
+              (i32.add (global.get $abc451_diag_array_push_growth_min_capacity) (i32.const 1)))))
+        (if (i32.eq (local.get $new_cap) (i32.add (local.get $len) (i32.const 1)))
+          (then
+            (global.set $abc451_diag_array_push_growth_required_capacity
+              (i32.add (global.get $abc451_diag_array_push_growth_required_capacity) (i32.const 1))))))))
+
+  (func $abc451_diag_array_push_top_check (param $array_ptr i32) (param $new_body_size i32) (result i32)
+    (local $old_body_size i32)
+    (local $current_end i32)
+    (local $requested_end i32)
+    (local $memory_bytes i32)
+    (local $is_top i32)
+    (local $fits_memory i32)
+    (local.set $old_body_size
+      (i32.load
+        (i32.add
+          (i32.sub (local.get $array_ptr) (i32.const 16))
+          (i32.const 4))))
+    (local.set $current_end (i32.add (local.get $array_ptr) (local.get $old_body_size)))
+    (local.set $requested_end
+      (i32.add
+        (local.get $array_ptr)
+        (i32.and
+          (i32.add (local.get $new_body_size) (i32.const 7))
+          (i32.const -8))))
+    (local.set $memory_bytes (i32.mul (memory.size) (i32.const 65536)))
+    (local.set $is_top (i32.eq (global.get $heap) (local.get $current_end)))
+    (local.set $fits_memory (i32.le_u (local.get $requested_end) (local.get $memory_bytes)))
+    (if (i32.eqz (global.get $abc451_diag_reported))
+      (then
+        (if (i32.and (local.get $is_top) (local.get $fits_memory))
+          (then
+            (global.set $abc451_diag_array_push_top_heap_hits
+              (i32.add (global.get $abc451_diag_array_push_top_heap_hits) (i32.const 1))))
+          (else
+            (if (i32.eqz (local.get $is_top))
+              (then
+                (global.set $abc451_diag_array_push_top_heap_miss_non_top
+                  (i32.add (global.get $abc451_diag_array_push_top_heap_miss_non_top) (i32.const 1)))))
+            (if (i32.and (local.get $is_top) (i32.eqz (local.get $fits_memory)))
+              (then
+                (global.set $abc451_diag_array_push_top_heap_miss_memory
+                  (i32.add (global.get $abc451_diag_array_push_top_heap_miss_memory) (i32.const 1)))))))))
+    (i32.and (local.get $is_top) (local.get $fits_memory)))
+"""
+
+
+def instrument_array_push_grow_attribution(wat: str) -> str:
+    wat = replace_expected(
+        wat,
+        "          (i32.lt_u (local.get 11) (local.get 12))",
+        "          (call $abc451_diag_array_push_capacity_check (local.get 11) (local.get 12))",
+        expected=2,
+        label="array push capacity local 11/12",
+    )
+    wat = replace_expected(
+        wat,
+        "              (i32.lt_u (local.get 11) (local.get 12))",
+        "              (call $abc451_diag_array_push_capacity_check (local.get 11) (local.get 12))",
+        expected=0,
+        label="array push capacity local 11/12 nested",
+    )
+    wat = replace_expected(
+        wat,
+        "          (i32.lt_u (local.get 7) (local.get 8))",
+        "          (call $abc451_diag_array_push_capacity_check (local.get 7) (local.get 8))",
+        expected=1,
+        label="array push capacity local 7/8",
+    )
+    wat = replace_expected(
+        wat,
+        """            (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
+              (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
+            )
+            (if (result i32)""",
+        """            (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
+              (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
+            )
+            (call $abc451_diag_array_push_growth_capacity (local.get 11) (local.get 12) (local.get 13))
+            (if (result i32)""",
+        expected=1,
+        label="array push growth capacity local 11/12/13",
+    )
+    wat = replace_expected(
+        wat,
+        """                (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
+                  (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
+                )
+                (if (result i32)""",
+        """                (if (i32.lt_u (local.get 13) (i32.add (local.get 11) (i32.const 1)))
+                  (then (local.set 13 (i32.add (local.get 11) (i32.const 1))))
+                )
+                (call $abc451_diag_array_push_growth_capacity (local.get 11) (local.get 12) (local.get 13))
+                (if (result i32)""",
+        expected=1,
+        label="array push growth capacity local 11/12/13 nested",
+    )
+    wat = replace_expected(
+        wat,
+        """            (if (i32.lt_u (local.get 9) (i32.add (local.get 7) (i32.const 1)))
+              (then (local.set 9 (i32.add (local.get 7) (i32.const 1))))
+            )
+            (if (result i32)""",
+        """            (if (i32.lt_u (local.get 9) (i32.add (local.get 7) (i32.const 1)))
+              (then (local.set 9 (i32.add (local.get 7) (i32.const 1))))
+            )
+            (call $abc451_diag_array_push_growth_capacity (local.get 7) (local.get 8) (local.get 9))
+            (if (result i32)""",
+        expected=1,
+        label="array push growth capacity local 7/8/9",
+    )
+    wat = replace_expected(
+        wat,
+        """              (i32.and
+                (i32.eq
+                  (global.get $heap)
+                  (i32.add
+                    (i32.and (local.get 8) (i32.const -8))
+                    (i32.load
+                      (i32.add
+                        (i32.sub (i32.and (local.get 8) (i32.const -8)) (i32.const 16))
+                        (i32.const 4)))))
+                (i32.le_u
+                  (i32.add
+                    (i32.and (local.get 8) (i32.const -8))
+                    (i32.and
+                      (i32.add
+                        (i32.add
+                          (i32.const 4)
+                          (i32.shl (local.get 13) (i32.const 2)))
+                        (i32.const 7))
+                      (i32.const -8)))
+                  (i32.mul (memory.size) (i32.const 65536))))""",
+        """              (call $abc451_diag_array_push_top_check
+                (i32.and (local.get 8) (i32.const -8))
+                (i32.add
+                  (i32.const 4)
+                  (i32.shl (local.get 13) (i32.const 2))))""",
+        expected=1,
+        label="array push top check local 8/13",
+    )
+    wat = replace_expected(
+        wat,
+        """                  (i32.and
+                    (i32.eq
+                      (global.get $heap)
+                      (i32.add
+                        (i32.and (local.get 8) (i32.const -8))
+                        (i32.load
+                          (i32.add
+                            (i32.sub (i32.and (local.get 8) (i32.const -8)) (i32.const 16))
+                            (i32.const 4)))))
+                    (i32.le_u
+                      (i32.add
+                        (i32.and (local.get 8) (i32.const -8))
+                        (i32.and
+                          (i32.add
+                            (i32.add
+                              (i32.const 4)
+                              (i32.shl (local.get 13) (i32.const 2)))
+                            (i32.const 7))
+                          (i32.const -8)))
+                      (i32.mul (memory.size) (i32.const 65536))))""",
+        """                  (call $abc451_diag_array_push_top_check
+                    (i32.and (local.get 8) (i32.const -8))
+                    (i32.add
+                      (i32.const 4)
+                      (i32.shl (local.get 13) (i32.const 2))))""",
+        expected=1,
+        label="array push top check local 8/13 nested",
+    )
+    wat = replace_expected(
+        wat,
+        """              (i32.and
+                (i32.eq
+                  (global.get $heap)
+                  (i32.add
+                    (i32.and (local.get 4) (i32.const -8))
+                    (i32.load
+                      (i32.add
+                        (i32.sub (i32.and (local.get 4) (i32.const -8)) (i32.const 16))
+                        (i32.const 4)))))
+                (i32.le_u
+                  (i32.add
+                    (i32.and (local.get 4) (i32.const -8))
+                    (i32.and
+                      (i32.add
+                        (i32.add
+                          (i32.const 4)
+                          (i32.shl (local.get 9) (i32.const 2)))
+                        (i32.const 7))
+                      (i32.const -8)))
+                  (i32.mul (memory.size) (i32.const 65536))))""",
+        """              (call $abc451_diag_array_push_top_check
+                (i32.and (local.get 4) (i32.const -8))
+                (i32.add
+                  (i32.const 4)
+                  (i32.shl (local.get 9) (i32.const 2))))""",
+        expected=1,
+        label="array push top check local 4/9",
+    )
+    return wat
 
 
 def instrument_callsite_attribution(wat: str) -> str:
@@ -435,11 +680,13 @@ def instrument_wat(wat: str, event_budget: int) -> str:
   (global $abc451_diag_reported (mut i32) (i32.const 0))
 """
     globals_wat += counter_globals(COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS)
+    globals_wat += counter_globals(ARRAY_PUSH_GROW_COUNTERS)
     first_data = wat.find("  (data ")
     if first_data < 0:
         raise RuntimeError("missing data segment insertion point")
     wat = wat[:first_data] + globals_wat + wat[first_data:]
     wat = instrument_callsite_attribution(wat)
+    wat = instrument_array_push_grow_attribution(wat)
 
     copy_probe = f"""
     (if (i32.eqz (global.get $abc451_diag_reported))
@@ -554,7 +801,7 @@ def instrument_wat(wat: str, event_budget: int) -> str:
     (call $abc451_diag_emit_counter (global.get $abc451_diag_gc_collections))
     (call $abc451_diag_emit_counter (global.get $abc451_diag_sweep_visits))
     (call $abc451_diag_emit_counter (global.get $abc451_diag_free_list_scan_visits))
-{emit_counter_calls(COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS).rstrip()})
+{emit_counter_calls(COPY_ATTRIBUTION_COUNTERS + ALLOC_ATTRIBUTION_COUNTERS + ARRAY_PUSH_GROW_COUNTERS).rstrip()})
 
   (func $abc451_diag_tick
     (global.set $abc451_diag_events
@@ -571,6 +818,7 @@ def instrument_wat(wat: str, event_budget: int) -> str:
     if start_marker not in wat:
         raise RuntimeError("missing $_start insertion point")
     wat = wat.replace(start_marker, attribution_wrappers() + report_fn + start_marker, 1)
+    wat = wat.replace(attribution_wrappers(), attribution_wrappers() + array_push_grow_helpers(), 1)
     wat = insert_before_function_end(wat, "$_start", "\n    (call $abc451_diag_report)\n")
     return wat
 
@@ -624,6 +872,17 @@ def build_attribution(counters: dict[str, int]) -> dict[str, Any]:
         "calls": counters["allocation_attempts"] - alloc_attributed_calls,
         "bytes": counters["allocation_requested_bytes"] - alloc_attributed_bytes,
     }
+    array_push_miss_reasons = [
+        {
+            "reason": "non_top_heap",
+            "calls": counters["array_push_top_heap_miss_non_top"],
+        },
+        {
+            "reason": "committed_memory",
+            "calls": counters["array_push_top_heap_miss_memory"],
+        },
+    ]
+    array_push_miss_reasons = sorted(array_push_miss_reasons, key=lambda entry: int(entry["calls"]), reverse=True)
     return {
         "copy": {
             "top": copy_categories[:5],
@@ -655,6 +914,29 @@ def build_attribution(counters: dict[str, int]) -> dict[str, Any]:
             key=lambda entry: (entry["bytes"], entry["calls"]),
             reverse=True,
         )[:8],
+        "array_push_grow": {
+            "capacity_hits": counters["array_push_capacity_hits"],
+            "capacity_misses": counters["array_push_capacity_misses"],
+            "top_heap_hits": counters["array_push_top_heap_hits"],
+            "top_heap_misses": counters["array_push_top_heap_miss_non_top"]
+            + counters["array_push_top_heap_miss_memory"],
+            "miss_reasons": array_push_miss_reasons,
+            "top_miss_reason": array_push_miss_reasons[0]["reason"] if array_push_miss_reasons else "none",
+            "growth_capacity_paths": {
+                "double_capacity": counters["array_push_growth_double_capacity"],
+                "linear_capacity": counters["array_push_growth_linear_capacity"],
+                "min_capacity": counters["array_push_growth_min_capacity"],
+                "required_capacity": counters["array_push_growth_required_capacity"],
+            },
+            "fallback_allocation": {
+                "calls": counters["alloc_array_growth_calls"],
+                "bytes": counters["alloc_array_growth_bytes"],
+            },
+            "fallback_copy": {
+                "calls": counters["copy_array_growth_calls"],
+                "bytes": counters["copy_array_growth_bytes"],
+            },
+        },
     }
 
 
