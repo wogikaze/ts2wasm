@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "fsm": "CHILD_SUPERVISE",
+  "fsm": "CLEAN_STOP",
   "active_task_id": null,
-  "updated_at": "2026-04-29T13:04:47Z",
+  "updated_at": "2026-04-30T21:12:00Z",
   "verify_fast_streak_fails": 0
 }
