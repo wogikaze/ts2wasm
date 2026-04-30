@@ -48,7 +48,7 @@ Focused test262 result on 2026-04-30 after parser fix:
 
 ```sh
 TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference \
-  python3 scripts/run/test262.py \
+  python3 scripts/run/reference-coverage.py test262 --jsonl \
   --path-filter language/arguments-object/10.5-7-b-2-s.js \
   --jobs 1
 ```
@@ -145,7 +145,7 @@ Required commands:
 ```sh
 cargo fmt --all --check
 cargo nextest run -E 'test(arguments) or test(node_diff) or test(parser)'
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/test262.py --path-filter language/arguments-object/10.5-7-b-2-s.js --jobs 1
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/reference-coverage.py test262 --jsonl --path-filter language/arguments-object/10.5-7-b-2-s.js --jobs 1
 mise run update-issue-index -- --check
 mise run check issues
 ```

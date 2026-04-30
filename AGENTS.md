@@ -55,7 +55,8 @@ mise run update-issue-index           # issue index更新
 mise run check manifest       # manifest/wasm import一致確認
 mise run reference-coverage -- test262 --limit 50  # カバレッジ計測（ramp）
 mise run update-coverage-matrix       # カバレッジ表更新
-mise run test262 -- --sample 50 --jobs 4  # test262実行
+mise run test262 -- --sample 50 --jobs 4  # test262詳細JSONL実行（= reference-coverage test262 --jsonl）
+mise run reference-coverage -- test262 --jsonl --sample 50 --jobs 4  # 同上
 # web-ui データ生成（test262/reference-coverage 実行時に自動生成されるが、手動でも可能）
 mise run web-ui-data                    # artifacts/coverage/results/ から web-ui JSON を再生成
 # web-ui のビルド（dev server で見るだけなら不要）

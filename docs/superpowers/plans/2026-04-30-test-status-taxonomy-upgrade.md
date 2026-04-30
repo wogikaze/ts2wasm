@@ -104,7 +104,7 @@ python3 scripts/run/reference-coverage.py test262 --limit 0 --no-web-ui 2>&1 | g
 ## Task 2: test262.py — Add mismatch and runtime_error statuses
 
 **Files:**
-- Modify: `scripts/run/test262.py`
+- Modify: `scripts/run/reference-coverage.py` (was `scripts/run/test262.py`, now merged)
 
 - [ ] **Step 1: Change process_one_test() — output mismatch from "fail" to "mismatch"**
 
@@ -141,7 +141,7 @@ To:
 - [ ] **Step 3: Verify**
 
 ```bash
-python3 -c "import ast; ast.parse(open('scripts/run/test262.py').read()); print('syntax OK')"
+python3 -c "import ast; ast.parse(open('scripts/run/reference-coverage.py').read()); print('syntax OK')"
 # Expected: syntax OK
 ```
 
@@ -407,7 +407,7 @@ cd web-ui && npx tsc --noEmit 2>&1
 - [ ] **Step 1: Run Python syntax checks on all modified scripts**
 
 ```bash
-python3 -c "import ast; [ast.parse(open(f).read()) for f in ['scripts/run/reference-coverage.py', 'scripts/run/test262.py', 'scripts/gen/web-ui-data.py']]; print('All syntax OK')"
+python3 -c "import ast; [ast.parse(open(f).read()) for f in ['scripts/run/reference-coverage.py', 'scripts/gen/web-ui-data.py']]; print('All syntax OK')"
 ```
 
 - [ ] **Step 2: Run TypeScript check**
@@ -427,7 +427,7 @@ mise run check
 
 ```bash
 # Generate coverage data with new statuses
-python3 scripts/run/test262.py --sample 0 2>&1 | grep -E 'generated|Error'
+python3 scripts/run/reference-coverage.py test262 --jsonl --sample 0 2>&1 | grep -E 'generated|Error'
 
 # Check the generated web UI data has new summary fields
 python3 -c "

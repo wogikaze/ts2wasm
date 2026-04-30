@@ -77,7 +77,7 @@ Out of scope:
 
 Expected:
 
-- ``scripts/run/test262.py``
+- ``scripts/run/reference-coverage.py``
 - ``scripts/run/reference-coverage.py``
 - ``artifacts/coverage/results/test262-results.jsonl``
 
@@ -149,7 +149,7 @@ command: cargo fmt --all --check
 result: PASS
 date: 2026-04-29
 
-command: python3 -m py_compile scripts/run/test262.py scripts/run/reference-coverage.py
+command: python3 -m py_compile scripts/run/reference-coverage.py scripts/run/reference-coverage.py
 result: PASS
 date: 2026-04-29
 

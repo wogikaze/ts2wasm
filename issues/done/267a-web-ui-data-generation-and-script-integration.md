@@ -53,7 +53,7 @@ Out of scope:
 Expected:
 
 - `scripts/gen/`
-- `scripts/run/test262.py`
+- `scripts/run/reference-coverage.py`
 - `web-ui/public/data/`
 - `web-ui/README.md`
 - `docs/`

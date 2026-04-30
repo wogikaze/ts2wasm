@@ -86,8 +86,8 @@ description = "Append build/fixture performance metrics to JSON"
 run = "python scripts/manager.py benchmark-tracker"
 
 [tasks.test262]
-description = "test262 harness: JSONL on stdout (see script for args)"
-run = "python scripts/manager.py test262"
+description = "Alias for 'reference-coverage test262 --jsonl' (detailed JSONL output)"
+run = "python scripts/manager.py reference-coverage test262 --jsonl"
 
 [tasks."test-differential-reporter"]
 description = "HTML/Md report from test262 JSONL (stdin; optional file args)"

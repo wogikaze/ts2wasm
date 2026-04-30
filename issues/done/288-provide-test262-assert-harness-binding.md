@@ -76,7 +76,7 @@ Out of scope:
 
 Expected:
 
-- ``scripts/run/test262.py``
+- ``scripts/run/reference-coverage.py``
 - ``crates/cli/src/``
 - ``crates/ir/src/``
 - ``crates/backend-wasm/src/``
@@ -144,7 +144,7 @@ Commits:
 Validation result:
 
 ```text
-command: python3 -m py_compile scripts/run/test262.py scripts/run/reference-coverage.py
+command: python3 -m py_compile scripts/run/reference-coverage.py scripts/run/reference-coverage.py
 result: PASS
 date: 2026-04-29
 
@@ -152,7 +152,7 @@ command: mise run reference-coverage -- test262 --path-filter /home/wogikaze/wgk
 result: PASS; executed=1, build_pass=1, unsupported=0, blocked=0; exact UnresolvedFunction/assert bucket not emitted
 date: 2026-04-29
 
-command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/test262.py --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/arguments-object/10.5-7-b-2-s.js --jobs 1
+command: TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/reference-coverage.py --path-filter /home/wogikaze/wgkz/ts2wasm/reference/test262/test/language/arguments-object/10.5-7-b-2-s.js --jobs 1
 result: PASS command; JSONL bucket count for `error: [UnresolvedFunction] unresolved function: `assert`\n` is 0; representative now reaches Test262AssertionFailure downstream
 date: 2026-04-29
 

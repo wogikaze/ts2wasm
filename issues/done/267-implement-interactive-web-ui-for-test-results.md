@@ -65,7 +65,7 @@ Expected:
 
 - `web-ui/` (new directory for web UI)
 - `scripts/gen/` (new web UI report generation script)
-- `scripts/run/test262.py` (add web UI output option)
+- `scripts/run/reference-coverage.py` (add web UI output option)
 - `docs/` (new web UI usage documentation)
 
 Do not touch:

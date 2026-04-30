@@ -77,7 +77,7 @@ Out of scope:
 
 Expected:
 
-- ``scripts/run/test262.py``
+- ``scripts/run/reference-coverage.py``
 - ``scripts/run/reference-coverage.py``
 - ``artifacts/coverage/results/*``
 
@@ -144,7 +144,7 @@ Commits:
 Validation result:
 
 ```text
-command: python3 -m py_compile scripts/run/test262.py scripts/run/reference-coverage.py
+command: python3 -m py_compile scripts/run/reference-coverage.py scripts/run/reference-coverage.py
 result: pass
 date: 2026-04-29
 

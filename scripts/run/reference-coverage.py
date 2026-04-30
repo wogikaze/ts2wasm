@@ -4,6 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--web-ui]
+      [--jsonl] [--jobs N] [--sample N] [--category PATTERN]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -22,6 +23,10 @@ Notes:
   - --paths-file: run a deterministic subset listed as repo-relative or suite-relative paths
   - --path-filter: run only files whose repo-relative path contains TEXT (repeatable)
   - --web-ui: refresh web-ui/public/data after writing this suite coverage result
+  - --jsonl: output results as JSONL (test262 only, enables full harness with parallel exec)
+  - --jobs N: number of parallel jobs (default: CPU count)
+  - --sample N: max files per category (test262 only, uses category-based sampling)
+  - --category PATTERN: regex filter for test categories (test262 only, used with --sample)
   - TS2WASM_REFERENCE_ROOT may point at an external reference/ directory for
     validation from isolated git worktrees.
 """
@@ -34,10 +39,18 @@ import re
 import shutil
 import os
 from pathlib import Path
-
-import test262 as test262_runner
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from datetime import datetime
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
+import test262_harness as test262_runner
+
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent / "report"))
+    from new_passes_notify import notify_new_passes
+except ImportError:
+    notify_new_passes = None
+
 from ts2wasm_binary import resolve_ts2wasm_binary
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
@@ -176,11 +189,18 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--web-ui] [--no-web-ui]")
+    print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN]")
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
     print("  tsc       -> reference/typescript/tests/cases/compiler/**/*.ts")
     print("  tsgo      -> reference/typescript-go/testdata/tests/**")
+    print()
+    print("Flags:")
+    print("  --jsonl      Output results as JSONL (test262 only, enables full harness with parallel exec)")
+    print("  --jobs N     Number of parallel jobs (default: CPU count)")
+    print("  --sample N   Max files per category (test262 only, uses category-based sampling)")
+    print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
 
 def repo_relative(path):
     """Return a stable repo-relative path string for evidence and filtering."""
@@ -587,6 +607,10 @@ def main():
     paths_file = None
     path_filters = []
     web_ui = True
+    jsonl_output = False
+    jobs = None
+    sample = None
+    category_pattern = None
     
     i = 0
     while i < len(args):
@@ -627,6 +651,35 @@ def main():
         elif args[i] == "--no-web-ui":
             web_ui = False
             i += 1
+        elif args[i] == "--jsonl":
+            jsonl_output = True
+            i += 1
+        elif args[i] == "--jobs":
+            if i + 1 >= len(args):
+                print("ERROR: --jobs requires a value", file=sys.stderr)
+                sys.exit(1)
+            try:
+                jobs = int(args[i + 1])
+            except ValueError:
+                print("ERROR: --jobs must be a positive integer", file=sys.stderr)
+                sys.exit(1)
+            i += 2
+        elif args[i] == "--sample":
+            if i + 1 >= len(args):
+                print("ERROR: --sample requires a value", file=sys.stderr)
+                sys.exit(1)
+            try:
+                sample = int(args[i + 1])
+            except ValueError:
+                print("ERROR: --sample must be a non-negative integer", file=sys.stderr)
+                sys.exit(1)
+            i += 2
+        elif args[i] == "--category":
+            if i + 1 >= len(args):
+                print("ERROR: --category requires a value", file=sys.stderr)
+                sys.exit(1)
+            category_pattern = args[i + 1]
+            i += 2
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -637,6 +690,10 @@ def main():
         usage()
         sys.exit(1)
 
+    if jsonl_output and suite != "test262":
+        print("ERROR: --jsonl is only supported for suite=test262", file=sys.stderr)
+        sys.exit(1)
+
     suite_config, files = resolve_suite_paths(suite, path_filters)
     if files is None:
         sys.exit(1)
@@ -644,6 +701,18 @@ def main():
     denominator = len(files)
     evidence = evidence_command(suite, limit, paths_file, path_filters)
     
+    if sample is not None and sample < 1:
+        if jsonl_output:
+            print(f"Sample mode: 0 files selected", file=sys.stderr)
+            if suite == "test262":
+                print(f"=== {suite} Summary ===", file=sys.stderr)
+                print("Pass: 0", file=sys.stderr)
+                print("Fail: 0", file=sys.stderr)
+                print("Unsupported: 0", file=sys.stderr)
+                print("Blocked: 0", file=sys.stderr)
+                print("Total: 0", file=sys.stderr)
+            sys.exit(0)
+
     if limit == 0:
         summary = {
             "suite": suite,
@@ -697,7 +766,23 @@ def main():
     
     if limit:
         files = files[:limit]
-    
+
+    if sample and suite == "test262":
+        category_seen = {}
+        sampled = []
+        for f in files:
+            cat_match = re.search(r'test/([^/]+)/', str(f))
+            cat = cat_match.group(1) if cat_match else "default"
+            if category_pattern and not re.search(category_pattern, cat):
+                continue
+            seen = category_seen.get(cat, 0)
+            if seen >= sample:
+                continue
+            category_seen[cat] = seen + 1
+            sampled.append(f)
+        files = sampled
+        print(f"Sample mode: {len(files)} files selected (max {sample} per category)", file=sys.stderr)
+
     executed = 0
     fail_count = 0
     unsupported_count = 0
@@ -802,6 +887,93 @@ def main():
                 if detail_output:
                     file_details.append(f"{detail_path}: {diag_code}: {feature_label_result}")
     
+    # JSONL output mode (test262 only, uses full harness with parallel execution)
+    if jsonl_output and suite == "test262":
+        if not files:
+            print(f"No files selected for {suite}", file=sys.stderr)
+            sys.exit(0)
+        if jobs is None:
+            jobs = os.cpu_count() or 4
+        if jobs < 1:
+            jobs = 1
+
+        results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
+        results_dir.mkdir(parents=True, exist_ok=True)
+        jsonl_file = results_dir / f"{suite}-results.jsonl"
+
+        passed = 0
+        failed = 0
+        unsupported = 0
+        blocked = 0
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_dir = Path(tmp_dir)
+            with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
+                with ThreadPoolExecutor(max_workers=jobs) as executor:
+                    futures = {executor.submit(test262_runner.process_one_test, f, tmp_dir, False): f for f in files}
+                    completed = 0
+                    total = len(files)
+                    last_progress = 0
+
+                    for future in as_completed(futures):
+                        record, status = future.result()
+                        if record:
+                            jsonl_out.write(record + "\n")
+                        if status == "pass":
+                            passed += 1
+                        elif status in ("fail", "mismatch", "runtime_error"):
+                            failed += 1
+                        elif status == "unsupported":
+                            unsupported += 1
+                        elif status == "blocked":
+                            blocked += 1
+                        completed += 1
+                        progress = int((completed / total) * 100)
+                        if progress >= last_progress + 5:
+                            print(f"Progress: {progress}% ({completed}/{total})", file=sys.stderr)
+                            last_progress = progress
+
+        print(f"\n=== {suite} Summary ===", file=sys.stderr)
+        print(f"Pass: {passed}", file=sys.stderr)
+        print(f"Fail: {failed}", file=sys.stderr)
+        print(f"Unsupported: {unsupported}", file=sys.stderr)
+        print(f"Blocked: {blocked}", file=sys.stderr)
+        print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
+
+        # Save summary files
+        summary = {
+            "suite": suite,
+            "passed": passed,
+            "failed": failed,
+            "unsupported": unsupported,
+            "blocked": blocked,
+            "total": passed + failed + unsupported + blocked,
+            "timestamp": datetime.now().isoformat(),
+            "jsonl_file": str(jsonl_file),
+        }
+        summary_file = results_dir / f"{suite}-summary.json"
+        summary_file.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+
+        # Legacy format
+        legacy = dict(summary)
+        legacy.pop("jsonl_file", None)
+        legacy_file = results_dir / f"{suite}.json"
+        legacy_file.write_text(json.dumps(legacy, indent=2), encoding="utf-8")
+
+        # Notify new passes
+        if notify_new_passes is not None:
+            try:
+                notify_new_passes(jsonl_file, suite=suite)
+            except Exception as e:
+                print(f"WARNING: notification failed: {e}", file=sys.stderr)
+
+        # Web UI refresh
+        if web_ui:
+            refresh_web_ui_data()
+
+        # Don't execute the sequential code path below
+        return
+
     # Build unsupported diagcodes string
     unsupported_diagcodes = ",".join(
         f"{code}:{count}" for code, count in 

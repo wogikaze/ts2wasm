@@ -8,7 +8,7 @@
 **Priority**: P1
 **Class**: implementation-ready
 
-Problem: Current test262 runner (scripts/run/test262.py) doesn't load required test harness files or provide host-defined functions, causing tests to fail with "UnresolvedName: assert" errors. This prevents meaningful test262 execution since assert.sameValue and other test helpers are undefined.
+Problem: Current test262 runner (scripts/run/reference-coverage.py) doesn't load required test harness files or provide host-defined functions, causing tests to fail with "UnresolvedName: assert" errors. This prevents meaningful test262 execution since assert.sameValue and other test helpers are undefined.
 
 Current state:
 - Test262 tests fail immediately with `error: [UnresolvedName] unresolved name: 'assert'`
@@ -86,16 +86,16 @@ cargo nextest run
 Reference:
 - Test262 INTERPRETING.md: <https://github.com/tc39/test262/blob/main/INTERPRETING.md>
 - Test262 harness files: reference/test262/harness/
-- Current runner: scripts/run/test262.py
+- Current runner: scripts/run/reference-coverage.py
 
 Completion evidence:
-- `scripts/run/test262.py` parses test262 metadata, prepares harness-wrapped source, loads real `sta.js`/`assert.js` for the Node oracle, and provides a wasm-compatible core harness shim for the current compiler slice.
+- `scripts/run/reference-coverage.py` parses test262 metadata, prepares harness-wrapped source, loads real `sta.js`/`assert.js` for the Node oracle, and provides a wasm-compatible core harness shim for the current compiler slice.
 - Host-defined `print` and `$262` hooks are provided to prepared test sources; unsupported hooks fail with explicit `Test262Error` diagnostics or are classified by metadata.
 - Negative metadata is handled as expected rejection, and unsupported `module`, `async`, and `IsHTMLDDA` tests are classified instead of run as ordinary failures.
 - `assert.sameValue`/`assert.notSameValue` mismatches emit a runner sentinel so assertion failures are not silently counted as passes while exception exit behavior is still incomplete.
 
 Validation run:
-- `python -m py_compile scripts/run/test262.py`
+- `python -m py_compile scripts/run/reference-coverage.py`
 - `python scripts/manager.py check scripts`
 - `python scripts/manager.py check issues`
 - `python scripts/manager.py test262 --sample 1 --jobs 1` -> `Pass: 9`, `Fail: 1`, `Unsupported: 18`, `Blocked: 0`

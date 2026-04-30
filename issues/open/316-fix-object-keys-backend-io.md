@@ -15,7 +15,7 @@ updated: 2026-04-30
 
 Normalize the Object.keys test262 reproduction before assigning a runtime fix.
 The original issue pointed at a built-ins test path, but the current
-`scripts/run/test262.py` runner only scans `test/language/**/*.js`, so the
+test262 runner (now merged into `scripts/run/reference-coverage.py`) only scans `test/language/**/*.js` by default, so the
 representative built-ins path is not currently selectable through that runner.
 
 ## Problem
@@ -48,7 +48,7 @@ Focused test262 runner attempt on 2026-04-30:
 
 ```sh
 TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference \
-  python3 scripts/run/test262.py \
+  python3 scripts/run/reference-coverage.py test262 --jsonl \
   --path-filter built-ins/Object/keys/15.2.3.14-3-4.js \
   --jobs 1
 ```
@@ -118,7 +118,7 @@ mise run check issues
 Impacted commands:
 
 ```sh
-TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/test262.py --path-filter built-ins/Object/keys/15.2.3.14-3-4.js --jobs 1
+TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference python3 scripts/run/reference-coverage.py test262 --jsonl --path-filter built-ins/Object/keys/15.2.3.14-3-4.js --jobs 1
 cargo run -q -- build /home/wogikaze/wgkz/ts2wasm/reference/test262/test/built-ins/Object/keys/15.2.3.14-3-4.js -o /tmp/object-keys.wasm --host-deny
 ```
 
