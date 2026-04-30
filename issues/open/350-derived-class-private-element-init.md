@@ -8,7 +8,7 @@ priority: P2
 depends_on: [255]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -86,6 +86,15 @@ Do not touch:
 - `cargo fmt --all --check`: pass.
 - `cargo test -p ts2wasm-cli private`: pass.
 - `cargo nextest run -E 'test(private) or test(class) or test(node_diff)'`: 195 passed, 1 failed due existing broad-filter timeout in `fixtures/core-semantics/abc451-depth8-live-set.ts` (tracked separately as issue 357), so this issue remains open instead of done.
+
+2026-05-01 child-350 follow-up verification:
+
+- No additional implementation change was required for issue-specific acceptance on parent base `53a6ad73`.
+- `cargo fmt --all --check`: pass.
+- `cargo test -p ts2wasm-cli private`: pass; private-class tests included direct private method/getter/setter lowering checks plus `private_class_field_read_write_fixture_matches_node_output_under_iwasm`.
+- `cargo nextest run -E 'test(private) or test(class) or test(node_diff)'`: 196 passed, 1 failed.
+- Only failing test in the broad filter: `abc451_depth8_live_set_fixture_matches_node_output_under_iwasm`, which timed out under `iwasm` after `30.412s` on `fixtures/core-semantics/abc451-depth8-live-set.ts`; this is unrelated to derived-class private element initialization and is tracked separately by issue 357.
+- Parent close/block decision evidence: all checked issue-specific acceptance criteria remain satisfied; the only unsatisfied acceptance line is the repository-wide `cargo nextest run` gate because of the unrelated ABC451 timeout.
 
 ## Validation
 
