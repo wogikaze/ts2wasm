@@ -135,7 +135,7 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- pending child commit: branch/control-flow-assigned BigInt add/sub local tracking is preserved for the supported if/else shape.
+- `7d27d84a` issue-397: preserve branch bigint add sub tracking
 
 Validation result:
 
