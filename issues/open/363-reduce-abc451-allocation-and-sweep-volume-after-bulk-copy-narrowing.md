@@ -8,7 +8,7 @@ priority: P1
 depends_on: [362]
 blocks: [357, 309]
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -170,6 +170,79 @@ Follow-up issues:
 ## Notes
 
 Issue 362 proved bulk `memory.copy` preserves the same API-level diagnostic counters at 100000 events, so the next useful change should reduce the amount of allocation/copy/sweep work rather than only replacing the implementation of a copy primitive.
+
+## Child attempt evidence: 2026-05-01
+
+Status: `BLOCKED`.
+
+This child did not keep runtime code changes because each tested candidate either produced no diagnostic improvement or changed the focused gate from timeout to OOM/trap.
+
+Baseline reproduced:
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; free_list_scan_visits=0; gc_collections=5; sweep_visits=58859; array_copy_calls=2898; array_copy_bytes=182008; allocation_attempts=20587; allocation_requested_bytes=521193
+```
+
+Rejected candidates:
+
+```text
+candidate: top-of-heap ArrayPushGrow memory.grow extension under MEMORY_MAX_PAGES=185
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; no counter delta from baseline
+command: mise run abc451-runtime-costs -- --event-budget 300000 --timeout 30
+result: pass; no counter delta from issue-362 300000-event baseline
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.212s
+```
+
+```text
+candidate: allocation-pressure GC cadence Layout::GC_THRESHOLD * 3
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; sweep_visits 58859 -> 51888, but allocation/copy volume increased
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; Exception: unreachable after 29.408s
+```
+
+```text
+candidate: allocation-pressure GC cadence Layout::GC_THRESHOLD * 2 + Layout::GC_THRESHOLD / 2
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; sweep_visits 58859 -> 57445, but allocation/copy volume increased
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; Exception: unreachable after 29.704s
+```
+
+```text
+candidate: immutable string concat empty-string fast path for "" + s and s + ""
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; counters worsened: allocation_attempts 20587 -> 20590, all_copy_calls 20549 -> 20551
+```
+
+```text
+candidate: ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD 3072 -> 4096
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; no counter delta from baseline
+command: mise run abc451-runtime-costs -- --event-budget 300000 --timeout 30
+result: pass; no counter delta from issue-362 300000-event baseline
+```
+
+Remaining blocker:
+
+```text
+The existing diagnostic identifies aggregate allocation/copy/sweep pressure, but the safe runtime-policy candidates above do not isolate a mergeable reduction that preserves the focused depth-8 gate. The next slice should add callsite/category attribution for allocation and copy volume, or target a proven high-volume allocation site with a smaller acceptance gate.
+```
+
+Validation for evidence-only blocker update:
+
+```text
+cargo fmt --all --check: pass
+mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30: pass; baseline counters reproduced
+cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm: fail; iwasm timed out after 30.212s
+cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm: pass
+cargo test -p ts2wasm-backend-wasm --lib -- --nocapture: pass; 27 passed
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
 
 ## Completion evidence
 
