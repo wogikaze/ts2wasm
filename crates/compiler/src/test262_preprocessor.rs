@@ -1,26 +1,26 @@
 //! Test262 includes directive preprocessor
 //!
-//! Processes test262 YAML frontmatter to extract includes: directives
-//! and inserts helper file contents before compilation.
+//! Processes test262 YAML frontmatter to extract includes/features directives
+//! and inserts directive-generated snippets before compilation.
 
 use std::fs;
 use std::path::Path;
 
 use ts2wasm_frontend::Diagnostic;
 
-/// Process test262 includes directive if present in source
+/// Process test262 metadata directives if present in source.
 ///
-/// If the source file contains test262 YAML frontmatter with an includes: directive,
-/// this function loads the specified helper files from the test262 harness directory
-/// and inserts their contents after the frontmatter.
+/// If the source file contains test262 YAML frontmatter with includes/features
+/// directives, this function injects helper/function stubs and feature shims after
+/// the frontmatter.
 ///
 /// # Arguments
 /// * `input` - Path to the input file (used to resolve test262 harness directory)
 /// * `source` - Source code to process
 ///
 /// # Returns
-/// * `Ok(String)` - Processed source code with includes inserted
-/// * `Err(Diagnostic)` - Error if includes cannot be resolved or loaded
+/// * `Ok(String)` - Processed source code with directive-generated snippets inserted
+/// * `Err(Diagnostic)` - Error if directives cannot be resolved/loaded or are unsupported
 pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Diagnostic> {
     // Check if this is a test262 file by looking for YAML frontmatter
     let Some(frontmatter_end) = source.find("---*/") else {
@@ -29,74 +29,216 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
     };
 
     let frontmatter = &source[..=frontmatter_end + 4]; // Include the closing */
-    // Extract includes: directive from frontmatter
-    let includes = extract_includes_from_frontmatter(frontmatter);
-    if includes.is_empty() {
-        // No includes directive, return source as-is
+    let metadata = parse_test262_metadata(frontmatter);
+    if metadata.includes.is_empty() && metadata.features.is_empty() {
         return Ok(source.to_string());
     }
 
-    // Resolve test262 harness directory
-    let harness_dir = resolve_harness_directory(input)?;
+    let mut injected = String::new();
 
-    // Load and concatenate helper file contents
-    let mut helper_contents = String::new();
-    for include_file in &includes {
-        let helper_path = harness_dir.join(include_file);
-        let helper_source = fs::read_to_string(&helper_path).map_err(|error| Diagnostic {
-            code: ts2wasm_frontend::DiagCode::BackendIo,
-            message: format!(
-                "failed to read test262 helper file {}: {error}",
-                helper_path.display()
-            ),
-            span: None,
-        })?;
-
-        // Remove YAML frontmatter from helper files if present
-        let helper_source = remove_frontmatter(&helper_source);
-
-        // Extract function stubs instead of full helper file
-        let stubs = extract_function_stubs(&helper_source);
-        if !helper_contents.is_empty() {
-            helper_contents.push('\n');
+    // Insert feature-backed stubs (e.g. `$262`) when supported by metadata.
+    let feature_stubs = build_feature_stubs(&metadata.features)?;
+    if !feature_stubs.is_empty() {
+        if !injected.is_empty() {
+            injected.push('\n');
         }
-        helper_contents.push_str(&stubs);
+        injected.push_str(&feature_stubs);
+    }
+
+    // Resolve test262 harness directory and inject selected helpers
+    if !metadata.includes.is_empty() {
+        let harness_dir = resolve_harness_directory(input)?;
+
+        for include_file in &metadata.includes {
+            let helper_path = harness_dir.join(include_file);
+            let helper_source = fs::read_to_string(&helper_path).map_err(|error| Diagnostic {
+                code: ts2wasm_frontend::DiagCode::BackendIo,
+                message: format!(
+                    "failed to read test262 helper file {}: {error}",
+                    helper_path.display()
+                ),
+                span: None,
+            })?;
+
+            // Remove YAML frontmatter from helper files if present
+            let helper_source = remove_frontmatter(&helper_source);
+
+            // Extract function stubs instead of full helper file
+            let stubs = extract_function_stubs(&helper_source);
+            if !injected.is_empty() {
+                injected.push('\n');
+            }
+            injected.push_str(&stubs);
+        }
+    }
+
+    if injected.is_empty() {
+        return Ok(source.to_string());
     }
 
     // Insert helper contents after frontmatter
     let body_start = frontmatter_end + 5;
     let body = &source[body_start..];
 
-    let processed = format!(
-        "{}\n{}\n{}",
-        frontmatter,
-        helper_contents.trim(),
-        body.trim()
-    );
+    let processed = format!("{}\n{}\n{}", frontmatter, injected.trim(), body.trim());
     Ok(processed)
 }
 
-/// Extract includes: directive from YAML frontmatter
-fn extract_includes_from_frontmatter(frontmatter: &str) -> Vec<String> {
-    let mut includes = Vec::new();
+/// Parsed test262 frontmatter directives used by preprocessor support.
+#[derive(Default)]
+struct Test262Directives {
+    includes: Vec<String>,
+    features: Vec<String>,
+}
 
-    for line in frontmatter.lines() {
-        let line = line.trim();
-        if line.starts_with("includes:") {
-            // Parse includes: [file1.js, file2.js]
-            let rest = line.strip_prefix("includes:").unwrap().trim();
-            // Remove brackets and split by comma
-            let rest = rest.trim_start_matches('[').trim_end_matches(']');
-            for item in rest.split(',') {
-                let item = item.trim().trim_matches('"').trim_matches('\'');
-                if !item.is_empty() {
-                    includes.push(item.to_string());
-                }
+/// Extract supported directives from YAML frontmatter.
+fn parse_test262_metadata(frontmatter: &str) -> Test262Directives {
+    let mut directives = Test262Directives::default();
+    let mut current_key = None;
+
+    for raw_line in frontmatter.lines() {
+        let stripped = raw_line.trim_end().trim();
+        if stripped.is_empty() || stripped.starts_with('#') {
+            continue;
+        }
+
+        if stripped.starts_with("- ") {
+            let item = parse_yaml_scalar(stripped.trim_start_matches("- ").trim());
+            match current_key.as_deref() {
+                Some("includes") | Some("include") => directives.includes.push(item.to_owned()),
+                Some("features") => directives.features.push(item.to_owned()),
+                _ => {}
             }
+            continue;
+        }
+
+        if !raw_line.starts_with(' ') && !raw_line.starts_with('\t') {
+            current_key = None;
+        }
+
+        if !stripped.contains(':') {
+            continue;
+        }
+
+        let Some((key, value)) = stripped.split_once(':') else {
+            continue;
+        };
+        let key = key.trim();
+        let value = value.trim();
+        current_key = Some(key.to_owned());
+
+        match key {
+            "includes" | "include" => {
+                directives.includes.extend(parse_yaml_list(value));
+            }
+            "features" => {
+                directives.features.extend(parse_yaml_list(value));
+            }
+            _ => {}
         }
     }
 
-    includes
+    directives
+}
+
+/// Parse a YAML-style scalar list item and trim YAML quoting.
+fn parse_yaml_scalar(value: &str) -> &str {
+    let no_comment = value.split_once('#').map(|(left, _)| left).unwrap_or(value);
+    no_comment.trim().trim_matches('"').trim_matches('\'')
+}
+
+/// Parse YAML list from inline (e.g. [a, b]) or scalar form.
+fn parse_yaml_list(value: &str) -> Vec<String> {
+    let value = value
+        .split_once('#')
+        .map(|(left, _)| left)
+        .unwrap_or(value)
+        .trim();
+    if value.is_empty() {
+        return Vec::new();
+    }
+
+    if value.starts_with('[') && value.ends_with(']') {
+        let inner = value[1..value.len() - 1].trim();
+        if inner.is_empty() {
+            return Vec::new();
+        }
+        return inner
+            .split(',')
+            .map(str::trim)
+            .filter(|part| !part.is_empty())
+            .map(parse_yaml_scalar)
+            .map(str::to_owned)
+            .collect();
+    }
+
+    if value.is_empty() {
+        Vec::new()
+    } else {
+        vec![parse_yaml_scalar(value).to_owned()]
+    }
+}
+
+/// Build stubs for supported `features:` values. Returns unsupported feature
+/// diagnostic for unsupported metadata values.
+fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
+    let mut unsupported_feature = None;
+    let mut has_262 = false;
+    let mut stubs = String::new();
+
+    for feature in features {
+        match feature.as_str() {
+            "IsHTMLDDA" => {
+                has_262 = true;
+                stubs.push_str("$262.IsHTMLDDA = {};\n");
+            }
+            "createRealm" => {
+                has_262 = true;
+                stubs.push_str("$262.createRealm = function createRealm() { return {}; };\n");
+            }
+            "tail-call-optimization" => {
+                // feature marker currently used only for test262 metadata filtering.
+            }
+            "Symbol.asyncIterator" => {
+                stubs.push_str(
+                    "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n",
+                );
+                stubs.push_str("  if (Symbol.asyncIterator === undefined) {\n");
+                stubs.push_str("    Symbol.asyncIterator = Symbol('Symbol.asyncIterator');\n");
+                stubs.push_str("  }\n}");
+            }
+            _ if unsupported_feature.is_none() => {
+                unsupported_feature = Some(feature.clone());
+            }
+            _ => {}
+        }
+    }
+
+    if let Some(feature) = unsupported_feature {
+        return Err(Diagnostic {
+            code: ts2wasm_frontend::DiagCode::UnsupportedSyntax,
+            message: format!(
+                "UnsupportedTest262Metadata/test262-metadata: test262 feature `{feature}` is not supported by this runner slice"
+            ),
+            span: None,
+        });
+    }
+
+    if has_262 && !stubs.starts_with("$262") {
+        stubs.insert_str(0, "var $262 = {};\n");
+    }
+
+    Ok(stubs)
+}
+
+/// Extract includes: directive from YAML frontmatter.
+fn extract_includes_from_frontmatter(frontmatter: &str) -> Vec<String> {
+    parse_test262_metadata(frontmatter).includes
+}
+
+/// Extract features: directive from YAML frontmatter.
+fn extract_features_from_frontmatter(frontmatter: &str) -> Vec<String> {
+    parse_test262_metadata(frontmatter).features
 }
 
 /// Extract function definitions from helper file
@@ -193,6 +335,50 @@ includes: [propertyHelper.js, assert.js]
 ---*/"#;
         let includes = extract_includes_from_frontmatter(frontmatter);
         assert_eq!(includes, vec!["propertyHelper.js", "assert.js"]);
+    }
+
+    #[test]
+    fn test_extract_features_and_multiline_includes_from_frontmatter() {
+        let frontmatter = r#"/*---
+includes:
+  - propertyHelper.js
+features: [IsHTMLDDA, createRealm]
+---*/"#;
+        let features = extract_features_from_frontmatter(frontmatter);
+        let includes = extract_includes_from_frontmatter(frontmatter);
+        assert_eq!(features, vec!["IsHTMLDDA", "createRealm"]);
+        assert_eq!(includes, vec!["propertyHelper.js"]);
+    }
+
+    #[test]
+    fn test_process_includes_and_features_inject_stubs() {
+        let source = r#"/*---
+features: [IsHTMLDDA, Symbol.asyncIterator]
+includes:
+  - assert.js
+---*/
+
+var IsHTMLDDA = $262.IsHTMLDDA;"#;
+        let input = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../reference/test262/test/annexB/built-ins/Object/is/emulates-undefined.js");
+        let processed = process_test262_includes(&input, source)
+            .expect("feature/inclusion processing should succeed");
+
+        assert!(processed.contains("var $262 = {};"));
+        assert!(processed.contains("$262.IsHTMLDDA = {};"));
+        assert!(processed.contains("function assert() {}"));
+        assert!(processed.contains("if (typeof Symbol === 'object'"));
+    }
+
+    #[test]
+    fn test_process_unknown_feature_is_unsupported() {
+        let source = "/*---\nfeatures: [UnknownFeature]\n---*/\nvar x = 1;";
+        let input = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../reference/test262/test/language/expressions/does-not-exist.js");
+        let error = process_test262_includes(&input, source)
+            .expect_err("unknown feature should be rejected");
+        assert_eq!(error.code, ts2wasm_frontend::DiagCode::UnsupportedSyntax);
+        assert!(error.message.contains("UnsupportedTest262Metadata"));
     }
 
     #[test]

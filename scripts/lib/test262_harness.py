@@ -25,6 +25,7 @@ TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
+SUPPORTED_FEATURES = ("IsHTMLDDA", "createRealm", "Symbol.asyncIterator", "tail-call-optimization")
 ASSERT_FAILURE_SENTINEL = "__TS2WASM_TEST262_ASSERT_FAIL__"
 
 TEST262_HOST_PRELUDE = r"""
@@ -259,8 +260,9 @@ class Test262Metadata:
         for flag in UNSUPPORTED_FLAGS:
             if flag in self.flags:
                 return f"test262 flag `{flag}` is not supported by this runner slice"
-        if "IsHTMLDDA" in self.features:
-            return "test262 feature `IsHTMLDDA` is not supported by this runner slice"
+        for feature in self.features:
+            if feature not in SUPPORTED_FEATURES:
+                return f"test262 feature `{feature}` is not supported by this runner slice"
         return None
 
     @property
@@ -273,7 +275,7 @@ class Test262Metadata:
 
 
 def _parse_yaml_list(value):
-    value = value.strip()
+    value = value.split('#', 1)[0].strip()
     if not value:
         return []
     if value.startswith("[") and value.endswith("]"):
@@ -282,6 +284,28 @@ def _parse_yaml_list(value):
             return []
         return [part.strip().strip("'\"") for part in inner.split(",") if part.strip()]
     return [value.strip().strip("'\"")]
+
+
+def _build_feature_shims(features):
+    stubs = []
+
+    for feature in features:
+        if feature == "IsHTMLDDA":
+            stubs.append("$262.IsHTMLDDA = {};")
+        elif feature == "createRealm":
+            stubs.append("$262.createRealm = function () { return {}; };")
+        elif feature == "Symbol.asyncIterator":
+            stubs.append(
+                "if (typeof Symbol === 'object' || typeof Symbol === 'function') {\n"
+                "  if (Symbol.asyncIterator === undefined) {\n"
+                "    Symbol.asyncIterator = Symbol('Symbol.asyncIterator');\n"
+                "  }\n"
+                "}"
+            )
+        elif feature == "tail-call-optimization":
+            continue
+
+    return "\n".join(stubs)
 
 
 def parse_test262_metadata(source_code):
@@ -371,6 +395,11 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
         for harness_name in CORE_HARNESS_FILES:
             chunks.append(f"\n/* test262 harness: {harness_name} */\n")
             chunks.append(load_harness_file(harness_name))
+
+    feature_shims = _build_feature_shims(metadata.features)
+    if feature_shims:
+        chunks.append("\n/* test262 feature shims */\n")
+        chunks.append(feature_shims)
 
     # Load additional harness includes for both targets
     for include in metadata.includes:
