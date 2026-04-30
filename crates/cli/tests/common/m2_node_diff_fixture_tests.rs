@@ -254,6 +254,19 @@ fn bigint_large_div_rem_local_flow_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn bigint_large_div_rem_branch_assignment_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-branch-large-div-rem.ts");
+}
+
+#[test]
+fn bigint_large_div_rem_mixed_branch_assignment_reports_issue_370() {
+    assert_build_fails_with_unsupported_syntax_without_span(
+        "fixtures/core-semantics/bigint-runtime-branch-mixed-div-rem-unsupported.ts",
+        "issue-370:",
+    );
+}
+
+#[test]
 fn bigint_runtime_pow_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/bigint-runtime-pow.ts");
 }

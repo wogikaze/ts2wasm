@@ -3,12 +3,13 @@ id: 398
 title: "Track control-flow-assigned BigInt div/rem locals"
 type: feature
 area: runtime/semantics
-class: implementation-ready
+class: done
 priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -29,10 +30,10 @@ Dynamic BigInt `/` and `%` over branch/control-flow-assigned locals lower to the
 
 In scope:
 
-- [ ] Add a conservative join rule for branch/control-flow-assigned locals that preserves BigInt type, not stale signed-i64 magnitude proofs.
-- [ ] Cover at least one `if/else` branch-assigned local with Node/iwasm differential `/` and `%` fixtures outside signed i64.
-- [ ] Keep loop/switch/try invalidation conservative unless the join can be proven safely.
-- [ ] Preserve issue-370 diagnostics for mixed Number/BigInt arithmetic.
+- [x] Add a conservative join rule for branch/control-flow-assigned locals that preserves BigInt type, not stale signed-i64 magnitude proofs.
+- [x] Cover at least one `if/else` branch-assigned local with Node/iwasm differential `/` and `%` fixtures outside signed i64.
+- [x] Keep loop/switch/try invalidation conservative unless the join can be proven safely.
+- [x] Preserve issue-370 diagnostics for mixed Number/BigInt arithmetic.
 
 Out of scope:
 
@@ -53,9 +54,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture covers BigInt `/` and `%` where both `if` branches assign outside-signed-i64 BigInt locals before the operation.
-- [ ] A mixed branch assignment such as one BigInt branch and one Number branch still reports issue-370.
-- [ ] Existing issue-384 known-local/literal div/rem fixtures continue to pass.
+- [x] Node/iwasm differential fixture covers BigInt `/` and `%` where both `if` branches assign outside-signed-i64 BigInt locals before the operation.
+- [x] A mixed branch assignment such as one BigInt branch and one Number branch still reports issue-370.
+- [x] Existing issue-384 known-local/literal div/rem fixtures continue to pass.
 
 ## Validation
 
@@ -74,10 +75,10 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- pending child commit: control-flow BigInt div/rem join and fixtures
 
 Validation result:
 
 ```text
-not run; issue is open
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_large_div_rem: pass (4 passed)
 ```

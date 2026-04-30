@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 46 | 102 |
+| runtime | 148 | 45 | 103 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 411 | 185 | 226 |
+| total | 411 | 184 | 227 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -58,7 +58,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 392 | Multi-limb BigInt remainder | feature | runtime/semantics | implementation-ready | P2 | 259, 260, 391 | Dynamic BigInt `%` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
 | 393 | Multi-limb BigInt addition | feature | runtime/semantics | implementation-ready | P2 | 259, 260 | Dynamic BigInt `+` with operands or results outside the signed-i64-backed helper slice reports diagnostics instead of... |
 | 396 | Runtime JS exception object throwing substrate | feature | runtime/semantics | implementation-ready | P2 |  | Runtime helper exceptional paths can only trap today, so issue 381 cannot produce a compatible `TypeError` object for... |
-| 398 | Track control-flow-assigned BigInt div/rem locals | feature | runtime/semantics | implementation-ready | P2 |  | Issue 384 implements known-BigInt cached-decimal division/remainder, but locals assigned inside branches, loops, swit... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -467,6 +466,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 391 | Multi-limb BigInt division | feature | runtime/semantics | see `issues/done/391-multilimb-bigint-division.md` |
 | 395 | Runtime array-like Array.prototype.map callback dispatch | feature | runtime/builtins | see `issues/done/395-array-map-runtime-array-like-callback-dispatch.md` |
 | 397 | BigInt add/sub branch-assigned operands | feature | runtime/semantics | see `issues/done/397-bigint-add-sub-branch-assigned-operands.md` |
+| 398 | Track control-flow-assigned BigInt div/rem locals | feature | runtime/semantics | see `issues/done/398-track-control-flow-assigned-bigint-div-rem.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

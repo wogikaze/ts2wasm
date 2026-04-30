@@ -30,6 +30,8 @@ struct Resolver<'a> {
     object_function_props: HashMap<LocalId, HashMap<String, FuncId>>,
     regexp_literal_locals: HashSet<LocalId>,
     bigint_locals: HashSet<LocalId>,
+    control_flow_bigint_div_rem_locals: HashSet<LocalId>,
+    control_flow_mixed_bigint_locals: HashSet<LocalId>,
     array_locals: HashSet<LocalId>,
     static_object_literal_locals: HashMap<LocalId, Vec<(String, ResolvedExpr)>>,
     static_object_literal_alias_sources: HashMap<LocalId, HashSet<LocalId>>,
@@ -104,6 +106,8 @@ impl<'a> Resolver<'a> {
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
+            control_flow_bigint_div_rem_locals: HashSet::new(),
+            control_flow_mixed_bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
@@ -160,6 +164,8 @@ impl<'a> Resolver<'a> {
             object_function_props: HashMap::new(),
             regexp_literal_locals: HashSet::new(),
             bigint_locals: HashSet::new(),
+            control_flow_bigint_div_rem_locals: HashSet::new(),
+            control_flow_mixed_bigint_locals: HashSet::new(),
             array_locals: HashSet::new(),
             static_object_literal_locals: HashMap::new(),
             static_object_literal_alias_sources: HashMap::new(),
@@ -314,6 +320,7 @@ impl<'a> Resolver<'a> {
                 }
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
+                self.update_control_flow_bigint_assignment(local_id);
                 self.update_array_local(local_id, expr);
                 self.update_static_object_literal_local_on_let(local_id, expr);
                 self.update_static_function_array_like_local_on_let(local_id, expr);
@@ -355,6 +362,7 @@ impl<'a> Resolver<'a> {
                 self.update_heap_closure_local(local_id, expr, &lowered);
                 self.update_nullish_local(local_id, expr);
                 self.update_bigint_local(local_id, expr);
+                self.update_control_flow_bigint_assignment(local_id);
                 self.update_array_local(local_id, expr);
                 self.invalidate_static_function_array_like_local(local_id);
                 self.update_string_literal_local(local_id, expr);
@@ -412,16 +420,44 @@ impl<'a> Resolver<'a> {
                 else_body,
             } => {
                 let condition = self.lower_expr(condition)?;
-                let entry_bigint_locals = self.bigint_locals.clone();
+                let incoming_bigint_locals = self.bigint_locals.clone();
+                let incoming_div_rem_locals = self.control_flow_bigint_div_rem_locals.clone();
+                let incoming_mixed_locals = self.control_flow_mixed_bigint_locals.clone();
+
                 let then_body = self.lower_nested_block(then_body)?;
-                let then_bigint_locals = self.bigint_locals.clone();
-                self.bigint_locals = entry_bigint_locals;
+                let then_add_sub_bigint_locals = self.bigint_locals.clone();
+                let then_div_rem_bigint_locals = self.bigint_div_rem_candidate_locals();
+                let then_mixed_locals = self.control_flow_mixed_bigint_locals.clone();
+
+                self.bigint_locals = incoming_bigint_locals.clone();
+                self.control_flow_bigint_div_rem_locals = incoming_div_rem_locals.clone();
+                self.control_flow_mixed_bigint_locals = incoming_mixed_locals.clone();
+
                 let else_body = self.lower_nested_block(else_body)?;
-                let else_bigint_locals = self.bigint_locals.clone();
-                self.bigint_locals = then_bigint_locals
-                    .intersection(&else_bigint_locals)
+                let else_add_sub_bigint_locals = self.bigint_locals.clone();
+                let else_div_rem_bigint_locals = self.bigint_div_rem_candidate_locals();
+                let else_mixed_locals = self.control_flow_mixed_bigint_locals.clone();
+
+                self.bigint_locals = then_add_sub_bigint_locals
+                    .intersection(&else_add_sub_bigint_locals)
                     .copied()
                     .collect();
+                let definite_div_rem_locals = then_div_rem_bigint_locals
+                    .intersection(&else_div_rem_bigint_locals)
+                    .copied()
+                    .collect::<HashSet<_>>();
+                let branch_mixed_locals = then_div_rem_bigint_locals
+                    .symmetric_difference(&else_div_rem_bigint_locals)
+                    .copied()
+                    .chain(then_mixed_locals.union(&else_mixed_locals).copied())
+                    .filter(|local| !definite_div_rem_locals.contains(local))
+                    .collect::<HashSet<_>>();
+
+                self.control_flow_bigint_div_rem_locals = definite_div_rem_locals
+                    .difference(&self.bigint_locals)
+                    .copied()
+                    .collect();
+                self.control_flow_mixed_bigint_locals = branch_mixed_locals;
                 Ok(LoweredStmt::If {
                     condition,
                     then_body,

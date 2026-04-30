@@ -165,6 +165,32 @@ impl<'a> Resolver<'a> {
                             key: Box::new(self.lower_expr(left)?),
                         }),
                     }
+                } else if matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
+                    && self.resolved_expr_is_bigint_div_rem_operand(left)
+                    && self.resolved_expr_is_bigint_div_rem_operand(right)
+                {
+                    let runtime_fn = match op {
+                        BinaryOp::Divide => "BigIntDiv",
+                        BinaryOp::Modulo => "BigIntRem",
+                        _ => unreachable!("checked above"),
+                    };
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: runtime_fn.to_owned(),
+                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    })
+                } else if matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
+                    && ((self.resolved_expr_is_control_flow_mixed_bigint(left)
+                        && self.resolved_expr_is_bigint_div_rem_operand(right))
+                        || (self.resolved_expr_is_bigint_div_rem_operand(left)
+                            && self.resolved_expr_is_control_flow_mixed_bigint(right)))
+                {
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message:
+                            "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the control-flow BigInt div/rem slice"
+                                .to_owned(),
+                        span: None,
+                    })
                 } else if matches!(
                     op,
                     BinaryOp::Add

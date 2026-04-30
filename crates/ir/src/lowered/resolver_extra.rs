@@ -1692,6 +1692,11 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    pub(super) fn update_control_flow_bigint_assignment(&mut self, local_id: LocalId) {
+        self.control_flow_bigint_div_rem_locals.remove(&local_id);
+        self.control_flow_mixed_bigint_locals.remove(&local_id);
+    }
+
     pub(super) fn update_heap_closure_local(
         &mut self,
         local_id: LocalId,
@@ -2002,6 +2007,40 @@ impl<'a> Resolver<'a> {
             }
             _ => false,
         }
+    }
+
+    pub(super) fn resolved_expr_is_bigint_div_rem_operand(&self, expr: &ResolvedExpr) -> bool {
+        match expr {
+            ResolvedExpr::Ident(name) => self.resolve_local(name).ok().is_some_and(|local_id| {
+                self.bigint_locals.contains(&local_id)
+                    || self
+                        .control_flow_bigint_div_rem_locals
+                        .contains(&local_id)
+            }),
+            ResolvedExpr::Unary { op, expr } => {
+                *op == UnaryOp::Negate && self.resolved_expr_is_bigint_div_rem_operand(expr)
+            }
+            _ => self.resolved_expr_is_bigint(expr),
+        }
+    }
+
+    pub(super) fn resolved_expr_is_control_flow_mixed_bigint(
+        &self,
+        expr: &ResolvedExpr,
+    ) -> bool {
+        let ResolvedExpr::Ident(name) = expr else {
+            return false;
+        };
+        self.resolve_local(name).ok().is_some_and(|local_id| {
+            self.control_flow_mixed_bigint_locals.contains(&local_id)
+        })
+    }
+
+    pub(super) fn bigint_div_rem_candidate_locals(&self) -> HashSet<LocalId> {
+        self.bigint_locals
+            .union(&self.control_flow_bigint_div_rem_locals)
+            .copied()
+            .collect()
     }
 
     pub(super) fn class_prototype_ref(&self, class_name: &str) -> Result<ClassPrototypeRef, Diagnostic> {
