@@ -3,12 +3,14 @@ id: 362
 title: "Drive ABC451 depth-8 under iwasm timeout after copy reductions"
 type: bug
 area: runtime/memory
-class: implementation-ready
+class: done
 priority: P1
 depends_on: [361]
 blocks: [357, 309]
 created: 2026-04-30
-updated: 2026-05-01
+updated: 2026-04-30
+status: done
+completed: 2026-04-30
 ---
 
 ## Summary
@@ -68,11 +70,11 @@ The depth-8 ABC451 live-set fixture completes under `iwasm` within the test time
 
 In scope:
 
-- [ ] Make a general runtime-memory improvement that either gets the focused depth-8 gate passing or produces a smaller measured blocker from the post-361 baseline.
-- [ ] Preserve the committed 185-page memory policy.
-- [ ] Preserve explicit OOM failure behavior.
-- [ ] Record before/after diagnostic evidence with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30`.
-- [ ] If the depth-8 fixture now completes, close issue 357 in the same merge or request parent close after verification.
+- [x] Made a general runtime-memory improvement and produced a smaller measured blocker from the post-361 baseline.
+- [x] Preserve the committed 185-page memory policy.
+- [x] Preserve explicit OOM failure behavior.
+- [x] Record before/after diagnostic evidence with `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30`.
+- [x] Depth-8 did not complete; issue 357 remains open and issue 363 tracks the remaining blocker.
 
 Out of scope:
 
@@ -88,7 +90,7 @@ Expected:
 
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/` only if regression coverage needs a small assertion update
-- `issues/open/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md`
+- `issues/done/362-drive-abc451-depth8-under-iwasm-timeout-after-copy-reductions.md`
 - `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` only if closure is verified
 - `issues/index.md`
 
@@ -102,12 +104,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` passes, or the issue records quantified progress and a smaller remaining blocker.
-- [ ] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records changed pressure versus the issue 361 parent-verified baseline, or records a justified replacement metric if the runtime structure changes.
-- [ ] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
-- [ ] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes if backend runtime code changes.
-- [ ] `cargo fmt --all --check` passes.
-- [ ] `mise run update-issue-index -- --check` and `mise run check issues` pass.
+- [x] `cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm` still times out, and this issue records quantified progress plus follow-up issue 363.
+- [x] `mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30` passes and records that the remaining blocker is not the internal copy loop.
+- [x] `cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm` passes.
+- [x] `cargo test -p ts2wasm-backend-wasm --lib -- --nocapture` passes.
+- [x] `cargo fmt --all --check` passes.
+- [x] `mise run update-issue-index -- --check` and `mise run check issues` pass.
 
 ## Validation
 
@@ -145,7 +147,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] create only if this slice isolates a smaller remaining blocker
+- [x] created issue 363 for remaining allocation/sweep volume
 
 ## Notes
 
@@ -237,3 +239,17 @@ date:
 Remaining risks:
 
 - none
+
+## Parent close evidence
+
+Parent verified and closed this focused issue after integrating child progress.
+
+```text
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; counters unchanged at API level after bulk copy; timed_out=false
+
+command: mise run abc451-runtime-costs -- --event-budget 300000 --timeout 30
+result: pass; free_list_scan_visits=0; gc_collections=13; sweep_visits=241504; array_copy_bytes=858376; allocation_requested_bytes=1376350; timed_out=false
+
+action: created issue 363 for remaining allocation/copy volume plus sweep visits because issue 357 still times out.
+```
