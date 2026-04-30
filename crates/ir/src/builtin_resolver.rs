@@ -62,7 +62,7 @@ impl BigIntStaticBuiltinFolder {
                 } else {
                     self.locals.remove(name);
                 }
-                if let Some(value) = object_valueof_bigint_primitive_expr(&expr) {
+                if let Some(value) = object_toprimitive_supported_primitive_expr(&expr) {
                     self.object_toprimitive_locals.insert(name.clone(), value);
                 } else {
                     self.object_toprimitive_locals.remove(name);
@@ -80,7 +80,7 @@ impl BigIntStaticBuiltinFolder {
                 } else {
                     self.locals.remove(name);
                 }
-                if let Some(value) = object_valueof_bigint_primitive_expr(&expr) {
+                if let Some(value) = object_toprimitive_supported_primitive_expr(&expr) {
                     self.object_toprimitive_locals.insert(name.clone(), value);
                 } else {
                     self.object_toprimitive_locals.remove(name);
@@ -385,6 +385,7 @@ impl BigIntStaticBuiltinFolder {
                 let right = self.fold_expr(right);
                 let left_toprimitive = self.object_toprimitive_primitive_expr(&left);
                 let right_toprimitive = self.object_toprimitive_primitive_expr(&right);
+                let is_abstract_equality = matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual);
                 let should_fold = matches!(
                     op,
                     BinaryOp::EqualEqual
@@ -397,14 +398,22 @@ impl BigIntStaticBuiltinFolder {
                     || expr_contains_bigint(&right)
                     || left_toprimitive.as_ref().is_some_and(expr_contains_bigint)
                     || right_toprimitive.as_ref().is_some_and(expr_contains_bigint));
+                let left_can_fold_toprimitive = left_toprimitive.as_ref().is_some_and(|expr| {
+                    expr_contains_bigint(expr)
+                        || (is_abstract_equality && matches!(expr, Expr::String { .. }))
+                });
+                let right_can_fold_toprimitive = right_toprimitive.as_ref().is_some_and(|expr| {
+                    expr_contains_bigint(expr)
+                        || (is_abstract_equality && matches!(expr, Expr::String { .. }))
+                });
                 Expr::Binary {
-                    left: Box::new(if should_fold {
+                    left: Box::new(if should_fold && left_can_fold_toprimitive {
                         left_toprimitive.unwrap_or(left)
                     } else {
                         left
                     }),
                     op: *op,
-                    right: Box::new(if should_fold {
+                    right: Box::new(if should_fold && right_can_fold_toprimitive {
                         right_toprimitive.unwrap_or(right)
                     } else {
                         right
@@ -437,7 +446,7 @@ impl BigIntStaticBuiltinFolder {
                 } else {
                     self.locals.remove(name);
                 }
-                if let Some(value) = object_valueof_bigint_primitive_expr(&folded) {
+                if let Some(value) = object_toprimitive_supported_primitive_expr(&folded) {
                     self.object_toprimitive_locals.insert(name.clone(), value);
                 } else {
                     self.object_toprimitive_locals.remove(name);
@@ -626,7 +635,7 @@ impl BigIntStaticBuiltinFolder {
     fn object_toprimitive_primitive_expr(&self, expr: &Expr) -> Option<Expr> {
         match expr {
             Expr::Ident { name, .. } => self.object_toprimitive_locals.get(name).cloned(),
-            _ => object_valueof_bigint_primitive_expr(expr),
+            _ => object_toprimitive_supported_primitive_expr(expr),
         }
     }
 }
@@ -638,16 +647,34 @@ fn static_bigint_builtin_const_expr(expr: &Expr) -> Option<Expr> {
     }
 }
 
-fn object_valueof_bigint_primitive_expr(expr: &Expr) -> Option<Expr> {
+fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
     let Expr::Object { props, .. } = expr else {
         return None;
     };
-    props
-        .iter()
-        .find(|(key, _)| key == "valueOf")
-        .and_then(|(_, value)| match value {
+
+    let value_of = props.iter().find(|(key, _)| key == "valueOf");
+    if let Some((_, value)) = value_of {
+        return match value {
             Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
                 Expr::BigInt { .. } => Some((**body).clone()),
+                _ => None,
+            },
+            _ => None,
+        };
+    }
+
+    props
+        .iter()
+        .find(|(key, _)| key == "toString")
+        .and_then(|(_, value)| match value {
+            Expr::ArrowFn { params, body, .. } if params.is_empty() => match body.as_ref() {
+                Expr::String { value, span }
+                    if bigint_from_string_builtin(value, *span)
+                        .ok()
+                        .is_some_and(|parsed| bigint_fits_runtime_mixed_string(&parsed)) =>
+                {
+                    Some((**body).clone())
+                }
                 _ => None,
             },
             _ => None,
