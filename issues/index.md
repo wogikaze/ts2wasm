@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 148 | 41 | 107 |
+| runtime | 148 | 40 | 108 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 412 | 180 | 232 |
+| total | 412 | 179 | 233 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,7 +46,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | implementation-ready | P1 |  | The depth-9 search-only reducer now fails at the explicit |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
-| 372 | Implement BigInt object ToPrimitive non-BigInt primitive returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Direct object-literal/local `valueOf` or `toString` methods that return booleans, supported tagged-int numbers, nulli... |
 | 373 | Handle BigInt object ToPrimitive invalid and out-of-range string returns | feature | runtime/semantics | implementation-ready | P2 | 259, 261 | Issue 368 implemented `toString: () => <supported decimal string>` for equality and relational comparisons, but inval... |
 | 375 | Handle non-source-backed out-of-range BigInt/String comparisons | feature | runtime/semantics | implementation-ready | P2 | 259, 261, 282 | Source-backed local and object-property out-of-range strings are diagnosed, but unknown non-source-backed dynamic str... |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
@@ -453,6 +452,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 367 | Extract ArrayPushGrow into a runtime helper | refactor | backend/runtime | see `issues/done/367-extract-arraypushgrow-runtime-helper.md` |
 | 368 | Implement remaining BigInt mixed runtime coercion edges | feature | runtime/semantics | see `issues/done/368-implement-remaining-bigint-mixed-runtime-coercion-edges.md` |
 | 371 | Define BigInt bitwise and exponentiation policy | feature | runtime/semantics | see `issues/done/371-define-bigint-bitwise-and-exponentiation-policy.md` |
+| 372 | Implement BigInt object ToPrimitive non-BigInt primitive returns | feature | runtime/semantics | see `issues/done/372-implement-bigint-object-toprimitive-non-bigint-primitive-returns.md` |
 | 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | see `issues/done/376-implement-dynamic-bigint-exponentiation.md` |
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | see `issues/done/377-implement-bigint-bitwise-not-and-or-xor.md` |
 | 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | see `issues/done/379-validate-array-map-thisarg-test262.md` |

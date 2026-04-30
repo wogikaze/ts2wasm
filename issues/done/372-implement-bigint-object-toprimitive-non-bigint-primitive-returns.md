@@ -9,6 +9,8 @@ depends_on: [259, 261]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01
+status: done
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -37,10 +39,10 @@ For direct object-literal/local no-argument arrow `valueOf` or `toString` method
 
 In scope:
 
-- [ ] Direct object literals and simple locals with no-argument arrow `valueOf` or `toString` methods returning supported primitive literals.
-- [ ] Boolean, nullish, supported string, and currently supported tagged-int number primitive returns.
-- [ ] Node/iwasm differential fixtures for at least one equality and one relational comparison when Node-compatible behavior is in the current primitive subset.
-- [ ] Source-backed diagnostics for primitive returns that are outside existing BigInt/Number or BigInt/String supported bounds.
+- [x] Direct object literals and simple locals with no-argument arrow `valueOf` or `toString` methods returning supported primitive literals.
+- [x] Boolean, nullish, supported string, and currently supported tagged-int number primitive returns.
+- [x] Node/iwasm differential fixtures for at least one equality and one relational comparison when Node-compatible behavior is in the current primitive subset.
+- [x] Source-backed diagnostics for primitive returns that are outside existing BigInt/Number or BigInt/String supported bounds.
 
 Out of scope:
 
@@ -68,10 +70,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture covers a direct object-literal/local `valueOf` primitive return that is not BigInt and compares with BigInt compatibly.
-- [ ] Node/iwasm differential fixture covers a direct object-literal/local `toString` or `valueOf` supported primitive return in a relational BigInt comparison when Node-compatible behavior is in the current primitive subset.
-- [ ] Unsupported primitive returns keep source-backed diagnostics with issue ownership rather than silently lowering incorrectly.
-- [ ] Docs/current-state/issues state the exact supported primitive-return subset and remaining exclusions.
+- [x] Node/iwasm differential fixture covers a direct object-literal/local `valueOf` primitive return that is not BigInt and compares with BigInt compatibly.
+- [x] Node/iwasm differential fixture covers a direct object-literal/local `toString` or `valueOf` supported primitive return in a relational BigInt comparison when Node-compatible behavior is in the current primitive subset.
+- [x] Unsupported primitive returns keep source-backed diagnostics with issue ownership rather than silently lowering incorrectly.
+- [x] Docs/current-state/issues state the exact supported primitive-return subset and remaining exclusions.
 
 ## Validation
 
@@ -98,16 +100,16 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/05-compatibility-and-semantics.md`
-- [ ] updated: `docs/language-reference/javascript-features.md`
+- [x] updated: `docs/05-compatibility-and-semantics.md`
+- [x] updated: `docs/language-reference/javascript-features.md`
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -119,17 +121,23 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- 6daf51df and 0143a290 added the implementation, regression fixture, and passing targeted Node/iwasm test.
+- close commit records the issue move plus stale docs/current-state wording cleanup.
 
 Validation result:
 
 ```text
-not run; issue is open
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_object_toprimitive_primitive_matches_node_output_under_iwasm: pass
+mise run update-issue-index -- --check: pass after issue index regeneration
+mise run check issues: pass after path reference sync
 ```
 
 Remaining risks:
 
+- Invalid/out-of-range object `toString` returns remain tracked by issue 373.
 - Broader object coercion remains tracked separately by issue 374.
+- Unknown out-of-range dynamic strings remain tracked separately by issue 375.
 
 ## Progress evidence
 
