@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 203 | 127 | 76 |
+| frontend | 206 | 130 | 76 |
 | ir | 7 | 0 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 7 | 3 | 4 |
-| runtime | 101 | 24 | 77 |
+| runtime | 104 | 27 | 77 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 353 | 157 | 196 |
+| total | 359 | 163 | 196 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -205,6 +205,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | 334 | Sparse array holes handling for Array.prototype.map |
 | 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | 334 | Callback thisArg for Array.prototype.map |
 | 340 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) | feature | runtime/builtins | 334 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) |
+| 341 | Implement core builtin API coverage (3,190 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement core builtin API coverage (3,190 test262 cases) |
+| 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
+| 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: triage-needed | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
+| 344 | Implement legacy global builtin bindings (8 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement legacy global builtin bindings (8 test262 cases) |
+| 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript type alias coverage for tsc suite (23 cases) |
+| 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
 <!-- generated:blocked:end -->
 
 ## Done queue
