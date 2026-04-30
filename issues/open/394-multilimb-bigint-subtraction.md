@@ -45,9 +45,8 @@ Dynamic BigInt `-` operates on the canonical heap BigInt limb representation for
 
 In scope:
 
-- [ ] Implement canonical limb subtraction for dynamic BigInt operands and results, preserving canonical zero and sign behavior.
+- [ ] Implement canonical limb subtraction for dynamic BigInt operands and results, preserving canonical zero and sign behavior, and add Node/iwasm differential fixtures for values larger than signed i64.
 - [ ] Keep source-backed diagnostics only for genuinely unsupported runtime representation or memory limits.
-- [ ] Add Node/iwasm differential fixtures for values larger than signed i64.
 - [ ] Update runtime linker structure tests if new helpers/deps are added.
 - [ ] Update `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md`.
 
