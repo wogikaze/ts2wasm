@@ -127,6 +127,13 @@ Follow-up issues:
 
 This issue is the third concrete TypeScript-only child bucket created from issue 399, alongside issue 345 (`type-alias`) and issue 346 (`declaration-emit`).
 
+Progress 2026-05-01:
+
+- Added parser erasure for declaration-only ambient variable declarations: `declare const`, `declare let`, `declare var`, and `export declare const`.
+- Added regression coverage that erased ambient variable declarations leave only the following runtime `let value = 1;` binding in the AST.
+- Kept ambient variable initializers and ambient enum declarations on the `UnsupportedTypeScriptSyntax` boundary.
+- Kept ambient module declarations on the existing `UnsupportedModule` boundary.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

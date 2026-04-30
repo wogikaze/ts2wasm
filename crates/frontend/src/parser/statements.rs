@@ -81,6 +81,10 @@ impl Parser {
                 self.consume_typescript_declare_function_declaration(declare_span)?;
                 Ok(true)
             }
+            Some(Token::Const | Token::Let | Token::Var) => {
+                self.consume_typescript_declare_variable_declaration(declare_span)?;
+                Ok(true)
+            }
             Some(Token::Ident(name)) if name == "module" || name == "namespace" => {
                 Err(Diagnostic {
                     code: DiagCode::UnsupportedModule,
@@ -133,6 +137,44 @@ impl Parser {
         }
         self.expect(TokenKind::Semicolon)?;
         Ok(())
+    }
+
+    fn consume_typescript_declare_variable_declaration(
+        &mut self,
+        declare_span: Span,
+    ) -> Result<(), Diagnostic> {
+        self.advance();
+        loop {
+            self.expect_ident().map_err(|_| Diagnostic {
+                code: DiagCode::UnsupportedTypeScriptSyntax,
+                message: "expected ambient variable declaration name".to_owned(),
+                span: Some(declare_span),
+            })?;
+            if self.consume(TokenKind::Colon) {
+                self.skip_type_annotation_until(&[TokenKind::Comma, TokenKind::Semicolon])
+                    .map_err(|_| Diagnostic {
+                        code: DiagCode::UnsupportedTypeScriptSyntax,
+                        message: "unterminated ambient variable declaration type".to_owned(),
+                        span: Some(declare_span),
+                    })?;
+            }
+            if self.consume(TokenKind::Equal) {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedTypeScriptSyntax,
+                    message: "ambient variable initializers are not supported in this TypeScript erasure slice".to_owned(),
+                    span: Some(declare_span),
+                });
+            }
+            if self.consume(TokenKind::Comma) {
+                continue;
+            }
+            self.expect(TokenKind::Semicolon).map_err(|_| Diagnostic {
+                code: DiagCode::UnsupportedTypeScriptSyntax,
+                message: "unterminated ambient variable declaration".to_owned(),
+                span: Some(declare_span),
+            })?;
+            return Ok(());
+        }
     }
 
     fn consume_typescript_interface_declaration(

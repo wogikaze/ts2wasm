@@ -107,8 +107,29 @@ mod tests {
     }
 
     #[test]
+    fn parses_ambient_variable_declarations_as_erased_syntax() {
+        let source = r#"
+            declare const literal: 1;
+            declare let mutableValue: number, optionalName: string | undefined;
+            declare var legacyName;
+            export declare const exportedLiteral: "ok";
+            let value = 1;
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { ref name, .. } if name == "value"));
+    }
+
+    #[test]
     fn rejects_unsupported_ambient_declarations_with_typescript_diagnostic() {
-        let err = parse_program("declare const value: number;").unwrap_err();
+        let err = parse_program("declare enum Value { A }").unwrap_err();
+        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
+        assert_eq!(err.span, Some(Span { start: 0, end: 7 }));
+    }
+
+    #[test]
+    fn rejects_ambient_variable_initializers_with_typescript_diagnostic() {
+        let err = parse_program("declare const value = 1;").unwrap_err();
         assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
         assert_eq!(err.span, Some(Span { start: 0, end: 7 }));
     }
