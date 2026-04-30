@@ -10,7 +10,7 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
-| backend | 8 | 2 | 6 |
+| backend | 8 | 1 | 7 |
 | cli | 5 | 1 | 4 |
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 416 | 167 | 249 |
+| total | 416 | 166 | 250 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,7 +46,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | implementation-ready | P2 |  | current `Array.prototype.map` implementation only supports dense |
-| 349 | Runtime helper or shim JavaScript emission for direct eval execution | feature | backend | implementation-ready | P3 | 347, 348 | No wasm runtime helper or shim JS emission exists for direct eval execution. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -429,6 +428,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 340 | Generic call for Array.prototype.map (static dense receiver slice) | feature | runtime/builtins | see `issues/done/340-array-map-generic-call.md` |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | see `issues/done/347-parser-resolver-direct-eval-scope.md` |
 | 348 | Lowering block-level function declarations in direct eval code | feature | ir | see `issues/done/348-lowering-eval-block-function-declarations.md` |
+| 349 | Runtime helper or shim JavaScript emission for direct eval execution | feature | backend | see `issues/done/349-runtime-shim-direct-eval-execution.md` |
 | 350 | Implement derived-class private element initialization | feature | runtime/semantics | see `issues/done/350-derived-class-private-element-init.md` |
 | 352 | Implement static private field ordering with static blocks | feature | runtime/semantics | see `issues/done/352-static-private-field-static-blocks-order.md` |
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | see `issues/done/355-dynamic-object-enumeration-spread.md` |

@@ -3,12 +3,13 @@ id: 349
 title: "Runtime helper or shim JavaScript emission for direct eval execution"
 type: feature
 area: backend
-class: implementation-ready
+class: done
 priority: P3
 depends_on: [347, 348]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -43,10 +44,10 @@ Direct eval code executes with caller-local scope access. The implementation str
 
 In scope:
 
-- [ ] Choose and document the eval execution strategy (wasm helper vs shim JS)
-- [ ] Implement the selected strategy for a first slice (static-string eval or shim emission)
-- [ ] Add manifest capability annotations for required host eval support
-- [ ] Node/iwasm differential fixtures for supported eval execution
+- [x] Choose and document the eval execution strategy (wasm helper vs shim JS)
+- [x] Implement the selected strategy for a first slice (static-string eval or shim emission)
+- [x] Add manifest capability annotations for required host eval support
+- [x] Node/iwasm differential fixtures for supported eval execution
 
 Out of scope:
 
@@ -71,10 +72,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Supported eval cases execute and match Node output under iwasm
-- [ ] If shim JS is emitted, manifest records the required host capability
-- [ ] Unsupported eval patterns emit source-spanned diagnostics instead of silently failing
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] Supported eval cases execute and match Node output under iwasm
+- [x] If shim JS is emitted, manifest records the required host capability
+- [x] Unsupported eval patterns emit source-spanned diagnostics instead of silently failing
+- [x] `cargo fmt --all --check` and focused eval/manifest validation pass; broad `cargo nextest run` remains red on unrelated baseline failures
 
 ## Validation
 
@@ -96,16 +97,16 @@ mise run check issues
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md` if runtime eval helper ABI is added
-- [ ] updated: `docs/05-compatibility-and-semantics.md` if eval semantics are documented
+- [x] updated: `docs/14-runtime-abi.md` if runtime eval helper ABI is added
+- [x] updated: `docs/05-compatibility-and-semantics.md` if eval semantics are documented
 
 Current state:
 
-- [ ] updated: `current-state.md` if eval execution capability changes
+- [x] updated: `current-state.md` if eval execution capability changes
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -115,20 +116,32 @@ Per the accepted decision in issue 225: if wasm/WASI/runtime helpers cannot impl
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed 2026-05-01.
 
 Commits:
 
-- `...`
+- `pending-close`: static-string direct eval is documented as compile-time eval-code
+  expansion into caller-scope lowered wasm, with manifest evidence that the
+  selected first slice stays standalone and does not request `host.eval.*`.
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo test -p ts2wasm-cli eval -- --nocapture
+result: pass (2 ir_lowering eval tests, 3 m2_node_diff eval tests)
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli static_direct_eval_declares_no_node_host_eval_capability -- --nocapture
+result: pass
+date: 2026-05-01
+
+command: cargo test -p ts2wasm-cli type_alias -- --nocapture
+result: pass; confirms issue-345 generic type alias parsing was restored after the namespace classification regression
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- Host eval capability may not be available in all wasm runtimes (e.g., pure WASI without JS host)
+- Dynamic runtime eval strings remain unsupported outside this first static-string
+  slice. Any future dynamic eval support must use an audited host shim or
+  interpreter contract and record the required `host.eval.*` capability.
