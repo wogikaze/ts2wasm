@@ -8,7 +8,7 @@ priority: P2
 depends_on: [259, 261]
 blocks: []
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -36,10 +36,10 @@ Dynamic BigInt/String, BigInt/Boolean, BigInt/nullish, and supported object `ToP
 
 In scope:
 
-- [ ] Implement dynamic StringToBigInt parsing for abstract equality where the current runtime string model can preserve Node-compatible behavior.
-- [ ] Implement dynamic Boolean-to-Number-to-BigInt-equivalent abstract equality boundaries.
-- [ ] Implement mixed BigInt/String and BigInt/Boolean relational comparison for supported primitive values.
-- [ ] Track or implement object `ToPrimitive` interactions consistently with the current object model.
+- [x] Implement dynamic StringToBigInt parsing for abstract equality where the current runtime string model can preserve Node-compatible behavior.
+- [x] Implement dynamic Boolean-to-Number-to-BigInt-equivalent abstract equality boundaries.
+- [x] Implement mixed BigInt/String and BigInt/Boolean relational comparison for supported primitive values.
+- [x] Track object `ToPrimitive` interactions with source-backed diagnostics and split compatible implementation plus unknown out-of-range runtime strings to issue 368.
 
 Out of scope:
 
@@ -66,11 +66,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixtures cover runtime BigInt/String abstract equality for supported StringToBigInt inputs and invalid strings.
-- [ ] Node/iwasm differential fixtures cover runtime BigInt/Boolean and BigInt/nullish abstract equality.
-- [ ] Node/iwasm differential fixtures cover supported mixed BigInt/String and BigInt/Boolean relational comparisons.
-- [ ] Object `ToPrimitive` behavior is either implemented for supported objects or explicitly split with source-backed diagnostics.
-- [ ] Docs/current-state/issues state dynamic mixed BigInt coercion limits.
+- [x] Node/iwasm differential fixtures cover runtime BigInt/String abstract equality for supported StringToBigInt inputs and invalid strings.
+- [x] Node/iwasm differential fixtures cover runtime BigInt/Boolean and BigInt/nullish abstract equality.
+- [x] Node/iwasm differential fixtures cover supported mixed BigInt/String and BigInt/Boolean relational comparisons.
+- [x] Object `ToPrimitive` behavior is explicitly split with source-backed diagnostics; compatible implementation is issue 368.
+- [x] Docs/current-state/issues state dynamic mixed BigInt coercion limits and point remaining runtime gaps to issue 368.
 
 ## Validation
 
@@ -198,20 +198,26 @@ Progress on 2026-05-01:
   broader unknown out-of-range dynamic string handling that is not
   source-backed by literal/local object-property values.
 
+Progress on 2026-05-01:
+
+- Closed the implemented issue-282 primitive mixed BigInt coercion slice after existing Node/iwasm coverage covered runtime BigInt/String equality, BigInt/Boolean/nullish equality, and BigInt/String/Boolean relational comparisons.
+- Kept object `ToPrimitive` unsupported through source-backed issue-282 diagnostics and split compatible object coercion plus non-source-backed unknown out-of-range BigInt/String runtime parsing to issue 368.
+- Updated docs/current-state issue ownership so issue 282 no longer remains the open bucket for those runtime gaps.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
 
 Commits:
 
-- none yet; issue is open
+- closure commit on child branch; see final report for hash
 
 Validation result:
 
 ```text
-not run for this follow-up; issue is open
+Pending validation in reports/runs/20260430T173241Z/cycle_report.md.
 ```
 
 Remaining risks:
 
-- Runtime string parsing and object `ToPrimitive` may require broader runtime helper work.
+- Compatible object `ToPrimitive` and non-source-backed unknown out-of-range runtime strings remain open in issue 368.
