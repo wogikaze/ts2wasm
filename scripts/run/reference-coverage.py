@@ -37,7 +37,11 @@ from pathlib import Path
 
 import test262 as test262_runner
 
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
+from ts2wasm_binary import resolve_ts2wasm_binary
+
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
+TS2WASM_BINARY = resolve_ts2wasm_binary()
 REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
 COVERAGE_RESULTS_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
 
@@ -729,8 +733,7 @@ def main():
             
             # Build with ts2wasm
             result = subprocess.run(
-                ["timeout", "8s", "cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", 
-                 str(build_input), "-o", str(out_wasm)],
+                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
                 capture_output=True,
                 cwd=REPO_ROOT
             )

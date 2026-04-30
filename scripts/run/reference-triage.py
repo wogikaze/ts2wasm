@@ -20,8 +20,11 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
+from ts2wasm_binary import resolve_ts2wasm_binary
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+TS2WASM_BINARY = resolve_ts2wasm_binary()
 REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
 
 
@@ -249,7 +252,7 @@ def extract_stack_trace(stderr: str) -> list[str]:
 
 def dump_phase(path: Path, phase: str, max_chars: int) -> dict[str, Any]:
     result = run_command(
-        ["cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "dump", phase, str(path)],
+        [str(TS2WASM_BINARY), "dump", phase, str(path)],
         timeout_seconds=12,
     )
     output = result.stdout if result.returncode == 0 else result.stderr
@@ -414,7 +417,7 @@ def build_report(suite: str, path: Path, max_dump_chars: int) -> TriageReport:
     with tempfile.TemporaryDirectory() as tmp_dir:
         out_wasm = Path(tmp_dir) / "out.wasm"
         build = run_command(
-            ["cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", str(path), "-o", str(out_wasm)],
+            [str(TS2WASM_BINARY), "build", str(path), "-o", str(out_wasm)],
             timeout_seconds=12,
         )
 

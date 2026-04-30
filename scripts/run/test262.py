@@ -18,10 +18,14 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
+sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
+from ts2wasm_binary import resolve_ts2wasm_binary
+
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
 REFERENCE_ROOT = Path(os.environ.get("TS2WASM_REFERENCE_ROOT", REPO_ROOT / "reference")).resolve()
 TEST262_ROOT = Path(os.environ.get("TS2WASM_TEST262_ROOT", REFERENCE_ROOT / "test262")).resolve()
 HARNESS_DIR = TEST262_ROOT / "harness"
+TS2WASM_BINARY = resolve_ts2wasm_binary()
 
 CORE_HARNESS_FILES = ("sta.js", "assert.js")
 UNSUPPORTED_FLAGS = ("IsHTMLDDA",)
@@ -389,7 +393,7 @@ def compile_and_run_test(test_file, tmp_dir):
     
     # Compile with ts2wasm
     result = subprocess.run(
-        ["cargo", "run", "-q", "-p", "ts2wasm-cli", "--", "build", str(tmp_source), "-o", str(tmp_wasm)],
+        [str(TS2WASM_BINARY), "build", str(tmp_source), "-o", str(tmp_wasm)],
         capture_output=True,
         text=True,
         cwd=REPO_ROOT
