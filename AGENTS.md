@@ -119,7 +119,51 @@ mise run update-issue-index
 mise run check issues
 ```
 
-## 6) 運用上の最小ルール
+## 6) ast-grep（最小運用）
+
+構造的パターンで既存 linter（clippy, ESLint 等）が表現できない場合のみ ast-grep を使う。自然言語プロンプトより再現可能な静的ルールを優先する。
+
+**最小構成**:
+
+```yaml
+# sgconfig.yml
+ruleDirs:
+  - rules
+testConfigs:
+  - testDir: rule-tests
+```
+
+```yaml
+# rules/example.yml
+id: example
+language: Rust
+severity: warning
+rule:
+  pattern: $EXPR.unwrap()
+message: Avoid unwrap outside tests.
+```
+
+```yaml
+# rule-tests/example-test.yml
+id: example
+valid:
+  - safe_call()
+invalid:
+  - some_vec.unwrap()
+```
+
+**実行**:
+
+```bash
+ast-grep test --skip-snapshot-tests   # CI で回す分類テスト
+ast-grep scan                         # プロジェクトスキャン
+```
+
+**メタ変数の注意**: `$VAR` は単一ノード、`$$$VARS` は複数ノード。`$_` はワイルドカード（キャプチャしない）。ドットアクセスのみマッチ（`obj['key']` にはマッチしない）。
+
+**公式**: <https://ast-grep.github.io/>
+
+## 7) 運用上の最小ルール
 
 - テスト: cargo nextest run
 - 整形: cargo fmt --all --check
