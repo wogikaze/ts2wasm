@@ -243,6 +243,54 @@ mise run update-issue-index -- --check: pass
 mise run check issues: pass
 ```
 
+## Child v3 blocker evidence: 2026-05-01
+
+Status: `BLOCKED`.
+
+This child did not keep runtime code changes. The tested implementation candidates either violated the parent mergeability constraint at the 100000-event diagnostic budget or failed before producing valid WAT.
+
+Baseline reproduced after reverting rejected probes:
+
+```text
+command: cargo fmt --all --check
+result: pass
+
+command: mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass; alloc_array_growth_bytes=362976; alloc_array_growth_calls=2648; copy_array_growth_bytes=181008; copy_array_growth_calls=2648; allocation_requested_bytes=521193; sweep_visits=58859; free_list_scan_visits=0; top_miss_reason=non_top_heap
+```
+
+Rejected candidates:
+
+```text
+candidate: lower ARRAY_PUSH_GROW_LINEAR_GROWTH_THRESHOLD from 3072 to 32 to reduce non-top fallback over-allocation
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: pass, but violates mergeability; alloc_array_growth_bytes 362976 -> 680548, copy_array_growth_bytes 181008 -> 621556, allocation_requested_bytes 521193 -> 801247, sweep_visits 58859 -> 62282, free_list_scan_visits 0 -> 6710
+decision: not kept
+```
+
+```text
+candidate: mark swept free-list blocks and expand a non-top ArrayPushGrow into an immediately adjacent free block before falling back to allocation/copy
+command: cargo fmt --all --check && mise run abc451-runtime-costs -- --event-budget 100000 --timeout 30
+result: rejected before measurement; generated instrumented WAT failed wat2wasm with "unexpected token (, expected )" near the ArrayPushGrow expression
+decision: not kept because the raw-WAT branch was not mergeable
+```
+
+Required validation for the final evidence-only state:
+
+```text
+cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm: fail; iwasm timed out after 30.204s
+cargo nextest run -p ts2wasm-cli oom_alloc_check_must_fail_iwasm: pass
+cargo test -p ts2wasm-backend-wasm --lib -- --nocapture: pass; 27 passed
+mise run update-issue-index -- --check: pass
+mise run check issues: pass
+```
+
+Remaining blocker:
+
+```text
+The remaining dominant category is still non-top ArrayPushGrow fallback allocation/copy. A raw inline-WAT expansion strategy is high risk in the current emitter shape; the next useful slice should either extract ArrayPushGrow into a dedicated runtime helper with unit-level WAT contract coverage before changing behavior, or introduce a representation-level append strategy that can be validated without fragile expression-template surgery.
+```
+
 ## Issue 366 ArrayPushGrow miss attribution: 2026-05-01
 
 Status: `READY_FOR_IMPLEMENTATION`.
