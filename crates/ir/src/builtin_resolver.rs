@@ -385,7 +385,13 @@ impl BigIntStaticBuiltinFolder {
                 let right = self.fold_expr(right);
                 let left_toprimitive = self.object_toprimitive_primitive_expr(&left);
                 let right_toprimitive = self.object_toprimitive_primitive_expr(&right);
-                let is_abstract_equality = matches!(op, BinaryOp::EqualEqual | BinaryOp::BangEqual);
+                let is_relational = matches!(
+                    op,
+                    BinaryOp::Less
+                        | BinaryOp::LessEqual
+                        | BinaryOp::Greater
+                        | BinaryOp::GreaterEqual
+                );
                 let should_fold = matches!(
                     op,
                     BinaryOp::EqualEqual
@@ -399,22 +405,30 @@ impl BigIntStaticBuiltinFolder {
                     || left_toprimitive.as_ref().is_some_and(expr_contains_bigint)
                     || right_toprimitive.as_ref().is_some_and(expr_contains_bigint));
                 let left_can_fold_toprimitive = left_toprimitive.as_ref().is_some_and(|expr| {
-                    expr_contains_bigint(expr)
-                        || (is_abstract_equality && matches!(expr, Expr::String { .. }))
+                    expr_contains_bigint(expr) || matches!(expr, Expr::String { .. })
                 });
                 let right_can_fold_toprimitive = right_toprimitive.as_ref().is_some_and(|expr| {
-                    expr_contains_bigint(expr)
-                        || (is_abstract_equality && matches!(expr, Expr::String { .. }))
+                    expr_contains_bigint(expr) || matches!(expr, Expr::String { .. })
                 });
                 Expr::Binary {
                     left: Box::new(if should_fold && left_can_fold_toprimitive {
-                        left_toprimitive.unwrap_or(left)
+                        let expr = left_toprimitive.unwrap_or(left);
+                        if is_relational {
+                            object_toprimitive_relational_expr(expr)
+                        } else {
+                            expr
+                        }
                     } else {
                         left
                     }),
                     op: *op,
                     right: Box::new(if should_fold && right_can_fold_toprimitive {
-                        right_toprimitive.unwrap_or(right)
+                        let expr = right_toprimitive.unwrap_or(right);
+                        if is_relational {
+                            object_toprimitive_relational_expr(expr)
+                        } else {
+                            expr
+                        }
                     } else {
                         right
                     }),
@@ -679,6 +693,37 @@ fn object_toprimitive_supported_primitive_expr(expr: &Expr) -> Option<Expr> {
             },
             _ => None,
         })
+}
+
+fn object_toprimitive_relational_expr(expr: Expr) -> Expr {
+    let Expr::String { value, span } = expr else {
+        return expr;
+    };
+    let Ok(parsed) = bigint_from_string_builtin(&value, span) else {
+        return Expr::String { value, span };
+    };
+    if !bigint_fits_runtime_mixed_string(&parsed) {
+        return Expr::String { value, span };
+    }
+    bigint_const_to_expr(parsed, span)
+}
+
+fn bigint_const_to_expr(value: BigIntConst, span: Span) -> Expr {
+    let decimal = value.decimal_string();
+    let magnitude = decimal.strip_prefix('-').unwrap_or(decimal.as_str());
+    let literal = Expr::BigInt {
+        raw: format!("{magnitude}n"),
+        span,
+    };
+    if value.sign < 0 {
+        Expr::Unary {
+            op: UnaryOp::Negate,
+            expr: Box::new(literal),
+            span,
+        }
+    } else {
+        literal
+    }
 }
 
 fn is_bigint_static_builtin_callee(callee: &Expr) -> bool {
