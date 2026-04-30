@@ -3,9 +3,9 @@ id: 365
 title: "Reduce ABC451 array-growth allocation and copy pressure"
 type: bug
 area: runtime/memory
-class: implementation-ready
+class: blocked
 priority: P1
-depends_on: [364]
+depends_on: [364, 366, 367]
 blocks: [363, 357, 309]
 created: 2026-05-01
 updated: 2026-05-01
@@ -150,6 +150,13 @@ Issue 364 reported zero unattributed allocation and copy counts at 100000 and 30
 
 - Class changed to `blocked` after two child attempts failed to find a safe mergeable array-growth reduction.
 - Follow-up issue 366 tracks `ArrayPushGrow` hit/miss attribution needed before more implementation probes.
+
+## Parent blocker classification
+
+2026-04-30 parent classification:
+
+- Class remains `blocked` after child v3 showed direct inline-WAT non-top growth surgery is too fragile.
+- Follow-up issue 367 extracts `ArrayPushGrow` into a helper boundary before the next behavior-changing issue 365 attempt.
 
 ## Completion evidence
 

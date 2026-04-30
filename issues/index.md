@@ -10,7 +10,7 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
-| backend | 7 | 2 | 5 |
+| backend | 8 | 3 | 5 |
 | cli | 5 | 1 | 4 |
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 379 | 174 | 205 |
+| total | 380 | 175 | 205 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -52,7 +52,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | ready | P2 |  | supported dense-array map calls work, but `Array.prototype.map` still |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | implementation-ready | P3 |  | Parser and resolver do not detect direct eval calls or model eval-code scope. |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | implementation-ready | P1 |  | `fixtures/core-semantics/abc451-depth8-live-set.ts` no longer finishes within the iwasm test timeout, blocking otherw... |
-| 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | implementation-ready | P1 | 364 | the focused ABC451 depth-8 gate still times out, and array growth is now the highest measured implementation target. ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -222,6 +221,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 354 | Implement sparse array spread support | feature | runtime/semantics | 274 | Implement sparse array spread support |
 | 355 | Implement dynamic object property enumeration spread | feature | runtime/semantics | 274 | Implement dynamic object property enumeration spread |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
+| 365 | Reduce ABC451 array-growth allocation and copy pressure | bug | runtime/memory | class: blocked | Reduce ABC451 array-growth allocation and copy pressure |
+| 367 | Extract ArrayPushGrow into a runtime helper | refactor | backend/runtime | 365, 366 | Extract ArrayPushGrow into a runtime helper |
 <!-- generated:blocked:end -->
 
 ## Done queue
