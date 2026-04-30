@@ -581,6 +581,24 @@ fn bigint_runtime_mixed_string_abstract_equality_matches_node_output_under_iwasm
 }
 
 #[test]
+fn bigint_runtime_mixed_stdin_string_in_range_matches_node_output_under_iwasm() {
+    super::assert_stdin_fixture_matches_node(
+        "fixtures/core-semantics/bigint-runtime-mixed-stdin-string-in-range.ts",
+        b"2\n",
+    );
+}
+
+#[test]
+fn bigint_runtime_mixed_stdin_string_out_of_range_traps_instead_of_boolean() {
+    for fixture in [
+        "fixtures/core-semantics/bigint-runtime-mixed-stdin-string-equality-out-of-range-trap.ts",
+        "fixtures/core-semantics/bigint-runtime-mixed-stdin-string-relational-out-of-range-trap.ts",
+    ] {
+        super::assert_stdin_fixture_node_succeeds_and_iwasm_traps(fixture, b"2147483648\n");
+    }
+}
+
+#[test]
 fn bigint_runtime_mixed_relational_matches_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/bigint-runtime-mixed-boolean-relational.ts",

@@ -1305,6 +1305,77 @@ fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
     );
 }
 
+fn assert_stdin_fixture_node_succeeds_and_iwasm_traps(fixture: &str, stdin_input: &[u8]) {
+    use std::io::Write;
+
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let mut node = Command::new("node")
+        .arg(&fixture_path)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    node.stdin.take().unwrap().write_all(stdin_input).unwrap();
+    let node_out = node.wait_with_output().unwrap();
+    assert!(
+        node_out.status.success(),
+        "node failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&node_out.stdout),
+        String::from_utf8_lossy(&node_out.stderr)
+    );
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+    assert!(
+        build.status.success(),
+        "build failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&build.stdout),
+        String::from_utf8_lossy(&build.stderr)
+    );
+
+    let mut iwasm = Command::new("iwasm")
+        .arg(&output)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    iwasm.stdin.take().unwrap().write_all(stdin_input).unwrap();
+    let iwasm_out = run_iwasm_child_with_timeout(iwasm).unwrap();
+    assert!(
+        !iwasm_out.timed_out,
+        "iwasm timed out for {fixture}\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm_out.output.stdout),
+        String::from_utf8_lossy(&iwasm_out.output.stderr)
+    );
+    assert!(
+        !iwasm_out.output.status.success(),
+        "expected iwasm trap for {fixture}, got success\nstdout:\n{}\nstderr:\n{}",
+        String::from_utf8_lossy(&iwasm_out.output.stdout),
+        String::from_utf8_lossy(&iwasm_out.output.stderr)
+    );
+    let output_text = format!(
+        "{}{}",
+        String::from_utf8_lossy(&iwasm_out.output.stdout),
+        String::from_utf8_lossy(&iwasm_out.output.stderr)
+    )
+    .to_ascii_lowercase();
+    assert!(
+        output_text.contains("unreachable") || output_text.contains("trap"),
+        "expected trap for {fixture}, got:\n{output_text}"
+    );
+}
+
 fn is_iwasm_stdin_fd_read_blocked(stdout: &[u8], stderrs: &[u8], fixture: &str) -> bool {
     // iwasm 2.4.4 returns `Exception: unreachable` for this path in environments
     // where stdin fd_read cannot be executed reliably. This keeps the rest of the

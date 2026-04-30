@@ -115,6 +115,15 @@ Follow-up issues:
 
 This issue is a direct follow-up split from issue 368. It is intentionally separate from source-backed object `toString` returns so runtime-only safety can be validated directly.
 
+## Progress evidence
+
+2026-05-01 child/375-bigint-string-boundary-20260501-062449:
+
+- Added stdin-backed non-source-backed dynamic BigInt/String comparison fixtures for supported in-range values and out-of-range equality/relational trap behavior.
+- Routed BigInt/String runtime comparison through a BigInt-specific signed-i32 StringToBigInt helper that traps on out-of-bound parses instead of returning a wrapped normal boolean.
+- Targeted validation passed: `cargo fmt --all --check`, `cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_stdin_string`, `cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_string_abstract`, `cargo test -p ts2wasm-cli --test m2_node_diff bigint_runtime_mixed_relational_matches`, `mise run update-issue-index -- --check`, `mise run check issues`.
+- Broad `cargo test -p ts2wasm-cli --test m2_node_diff bigint` was run and remains red due unrelated baseline failures in existing BigInt tests (`bigint_dynamic_builtin_fixtures_match_node_output_under_iwasm`, `bigint_builtin_string_conversion_fixture_matches_node_output_under_iwasm`, diagnostic-code expectation mismatches, and existing issue-282 unsupported diagnostics), so this issue is left open as progress rather than strict close.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
