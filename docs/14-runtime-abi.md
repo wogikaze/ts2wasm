@@ -109,14 +109,60 @@ length を読むには: `len = i32.load(ptr)`
 
 ### Heap Array Object
 
-Array payload は以下の形式を使う。
+Array payload は dense/sparse 共通の logical contract として、length、
+per-index presence、RawValue element storage を持つ。Hole は ordinary
+`undefined` value ではない。Presence bit が 0 の index は absent property
+であり、element storage の値を JavaScript value として観測してはならない。
+
+Sparse-capable array payload は以下の形式を使う。
 
 ```text
-offset + 0 .. +4       : i32 length
-offset + 4 .. +4+N*4   : RawValue elements
+offset + 0  .. +4      : i32 length
+offset + 4  .. +8      : i32 capacity
+offset + 8  .. +12     : i32 presence_word_count
+offset + 12 .. +16     : i32 elements_offset_from_payload_start
+offset + 16 .. +16+W*4 : u32 presence_words[W]
+offset + elements_offset_from_payload_start
+                       : RawValue elements[capacity]
 
 RawValue = ptr | 0b101  (ptr は 8-byte aligned)
 ```
+
+`presence_word_count` は `ceil(capacity / 32)` で、bit `index % 32` が 1
+のとき index は present property である。Dense array はすべての
+`0 <= index < length` の presence bit を 1 にする。Sparse array hole は
+presence bit 0 とし、該当 element storage には `undefined` を格納する。
+GC は stale heap reference を保持しないよう、presence bit 0 の slot を mark
+対象にしないか、slot が canonical `undefined` であることを前提に全 slot scan
+してもよい。
+
+Parser/frontend は array literal slots を expression list ではなく
+slot list として表す。Allowed representation は
+`ArrayLiteralElement::Present(expr)`, `ArrayLiteralElement::Hole(span)`,
+`ArrayLiteralElement::Spread(expr)` 相当である。Elision は comma structure
+から作る。`[1,]` は length 1 の dense array、`[1,,]` は index 1 が hole の
+length 2 array、`[,]` は index 0 が hole の length 1 array として扱う。
+
+Resolved/lowered IR は present と absent を失わない slot representation を持つ。
+Allowed implementation path は `LoweredArraySlot::{Present(LoweredExpr), Hole}`
+を使う `ArrayNew` equivalent、または dense `ArrayNew` と sparse
+`ArrayNewSparse` の分割である。Either path must keep hole information until
+backend array allocation writes the presence bitmap. Existing dense-only lowering
+may remain as an optimization only when it proves every slot is present.
+
+Array observability follows ECMAScript property presence:
+
+- `arr.length` returns the logical length and counts holes.
+- `arr[index]` returns `undefined` for holes and out-of-range indexes, but this does
+  not make the index present.
+- Supported numeric `index in arr` checks return true only when
+  `0 <= index < length` and the presence bit is 1.
+- `Array.prototype.map` checks presence before invoking the callback. It skips holes,
+  preserves holes in the result, and stores callback results as present values even
+  when the callback returns `undefined`.
+- Array literal spread and call spread consume the array iterator/Get semantics.
+  A source hole is read as `undefined`; the destination array element or argument is
+  present `undefined`, not a preserved hole.
 
 GC header の `body_size_bytes` から `ARRAY_HEADER_SIZE` を引き、`ARRAY_ELEM_SHIFT`
 で割ることで、現 allocation が保持できる element capacity を求められる。

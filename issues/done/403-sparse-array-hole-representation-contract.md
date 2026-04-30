@@ -3,12 +3,13 @@ id: 403
 title: "Define sparse array hole representation contract"
 type: feature
 area: runtime/semantics
-class: design-ready
+class: done
 priority: P2
 depends_on: []
 blocks: [338, 354]
 created: 2026-05-01
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -63,11 +64,11 @@ Sparse array holes have an explicit project contract that defines:
 
 In scope:
 
-- [ ] Define the parser AST representation for array holes.
-- [ ] Define the resolved/lowered IR representation for sparse arrays.
-- [ ] Define the runtime array layout or hole sentinel/bitmap ABI.
-- [ ] Define observable supported behavior for `index in array`, `length`, map callback skipping, and map result hole preservation.
-- [ ] Decide whether this issue implements the smallest parser/IR/backend substrate or splits implementation-ready child issues.
+- [x] Define the parser AST representation for array holes.
+- [x] Define the resolved/lowered IR representation for sparse arrays.
+- [x] Define the runtime array layout or hole sentinel/bitmap ABI.
+- [x] Define observable supported behavior for `index in array`, `length`, map callback skipping, and map result hole preservation.
+- [x] Decide whether this issue implements the smallest parser/IR/backend substrate or splits implementation-ready child issues.
 
 Out of scope:
 
@@ -93,12 +94,12 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `docs/14-runtime-abi.md` or an equivalent numbered doc records the sparse array hole contract.
-- [ ] A concrete parser/IR/runtime representation decision is recorded with allowed implementation paths.
-- [ ] Issue 338 can be changed from blocked to implementation-ready without redefining representation.
-- [ ] Issue 354 can reference the same representation contract instead of inventing a spread-specific hole model.
-- [ ] Any implementation-ready child issues created by this design name exact fixtures, commands, and affected paths.
-- [ ] `issues/index.md` is regenerated and issue health checks pass.
+- [x] `docs/14-runtime-abi.md` or an equivalent numbered doc records the sparse array hole contract.
+- [x] A concrete parser/IR/runtime representation decision is recorded with allowed implementation paths.
+- [x] Issue 338 can be changed from blocked to implementation-ready without redefining representation.
+- [x] Issue 354 can reference the same representation contract instead of inventing a spread-specific hole model.
+- [x] Any implementation-ready child issues created by this design name exact fixtures, commands, and affected paths.
+- [x] `issues/index.md` is regenerated and issue health checks pass.
 
 ## Validation
 
@@ -124,15 +125,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md` when the representation contract is accepted
+- [x] updated: `docs/14-runtime-abi.md` when the representation contract is accepted
 
 Current state:
 
-- [ ] updated: `current-state.md` when representation behavior changes
+- [x] updated: `current-state.md` when representation behavior changes
 
 Follow-up issues:
 
-- [ ] created if this design is split into parser/IR/backend implementation slices
+- [x] no new child issue created; existing issues 338 and 354 now name exact fixtures, commands, and affected paths
 
 ## Notes
 
@@ -144,18 +145,33 @@ requires callback skipping and result hole preservation.
 
 Fill only when moving to `done/`.
 
+Completed: 2026-05-01
+
 Commits:
 
-- `...`
+- `<pending>` issue-403: define sparse array hole contract
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: mise run update-issue-index -- --check
+result: pass; issues/index.md OK after regeneration
+date: 2026-05-01
+
+command: mise run check issues
+result: pass; issues/index.md queue OK and check_issue_health OK
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass; 15 array_map tests passed, 428 skipped
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- Sparse array layout changes may affect dense array allocation, GC/rooting, and array helper assumptions.
+- Implementation still needs parser/IR/backend changes in issues 338 and 354.
+- Sparse array layout migration may affect dense array allocation, GC/rooting, and array helper assumptions.

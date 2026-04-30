@@ -8,18 +8,26 @@ priority: P2
 depends_on: [274]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
 
-Implement spread operator behavior for sparse arrays, ensuring that holes are correctly preserved when spreading a sparse array into another array literal or call arguments.
+Implement spread operator behavior for sparse arrays using the shared sparse
+array representation contract. Array/call spread observes holes through
+iterator/Get semantics, so holes become present `undefined` values in the
+destination rather than preserved absent slots.
 
 ## Problem
 
-The current spread implementation only supports dense arrays. When spreading a sparse array (e.g., `const sparse = [1, , 3]; const arr = [...sparse];`), the hole must be preserved in the resulting array. The current implementation either produces incorrect dense arrays or rejects sparse array spread.
+The current spread implementation only supports dense arrays. When spreading a
+sparse array (e.g., `const sparse = [1, , 3]; const arr = [...sparse];`), the
+hole must be read as `undefined` and stored as a present destination element.
+The current implementation either produces incorrect dense arrays or rejects
+sparse array spread.
 
-Problem: Sparse array hole preservation is unsupported in spread operator.
+Problem: Sparse array spread needs shared hole representation support and
+iterator/Get-compatible hole materialization to present `undefined`.
 
 ## Current failure
 
@@ -33,14 +41,16 @@ Current result: `[UnsupportedSyntax] issue-274: sparse array spread is not suppo
 
 ## Desired final state
 
-Sparse array spread produces arrays with correct holes. Array methods that interact with spread results (e.g., `.map()` on a spread sparse array) observe the holes correctly.
+Sparse array spread produces arrays with present `undefined` values for source
+holes. Array methods that interact with spread results (e.g., `.map()` on a
+spread sparse array) observe those positions as present, matching Node behavior.
 
 ## Scope
 
 In scope:
 
 - [ ] Sparse array representation in array literal spread
-- [ ] Hole preservation when spreading sparse arrays
+- [ ] Hole materialization to present `undefined` when spreading sparse arrays
 - [ ] Call argument spread with sparse arrays (holes map to undefined in arguments)
 - [ ] Node/iwasm differential fixtures for sparse array spread
 
@@ -66,8 +76,8 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture proves sparse array spread preserves holes
-- [ ] Node/iwasm differential fixture proves `0 in [...sparse]` matches Node
+- [ ] Node/iwasm differential fixture proves sparse array spread materializes holes as present `undefined`
+- [ ] Node/iwasm differential fixture proves `0 in [...sparse]` / `1 in [...sparse]` / `2 in [...sparse]` match Node
 - [ ] Node/iwasm differential fixture proves call spread with sparse array maps holes to undefined
 - [ ] Existing dense array spread slices remain passing
 - [ ] `cargo fmt --all --check` and `cargo nextest run` pass
@@ -107,7 +117,20 @@ Follow-up issues:
 
 Parent issue: 274
 
-In ECMAScript, sparse array holes are not the same as `undefined` values. When a sparse array is spread into a new array literal, the holes should be preserved in the destination. When spread into call arguments, holes are mapped to `undefined` because the arguments object is always dense.
+Sparse array representation is defined by `docs/14-runtime-abi.md`. In
+ECMAScript, sparse array holes are not the same as `undefined` values while they
+remain array properties. When a sparse array is spread into a new array literal
+or call arguments, spread consumes iterator/Get semantics: source holes are read
+as `undefined`, and the destination element/argument is present.
+
+Exact fixture targets:
+
+- Fixture name `spread-sparse-array-materializes-undefined.ts` under the existing core-semantics spread fixture group: cover
+  `0 in arr`, `1 in arr`, `2 in arr`, `arr[1] === undefined`, and `arr.length`.
+- Fixture name `spread-sparse-call-undefined.ts` under the existing core-semantics spread fixture group: cover a call where
+  the hole argument is observed as `undefined`.
+
+Targeted validation: `cargo fmt --all --check`; `cargo nextest run -E 'test(spread) or test(node_diff)'`; `mise run update-issue-index -- --check`; `mise run check issues`.
 
 ## Completion evidence
 
