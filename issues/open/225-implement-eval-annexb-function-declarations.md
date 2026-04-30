@@ -8,7 +8,7 @@ priority: P3
 depends_on: []
 blocks: [347, 348, 349]
 created: 2026-04-28
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -36,7 +36,7 @@ Accepted decisions:
 This meta issue tracks child issues for completing eval and Annex B function declaration semantics.
 
 Child issues:
-- [ ] Issue 347: Parser and resolver support for direct eval and eval-code scope
+- [x] Issue 347: Parser and resolver support for direct eval and eval-code scope
 - [ ] Issue 348: Lowering block-level function declarations in direct eval code
 - [ ] Issue 349: Runtime helper or shim JavaScript emission for direct eval execution
 
@@ -63,7 +63,7 @@ Do not touch:
 
 This meta issue is complete when all child issues are moved to `done/`.
 
-- [ ] Issue 347 closed: parser/resolver direct eval detection and eval-code scope analysis
+- [x] Issue 347 closed: parser/resolver direct eval detection and eval-code scope analysis
 - [ ] Issue 348 closed: IR lowering for block-level function declarations in eval code
 - [ ] Issue 349 closed: runtime helper or shim JavaScript emission for direct eval execution
 - [ ] test262 direct eval Annex B function-declaration cases in the classified window no longer report `eval`.

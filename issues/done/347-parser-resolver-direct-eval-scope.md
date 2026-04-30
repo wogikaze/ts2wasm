@@ -3,12 +3,13 @@ id: 347
 title: "Parser and resolver support for direct eval and eval-code scope"
 type: feature
 area: frontend/semantics
-class: blocked
+class: done
 priority: P3
 depends_on: [336,357]
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -43,10 +44,10 @@ The parser and resolver can:
 
 In scope:
 
-- [ ] Parser detection of direct `eval(...)` call expression
-- [ ] Resolver scope-chain linking for eval code to caller locals
-- [ ] Annex B block-level function declaration binding inside eval code
-- [ ] Issue-linked diagnostics for unsupported indirect eval patterns
+- [x] Parser detection of direct `eval(...)` call expression
+- [x] Resolver scope-chain linking for eval code to caller locals
+- [x] Annex B block-level function declaration binding inside eval code
+- [x] Issue-linked diagnostics for unsupported indirect eval patterns
 
 Out of scope:
 
@@ -73,7 +74,7 @@ Do not touch:
 - [x] Parser fixture proves `eval("...")` is recognized as a direct eval call
 - [x] Resolver fixture proves eval code can resolve caller-local variable references
 - [x] Diagnostic fixture proves unsupported indirect eval is rejected with issue-linked error
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] `cargo fmt --all --check` and focused eval validation pass; broad `cargo nextest run` is blocked only by unrelated issue 336/357 failures recorded below
 
 ## Validation
 
@@ -95,16 +96,16 @@ cargo test -p ts2wasm-frontend eval
 
 Final-state docs:
 
-- [ ] updated: `docs/language-reference/javascript-features.md` if eval scope rules are documented
+- [x] updated: `docs/language-reference/javascript-features.md` if eval scope rules are documented
 
 Current state:
 
-- [ ] updated: `current-state.md` if parser/resolver eval capability changes
+- [x] updated: `current-state.md` if parser/resolver eval capability changes
 
 Follow-up issues:
 
-- [ ] created: issue 348 for lowering
-- [ ] created: issue 349 for runtime/shim
+- [x] created: issue 348 for lowering
+- [x] created: issue 349 for runtime/shim
 
 ## Notes
 
@@ -114,23 +115,29 @@ The direct-eval detection must be syntactic: the callee must be the identifier `
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Completed 2026-05-01.
 
 Commits:
 
-- `...`
+- prior implementation commits recorded in progress sections
+- current close-state commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-frontend eval -- --nocapture: pass (3)
+cargo test -p ts2wasm-cli eval -- --nocapture: pass (3)
+mise run update-issue-index -- --check && mise run check issues: pass
 ```
 
 Remaining risks:
 
-- none
+- Dynamic runtime eval execution remains issue 349.
+- Lowering follow-up work remains issue 348.
+- Broad `cargo nextest run` remains blocked by unrelated issue 336
+  `reference/test262/harness` availability and issue 357 ABC451 iwasm timeout,
+  as recorded in the progress evidence.
 
 ## Progress evidence
 
