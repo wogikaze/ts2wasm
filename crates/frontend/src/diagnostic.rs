@@ -81,6 +81,9 @@ impl Diagnostic {
             || message.contains("boolean.")
             || message.contains("console.")
             || message.contains("process.")
+            || message.contains("bigint.")
+            || message.contains("bigint(")
+            || message.contains("bigint is not a constructor")
             || message.contains("globalthis")
             || message.contains("builtin")
         {
@@ -215,6 +218,11 @@ mod tests {
             ),
             (
                 "Array.prototype.map generic calls are not supported",
+                DiagCode::UnsupportedBuiltin,
+                "[UnsupportedBuiltin]",
+            ),
+            (
+                "issue-280: BigInt.asIntN/asUintN currently require a supported BigInt value input",
                 DiagCode::UnsupportedBuiltin,
                 "[UnsupportedBuiltin]",
             ),

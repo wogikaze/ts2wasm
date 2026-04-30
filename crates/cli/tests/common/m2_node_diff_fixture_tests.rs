@@ -260,9 +260,11 @@ fn bigint_large_div_rem_branch_assignment_fixture_matches_node_output_under_iwas
 
 #[test]
 fn bigint_large_div_rem_mixed_branch_assignment_reports_issue_370() {
-    assert_build_fails_with_unsupported_syntax_without_span(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-runtime-branch-mixed-div-rem-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-370:",
+        false,
     );
 }
 
@@ -463,35 +465,45 @@ fn bigint_dynamic_builtin_unsupported_forms_report_issue_280() {
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
         "fixtures/core-semantics/bigint-builtin-invalid-string-unsupported.ts",
     ] {
-        assert_build_fails_with_unsupported_syntax(fixture, "issue-280:");
+        assert_build_fails_with_diagnostic(fixture, "[UnsupportedBuiltin]", "issue-280:", true);
     }
 }
 
 #[test]
 fn bigint_invalid_static_string_diagnostics_remain_source_spanned_issue_280() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-builtin-invalid-decimal-string-unsupported.ts",
+        "[UnsupportedBuiltin]",
         "issue-280: BigInt(string) currently supports decimal, binary, octal, or hexadecimal integer string literals",
+        true,
     );
 }
 
 #[test]
 fn bigint_invalid_dynamic_string_diagnostics_are_source_spanned_issue_333() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-builtin-dynamic-invalid-string-unsupported.ts",
+        "[UnsupportedBuiltin]",
         "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support",
+        true,
     );
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-builtin-dynamic-out-of-range-string-unsupported.ts",
+        "[UnsupportedBuiltin]",
         "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support",
+        true,
     );
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-builtin-dynamic-object-invalid-string-unsupported.ts",
+        "[UnsupportedBuiltin]",
         "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support",
+        true,
     );
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-builtin-dynamic-object-out-of-range-string-unsupported.ts",
+        "[UnsupportedBuiltin]",
         "issue-333: dynamic BigInt(string) inputs with provably invalid or out-of-range StringToBigInt values require compatible runtime exception support",
+        true,
     );
 }
 
@@ -519,33 +531,41 @@ fn bigint_new_constructor_reports_issue_262() {
 
 #[test]
 fn bigint_dynamic_exponentiation_reports_issue_376() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-exponentiation-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-376: BigInt exponentiation beyond literal non-negative exponent folding is not implemented",
+        true,
     );
 }
 
 #[test]
 fn bigint_negative_runtime_exponent_reports_issue_370() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-exponentiation-negative-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-370: BigInt negative exponent RangeError parity is not implemented in this literal-folding slice",
+        true,
     );
 }
 
 #[test]
 fn bigint_mixed_abstract_equality_reports_issue_282() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-mixed-abstract-equality-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-282: mixed BigInt abstract equality and relational comparison coercion is not implemented in this runtime coercion slice",
+        true,
     );
 }
 
 #[test]
 fn bigint_mixed_relational_reports_issue_282() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/bigint-mixed-relational-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-282: mixed BigInt abstract equality and relational comparison coercion is not implemented in this runtime coercion slice",
+        true,
     );
 }
 
