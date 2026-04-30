@@ -26,6 +26,22 @@ TypeScript tests は、構文と型の互換性を見るために使う。`tsc` 
 
 Coverage dashboard は、少なくとも suite、shard、semantic area、target、status を軸に集計する。運用上の実測 dashboard は `artifacts/coverage/reference-coverage-matrix.md` を正とする。`build_pass` / `semantic_pass` と `unsupported` / `blocked` は別列・別グラフで追い、未対応の増加を coverage 改善として扱わない（`docs/15-coverage-matrix.md` の Metric Definitions に従う）。
 
+### TypeScript coverage label ownership
+
+`tsc` / `tsgo` labels are triage labels, not implementation boundaries. Each TypeScript-specific unsupported record must map to the parse / erase / emit categories in `docs/05-compatibility-and-semantics.md` before it becomes implementation-ready.
+
+| Coverage label | Coverage status guidance | Required tracking |
+|---|---|---|
+| `type-alias`, `type-annotation`, `type-assertion`, `type-system` | `unsupported` with `UnsupportedTypeScriptSyntax` until the parser/erasure slice accepts and erases the form | TypeScript erasure issue |
+| `ambient-declaration`, `declaration-emit` | `unsupported` with `UnsupportedTypeScriptSyntax` for declaration-only syntax or `UnsupportedModule` for module-shaped declaration effects | Ambient/declaration emit child issue |
+| `import-export`, `module-resolution`, `module-system-amd` | `unsupported` with `UnsupportedModule` when the blocker is graph shape, module kind, or resolver policy | Module graph/emit issue |
+| `class-accessor`, `decorator`, `jsx`, `enum` | `unsupported` with `UnsupportedTypeScriptSyntax` until the TS transform is defined; after transform, remaining JS behavior uses the normal runtime label | Transform issue plus runtime issue only if needed |
+| `typescript-directive` | `unsupported` or `skip-with-reason` only when the directive is an environment/compiler-mode constraint; otherwise classify by the syntax it affects | Directive/harness issue |
+| `parser-syntax`, `unknown-unsupported` | Temporary triage labels only; representative cases must be split into a concrete label above | Triage issue with evidence |
+| `arguments-object`, `runtime-subset`, `class`, `object-literal` | Not TypeScript-only after transform; use `UnsupportedRuntimeSubset` or existing JS feature diagnostics | JS semantics issue |
+
+Reference coverage must not count a TypeScript-only parse success as `build_pass` unless the erased or transformed executable program reaches the normal build pipeline. Declaration-only success is a parser/transform result, not semantic parity.
+
 ### テスト分類運用
 
 - `parser_smoke`: 構文受理や parser/解決の最小確認。意味論適合は保証しない。

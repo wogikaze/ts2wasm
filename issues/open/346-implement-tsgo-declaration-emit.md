@@ -5,10 +5,10 @@ type: feature
 area: frontend/syntax
 class: triage-needed
 priority: P2
-depends_on: []
+depends_on: [399]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -19,7 +19,7 @@ TypeScript declaration emit (`declare`) and declaration emit-related constructs 
 
 tsgo coverage shows 16 cases blocked by declaration emit support (feature label: `declaration-emit`). The frontend needs to handle `declare` keyword and related declaration patterns found in the tsgo corpus.
 
-Problem: 16 tsgo suite cases fail due to missing declaration emit support.
+Problem: Child bucket of issue 399; 16 tsgo suite cases fail due to missing declaration/ambient parse/erase support, but implementation must wait for the TypeScript parse/erase/emit boundary contract.
 
 ## Current failure
 
@@ -102,4 +102,8 @@ Follow-up issues:
 
 ## Notes
 
-Similar to type alias erasure — `declare` declarations are compile-time only and should be erased. The parser needs to accept `declare` as a declaration modifier.
+This issue is a child implementation bucket of issue 399. Do not start broad declaration/ambient implementation until issue 399 defines the TypeScript parse/erase/emit boundary and confirms which `declare` and declaration-emit forms are pure erasure, which affect module shape, and which need narrower child issues.
+
+Boundary decision after issue 399: `declaration-emit` maps to category 2 when declaration output or module shape matters, and category 4 when declaration-only input must be rejected or erased without runtime bindings. Ambient declaration erasure is split to issue 400.
+
+Similar to type alias erasure, many `declare` declarations are compile-time only and should be erased if issue 399 confirms they have no runtime/module-shape effect for the selected cases. The parser then needs to accept `declare` as a declaration modifier and route it through the erasure boundary.

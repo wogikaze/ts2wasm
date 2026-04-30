@@ -136,3 +136,9 @@ Child issues:
   - targeted regression `cargo nextest run function_expression_return_this_iife_fixture_matches_node_output_under_iwasm` passed, and `mise run update-issue-index -- --check` plus `mise run check issues` passed;
   - `cargo fmt --all --check` is `BLOCKED_BY_UNRELATED_FORMAT` in `crates/ir/src/builtin_resolver.rs`, which is outside this issue-274 slice;
   - broader direct ordinary-function `this` binding, top-level `this`, `arguments`, parameters, spread/rest arguments, and receiver-dependent function-expression calls remain guarded by existing issue-062d/issue-274 diagnostics.
+- 2026-05-01: Added the smallest Test262 wasm harness/assert slice for the Array.map representative:
+  - `scripts/lib/test262_harness.py` now emits a lightweight wasm-side harness shim instead of compiling the full self-referential `assert.js` implementation;
+  - direct `assert(false)` and unsupported wasm harness hooks report the existing `__TS2WASM_TEST262_ASSERT_FAIL__` sentinel, while `assert.sameValue`/`assert.notSameValue` statements continue to use the compiler-side Test262 assertion lowering;
+  - `mise run reference-triage -- test262 reference/test262/test/built-ins/Array/prototype/map/15.4.4.19-2-19.js` now advances past `UnresolvedName: assert` and reports `BuildPass`;
+  - validation passed: `cargo fmt --all --check`, `mise run update-issue-index -- --check`, `mise run check issues`, and `mise run check scripts`;
+  - no broad spread child scope is closed; iterator protocol integration, sparse arrays, dynamic object enumeration, and broad Test262 spread coverage remain open.

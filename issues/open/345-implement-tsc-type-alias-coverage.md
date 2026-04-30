@@ -5,10 +5,10 @@ type: feature
 area: frontend/syntax
 class: triage-needed
 priority: P2
-depends_on: []
+depends_on: [399]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -19,7 +19,7 @@ TypeScript type alias declarations (`type Foo = ...`) are unsupported in 23 tsc 
 
 tsc coverage shows 23 cases blocked by type alias support (feature label: `type-alias`). The frontend needs to parse and erase type alias declarations when emitting wasm.
 
-Problem: 23 tsc suite cases fail due to missing type alias (`type X = ...`) support.
+Problem: Child bucket of issue 399; 23 tsc suite cases fail due to missing type alias (`type X = ...`) parse/erase support, but implementation must wait for the TypeScript parse/erase/emit boundary contract.
 
 ## Current failure
 
@@ -102,4 +102,8 @@ Follow-up issues:
 
 ## Notes
 
-Type aliases should be purely erased during compilation. The main work is in the parser to accept `type` keyword in declaration position and pass it through to the erasure pass.
+This issue is a child implementation bucket of issue 399. Do not start broad type-alias implementation until issue 399 defines the TypeScript parse/erase/emit boundary and confirms whether the tsc `type-alias` bucket should be handled by pure erasure, module-shape preservation, or a narrower child slice.
+
+Boundary decision after issue 399: `type-alias` maps to category 1, parse and erase before runtime lowering. Representative failures that also require module-shape handling should be split out rather than widening this issue into module resolution or runtime semantics.
+
+Type aliases should be purely erased during compilation if issue 399 confirms they have no runtime/module-shape effect for the selected cases. The main work is then in the parser to accept `type` keyword in declaration position and pass it through to the erasure pass.

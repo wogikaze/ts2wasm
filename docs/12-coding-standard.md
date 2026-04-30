@@ -429,6 +429,18 @@ InvariantViolation
 BackendIo
 ```
 
+### 3.1 TypeScript diagnostic ownership
+
+TypeScript-only syntax must fail at the frontend boundary with a source span and a diagnostic that identifies the owning phase.
+
+Use `UnsupportedTypeScriptSyntax` when the source construct is valid TypeScript but the compiler cannot yet parse, erase, or transform its TypeScript-only shape. Examples include type aliases, interfaces, type annotations, type assertions, ambient declarations, decorators, JSX, enums, parameter properties, and declaration-only forms before their boundary slice exists.
+
+Use `UnsupportedModule` when the parser can represent the form but the missing behavior is module graph, module kind, import/export shape, module resolution, AMD/System/CommonJS transform policy, or declaration emit that affects module shape.
+
+Use `UnsupportedRuntimeSubset` only after TypeScript syntax has been erased or transformed into executable JavaScript and the remaining blocker is ordinary JavaScript runtime semantics. Do not report a TypeScript erasure gap as a runtime subset gap.
+
+Generated reference labels such as `parser-syntax` and `unknown-unsupported` are triage labels. They must be split to a concrete TypeScript boundary category before the issue is marked implementation-ready.
+
 ## 4. Span ポリシー
 
 すべての source-derived node は span を持つ。
