@@ -79,6 +79,9 @@ def should_skip_path(p: str) -> bool:
     # Skip paths in migration issues that don't exist yet
     if "(after migration)" in p or "(not yet created)" in p:
         return True
+    # Skip generated artifact paths under gitignored directory
+    if p.startswith("artifacts/coverage/results/"):
+        return True
     return False
 
 
