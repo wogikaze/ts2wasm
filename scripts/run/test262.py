@@ -72,55 +72,149 @@ function print(message) {
 }
 """
 
+# JavaScript standard globals that the compiler may not resolve natively
+WASM_GLOBALS = r"""
+var NaN = 0/0;
+var Infinity = 1/0;
+var undefined = void 0;
+"""
+
 WASM_HARNESS_SHIM = r"""
-class Test262Error {
+var Test262Error = class {
   constructor(message) {
     this.message = message || "";
   }
+};
+
+Test262Error.prototype.toString = function() {
+  return "Test262Error: " + this.message;
+};
+
+Test262Error.thrower = function(message) {
+  throw new Test262Error(message);
+};
+
+var $262 = {};
+$262.gc = function() {};
+$262.evalScript = function() { throw new Test262Error("$262.evalScript is not supported"); };
+$262.createRealm = function() { return {}; };
+$262.detachArrayBuffer = function() { throw new Test262Error("$262.detachArrayBuffer is not supported"); };
+$262.IsHTMLDDA = undefined;
+$262.agent = {};
+$262.agent.start = function() { throw new Test262Error("$262.agent.start is not supported"); };
+
+function $ERROR(message) {
+  throw new Test262Error(message);
 }
 
 function $DONOTEVALUATE() {
   throw "Test262: This statement should not be evaluated.";
 }
 
+function fnGlobalObject() {
+  return (function() { return this; })();
+}
+
+var __globalObject = fnGlobalObject();
+
 function assert(mustBeTrue, message) {
   if (mustBeTrue === true) {
-    return undefined;
+    return;
   }
-
-  print("__TS2WASM_TEST262_ASSERT_FAIL__");
-  return undefined;
+  if (message === undefined) {
+    message = 'Expected true but got ' + assert._toString(mustBeTrue);
+  }
+  throw new Test262Error(message);
 }
 
-class Test262Assert {
-  static _isSameValue(a, b) {
-    if (a === b) {
-      return a !== 0 || 1 / a === 1 / b;
-    }
-    return a !== a && b !== b;
+assert._isSameValue = function(a, b) {
+  if (a === b) {
+    return a !== 0 || 1 / a === 1 / b;
   }
+  return a !== a && b !== b;
+};
 
-  static sameValue(actual, expected, message) {
-    if (actual === expected) {
-      return undefined;
-    }
-    print("__TS2WASM_TEST262_ASSERT_FAIL__");
-    throw new Test262Error(message);
+assert.sameValue = function(actual, expected, message) {
+  if (assert._isSameValue(actual, expected)) {
+    return;
   }
+  if (message === undefined) { message = ''; } else { message += ' '; }
+  message += 'Expected SameValue(«' + assert._toString(actual) + '», «' + assert._toString(expected) + '») to be true';
+  throw new Test262Error(message);
+};
 
-  static notSameValue(actual, unexpected, message) {
-    if (actual !== unexpected) {
-      return undefined;
-    }
-    print("__TS2WASM_TEST262_ASSERT_FAIL__");
-    throw new Test262Error(message);
+assert.notSameValue = function(actual, unexpected, message) {
+  if (!assert._isSameValue(actual, unexpected)) {
+    return;
   }
+  if (message === undefined) { message = ''; } else { message += ' '; }
+  message += 'Expected SameValue(«' + assert._toString(actual) + '», «' + assert._toString(unexpected) + '») to be false';
+  throw new Test262Error(message);
+};
 
-  static throws(expectedErrorConstructor, func, message) {
-    print("__TS2WASM_TEST262_ASSERT_FAIL__");
-    throw new Test262Error(message);
+assert.throws = function(expectedErrorConstructor, func, message) {
+  if (typeof func !== "function") {
+    throw new Test262Error('assert.throws: second argument must be a function');
   }
+  try {
+    func();
+  } catch (thrown) {
+    if (typeof thrown === 'object' && thrown !== null && thrown.constructor === expectedErrorConstructor) {
+      return;
+    }
+    var actualName = (thrown && thrown.constructor && thrown.constructor.name) || typeof thrown;
+    var expectedName = expectedErrorConstructor.name || 'constructor';
+    var msg = (message || '') + 'Expected a ' + expectedName + ' but got ' + actualName;
+    throw new Test262Error(msg);
+  }
+  throw new Test262Error((message || '') + 'Expected a ' + (expectedErrorConstructor.name || 'error') + ' to be thrown but no exception was thrown');
+};
+
+assert._formatIdentityFreeValue = function(value) {
+  if (value === null) return 'null';
+  var t = typeof value;
+  if (t === 'string') {
+    try { return JSON.stringify(value); } catch(e) { return '"' + value + '"'; }
+  }
+  if (t === 'bigint') return value + 'n';
+  if (t === 'number') {
+    if (value === 0 && 1 / value === -Infinity) return '-0';
+    return String(value);
+  }
+  if (t === 'boolean' || t === 'undefined') return String(value);
+  return '';
+};
+
+assert._toString = function(value) {
+  var basic = assert._formatIdentityFreeValue(value);
+  if (basic) return basic;
+  try { return String(value); } catch (err) {
+    if (err.name === 'TypeError') return Object.prototype.toString.call(value);
+    throw err;
+  }
+};
+
+function compareArray(a, b) {
+  if (b.length !== a.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (!assert._isSameValue(b[i], a[i])) return false;
+  }
+  return true;
 }
+
+compareArray.format = function(arrayLike) {
+  var result = [];
+  for (var i = 0; i < arrayLike.length; i++) {
+    result.push(String(arrayLike[i]));
+  }
+  return '[' + result.join(', ') + ']';
+};
+
+assert.compareArray = function(actual, expected, message) {
+  var result = compareArray(actual, expected);
+  if (result) return;
+  assert(false, (message || '') + 'Actual ' + compareArray.format(actual) + ' and expected ' + compareArray.format(expected) + ' should have the same contents.');
+};
 """
 
 class Test262Metadata:
@@ -279,7 +373,9 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
 
     if target == "wasm":
         chunks = [WASM_HOST_PRELUDE]
-        chunks.append("\n/* test262 harness compatibility shim: sta.js + assert.js */\n")
+        chunks.append("\n/* standard globals shim */\n")
+        chunks.append(WASM_GLOBALS)
+        chunks.append("\n/* test262 harness shim: sta.js + assert.js */\n")
         chunks.append(WASM_HARNESS_SHIM)
     else:
         chunks = [TEST262_HOST_PRELUDE]
@@ -287,11 +383,15 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
             chunks.append(f"\n/* test262 harness: {harness_name} */\n")
             chunks.append(load_harness_file(harness_name))
 
-        for include in metadata.includes:
-            if include in CORE_HARNESS_FILES:
-                continue
+    # Load additional harness includes for both targets
+    for include in metadata.includes:
+        if include in CORE_HARNESS_FILES:
+            continue
+        try:
             chunks.append(f"\n/* test262 harness: {include} */\n")
             chunks.append(load_harness_file(include))
+        except FileNotFoundError:
+            pass
 
     try:
         display_path = test_file.resolve().relative_to(REPO_ROOT)
