@@ -100,8 +100,7 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture covers mixed Number/BigInt arithmetic as TypeError, with no silent lowering to number arithmetic.
-- [ ] Existing issue-260 signed-i64 arithmetic success fixtures continue to pass.
+- [ ] Node/iwasm differential fixture covers mixed Number/BigInt arithmetic as TypeError with no silent lowering to number arithmetic, and existing issue-260 signed-i64 arithmetic success fixtures continue to pass.
 - [ ] Docs/current-state/issues state the mixed arithmetic exception boundary.
 
 ## Validation
