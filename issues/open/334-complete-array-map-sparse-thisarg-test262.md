@@ -8,7 +8,7 @@ priority: P2
 depends_on: []
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
@@ -35,8 +35,9 @@ and generic call, with Test262-backed compatibility evidence.
 ## Child issues
 
 - [ ] Issue 338: Sparse array holes handling for Array.prototype.map
-- [ ] Issue 339: Callback thisArg for Array.prototype.map
+- [x] Issue 339: Callback thisArg for Array.prototype.map
 - [ ] Issue 340: Generic call for Array.prototype.map (Array.prototype.map.call(...))
+- [ ] Issue 379: Test262 verification for Array.prototype.map callback thisArg
 
 ## Acceptance criteria
 

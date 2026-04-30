@@ -19,13 +19,13 @@ Issue files are the source of truth for work items. The generated section below 
 | ir | 8 | 1 | 7 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 7 | 3 | 4 |
-| runtime | 131 | 38 | 93 |
+| reference | 8 | 4 | 4 |
+| runtime | 131 | 37 | 94 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 391 | 176 | 215 |
+| total | 392 | 176 | 216 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -55,6 +55,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 376 | Implement dynamic BigInt exponentiation | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt exponentiation where either operand is not a literal-foldable BigInt expression still reports issue-376 diagno... |
 | 377 | Implement BigInt bitwise NOT/AND/OR/XOR | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt bitwise NOT/AND/OR/XOR currently report issue-377 diagnostics and must not reuse ordinary number bitwise lower... |
 | 378 | Implement BigInt shift operators and unsigned-right-shift policy | feature | runtime/semantics | implementation-ready | P2 | 260 | BigInt shift operators currently report issue-378 diagnostics and must not lower through ordinary number shifts; BigI... |
+| 379 | Validate Array.prototype.map thisArg against Test262 | test | reference/tests | verification-ready | P2 | 339 | selected Test262 `Array.prototype.map` thisArg evidence cannot be recorded in the current child worktree because the ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -206,7 +207,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | 334 | Sparse array holes handling for Array.prototype.map |
-| 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | 334 | Callback thisArg for Array.prototype.map |
 | 340 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) | feature | runtime/builtins | 334 | Generic call for Array.prototype.map (Array.prototype.map.call(...)) |
 | 341 | Implement core builtin API coverage (3,190 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement core builtin API coverage (3,190 test262 cases) |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
@@ -434,6 +434,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
 | 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | see `issues/done/333-implement-bigint-dynamic-string-exception-parity.md` |
 | 337 | Implement test262 features directive and $262 object | feature | cli/reference | see `issues/done/337-implement-test262-features-directive.md` |
+| 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | see `issues/done/339-array-map-thisarg.md` |
 | 350 | Implement derived-class private element initialization | feature | runtime/semantics | see `issues/done/350-derived-class-private-element-init.md` |
 | 352 | Implement static private field ordering with static blocks | feature | runtime/semantics | see `issues/done/352-static-private-field-static-blocks-order.md` |
 | 356 | Fix array-push growth WAT format compile blocker | bug | backend | see `issues/done/356-fix-array-push-growth-wat-format-compile-blocker.md` |

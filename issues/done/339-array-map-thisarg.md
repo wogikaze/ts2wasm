@@ -8,7 +8,8 @@ priority: P2
 depends_on: [334]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -34,18 +35,19 @@ correctly.
 
 In scope:
 
-- [ ] Accept `thisArg` parameter in map calls
-- [ ] Pass `thisArg` as `this` value to callback functions
-- [ ] Support thisArg for named function callbacks
-- [ ] Support thisArg for arrow function callbacks (where applicable)
-- [ ] Add thisArg map fixtures
-- [ ] Validate with Test262 thisArg map tests
+- [x] Accept `thisArg` parameter in map calls
+- [x] Pass `thisArg` as `this` value to callback functions
+- [x] Support thisArg for named function callbacks
+- [x] Support thisArg for arrow function callbacks where applicable: arrows keep lexical-this semantics and ignore map `thisArg`
+- [x] Add thisArg map fixtures
+- [x] Split unavailable Test262 reference-root validation to issue 379
 
 Out of scope:
 
 - Dense array behavior (already implemented in issues 270, 295)
 - Sparse array holes (tracked by issue 338)
 - Generic call (tracked by issue 340)
+- Test262 reference-root validation in environments where `reference/test262` is present (tracked by issue 379)
 
 ## Affected paths
 
@@ -64,10 +66,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] A thisArg map fixture (e.g., `array.map(function(x) { return this.multiplier * x; }, {multiplier: 2})`) matches Node output under `iwasm`.
-- [ ] Callback receives correct `this` value from thisArg.
-- [ ] Existing map fixtures without thisArg still pass.
-- [ ] Selected Test262 thisArg map tests pass.
+- [x] A thisArg map fixture (`fixtures/core-semantics/array-map-thisarg-inline-function.ts`) matches Node output under `iwasm`.
+- [x] Callback receives correct `this` value from thisArg.
+- [x] Existing map fixtures without thisArg still pass.
+- [x] Selected Test262 thisArg map validation is split to issue 379 because this worktree has no `reference/test262` checkout.
 
 ## Validation
 
@@ -94,11 +96,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` when thisArg map behavior is implemented
+- [x] updated: `current-state.md` when thisArg map behavior is implemented
+
+Follow-up issues:
+
+- [x] created: `issues/open/379-validate-array-map-thisarg-test262.md`
 
 ## Notes
 
@@ -111,19 +117,23 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- pending branch commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: cargo nextest run -p ts2wasm-cli array_map
+result: pass, 12/12 tests; includes fixtures/core-semantics/array-map-thisarg-named-callback.ts and fixtures/core-semantics/array-map-thisarg-inline-function.ts
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- Arrow function lexical `this` may complicate thisArg implementation
+- Test262 runner validation is not recorded in this worktree because `reference/test262` is absent; issue 379 tracks the exact verification-only follow-up.
 
 ## Progress evidence
 

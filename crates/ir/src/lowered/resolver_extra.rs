@@ -216,6 +216,11 @@ impl<'a> Resolver<'a> {
                     args: call_args,
                 })
             }
+            ResolvedExpr::FunctionExpr { name, params, body } => {
+                self.lower_array_map_function_expr_callback_call(
+                    name, params, body, this_arg, element, index, array_expr, span,
+                )
+            }
             ResolvedExpr::Ident(name) => {
                 let func_id = self.resolve_func(name)?;
                 let receiver = match this_arg {
@@ -264,6 +269,131 @@ impl<'a> Resolver<'a> {
             }
             _ => Err(unsupported_array_map_diagnostic(Some(span))),
         }
+    }
+
+    fn lower_array_map_function_expr_callback_call(
+        &mut self,
+        name: &str,
+        params: &[ResolvedParam],
+        body: &[ResolvedStmt],
+        this_arg: Option<&ResolvedExpr>,
+        element: LoweredExpr,
+        index: usize,
+        array_expr: &ResolvedExpr,
+        span: Span,
+    ) -> Result<LoweredExpr, Diagnostic> {
+        if params
+            .iter()
+            .any(|param| param.default.is_some() || param.is_rest)
+        {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        }
+        if block_contains_arguments(body) {
+            return Err(unsupported_array_map_diagnostic(Some(span)));
+        }
+
+        let receiver = match this_arg {
+            Some(expr) => self.lower_expr(expr)?,
+            None => LoweredExpr::Undefined,
+        };
+        let mut params_with_this = vec![ResolvedParam {
+            name: "this".to_owned(),
+            default: None,
+            is_rest: false,
+            span: None,
+        }];
+        params_with_this.extend(params.iter().cloned());
+        let capture_names = self.nested_function_capture_names(name, &params_with_this, body)?;
+        let mutable_captures = capture_names
+            .iter()
+            .filter(|capture| block_assigns_any_name(body, std::slice::from_ref(capture)))
+            .cloned()
+            .collect::<Vec<_>>();
+        if mutable_captures
+            .iter()
+            .any(|capture| !self.env_cell_names.contains(capture))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-062e: nested function `{name}` mutates a captured outer local; mutable closure environments require heap environment support"
+                ),
+                span: None,
+            });
+        }
+        let captures = capture_names
+            .iter()
+            .map(|capture| self.resolve_local(capture))
+            .collect::<Result<Vec<_>, _>>()?;
+        let mut lowered_params = params.to_vec();
+        lowered_params.extend(
+            capture_names
+                .iter()
+                .map(|capture| ResolvedParam {
+                    name: capture.clone(),
+                    default: None,
+                    is_rest: false,
+                    span: None,
+                }),
+        );
+
+        let func_id = FuncId(self.next_func_id);
+        self.next_func_id += 1;
+        let self_closure = (!name.is_empty())
+            .then_some(SelfClosureOptions {
+                name,
+                func_id,
+                capture_names: &capture_names,
+            })
+            .filter(|_| !self.env_cell_names.contains(name));
+        let mut function_signatures = self.function_signatures.clone();
+        function_signatures.insert(
+            func_id,
+            FunctionSignature {
+                explicit_params: params.len(),
+                needs_receiver: true,
+                ..FunctionSignature::default()
+            },
+        );
+        let lowered = lower_function(
+            func_id,
+            &lowered_params,
+            body,
+            self.function_ids,
+            &function_signatures,
+            self.class_method_captures,
+            self.class_method_mutable_captures,
+            &self.env_cell_names,
+            &self.heap_closure_names,
+            self.class_parents.clone(),
+            self.class_private_fields.clone(),
+            self.class_static_private_fields.clone(),
+            LowerFunctionOptions {
+                current_class: self.current_class.as_deref(),
+                in_constructor: false,
+                next_func_id: self.next_func_id,
+                self_closure,
+            },
+        )?;
+        self.next_func_id = lowered.next_func_id;
+        self.generated_functions.push(lowered.function);
+        self.generated_functions.extend(lowered.generated_functions);
+
+        let explicit_args = [
+            element,
+            LoweredExpr::Number(index as i32),
+            self.lower_expr(array_expr)?,
+        ];
+        let mut call_args = vec![receiver];
+        call_args.extend(explicit_args.into_iter().take(params.len()));
+        for _ in call_args.len()..=params.len() {
+            call_args.push(LoweredExpr::Undefined);
+        }
+        call_args.extend(captures.into_iter().map(LoweredExpr::Local));
+        Ok(LoweredExpr::Call {
+            kind: FunctionCallKind::User(func_id),
+            args: call_args,
+        })
     }
 
     pub(super) fn lower_array_literal_elements(

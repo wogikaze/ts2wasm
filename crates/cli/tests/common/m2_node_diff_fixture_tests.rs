@@ -136,6 +136,11 @@ fn array_map_thisarg_named_callback_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_map_thisarg_inline_function_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-map-thisarg-inline-function.ts");
+}
+
+#[test]
 fn array_map_generic_call_array_receiver_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/array-map-call-unsupported.ts");
 }
