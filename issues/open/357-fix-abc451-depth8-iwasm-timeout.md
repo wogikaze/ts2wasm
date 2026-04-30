@@ -134,6 +134,63 @@ Follow-up issues:
 
 Issue 309 evidence already rejected array-growth-only approaches: exact-fit keeps the allocation shape smaller but remains too slow, while slack/geometric growth reduces copy pressure but trips the 185-page cap. Start from that evidence and avoid repeating the same rejected probes without a new hypothesis.
 
+2026-04-30 child-357 blocker evidence:
+
+- Baseline reproduced the assigned blocker:
+
+```text
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.327s; stdout/stderr empty
+```
+
+- Rejected `memory.copy` plus small post-threshold array slack. The new
+  hypothesis was not array-growth-only: combine bulk memory copy with bounded
+  slack lower than the previously rejected geometric policies. It did not meet
+  the required gate:
+
+```text
+candidate: $copy implemented with memory.copy; ArrayPushGrow exact-fit after 3072 plus 16 spare slots
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.231s
+
+command: cargo run -q -- build fixtures/core-semantics/abc451-depth8-live-set.ts -o /tmp/abc451-depth8-live-set-357.wasm --host-deny && /usr/bin/time -f 'elapsed:%e' timeout 40s iwasm /tmp/abc451-depth8-live-set-357.wasm
+result: fail; Exception: unreachable; elapsed:39.70
+
+candidate: $copy implemented with memory.copy; ArrayPushGrow exact-fit after 3072 plus 8 spare slots; allocator max-cap GC preserved
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.254s
+```
+
+- Rejected allocator free-list-first GC suppression as implemented in this
+  slice. The broad form skipped max-cap last-chance GC and trapped quickly; the
+  narrowed allocation-pressure-only form preserved max-cap GC but did not
+  improve the required gate enough:
+
+```text
+candidate: skip all pre-scan GC when gc_free_list_max_body_size can satisfy payload_size
+result: fail; iwasm Exception: unreachable after 0.288s
+
+candidate: skip only allocation-pressure GC when gc_free_list_max_body_size can satisfy payload_size, but still run max-cap last-chance GC
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm timed out after 30.235s
+```
+
+- Rejected top-of-heap in-place `ArrayPushGrow` as implemented in this slice.
+  The hypothesis was semantics-preserving for aliases when the array block was
+  exactly at `$heap`, but the candidate trapped before producing output:
+
+```text
+candidate: grow top heap array block in place when current memory already covers the larger aligned payload
+command: cargo nextest run -p ts2wasm-cli abc451_depth8_live_set_fixture_matches_node_output_under_iwasm
+result: fail; iwasm Exception: unreachable after 16.217s
+```
+
+- No runtime implementation from these probes was left in the tree. The next
+  likely executable slice should instrument the remaining timeout by separating
+  copy time from GC sweep/free-list time in the depth-8 fixture, then target a
+  representation change that reduces post-3072 copying without increasing live
+  capacity under the 185-page policy.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.
