@@ -7,6 +7,25 @@ description: Use for autonomous compiler-dev runs. Covers FSM, current_task.json
 
 This skill is the **thin entry** for the autonomous build/test loop. The authoritative contract is large; it lives in the workflow + state files, not in this `SKILL.md` alone.
 
+## Entry
+
+**When this skill loads (at session start, or when idle detected), ALWAYS run:**
+
+```bash
+mise run dev-loop
+```
+
+This shows the current FSM state and what to do next. The dev-loop script (`scripts/dev/dev-loop.sh`) is the primary loop driver.
+
+## Loop interface
+
+```bash
+mise run dev-loop               # Show status + suggested actions
+mise run dev-loop --advance     # Advance to next FSM state
+mise run dev-loop --reset       # Reset to SYNC (clean slate)
+mise run dev-loop --check       # Validate state consistency
+```
+
 ## Success Criteria
 
 The autonomous loop is considered complete when:
@@ -70,6 +89,7 @@ The autonomous loop is considered complete when:
 - **REQUIRED**: If new failure pattern discovered, add to `failure_patterns.md` with mechanical guards
 - **REQUIRED**: If new guard needed, add to `review_checklist.md`
 - **REQUIRED**: Run `mise run check agent-state` to validate state files
+- **REQUIRED**: Run `mise run dev-loop --advance` to advance RETRO → SYNC (restart loop)
 
 ## Read order
 
@@ -97,37 +117,40 @@ The autonomous loop is considered complete when:
 ### Before: Manual autonomous run
 
 ```bash
-# Run tests manually
-cargo nextest run
-# Check fmt manually
-cargo fmt --all --check
-# No cycle report generated
+# Check status manually
+mise run dev-loop
 ```
 
 ### After: Follow autonomous loop
 
 ```bash
-# Read current_task.json for FSM state
-# Run required gates
-mise run fmt
-mise run nextest
-mise run check issues
-# Generate test report to reports/runs/<run_id>/test_report.json
-# Write cycle report with evidence
-# Update current_task.json with verification results
+# Start every session
+mise run dev-loop
+
+# Each step
+mise run dev-loop --advance     # move to next FSM state
+mise run fmt                    # fast gate
+mise run nextest                # fast gate
+mise run gate                   # full validation
+mise run update-issue-index     # after closing issues
+mise run dev-loop --check       # validate consistency
+mise run dev-loop --advance     # RETRO → SYNC, loop restarts
 ```
 
-### Commands run
+### Commands run per cycle
 
 ```bash
-mise run fmt
-mise run nextest
-mise run check issues
-mise run check
+mise run dev-loop
+mise run dev-loop --advance   # SYNC → TRIAGE
+mise run dev-loop --advance   # TRIAGE → TASK_SELECT
+# ... through all FSM states ...
+mise run dev-loop --advance   # RETRO → SYNC
 ```
 
 ## Post-change auto-execution
 
 After completing issue work (code changes, issue file updates, cycle report), automatically:
 1. Run `mise run fmt`, `mise run nextest`, and `mise run check issues`
-2. Commit changes with auto-generated commit message based on issue completion evidence
+2. Run `mise run dev-loop --check` to validate state
+3. Run `mise run dev-loop --advance` to progress the FSM
+4. Commit changes with auto-generated commit message based on issue completion evidence

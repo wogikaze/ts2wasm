@@ -171,26 +171,64 @@ ast-grep scan                         # プロジェクトスキャン
 - commit/push: docs/16-commit-and-push-policy.md
 - push hook / pre-push gate は `--no-verify` 等で bypass しない（理由: 既知 baseline 失敗でも gate を迂回すると監査不能な push になるため、失敗時は修正または blocker 報告で止める）
 
-## Autonomous development loop
+## Autonomous development loop (FSM-driven)
 
-1. Read current-state.md, docs/11, docs/12, issues/index.md
-2. Fix stale issues/index.md if needed
-3. Select one Ready issue
-4. State target gate and validation
-5. Implement smallest slice
-6. Run validation
-7. Update current-state only when facts changed
-8. Write cycle report
-9. Create follow-up issues
+The loop is driven by `mise run dev-loop` (see `scripts/dev/dev-loop.sh`).  
+FSM reference: `.agents/workflows/compiler_dev_fsm.md`.
 
-**Issue addition workflow** (when Ready queue is low):
-1. Run reference-coverage with --detail flag
-2. Pipe to gen-issues-from-coverage to auto-generate issues
-3. Use reference-triage output in generated triage-needed issues before creating implementation-ready child issues
-4. Update issue index
-5. Commit changes
+### Entry point
 
-**Coverage expansion** (when implementation targets decrease):
+```bash
+mise run dev-loop          # Show current FSM state and suggested actions
+mise run dev-loop --check  # Validate state consistency
+```
+
+### Loop traversal
+
+Each FSM state has a corresponding action. Advance with `mise run dev-loop --advance`.
+
+```
+SYNC             → Read current-state.md, docs/11, issues/index.md; check for drift
+TRIAGE           → Review open issues, ensure Ready queue is current
+TASK_SELECT      → Pick one Ready issue; set scope in current_task.json
+PLAN             → Create implementation plan; set plan_path in project_state.json
+PLAN_REVIEW_GATE → Review plan against review_checklist.md; revise if needed
+IMPLEMENT        → Implement the smallest slice of the plan
+SELF_REVIEW_GATE → Self-review code against review_checklist.md
+VERIFY_FAST      → mise run fmt && mise run nextest (fast gates)
+VERIFY_FULL      → mise run gate; verify all acceptance criteria with evidence
+CLOSE_OR_SPLIT   → Move issue to issues/done/ or split into follow-ups
+RETRO            → Write cycle report; log failure patterns; update guardrails
+→ back to SYNC (loop restarts)
+```
+
+### Failure branches (from FSM)
+
+- **VERIFY_FAST fails**: Go to DIAGNOSE → PATCH → re-run VERIFY_FAST.  
+  3 consecutive fails → SPLIT_TASK (file blocker issue, reset streak).
+- **VERIFY_FULL fails**: Classify (regression/flaky/perf/unsupported); patch in scope or file follow-up.
+- **PLAN_REVIEW_GATE fails**: Return to PLAN — rewrite the plan, not the code.
+- **SELF_REVIEW_GATE fails**: Patch against review_checklist.md before verification.
+
+### Close conditions (all required)
+
+- current_task.acceptance satisfied and recorded
+- VERIFY_FAST passed for final patch set
+- VERIFY_FULL passed (or documented, approved skip reason)
+- test_report.fixtures.newly_failed is empty
+- No unintended docs drift
+- Issue moved to issues/done/ and index regenerated
+
+### Issue addition workflow (when Ready queue is low)
+
+```bash
+mise run reference-coverage -- test262 --limit 500 --detail | \
+  mise run gen-issues-from-coverage -- --suite test262
+mise run update-issue-index
+```
+
+### Coverage expansion (when implementation targets decrease)
+
 - Increase --limit in reference-coverage (e.g., 50 → 100 → 500 → 1000)
 - Add new test suites if needed
 - Auto-generate issues from expanded coverage

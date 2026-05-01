@@ -1,7 +1,10 @@
 {
   "version": 1,
-  "fsm": "RETRO",
+  "fsm": "SYNC",
   "active_task_id": null,
-  "updated_at": "2026-05-01T11:00:00Z",
+  "updated_at": "2026-05-01T14:22:49Z",
+  "milestone_id": null,
+  "run_id": null,
+  "plan_path": null,
   "verify_fast_streak_fails": 0
 }

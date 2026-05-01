@@ -228,3 +228,7 @@ run = "cd web-ui && npm run build"
 [tasks."serve-web-ui"]
 description = "Serve web UI locally for development"
 run = "cd web-ui && npm run dev"
+
+[tasks."dev-loop"]
+description = "Autonomous compiler development loop driver: status, advance, reset, check"
+run = "scripts/dev/dev-loop.sh"
