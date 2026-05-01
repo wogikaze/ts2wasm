@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 150 | 29 | 121 |
+| runtime | 151 | 30 | 121 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 420 | 163 | 257 |
+| total | 421 | 164 | 257 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -44,6 +44,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | meta | frontend/semantics | ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
+| 341 | Implement core builtin API coverage (3,190 test262 cases) | meta | runtime/builtins | ready | P1 |  | 3,190 test262 cases fail due to missing core builtin API implementations. |
+| 341a | Implement isNaN, parseInt, parseFloat, isFinite global functions | feature | runtime/builtins | implementation-ready | P1 |  | Global number conversion functions `isNaN`, `parseInt`, `parseFloat`, `isFinite` are unimplemented, causing ~20+ test... |
 | 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | implementation-ready | P2 |  | No runtime brand storage or brand-checking semantics for private elements. |
 <!-- generated:ready:end -->
 
@@ -196,7 +198,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: triage-needed | Fix Object.keys backend-io error |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
-| 341 | Implement core builtin API coverage (3,190 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement core builtin API coverage (3,190 test262 cases) |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: triage-needed | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
 | 344 | Implement legacy global builtin bindings (8 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement legacy global builtin bindings (8 test262 cases) |

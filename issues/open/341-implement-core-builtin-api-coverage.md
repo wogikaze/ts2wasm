@@ -1,19 +1,19 @@
 ---
 id: 341
 title: "Implement core builtin API coverage (3,190 test262 cases)"
-type: feature
+type: meta
 area: runtime/builtins
-class: triage-needed
+class: ready
 priority: P1
 depends_on: []
-blocks: []
+blocks: [341a, 341b, 341c, 341d, 341e]
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-01
 ---
 
 ## Summary
 
-Core runtime builtin APIs (Math, console, Number, Boolean, globalThis, etc.) are responsible for 3,190 unsupported test262 cases. This issue tracks closing that gap by implementing the most commonly referenced builtin APIs that are not yet covered by individual feature issues.
+Core runtime builtin APIs (Math, console, Number, Boolean, globalThis, etc.) are responsible for 3,190 unsupported test262 cases. This meta issue tracks closing that gap by implementing the most commonly referenced builtin APIs that are not yet covered by individual feature issues.
 
 ## Problem
 
@@ -34,15 +34,18 @@ The `builtin-api` unsupported count is reduced to 0 for the implemented subset. 
 
 ## Scope
 
-In scope:
+This meta issue tracks child issues for completing core builtin API coverage.
 
-- [ ] Inventory all test262 cases tagged `builtin-api` to identify which specific APIs are missing
-- [ ] Implement missing Math methods beyond pow/sqrt (e.g., Math.floor, Math.ceil, Math.round, Math.abs, Math.min/max)
-- [ ] Implement console.log/bindings for diagnostics
-- [ ] Implement Number constructor and static properties (Number.MAX_VALUE, Number.isNaN, etc.)
-- [ ] Implement Boolean global
-- [ ] Implement globalThis, isNaN, parseInt, parseFloat
-- [ ] Ensure new builtins are exposed to test262 harness
+Already completed (not tracked by child issues):
+- [x] Math.floor, ceil, round, abs, min, max, random, pow
+- [x] console.log
+
+Child issues:
+- [ ] Issue 341a: Implement isNaN, parseInt, parseFloat, isFinite global functions
+- [ ] Issue 341b: Implement Number constructor and static methods
+- [ ] Issue 341c: Implement Boolean global
+- [ ] Issue 341d: Implement globalThis binding
+- [ ] Issue 341e: Implement encodeURI, decodeURI, escape, unescape
 
 Out of scope:
 
@@ -56,62 +59,46 @@ Out of scope:
 
 ## Affected paths
 
-Expected:
+Child issues define their own affected paths. This meta issue spans:
 
-- `crates/ir/src/builtin.rs`
-- `crates/ir/src/builtin_resolver.rs`
-- `crates/frontend/src/parser/`
+- `crates/ir/src/`
+- `crates/backend-wasm/src/`
+- `crates/cli/tests/`
 - `fixtures/`
-
-Do not touch:
-
-- Issues already handled by other tracking issues (see out-of-scope)
 
 ## Acceptance criteria
 
-- [ ] Builtin API unsupported count in coverage matrix decreases from 3,190
-- [ ] Each newly implemented builtin has a fixture test
-- [ ] Existing test262 cases that now pass are updated in the baseline
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+This meta issue is complete when all child issues are moved to `done/`.
+
+- [x] Math builtins (floor, ceil, round, abs, min, max, random, pow) are implemented
+- [x] console.log is implemented
+- [ ] All child issues (341a-341e) are moved to `done/`
+- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Validation
 
 Required commands:
 
 ```sh
-mise run reference-coverage -- test262 --limit 53445
-mise run update-coverage-matrix
 cargo fmt --all --check
 cargo nextest run
+mise run reference-coverage -- test262 --limit 2000 --no-web-ui
 ```
-
-Impacted commands:
-
-```sh
-mise run reference-coverage -- test262 --detail | head -50
-```
-
-Not run:
-
-- none
 
 ## Docs / current-state / issue sync
 
 Final-state docs:
 
 - [x] not affected
-- [ ] updated: `docs/...`
 
 Current state:
 
 - [x] not affected
-- [ ] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
 - [x] created/updated: individual builtin slice issues as needed
 
 ## Notes
 
-This is a triage-need umbrella. The first step is to inventory specific missing APIs and create child issues for each major builtin group.
+Triage from triage-needed to ready with child issues on 2026-05-01.
