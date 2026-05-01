@@ -5,7 +5,7 @@ type: feature
 area: runtime/semantics
 class: implementation-ready
 priority: P2
-depends_on: [255]
+depends_on: []
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01

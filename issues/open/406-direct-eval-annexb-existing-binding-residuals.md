@@ -5,7 +5,7 @@ type: feature
 area: frontend/semantics
 class: implementation-ready
 priority: P3
-depends_on: [225, 347, 348, 349]
+depends_on: [347, 348, 349]
 blocks: [225]
 created: 2026-05-01
 updated: 2026-05-01

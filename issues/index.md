@@ -44,6 +44,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | meta | frontend/semantics | ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
+| 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | implementation-ready | P2 |  | No runtime brand storage or brand-checking semantics for private elements. |
+| 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | implementation-ready | P3 | 347, 348, 349 | direct eval Annex B existing-binding representatives still report |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -201,7 +203,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 344 | Implement legacy global builtin bindings (8 test262 cases) | feature | runtime/builtins | class: triage-needed | Implement legacy global builtin bindings (8 test262 cases) |
 | 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | class: triage-needed | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) |
-| 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | 255 | Implement full private brand storage and brand-checking semantics |
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | class: blocked | Implement iterator protocol integration for spread operator |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | bug | runtime/memory | class: blocked | Reduce ABC451 allocation and sweep volume after bulk copy narrowing |
@@ -211,7 +212,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
-| 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | 225, 347, 348, 349 | Direct eval Annex B existing binding residuals |
 | 407 | Implement key-preserving Map entry storage for spread iteration | feature | runtime/semantics | class: blocked | Implement key-preserving Map entry storage for spread iteration |
 <!-- generated:blocked:end -->
 
