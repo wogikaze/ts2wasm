@@ -182,6 +182,11 @@ fn array_map_new_array_holes_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_map_test262_same_value_shim_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/array-map-test262-same-value-shim.ts");
+}
+
+#[test]
 fn array_map_callback_mutates_outer_counter_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node(
         "fixtures/core-semantics/array-map-callback-mutates-outer-counter.ts",
@@ -1603,6 +1608,15 @@ fn spread_operator_custom_iterable_reaches_issue_353() {
     assert_build_fails_with_unsupported_syntax_without_span(
         "fixtures/core-semantics/spread-array-custom-iterable-unsupported.ts",
         "issue-353:",
+    );
+}
+
+#[test]
+fn spread_operator_map_local_reaches_issue_353_and_407() {
+    assert_build_fails_with_issue_diagnostic(
+        "fixtures/core-semantics/spread-array-map-unsupported.ts",
+        "issue-353/407:",
+        false,
     );
 }
 

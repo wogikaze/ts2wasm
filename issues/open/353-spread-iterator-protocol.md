@@ -157,12 +157,27 @@ Follow-up issues:
 
 - [x] created/updated: `issues/done/401-generator-function-syntax-prerequisite-for-iterator-spread.md`
 - [x] created/updated: `issues/done/402-computed-symbol-iterator-prerequisite-for-spread.md`
+- [x] created/updated: `issues/open/407-map-spread-key-preserving-iterator-storage.md`
+- [x] created/updated: `issues/open/407-map-spread-key-preserving-iterator-storage.md`
 
 ## Notes
 
 Parent issue: 274
 
 The iterator protocol is: get `obj[Symbol.iterator]`, call it to get an iterator, call `.next()` repeatedly until `done: true`, collecting `value` properties. The spread operator in array literals and call arguments must support this for any iterable. String iteration is a special case that can reuse the existing ASCII string spread optimization.
+
+2026-05-01 Map spread split:
+
+- Known `Map` local spread now reports an issue-linked diagnostic instead of
+  falling through to a generic iterator-protocol error.
+- Issue 407 tracks the required key-preserving Map entry storage prerequisite
+  before `[...map]` can be lowered safely.
+
+2026-05-01 slice: known runtime `Map` locals now route spread attempts to an
+explicit `issue-353/407` diagnostic instead of the generic issue-274 spread
+boundary. The concrete blocker is Map storage: current Map helpers stringify
+keys for lookup, so Map default iteration cannot safely yield insertion-ordered
+`[key, value]` entries until issue 407 adds key-preserving entry storage.
 
 ## Completion evidence
 

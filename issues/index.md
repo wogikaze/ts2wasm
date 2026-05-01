@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 149 | 28 | 121 |
+| runtime | 150 | 29 | 121 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 419 | 164 | 255 |
+| total | 420 | 165 | 255 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -212,6 +212,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
 | 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | 225, 347, 348, 349 | Direct eval Annex B existing binding residuals |
+| 407 | Implement key-preserving Map entry storage for spread iteration | feature | runtime/semantics | class: blocked | Implement key-preserving Map entry storage for spread iteration |
 <!-- generated:blocked:end -->
 
 ## Done queue
