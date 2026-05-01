@@ -375,6 +375,7 @@ impl Parser {
     ) -> Result<(), Diagnostic> {
         self.expect(TokenKind::Function)?;
         self.expect_ident()?;
+        self.consume_typescript_generic_parameter_list()?;
         self.skip_type_annotation_until(&[TokenKind::Semicolon])
             .map_err(|_| {
                 self.unsupported_typescript_syntax(
@@ -1970,7 +1971,36 @@ impl Parser {
                 continue;
             }
 
-            let (method_name, method_span) = self.expect_ident()?;
+            let (mut method_name, mut method_span) = self.expect_ident()?;
+            if (method_name == "get" || method_name == "set")
+                && matches!(self.peek(), Some(Token::Ident(_)))
+            {
+                let (next_name, next_span) = self.expect_ident()?;
+                method_name = next_name;
+                method_span = next_span;
+            }
+
+            let _ = self.consume_typescript_generic_parameter_list()?;
+
+            if matches!(self.peek(), Some(Token::Colon)) {
+                self.expect(TokenKind::Colon)?;
+                self.skip_type_annotation_until(&[
+                    TokenKind::Semicolon,
+                    TokenKind::Comma,
+                    TokenKind::RightBrace,
+                ])
+                .map_err(|_| {
+                    self.unsupported_typescript_syntax(
+                        method_span,
+                        "issue-400: unterminated class field declaration type annotation",
+                    )
+                })?;
+                if self.consume(TokenKind::Equal) {
+                    let _ = self.expression()?;
+                }
+                self.consume(TokenKind::Semicolon);
+                continue;
+            }
 
             self.expect(TokenKind::LeftParen)?;
             let mut params = Vec::new();

@@ -1384,21 +1384,28 @@ impl<'a> Resolver<'a> {
                         });
                     }
                     if let Some(setter_id) = self.current_private_setter_id(key) {
-                        if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
-                            return Err(Diagnostic {
+                        let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
+                            LoweredExpr::Local(self.resolve_local("this")?)
+                        } else {
+                            let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(
-                                    "issue-255: private setter `{key}` assignment is currently supported only as `this.{key} = value` inside the declaring class"
+                                    "issue-255: private setter `{key}` assignment requires declaring class context"
                                 ),
                                 span: Some(*span),
-                            });
-                        }
+                            })?;
+                            let brand = self.private_brand_for_class(&class_name, Some(*span))?;
+                            LoweredExpr::RuntimeCall {
+                                runtime_fn: "PrivateBrandCheck".to_owned(),
+                                args: vec![
+                                    self.lower_expr(object)?,
+                                    LoweredExpr::Number(brand as i32),
+                                ],
+                            }
+                        };
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(setter_id),
-                            args: vec![
-                                LoweredExpr::Local(self.resolve_local("this")?),
-                                self.lower_expr(value)?,
-                            ],
+                            args: vec![receiver, self.lower_expr(value)?],
                         });
                     }
                     if let Some(class_name) = self.infer_class_for_expr(object)

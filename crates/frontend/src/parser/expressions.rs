@@ -1801,6 +1801,12 @@ impl Parser {
                         if self.consume(TokenKind::RightBrace) {
                             break;
                         }
+                        if self.consume(TokenKind::Comma) {
+                            if self.consume(TokenKind::RightBrace) {
+                                break;
+                            }
+                            continue;
+                        }
                         self.expect(TokenKind::Comma)?;
                     }
                 }
