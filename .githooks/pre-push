@@ -8,6 +8,9 @@ cd "$repo_root"
 echo "pre-push: fast gate (fmt, issues, architecture, coverage matrix check; no full nextest)"
 scripts/manager check-fast-gate --skip-nextest
 
+echo "pre-push: architecture rules (file size, crate layers)"
+python3 scripts/check/architecture-rules.py
+
 echo "pre-push: manifest vs wasm imports"
 scripts/manager check-manifest-imports
 

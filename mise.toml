@@ -69,6 +69,10 @@ run = "python scripts/manager.py reference-coverage"
 description = "Generate rich diagnostics for one reference test path"
 run = "python scripts/manager.py reference-triage"
 
+[tasks."coverage-to-issues"]
+description = "Run coverage and auto-generate issues (args: --suite test262, --limit N)"
+run = "python scripts/manager.py coverage-to-issues"
+
 [tasks."abc451-runtime-costs"]
 description = "Run default-off ABC451 depth-8 runtime cost diagnostic"
 run = "python scripts/manager.py abc451-runtime-costs"

@@ -9,8 +9,10 @@ staged_files="$(git diff --cached --name-only --diff-filter=ACM || true)"
 if printf '%s\n' "$staged_files" | grep -Eq '(^|/)(Cargo\.toml|Cargo\.lock|.*\.rs)$'; then
   echo "pre-commit: cargo fmt --all --check"
   cargo fmt --all --check
+  echo "pre-commit: cargo clippy --all-targets -- -D warnings"
+  cargo clippy --all-targets -- -D warnings
 else
-  echo "pre-commit: skip cargo fmt; no staged Rust changes"
+  echo "pre-commit: skip cargo fmt and clippy; no staged Rust changes"
 fi
 
 if printf '%s\n' "$staged_files" | grep -Eq '^(issues/|scripts/gen/update-issue-index\.py|scripts/check/issue-health\.py)'; then
