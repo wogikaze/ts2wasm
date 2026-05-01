@@ -1043,9 +1043,13 @@ impl Parser {
             return Ok(None);
         };
 
-        let has_prefix = !block.prefix.trim().is_empty();
-        let has_suffix = !block.suffix.trim().is_empty();
-        if has_prefix && has_suffix {
+        let prefix = self.parse_static_eval_fragment(block.prefix, eval_span)?;
+        let suffix_is_only_block_functions =
+            self.source_contains_only_static_eval_function_blocks(block.suffix, eval_span)?;
+        if !prefix.is_empty()
+            && !block.suffix.trim().is_empty()
+            && !suffix_is_only_block_functions
+        {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-406: direct eval Annex B existing-binding sequences with statements before and after block function declarations are not implemented yet".to_owned(),
@@ -1053,14 +1057,17 @@ impl Parser {
             });
         }
 
-        let suffix = self.parse_static_eval_fragment(block.suffix, eval_span)?;
-        if !has_prefix {
+        let suffix = if suffix_is_only_block_functions {
+            Vec::new()
+        } else {
+            self.parse_static_eval_fragment(block.suffix, eval_span)?
+        };
+        if prefix.is_empty() {
             let mut statements = vec![function];
             statements.extend(suffix);
             return Ok(Some(statements));
         }
-        if !has_suffix {
-            let prefix = self.parse_static_eval_fragment(block.prefix, eval_span)?;
+        if block.suffix.trim().is_empty() || suffix_is_only_block_functions {
             let mut statements = vec![Stmt::Let {
                 name: name.clone(),
                 expr: Expr::Undefined { span: eval_span },
@@ -1071,6 +1078,45 @@ impl Parser {
         }
 
         Ok(None)
+    }
+
+    fn source_contains_only_static_eval_function_blocks(
+        &self,
+        source: &str,
+        eval_span: Span,
+    ) -> Result<bool, Diagnostic> {
+        let mut rest = source.trim();
+        if rest.is_empty() {
+            return Ok(false);
+        }
+
+        loop {
+            let tokens = crate::Lexer::new_with_strict_mode(rest, self.strict_mode).tokenize()?;
+            if !matches!(tokens.first().map(|token| &token.kind), Some(Token::LeftBrace))
+                || !matches!(
+                    tokens.get(1).map(|token| &token.kind),
+                    Some(Token::Function)
+                )
+            {
+                return Ok(false);
+            }
+
+            let Some(end_index) = Self::matching_brace_token_index(&tokens, 0) else {
+                return Ok(false);
+            };
+            let inner_source = &rest[tokens[0].span.end..tokens[end_index].span.start];
+            if self
+                .parse_static_eval_function(inner_source, eval_span)?
+                .is_none()
+            {
+                return Ok(false);
+            }
+
+            rest = rest[tokens[end_index].span.end..].trim();
+            if rest.is_empty() {
+                return Ok(true);
+            }
+        }
     }
 
     fn parse_static_eval_function(

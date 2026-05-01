@@ -39,7 +39,7 @@ Child issues:
 - [x] Issue 347: Parser and resolver support for direct eval and eval-code scope
 - [x] Issue 348: Lowering block-level function declarations in direct eval code
 - [x] Issue 349: Runtime helper or shim JavaScript emission for direct eval execution
-- [ ] Issue 406: Direct eval Annex B existing binding residuals
+- [x] Issue 406: Direct eval Annex B existing binding residuals
 
 Out of scope:
 
@@ -134,6 +134,15 @@ Reference-backed affected files in the limit-300 window are under:
   now reaches `[UnsupportedEval] issue-406` instead of the parser object-key
   error, so issue 225 remains blocked on issue 406 semantics rather than the
   previous frontend parser fallthrough.
+
+2026-05-01 issue 406 close refresh:
+
+- `mise run reference-triage -- test262 reference/test262/test/annexB/language/eval-code/direct/func-block-decl-eval-func-existing-block-fn-no-init.js`
+  now reports `BuildPass / build-pass`.
+  - `mise run reference-coverage -- test262 --limit 300 --no-web-ui` now reports
+  `build_pass=7`, `semantic_pass=2`, `unsupported=293`, and
+  `unsupported_features=eval:28`; direct-eval residuals remain, so issue 225
+  stays open.
 
 ## Completion evidence
 

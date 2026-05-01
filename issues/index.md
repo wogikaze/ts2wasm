@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 215 | 131 | 84 |
+| frontend | 215 | 130 | 85 |
 | ir | 9 | 0 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 420 | 165 | 255 |
+| total | 420 | 164 | 256 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,7 +45,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | implementation-ready | P2 |  | No runtime brand storage or brand-checking semantics for private elements. |
-| 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | implementation-ready | P3 | 347, 348, 349 | direct eval Annex B existing-binding representatives still report |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -476,6 +475,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 403 | Define sparse array hole representation contract | feature | runtime/semantics | see `issues/done/403-sparse-array-hole-representation-contract.md` |
 | 404 | Support mutable outer local captures in callback functions | feature | ir/runtime | see `issues/done/404-mutable-outer-local-callback-captures.md` |
 | 405 | Support Test262 harness instanceof function RHS | feature | frontend/semantics | see `issues/done/405-test262-instanceof-harness-function-rhs.md` |
+| 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | see `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

@@ -9,6 +9,8 @@ depends_on: [347, 348, 349]
 blocks: [225]
 created: 2026-05-01
 updated: 2026-05-01
+status: done
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -67,11 +69,11 @@ the next precise issue-linked eval semantic blocker.
 
 In scope:
 
-- [ ] Reproduce and classify the selected existing-binding direct-eval case.
-- [ ] Fix the smallest parser/preprocessor/lowering blocker needed to advance
+- [x] Reproduce and classify the selected existing-binding direct-eval case.
+- [x] Fix the smallest parser/preprocessor/lowering blocker needed to advance
       that case.
-- [ ] Preserve the existing direct-eval shim behavior from issues 347-349.
-- [ ] Update issue 225 with refreshed limit-300 eval evidence.
+- [x] Preserve the existing direct-eval shim behavior from issues 347-349.
+- [x] Update issue 225 with refreshed limit-300 eval evidence.
 
 Out of scope:
 
@@ -96,13 +98,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] The selected representative no longer reports `expected identifier or
+- [x] The selected representative no longer reports `expected identifier or
       string literal as object key, got Some(Function)`.
-- [ ] Focused regression coverage is added for the parser/frontend or eval
+- [x] Focused regression coverage is added for the parser/frontend or eval
       lowering shape that changed.
-- [ ] `mise run reference-triage -- test262 reference/test262/test/annexB/language/eval-code/direct/func-block-decl-eval-func-existing-block-fn-no-init.js`
+- [x] `mise run reference-triage -- test262 reference/test262/test/annexB/language/eval-code/direct/func-block-decl-eval-func-existing-block-fn-no-init.js`
       reaches `BuildPass` or a more precise issue-linked semantic blocker.
-- [ ] Issue 225 records refreshed limit-300 eval evidence.
+- [x] Issue 225 records refreshed limit-300 eval evidence.
 
 ## Validation
 
@@ -155,20 +157,32 @@ semantics can be checked.
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
-
 Commits:
 
-- `...`
+- pending cycle commit
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo test -p ts2wasm-frontend expands_direct_eval_existing_block_function_residuals -- --nocapture
+result: pass (1 parser regression)
+date: 2026-05-01
+
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-01
+
+command: mise run reference-triage -- test262 reference/test262/test/annexB/language/eval-code/direct/func-block-decl-eval-func-existing-block-fn-no-init.js
+result: BuildPass / build-pass
+date: 2026-05-01
+
+command: mise run reference-coverage -- test262 --limit 300 --no-web-ui
+result: pass; build_pass=7; semantic_pass=2; unsupported=293; unsupported_features includes eval:28
+date: 2026-05-01
 ```
 
 Remaining risks:
 
-- none
+- Issue 225 remains open because the limit-300 window still reports `eval:28`
+  and `UnsupportedEval:6`; this issue only closed the selected existing-binding
+  representative and parser/frontend blocker.

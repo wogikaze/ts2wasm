@@ -365,6 +365,27 @@ mod tests {
     }
 
     #[test]
+    fn expands_direct_eval_existing_block_function_residuals() {
+        let program = parse_program(
+            "function f() { let init; eval('init = f;{ function f() {} }{ function f() {} }'); return init; }",
+        )
+        .unwrap();
+        let Stmt::Function { body, .. } = &program[0] else {
+            panic!("expected function statement");
+        };
+
+        assert!(matches!(
+            &body[1],
+            Stmt::Let {
+                name,
+                expr: Expr::Undefined { .. },
+                ..
+            } if name == "f"
+        ));
+        assert!(matches!(&body[2], Stmt::Assign { name, .. } if name == "init"));
+    }
+
+    #[test]
     fn rejects_indirect_eval_calls_with_issue_347() {
         for source in [
             "globalThis.eval(\"x\");",
