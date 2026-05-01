@@ -73,7 +73,7 @@ This meta issue is complete when all child issues are moved to `done/`.
 - [x] Math builtins (floor, ceil, round, abs, min, max, random, pow) are implemented
 - [x] console.log is implemented
 - [x] All child issues (341a-341d) are moved to `done/`
-- [ ] Issue 341e (encodeURI, decodeURI, escape, unescape) — not started
+- [x] Issue 341e (encodeURI, decodeURI, escape, unescape)
 - [ ] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Validation

@@ -60,3 +60,25 @@ fn build_smoke_path_resolve() {
 fn build_smoke_crypto_random_bytes() {
     assert_fixture_build_smoke("node-apis/crypto-random-bytes.ts");
 }
+
+// --- Builtin API build smoke tests (host shim imports) ---
+
+#[test]
+fn build_smoke_encode_uri() {
+    assert_fixture_build_smoke("builtins-and-io/global-encode-uri.ts");
+}
+
+#[test]
+fn build_smoke_decode_uri() {
+    assert_fixture_build_smoke("builtins-and-io/global-decode-uri.ts");
+}
+
+#[test]
+fn build_smoke_escape() {
+    assert_fixture_build_smoke("builtins-and-io/global-escape.ts");
+}
+
+#[test]
+fn build_smoke_unescape() {
+    assert_fixture_build_smoke("builtins-and-io/global-unescape.ts");
+}
