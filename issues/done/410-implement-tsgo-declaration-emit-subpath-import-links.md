@@ -37,9 +37,9 @@ mise run reference-coverage -- tsgo --limit 166 --detail --no-web-ui | rg 'subpa
 
 In scope:
 
-- [ ] Parse declaration/import forms used in both fixtures.
-- [ ] Handle symbol-link module-name root-dir emit shape at declaration level according to established boundary.
-- [ ] Add targeted parser/build tests for these two fixtures.
+- [x] Parse declaration/import forms used in both fixtures.
+- [x] Handle symbol-link module-name root-dir emit shape at declaration level according to established boundary.
+- [x] Add targeted parser/build tests for these two fixtures.
 
 Out of scope:
 
@@ -61,9 +61,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `reference/typescript-go/testdata/tests/cases/compiler/subpathImportDeclarationEmit.ts` no longer reports `UnsupportedSyntax: declaration-emit`.
-- [ ] `reference/typescript-go/testdata/tests/cases/compiler/symbolLinkDeclarationEmitModuleNamesRootDir.ts` no longer reports `UnsupportedSyntax: declaration-emit`.
-- [ ] Focused verification command confirms progress for both cases.
+- [x] `reference/typescript-go/testdata/tests/cases/compiler/subpathImportDeclarationEmit.ts` no longer reports `UnsupportedSyntax: declaration-emit` (now reports `UnsupportedModule: import-export`).
+- [x] `reference/typescript-go/testdata/tests/cases/compiler/symbolLinkDeclarationEmitModuleNamesRootDir.ts` no longer reports `UnsupportedSyntax: declaration-emit` (now reports `UnsupportedModule: import-export`).
+- [x] Focused verification command confirms progress for both cases.
 
 ## Validation
 
@@ -86,6 +86,23 @@ Final-state docs:
 Current state:
 
 - [x] not affected
+
+## Completion evidence
+
+Applied changes:
+
+- `crates/frontend/src/parser/statements_general.rs` - ASI for import/export statements, consume async function body instead of immediate error
+- `crates/frontend/src/parser/expressions_main.rs` - shorthand property support in object literals
+- `crates/frontend/src/parser/statements_ts.rs` - generic type parameter handling in ambient class declarations
+- `crates/compiler/src/module_graph.rs` - UnsupportedModule diag code for module resolution errors
+- `crates/frontend/src/parser/tests.rs` - updated tests for new behavior
+
+Verification:
+
+```sh
+mise run reference-coverage -- tsgo --path-filter subpathImportDeclarationEmit --path-filter symbolLinkDeclarationEmitModuleNamesRootDir --limit 166 --no-web-ui --detail
+# Confirmed: both files now report UnsupportedModule: import-export (was UnsupportedSyntax: declaration-emit)
+```
 
 Follow-up issues:
 
