@@ -45,10 +45,16 @@ Representative:
 mise run reference-triage -- test262 reference/test262/test/annexB/language/eval-code/direct/func-block-decl-eval-func-existing-block-fn-no-init.js
 ```
 
-Current result:
+Previous result:
 
 ```text
 [UnsupportedSyntax] expected identifier or string literal as object key, got Some(Function) at 1566..1655
+```
+
+Current result after the parser-blocker slice:
+
+```text
+[UnsupportedEval] issue-406: direct eval Annex B existing-binding sequences with statements before and after block function declarations are not implemented yet
 ```
 
 ## Desired final state
@@ -138,6 +144,14 @@ Follow-up issues:
 Start with the prepared Test262 source around the failing span. The failure
 appears while parsing the harness/source combination before direct eval
 semantics can be checked.
+
+2026-05-01 child-worker slice:
+
+- The representative now reports the issue-linked eval semantic blocker above
+  instead of falling through to object-literal parsing for the eval suffix
+  `{ function f() { } }`.
+- Issue remains open because the underlying Annex B existing-binding semantics
+  are still unsupported.
 
 ## Completion evidence
 

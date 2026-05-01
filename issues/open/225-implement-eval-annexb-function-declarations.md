@@ -123,6 +123,18 @@ Reference-backed affected files in the limit-300 window are under:
   `DuplicateLocal`, and `UnsupportedSyntax: eval`. Issue 406 tracks the next
   concrete direct-eval residual family instead of treating 225 as closable.
 
+2026-05-01 issue 406 parser-blocker refresh:
+
+- `TS2WASM_REFERENCE_ROOT=/home/wogikaze/wgkz/ts2wasm/reference mise run reference-coverage -- test262 --limit 300 --no-web-ui`
+  still reports `unsupported_features=eval:29`.
+- Diagnostic mix in that window is now
+  `unsupported_diagcodes=UnsupportedSyntax:139,UnresolvedName:64,UnsupportedRegExp:33,UnsupportedEval:19,UnsupportedBuiltin:17,UnresolvedFunction:13,UnsupportedDate:6,DuplicateLocal:3`.
+- Representative
+  `reference/test262/test/annexB/language/eval-code/direct/func-block-decl-eval-func-existing-block-fn-no-init.js`
+  now reaches `[UnsupportedEval] issue-406` instead of the parser object-key
+  error, so issue 225 remains blocked on issue 406 semantics rather than the
+  previous frontend parser fallthrough.
+
 ## Completion evidence
 
 Fill only when moving to `done/`.

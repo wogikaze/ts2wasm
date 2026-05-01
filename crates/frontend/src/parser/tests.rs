@@ -382,6 +382,25 @@ mod tests {
     }
 
     #[test]
+    fn reports_direct_eval_existing_binding_sequence_as_issue_406() {
+        let err =
+            parse_program("eval('init = f; { function f() {} }{ function f() {  } }');")
+                .unwrap_err();
+
+        assert_eq!(err.display_code(), DiagCode::UnsupportedEval);
+        assert!(
+            err.message
+                .contains("issue-406: direct eval Annex B existing-binding"),
+            "unexpected diagnostic: {err:?}"
+        );
+        assert!(
+            !err.message
+                .contains("expected identifier or string literal as object key"),
+            "issue-406 residual should not fall through to object-literal parsing: {err:?}"
+        );
+    }
+
+    #[test]
     fn parses_typescript_const_assertions_as_erased_syntax() {
         let source = r#"
             let value = { x: 3 } as const;

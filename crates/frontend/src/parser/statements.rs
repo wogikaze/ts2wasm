@@ -1043,14 +1043,24 @@ impl Parser {
             return Ok(None);
         };
 
-        let prefix = self.parse_static_eval_fragment(block.prefix, eval_span)?;
+        let has_prefix = !block.prefix.trim().is_empty();
+        let has_suffix = !block.suffix.trim().is_empty();
+        if has_prefix && has_suffix {
+            return Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-406: direct eval Annex B existing-binding sequences with statements before and after block function declarations are not implemented yet".to_owned(),
+                span: Some(eval_span),
+            });
+        }
+
         let suffix = self.parse_static_eval_fragment(block.suffix, eval_span)?;
-        if prefix.is_empty() {
+        if !has_prefix {
             let mut statements = vec![function];
             statements.extend(suffix);
             return Ok(Some(statements));
         }
-        if suffix.is_empty() {
+        if !has_suffix {
+            let prefix = self.parse_static_eval_fragment(block.prefix, eval_span)?;
             let mut statements = vec![Stmt::Let {
                 name: name.clone(),
                 expr: Expr::Undefined { span: eval_span },
