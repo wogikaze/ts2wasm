@@ -37,7 +37,6 @@ Out of scope:
 Expected:
 
 - `crates/runtime-abi/src/`
-- `crates/cli/src/backend/`
 
 ## Acceptance criteria
 

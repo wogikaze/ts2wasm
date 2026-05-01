@@ -36,8 +36,7 @@ Out of scope:
 
 Expected:
 
-- `crates/frontend/src/check/`
-- `crates/frontend/src/types/`
+- `crates/frontend/src/`
 
 ## Acceptance criteria
 

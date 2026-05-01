@@ -35,7 +35,7 @@ Out of scope:
 
 Expected:
 
-- `crates/frontend/src/emit/`
+- `crates/frontend/src/`
 
 ## Acceptance criteria
 

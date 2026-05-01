@@ -198,13 +198,13 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md",
+    "path": "issues/done/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md",
     "title": "Implement tsgo declaration emit: AsConstSatisfies/const generic method cases",
     "reason": "same feature label, title overlap"
   },
   {
     "state": "open",
-    "path": "issues/open/409-implement-tsgo-declaration-emit-package-json-subpath.md",
+    "path": "issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md",
     "title": "Implement tsgo declaration emit: package-json exports and subpath reexport cases",
     "reason": "same feature label, title overlap"
   },

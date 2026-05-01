@@ -36,7 +36,7 @@ Out of scope:
 
 Expected:
 
-- `crates/frontend/src/resolver/`
+- `crates/frontend/src/`
 
 ## Acceptance criteria
 
