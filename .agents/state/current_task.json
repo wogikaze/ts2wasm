@@ -1,11 +1,19 @@
 {
-  "id": null,
-  "title": null,
-  "status": "idle",
-  "issue_path": null,
-  "scope": null,
-  "acceptance": null,
-  "commands": null,
+  "id": 341,
+  "title": "Implement core builtin API coverage - triage into child slices",
+  "status": "planning",
+  "issue_path": "issues/open/341-implement-core-builtin-api-coverage.md",
+  "scope": "Triage issue 341 (3,190 core builtin API test262 cases) into concrete implementation-ready child slices, then implement first slice.",
+  "acceptance": [
+    "Issue 341 is split into 4+ concrete child issues under issues/open/",
+    "Each child issue has defined scope, acceptance criteria, affected paths, and validation commands",
+    "issue index is regenerated",
+    "cargo fmt --all --check and cargo nextest run pass"
+  ],
+  "commands": {
+    "fast": "cargo fmt --all --check && mise run update-issue-index -- --check",
+    "full": "cargo nextest run"
+  },
   "risk": null,
-  "notes": "Merged origin/master with local changes (030 instanceof, 036 arrow function). Resolving conflicts."
+  "notes": "Starting autonomous multi-worktree compiler development. First cycle: triage #341 into child slices, implement first slice."
 }

@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "fsm": "CLEAN_STOP",
-  "active_task_id": null,
-  "updated_at": "2026-04-30T21:12:00Z",
+  "fsm": "SYNC",
+  "active_task_id": 341,
+  "updated_at": "2026-05-01T10:00:00Z",
   "verify_fast_streak_fails": 0
 }
