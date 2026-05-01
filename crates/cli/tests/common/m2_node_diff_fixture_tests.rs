@@ -1705,3 +1705,23 @@ fn instanceof_unsupported_rhs_fixture_reports_issue_207() {
         "expected issue-207 diagnostic, got:\n{stderr}"
     );
 }
+
+#[test]
+fn global_isnan_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-isnan.ts");
+}
+
+#[test]
+fn global_parseint_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-parseint.ts");
+}
+
+#[test]
+fn global_parsefloat_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-parsefloat.ts");
+}
+
+#[test]
+fn global_isfinite_matches_node_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/global-isfinite.ts");
+}

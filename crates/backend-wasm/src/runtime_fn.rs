@@ -213,6 +213,14 @@ pub(crate) enum RuntimeFn {
     PathDirname,
     /// Node crypto.randomBytes(size)
     CryptoRandomBytes,
+    /// Global isNaN function
+    IsNaN,
+    /// Global parseInt function
+    ParseInt,
+    /// Global parseFloat function
+    ParseFloat,
+    /// Global isFinite function
+    IsFinite,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -472,6 +480,10 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
+        "IsNaN" => Some(RuntimeFn::IsNaN),
+        "ParseInt" => Some(RuntimeFn::ParseInt),
+        "ParseFloat" => Some(RuntimeFn::ParseFloat),
+        "IsFinite" => Some(RuntimeFn::IsFinite),
         _ => None,
     }
 }

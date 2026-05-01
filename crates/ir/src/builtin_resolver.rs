@@ -1544,6 +1544,12 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
             {
                 return resolve_bigint_function_call(&resolved_args, *span);
             }
+            if let Some(builtin) = resolve_global_identifier_call(callee.as_ref()) {
+                return Ok(ResolvedExpr::BuiltinCall {
+                    builtin,
+                    args: resolved_args,
+                });
+            }
             if let Some(resolved) =
                 resolve_bigint_static_function_call(callee.as_ref(), &resolved_args, *span)?
             {
@@ -1886,5 +1892,20 @@ fn increment_update_diagnostic(span: Span) -> Diagnostic {
             "issue-268: for-loop increment/decrement updates currently require an identifier target"
                 .to_owned(),
         span: Some(span),
+    }
+}
+
+/// Resolve a global identifier function call (e.g., `isNaN(x)`, `parseInt(s)`)
+/// to a BuiltinId. Returns None if the identifier is not a recognized global function.
+fn resolve_global_identifier_call(callee: &Expr) -> Option<BuiltinId> {
+    let Expr::Ident { name, .. } = callee else {
+        return None;
+    };
+    match name.as_str() {
+        "isNaN" => Some(BuiltinId::IsNaN),
+        "parseInt" => Some(BuiltinId::ParseInt),
+        "parseFloat" => Some(BuiltinId::ParseFloat),
+        "isFinite" => Some(BuiltinId::IsFinite),
+        _ => None,
     }
 }

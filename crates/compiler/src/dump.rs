@@ -1077,5 +1077,9 @@ fn hir_builtin_name(builtin: BuiltinId) -> &'static str {
         BuiltinId::CryptoRandomBytes => "crypto.randomBytes",
         BuiltinId::InstanceOf => "instanceof",
         BuiltinId::MathPow => "Math.pow",
+        BuiltinId::IsNaN => "isNaN",
+        BuiltinId::ParseInt => "parseInt",
+        BuiltinId::ParseFloat => "parseFloat",
+        BuiltinId::IsFinite => "isFinite",
     }
 }

@@ -853,4 +853,386 @@ impl WatEmitter<'_> {
   "#,
         );
     }
+
+    /// Emit $is_nan global function.
+    /// isNaN(x): returns true if ToNumber(x) is NaN, false otherwise.
+    pub(super) fn emit_is_nan(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $is_nan (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    ;; If number: return false (all our integers are valid)
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (i32.const {false_tag}))))
+    ;; If undefined: return true (ToNumber(undefined) = NaN)
+    (if (i32.eq (local.get $v) (i32.const {undefined}))
+      (then (return (i32.const {true_tag}))))
+    ;; If string: try to parse; if parse fails, return true (NaN)
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
+      (then
+        (return (call $is_nan_string (local.get $v)))))
+    ;; null -> 0 (finite), boolean -> 0/1 (finite): return false
+    (i32.const {false_tag}))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            string_tag = ValueTag::STRING,
+            undefined = ValueTag::UNDEFINED,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+        ));
+        wat.push_str(&format!(
+            r##"
+  (func $is_nan_string (param $v i32) (result i32)
+    (local $base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $seen_digit i32)
+    (local.set $base (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    ;; Skip leading whitespace
+    (block $ws_done
+      (loop $ws_loop
+        (br_if $ws_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.eq (local.get $ch) (i32.const {space}))
+          (then (local.set $i (i32.add (local.get $i) (i32.const {one}))) (br $ws_loop)))
+        (br $ws_done)))
+    ;; Optional sign
+    (if (i32.lt_u (local.get $i) (local.get $len))
+      (then
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.or (i32.eq (local.get $ch) (i32.const {plus})) (i32.eq (local.get $ch) (i32.const {minus})))
+          (then (local.set $i (i32.add (local.get $i) (i32.const {one})))))))
+    ;; Check for at least one digit
+    (block $digit_check
+      (loop $digit_loop
+        (br_if $digit_check (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_zero})) (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+          (then
+            (local.set $seen_digit (i32.const {one}))
+            (br $digit_check)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $digit_loop)))
+    (if (result i32) (local.get $seen_digit)
+      (then (i32.const {false_tag}))
+      (else (i32.const {true_tag}))))
+"##,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            space = 32,
+            plus = 43,
+            minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = 57,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+        ));
+    }
+
+    /// Emit $parse_int global function.
+    pub(super) fn emit_parse_int(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $parse_int (param $s i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $s) (i32.const {tag_mask})))
+    ;; If number: return the number value
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (local.get $s))))
+    ;; If not a string, return NaN (0 in our model)
+    (if (i32.ne (local.get $tag) (i32.const {string_tag}))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Parse string to integer with auto-detected radix
+    (call $parse_int_string (local.get $s) (i32.const {zero})))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            string_tag = ValueTag::STRING,
+            zero = RuntimeConst::ZERO,
+            number_shift = ValueTag::NUMBER_SHIFT,
+        ));
+        wat.push_str(&format!(
+            r##"
+  (func $parse_int_string (param $s i32) (param $radix i32) (result i32)
+    (local $base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $sign i32)
+    (local $n i32)
+    (local $r i32)
+    (local $digit i32)
+    (local $seen i32)
+    (local.set $base (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (local.set $sign (i32.const {one}))
+    ;; 1. Skip leading whitespace
+    (block $ws_done
+      (loop $ws_loop
+        (br_if $ws_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.eq (local.get $ch) (i32.const {space}))
+          (then (local.set $i (i32.add (local.get $i) (i32.const {one}))) (br $ws_loop)))
+        (br $ws_done)))
+    ;; 2. Handle sign
+    (if (i32.lt_u (local.get $i) (local.get $len))
+      (then
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.eq (local.get $ch) (i32.const {minus}))
+          (then
+            (local.set $sign (i32.const -1))
+            (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+          (if (i32.eq (local.get $ch) (i32.const {plus}))
+            (then (local.set $i (i32.add (local.get $i) (i32.const {one}))))))))
+    ;; 3. Determine radix
+    (if (i32.lt_u (local.get $i) (local.get $len))
+      (then
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        ;; Check for 0x prefix
+        (if (i32.eq (local.get $ch) (i32.const {ascii_zero}))
+          (then
+            (if (i32.lt_u (i32.add (local.get $i) (i32.const {one})) (local.get $len))
+              (then
+                (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (i32.add (local.get $i) (i32.const {one}))))))
+                (if (i32.or (i32.eq (local.get $ch) (i32.const {ascii_lower_x})) (i32.eq (local.get $ch) (i32.const {ascii_upper_x})))
+                  (then
+                    (local.set $r (i32.const 16))
+                    (local.set $i (i32.add (local.get $i) (i32.const {two})))))))))))
+    (if (i32.eq (local.get $r) (i32.const {zero}))
+      (then
+        (if (i32.eq (i32.and (local.get $radix) (i32.const {tag_mask})) (i32.const {number_tag}))
+          (then
+            (local.set $r (i32.shr_s (local.get $radix) (i32.const {number_shift})))))
+        ;; If radix is 0 or undefined (0 tagged), detect automatically
+        (if (i32.eqz (local.get $r))
+          (then (local.set $r (i32.const 10))))))
+    ;; Clamp radix
+    (if (i32.lt_s (local.get $r) (i32.const 2))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.gt_s (local.get $r) (i32.const 36))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; 4. Parse digits
+    (block $parse_done
+      (loop $parse_loop
+        (br_if $parse_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        ;; Convert char to digit
+        (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_zero})) (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+          (then (local.set $digit (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+          (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_lower_a})) (i32.le_u (local.get $ch) (i32.const {ascii_lower_f})))
+            (then (local.set $digit (i32.add (i32.sub (local.get $ch) (i32.const {ascii_lower_a})) (i32.const 10))))
+            (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_upper_a})) (i32.le_u (local.get $ch) (i32.const {ascii_upper_f})))
+              (then (local.set $digit (i32.add (i32.sub (local.get $ch) (i32.const {ascii_upper_a})) (i32.const 10))))
+              (br $parse_done))))
+        ;; Check digit is valid for radix
+        (if (i32.ge_u (local.get $digit) (local.get $r))
+          (then (br $parse_done)))
+        (local.set $n (i32.add (i32.mul (local.get $n) (local.get $r)) (local.get $digit)))
+        (local.set $seen (i32.const {one}))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $parse_loop)))
+    ;; If no digits seen, return NaN (modeled as tagged 0)
+    (if (i32.eqz (local.get $seen))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
+    (i32.or (i32.shl (local.get $n) (i32.const {number_shift})) (i32.const {number_tag})))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            two = 2,
+            space = 32,
+            plus = 43,
+            minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = 57,
+            ascii_lower_x = 120,
+            ascii_upper_x = 88,
+            ascii_lower_a = 97,
+            ascii_lower_f = 102,
+            ascii_upper_a = 65,
+            ascii_upper_f = 70,
+        ));
+    }
+
+    /// Emit $parse_float global function.
+    pub(super) fn emit_parse_float(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $parse_float (param $s i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $s) (i32.const {tag_mask})))
+    ;; If number: return as-is
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (local.get $s))))
+    ;; If not a string, return NaN (modeled as tagged 0)
+    (if (i32.ne (local.get $tag) (i32.const {string_tag}))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Parse string to float (integer part only in our model)
+    (call $parse_float_string (local.get $s)))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            string_tag = ValueTag::STRING,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+        ));
+        wat.push_str(&format!(
+            r##"
+  (func $parse_float_string (param $s i32) (result i32)
+    (local $base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $sign i32)
+    (local $n i32)
+    (local $seen i32)
+    (local.set $base (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    (local.set $sign (i32.const {one}))
+    ;; Skip leading whitespace
+    (block $ws_done
+      (loop $ws_loop
+        (br_if $ws_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.eq (local.get $ch) (i32.const {space}))
+          (then (local.set $i (i32.add (local.get $i) (i32.const {one}))) (br $ws_loop)))
+        (br $ws_done)))
+    ;; Handle sign
+    (if (i32.lt_u (local.get $i) (local.get $len))
+      (then
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.eq (local.get $ch) (i32.const {minus}))
+          (then
+            (local.set $sign (i32.const -1))
+            (local.set $i (i32.add (local.get $i) (i32.const {one}))))
+          (if (i32.eq (local.get $ch) (i32.const {plus}))
+            (then (local.set $i (i32.add (local.get $i) (i32.const {one}))))))))
+    ;; Parse integer part
+    (block $int_done
+      (loop $int_loop
+        (br_if $int_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_zero})) (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+          (then
+            (local.set $n (i32.add (i32.mul (local.get $n) (i32.const 10)) (i32.sub (local.get $ch) (i32.const {ascii_zero}))))
+            (local.set $seen (i32.const {one}))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $int_loop))
+          (br $int_done))))
+    ;; If no digits seen, return NaN (modeled as tagged 0)
+    (if (i32.eqz (local.get $seen))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.lt_s (local.get $sign) (i32.const {zero}))
+      (then (local.set $n (i32.sub (i32.const {zero}) (local.get $n)))))
+    (i32.or (i32.shl (local.get $n) (i32.const {number_shift})) (i32.const {number_tag})))
+"##,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            space = 32,
+            plus = 43,
+            minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = 57,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+        ));
+    }
+
+    /// Emit $is_finite global function.
+    pub(super) fn emit_is_finite(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $is_finite (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    ;; If number: return true (all our integers are finite)
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (i32.const {true_tag}))))
+    ;; If undefined: return false (ToNumber(undefined) = NaN)
+    (if (i32.eq (local.get $v) (i32.const {undefined}))
+      (then (return (i32.const {false_tag}))))
+    ;; If string: try to parse; if parse succeeds and is finite, return true
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
+      (then
+        (return (call $is_finite_string (local.get $v)))))
+    ;; null -> 0 (finite), boolean -> 0/1 (finite): return true
+    (i32.const {true_tag}))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            string_tag = ValueTag::STRING,
+            undefined = ValueTag::UNDEFINED,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+        wat.push_str(&format!(
+            r##"
+  (func $is_finite_string (param $v i32) (result i32)
+    (local $base i32)
+    (local $len i32)
+    (local $i i32)
+    (local $ch i32)
+    (local $seen_digit i32)
+    (local.set $base (i32.and (local.get $v) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $base)))
+    (local.set $i (i32.const {zero}))
+    ;; Skip leading whitespace
+    (block $ws_done
+      (loop $ws_loop
+        (br_if $ws_done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.eq (local.get $ch) (i32.const {space}))
+          (then (local.set $i (i32.add (local.get $i) (i32.const {one}))) (br $ws_loop)))
+        (br $ws_done)))
+    ;; Optional sign
+    (if (i32.lt_u (local.get $i) (local.get $len))
+      (then
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.or (i32.eq (local.get $ch) (i32.const {plus})) (i32.eq (local.get $ch) (i32.const {minus})))
+          (then (local.set $i (i32.add (local.get $i) (i32.const {one})))))))
+    ;; Check for at least one digit
+    (block $digit_check
+      (loop $digit_loop
+        (br_if $digit_check (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $ch (i32.load8_u (i32.add (local.get $base) (i32.add (i32.const {header}) (local.get $i)))))
+        (if (i32.and (i32.ge_u (local.get $ch) (i32.const {ascii_zero})) (i32.le_u (local.get $ch) (i32.const {ascii_nine})))
+          (then
+            (local.set $seen_digit (i32.const {one}))
+            (br $digit_check)))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $digit_loop)))
+    (if (result i32) (local.get $seen_digit)
+      (then (i32.const {true_tag}))
+      (else (i32.const {false_tag}))))
+"##,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            space = 32,
+            plus = 43,
+            minus = RuntimeConst::ASCII_MINUS,
+            ascii_zero = RuntimeConst::ASCII_ZERO,
+            ascii_nine = 57,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
 }

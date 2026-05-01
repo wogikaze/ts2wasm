@@ -167,6 +167,10 @@ impl WatEmitter<'_> {
                 RuntimeFn::PathBasename => self.emit_path_basename(wat),
                 RuntimeFn::PathDirname => self.emit_path_dirname(wat),
                 RuntimeFn::CryptoRandomBytes => self.emit_crypto_random_bytes(wat),
+                RuntimeFn::IsNaN => self.emit_is_nan(wat),
+                RuntimeFn::ParseInt => self.emit_parse_int(wat),
+                RuntimeFn::ParseFloat => self.emit_parse_float(wat),
+                RuntimeFn::IsFinite => self.emit_is_finite(wat),
             }
         }
     }

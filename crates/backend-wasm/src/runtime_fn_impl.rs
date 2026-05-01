@@ -18,6 +18,10 @@ impl RuntimeFn {
             BuiltinId::CryptoRandomBytes => Self::CryptoRandomBytes,
             BuiltinId::InstanceOf => Self::InstanceOf,
             BuiltinId::MathPow => Self::MathPow,
+            BuiltinId::IsNaN => Self::IsNaN,
+            BuiltinId::ParseInt => Self::ParseInt,
+            BuiltinId::ParseFloat => Self::ParseFloat,
+            BuiltinId::IsFinite => Self::IsFinite,
         }
     }
 
@@ -1199,6 +1203,38 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::IsNaN => RuntimeSpec {
+                symbol: "$is_nan",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ParseInt => RuntimeSpec {
+                symbol: "$parse_int",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ParseFloat => RuntimeSpec {
+                symbol: "$parse_float",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::IsFinite => RuntimeSpec {
+                symbol: "$is_finite",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
         }
     }
 
@@ -1381,6 +1417,10 @@ impl RuntimeFn {
             Self::PathDirname => "path_dirname",
             Self::CryptoRandomBytes => "crypto_random_bytes",
             Self::InstanceOf => "instanceof",
+            Self::IsNaN => "is_nan",
+            Self::ParseInt => "parse_int",
+            Self::ParseFloat => "parse_float",
+            Self::IsFinite => "is_finite",
         }
     }
 
@@ -1541,6 +1581,11 @@ impl RuntimeFn {
             Self::PathBasename,
             Self::PathDirname,
             Self::CryptoRandomBytes,
+            // Global number functions (341a)
+            Self::IsNaN,
+            Self::ParseInt,
+            Self::ParseFloat,
+            Self::IsFinite,
         ]
     }
 
@@ -1702,6 +1747,11 @@ impl RuntimeFn {
             Self::PathBasename,
             Self::PathDirname,
             Self::CryptoRandomBytes,
+            // Global number functions (341a)
+            Self::IsNaN,
+            Self::ParseInt,
+            Self::ParseFloat,
+            Self::IsFinite,
         ]
     }
 }

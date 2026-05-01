@@ -15,6 +15,10 @@ pub enum BuiltinId {
     CryptoRandomBytes,
     InstanceOf,
     MathPow,
+    IsNaN,
+    ParseInt,
+    ParseFloat,
+    IsFinite,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -47,6 +51,10 @@ impl BuiltinId {
             Self::CryptoRandomBytes => 1,
             Self::InstanceOf => 2,
             Self::MathPow => 2,
+            Self::IsNaN => 1,
+            Self::ParseInt => 1,
+            Self::ParseFloat => 1,
+            Self::IsFinite => 1,
         }
     }
 
@@ -67,6 +75,10 @@ impl BuiltinId {
             Self::CryptoRandomBytes => BuiltinResult::Value,
             Self::InstanceOf => BuiltinResult::Value,
             Self::MathPow => BuiltinResult::Value,
+            Self::IsNaN => BuiltinResult::Value,
+            Self::ParseInt => BuiltinResult::Value,
+            Self::ParseFloat => BuiltinResult::Value,
+            Self::IsFinite => BuiltinResult::Value,
         }
     }
 }

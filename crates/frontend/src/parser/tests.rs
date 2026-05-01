@@ -318,14 +318,14 @@ mod tests {
         };
         assert_eq!(props.len(), 2);
         assert!(matches!(
-            props[0].1,
+            &props[0].1,
             Expr::FunctionExpr {
                 name,
                 ..
             } if name == "id"
         ));
         assert!(matches!(
-            props[1].1,
+            &props[1].1,
             Expr::FunctionExpr {
                 name,
                 ..

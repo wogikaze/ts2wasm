@@ -315,3 +315,33 @@ fn build_smoke_array_reverse_method() {
         result.err()
     );
 }
+
+// Global number functions (issue 341a)
+
+#[test]
+fn build_smoke_global_isnan() {
+    let result = run_fixture("builtins-and-io/global-isnan.ts");
+    assert!(result.is_ok(), "isNaN should build: {:?}", result.err());
+}
+
+#[test]
+fn build_smoke_global_parseint() {
+    let result = run_fixture("builtins-and-io/global-parseint.ts");
+    assert!(result.is_ok(), "parseInt should build: {:?}", result.err());
+}
+
+#[test]
+fn build_smoke_global_parsefloat() {
+    let result = run_fixture("builtins-and-io/global-parsefloat.ts");
+    assert!(
+        result.is_ok(),
+        "parseFloat should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_global_isfinite() {
+    let result = run_fixture("builtins-and-io/global-isfinite.ts");
+    assert!(result.is_ok(), "isFinite should build: {:?}", result.err());
+}

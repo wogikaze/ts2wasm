@@ -64,6 +64,10 @@ impl NameResolver {
             "RangeError",
             "Infinity",
             "NaN",
+            "isNaN",
+            "parseInt",
+            "parseFloat",
+            "isFinite",
         ]
         .iter()
         .map(|s| s.to_string())
