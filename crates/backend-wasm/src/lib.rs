@@ -494,30 +494,46 @@ mod tests {
         let wat =
             emit_wat(&program).expect("mutable class method env cell fixture should emit WAT");
 
+        // Env cell: ARRAY_HEADER_SIZE=20 + ENV_CELL_SLOT_COUNT*4=4 = 24 bytes
         assert!(
-            wat.contains("(call $alloc_heap (i32.const 8))"),
-            "env cells need an array header plus one captured value slot"
+            wat.contains("(call $alloc_heap (i32.const 24))"),
+            "env cells need an array header (20 bytes) plus one captured value slot (4 bytes)"
         );
+        // The array length field stores EC (env cell slot count = 1)
         assert!(
             wat.contains("(i32.const 1))"),
             "env cell payload should use array length 1 so GC scans its value slot"
         );
+        // The env cell pointer is ORed with the ARRAY tag
         assert!(
             wat.contains(&format!("(i32.const {}))", ValueTag::ARRAY_TAG)),
             "env cell roots/captures must hold a tagged heap value"
         );
+        // Env cell load uses HEAP_MASK and ENV_CELL_VALUE_OFFSET (= ARRAY_HEADER_SIZE = 20).
+        // We do not hardcode the local index because it depends on the fixture's function
+        // parameter layout; any (i32.load ... i32.and (local.get <N>) ... i32.const -8 ... 20)
+        // is accepted.
         assert!(
-            wat.contains(&format!(
-                "(i32.load (i32.add (i32.and (local.get 0) (i32.const {})) (i32.const 4)))",
-                ValueTag::HEAP_MASK
-            )),
-            "env cell reads should mask the tagged cell before loading the value slot"
+            wat.lines().any(|line| {
+                line.contains("(i32.load")
+                    && line.contains("(i32.and (local.get")
+                    && line.contains(&format!(
+                        "(i32.const {})) (i32.const 20)",
+                        ValueTag::HEAP_MASK
+                    ))
+            }),
+            "env cell reads should mask the tagged cell before loading the value slot at offset 20"
         );
+        // Same for env cell writes.
         assert!(
-            wat.contains(&format!(
-                "(i32.store (i32.add (i32.and (local.get 1) (i32.const {})) (i32.const 4))",
-                ValueTag::HEAP_MASK
-            )),
+            wat.lines().any(|line| {
+                line.contains("(i32.store")
+                    && line.contains("(i32.and (local.get")
+                    && line.contains(&format!(
+                        "(i32.const {})) (i32.const 20)",
+                        ValueTag::HEAP_MASK
+                    ))
+            }),
             "env cell writes should mask the tagged captured cell before storing the value slot"
         );
         assert!(
