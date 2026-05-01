@@ -1757,6 +1757,14 @@ impl<'a> Resolver<'a> {
             .map_or(0, HashMap::len)
     }
 
+    pub(super) fn class_has_instance_private_brand(&self, class_name: &str) -> bool {
+        self.private_slot_count(class_name) > 0
+            || self
+                .class_method_ids
+                .keys()
+                .any(|(owner, method)| owner == class_name && method.starts_with('#'))
+    }
+
     pub(super) fn is_object_key_enumeration_leak(
         &self,
         object: &ResolvedExpr,

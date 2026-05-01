@@ -580,18 +580,28 @@ impl<'a> Resolver<'a> {
                         });
                     }
                     if let Some(getter_id) = self.current_private_getter_id(key) {
-                        if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
-                            return Err(Diagnostic {
+                        let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
+                            LoweredExpr::Local(self.resolve_local("this")?)
+                        } else {
+                            let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,
                                 message: format!(
-                                    "issue-255: private getter `{key}` access is currently supported only as `this.{key}` inside the declaring class"
+                                    "issue-255: private getter `{key}` access requires declaring class context"
                                 ),
                                 span: Some(*span),
-                            });
-                        }
+                            })?;
+                            let brand = self.private_brand_for_class(&class_name, Some(*span))?;
+                            LoweredExpr::RuntimeCall {
+                                runtime_fn: "PrivateBrandCheck".to_owned(),
+                                args: vec![
+                                    self.lower_expr(object)?,
+                                    LoweredExpr::Number(brand as i32),
+                                ],
+                            }
+                        };
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(getter_id),
-                            args: vec![LoweredExpr::Local(self.resolve_local("this")?)],
+                            args: vec![receiver],
                         });
                     }
                     if let Some(class_name) = self.infer_class_for_expr(object)
@@ -781,15 +791,6 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         });
                     }
-                    if !matches!(object.as_ref(), ResolvedExpr::This { .. }) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "issue-255: private method `{method}` calls are currently supported only as `this.{method}(...)` inside the declaring class"
-                            ),
-                            span: Some(*span),
-                        });
-                    }
                     let method_id = self.current_private_method_id(method).ok_or_else(|| {
                         Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -799,7 +800,23 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         }
                     })?;
-                    let mut lowered_args = vec![LoweredExpr::Local(self.resolve_local("this")?)];
+                    let receiver = if matches!(object.as_ref(), ResolvedExpr::This { .. }) {
+                        LoweredExpr::Local(self.resolve_local("this")?)
+                    } else {
+                        let class_name = self.current_class.clone().ok_or_else(|| Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-255: private method `{method}` call requires declaring class context"
+                            ),
+                            span: Some(*span),
+                        })?;
+                        let brand = self.private_brand_for_class(&class_name, Some(*span))?;
+                        LoweredExpr::RuntimeCall {
+                            runtime_fn: "PrivateBrandCheck".to_owned(),
+                            args: vec![self.lower_expr(object)?, LoweredExpr::Number(brand as i32)],
+                        }
+                    };
+                    let mut lowered_args = vec![receiver];
                     lowered_args.extend(
                         args.iter()
                             .map(|e| self.lower_expr(e))
@@ -1538,7 +1555,7 @@ impl<'a> Resolver<'a> {
                     .map(|arg| self.lower_expr(arg))
                     .collect::<Result<Vec<_>, _>>()?;
                 let private_slot_count = self.private_slot_count(class_name);
-                let private_brand = if private_slot_count > 0 {
+                let private_brand = if self.class_has_instance_private_brand(class_name) {
                     Some(self.private_brand_for_class(class_name, None)?)
                 } else {
                     None

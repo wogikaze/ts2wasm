@@ -14,6 +14,14 @@ pub(super) fn private_field_metadata(brand: u32, slot_count: u32) -> u32 {
     (brand << PRIVATE_FIELD_BRAND_SHIFT) | slot_count
 }
 
+pub(super) fn is_private_brand_check_expr(expr: &LoweredExpr) -> bool {
+    matches!(
+        expr,
+        LoweredExpr::RuntimeCall { runtime_fn, args }
+            if runtime_fn == "PrivateBrandCheck" && args.len() == 2
+    )
+}
+
 pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
     match expr {
         LoweredExpr::Call { .. }

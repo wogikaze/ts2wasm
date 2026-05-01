@@ -194,13 +194,23 @@ writes a `TypeError` message and aborts instead of returning `undefined` or sile
 skipping a write; with an active handler it raises a catchable TypeError-like object
 and lets the current `TryCatch` statement-boundary propagation bind it.
 
-`PrivateBrandCheck(receiver, brand)` is available as a backend runtime-call primitive for future private method/accessor receiver checks. It validates the object tag and packed brand, returns the checked receiver on success, and uses the same `private_brand_type_error` path on mismatch. It is not yet wired into method/accessor lowering because private method/accessor calls currently need expression-level exception short-circuiting rather than statement-boundary-only propagation.
+`PrivateBrandCheck(receiver, brand)` is available as a backend runtime-call primitive
+for private method/accessor receiver checks. It validates the object tag and packed
+brand, returns the checked receiver on success, and uses the same
+`private_brand_type_error` path on mismatch. Same-class non-`this` instance private
+method calls and getter reads lower their receiver through this helper. The backend
+user-call emission recognizes that checked receiver position and short-circuits the
+callee call when the helper raises `exception_pending`, so the private method/getter
+body is not executed on mismatch in the supported statement-boundary `try/catch`
+shape. Setter assignment, extracted private method/accessor values, and broader
+expression-nested propagation remain future issue 351 / issue 255 work.
 
 This is current progress toward ECMAScript private brands. Compatible catchable
 `TypeError` propagation now covers lowered private field brand mismatches that occur
-inside the supported `try/catch` statement shape. Private method/accessor receiver
-checks remain issue 351 / issue 255 work until expression-level exception propagation
-can short-circuit method/accessor body execution.
+inside the supported `try/catch` statement shape, plus same-class non-`this` instance
+private method calls and getter reads emitted as expression statements in that shape.
+Other private accessor/method receiver forms remain issue 351 / issue 255 work until
+expression-level exception propagation is generalized.
 
 ### BigInt value representation (accepted design)
 

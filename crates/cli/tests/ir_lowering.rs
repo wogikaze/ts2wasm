@@ -929,6 +929,47 @@ fn lowering_represents_direct_private_method_call_as_same_class_user_call() {
 }
 
 #[test]
+fn lowering_represents_private_method_non_this_receiver_as_brand_checked_user_call() {
+    use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class C {
+          #m() { return 1; }
+          read(other) { return other.#m(); }
+        }
+
+        let c = new C();
+        console.log(c.read(c));
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(2)),
+            args,
+        }) => match args.as_slice() {
+            [
+                LoweredExpr::RuntimeCall {
+                    runtime_fn,
+                    args: brand_args,
+                },
+            ] => {
+                assert_eq!(runtime_fn, "PrivateBrandCheck");
+                assert!(matches!(
+                    brand_args.as_slice(),
+                    [LoweredExpr::Local(_), LoweredExpr::Number(1)]
+                ));
+            }
+            other => panic!("unexpected private method brand-check args: {other:?}"),
+        },
+        other => panic!("unexpected private method call lowering: {other:?}"),
+    }
+}
+
+#[test]
 fn lowering_represents_static_private_method_call_as_same_class_user_call() {
     use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LoweredExpr, LoweredStmt};
 
@@ -1093,6 +1134,47 @@ fn lowering_represents_direct_private_getter_access_as_same_class_user_call() {
             kind: FunctionCallKind::User(FuncId(2)),
             args,
         }) => assert!(matches!(args.as_slice(), [LoweredExpr::Local(LocalId(0))])),
+        other => panic!("unexpected private getter access lowering: {other:?}"),
+    }
+}
+
+#[test]
+fn lowering_represents_private_getter_non_this_receiver_as_brand_checked_user_call() {
+    use ts2wasm_ir::lowered::{FuncId, FunctionCallKind, LoweredExpr, LoweredStmt};
+
+    let program = parse_and_resolve(
+        r#"
+        class C {
+          get #x() { return 3; }
+          read(other) { return other.#x; }
+        }
+
+        let c = new C();
+        console.log(c.read(c));
+        "#,
+    );
+    let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
+
+    let read_method = &lowered.functions[1];
+    match &read_method.body[0] {
+        LoweredStmt::Return(LoweredExpr::Call {
+            kind: FunctionCallKind::User(FuncId(2)),
+            args,
+        }) => match args.as_slice() {
+            [
+                LoweredExpr::RuntimeCall {
+                    runtime_fn,
+                    args: brand_args,
+                },
+            ] => {
+                assert_eq!(runtime_fn, "PrivateBrandCheck");
+                assert!(matches!(
+                    brand_args.as_slice(),
+                    [LoweredExpr::Local(_), LoweredExpr::Number(1)]
+                ));
+            }
+            other => panic!("unexpected private getter brand-check args: {other:?}"),
+        },
         other => panic!("unexpected private getter access lowering: {other:?}"),
     }
 }

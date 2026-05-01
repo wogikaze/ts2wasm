@@ -4,6 +4,7 @@ use super::RuntimeFn;
 use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
 use expr_emit_helpers::*;
+use std::sync::atomic::{AtomicUsize, Ordering};
 use ts2wasm_ir::lowered::{
     ClosureRepresentation, FunctionCallKind, InferredType, LocalId, LoweredArraySlot,
     LoweredBinaryOp, LoweredExpr, LoweredLogicalAssignOp, LoweredUnaryOp,
@@ -30,6 +31,12 @@ const CLASS_INSTANCE_PUBLIC_SLOT_CAPACITY: u32 = 16;
 const PRIVATE_FIELD_SLOT_SIZE: u32 = 4;
 const PRIVATE_FIELD_COUNT_MASK: u32 = 0xffff;
 const PRIVATE_FIELD_BRAND_SHIFT: u32 = 16;
+
+fn gen_expr_label(prefix: &str) -> String {
+    static COUNTER: AtomicUsize = AtomicUsize::new(0);
+    let id = COUNTER.fetch_add(1, Ordering::Relaxed);
+    format!("{prefix}_{id}")
+}
 
 fn array_presence_mask(len: usize) -> i32 {
     if len >= 32 {
@@ -904,6 +911,14 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         let func = self.program.functions.get(func_id.0);
 
+        if args
+            .first()
+            .is_some_and(|arg| is_private_brand_check_expr(arg))
+        {
+            self.emit_user_call_args_with_checked_receiver(wat, func_id, args, indent, frame, func);
+            return;
+        }
+
         if let Some(func) = func
             && let Some(rest_index) = func.rest_param_index
         {
@@ -928,6 +943,64 @@ impl WatEmitter<'_> {
             wat.push_str(&format!("{pad}(i32.const {})\n", ValueTag::UNDEFINED));
         }
         wat.push_str(&format!("{pad}(call ${})\n", function_symbol(func_id)));
+    }
+
+    fn emit_user_call_args_with_checked_receiver(
+        &self,
+        wat: &mut String,
+        func_id: ts2wasm_ir::lowered::FuncId,
+        args: &[LoweredExpr],
+        indent: usize,
+        frame: &LocalFrame,
+        func: Option<&ts2wasm_ir::lowered::LoweredFunction>,
+    ) {
+        let pad = " ".repeat(indent);
+        let inner_pad = " ".repeat(indent + 2);
+        let receiver_tmp = frame.heap_base_tmp();
+        let checked_call_exit = gen_expr_label("checked_call_exit");
+
+        wat.push_str(&format!("{pad}(block ${checked_call_exit} (result i32)\n"));
+        self.emit_expr(wat, &args[0], indent + 2, frame);
+        wat.push_str(&format!("{inner_pad}(local.set {receiver_tmp})\n"));
+        self.emit_gc_root_mirror_index(wat, &inner_pad, receiver_tmp, frame);
+        wat.push_str(&format!(
+            "{inner_pad}(if (global.get $exception_pending)\n{inner_pad}  (then\n{inner_pad}    (br ${checked_call_exit} (i32.const {}))\n{inner_pad}  ))\n",
+            ValueTag::UNDEFINED
+        ));
+        wat.push_str(&format!("{inner_pad}(local.get {receiver_tmp})\n"));
+
+        if let Some(func) = func
+            && let Some(rest_index) = func.rest_param_index
+        {
+            for arg_index in 1..rest_index {
+                if let Some(arg) = args.get(arg_index) {
+                    self.emit_expr(wat, arg, indent + 2, frame);
+                } else {
+                    wat.push_str(&format!("{inner_pad}(i32.const {})\n", ValueTag::UNDEFINED));
+                }
+            }
+            let rest_start = rest_index.min(args.len());
+            self.emit_array_literal(wat, &args[rest_start..], indent + 2, frame);
+            wat.push_str(&format!(
+                "{inner_pad}(call ${})\n",
+                function_symbol(func_id)
+            ));
+            wat.push_str(&format!("{pad})\n"));
+            return;
+        }
+
+        let param_count = func.map(|f| f.params.len()).unwrap_or(0);
+        for arg in args.iter().skip(1) {
+            self.emit_expr(wat, arg, indent + 2, frame);
+        }
+        for _ in args.len()..param_count {
+            wat.push_str(&format!("{inner_pad}(i32.const {})\n", ValueTag::UNDEFINED));
+        }
+        wat.push_str(&format!(
+            "{inner_pad}(call ${})\n",
+            function_symbol(func_id)
+        ));
+        wat.push_str(&format!("{pad})\n"));
     }
 
     fn emit_heap_closure_alloc(

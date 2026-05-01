@@ -300,3 +300,25 @@ Remaining blockers:
 
 - Same-class non-`this` private method/accessor receiver brand checks need expression-level exception short-circuiting or statement-sequence lowering before replacing issue-255 diagnostics.
 - Top-level external private syntax such as `c.#m()` / `c.#x` and extracted private method/accessor values remain diagnostic-only pending that lowering model.
+
+2026-05-01 same-class private method/getter receiver brand-check slice:
+
+- Lowered same-class non-`this` instance private method calls and getter reads through `PrivateBrandCheck(receiver, brand)` instead of issue-255 diagnostics.
+- Added a backend user-call emission path that recognizes a checked receiver in argument position and branches out before evaluating later arguments or invoking the private body when `PrivateBrandCheck` raises `exception_pending`.
+- Added method-only/getter-only instance brand attachment so zero-private-field classes still carry the per-class private brand required by method/accessor brand checks.
+- Added IR lowering coverage plus Node/iwasm differential fixtures proving mismatched receivers are caught and do not execute the private method/getter body; matching receivers still execute normally.
+- Updated `docs/14-runtime-abi.md`, `docs/language-reference/javascript-features.md`, and `current-state.md` for the new supported slice and remaining limitations.
+
+Validation result:
+
+```text
+cargo fmt --all --check: pass
+cargo test -p ts2wasm-cli non_this_receiver -- --nocapture: pass (2 focused IR tests)
+cargo test -p ts2wasm-cli private_class_field_read_write_fixture_matches_node_output_under_iwasm -- --nocapture: pass (private Node/iwasm fixture group including new method/getter fixtures)
+cargo test -p ts2wasm-cli private -- --nocapture: pass (4 m2 private tests + 10 IR private tests + dump AST private test)
+cargo test -p ts2wasm-backend-wasm private_brand_check -- --nocapture: pass (1 backend test)
+```
+
+Remaining blockers:
+
+- Issue 351 remains open: top-level external private method/accessor syntax, extracted private method/accessor values, private setter non-`this` receiver brand checks, accessor duplicate-pair semantics, and expression-nested exception propagation remain issue-351/issue-255 work.
