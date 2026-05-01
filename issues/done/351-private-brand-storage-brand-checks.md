@@ -39,11 +39,11 @@ Every class with private elements has a unique brand. Runtime private element ac
 
 In scope:
 
-- [ ] Per-class private brand generation and storage
-- [ ] Brand attachment to instances during construction
-- [ ] Runtime brand-check helper for private field/method/accessor access
-- [ ] TypeError throwing on brand mismatch for external private access attempts
-- [ ] Node/iwasm differential fixtures for brand-check behavior
+- [x] Per-class private brand generation and storage
+- [x] Brand attachment to instances during construction
+- [x] Runtime brand-check helper for private field/method/accessor access
+- [x] TypeError throwing on brand mismatch for external private access attempts
+- [x] Node/iwasm differential fixtures for brand-check behavior
 
 Out of scope:
 
@@ -66,11 +66,11 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Node/iwasm differential fixture proves external private access throws TypeError
-- [ ] Node/iwasm differential fixture proves same-class access succeeds
-- [ ] Node/iwasm differential fixture proves subclass access fails (no inherited brand)
-- [ ] Runtime helper tests cover brand check and TypeError throw paths
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass
+- [x] Node/iwasm differential fixture proves external private access throws TypeError
+- [x] Node/iwasm differential fixture proves same-class access succeeds
+- [x] Node/iwasm differential fixture proves subclass access fails (no inherited brand)
+- [x] Runtime helper tests cover brand check and TypeError throw paths
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Validation
 
@@ -93,16 +93,16 @@ cargo test -p ts2wasm-cli private
 
 Final-state docs:
 
-- [ ] updated: `docs/14-runtime-abi.md` for brand storage ABI
-- [ ] updated: `docs/language-reference/javascript-features.md` for brand semantics
+- [x] updated: `docs/14-runtime-abi.md` for brand storage ABI
+- [x] updated: `docs/language-reference/javascript-features.md` for brand semantics
 
 Current state:
 
-- [ ] updated: `current-state.md` if runtime brand capability changes
+- [x] updated: `current-state.md` if runtime brand capability changes
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -114,7 +114,30 @@ The current implementation rejects external private access at compile time. Movi
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+2026-05-01 closure evidence:
+
+All in-scope acceptance criteria are met:
+
+- **Per-class private brand generation and storage**: Each class constructor with instance private members gets a brand token (constructor_id + 1), packed as `(brand << 16) | slot_count` in the GC header reserved word. Brand=0 means "no brand".
+- **Brand attachment to instances during construction**: `LoweredExpr::New` carries `private_brand: Option<u32>`. Backend emission stores the packed metadata in the GC reserved word during `$new_object` for class instances.
+- **Runtime brand-check helper**: `PrivateBrandCheck(receiver, brand)` runtime-call primitive validates object tag and packed brand, returns checked receiver on success. Backend user-call emission recognizes checked receiver position and short-circuits the callee call when `exception_pending`.
+- **TypeError throwing on brand mismatch**: `private_brand_type_error` runtime helper writes `TypeError: Cannot read private member from an object whose class did not declare it` and aborts for uncaught mismatches; inside supported `try/catch`, raises a catchable TypeError-like object.
+- **Private field get/set**: `PrivateFieldGet`/`PrivateFieldSet` carry brand token + slot index, validate object tag, brand match, and slot count before reading/writing private slot storage after public property capacity.
+- **Same-class non-this receivers**: Fields use branded slot calls, methods/getters/setters use `PrivateBrandCheck` receiver + user call.
+- **Zero-slot brand check**: Method-only/getter-only classes carry brand without private field slots via `PrivateBrandCheck`.
+- **Derived-class fixture**: `private-class-derived-no-inherited-brand.ts` proves no inherited brand.
+- **Node/iwasm differential coverage**: `private_class_field_read_write_fixture_matches_node_output_under_iwasm` covers 18 fixtures including all brand fixtures.
+
+Documentation:
+- `docs/14-runtime-abi.md`: Brand/metadata layout documented at "Private class private metadata" section
+- `docs/language-reference/javascript-features.md`: Private brand semantics documented in the features table
+- `current-state.md`: Updated to reflect brand-check coverage
+
+Remaining work (out of scope for this issue, tracked separately):
+- Top-level external private syntax (`c.#x` from outside class) → compile-time diagnostic (issue-255, frontend)
+- Extracted private method/accessor values → issue-255
+- Accessor duplicate-pair semantics → follow-up
+- Expression-nested exception propagation → follow-up
 
 ## Progress evidence
 

@@ -37,10 +37,10 @@ mise run reference-coverage -- tsgo --limit 166 --detail --no-web-ui | rg 'decla
 
 In scope:
 
-- [ ] Add parsing support for the declaration modifiers/constructs referenced by the two fixtures.
-- [ ] Implement compiler handling so these declarations are accepted and safely handled by emit/erasure path.
-- [ ] Add focused parser/build fixture assertions matching the two tsgo cases.
-- [ ] Update affected docs/comments in fixtures or parser tests if behavior is normalized.
+- [x] Add parsing support for the declaration modifiers/constructs referenced by the two fixtures.
+- [x] Implement compiler handling so these declarations are accepted and safely handled by emit/erasure path.
+- [x] Add focused parser/build fixture assertions matching the two tsgo cases.
+- [x] Update affected docs/comments in fixtures or parser tests if behavior is normalized.
 
 Out of scope:
 
@@ -63,9 +63,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `reference/typescript-go/testdata/tests/cases/compiler/declarationEmitAsConstSatisfiesNonReadonlyResult.ts` no longer reports `UnsupportedSyntax: declaration-emit`.
-- [ ] `reference/typescript-go/testdata/tests/cases/compiler/declarationEmitConstObjectLiteralGenericMethod1.ts` no longer reports `UnsupportedSyntax: declaration-emit`.
-- [ ] Focused coverage command confirms both cases move to `build_pass` or expected non-blocked state.
+- [x] `reference/typescript-go/testdata/tests/cases/compiler/declarationEmitAsConstSatisfiesNonReadonlyResult.ts` no longer reports `UnsupportedSyntax: declaration-emit`.
+- [x] `reference/typescript-go/testdata/tests/cases/compiler/declarationEmitConstObjectLiteralGenericMethod1.ts` no longer reports `UnsupportedSyntax: declaration-emit`.
+- [x] Focused coverage command confirms both cases move to `build_pass` or expected non-blocked state.
 
 ## Validation
 

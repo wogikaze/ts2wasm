@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/open/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key, title overlap)
 - `issues/open/308-implement-abc451-depth9-gc-cadence-policy.md` - Implement ABC451 depth-9 GC cadence policy (same feature label, same group key, title overlap)
 - `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
-- `issues/open/351-private-brand-storage-brand-checks.md` - Implement full private brand storage and brand-checking semantics (same feature label, same group key, title overlap)
+- `issues/done/351-private-brand-storage-brand-checks.md` - Implement full private brand storage and brand-checking semantics (same feature label, same group key, title overlap)
 - `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` - Fix ABC451 depth-8 iwasm timeout (same feature label, same group key)
 - `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md` - Reduce ABC451 allocation and sweep volume after bulk copy narrowing (same feature label, same group key)
 - `issues/open/365-reduce-abc451-array-growth-allocation-copy-pressure.md` - Reduce ABC451 array-growth allocation and copy pressure (same feature label, same group key)
