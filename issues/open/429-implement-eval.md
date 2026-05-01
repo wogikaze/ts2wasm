@@ -128,7 +128,7 @@ Follow-up issues:
 - `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
 - `issues/open/128-implement-aliasUsedAsNameValue.md` - Implement Aliasusedasnamevalue (same feature label, same group key, title overlap)
 - `issues/open/132-implement-allowJsClassThisTypeCrash.md` - Implement Allowjsclassthistypecrash (same feature label, same group key, title overlap)
-- `issues/open/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key, title overlap)
+- `issues/done/225-implement-eval-annexb-function-declarations.md` - Implement eval and Annex B function declaration semantics (same feature label, same group key, title overlap)
 - `issues/open/308-implement-abc451-depth9-gc-cadence-policy.md` - Implement ABC451 depth-9 GC cadence policy (same feature label, same group key, title overlap)
 - `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
 - `issues/done/351-private-brand-storage-brand-checks.md` - Implement full private brand storage and brand-checking semantics (same feature label, same group key, title overlap)
@@ -255,7 +255,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/225-implement-eval-annexb-function-declarations.md",
+    "path": "issues/done/225-implement-eval-annexb-function-declarations.md",
     "title": "Implement eval and Annex B function declaration semantics",
     "reason": "same feature label, title overlap"
   },

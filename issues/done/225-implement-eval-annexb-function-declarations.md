@@ -68,8 +68,8 @@ This meta issue is complete when all child issues are moved to `done/`.
 - [x] Issue 347 closed: parser/resolver direct eval detection and eval-code scope analysis
 - [x] Issue 348 closed: IR lowering for block-level function declarations in eval code
 - [x] Issue 349 closed: runtime helper or shim JavaScript emission for direct eval execution
-- [ ] test262 direct eval Annex B function-declaration cases in the classified window no longer report `eval`.
-- [ ] `cargo fmt --all --check` and `cargo nextest run` pass.
+- [x] test262 direct eval Annex B function-declaration cases in the classified window no longer report `eval`.
+- [x] `cargo fmt --all --check` and `cargo nextest run` pass.
 
 ## Validation
 

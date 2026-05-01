@@ -288,7 +288,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/225-implement-eval-annexb-function-declarations.md",
+    "path": "issues/done/225-implement-eval-annexb-function-declarations.md",
     "title": "Implement eval and Annex B function declaration semantics",
     "reason": "same feature label, title overlap"
   },

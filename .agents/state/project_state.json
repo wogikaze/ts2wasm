@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "RETRO",
-  "active_task_id": "agent-341-close",
-  "updated_at": "2026-05-01T22:35:13Z",
+  "fsm": "CLOSE_OR_SPLIT",
+  "active_task_id": "agent-225-close",
+  "updated_at": "2026-05-01T22:36:38Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "plans/341-close-meta.md",
+  "plan_path": "plans/225-close-meta.md",
   "verify_fast_streak_fails": 0
 }

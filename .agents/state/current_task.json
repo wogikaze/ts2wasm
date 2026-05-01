@@ -1,8 +1,8 @@
 {
-  "id": "agent-341-close",
-  "title": "Close meta-issue 341 (core builtin API coverage - all children done)",
+  "id": "agent-225-close",
+  "title": "Close meta-issue 225 (eval Annex B - all children done)",
   "status": "selected",
-  "issue_path": "issues/open/341-implement-core-builtin-api-coverage.md",
+  "issue_path": "issues/open/225-implement-eval-annexb-function-declarations.md",
   "scope": {
     "allowed_files": [
       "issues/"
@@ -13,7 +13,7 @@
     ]
   },
   "acceptance": [
-    "Issue 341 moved to done/, index updated, child 341e marked done"
+    "Issue 225 moved to done/, index updated"
   ],
   "commands": {
     "fast": [
@@ -26,5 +26,5 @@
   "risk": [
     "none - meta close only"
   ],
-  "notes": "Cycle 2 of 5"
+  "notes": "Cycle 3 of 5"
 }

@@ -90,7 +90,7 @@ Expected:
 - `crates/backend-wasm/src/`
 - `crates/cli/tests/`
 - `fixtures/core-semantics/`
-- `issues/open/225-implement-eval-annexb-function-declarations.md`
+- `issues/done/225-implement-eval-annexb-function-declarations.md`
 
 Do not touch:
 
