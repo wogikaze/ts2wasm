@@ -1,30 +1,30 @@
 {
-  "id": "agent-1001",
-  "title": "Annex B eval-code function declaration residuals",
+  "id": "agent-341-close",
+  "title": "Close meta-issue 341 (core builtin API coverage - all children done)",
   "status": "selected",
-  "issue_path": "issues/open/1001-eval-annexb-function-existing-binding-residuals.md",
+  "issue_path": "issues/open/341-implement-core-builtin-api-coverage.md",
   "scope": {
     "allowed_files": [
-      "crates/frontend/src/parser/"
+      "issues/"
     ],
     "forbidden_files": [
-      "docs/"
+      "crates/",
+      "fixtures/"
     ]
   },
   "acceptance": [
-    "22 test262 eval-code/direct/ cases no longer report eval label"
+    "Issue 341 moved to done/, index updated, child 341e marked done"
   ],
   "commands": {
     "fast": [
-      "mise run fmt",
-      "mise run nextest"
+      "mise run update-issue-index"
     ],
     "full": [
-      "mise run gate"
+      "mise run check issues"
     ]
   },
   "risk": [
-    "parser changes may affect other eval parsing"
+    "none - meta close only"
   ],
-  "notes": "Cycle 1 of 5"
+  "notes": "Cycle 2 of 5"
 }
