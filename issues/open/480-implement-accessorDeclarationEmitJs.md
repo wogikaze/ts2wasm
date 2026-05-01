@@ -211,7 +211,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/410-implement-tsgo-declaration-emit-subpath-import-links.md",
+    "path": "issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md",
     "title": "Implement tsgo declaration emit: subpath import declaration emit cases",
     "reason": "same feature label, title overlap"
   },

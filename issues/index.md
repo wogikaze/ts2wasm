@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 774 | 687 | 87 |
+| frontend | 774 | 686 | 88 |
 | ir | 9 | 0 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 1017 | 753 | 264 |
+| total | 1017 | 752 | 265 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -46,7 +46,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 341 | Implement core builtin API coverage (3,190 test262 cases) | meta | runtime/builtins | ready | P1 |  | 3,190 test262 cases fail due to missing core builtin API implementations. |
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | implementation-ready | P2 | 399 | Implement tsgo declaration emit: package-json exports and subpath reexport cases |
-| 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | implementation-ready | P2 | 399 | Implement tsgo declaration emit: subpath import declaration emit cases |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -1073,6 +1072,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 405 | Support Test262 harness instanceof function RHS | feature | frontend/semantics | see `issues/done/405-test262-instanceof-harness-function-rhs.md` |
 | 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | see `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` |
 | 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | see file |
+| 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
