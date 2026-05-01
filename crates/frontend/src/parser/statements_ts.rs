@@ -315,6 +315,7 @@ impl Parser {
     fn consume_ambient_class_declaration(&mut self, declare_span: Span) -> Result<(), Diagnostic> {
         self.expect(TokenKind::Class)?;
         self.expect_ident()?;
+        let _ = self.consume_typescript_generic_parameter_list()?;
         if self.consume(TokenKind::Extends) {
             self.skip_type_annotation_until(&[TokenKind::LeftBrace])
                 .map_err(|_| {

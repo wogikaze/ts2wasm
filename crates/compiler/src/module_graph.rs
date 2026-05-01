@@ -237,7 +237,7 @@ fn resolve_local_specifier(
 ) -> Result<PathBuf, Diagnostic> {
     if !is_local_relative_specifier(&specifier.value) {
         return Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
+            code: DiagCode::UnsupportedModule,
             message: format!(
                 "issue-232: unsupported non-local module specifier `{}`; package resolution, import maps, and absolute specifiers are not implemented",
                 specifier.value
@@ -257,7 +257,7 @@ fn resolve_local_specifier(
     }
 
     Err(Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
+        code: DiagCode::UnsupportedModule,
         message: format!(
             "issue-232: missing local module `{}` imported from {}; tried {}",
             specifier.value,
@@ -282,7 +282,7 @@ fn module_resolution_candidates(
     {
         Some("ts" | "js") => Ok(vec![raw_candidate.to_path_buf()]),
         Some(extension) => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
+            code: DiagCode::UnsupportedModule,
             message: format!(
                 "issue-232: unsupported local module extension `.{extension}` for `{}`; only .ts and .js modules are resolved",
                 specifier.value
@@ -471,7 +471,7 @@ export const value = nested;
 
         let err = build_entry_module_graph(&entry, &program).unwrap_err();
 
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::UnsupportedModule);
         assert!(err.message.contains("issue-232"));
         assert!(
             err.message
@@ -493,7 +493,7 @@ export const value = nested;
 
         let err = build_entry_module_graph(&entry, &program).unwrap_err();
 
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
+        assert_eq!(err.code, DiagCode::UnsupportedModule);
         assert!(err.message.contains("issue-232"));
         assert!(err.message.contains("missing local module"));
         assert!(err.message.contains("missing.ts"));

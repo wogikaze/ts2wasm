@@ -1487,18 +1487,24 @@ impl Parser {
                             props.push((OBJECT_SPREAD_SENTINEL.to_owned(), val));
                         } else {
                             let key = self.parse_object_key()?;
-                            let key_start = self
+                            let key_span = self
                                 .prev_span()
                                 .unwrap_or(Span {
                                     start: start.start,
                                     end: start.start,
-                                })
-                                .start;
+                                });
+                            let key_start = key_span.start;
                             if let Some(val) = self.parse_object_literal_method(key.clone(), key_start)? {
                                 props.push((key, val));
-                            } else {
+                            } else if matches!(self.peek(), Some(Token::Colon)) {
                                 self.expect(TokenKind::Colon)?;
                                 let val = self.expression()?;
+                                props.push((key, val));
+                            } else {
+                                let val = Expr::Ident {
+                                    name: key.clone(),
+                                    span: key_span,
+                                };
                                 props.push((key, val));
                             }
                         }

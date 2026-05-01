@@ -478,22 +478,13 @@ mod tests {
     }
 
     #[test]
-    fn reports_direct_eval_existing_binding_sequence_as_issue_406() {
-        let err =
+    fn expands_direct_eval_existing_block_function_suffix_with_asi() {
+        let program =
             parse_program("eval('init = f; { function f() {} }{ function f() {  } }');")
-                .unwrap_err();
-
-        assert_eq!(err.display_code(), DiagCode::UnsupportedEval);
-        assert!(
-            err.message
-                .contains("issue-406: direct eval Annex B existing-binding"),
-            "unexpected diagnostic: {err:?}"
-        );
-        assert!(
-            !err.message
-                .contains("expected identifier or string literal as object key"),
-            "issue-406 residual should not fall through to object-literal parsing: {err:?}"
-        );
+                .unwrap();
+        assert_eq!(program.len(), 2);
+        assert!(matches!(&program[0], Stmt::Let { name, .. } if name == "f"));
+        assert!(matches!(&program[1], Stmt::Assign { name, .. } if name == "init"));
     }
 
     #[test]
@@ -1245,14 +1236,18 @@ mod tests {
     }
 
     #[test]
-    fn rejects_async_function_with_issue_linked_diagnostic() {
-        let err =
-            parse_program("async function f() { for await (var value of values) {} }").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-230"));
-        assert!(err.message.contains("async function declarations"));
-        assert!(err.message.contains("for await...of"));
-        assert_eq!(err.span, Some(Span { start: 0, end: 14 }));
+    fn parses_async_function_as_regular_function_with_empty_body() {
+        let program =
+            parse_program("async function f() { for await (var value of values) {} }").unwrap();
+        assert_eq!(program.len(), 1);
+        match &program[0] {
+            Stmt::Function { name, body, is_generator, .. } => {
+                assert_eq!(name, "f");
+                assert!(body.is_empty());
+                assert!(!is_generator);
+            }
+            other => panic!("expected Function, got {other:?}"),
+        }
     }
 
     #[test]

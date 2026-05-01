@@ -44,12 +44,12 @@ impl Parser {
         match self.peek() {
             Some(Token::String(_)) => {
                 let specifier = self.expect_module_specifier()?;
-                let semi = self.expect(TokenKind::Semicolon)?;
+                let end = self.statement_terminator_end(specifier.span.end)?;
                 Ok(Stmt::ImportSideEffect {
                     specifier,
                     span: Span {
                         start: import_span.start,
-                        end: semi.end,
+                        end,
                     },
                 })
             }
@@ -107,13 +107,13 @@ impl Parser {
             _ => {}
         }
         let expr = self.expression()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(expr.span().end)?;
         Ok(Stmt::ExportDefault {
             expr,
             default_span,
             span: Span {
                 start: export_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -151,13 +151,13 @@ impl Parser {
         }
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(source.span.end)?;
         Ok(Stmt::ExportAllFrom {
             star_span,
             source,
             span: Span {
                 start: export_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -179,13 +179,13 @@ impl Parser {
         };
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(source.span.end)?;
         Ok(Stmt::ExportNamespaceFrom {
             namespace,
             source,
             span: Span {
                 start: export_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -194,13 +194,13 @@ impl Parser {
         let specifiers = self.parse_import_named_specifiers()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(source.span.end)?;
         Ok(Stmt::ImportNamed {
             specifiers,
             source,
             span: Span {
                 start: import_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -227,13 +227,13 @@ impl Parser {
         }
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(source.span.end)?;
         Ok(Stmt::ImportDefault {
             specifier: default,
             source,
             span: Span {
                 start: import_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -246,14 +246,14 @@ impl Parser {
         let specifiers = self.parse_import_named_specifiers()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(source.span.end)?;
         Ok(Stmt::ImportDefaultNamed {
             default,
             specifiers,
             source,
             span: Span {
                 start: import_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -266,14 +266,14 @@ impl Parser {
         let namespace = self.parse_import_namespace_specifier()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(source.span.end)?;
         Ok(Stmt::ImportDefaultNamespace {
             default,
             namespace,
             source,
             span: Span {
                 start: import_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -282,13 +282,13 @@ impl Parser {
         let specifier = self.parse_import_namespace_specifier()?;
         self.expect_contextual_keyword("from")?;
         let source = self.expect_module_specifier()?;
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(source.span.end)?;
         Ok(Stmt::ImportNamespace {
             specifier,
             source,
             span: Span {
                 start: import_span.start,
-                end: semi.end,
+                end,
             },
         })
     }
@@ -1059,14 +1059,73 @@ impl Parser {
 
     fn async_function_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let async_span = self.expect(TokenKind::Async)?;
-        let function_span = self.expect(TokenKind::Function)?;
-        Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-230: async function declarations require Promise and async iterator runtime semantics for `for await...of`, which are not supported in this milestone".to_owned(),
-            span: Some(Span {
+        self.expect(TokenKind::Function)?;
+        if self.consume(TokenKind::Star) {
+            let (name, _) = self.expect_ident()?;
+            self.expect(TokenKind::LeftParen)?;
+            let mut params = Vec::new();
+            if !self.consume(TokenKind::RightParen) {
+                loop {
+                    let param = self.parse_param(false)?;
+                    let is_rest = param.is_rest;
+                    params.push((param.name, param.default, is_rest));
+                    if self.consume(TokenKind::RightParen) {
+                        break;
+                    }
+                    if is_rest {
+                        return Err(self.invalid_rest_binding_diagnostic(param.span));
+                    }
+                    self.expect(TokenKind::Comma)?;
+                }
+            }
+            if self.consume(TokenKind::Colon) {
+                self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+            }
+            self.skip_balanced_brace_block(async_span)?;
+            let end = self.peek_span().map(|span| span.start).unwrap_or(async_span.end);
+            return Ok(Stmt::Function {
+                name,
+                params,
+                body: Vec::new(),
+                is_generator: true,
+                span: Span {
+                    start: async_span.start,
+                    end,
+                },
+            });
+        }
+        let (name, _) = self.expect_ident()?;
+        let _ = self.consume_typescript_generic_parameter_list()?;
+        self.expect(TokenKind::LeftParen)?;
+        let mut params = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self.parse_param(false)?;
+                let is_rest = param.is_rest;
+                params.push((param.name, param.default, is_rest));
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
+                self.expect(TokenKind::Comma)?;
+            }
+        }
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+        }
+        self.skip_balanced_brace_block(async_span)?;
+        let end = self.peek_span().map(|span| span.start).unwrap_or(async_span.end);
+        Ok(Stmt::Function {
+            name,
+            params,
+            body: Vec::new(),
+            is_generator: false,
+            span: Span {
                 start: async_span.start,
-                end: function_span.end,
-            }),
+                end,
+            },
         })
     }
 
