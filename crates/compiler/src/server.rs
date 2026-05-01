@@ -1,8 +1,8 @@
 use std::fs;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Mutex;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use serde::{Deserialize, Serialize};
 
@@ -94,8 +94,8 @@ pub fn run_server() -> Result<(), String> {
         if !req.items.is_empty() {
             // Batch mode: process all items in parallel using a thread pool
             let results = process_batch(&tmpdir, &req.items);
-            let json = serde_json::to_string(&results)
-                .map_err(|e| format!("serialization error: {e}"))?;
+            let json =
+                serde_json::to_string(&results).map_err(|e| format!("serialization error: {e}"))?;
             let mut out = stdout.lock();
             writeln!(out, "{json}").map_err(|e| format!("stdout write error: {e}"))?;
             out.flush()
@@ -104,11 +104,14 @@ pub fn run_server() -> Result<(), String> {
             // Single-file mode
             let tmpfile = tmpdir.join(format!("{}.js", req.id));
             if let Err(e) = fs::write(&tmpfile, &req.source) {
-                let resp = make_response(req.id, Err(Diagnostic {
-                    code: ts2wasm_frontend::DiagCode::BackendIo,
-                    message: format!("failed to write temp file: {e}"),
-                    span: None,
-                }));
+                let resp = make_response(
+                    req.id,
+                    Err(Diagnostic {
+                        code: ts2wasm_frontend::DiagCode::BackendIo,
+                        message: format!("failed to write temp file: {e}"),
+                        span: None,
+                    }),
+                );
                 emit_response(&stdout, &resp)?;
                 continue;
             }
@@ -147,33 +150,35 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
 
     std::thread::scope(|s| {
         for _ in 0..n_workers {
-            s.spawn(|| loop {
-                let idx = next_idx.fetch_add(1, Ordering::Relaxed);
-                if idx >= n {
-                    break;
+            s.spawn(|| {
+                loop {
+                    let idx = next_idx.fetch_add(1, Ordering::Relaxed);
+                    if idx >= n {
+                        break;
+                    }
+
+                    let item = &items[idx];
+                    let tmpfile = tmpdir.join(format!("b_{}_{}.js", idx, item.id));
+
+                    // Write source, compile, clean up.
+                    let write_result = fs::write(&tmpfile, &item.source);
+                    let compile_result = if write_result.is_ok() {
+                        let r = compile_source(&tmpfile);
+                        let _ = fs::remove_file(&tmpfile);
+                        r
+                    } else {
+                        let err = write_result.unwrap_err();
+                        Err(Diagnostic {
+                            code: ts2wasm_frontend::DiagCode::BackendIo,
+                            message: format!("failed to write temp file: {err}"),
+                            span: None,
+                        })
+                    };
+
+                    let resp = make_response(item.id, compile_result);
+                    let mut guard = results.lock().unwrap();
+                    guard[idx] = Some(resp);
                 }
-
-                let item = &items[idx];
-                let tmpfile = tmpdir.join(format!("b_{}_{}.js", idx, item.id));
-
-                // Write source, compile, clean up.
-                let write_result = fs::write(&tmpfile, &item.source);
-                let compile_result = if write_result.is_ok() {
-                    let r = compile_source(&tmpfile);
-                    let _ = fs::remove_file(&tmpfile);
-                    r
-                } else {
-                    let err = write_result.unwrap_err();
-                    Err(Diagnostic {
-                        code: ts2wasm_frontend::DiagCode::BackendIo,
-                        message: format!("failed to write temp file: {err}"),
-                        span: None,
-                    })
-                };
-
-                let resp = make_response(item.id, compile_result);
-                let mut guard = results.lock().unwrap();
-                guard[idx] = Some(resp);
             });
         }
     });

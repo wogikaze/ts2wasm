@@ -817,14 +817,12 @@ def main():
     if jobs is None:
         jobs = os.cpu_count() or 4
     
-    # Server-mode setup (shared across all threads)
+    # Server-mode setup
     use_server = server_mode
     server_proc = None
-    server_lock = threading.Lock() if server_mode else None
-    server_counter = itertools.count(1) if server_mode else None
     
     if server_mode:
-        print(f"Starting ts2wasm server (1 process, {jobs} worker threads)...", file=sys.stderr)
+        print(f"Starting ts2wasm server (1 process, batch mode)...", file=sys.stderr)
         server_proc = subprocess.Popen(
             [str(TS2WASM_BINARY), "server"],
             stdin=subprocess.PIPE,
@@ -861,8 +859,62 @@ def main():
         else:
             result_metrics["mismatch"] = True
     
+    def _classify_build_response(build_resp, item, semantic_enabled, tmp_dir):
+        """Classify a batch build response into result_metrics. Returns result_metrics."""
+        rm = item["result_metrics"]
+        detail_path = item["detail_path"]
+        
+        if build_resp["status"] == "ok":
+            rm["build_pass"] = True
+            
+            if semantic_enabled:
+                thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
+                try:
+                    build_input = thread_tmp / "in.js"
+                    build_input.write_text(item["build_source"], encoding="utf-8")
+                    out_wasm = thread_tmp / "out.wasm"
+                    
+                    build_result = subprocess.run(
+                        ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                        capture_output=True,
+                        cwd=REPO_ROOT
+                    )
+                    if build_result.returncode == 0:
+                        _run_semantic_check(
+                            item["file_path"], item["source_code"], item["metadata"],
+                            thread_tmp, out_wasm, rm
+                        )
+                finally:
+                    shutil.rmtree(thread_tmp, ignore_errors=True)
+            
+            if detail_output and not rm.get("detail_line"):
+                rm["detail_line"] = f"{detail_path}: build_pass"
+        else:
+            diag_code = build_resp.get("code", "Unknown")
+            rm["diag_code"] = diag_code
+            
+            if diag_code == "BackendIo":
+                rm["blocked"] = True
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: blocked"
+            elif diag_code == "InvariantViolation":
+                rm["fail"] = True
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: fail: InvariantViolation"
+            else:
+                rm["unsupported"] = True
+                rm["feature_label"] = feature_label(diag_code, None, str(item["file_path"]))
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
+        
+        return rm
+    
     def _process_one_file(file_path):
-        """Process a single file for coverage measurement. Thread-safe."""
+        """Process a single file for coverage measurement. Thread-safe.
+        
+        In server mode, returns a pre-processed item dict for batch building.
+        In subprocess mode, runs the full build and returns result_metrics.
+        """
         if not file_path.is_file():
             return None
         
@@ -903,83 +955,26 @@ def main():
         )
         
         if use_server:
-            # === Server mode: one-liner protocol ===
-            server_id = next(server_counter)
-            req = json.dumps({"id": server_id, "source": build_source})
-            with server_lock:
-                server_proc.stdin.write(req.encode("utf-8") + b"\n")
-                server_proc.stdin.flush()
-                resp_line = server_proc.stdout.readline()
-                if not resp_line:
-                    result_metrics["blocked"] = True
-                    if detail_output:
-                        result_metrics["detail_line"] = f"{detail_path}: blocked (server disconnected)"
-                    return result_metrics
-            resp = json.loads(resp_line.decode("utf-8"))
-            
-            if resp["status"] == "ok":
-                result_metrics["build_pass"] = True
-                
-                if semantic_enabled:
-                    # Fall back to subprocess for WASM + semantic comparison
-                    thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
-                    try:
-                        build_input = thread_tmp / "in.js"
-                        build_input.write_text(build_source, encoding="utf-8")
-                        out_wasm = thread_tmp / "out.wasm"
-                        
-                        build_result = subprocess.run(
-                            ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
-                            capture_output=True,
-                            cwd=REPO_ROOT
-                        )
-                        if build_result.returncode == 0:
-                            _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics)
-                    finally:
-                        shutil.rmtree(thread_tmp, ignore_errors=True)
-                
-                if detail_output and not result_metrics.get("detail_line"):
-                    result_metrics["detail_line"] = f"{detail_path}: build_pass"
-                return result_metrics
-            
-            if resp["status"] == "error":
-                diag_code = resp.get("code", "Unknown")
-                result_metrics["diag_code"] = diag_code
-                
-                if diag_code == "BackendIo":
-                    result_metrics["blocked"] = True
-                    if detail_output:
-                        result_metrics["detail_line"] = f"{detail_path}: blocked"
-                    return result_metrics
-                
-                result_metrics["unsupported"] = True
-                diag_label = feature_label(diag_code, None, str(file_path))
-                result_metrics["feature_label"] = diag_label
-                if detail_output:
-                    result_metrics["detail_line"] = f"{detail_path}: {diag_code}: {diag_label}"
-                return result_metrics
-            
-            result_metrics["blocked"] = True
-            if detail_output:
-                result_metrics["detail_line"] = f"{detail_path}: blocked (unknown status)"
-            return result_metrics
+            # Server mode: return pre-processed item (batch build later)
+            return {
+                "type": "build_item",
+                "id": id_counter[0],
+                "file_path": file_path,
+                "detail_path": detail_path,
+                "source_code": source_code,
+                "metadata": metadata,
+                "build_source": build_source,
+                "result_metrics": result_metrics,
+            }
         
         # === Legacy subprocess mode ===
-        # Use per-thread temp dir to avoid file conflicts
         thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
         try:
-            # Write build input
-            metadata = test262_runner.parse_test262_metadata(source_code)
-            test262_runner.HARNESS_DIR = test262_harness_dir_for(file_path)
-            build_source = test262_runner.build_test262_source(
-                file_path, source_code, metadata, target="wasm"
-            )
             build_input = thread_tmp / "in.js"
             build_input.write_text(build_source, encoding="utf-8")
             
             out_wasm = thread_tmp / "out.wasm"
             
-            # Build with ts2wasm
             build_result = subprocess.run(
                 ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
                 capture_output=True,
@@ -1033,60 +1028,149 @@ def main():
     
     file_details = []
     
+    # Thread-safe counter for server items (list for mutation in closure)
+    id_counter = [0]
+    
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         
-        with ThreadPoolExecutor(max_workers=jobs) as executor:
-            futures = {executor.submit(_process_one_file, f): f for f in files}
-            for future in as_completed(futures):
-                result = future.result()
-                if result is None:
-                    continue
-                executed += 1
+        if use_server:
+            # === Server mode: parallel pre-process + batch build ===
+            # Phase 1: Pre-process all files in parallel
+            build_items = []
+            early_results = []
+            with ThreadPoolExecutor(max_workers=jobs) as executor:
+                for result in executor.map(_process_one_file, files):
+                    if result is None:
+                        continue
+                    if isinstance(result, dict) and result.get("type") == "build_item":
+                        result["id"] = id_counter[0]
+                        id_counter[0] += 1
+                        build_items.append(result)
+                    else:
+                        early_results.append(result)
+            
+            # Phase 2: Batch build via server
+            batch_size = 500
+            for i in range(0, len(build_items), batch_size):
+                batch = build_items[i:i+batch_size]
+                req = json.dumps({
+                    "id": -1,
+                    "items": [{"id": item["id"], "source": item["build_source"]} for item in batch]
+                })
+                server_proc.stdin.write(req.encode("utf-8") + b"\n")
+                server_proc.stdin.flush()
+                resp_line = server_proc.stdout.readline()
+                if not resp_line:
+                    # Server disconnected; mark remaining as blocked
+                    for item in batch:
+                        item["result_metrics"]["blocked"] = True
+                    break
+                build_results = json.loads(resp_line.decode("utf-8"))
+                results_by_id = {r["id"]: r for r in build_results}
                 
+                for item in batch:
+                    result = _classify_build_response(
+                        results_by_id[item["id"]], item, semantic_enabled, tmp_dir
+                    )
+                    executed += 1
+                    if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
+                        unsupported_count += 1
+                        unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
+                        unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                    elif result["build_pass"]:
+                        build_pass_count += 1
+                        if result["semantic_pass"]:
+                            semantic_pass_count += 1
+                        elif result["mismatch"]:
+                            mismatch_count += 1
+                        elif result["runtime_error"]:
+                            runtime_error_count += 1
+                        elif result["blocked"]:
+                            blocked_count += 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                    elif result["blocked"]:
+                        blocked_count += 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                    elif result["fail"]:
+                        fail_count += 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                    elif result["unsupported"]:
+                        unsupported_count += 1
+                        diag_code = result["diag_code"]
+                        feat = result["feature_label"]
+                        unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
+                        unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+            
+            # Phase 3: Process early results (negative-parse-syntaxerror etc.)
+            for result in early_results:
+                executed += 1
                 if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
                     unsupported_count += 1
                     unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
                     unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
                     if result["detail_line"]:
                         file_details.append(result["detail_line"])
-                    continue
-                
-                if result["build_pass"]:
-                    build_pass_count += 1
-                    if result["semantic_pass"]:
-                        semantic_pass_count += 1
-                    elif result["mismatch"]:
-                        mismatch_count += 1
-                    elif result["runtime_error"]:
-                        runtime_error_count += 1
-                    elif result["blocked"]:
+        else:
+            # === Legacy subprocess mode ===
+            with ThreadPoolExecutor(max_workers=jobs) as executor:
+                futures = {executor.submit(_process_one_file, f): f for f in files}
+                for future in as_completed(futures):
+                    result = future.result()
+                    if result is None:
+                        continue
+                    executed += 1
+                    
+                    if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
+                        unsupported_count += 1
+                        unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
+                        unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                        continue
+                    
+                    if result["build_pass"]:
+                        build_pass_count += 1
+                        if result["semantic_pass"]:
+                            semantic_pass_count += 1
+                        elif result["mismatch"]:
+                            mismatch_count += 1
+                        elif result["runtime_error"]:
+                            runtime_error_count += 1
+                        elif result["blocked"]:
+                            blocked_count += 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                        continue
+                    
+                    if result["blocked"]:
                         blocked_count += 1
-                    if result["detail_line"]:
-                        file_details.append(result["detail_line"])
-                    continue
-                
-                if result["blocked"]:
-                    blocked_count += 1
-                    if result["detail_line"]:
-                        file_details.append(result["detail_line"])
-                    continue
-                
-                if result["fail"]:
-                    fail_count += 1
-                    if result["detail_line"]:
-                        file_details.append(result["detail_line"])
-                    continue
-                
-                if result["unsupported"]:
-                    unsupported_count += 1
-                    diag_code = result["diag_code"]
-                    feat = result["feature_label"]
-                    unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
-                    unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
-                    if result["detail_line"]:
-                        file_details.append(result["detail_line"])
-                    continue
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                        continue
+                    
+                    if result["fail"]:
+                        fail_count += 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                        continue
+                    
+                    if result["unsupported"]:
+                        unsupported_count += 1
+                        diag_code = result["diag_code"]
+                        feat = result["feature_label"]
+                        unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
+                        unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
+                        if result["detail_line"]:
+                            file_details.append(result["detail_line"])
+                        continue
     
         # Server cleanup
         if server_mode and server_proc:
