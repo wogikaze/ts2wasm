@@ -9,6 +9,8 @@ depends_on: [399]
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01
+status: done
+completed: 2026-05-01
 ---
 
 ## Summary
@@ -36,11 +38,11 @@ The `declaration-emit` unsupported count in the tsgo suite is reduced to 0. `dec
 
 In scope:
 
-- [ ] Implement parsing of `declare` modifier on declarations
-- [ ] Support declare class, declare function, declare module, declare namespace
-- [ ] Support declare global, declare enum
-- [ ] Erase declare declarations during IR lowering (no runtime emission)
-- [ ] Add fixture tests for common declare patterns
+- [x] Implement parsing of `declare` modifier on declarations
+- [x] Support declare class, declare function, declare module, declare namespace
+- [x] Support declare global, declare enum
+- [x] Erase declare declarations during IR lowering (no runtime emission)
+- [x] Add fixture tests for common declare patterns
 
 Out of scope:
 
@@ -64,10 +66,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Declaration emit unsupported count in tsgo coverage decreases from 16
-- [ ] Fixture tests cover basic declare class, declare function, declare module
-- [ ] Existing tsgo suite cases that now pass are updated
-- [ ] Docs/current-state/issues are synchronized when status or design changes
+- [x] Declaration emit unsupported count in tsgo coverage decreases from 16
+- [x] Fixture tests cover basic declare class, declare function, declare module
+- [x] Existing tsgo suite cases that now pass are updated
+- [x] Docs/current-state/issues are synchronized when status or design changes
 
 ## Validation
 
@@ -89,12 +91,12 @@ Not run:
 Final-state docs:
 
 - [x] not affected
-- [ ] updated: `docs/...`
+- [x] not updated in this slice
 
 Current state:
 
 - [x] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] not updated in this slice
 
 Follow-up issues:
 
@@ -107,3 +109,13 @@ This issue is a child implementation bucket of issue 399. Do not start broad dec
 Boundary decision after issue 399: `declaration-emit` maps to category 2 when declaration output or module shape matters, and category 4 when declaration-only input must be rejected or erased without runtime bindings. Ambient declaration erasure is split to issue 400.
 
 Similar to type alias erasure, many `declare` declarations are compile-time only and should be erased if issue 399 confirms they have no runtime/module-shape effect for the selected cases. The parser then needs to accept `declare` as a declaration modifier and route it through the erasure boundary.
+
+## Completion evidence
+
+- Parser support and regressions were implemented in:
+  - `crates/frontend/src/parser/helpers.rs`
+  - `crates/frontend/src/parser/expressions.rs`
+  - `crates/frontend/src/parser/statements.rs`
+  - `crates/frontend/src/parser/tests.rs`
+- The issue file was moved from `issues/open/` to `issues/done/`.
+- `issues/index.md` was regenerated via `mise run update-issue-index`.
