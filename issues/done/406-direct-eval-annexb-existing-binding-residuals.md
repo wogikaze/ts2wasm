@@ -159,7 +159,7 @@ semantics can be checked.
 
 Commits:
 
-- pending cycle commit
+- `d005943f` issue-406: close eval existing binding parser residual
 
 Validation result:
 
