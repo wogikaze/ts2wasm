@@ -3,9 +3,9 @@ id: 343
 title: "Implement DuplicateLocal diagnostic detection (66 test262 cases)"
 type: feature
 area: frontend/resolver
-class: triage-needed
+class: blocked
 priority: P2
-depends_on: []
+depends_on: [5005]
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30

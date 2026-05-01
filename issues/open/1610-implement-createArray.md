@@ -4,7 +4,7 @@ title: "Implement Createarray"
 type: spike
 area: frontend/syntax
 class: triage-needed
-priority: P1
+priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01

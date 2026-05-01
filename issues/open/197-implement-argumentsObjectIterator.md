@@ -3,9 +3,9 @@ id: 197
 title: "Implement Argumentsobjectiterator"
 type: spike
 area: frontend/semantics
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5001]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29

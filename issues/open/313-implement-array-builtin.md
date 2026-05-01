@@ -3,7 +3,7 @@ id: 313
 title: "Implement array-builtin support"
 type: spike
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P1
 depends_on: []
 blocks: []

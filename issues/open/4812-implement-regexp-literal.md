@@ -3,7 +3,7 @@ id: 4812
 title: "Implement RegExp literal support"
 type: spike
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P1
 depends_on: []
 blocks: []

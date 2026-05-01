@@ -3,9 +3,9 @@ id: 3376
 title: "Implement Moduleresolutionnoresolve"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5001]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

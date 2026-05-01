@@ -3,9 +3,9 @@ id: 178
 title: "Implement Anonterface"
 type: spike
 area: frontend/syntax
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5000]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29

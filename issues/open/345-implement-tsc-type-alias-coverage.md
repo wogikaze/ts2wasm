@@ -3,7 +3,7 @@ id: 345
 title: "Implement TypeScript type alias coverage for tsc suite (23 cases)"
 type: feature
 area: frontend/syntax
-class: triage-needed
+class: blocked
 priority: P2
 depends_on: [399]
 blocks: []

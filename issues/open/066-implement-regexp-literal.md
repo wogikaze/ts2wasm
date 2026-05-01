@@ -3,9 +3,9 @@ id: 066
 title: "Implement RegExp literal support"
 type: spike
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5005, 5004]
 blocks: []
 created: 2026-04-26
 updated: 2026-04-29

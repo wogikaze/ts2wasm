@@ -3,9 +3,9 @@ id: 068
 title: "Implement unsupported expression types"
 type: spike
 area: frontend/semantics
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5005]
 blocks: []
 created: 2026-04-26
 updated: 2026-04-29

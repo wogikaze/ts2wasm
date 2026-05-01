@@ -3,9 +3,9 @@ id: 316
 title: "Fix Object.keys backend-io error"
 type: feature
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P0
-depends_on: []
+depends_on: [5004]
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30

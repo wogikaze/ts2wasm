@@ -4,7 +4,7 @@ title: "Implement function resolution"
 type: spike
 area: frontend/resolver
 class: triage-needed
-priority: P1
+priority: P2
 depends_on: []
 blocks: []
 created: 2026-05-01

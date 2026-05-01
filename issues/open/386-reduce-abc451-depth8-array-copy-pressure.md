@@ -4,7 +4,7 @@ title: "Reduce ABC451 depth-8 array copy pressure"
 type: feature
 area: runtime/memory
 class: triage-needed
-priority: P1
+priority: P2
 depends_on: [385]
 blocks: [357]
 created: 2026-05-01

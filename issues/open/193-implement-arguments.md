@@ -3,9 +3,9 @@ id: 193
 title: "Implement Arguments"
 type: spike
 area: frontend/resolver
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5005]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29

@@ -3,9 +3,9 @@ id: 4291
 title: "Implement Stringmatchall"
 type: spike
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P1
-depends_on: []
+depends_on: [5005, 5004]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

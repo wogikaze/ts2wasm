@@ -3,9 +3,9 @@ id: 3371
 title: "Implement Moduleresolution Module Resolution"
 type: spike
 area: frontend/syntax
-class: triage-needed
-priority: P1
-depends_on: []
+class: blocked
+priority: P2
+depends_on: [5007]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

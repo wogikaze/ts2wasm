@@ -4,7 +4,7 @@ title: "Investigate and classify unknown-unsupported cases"
 type: spike
 area: reference/triage
 class: triage-needed
-priority: P1
+priority: P2
 depends_on: []
 blocks: []
 created: 2026-04-26

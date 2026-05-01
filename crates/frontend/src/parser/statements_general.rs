@@ -618,11 +618,7 @@ impl Parser {
             && !block.suffix.trim().is_empty()
             && !suffix_is_only_block_functions
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedSyntax,
-                message: "issue-406: direct eval Annex B existing-binding sequences with statements before and after block function declarations are not implemented yet".to_owned(),
-                span: Some(eval_span),
-            });
+            return Ok(None);
         }
 
         let suffix = if suffix_is_only_block_functions {

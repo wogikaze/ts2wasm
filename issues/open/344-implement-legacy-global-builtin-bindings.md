@@ -3,9 +3,9 @@ id: 344
 title: "Implement legacy global builtin bindings (8 test262 cases)"
 type: feature
 area: runtime/builtins
-class: triage-needed
+class: blocked
 priority: P3
-depends_on: []
+depends_on: [5005, 5004]
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30

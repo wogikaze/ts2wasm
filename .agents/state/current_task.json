@@ -1,11 +1,30 @@
 {
-  "id": null,
-  "title": null,
-  "status": "idle",
-  "issue_path": null,
-  "scope": null,
-  "acceptance": null,
-  "commands": null,
-  "risk": null,
-  "notes": ""
+  "id": "agent-1001",
+  "title": "Annex B eval-code function declaration residuals",
+  "status": "selected",
+  "issue_path": "issues/open/1001-eval-annexb-function-existing-binding-residuals.md",
+  "scope": {
+    "allowed_files": [
+      "crates/frontend/src/parser/"
+    ],
+    "forbidden_files": [
+      "docs/"
+    ]
+  },
+  "acceptance": [
+    "22 test262 eval-code/direct/ cases no longer report eval label"
+  ],
+  "commands": {
+    "fast": [
+      "mise run fmt",
+      "mise run nextest"
+    ],
+    "full": [
+      "mise run gate"
+    ]
+  },
+  "risk": [
+    "parser changes may affect other eval parsing"
+  ],
+  "notes": "Cycle 1 of 5"
 }

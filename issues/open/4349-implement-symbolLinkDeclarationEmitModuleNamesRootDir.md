@@ -3,9 +3,9 @@ id: 4349
 title: "Implement Symbollinkdeclarationemitmodulenamesrootdir"
 type: spike
 area: frontend/syntax
-class: triage-needed
-priority: P1
-depends_on: []
+class: blocked
+priority: P2
+depends_on: [5003]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

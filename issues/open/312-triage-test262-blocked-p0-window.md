@@ -4,7 +4,7 @@ title: "Triage test262 blocked P0 window"
 type: spike
 area: reference
 class: triage-needed
-priority: P0
+priority: P2
 depends_on: []
 blocks: []
 created: 2026-04-30
