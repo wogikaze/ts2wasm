@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 214 | 130 | 84 |
+| frontend | 215 | 131 | 84 |
 | ir | 9 | 0 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 418 | 163 | 255 |
+| total | 419 | 164 | 255 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -211,6 +211,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | design | runtime/semantics | class: blocked | Design broader object ToPrimitive for mixed BigInt comparisons |
 | 382 | Multi-limb BigInt addition and subtraction | feature | runtime/semantics | class: blocked | Multi-limb BigInt addition and subtraction |
 | 386 | Reduce ABC451 depth-8 array copy pressure | feature | runtime/memory | class: triage-needed | Reduce ABC451 depth-8 array copy pressure |
+| 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | 225, 347, 348, 349 | Direct eval Annex B existing binding residuals |
 <!-- generated:blocked:end -->
 
 ## Done queue

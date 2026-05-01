@@ -6,7 +6,7 @@ area: frontend/semantics
 class: ready
 priority: P3
 depends_on: []
-blocks: [347, 348, 349]
+blocks: [347, 348, 349, 406]
 created: 2026-04-28
 updated: 2026-05-01
 ---
@@ -39,6 +39,7 @@ Child issues:
 - [x] Issue 347: Parser and resolver support for direct eval and eval-code scope
 - [x] Issue 348: Lowering block-level function declarations in direct eval code
 - [x] Issue 349: Runtime helper or shim JavaScript emission for direct eval execution
+- [ ] Issue 406: Direct eval Annex B existing binding residuals
 
 Out of scope:
 
@@ -112,6 +113,15 @@ Reference-backed affected files in the limit-300 window are under:
 - `reference/test262/test/annexB/language/eval-code/direct/func-block-decl-eval-func-*.js`
 - `reference/test262/test/annexB/language/eval-code/direct/func-if-decl-else-decl-a-eval-func-*.js`
 - `reference/test262/test/annexB/language/eval-code/direct/func-if-decl-else-decl-b-eval-func-*.js`
+
+2026-05-01 parent coverage refresh:
+
+- `mise run reference-coverage -- test262 --limit 300 --no-web-ui` still
+  reports `unsupported_features=eval:29` and
+  `unsupported_diagcodes=UnsupportedEval:6` in the classified window.
+- Direct eval-code cases now include a mix of `BuildPass`, `UnresolvedName`,
+  `DuplicateLocal`, and `UnsupportedSyntax: eval`. Issue 406 tracks the next
+  concrete direct-eval residual family instead of treating 225 as closable.
 
 ## Completion evidence
 
