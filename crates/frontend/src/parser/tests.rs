@@ -299,6 +299,81 @@ mod tests {
     }
 
     #[test]
+    fn parses_typescript_object_literal_generic_methods_as_erased_syntax() {
+        let source = r#"
+            let object = {
+                id<T>(value: T) { return value; },
+                pair<T, U>(left: T, right: U): [T, U] { return [left, right]; },
+            };
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 1);
+
+        let Stmt::Let {
+            expr: Expr::Object { props, .. },
+            ..
+        } = &program[0]
+        else {
+            panic!("expected object literal let statement");
+        };
+        assert_eq!(props.len(), 2);
+        assert!(matches!(
+            props[0].1,
+            Expr::FunctionExpr {
+                name,
+                ..
+            } if name == "id"
+        ));
+        assert!(matches!(
+            props[1].1,
+            Expr::FunctionExpr {
+                name,
+                ..
+            } if name == "pair"
+        ));
+    }
+
+    #[test]
+    fn parses_as_const_satisfies_expression_followed_by_erasable_declare() {
+        let source = r#"
+            let value = { x: 3 } as const satisfies { x: number }
+            declare function parse<T extends { x: number }>(value: T): T;
+            let result = parse({ x: 3 });
+        "#;
+        let program = parse_program(source).unwrap();
+        assert_eq!(program.len(), 2);
+
+        let Stmt::Let { name, expr: _, .. } = &program[0] else {
+            panic!("expected let statement");
+        };
+        assert_eq!(name, "value");
+
+        let Stmt::Let { name, .. } = &program[1] else {
+            panic!("expected call let statement");
+        };
+        assert_eq!(name, "result");
+    }
+
+    #[test]
+    fn accepts_expression_statement_without_semicolon_before_left_brace_boundary() {
+        let program = parse_program("let value = 1\n{}").unwrap();
+        assert_eq!(program.len(), 2);
+
+        let Stmt::Let { name, expr: Expr::Number { value: 1, .. }, .. } = &program[0] else {
+            panic!("expected leading let statement");
+        };
+        assert_eq!(name, "value");
+
+        match &program[1] {
+            Stmt::Expr {
+                expr: Expr::Object { props, .. },
+                ..
+            } => assert!(props.is_empty()),
+            other => panic!("expected object expression boundary statement, got {other:?}"),
+        }
+    }
+
+    #[test]
     fn parses_spread_in_array_and_object_literals() {
         let program = parse_program("let array = [0, ...items, 3]; let object = { a: 1, ...rest };")
             .unwrap();

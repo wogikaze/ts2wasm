@@ -1794,9 +1794,20 @@ impl Parser {
                             props.push((OBJECT_SPREAD_SENTINEL.to_owned(), val));
                         } else {
                             let key = self.parse_object_key()?;
-                            self.expect(TokenKind::Colon)?;
-                            let val = self.expression()?;
-                            props.push((key, val));
+                            let key_start = self
+                                .prev_span()
+                                .unwrap_or(Span {
+                                    start: start.start,
+                                    end: start.start,
+                                })
+                                .start;
+                            if let Some(val) = self.parse_object_literal_method(key.clone(), key_start)? {
+                                props.push((key, val));
+                            } else {
+                                self.expect(TokenKind::Colon)?;
+                                let val = self.expression()?;
+                                props.push((key, val));
+                            }
                         }
                         if self.consume(TokenKind::RightBrace) {
                             break;
@@ -1829,6 +1840,60 @@ impl Parser {
                 span: self.peek_span(),
             }),
         }
+    }
+
+    fn parse_object_literal_method(
+        &mut self,
+        name: String,
+        method_start: usize,
+    ) -> Result<Option<Expr>, Diagnostic> {
+        let checkpoint = self.cursor;
+        let has_generic_params = match self.consume_typescript_generic_parameter_list() {
+            Ok(has_generic_params) => has_generic_params,
+            Err(_) => {
+                self.cursor = checkpoint;
+                false
+            }
+        };
+
+        if !self.consume(TokenKind::LeftParen) {
+            self.cursor = checkpoint;
+            return Ok(None);
+        }
+
+        let _ = has_generic_params;
+        let mut params = Vec::new();
+        if !self.consume(TokenKind::RightParen) {
+            loop {
+                let param = self.parse_param(false)?;
+                let is_rest = param.is_rest;
+                params.push((param.name, param.default, is_rest));
+                if self.consume(TokenKind::RightParen) {
+                    break;
+                }
+                if is_rest {
+                    return Err(self.invalid_rest_binding_diagnostic(param.span));
+                }
+                self.expect(TokenKind::Comma)?;
+            }
+        }
+
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+        }
+
+        let body = self.block()?;
+        let end = body.last().map(|stmt| stmt.span().end).unwrap_or(method_start);
+
+        Ok(Some(Expr::FunctionExpr {
+            name,
+            params,
+            body,
+            span: Span {
+                start: method_start,
+                end,
+            },
+        }))
     }
 
     fn function_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
