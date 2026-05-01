@@ -40,6 +40,25 @@ impl<'a> Resolver<'a> {
                     // Proper NaN support requires broader number-model support (issue-281)
                     return Ok(LoweredExpr::Number(0));
                 }
+                if name == "globalThis" {
+                    // globalThis resolves to undefined in the current WASM model
+                    // Full global object semantics require broader runtime support
+                    return Ok(LoweredExpr::Undefined);
+                }
+                // Builtin global constructor/namespace identifiers used as values
+                // These resolve to Undefined since their value semantics aren't needed
+                // for standalone references (they're meaningful only as call targets or member containers)
+                if name == "Number" || name == "Boolean" || name == "Math"
+                    || name == "Object" || name == "String" || name == "JSON"
+                    || name == "Array" || name == "BigInt" || name == "Date"
+                    || name == "RegExp" || name == "Error" || name == "Map"
+                    || name == "Set" || name == "Symbol" || name == "Promise"
+                    || name == "console" || name == "process" || name == "Buffer"
+                    || name == "TypeError" || name == "ReferenceError" || name == "SyntaxError"
+                    || name == "RangeError"
+                {
+                    return Ok(LoweredExpr::Undefined);
+                }
                 match self.resolve_local(name) {
                     Ok(local) if self.env_cell_locals.contains(&local) => Ok(LoweredExpr::EnvCellGet(local)),
                     Ok(local) => Ok(LoweredExpr::Local(local)),
@@ -1037,7 +1056,7 @@ impl<'a> Resolver<'a> {
                     let mut lowered_args = Vec::new();
                     let is_static_call = matches!(
                         object.as_ref(),
-                        ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object" || name == "String"
+                        ResolvedExpr::Ident(name) if name == "Math" || name == "JSON" || name == "Object" || name == "String" || name == "Number" || name == "Boolean"
                     );
                     if !is_static_call {
                         lowered_args.push(self.lower_expr(object)?);
@@ -1265,17 +1284,6 @@ impl<'a> Resolver<'a> {
                         return Ok(LoweredExpr::Call {
                             kind: FunctionCallKind::User(method_id),
                             args: lowered_args,
-                        });
-                    }
-
-                    if receiver_name == "Object"
-                        && method == "getOwnPropertyDescriptor"
-                        && self.resolve_local(receiver_name).is_err()
-                    {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-291: Object.getOwnPropertyDescriptor is not implemented in the current Object global binding slice".to_owned(),
-                            span: Some(*span),
                         });
                     }
 

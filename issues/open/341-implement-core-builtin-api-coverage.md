@@ -41,10 +41,10 @@ Already completed (not tracked by child issues):
 - [x] console.log
 
 Child issues:
-- [ ] Issue 341a: Implement isNaN, parseInt, parseFloat, isFinite global functions
-- [ ] Issue 341b: Implement Number constructor and static methods
-- [ ] Issue 341c: Implement Boolean global
-- [ ] Issue 341d: Implement globalThis binding
+- [x] Issue 341a: Implement isNaN, parseInt, parseFloat, isFinite global functions
+- [x] Issue 341b: Implement Number constructor and static methods
+- [x] Issue 341c: Implement Boolean global
+- [x] Issue 341d: Implement globalThis binding
 - [ ] Issue 341e: Implement encodeURI, decodeURI, escape, unescape
 
 Out of scope:
@@ -72,7 +72,8 @@ This meta issue is complete when all child issues are moved to `done/`.
 
 - [x] Math builtins (floor, ceil, round, abs, min, max, random, pow) are implemented
 - [x] console.log is implemented
-- [ ] All child issues (341a-341e) are moved to `done/`
+- [x] All child issues (341a-341d) are moved to `done/`
+- [ ] Issue 341e (encodeURI, decodeURI, escape, unescape) — not started
 - [ ] `cargo fmt --all --check` and `cargo nextest run` pass
 
 ## Validation

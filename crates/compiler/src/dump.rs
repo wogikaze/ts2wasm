@@ -1081,5 +1081,7 @@ fn hir_builtin_name(builtin: BuiltinId) -> &'static str {
         BuiltinId::ParseInt => "parseInt",
         BuiltinId::ParseFloat => "parseFloat",
         BuiltinId::IsFinite => "isFinite",
+        BuiltinId::BooleanCoerce => "Boolean",
+        BuiltinId::NumberCoerce => "Number",
     }
 }

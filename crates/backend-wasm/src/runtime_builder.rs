@@ -140,6 +140,10 @@ impl WatEmitter<'_> {
                 RuntimeFn::ObjectSpread => self.emit_object_spread(wat),
                 RuntimeFn::ObjectValues => self.emit_object_values(wat),
                 RuntimeFn::ObjectEntries => self.emit_object_entries(wat),
+                RuntimeFn::ObjectHasOwnProperty => self.emit_object_has_own_property(wat),
+                RuntimeFn::ObjectGetOwnPropertyDescriptor => {
+                    self.emit_object_get_own_property_descriptor(wat)
+                }
                 RuntimeFn::ObjectGetPrototypeOf => self.emit_object_get_prototype_of(wat),
                 RuntimeFn::ObjectSetPrototypeOf => self.emit_object_set_prototype_of(wat),
                 RuntimeFn::InstanceOf => self.emit_instanceof(wat),
@@ -171,6 +175,12 @@ impl WatEmitter<'_> {
                 RuntimeFn::ParseInt => self.emit_parse_int(wat),
                 RuntimeFn::ParseFloat => self.emit_parse_float(wat),
                 RuntimeFn::IsFinite => self.emit_is_finite(wat),
+                RuntimeFn::BooleanCoerce => self.emit_boolean_coerce(wat),
+                RuntimeFn::NumberCoerce => self.emit_number_coerce(wat),
+                RuntimeFn::NumberIsNaN => self.emit_number_is_nan(wat),
+                RuntimeFn::NumberIsFinite => self.emit_number_is_finite(wat),
+                RuntimeFn::NumberIsInteger => self.emit_number_is_integer(wat),
+                RuntimeFn::NumberIsSafeInteger => self.emit_number_is_safe_integer(wat),
             }
         }
     }

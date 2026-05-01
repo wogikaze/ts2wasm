@@ -1130,11 +1130,13 @@ fn array_sort_unsupported_forms_report_issue_299() {
 }
 
 #[test]
-fn object_get_own_property_descriptor_reports_issue_291() {
-    assert_build_fails_with_unsupported_builtin(
-        "fixtures/builtins-and-io/object-get-own-property-descriptor-unsupported.ts",
-        "issue-291: Object.getOwnPropertyDescriptor is not implemented in the current Object global binding slice",
-    );
+fn object_get_own_property_descriptor_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-get-own-property-descriptor.ts");
+}
+
+#[test]
+fn object_has_own_property_matches_node() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/object-has-own-property.ts");
 }
 
 #[test]

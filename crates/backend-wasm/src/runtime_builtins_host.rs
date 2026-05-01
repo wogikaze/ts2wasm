@@ -1235,4 +1235,146 @@ impl WatEmitter<'_> {
             false_tag = ValueTag::FALSE,
         ));
     }
+
+    /// Emit $boolean_coerce global function.
+    /// Boolean(x): returns TRUE if truthy (not 0, not undefined, not null, not false, not empty string)
+    pub(crate) fn emit_boolean_coerce(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $boolean_coerce (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    ;; false, undefined, null -> 0 -> false
+    (if (i32.eq (local.get $v) (i32.const {false_val})) (then (return (i32.const {false_tag}))))
+    (if (i32.eq (local.get $v) (i32.const {undefined})) (then (return (i32.const {false_tag}))))
+    (if (i32.eq (local.get $v) (i32.const {null_val})) (then (return (i32.const {false_tag}))))
+    ;; number 0 -> false
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then
+        (if (i32.eqz (i32.shr_s (local.get $v) (i32.const {number_shift})))
+          (then (return (i32.const {false_tag})))
+          (else (return (i32.const {true_tag}))))))
+    ;; empty string -> false (check string length)
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
+      (then
+        (if (i32.eqz (i32.load (i32.and (local.get $v) (i32.const {heap_mask}))))
+          (then (return (i32.const {false_tag})))
+          (else (return (i32.const {true_tag}))))))
+    ;; Everything else is truthy
+    (i32.const {true_tag}))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            string_tag = ValueTag::STRING,
+            heap_mask = ValueTag::HEAP_MASK,
+            false_val = ValueTag::FALSE,
+            undefined = ValueTag::UNDEFINED,
+            null_val = ValueTag::NULL,
+            false_tag = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
+        ));
+    }
+
+    /// Emit $number_coerce global function.
+    /// Number(x): coerces to number value.
+    pub(crate) fn emit_number_coerce(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $number_coerce (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    ;; Already a number: return as-is
+    (if (i32.eq (local.get $tag) (i32.const {number_tag}))
+      (then (return (local.get $v))))
+    ;; Boolean: 0 or 1
+    (if (i32.eq (local.get $v) (i32.const {false_val}))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.eq (local.get $v) (i32.const {true_val}))
+      (then (return (i32.or (i32.shl (i32.const {one}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; undefined -> 0 (NaN in spec, but 0 in our model)
+    (if (i32.eq (local.get $v) (i32.const {undefined}))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; null -> 0
+    (if (i32.eq (local.get $v) (i32.const {null_val}))
+      (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; String: parse integer
+    (if (i32.eq (local.get $tag) (i32.const {string_tag}))
+      (then (return (call $parse_int_string (local.get $v) (i32.const {zero})))))
+    ;; Default: 0
+    (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            string_tag = ValueTag::STRING,
+            false_val = ValueTag::FALSE,
+            true_val = ValueTag::TRUE,
+            undefined = ValueTag::UNDEFINED,
+            null_val = ValueTag::NULL,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
+    /// Emit $number_is_nan — wrapper around $is_nan for Number.isNaN().
+    /// Number.isNaN(x): same semantics as global isNaN(x).
+    pub(super) fn emit_number_is_nan(&self, wat: &mut String) {
+        wat.push_str(
+            r##"
+  (func $number_is_nan (param $v i32) (result i32)
+    (return (call $is_nan (local.get $v))))
+"##,
+        );
+    }
+
+    /// Emit $number_is_finite — wrapper around $is_finite for Number.isFinite().
+    /// Number.isFinite(x): same semantics as global isFinite(x).
+    pub(super) fn emit_number_is_finite(&self, wat: &mut String) {
+        wat.push_str(
+            r##"
+  (func $number_is_finite (param $v i32) (result i32)
+    (return (call $is_finite (local.get $v))))
+"##,
+        );
+    }
+
+    /// Emit $number_is_integer.
+    /// Number.isInteger(x): returns true if x is a number and is an integer.
+    pub(super) fn emit_number_is_integer(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $number_is_integer (param $v i32) (result i32)
+    ;; Number.isInteger returns true only if value is a number tag.
+    ;; All our numbers are integers (in the tagged model), so check tag.
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then (return (i32.const {true_tag}))))
+    (return (i32.const {false_tag})))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
+
+    /// Emit $number_is_safe_integer.
+    /// Number.isSafeInteger(x): returns true if x is a number and is a safe integer.
+    pub(super) fn emit_number_is_safe_integer(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r##"
+  (func $number_is_safe_integer (param $v i32) (result i32)
+    ;; All our numbers are integers in the tagged model.
+    ;; MAX_SAFE_INTEGER is 2^53-1 which is larger than our shifted range.
+    ;; So all tagged numbers are "safe" in our model.
+    (if (i32.eq (i32.and (local.get $v) (i32.const {tag_mask})) (i32.const {number_tag}))
+      (then (return (i32.const {true_tag}))))
+    (return (i32.const {false_tag})))
+"##,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+        ));
+    }
 }

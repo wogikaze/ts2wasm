@@ -27,6 +27,8 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "keys" => Some("ObjectKeys".to_owned()),
                 "values" => Some("ObjectValues".to_owned()),
                 "entries" => Some("ObjectEntries".to_owned()),
+                "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
+                "getOwnPropertyDescriptor" => Some("ObjectGetOwnPropertyDescriptor".to_owned()),
                 "getPrototypeOf" => Some("ObjectGetPrototypeOf".to_owned()),
                 "setPrototypeOf" => Some("ObjectSetPrototypeOf".to_owned()),
                 _ => None,
@@ -35,6 +37,15 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         if name == "String" {
             return match method {
                 "fromCharCode" => Some("StringFromCharCode".to_owned()),
+                _ => None,
+            };
+        }
+        if name == "Number" {
+            return match method {
+                "isNaN" => Some("NumberIsNaN".to_owned()),
+                "isFinite" => Some("NumberIsFinite".to_owned()),
+                "isInteger" => Some("NumberIsInteger".to_owned()),
+                "isSafeInteger" => Some("NumberIsSafeInteger".to_owned()),
                 _ => None,
             };
         }
@@ -49,6 +60,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "toUpperCase" => Some("StringToUpperCase".to_owned()),
         "toLowerCase" => Some("StringToLowerCase".to_owned()),
         "charCodeAt" => Some("StringCharCodeAt".to_owned()),
+        "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
         "push" => Some("ArrayPush".to_owned()),
         "pop" => Some("ArrayPop".to_owned()),
         "concat" => Some("ArrayConcat".to_owned()),

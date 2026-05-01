@@ -1075,6 +1075,164 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_object_has_own_property(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_has_own_property (param $obj i32) (param $key i32) (result i32)
+    (local $key_len i32)
+    (local.set $key_len
+      (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (call $property_has
+      (local.get $obj)
+      (i32.const {scratch_offset})
+      (local.get $key_len)))
+"#,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_object_get_own_property_descriptor(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_get_own_property_descriptor (param $obj i32) (param $key i32) (result i32)
+    (local $tag i32)
+    (local $base i32)
+    (local $count i32)
+    (local $i i32)
+    (local $entry_base i32)
+    (local $entry_key_raw i32)
+    (local $entry_key_ptr i32)
+    (local $entry_key_len i32)
+    (local $entry_value i32)
+    (local $desc i32)
+    (local $key_len i32)
+    (if (i32.ne (i32.and (local.get $obj) (i32.const {tag_mask})) (i32.const {object_tag}))
+      (then (return (i32.const {undefined}))))
+    (local.set $key_len (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
+    (local.set $base (i32.and (local.get $obj) (i32.const {heap_mask})))
+    (local.set $count (i32.load (local.get $base)))
+    (block $desc_done (result i32)
+      (local.set $i (local.get $count))
+      (loop $desc_loop
+        (if (i32.eq (local.get $i) (i32.const {zero}))
+          (then (br $desc_done (i32.const {undefined}))))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (local.set $entry_base
+          (i32.add (local.get $base)
+            (i32.add (i32.const {obj_header})
+              (i32.shl (local.get $i) (i32.const {entry_shift})))))
+        (local.set $entry_key_raw (i32.load (local.get $entry_base)))
+        (local.set $entry_key_ptr
+          (i32.add (i32.and (local.get $entry_key_raw) (i32.const {heap_mask})) (i32.const {str_header})))
+        (local.set $entry_key_len
+          (i32.load (i32.and (local.get $entry_key_raw) (i32.const {heap_mask}))))
+        (if (i32.eq (local.get $key_len) (local.get $entry_key_len))
+          (then
+            (if (call $mem_equal (i32.const {scratch_offset}) (local.get $entry_key_ptr) (local.get $key_len))
+              (then
+                (local.set $entry_value (i32.load (i32.add (local.get $entry_base) (i32.const {value_off}))))
+                (local.set $desc (call $alloc_heap (i32.const {collection_size})))
+                (i32.store (local.get $desc) (i32.const {zero}))
+                (i32.store (i32.add (local.get $desc) (i32.const {obj_proto})) (i32.const {zero}))
+                (i32.store8 (i32.const {scratch_offset}) (i32.const 118))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 97))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 108))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 117))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 101))
+                (drop
+                  (call $property_set
+                    (i32.or (local.get $desc) (i32.const {object_tag}))
+                    (i32.const {scratch_offset})
+                    (i32.const 5)
+                    (local.get $entry_value)))
+                (i32.store8 (i32.const {scratch_offset}) (i32.const 119))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 114))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 105))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 116))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 97))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 98))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 6)) (i32.const 108))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 7)) (i32.const 101))
+                (drop
+                  (call $property_set
+                    (i32.or (local.get $desc) (i32.const {object_tag}))
+                    (i32.const {scratch_offset})
+                    (i32.const 8)
+                    (i32.const {true})))
+                (i32.store8 (i32.const {scratch_offset}) (i32.const 101))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 110))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 117))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 109))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 101))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 114))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 6)) (i32.const 97))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 7)) (i32.const 98))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 8)) (i32.const 108))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 9)) (i32.const 101))
+                (drop
+                  (call $property_set
+                    (i32.or (local.get $desc) (i32.const {object_tag}))
+                    (i32.const {scratch_offset})
+                    (i32.const 10)
+                    (i32.const {true})))
+                (i32.store8 (i32.const {scratch_offset}) (i32.const 99))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 111))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 110))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 102))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 105))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 5)) (i32.const 103))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 6)) (i32.const 117))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 7)) (i32.const 114))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 8)) (i32.const 97))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 9)) (i32.const 98))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 10)) (i32.const 108))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 11)) (i32.const 101))
+                (drop
+                  (call $property_set
+                    (i32.or (local.get $desc) (i32.const {object_tag}))
+                    (i32.const {scratch_offset})
+                    (i32.const 12)
+                    (i32.const {true})))
+                (i32.store8 (i32.const {scratch_offset}) (i32.const 103))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 101))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 116))
+                (drop
+                  (call $property_set
+                    (i32.or (local.get $desc) (i32.const {object_tag}))
+                    (i32.const {scratch_offset})
+                    (i32.const 3)
+                    (i32.const {undefined})))
+                (i32.store8 (i32.const {scratch_offset}) (i32.const 115))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 101))
+                (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 116))
+                (drop
+                  (call $property_set
+                    (i32.or (local.get $desc) (i32.const {object_tag}))
+                    (i32.const {scratch_offset})
+                    (i32.const 3)
+                    (i32.const {undefined})))
+                (br $desc_done (i32.or (local.get $desc) (i32.const {object_tag})))))))
+        (br $desc_loop))
+      (i32.const {undefined})))
+            "#,
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            heap_mask = ValueTag::HEAP_MASK,
+            obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            entry_shift = Layout::OBJECT_ENTRY_SHIFT,
+            str_header = Layout::STRING_HEADER_SIZE,
+            value_off = Layout::OBJECT_VALUE_OFFSET,
+            collection_size =
+                (Layout::OBJECT_HEADER_SIZE + (32 * Layout::OBJECT_ENTRY_SIZE)) as i32,
+            scratch_offset = Layout::SCRATCH_OFFSET,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+            true = ValueTag::TRUE,
+        ));
+    }
+
     pub(super) fn emit_greater_equal(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

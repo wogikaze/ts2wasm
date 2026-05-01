@@ -68,6 +68,7 @@ impl NameResolver {
             "parseInt",
             "parseFloat",
             "isFinite",
+            "globalThis",
         ]
         .iter()
         .map(|s| s.to_string())

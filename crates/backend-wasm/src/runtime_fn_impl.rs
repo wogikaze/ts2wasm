@@ -22,6 +22,8 @@ impl RuntimeFn {
             BuiltinId::ParseInt => Self::ParseInt,
             BuiltinId::ParseFloat => Self::ParseFloat,
             BuiltinId::IsFinite => Self::IsFinite,
+            BuiltinId::BooleanCoerce => Self::BooleanCoerce,
+            BuiltinId::NumberCoerce => Self::NumberCoerce,
         }
     }
 
@@ -987,6 +989,22 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectHasOwnProperty => RuntimeSpec {
+                symbol: "$object_has_own_property",
+                deps: OBJECT_HAS_OWN_PROPERTY_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ObjectGetOwnPropertyDescriptor => RuntimeSpec {
+                symbol: "$object_get_own_property_descriptor",
+                deps: OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ObjectGetPrototypeOf => RuntimeSpec {
                 symbol: "$object_get_prototype_of",
                 deps: OBJECT_PROTOTYPE_DEPS,
@@ -1235,6 +1253,54 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::BooleanCoerce => RuntimeSpec {
+                symbol: "$boolean_coerce",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::NumberCoerce => RuntimeSpec {
+                symbol: "$number_coerce",
+                deps: &[RuntimeFn::ParseInt],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::NumberIsNaN => RuntimeSpec {
+                symbol: "$number_is_nan",
+                deps: &[RuntimeFn::IsNaN],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::NumberIsFinite => RuntimeSpec {
+                symbol: "$number_is_finite",
+                deps: &[RuntimeFn::IsFinite],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::NumberIsInteger => RuntimeSpec {
+                symbol: "$number_is_integer",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::NumberIsSafeInteger => RuntimeSpec {
+                symbol: "$number_is_safe_integer",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
         }
     }
 
@@ -1390,6 +1456,8 @@ impl RuntimeFn {
             Self::ObjectSpread => "object_spread",
             Self::ObjectValues => "object_values",
             Self::ObjectEntries => "object_entries",
+            Self::ObjectHasOwnProperty => "object_has_own_property",
+            Self::ObjectGetOwnPropertyDescriptor => "object_get_own_property_descriptor",
             Self::ObjectGetPrototypeOf => "object_get_prototype_of",
             Self::ObjectSetPrototypeOf => "object_set_prototype_of",
             Self::MathFloor => "math_floor",
@@ -1421,6 +1489,12 @@ impl RuntimeFn {
             Self::ParseInt => "parse_int",
             Self::ParseFloat => "parse_float",
             Self::IsFinite => "is_finite",
+            Self::BooleanCoerce => "boolean_coerce",
+            Self::NumberCoerce => "number_coerce",
+            Self::NumberIsNaN => "number_is_nan",
+            Self::NumberIsFinite => "number_is_finite",
+            Self::NumberIsInteger => "number_is_integer",
+            Self::NumberIsSafeInteger => "number_is_safe_integer",
         }
     }
 
@@ -1549,6 +1623,8 @@ impl RuntimeFn {
             Self::ObjectSpread,
             Self::ObjectValues,
             Self::ObjectEntries,
+            Self::ObjectHasOwnProperty,
+            Self::ObjectGetOwnPropertyDescriptor,
             Self::ObjectGetPrototypeOf,
             Self::ObjectSetPrototypeOf,
             // Instanceof operator
@@ -1586,6 +1662,13 @@ impl RuntimeFn {
             Self::ParseInt,
             Self::ParseFloat,
             Self::IsFinite,
+            // Boolean/Number coercion (341b/341c)
+            Self::BooleanCoerce,
+            Self::NumberCoerce,
+            Self::NumberIsNaN,
+            Self::NumberIsFinite,
+            Self::NumberIsInteger,
+            Self::NumberIsSafeInteger,
         ]
     }
 
@@ -1715,6 +1798,8 @@ impl RuntimeFn {
             Self::ObjectSpread,
             Self::ObjectValues,
             Self::ObjectEntries,
+            Self::ObjectHasOwnProperty,
+            Self::ObjectGetOwnPropertyDescriptor,
             Self::ObjectGetPrototypeOf,
             Self::ObjectSetPrototypeOf,
             // Instanceof operator
@@ -1752,6 +1837,13 @@ impl RuntimeFn {
             Self::ParseInt,
             Self::ParseFloat,
             Self::IsFinite,
+            // Boolean/Number coercion (341b/341c)
+            Self::BooleanCoerce,
+            Self::NumberCoerce,
+            Self::NumberIsNaN,
+            Self::NumberIsFinite,
+            Self::NumberIsInteger,
+            Self::NumberIsSafeInteger,
         ]
     }
 }

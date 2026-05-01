@@ -1906,6 +1906,8 @@ fn resolve_global_identifier_call(callee: &Expr) -> Option<BuiltinId> {
         "parseInt" => Some(BuiltinId::ParseInt),
         "parseFloat" => Some(BuiltinId::ParseFloat),
         "isFinite" => Some(BuiltinId::IsFinite),
+        "Boolean" => Some(BuiltinId::BooleanCoerce),
+        "Number" => Some(BuiltinId::NumberCoerce),
         _ => None,
     }
 }

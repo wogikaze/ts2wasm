@@ -1,6 +1,8 @@
 use std::fs;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 
 use serde::{Deserialize, Serialize};
 
@@ -22,7 +24,18 @@ use crate::{
 struct ServerRequest {
     /// Opaque id echoed back in the response. Use -1 to signal shutdown.
     id: i64,
-    /// The full TypeScript/JavaScript source to compile (already preprocessed).
+    /// Source for single-file request (empty for batch).
+    #[serde(default)]
+    source: String,
+    /// Batch of files for parallel processing (empty for single-file).
+    #[serde(default)]
+    items: Vec<BatchItem>,
+}
+
+/// An item in a batch request.
+#[derive(Debug, Deserialize)]
+struct BatchItem {
+    id: i64,
     source: String,
 }
 
@@ -40,8 +53,11 @@ struct ServerResponse {
 /// Run the ts2wasm build server.
 ///
 /// Reads newline-delimited JSON from stdin and writes newline-delimited JSON
-/// to stdout. Each input line is a `ServerRequest`; each output line is a
-/// `ServerResponse`.
+/// to stdout. Supports two request formats:
+///   - Single: `{"id": N, "source": "..."}`
+///   - Batch:  `{"id": -1, "items": [{"id": 1, "source": "..."}, ...]}`
+///
+/// Batch requests process all files in parallel using a thread pool.
 ///
 /// Send `{"id": -1, "source": ""}` (or EOF) to shut down cleanly.
 pub fn run_server() -> Result<(), String> {
@@ -71,48 +87,120 @@ pub fn run_server() -> Result<(), String> {
         let req: ServerRequest =
             serde_json::from_str(line).map_err(|e| format!("bad request JSON: {e}"))?;
 
-        if req.id == -1 {
-            break; // shutdown signal
+        if req.id == -1 && req.items.is_empty() {
+            break; // shutdown signal (single-file with id=-1, not a batch)
         }
 
-        // The server writes the source to a temp file so the module-graph
-        // builder (which requires on-disk canonicalization) can find it.
-        let tmpfile = tmpdir.join(format!("{}.js", req.id));
-        if let Err(e) = fs::write(&tmpfile, &req.source) {
-            let resp = ServerResponse {
-                id: req.id,
-                status: "error".into(),
-                code: Some("BackendIo".into()),
-                message: Some(format!("failed to write temp file: {e}")),
-            };
-            emit_response(&stdout, &resp)?;
-            continue;
+        if !req.items.is_empty() {
+            // Batch mode: process all items in parallel using a thread pool
+            let results = process_batch(&tmpdir, &req.items);
+            let json = serde_json::to_string(&results)
+                .map_err(|e| format!("serialization error: {e}"))?;
+            let mut out = stdout.lock();
+            writeln!(out, "{json}").map_err(|e| format!("stdout write error: {e}"))?;
+            out.flush()
+                .map_err(|e| format!("stdout flush error: {e}"))?;
+        } else {
+            // Single-file mode
+            let tmpfile = tmpdir.join(format!("{}.js", req.id));
+            if let Err(e) = fs::write(&tmpfile, &req.source) {
+                let resp = make_response(req.id, Err(Diagnostic {
+                    code: ts2wasm_frontend::DiagCode::BackendIo,
+                    message: format!("failed to write temp file: {e}"),
+                    span: None,
+                }));
+                emit_response(&stdout, &resp)?;
+                continue;
+            }
+
+            let result = compile_source(&tmpfile);
+            let _ = fs::remove_file(&tmpfile);
+            emit_response(&stdout, &make_response(req.id, result))?;
         }
-
-        let result = compile_source(&tmpfile);
-        let _ = fs::remove_file(&tmpfile);
-
-        let resp = match result {
-            Ok(()) => ServerResponse {
-                id: req.id,
-                status: "ok".into(),
-                code: None,
-                message: None,
-            },
-            Err(diag) => ServerResponse {
-                id: req.id,
-                status: "error".into(),
-                code: Some(format!("{:?}", diag.code)),
-                message: Some(diag.message),
-            },
-        };
-
-        emit_response(&stdout, &resp)?;
     }
 
     // Clean up the per-process temp directory.
     let _ = fs::remove_dir_all(&tmpdir);
     Ok(())
+}
+
+/// Process a batch of files in parallel using `std::thread::scope`.
+/// Returns one `ServerResponse` per item, in the same order as `items`.
+fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
+    let n = items.len();
+    if n == 0 {
+        return vec![];
+    }
+
+    // Create a slot for each result, pre-filled with a placeholder.
+    let results: Mutex<Vec<Option<ServerResponse>>> = Mutex::new((0..n).map(|_| None).collect());
+
+    // Atomic counter for work stealing across threads.
+    let next_idx = AtomicUsize::new(0);
+
+    // Number of worker threads: up to CPU count, capped at batch size.
+    let n_workers = std::thread::available_parallelism()
+        .map(|c| c.get())
+        .unwrap_or(4)
+        .min(n)
+        .max(1);
+
+    std::thread::scope(|s| {
+        for _ in 0..n_workers {
+            s.spawn(|| loop {
+                let idx = next_idx.fetch_add(1, Ordering::Relaxed);
+                if idx >= n {
+                    break;
+                }
+
+                let item = &items[idx];
+                let tmpfile = tmpdir.join(format!("b_{}_{}.js", idx, item.id));
+
+                // Write source, compile, clean up.
+                let write_result = fs::write(&tmpfile, &item.source);
+                let compile_result = if write_result.is_ok() {
+                    let r = compile_source(&tmpfile);
+                    let _ = fs::remove_file(&tmpfile);
+                    r
+                } else {
+                    let err = write_result.unwrap_err();
+                    Err(Diagnostic {
+                        code: ts2wasm_frontend::DiagCode::BackendIo,
+                        message: format!("failed to write temp file: {err}"),
+                        span: None,
+                    })
+                };
+
+                let resp = make_response(item.id, compile_result);
+                let mut guard = results.lock().unwrap();
+                guard[idx] = Some(resp);
+            });
+        }
+    });
+
+    results
+        .into_inner()
+        .unwrap()
+        .into_iter()
+        .map(|r| r.expect("all batch slots filled"))
+        .collect()
+}
+
+fn make_response(id: i64, result: Result<(), Diagnostic>) -> ServerResponse {
+    match result {
+        Ok(()) => ServerResponse {
+            id,
+            status: "ok".into(),
+            code: None,
+            message: None,
+        },
+        Err(diag) => ServerResponse {
+            id,
+            status: "error".into(),
+            code: Some(format!("{:?}", diag.code)),
+            message: Some(diag.message),
+        },
+    }
 }
 
 fn emit_response(stdout: &io::Stdout, resp: &ServerResponse) -> Result<(), String> {

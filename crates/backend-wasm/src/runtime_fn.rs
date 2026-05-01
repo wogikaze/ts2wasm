@@ -169,6 +169,8 @@ pub(crate) enum RuntimeFn {
     ObjectSpread,
     ObjectValues,
     ObjectEntries,
+    ObjectHasOwnProperty,
+    ObjectGetOwnPropertyDescriptor,
     ObjectGetPrototypeOf,
     ObjectSetPrototypeOf,
     /// Instanceof operator
@@ -221,6 +223,18 @@ pub(crate) enum RuntimeFn {
     ParseFloat,
     /// Global isFinite function
     IsFinite,
+    /// Global Boolean(x) coercion
+    BooleanCoerce,
+    /// Global Number(x) coercion
+    NumberCoerce,
+    /// Number.isNaN static method
+    NumberIsNaN,
+    /// Number.isFinite static method
+    NumberIsFinite,
+    /// Number.isInteger static method
+    NumberIsInteger,
+    /// Number.isSafeInteger static method
+    NumberIsSafeInteger,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -432,6 +446,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
         "ObjectEntries" => Some(RuntimeFn::ObjectEntries),
+        "ObjectHasOwnProperty" => Some(RuntimeFn::ObjectHasOwnProperty),
+        "ObjectGetOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
         "ObjectGetPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
         "ObjectSetPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
         "$instanceof" => Some(RuntimeFn::InstanceOf),
@@ -484,6 +500,12 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ParseInt" => Some(RuntimeFn::ParseInt),
         "ParseFloat" => Some(RuntimeFn::ParseFloat),
         "IsFinite" => Some(RuntimeFn::IsFinite),
+        "BooleanCoerce" => Some(RuntimeFn::BooleanCoerce),
+        "NumberCoerce" => Some(RuntimeFn::NumberCoerce),
+        "NumberIsNaN" => Some(RuntimeFn::NumberIsNaN),
+        "NumberIsFinite" => Some(RuntimeFn::NumberIsFinite),
+        "NumberIsInteger" => Some(RuntimeFn::NumberIsInteger),
+        "NumberIsSafeInteger" => Some(RuntimeFn::NumberIsSafeInteger),
         _ => None,
     }
 }
@@ -855,6 +877,13 @@ const OBJECT_SPREAD_DEPS: &[RuntimeFn] = &[
 ];
 const OBJECT_VALUES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const OBJECT_ENTRIES_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const OBJECT_HAS_OWN_PROPERTY_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::ValueToStringInto, RuntimeFn::PropertyHas];
+const OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertySet,
+];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
 const INDEX_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertyGet,

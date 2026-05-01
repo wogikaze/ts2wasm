@@ -19,6 +19,8 @@ pub enum BuiltinId {
     ParseInt,
     ParseFloat,
     IsFinite,
+    BooleanCoerce,
+    NumberCoerce,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -55,6 +57,8 @@ impl BuiltinId {
             Self::ParseInt => 1,
             Self::ParseFloat => 1,
             Self::IsFinite => 1,
+            Self::BooleanCoerce => 1,
+            Self::NumberCoerce => 1,
         }
     }
 
@@ -79,6 +83,8 @@ impl BuiltinId {
             Self::ParseInt => BuiltinResult::Value,
             Self::ParseFloat => BuiltinResult::Value,
             Self::IsFinite => BuiltinResult::Value,
+            Self::BooleanCoerce => BuiltinResult::Value,
+            Self::NumberCoerce => BuiltinResult::Value,
         }
     }
 }

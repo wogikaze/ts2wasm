@@ -120,6 +120,26 @@ fn build_smoke_object_entries_method() {
 }
 
 #[test]
+fn build_smoke_object_has_own_property() {
+    let result = run_fixture("builtins-and-io/object-has-own-property.ts");
+    assert!(
+        result.is_ok(),
+        "Object.prototype.hasOwnProperty should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_get_own_property_descriptor() {
+    let result = run_fixture("builtins-and-io/object-get-own-property-descriptor.ts");
+    assert!(
+        result.is_ok(),
+        "Object.getOwnPropertyDescriptor should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
