@@ -4,7 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--web-ui]
-      [--jsonl] [--jobs N] [--sample N] [--category PATTERN]
+      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -26,8 +26,9 @@ Notes:
   - --jsonl: output results as JSONL (test262 only, enables full harness with parallel exec)
   - --jobs N: number of parallel jobs (default: CPU count)
   - --sample N: max files per category (test262 only, uses category-based sampling)
-  - --category PATTERN: regex filter for test categories (test262 only, used with --sample)
-  - TS2WASM_REFERENCE_ROOT may point at an external reference/ directory for
+   - --category PATTERN: regex filter for test categories (test262 only, used with --sample)
+   - --no-server: use legacy subprocess mode (default: server mode with batch parallel build)
+   - TS2WASM_REFERENCE_ROOT may point at an external reference/ directory for
     validation from isolated git worktrees.
 """
 
@@ -191,7 +192,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--web-ui] [--no-web-ui]")
-    print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN]")
+    print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server]")
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
@@ -627,7 +628,7 @@ def main():
     jobs = None
     sample = None
     category_pattern = None
-    server_mode = False
+    server_mode = True
     
     i = 0
     while i < len(args):
@@ -697,8 +698,8 @@ def main():
                 sys.exit(1)
             category_pattern = args[i + 1]
             i += 2
-        elif args[i] == "--server":
-            server_mode = True
+        elif args[i] == "--no-server":
+            server_mode = False
             i += 1
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
@@ -822,7 +823,7 @@ def main():
     server_proc = None
     
     if server_mode:
-        print(f"Starting ts2wasm server (1 process, batch mode)...", file=sys.stderr)
+        print(f"Starting ts2wasm server (batch mode, {jobs} workers)...", file=sys.stderr)
         server_proc = subprocess.Popen(
             [str(TS2WASM_BINARY), "server"],
             stdin=subprocess.PIPE,
