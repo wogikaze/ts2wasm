@@ -1040,7 +1040,9 @@ def main():
             build_items = []
             early_results = []
             with ThreadPoolExecutor(max_workers=jobs) as executor:
-                for result in executor.map(_process_one_file, files):
+                futures = {executor.submit(_process_one_file, f): f for f in files}
+                for future in as_completed(futures):
+                    result = future.result()
                     if result is None:
                         continue
                     if isinstance(result, dict) and result.get("type") == "build_item":
