@@ -20,12 +20,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 176 | 171 | 5 |
-| runtime | 190 | 63 | 127 |
+| runtime | 190 | 62 | 128 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4841 | 4574 | 267 |
+| total | 4841 | 4573 | 268 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -44,7 +44,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 225 | Implement eval and Annex B function declaration semantics | meta | frontend/semantics | ready | P3 |  | Direct `eval` and dynamic code evaluation are required JavaScript semantics; when wasm-only implementation is not suf... |
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
-| 341 | Implement core builtin API coverage (3,190 test262 cases) | meta | runtime/builtins | ready | P1 |  | 3,190 test262 cases fail due to missing core builtin API implementations. |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
 <!-- generated:ready:end -->
@@ -4836,6 +4835,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | see `issues/done/338-array-map-sparse-array-holes.md` |
 | 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | see `issues/done/339-array-map-thisarg.md` |
 | 340 | Generic call for Array.prototype.map (static dense receiver slice) | feature | runtime/builtins | see `issues/done/340-array-map-generic-call.md` |
+| 341 | Implement core builtin API coverage (3,190 test262 cases) | meta | runtime/builtins | see file |
 | 341a | Implement isNaN, parseInt, parseFloat, isFinite global functions | feature | runtime/builtins | see `issues/done/341a-global-number-functions.md` |
 | 341b | Implement Number constructor and static methods | feature | runtime/builtins | see `issues/done/341b-number-constructor.md` |
 | 341c | Implement Boolean global | feature | runtime/builtins | see `issues/done/341c-boolean-global.md` |
