@@ -1,6 +1,11 @@
 {
-  "id": "commit-test-001",
-  "title": "Test commit in loop",
-  "status": "selected",
-  "issue_path": "issues/open/test-commit.md"
+  "id": null,
+  "title": null,
+  "status": "idle",
+  "issue_path": null,
+  "scope": null,
+  "acceptance": null,
+  "commands": null,
+  "risk": null,
+  "notes": ""
 }

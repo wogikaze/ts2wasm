@@ -83,20 +83,53 @@ Use the maximum safe number of child agents, not the maximum possible number.
 
 Default strategy:
 
-- Start with 2 to 4 child agents.
-- Increase only when issues are file-disjoint and gates are stable.
-- Avoid parallel edits to central compiler files unless workstreams are clearly separated.
-- Prefer separate areas:
-  - parser/frontend
-  - type/resolution
-  - MIR/lowering
-  - runtime ABI
-  - wasm/backend
-  - CLI
-  - fixtures/reference harness
-  - docs/issues/quality gates
+- Start with **8 to 12 child agents** to maximize throughput on 12-core hardware.
+- Assign only file-disjoint issue groups (see File Affinity Groups below).
+- Never assign two children to the same affinity group in the same wave.
+- Increase beyond 12 only when gates are fully stable and no merge conflicts arise.
 
-Do not overload the repo with many children fighting over the same files.
+Hardware baseline: 12 cores, 23 GB RAM, 718 GB free disk, shared cargo target.
+
+### File Affinity Groups
+
+Issues in different groups can safely run in parallel. Issues in the same group must run sequentially.
+
+| Group | Allowed files | Forbidden files |
+|-------|---------------|-----------------|
+| frontend/parser | `crates/frontend/src/parser/` | `crates/ir/`, `crates/cli/src/backend/` |
+| frontend/semantics | `crates/frontend/src/` | `crates/backend-wasm/`, `crates/cli/src/backend/` |
+| ir/lowering | `crates/ir/src/resolved.rs`, `crates/ir/src/lowered.rs`, `crates/ir/src/builtin_resolver.rs` | `crates/frontend/`, `crates/cli/src/backend/` |
+| runtime/semantics | `crates/ir/src/builtin_resolver.rs`, `crates/ir/src/lowered.rs`, `crates/cli/src/backend/expr_emit.rs`, `crates/cli/src/backend/runtime_builder.rs`, `fixtures/` | `docs/`, `issues/` |
+| runtime/builtins | `crates/runtime-abi/src/`, `crates/cli/src/backend/runtime_builder.rs`, `fixtures/` | `docs/`, `issues/` |
+| backend/wasm | `crates/backend-wasm/src/` | `crates/frontend/`, `crates/ir/` |
+| cli/orchestration | `crates/cli/src/`, `crates/compiler/src/` | `docs/`, `issues/` |
+| test/fixtures | `fixtures/`, `crates/cli/tests/` | `crates/frontend/`, `crates/backend-wasm/` |
+| meta/issues | `issues/`, `docs/` | `crates/`, `fixtures/` |
+
+### Shared cargo target
+
+All worktrees share the parent repo's `target/` directory via `.cargo/config.toml`. This saves ~20 GB of disk per 12 worktrees. Created automatically by `setup-worktree.py` and `spawn-worktrees.sh`.
+
+### Batch worktree creation
+
+Instead of creating worktrees one by one, use:
+
+```bash
+./scripts/dev/spawn-worktrees.sh \
+  issues/open/225-*.md \
+  issues/open/255-*.md \
+  issues/open/274-*.md
+```
+
+Outputs a JSON manifest of created worktrees.
+
+### Batch status collection
+
+```bash
+./scripts/dev/worktree-batch-status.sh --format json
+```
+
+Collects `git status/log/diff` from all active worktrees in parallel using background processes. Use this for the 15-minute supervision cycle — one command covers all children.
 
 ## Issue splitting
 
@@ -145,20 +178,30 @@ Apply this rule especially to backend wasm emission, dynamic JavaScript semantic
 
 ## Worktree assignment
 
-For each child assignment:
-
-1. Create or reuse a clean worktree.
-
-Branch naming:
+For batch worktree creation (preferred for high-parallel waves):
 
 ```bash
-git worktree add ../ts2wasm-<issue-id>-<short-title>-<timestamp> -b agent/<issue-id>-<short-title>-<timestamp>
+manifest=$(./scripts/dev/spawn-worktrees.sh \
+  --base master \
+  issues/open/225-*.md issues/open/255-*.md \
+  issues/open/274-*.md issues/open/341-*.md)
+```
+
+`spawn-worktrees.sh` handles: git worktree add, reference linking, shared cargo
+target, dev-loop state setup. Outputs a JSON manifest with worktree paths,
+branch names, and issue IDs. Parse with `jq` or `python3 -c "import json..."`.
+
+For individual worktree creation (when only one child is needed):
+
+```bash
+git worktree add ../ts2wasm-<issue-id>-<short-title>-<timestamp> \
+  -b agent/<issue-id>-<short-title>-<timestamp>
 mise run link-reference -- ../ts2wasm-<issue-id>-<short-title>-<timestamp>
 ```
 
-1. Link the ignored reference corpus into the worktree with `mise run link-reference -- <worktree-path>` so `reference/test262` and other external suites are available without copying.
+Always verify the reference corpus is linked: `ls <worktree>/reference/test262`.
 
-1. Write an assignment file:
+For each child, write an assignment file:
 
 ```text
 reports/agents/<agent_id>/assignment.md
@@ -295,6 +338,34 @@ If conflict occurs:
 - if semantic or broad, create a merge-fix issue
 - reassign merge-fix to a child or handle as parent
 - keep other children working
+
+**Common high-parallel conflict: `issues/index.md`**
+
+When merging multiple parallel branches, `issues/index.md` (generated section)
+conflicts on every merge. Resolution:
+
+1. Accept the first cherry-pick/merge as-is.
+2. For subsequent merges, if `issues/index.md` conflicts, checkout our version
+   and regenerate:
+
+   ```bash
+   git checkout --ours -- issues/index.md
+   mise run update-issue-index
+   git add issues/index.md
+   git merge --continue  # or cherry-pick --continue
+   ```
+
+3. Run `mise run update-issue-index -- --check` and `mise run check issues`
+   after each merge to keep the index consistent.
+
+**Batch status collection** (for 15-min supervision cycle):
+
+```bash
+./scripts/dev/worktree-batch-status.sh --format text --dirty-only
+```
+
+Collects `git status/log/diff` from all active worktrees in parallel. One
+command covers all children. JSON output also available (`--format json`).
 
 1. After successful merge:
 

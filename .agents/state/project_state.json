@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "RETRO",
-  "active_task_id": "commit-test-001",
-  "updated_at": "2026-05-01T15:16:03Z",
+  "fsm": "SYNC",
+  "active_task_id": null,
+  "updated_at": "2026-05-01T18:24:46Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "reports/runs/commit-test/plan.md",
+  "plan_path": null,
   "verify_fast_streak_fails": 0
 }

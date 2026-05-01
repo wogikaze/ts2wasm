@@ -2,28 +2,105 @@
 
 Workflow for running independent tasks in isolated git worktrees.
 
+## Layout
+
+- Worktrees live in sibling directories: `../ts2wasm-<prefix>-<id>-<timestamp>/`
+- Batch scripts under `scripts/dev/`
+- State setup: `_worktrees/setup-worktree.py`
+- Reference corpus symlinked (not copied) via `mise run link-reference`
+
+## Batch worktree creation
+
+Create up to 12 worktrees per wave for 12-core hardware:
+
+```bash
+./scripts/dev/spawn-worktrees.sh \
+  --base master \
+  issues/open/225-*.md \
+  issues/open/255-*.md \
+  issues/open/274-*.md
+```
+
+Output: JSON manifest with worktree paths, branch names, issue IDs, base refs.
+
+Each worktree gets:
+- Isolated git branch from `--base`
+- Reference corpus symlinks
+- Shared cargo `target/` directory (via `.cargo/config.toml` → parent's `target/`)
+- Dev-loop state files (`.agents/state/project_state.json`, `current_task.json`)
+
+## File affinity groups
+
+Issues in different groups can safely run in parallel. Groups defined in
+`setup-worktree.py` and `autonomous-parent-orchestrator.md`:
+
+| Group | Scope |
+|-------|-------|
+| frontend/parser | `crates/frontend/src/parser/` |
+| frontend/semantics | `crates/frontend/src/`, `crates/ir/src/` |
+| ir/lowering | `crates/ir/src/resolved.rs`, `crates/ir/src/lowered.rs` |
+| runtime/semantics | IR + backend expr_emit + fixtures |
+| runtime/builtins | `crates/runtime-abi/src/` + fixtures |
+| backend/wasm | `crates/backend-wasm/src/` |
+| cli/orchestration | `crates/cli/src/`, `crates/compiler/src/` |
+| test/fixtures | `fixtures/`, `crates/cli/tests/` |
+| meta/issues | `issues/`, `docs/` |
+
+Assign at most one issue per group per wave.
+
+## Supervision
+
+Batch status collection for the 15-minute supervision cycle:
+
+```bash
+# All worktrees, text table
+./scripts/dev/worktree-batch-status.sh
+
+# Dirty-only, JSON output (for parent agent)
+./scripts/dev/worktree-batch-status.sh --format json --dirty-only
+
+# Ahead-of-base only
+./scripts/dev/worktree-batch-status.sh --ahead-only --base origin/master
+```
+
+Collects worktree status in parallel using background processes.
+
+## Integration
+
+When merging multiple parallel branches:
+
+1. Merge/cherry-pick branches one at a time, starting with lowest-conflict groups.
+2. For `issues/index.md` conflicts: accept ours and regenerate:
+
+   ```bash
+   git checkout --ours -- issues/index.md
+   mise run update-issue-index
+   git add issues/index.md
+   ```
+
+3. After each merge, run:
+
+   ```bash
+   mise run update-issue-index -- --check
+   mise run check issues
+   ```
+
+4. Run `mise run gate` after all branches are merged.
+
+## Shared cargo target
+
+All worktrees point `.cargo/config.toml` → parent repo's `target/` directory.
+This:
+- Saves ~1.8 GB per worktree (×12 = ~21.6 GB saved)
+- Reuses compiled crate cache across worktrees
+- Is created automatically by `setup-worktree.py` and `spawn-worktrees.sh`
+
 ## Prerequisites
 
 - Worktree helpers: `scripts/dev/git-worktree.sh`
-- `.config/nextest.toml` - 8 parallel test workers
-
-## Workflow
-
-1. **Plan**: `mise run update-issue-index`
-2. **Create worktree**: `scripts/dev/git-worktree.sh create feature-name`
-   `cd _worktrees/feature-name && mise run link-reference`
-3. **Develop**: `cargo check -p <crate> && cargo nextest run -p <crate>`
-4. **Gate**: `mise run check architecture` then `git add -A && git commit`
-5. **Integrate**: `cd /path/to/main && git pull _worktrees/feature-name master`
-6. **Clean up**: `scripts/dev/git-worktree.sh remove feature-name`
-
-## File splits enable parallelism
-
-- runtime_core.rs 2696 -> 3 sub-files (< 600 lines each)
-- statements.rs 2238 -> 3 sub-files (< 1800 lines each)
-- expressions.rs 2039 -> 2 sub-files (< 1800 lines each)
-- expr_emit.rs 2110 -> dir with 3 sub-modules
-- resolver_extra.rs 2400 -> dir with 4 sub-modules
+- Batch spawn: `scripts/dev/spawn-worktrees.sh`
+- Batch status: `scripts/dev/worktree-batch-status.sh`
+- `.config/nextest.toml` — 8 parallel test workers
 
 ## CI hooks
 
