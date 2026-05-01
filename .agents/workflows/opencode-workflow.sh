@@ -4,7 +4,7 @@ set -Eeuo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
-MODEL="${MODEL:-opencode-go/kimi-k2.6}"
+MODEL="${MODEL:-CrofAI/deepseek-v4-pro-precision}"
 PARALLELISM="${PARALLELISM:-6}"
 MAX_PARALLELISM="${MAX_PARALLELISM:-10}"
 RUN_ID="${RUN_ID:-opencode-ralph-$(date +%Y%m%d-%H%M%S)}"
@@ -23,7 +23,7 @@ run_opencode() {
   local prompt="$2"
   local out="$3"
 
-  opencode run \
+  opencode run "execute $title" \
     -m "$MODEL" \
     --dangerously-skip-permissions \
     --file "$prompt" \
@@ -177,7 +177,7 @@ PY
     (
       wt_abs="$(cd "$wt" && pwd)"
       cd "$wt_abs"
-      opencode run \
+      opencode run "build $worker" \
         -m "$MODEL" \
         --dangerously-skip-permissions \
         --file assignment.md \
@@ -220,7 +220,7 @@ Run validation.
 Commit integration state.
 EOF
 
-  opencode run \
+  opencode run "verify $RUN_ID" \
     -m "$MODEL" \
     --dangerously-skip-permissions \
     --file .agents/prompts/opencode-verifier.md \
