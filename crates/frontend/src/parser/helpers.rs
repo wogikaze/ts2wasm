@@ -55,6 +55,10 @@ fn is_super_call_statement(stmt: &Stmt) -> bool {
 }
 
 fn is_typescript_expression_type_stop(token: &Token) -> bool {
+    if is_statement_boundary_token(token) {
+        return true;
+    }
+
     matches!(
         token,
         Token::Semicolon
@@ -100,6 +104,53 @@ fn is_typescript_expression_type_stop(token: &Token) -> bool {
             | Token::OrOrEqual
             | Token::NullishCoalesceEqual
     )
+}
+
+fn is_statement_boundary_token(token: &Token) -> bool {
+    match token {
+        Token::Semicolon
+        | Token::RightParen
+        | Token::RightBracket
+        | Token::RightBrace
+        | Token::LeftBrace
+        | Token::Export
+        | Token::Import
+        | Token::Let
+        | Token::Const
+        | Token::Var
+        | Token::Function
+        | Token::Class
+        | Token::If
+        | Token::Else
+        | Token::While
+        | Token::Do
+        | Token::For
+        | Token::Switch
+        | Token::Try
+        | Token::Catch
+        | Token::Finally
+        | Token::Throw
+        | Token::Break
+        | Token::Continue
+        | Token::Return
+        | Token::Case
+        | Token::Default
+        | Token::Async
+        | Token::Await
+        | Token::Of
+        | Token::In => true,
+        Token::Ident(name)
+            if name == "declare"
+                || name == "interface"
+                || name == "type"
+                || name == "namespace"
+                || name == "module"
+                || name == "enum" =>
+        {
+            true
+        }
+        _ => false,
+    }
 }
 
 enum TemplatePart {

@@ -1241,7 +1241,11 @@ impl Parser {
         if let Some(semi) = self.consume_span(TokenKind::Semicolon) {
             return Ok(semi.end);
         }
-        if self.is_at_end() || matches!(self.peek(), Some(Token::RightBrace)) {
+        if self.is_at_end()
+            || self
+                .peek()
+                .is_some_and(is_statement_boundary_token)
+        {
             return Ok(fallback_end);
         }
         Err(Diagnostic {
