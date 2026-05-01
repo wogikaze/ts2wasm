@@ -1,0 +1,43 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode-go/kimi-k2.6",
+  "permission": {
+    "*": "allow",
+
+    "question": "deny",
+    "doom_loop": "deny",
+
+    "external_directory": {
+      "~/wgkz/**": "allow",
+      "../ts2wasm*": "allow"
+    },
+
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+
+    "bash": {
+      "*": "allow",
+      "sudo *": "deny",
+      "su *": "deny",
+      "rm -rf /*": "deny",
+      "rm -rf ~/*": "deny",
+      "rm -rf $HOME/*": "deny",
+      "git push --force*": "deny",
+      "git push -f*": "deny",
+      "git push*": "deny",
+      "git merge master*": "deny",
+      "git merge main*": "deny",
+      "git rebase master*": "deny",
+      "git rebase main*": "deny",
+      "git commit --no-verify*": "deny",
+      "git push --no-verify*": "deny",
+      "cat *.env": "deny",
+      "cat .env*": "deny",
+      "gh auth token*": "deny"
+    }
+  }
+}
