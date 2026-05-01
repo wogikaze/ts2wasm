@@ -179,7 +179,7 @@ ast-grep scan                         # プロジェクトスキャン
 4. State target gate and validation
 5. Implement smallest slice
 6. Run validation
-7. Update docs/artifacts/current-state only when facts changed
+7. Update current-state only when facts changed
 8. Write cycle report
 9. Create follow-up issues
 

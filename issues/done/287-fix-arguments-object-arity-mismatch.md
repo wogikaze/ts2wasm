@@ -91,7 +91,7 @@ Do not touch:
 - [x] The representative case no longer emits the exact stderr bucket shown above.
 - [x] Regenerating reference coverage for the representative case reports `UnresolvedName: name-resolution`, not the exact arity bucket.
 - [x] Added a focused Node/iwasm differential regression fixture for `assert.sameValue`-style object-property calls to functions that read `arguments`.
-- [x] Coverage artifacts/current-state were not updated; the validation run produced no tracked artifact changes.
+- [x] Coverage current-state were not updated; the validation run produced no tracked artifact changes.
 
 ## Validation
 
