@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 215 | 129 | 86 |
+| frontend | 218 | 132 | 86 |
 | ir | 9 | 0 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 8 | 3 | 5 |
-| runtime | 151 | 30 | 121 |
+| runtime | 151 | 29 | 122 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 421 | 164 | 257 |
+| total | 424 | 166 | 258 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -45,8 +45,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 341 | Implement core builtin API coverage (3,190 test262 cases) | meta | runtime/builtins | ready | P1 |  | 3,190 test262 cases fail due to missing core builtin API implementations. |
-| 341a | Implement isNaN, parseInt, parseFloat, isFinite global functions | feature | runtime/builtins | implementation-ready | P1 |  | Global number conversion functions `isNaN`, `parseInt`, `parseFloat`, `isFinite` are unimplemented, causing ~20+ test... |
 | 351 | Implement full private brand storage and brand-checking semantics | feature | runtime/semantics | implementation-ready | P2 |  | No runtime brand storage or brand-checking semantics for private elements. |
+| 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | implementation-ready | P2 | 399 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases |
+| 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | implementation-ready | P2 | 399 | Implement tsgo declaration emit: package-json exports and subpath reexport cases |
+| 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | implementation-ready | P2 | 399 | Implement tsgo declaration emit: subpath import declaration emit cases |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -426,6 +428,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 338 | Sparse array holes handling for Array.prototype.map | feature | runtime/builtins | see `issues/done/338-array-map-sparse-array-holes.md` |
 | 339 | Callback thisArg for Array.prototype.map | feature | runtime/builtins | see `issues/done/339-array-map-thisarg.md` |
 | 340 | Generic call for Array.prototype.map (static dense receiver slice) | feature | runtime/builtins | see `issues/done/340-array-map-generic-call.md` |
+| 341a | Implement isNaN, parseInt, parseFloat, isFinite global functions | feature | runtime/builtins | see `issues/done/341a-global-number-functions.md` |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | see `issues/done/346-implement-tsgo-declaration-emit.md` |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | see `issues/done/347-parser-resolver-direct-eval-scope.md` |
 | 348 | Lowering block-level function declarations in direct eval code | feature | ir | see `issues/done/348-lowering-eval-block-function-declarations.md` |
