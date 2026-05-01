@@ -21,6 +21,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_REFERENCE = REPO_ROOT / "reference"
 
 
+def has_directory(entry: Path) -> bool:
+    try:
+        return entry.is_dir()
+    except OSError:
+        return False
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Symlink ignored reference corpus directories into one or more worktrees."
@@ -69,14 +76,20 @@ def git_worktree_reference_roots() -> list[Path]:
 
 def has_corpus_entries(reference_root: Path) -> bool:
     try:
-        return any(entry.is_dir() and not entry.is_symlink() for entry in reference_root.iterdir())
+        return any(has_directory(entry) for entry in reference_root.iterdir() if entry.name != "README.md")
     except FileNotFoundError:
         return False
 
 
 def default_reference_root() -> Path:
     if env_root := os.environ.get("TS2WASM_REFERENCE_ROOT"):
-        return Path(env_root)
+        env_path = Path(env_root)
+        if has_corpus_entries(env_path):
+            return env_path
+        print(
+            f"link-reference: TS2WASM_REFERENCE_ROOT has no corpus directory: {env_path}",
+            file=sys.stderr,
+        )
     if has_corpus_entries(DEFAULT_REFERENCE):
         return DEFAULT_REFERENCE
     for candidate in git_worktree_reference_roots():
@@ -98,7 +111,7 @@ def reference_entries(reference_root: Path) -> list[Path]:
     return sorted(
         entry
         for entry in reference_root.iterdir()
-        if entry.is_dir() and not entry.is_symlink()
+        if entry.name != "README.md" and has_directory(entry)
     )
 
 
