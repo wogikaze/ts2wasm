@@ -1,14 +1,15 @@
-# Implement full wasm backend
-
-**Status**: open
-**Created**: 2026-04-26
-**Updated**: 2026-04-26
-**ID**: 021
-**Type**: feature
-**Area**: backend
-**Priority**: P2
-**Depends on**: 008, 020
-**Orchestration class**: blocked
+---
+id: 021
+title: "Implement full wasm backend"
+type: feature
+area: backend
+class: blocked
+priority: P2
+depends_on: [008, 020]
+blocks: []
+created: 2026-04-26
+updated: 2026-04-26
+---
 
 Problem: Full wasm backend is not implemented. Current implementation is WAT-centric. docs/04 specifies initial linear memory backend with future Wasm GC support.
 

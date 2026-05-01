@@ -1,16 +1,19 @@
-# Implement GC strategy
+---
+id: 017b
+title: "Implement GC strategy"
+type: feature
+area: runtime/memory
+class: blocked
+priority: P1
+depends_on: [217, 218, 219, 220, 221]
+blocks: []
+created: 2026-04-26
+updated: 2026-04-28
+---
 
-**Status**: open
-**Created**: 2026-04-26
-**Updated**: 2026-04-28
-**ID**: 017b
-**Type**: feature
-**Area**: runtime/memory
-**Priority**: P1
-**Depends on**: 217, 218, 219, 220, 221
-**Orchestration class**: blocked
+## Summary
 
-Problem: GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks.
+GC strategy is designed in 017a but not implemented. Runtime needs actual GC to prevent memory leaks.
 
 Scope:
 

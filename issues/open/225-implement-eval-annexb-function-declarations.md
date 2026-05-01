@@ -40,7 +40,7 @@ Child issues:
 - [x] Issue 348: Lowering block-level function declarations in direct eval code
 - [x] Issue 349: Runtime helper or shim JavaScript emission for direct eval execution
 - [x] Issue 406: Direct eval Annex B existing binding residuals
-- [ ] Issue 1001: Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) [split 2026-05-02]
+- [x] Issue 1001e: Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) [split 2026-05-02]
 
 Out of scope:
 

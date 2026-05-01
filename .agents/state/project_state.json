@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "IMPLEMENT",
+  "fsm": "CLOSE_OR_SPLIT",
   "active_task_id": "agent-1001",
-  "updated_at": "2026-05-01T18:51:22Z",
+  "updated_at": "2026-05-01T19:01:29Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/1001-eval-residuals.md",

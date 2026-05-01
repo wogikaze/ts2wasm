@@ -26,7 +26,7 @@ class Issue:
     depends: list[str]
 
 
-ID_FROM_NAME_RE = re.compile(r"^([0-9]{3}[a-z]?)-")
+ID_FROM_NAME_RE = re.compile(r"^([0-9]+[a-z]?)-")
 MD_ID_RE = re.compile(r"^\*\*ID\*\*:\s*(.+?)\s*$", re.M)
 YAML_ID_RE = re.compile(r"^(?:id|ID):\s*\"?([0-9]+[a-z]?)\"?\s*$", re.M)
 DEPENDS_RE = re.compile(r"^\*\*Depends on\*\*:\s*(.*?)\s*$", re.M)

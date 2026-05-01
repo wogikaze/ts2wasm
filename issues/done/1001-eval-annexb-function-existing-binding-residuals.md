@@ -1,5 +1,5 @@
 ---
-id: 1001
+id: 1001e
 title: "Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns)"
 type: feature
 area: frontend/semantics
@@ -83,9 +83,9 @@ Do not touch:
 
 ## Acceptance Criteria
 
-- [ ] At least 10 of the 22 Annex B eval cases no longer report `eval` (switch to `name-resolution`, `parser-syntax`, or `build-pass`)
-- [ ] `cargo fmt --all --check` passes
-- [ ] `cargo nextest run` passes (unrelated baseline failures documented)
+- [x] At least 10 of the 22 Annex B eval cases no longer report `eval` (switch to `name-resolution`, `parser-syntax`, or `build-pass`)
+- [x] `cargo fmt --all --check` passes
+- [x] `cargo nextest run` passes (unrelated baseline failures documented)
 
 ## Validation
 

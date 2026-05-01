@@ -116,7 +116,7 @@ def extract_table_ids(content: str, start_marker: str, end_marker: str) -> set[s
             in_table = False
             continue
         if in_table:
-            m = re.match(r"^\s*\|\s*([0-9]{3}[a-z]?)\s*\|", line)
+            m = re.match(r"^\s*\|\s*([0-9]+[a-z]?)\s*\|", line)
             if m:
                 ids.add(m.group(1))
 
