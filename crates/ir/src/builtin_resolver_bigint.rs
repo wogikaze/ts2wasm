@@ -344,12 +344,10 @@ pub(super) fn fold_bigint_static_abstract_equality(
         Some((bigint, Some(bigint_from_bool(*value))))
     } else if let (ResolvedExpr::Bool(value), Some(bigint)) = (left, bigint_from_resolved(right)) {
         Some((bigint, Some(bigint_from_bool(*value))))
-    } else if bigint_from_resolved(left).is_some()
-        && matches!(right, ResolvedExpr::Null | ResolvedExpr::Undefined)
-    {
-        Some((BigIntConst::zero(), None))
-    } else if matches!(left, ResolvedExpr::Null | ResolvedExpr::Undefined)
-        && bigint_from_resolved(right).is_some()
+    } else if (bigint_from_resolved(left).is_some()
+        && matches!(right, ResolvedExpr::Null | ResolvedExpr::Undefined))
+        || (matches!(left, ResolvedExpr::Null | ResolvedExpr::Undefined)
+            && bigint_from_resolved(right).is_some())
     {
         Some((BigIntConst::zero(), None))
     } else {
@@ -949,10 +947,8 @@ impl BigIntRuntimeGuard {
         };
         let values = props
             .iter()
-            .filter_map(|(key, value)| {
-                self.expr_is_tracked_bigint_value(value)
-                    .then(|| key.clone())
-            })
+            .filter(|(_, value)| self.expr_is_tracked_bigint_value(value))
+            .map(|(key, _)| key.clone())
             .collect::<HashSet<_>>();
         (!values.is_empty()).then_some(values)
     }

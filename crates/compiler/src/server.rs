@@ -162,17 +162,17 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
 
                     // Write source, compile, clean up.
                     let write_result = fs::write(&tmpfile, &item.source);
-                    let compile_result = if write_result.is_ok() {
-                        let r = compile_source(&tmpfile);
-                        let _ = fs::remove_file(&tmpfile);
-                        r
-                    } else {
-                        let err = write_result.unwrap_err();
-                        Err(Diagnostic {
+                    let compile_result = match write_result {
+                        Ok(()) => {
+                            let r = compile_source(&tmpfile);
+                            let _ = fs::remove_file(&tmpfile);
+                            r
+                        }
+                        Err(err) => Err(Diagnostic {
                             code: ts2wasm_frontend::DiagCode::BackendIo,
                             message: format!("failed to write temp file: {err}"),
                             span: None,
-                        })
+                        }),
                     };
 
                     let resp = make_response(item.id, compile_result);

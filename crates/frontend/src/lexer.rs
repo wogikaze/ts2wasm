@@ -1267,7 +1267,7 @@ impl<'a> Lexer<'a> {
                     end: self.cursor,
                 }),
             })?;
-            digits.extend(std::iter::repeat('0').take(zeros));
+            digits.extend(std::iter::repeat_n('0', zeros));
         }
 
         Ok((digits, 10))

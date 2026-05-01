@@ -1116,9 +1116,10 @@ fn annex_b_string_anchor_fixture_reports_issue_067() {
 
 #[test]
 fn array_map_fixtures_report_issue_270() {
-    for fixture in ["fixtures/builtins-and-io/array-map-unsupported.ts"] {
-        assert_build_fails_with_unsupported_builtin(fixture, "issue-270: Array.prototype.map");
-    }
+    assert_build_fails_with_unsupported_builtin(
+        "fixtures/builtins-and-io/array-map-unsupported.ts",
+        "issue-270: Array.prototype.map",
+    );
 }
 
 #[test]

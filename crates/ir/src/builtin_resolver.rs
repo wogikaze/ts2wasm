@@ -747,10 +747,7 @@ impl BigIntStaticBuiltinFolder {
 
     fn bigint_const_value(&self, expr: &Expr) -> Option<BigIntConst> {
         match expr {
-            Expr::Ident { name, .. } => self
-                .locals
-                .get(name)
-                .and_then(|expr| bigint_expr_const_value(expr)),
+            Expr::Ident { name, .. } => self.locals.get(name).and_then(bigint_expr_const_value),
             _ => bigint_expr_const_value(expr),
         }
     }
@@ -1908,6 +1905,10 @@ fn resolve_global_identifier_call(callee: &Expr) -> Option<BuiltinId> {
         "isFinite" => Some(BuiltinId::IsFinite),
         "Boolean" => Some(BuiltinId::BooleanCoerce),
         "Number" => Some(BuiltinId::NumberCoerce),
+        "encodeURI" => Some(BuiltinId::EncodeURI),
+        "decodeURI" => Some(BuiltinId::DecodeURI),
+        "escape" => Some(BuiltinId::Escape),
+        "unescape" => Some(BuiltinId::Unescape),
         _ => None,
     }
 }

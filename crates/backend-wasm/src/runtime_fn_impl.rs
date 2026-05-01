@@ -24,6 +24,10 @@ impl RuntimeFn {
             BuiltinId::IsFinite => Self::IsFinite,
             BuiltinId::BooleanCoerce => Self::BooleanCoerce,
             BuiltinId::NumberCoerce => Self::NumberCoerce,
+            BuiltinId::EncodeURI => Self::EncodeURI,
+            BuiltinId::DecodeURI => Self::DecodeURI,
+            BuiltinId::Escape => Self::Escape,
+            BuiltinId::Unescape => Self::Unescape,
         }
     }
 
@@ -1301,6 +1305,38 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::EncodeURI => RuntimeSpec {
+                symbol: "$encode_uri",
+                deps: NO_DEPS,
+                imports: IMPORT_ENCODE_URI,
+                capability: CAP_HOST_ENCODE_URI,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::DecodeURI => RuntimeSpec {
+                symbol: "$decode_uri",
+                deps: NO_DEPS,
+                imports: IMPORT_DECODE_URI,
+                capability: CAP_HOST_DECODE_URI,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::Escape => RuntimeSpec {
+                symbol: "$escape",
+                deps: NO_DEPS,
+                imports: IMPORT_ESCAPE,
+                capability: CAP_HOST_ESCAPE,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::Unescape => RuntimeSpec {
+                symbol: "$unescape",
+                deps: NO_DEPS,
+                imports: IMPORT_UNESCAPE,
+                capability: CAP_HOST_UNESCAPE,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
         }
     }
 
@@ -1495,6 +1531,10 @@ impl RuntimeFn {
             Self::NumberIsFinite => "number_is_finite",
             Self::NumberIsInteger => "number_is_integer",
             Self::NumberIsSafeInteger => "number_is_safe_integer",
+            Self::EncodeURI => "encode_uri",
+            Self::DecodeURI => "decode_uri",
+            Self::Escape => "escape",
+            Self::Unescape => "unescape",
         }
     }
 
@@ -1669,6 +1709,11 @@ impl RuntimeFn {
             Self::NumberIsFinite,
             Self::NumberIsInteger,
             Self::NumberIsSafeInteger,
+            // URI encoding/decoding (341e)
+            Self::EncodeURI,
+            Self::DecodeURI,
+            Self::Escape,
+            Self::Unescape,
         ]
     }
 
@@ -1844,6 +1889,11 @@ impl RuntimeFn {
             Self::NumberIsFinite,
             Self::NumberIsInteger,
             Self::NumberIsSafeInteger,
+            // URI encoding/decoding (341e)
+            Self::EncodeURI,
+            Self::DecodeURI,
+            Self::Escape,
+            Self::Unescape,
         ]
     }
 }

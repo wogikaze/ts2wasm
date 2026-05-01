@@ -1352,9 +1352,11 @@ fn block_contains_arguments(stmts: &[ResolvedStmt]) -> bool {
 }
 
 fn direct_iife_body_has_static_eval_block_function_binding(stmts: &[ResolvedStmt]) -> bool {
-    stmts.iter().any(|stmt| match stmt {
-        ResolvedStmt::Let(_, ResolvedExpr::Undefined) | ResolvedStmt::Function { .. } => true,
-        _ => false,
+    stmts.iter().any(|stmt| {
+        matches!(
+            stmt,
+            ResolvedStmt::Let(_, ResolvedExpr::Undefined) | ResolvedStmt::Function { .. }
+        )
     })
 }
 
@@ -1567,6 +1569,7 @@ struct SelfClosureOptions<'a> {
     capture_names: &'a [String],
 }
 
+#[allow(clippy::too_many_arguments)]
 fn lower_function(
     id: FuncId,
     params: &[ResolvedParam],

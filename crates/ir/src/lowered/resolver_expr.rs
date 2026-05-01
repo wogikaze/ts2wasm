@@ -467,24 +467,23 @@ impl<'a> Resolver<'a> {
                     });
                 }
 
-                if func_name == "String" {
-                    if let [arg] = args.as_slice()
-                        && self.resolved_expr_is_bigint(arg)
-                    {
-                        return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "BigIntToString".to_owned(),
-                            args: vec![self.lower_expr(arg)?],
-                        });
-                    }
+                if func_name == "String"
+                    && let [arg] = args.as_slice()
+                    && self.resolved_expr_is_bigint(arg)
+                {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntToString".to_owned(),
+                        args: vec![self.lower_expr(arg)?],
+                    });
                 }
 
-                if func_name == "Boolean" {
-                    if let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice() {
-                        return Ok(LoweredExpr::RuntimeCall {
-                            runtime_fn: "BigIntToBoolean".to_owned(),
-                            args: vec![self.lower_expr(&args[0])?],
-                        });
-                    }
+                if func_name == "Boolean"
+                    && let [ResolvedExpr::BigIntLiteral { .. }] = args.as_slice()
+                {
+                    return Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntToBoolean".to_owned(),
+                        args: vec![self.lower_expr(&args[0])?],
+                    });
                 }
 
                 let func_id = match self.resolve_func(func_name) {

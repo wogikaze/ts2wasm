@@ -21,6 +21,10 @@ pub enum BuiltinId {
     IsFinite,
     BooleanCoerce,
     NumberCoerce,
+    EncodeURI,
+    DecodeURI,
+    Escape,
+    Unescape,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -59,6 +63,10 @@ impl BuiltinId {
             Self::IsFinite => 1,
             Self::BooleanCoerce => 1,
             Self::NumberCoerce => 1,
+            Self::EncodeURI => 1,
+            Self::DecodeURI => 1,
+            Self::Escape => 1,
+            Self::Unescape => 1,
         }
     }
 
@@ -85,6 +93,10 @@ impl BuiltinId {
             Self::IsFinite => BuiltinResult::Value,
             Self::BooleanCoerce => BuiltinResult::Value,
             Self::NumberCoerce => BuiltinResult::Value,
+            Self::EncodeURI => BuiltinResult::Value,
+            Self::DecodeURI => BuiltinResult::Value,
+            Self::Escape => BuiltinResult::Value,
+            Self::Unescape => BuiltinResult::Value,
         }
     }
 }

@@ -74,6 +74,12 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             Capability::HostCryptoRandomBytes => {
                 manifest.wasi.random = true;
             }
+            Capability::HostEncodeURI
+            | Capability::HostDecodeURI
+            | Capability::HostEscape
+            | Capability::HostUnescape => {
+                // Node host capabilities for URI encoding/decoding
+            }
         }
     }
 

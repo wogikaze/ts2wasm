@@ -1,5 +1,6 @@
 use super::*;
 
+#[allow(clippy::type_complexity)]
 pub(super) fn resolve_private_elements(
     class_name: &str,
     _extends_name: Option<&String>,

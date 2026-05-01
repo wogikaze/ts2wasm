@@ -235,6 +235,14 @@ pub(crate) enum RuntimeFn {
     NumberIsInteger,
     /// Number.isSafeInteger static method
     NumberIsSafeInteger,
+    /// Global encodeURI function
+    EncodeURI,
+    /// Global decodeURI function
+    DecodeURI,
+    /// Global escape function
+    Escape,
+    /// Global unescape function
+    Unescape,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Ord, PartialOrd)]
@@ -254,6 +262,10 @@ pub(crate) enum HostImport {
     PathBasename,
     PathDirname,
     CryptoRandomBytes,
+    EncodeURI,
+    DecodeURI,
+    Escape,
+    Unescape,
 }
 
 impl HostImport {
@@ -380,6 +392,38 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::EncodeURI => HostImportSpec {
+                module: "host",
+                name: "encodeURI",
+                wat_symbol: "$host_encode_uri",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::DecodeURI => HostImportSpec {
+                module: "host",
+                name: "decodeURI",
+                wat_symbol: "$host_decode_uri",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::Escape => HostImportSpec {
+                module: "host",
+                name: "escape",
+                wat_symbol: "$host_escape",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
+            Self::Unescape => HostImportSpec {
+                module: "host",
+                name: "unescape",
+                wat_symbol: "$host_unescape",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -403,6 +447,10 @@ impl HostImport {
             Self::PathBasename => "host.path.basename",
             Self::PathDirname => "host.path.dirname",
             Self::CryptoRandomBytes => "host.crypto.randomBytes",
+            Self::EncodeURI => "host.encodeURI",
+            Self::DecodeURI => "host.decodeURI",
+            Self::Escape => "host.escape",
+            Self::Unescape => "host.unescape",
         }
     }
 }
@@ -506,6 +554,10 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "NumberIsFinite" => Some(RuntimeFn::NumberIsFinite),
         "NumberIsInteger" => Some(RuntimeFn::NumberIsInteger),
         "NumberIsSafeInteger" => Some(RuntimeFn::NumberIsSafeInteger),
+        "EncodeURI" => Some(RuntimeFn::EncodeURI),
+        "DecodeURI" => Some(RuntimeFn::DecodeURI),
+        "Escape" => Some(RuntimeFn::Escape),
+        "Unescape" => Some(RuntimeFn::Unescape),
         _ => None,
     }
 }
@@ -527,6 +579,10 @@ pub(crate) enum Capability {
     HostPathBasename,
     HostPathDirname,
     HostCryptoRandomBytes,
+    HostEncodeURI,
+    HostDecodeURI,
+    HostEscape,
+    HostUnescape,
 }
 
 impl Capability {
@@ -548,6 +604,10 @@ impl Capability {
             Self::HostPathBasename => "host.path.basename",
             Self::HostPathDirname => "host.path.dirname",
             Self::HostCryptoRandomBytes => "host.crypto.randomBytes",
+            Self::HostEncodeURI => "host.encodeURI",
+            Self::HostDecodeURI => "host.decodeURI",
+            Self::HostEscape => "host.escape",
+            Self::HostUnescape => "host.unescape",
         }
     }
 }
@@ -742,6 +802,10 @@ const IMPORT_PATH_RESOLVE: &[HostImport] = &[HostImport::PathResolve];
 const IMPORT_PATH_BASENAME: &[HostImport] = &[HostImport::PathBasename];
 const IMPORT_PATH_DIRNAME: &[HostImport] = &[HostImport::PathDirname];
 const IMPORT_CRYPTO_RANDOM_BYTES: &[HostImport] = &[HostImport::CryptoRandomBytes];
+const IMPORT_ENCODE_URI: &[HostImport] = &[HostImport::EncodeURI];
+const IMPORT_DECODE_URI: &[HostImport] = &[HostImport::DecodeURI];
+const IMPORT_ESCAPE: &[HostImport] = &[HostImport::Escape];
+const IMPORT_UNESCAPE: &[HostImport] = &[HostImport::Unescape];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -757,6 +821,10 @@ const CAP_HOST_PATH_RESOLVE: &[Capability] = &[Capability::HostPathResolve];
 const CAP_HOST_PATH_BASENAME: &[Capability] = &[Capability::HostPathBasename];
 const CAP_HOST_PATH_DIRNAME: &[Capability] = &[Capability::HostPathDirname];
 const CAP_HOST_CRYPTO_RANDOM_BYTES: &[Capability] = &[Capability::HostCryptoRandomBytes];
+const CAP_HOST_ENCODE_URI: &[Capability] = &[Capability::HostEncodeURI];
+const CAP_HOST_DECODE_URI: &[Capability] = &[Capability::HostDecodeURI];
+const CAP_HOST_ESCAPE: &[Capability] = &[Capability::HostEscape];
+const CAP_HOST_UNESCAPE: &[Capability] = &[Capability::HostUnescape];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,

@@ -1083,5 +1083,9 @@ fn hir_builtin_name(builtin: BuiltinId) -> &'static str {
         BuiltinId::IsFinite => "isFinite",
         BuiltinId::BooleanCoerce => "Boolean",
         BuiltinId::NumberCoerce => "Number",
+        BuiltinId::EncodeURI => "encodeURI",
+        BuiltinId::DecodeURI => "decodeURI",
+        BuiltinId::Escape => "escape",
+        BuiltinId::Unescape => "unescape",
     }
 }

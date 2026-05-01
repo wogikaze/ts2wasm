@@ -1218,7 +1218,7 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_add(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $add (param $a i32) (param $b i32) (result i32)
     (if (i32.or (call $is_string (local.get $a)) (call $is_string (local.get $b)))
@@ -1228,7 +1228,7 @@ impl WatEmitter<'_> {
         (call $number_to_i32 (local.get $a))
         (call $number_to_i32 (local.get $b)))))
 "#,
-        ));
+        );
     }
 
     pub(crate) fn emit_add_fast(&self, wat: &mut String) {

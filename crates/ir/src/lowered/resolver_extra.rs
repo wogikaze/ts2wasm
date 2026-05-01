@@ -363,6 +363,7 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn lower_array_map_function_expr_callback_call(
         &mut self,
         name: &str,

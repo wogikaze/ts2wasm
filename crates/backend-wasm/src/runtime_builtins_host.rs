@@ -1377,4 +1377,40 @@ impl WatEmitter<'_> {
             false_tag = ValueTag::FALSE,
         ));
     }
+
+    pub(super) fn emit_encode_uri(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $encode_uri (param $str i32) (result i32)
+    (call $host_encode_uri (local.get $str)))
+  "#,
+        );
+    }
+
+    pub(super) fn emit_decode_uri(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $decode_uri (param $str i32) (result i32)
+    (call $host_decode_uri (local.get $str)))
+  "#,
+        );
+    }
+
+    pub(super) fn emit_escape(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $escape (param $str i32) (result i32)
+    (call $host_escape (local.get $str)))
+  "#,
+        );
+    }
+
+    pub(super) fn emit_unescape(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+    (func $unescape (param $str i32) (result i32)
+    (call $host_unescape (local.get $str)))
+  "#,
+        );
+    }
 }

@@ -911,10 +911,7 @@ impl WatEmitter<'_> {
         let pad = " ".repeat(indent);
         let func = self.program.functions.get(func_id.0);
 
-        if args
-            .first()
-            .is_some_and(|arg| is_private_brand_check_expr(arg))
-        {
+        if args.first().is_some_and(is_private_brand_check_expr) {
             self.emit_user_call_args_with_checked_receiver(wat, func_id, args, indent, frame, func);
             return;
         }

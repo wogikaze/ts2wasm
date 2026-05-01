@@ -419,10 +419,10 @@ impl Parser {
             } else {
                 unreachable!()
             };
-            if parser_expr_is_bigint_literal_operand(&expr) {
-                if let Some(diagnostic) = self.bigint_fractional_right_gap() {
-                    return Err(diagnostic);
-                }
+            if parser_expr_is_bigint_literal_operand(&expr)
+                && let Some(diagnostic) = self.bigint_fractional_right_gap()
+            {
+                return Err(diagnostic);
             }
             let right = self.relational()?;
             let span = Span {
@@ -489,10 +489,10 @@ impl Parser {
                 None
             };
             let Some(op) = op else { break };
-            if parser_expr_is_bigint_literal_operand(&expr) {
-                if let Some(diagnostic) = self.bigint_fractional_right_gap() {
-                    return Err(diagnostic);
-                }
+            if parser_expr_is_bigint_literal_operand(&expr)
+                && let Some(diagnostic) = self.bigint_fractional_right_gap()
+            {
+                return Err(diagnostic);
             }
             let right = self.bitwise()?;
             let span = Span {
@@ -1695,7 +1695,7 @@ fn bigint_fractional_number_diagnostic(value: &str, span: Span) -> Diagnostic {
 fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
     match expr {
         Expr::BigInt { .. } => true,
-        Expr::Unary { op, expr, .. } if matches!(op, UnaryOp::Plus | UnaryOp::Negate) => {
+        Expr::Unary { op: UnaryOp::Plus | UnaryOp::Negate, expr, .. } => {
             parser_expr_is_bigint_literal_operand(expr)
         }
         Expr::FunctionExpr { .. }

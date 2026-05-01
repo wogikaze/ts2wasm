@@ -68,6 +68,10 @@ impl NameResolver {
             "parseInt",
             "parseFloat",
             "isFinite",
+            "encodeURI",
+            "decodeURI",
+            "escape",
+            "unescape",
             "globalThis",
         ]
         .iter()

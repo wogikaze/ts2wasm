@@ -252,6 +252,7 @@ impl Parser {
         }
     }
 
+    #[allow(clippy::only_used_in_recursion)]
     fn binding_default_expr_text(&self, expr: &Expr) -> String {
         match expr {
             Expr::Number { value, .. } => value.to_string(),

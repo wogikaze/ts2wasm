@@ -93,12 +93,12 @@ impl WatEmitter<'_> {
     }
 
     pub(crate) fn emit_copy(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $copy (param $src i32) (param $dst i32) (param $len i32)
     (memory.copy (local.get $dst) (local.get $src) (local.get $len)))
 "#,
-        ));
+        );
     }
 
     pub(crate) fn emit_value_to_string_into(&self, wat: &mut String) {

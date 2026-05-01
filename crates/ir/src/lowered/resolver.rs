@@ -69,6 +69,7 @@ impl ArrowClosure {
 }
 
 impl<'a> Resolver<'a> {
+    #[allow(clippy::too_many_arguments)]
     fn new(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,
@@ -132,6 +133,7 @@ impl<'a> Resolver<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn with_params(
         function_ids: &'a HashMap<String, FuncId>,
         function_signatures: &'a HashMap<FuncId, FunctionSignature>,

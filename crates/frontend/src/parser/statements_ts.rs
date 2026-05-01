@@ -48,7 +48,7 @@ impl Parser {
         }
 
         if self.peek_contextual_keyword("enum") {
-            let enum_span = self.peek_span().unwrap_or_else(|| Span {
+            let enum_span = self.peek_span().unwrap_or(Span {
                 start: self.cursor,
                 end: self.cursor,
             });

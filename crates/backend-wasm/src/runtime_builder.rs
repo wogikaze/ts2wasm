@@ -181,6 +181,10 @@ impl WatEmitter<'_> {
                 RuntimeFn::NumberIsFinite => self.emit_number_is_finite(wat),
                 RuntimeFn::NumberIsInteger => self.emit_number_is_integer(wat),
                 RuntimeFn::NumberIsSafeInteger => self.emit_number_is_safe_integer(wat),
+                RuntimeFn::EncodeURI => self.emit_encode_uri(wat),
+                RuntimeFn::DecodeURI => self.emit_decode_uri(wat),
+                RuntimeFn::Escape => self.emit_escape(wat),
+                RuntimeFn::Unescape => self.emit_unescape(wat),
             }
         }
     }

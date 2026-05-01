@@ -64,7 +64,7 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
             let helper_source = remove_frontmatter(&helper_source);
 
             // Extract function stubs instead of full helper file
-            let stubs = extract_function_stubs(&helper_source);
+            let stubs = extract_function_stubs(helper_source);
             if !injected.is_empty() {
                 injected.push('\n');
             }
@@ -232,11 +232,13 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
 }
 
 /// Extract includes: directive from YAML frontmatter.
+#[allow(dead_code)]
 fn extract_includes_from_frontmatter(frontmatter: &str) -> Vec<String> {
     parse_test262_metadata(frontmatter).includes
 }
 
 /// Extract features: directive from YAML frontmatter.
+#[allow(dead_code)]
 fn extract_features_from_frontmatter(frontmatter: &str) -> Vec<String> {
     parse_test262_metadata(frontmatter).features
 }
@@ -272,11 +274,11 @@ fn resolve_harness_directory(input: &Path) -> Result<std::path::PathBuf, Diagnos
         // Limit depth to avoid infinite loops
         if current.ends_with("test") {
             let parent = current.parent();
-            if let Some(p) = parent {
-                if p.ends_with("test262") {
-                    test262_root = Some(p.to_path_buf());
-                    break;
-                }
+            if let Some(p) = parent
+                && p.ends_with("test262")
+            {
+                test262_root = Some(p.to_path_buf());
+                break;
             }
         }
         current = match current.parent() {
