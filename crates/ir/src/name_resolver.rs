@@ -138,9 +138,11 @@ impl NameResolver {
             Stmt::ExportNamespaceFrom { span, .. } => {
                 Err(unsupported_module_decl(*span, "namespace re-export"))
             }
-            Stmt::ExportDecl { span, .. } => {
-                Err(unsupported_module_decl(*span, "declaration export"))
-            }
+            Stmt::ExportDecl {
+                declaration,
+                span: _span,
+                ..
+            } => self.resolve_stmt(declaration),
             Stmt::ExportDefault { span, .. } => {
                 Err(unsupported_module_decl(*span, "default export"))
             }

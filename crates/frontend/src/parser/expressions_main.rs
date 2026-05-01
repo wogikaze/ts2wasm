@@ -912,6 +912,9 @@ impl Parser {
         while let Some((keyword_span, keyword)) =
             self.consume_typescript_expression_type_erasure_keyword()
         {
+            if keyword == "as" && self.consume(TokenKind::Const) {
+                continue;
+            }
             self.skip_typescript_expression_type(keyword_span, keyword)?;
         }
 
@@ -1268,7 +1271,9 @@ impl Parser {
 
             if at_top_level
                 && !consumed_type_token
-                && self.peek().is_some_and(is_typescript_expression_type_stop)
+                && self.peek().is_some_and(|t| {
+                    is_typescript_expression_type_stop(t) && !matches!(t, Token::LeftBrace)
+                })
             {
                 break;
             }

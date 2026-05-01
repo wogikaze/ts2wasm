@@ -874,13 +874,13 @@ impl Parser {
                 },
             });
         }
-        let semi = self.expect(TokenKind::Semicolon)?;
+        let end = self.statement_terminator_end(expr.span().end)?;
         let stmt = Stmt::Let {
             name: binding.text.clone(),
             expr,
             span: Span {
                 start: start.start,
-                end: semi.end,
+                end,
             },
         };
         Ok((stmt, binding.text, binding.span))
