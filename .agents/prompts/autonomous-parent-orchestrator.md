@@ -298,6 +298,14 @@ If conflict occurs:
 
 1. After successful merge:
 
+- write merge report to `reports/runs/<run_id>/merge_report.md`
+- send merge report via webhook:
+
+  ```bash
+  mise run discord-report -- reports/runs/<run_id>/merge_report.md --run-id <run_id>
+  ```
+
+  If webhook fails, save payload to `reports/runs/<run_id>/discord_payload.json`, retry once, then mark `DEFERRED` and continue.
 - update parent reports
 - update queues
 - clean up the child git worktree and `agent/*` branch after the integration is verified
@@ -411,8 +419,30 @@ Include:
 - queue sizes
 - next assignments
 
+## Webhook push
+
+After writing the parent cycle report, send it to Discord before any user-facing response:
+
+```bash
+mise run discord-report -- reports/runs/<run_id>/cycle_report.md --run-id <run_id>
+```
+
+If the webhook push fails:
+
+- save payload to `reports/runs/<run_id>/discord_payload.json`
+- save error to `reports/runs/<run_id>/reporting_error.log`
+- retry once
+- if retry fails, mark `DEFERRED` in `reports/runs/<run_id>/webhook_status.txt`
+- continue the loop regardless; do not stop on webhook failure
+
+To retry a saved payload later:
+
+```bash
+mise run discord-report -- reports/runs/<run_id>/discord_payload.json --run-id <run_id>
+```
+
 Parent cycle reports are loop artifacts, not user-facing completion messages.
-After writing and sending or deferring the Discord report:
+After writing and sending (or deferring) the Discord report:
 
 - If more work is safe to dispatch, do not send a user-facing summary and do not stop; immediately continue to `QUEUE_SCAN`.
 - If a child is still active, do not send a user-facing summary and do not stop; keep supervising or assign non-conflicting work.
