@@ -58,7 +58,7 @@ impl BuiltinId {
             Self::InstanceOf => 2,
             Self::MathPow => 2,
             Self::IsNaN => 1,
-            Self::ParseInt => 1,
+            Self::ParseInt => 2,
             Self::ParseFloat => 1,
             Self::IsFinite => 1,
             Self::BooleanCoerce => 1,

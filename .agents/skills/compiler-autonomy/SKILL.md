@@ -22,6 +22,8 @@ This shows the current FSM state and what to do next. The dev-loop script (`scri
 ```bash
 mise run dev-loop               # Show status + suggested actions
 mise run dev-loop --advance     # Advance to next FSM state
+mise run dev-loop --commit      # Commit changes (auto-generated message)
+mise run dev-loop --commit "feat: X"  # Commit with custom message
 mise run dev-loop --reset       # Reset to SYNC (clean slate)
 mise run dev-loop --check       # Validate state consistency
 ```

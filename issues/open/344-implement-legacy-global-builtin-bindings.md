@@ -25,7 +25,7 @@ Problem: 8 test262 cases fail due to missing legacy global builtin bindings.
 
 ```
 mise run reference-coverage -- test262 --limit 53445
-# Coverage matrix shows 8 legacy-global-builtin failures
+# Coverage matrix shows 18 legacy-global-builtin failures (full run)
 ```
 
 ## Desired final state
@@ -36,8 +36,10 @@ The `legacy-global-builtin` unsupported count is reduced to 0. All legacy global
 
 In scope:
 
-- [ ] Identify which legacy globals are referenced by failing test262 cases
-- [ ] Implement escape/unescape global functions
+- [x] Fix parseInt expected arity (1→2) to accept radix argument
+- [x] Fix surrogate Unicode escape parsing (FFFD fallback for surrogates in \uXXXX)
+- [x] Escape/unescape call-position builtin resolution (works for `escape(x)` calls)
+- [ ] Make escape/unescape available as value bindings (for `escape.length` style tests)
 - [ ] Verify isNaN/parseFloat/parseInt are properly bound
 - [ ] Add fixture tests
 

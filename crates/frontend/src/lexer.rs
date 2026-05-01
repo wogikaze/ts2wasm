@@ -1651,6 +1651,9 @@ impl<'a> Lexer<'a> {
             value = (value << 4) | digit;
         }
 
+        if (0xD800..=0xDFFF).contains(&value) {
+            return Ok('\u{FFFD}');
+        }
         char::from_u32(value).ok_or(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("invalid {label} escape scalar value"),

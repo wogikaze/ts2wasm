@@ -6,8 +6,16 @@ set -euo pipefail
 # Usage:
 #   mise run dev-loop               Show current loop status
 #   mise run dev-loop --advance     Advance to next FSM state
+#   mise run dev-loop --commit      Commit changes (with auto-generated message)
+#   mise run dev-loop --commit "msg" Commit changes with custom message
 #   mise run dev-loop --reset       Reset to SYNC (clean slate)
 #   mise run dev-loop --check       Validate state consistency
+#
+# Commit points in the loop:
+#   - IMPLEMENT / SELF_REVIEW_GATE → commit code changes before verification
+#   - CLOSE_OR_SPLIT → commit issue moves / index updates
+#   - RETRO → commit cycle report and state changes
+#   - RETRO→SYNC (--advance) → auto-commits before resetting
 #
 # FSM: SYNC → TRIAGE → TASK_SELECT → PLAN → PLAN_REVIEW_GATE → IMPLEMENT →
 #      SELF_REVIEW_GATE → VERIFY_FAST → VERIFY_FULL → CLOSE_OR_SPLIT →
@@ -261,10 +269,12 @@ cmd_status() {
       ;;
     IMPLEMENT)
       log_step "Implement code changes"
+      log_step "mise run dev-loop --commit    → commit implementation"
       log_step "mise run dev-loop --advance   → SELF_REVIEW_GATE"
       ;;
     SELF_REVIEW_GATE)
       log_step "Self-review code against review_checklist.md"
+      log_step "mise run dev-loop --commit    → commit review fixes"
       log_step "mise run dev-loop --advance   → VERIFY_FAST"
       ;;
     VERIFY_FAST)
@@ -278,12 +288,14 @@ cmd_status() {
       ;;
     CLOSE_OR_SPLIT)
       log_step "Move issue to issues/done/ or split into follow-ups"
+      log_step "mise run dev-loop --commit    → commit index update"
       log_step "mise run dev-loop --advance   → RETRO"
       ;;
     RETRO)
       log_step "Write cycle report to reports/runs/<ts>/cycle_report.md"
       log_step "Log failure patterns if any"
-      log_step "mise run dev-loop --advance   → back to SYNC (new cycle)"
+      log_step "mise run dev-loop --commit    → commit cycle artifacts"
+      log_step "mise run dev-loop --advance   → back to SYNC (new cycle, auto-commits)"
       ;;
   esac
   printf '\n'
@@ -368,6 +380,22 @@ cmd_advance() {
       fi
       ;;
     RETRO)
+      # Auto-commit before closing the cycle
+      if ! git diff --quiet || ! git diff --cached --quiet || ! git ls-files --others --exclude-standard --quiet 2>/dev/null; then
+        log_step "Auto-committing cycle artifacts before reset..."
+        local retro_msg="chore: cycle report and state update"
+        if [[ -n "$TASK_TITLE" && "$TASK_TITLE" != "(no title)" && "$TASK_TITLE" != "null" ]]; then
+          retro_msg="chore: close cycle for $TASK_TITLE"
+        fi
+        git add -A
+        if git commit -m "$retro_msg" 2>/dev/null; then
+          log_info "Committed: ${retro_msg}"
+        else
+          log_warn "Auto-commit skipped (no new changes)."
+        fi
+      else
+        log_step "No changes to commit — resetting directly."
+      fi
       # Loop complete — back to SYNC
       log_info "Loop complete! Resetting to SYNC for next cycle."
       write_json_file "$PROJECT_STATE" "{\"version\": 1, \"fsm\": \"SYNC\", \"active_task_id\": null, \"updated_at\": \"$now\", \"milestone_id\": null, \"run_id\": null, \"plan_path\": null, \"verify_fast_streak_fails\": 0}"
@@ -440,6 +468,77 @@ cmd_reset() {
   write_json_file "$CURRENT_TASK" "{\"id\": null, \"title\": null, \"status\": \"idle\", \"issue_path\": null, \"scope\": null, \"acceptance\": null, \"commands\": null, \"risk\": null, \"notes\": \"\"}"
   log_info "Reset complete. FSM is at SYNC."
   log_step "Run 'mise run dev-loop' to see status."
+}
+
+# --- Commit changes ---
+cmd_commit() {
+  load_state
+
+  local custom_msg="${1:-}"
+
+  # Check if there are any changes
+  if git diff --quiet && git diff --cached --quiet && git ls-files --others --exclude-standard --quiet; then
+    log_warn "No changes to commit."
+    return 0
+  fi
+
+  # Build commit message
+  local msg=""
+  if [[ -n "$custom_msg" ]]; then
+    msg="$custom_msg"
+  else
+    case "$FSM" in
+      IMPLEMENT)
+        if [[ -n "$TASK_TITLE" && "$TASK_TITLE" != "(no title)" && "$TASK_TITLE" != "null" ]]; then
+          msg="feat: $TASK_TITLE"
+        else
+          msg="feat: implement task changes"
+        fi
+        ;;
+      SELF_REVIEW_GATE)
+        msg="fix: self-review fixes"
+        if [[ -n "$TASK_TITLE" && "$TASK_TITLE" != "(no title)" && "$TASK_TITLE" != "null" ]]; then
+          msg="fix: self-review fixes for $TASK_TITLE"
+        fi
+        ;;
+      CLOSE_OR_SPLIT)
+        msg="chore: close issue and update index"
+        if [[ -n "$TASK_ISSUE_PATH" && "$TASK_ISSUE_PATH" != "null" ]]; then
+          local issue_name
+          issue_name=$(basename "$TASK_ISSUE_PATH" .md 2>/dev/null || echo "issue")
+          msg="chore: close $issue_name and update index"
+        fi
+        ;;
+      RETRO)
+        msg="chore: cycle report and state update"
+        ;;
+      VERIFY_FAST)
+        msg="chore: fast-gate fixes"
+        ;;
+      VERIFY_FULL)
+        msg="chore: full-gate fixes"
+        ;;
+      *)
+        msg="chore: dev-loop state update"
+        ;;
+    esac
+  fi
+
+  # Stage all changes (respecting .gitignore)
+  git add -A
+
+  # Create commit
+  if git commit -m "$msg"; then
+    log_info "Committed: ${msg}"
+  else
+    # git commit can fail if there are no changes after add (e.g., only ignored files changed)
+    if git diff --quiet --staged; then
+      log_warn "Nothing staged after git add -A (changes may be gitignored)."
+      return 0
+    fi
+    log_error "Commit failed."
+    return 1
+  fi
 }
 
 # --- Check consistency ---
@@ -540,6 +639,10 @@ main() {
     advance|--advance|-a)
       cmd_advance
       ;;
+    commit|--commit|-C)
+      shift
+      cmd_commit "$*"
+      ;;
     reset|--reset|-r)
       cmd_reset
       ;;
@@ -549,10 +652,16 @@ main() {
     --help|-h)
       cat <<HELP
 Usage:
-  mise run dev-loop               Show current loop status
-  mise run dev-loop --advance     Advance to next FSM state
-  mise run dev-loop --reset       Reset to SYNC (clean slate)
-  mise run dev-loop --check       Validate state consistency
+  mise run dev-loop                            Show current loop status
+  mise run dev-loop --advance                  Advance to next FSM state
+  mise run dev-loop --commit [\"message\"]       Commit changes (auto msg if omitted)
+  mise run dev-loop --reset                    Reset to SYNC (clean slate)
+  mise run dev-loop --check                    Validate state consistency
+
+Commit points:
+  IMPLEMENT / SELF_REVIEW_GATE → commit code before verification
+  CLOSE_OR_SPLIT              → commit issue moves and index update
+  RETRO                       → commit cycle artifacts (auto-commits on --advance)
 
 FSM: SYNC → TRIAGE → TASK_SELECT → PLAN → PLAN_REVIEW_GATE → IMPLEMENT →
      SELF_REVIEW_GATE → VERIFY_FAST → VERIFY_FULL → CLOSE_OR_SPLIT →

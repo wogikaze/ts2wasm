@@ -185,7 +185,8 @@ mise run dev-loop --check  # Validate state consistency
 
 ### Loop traversal
 
-Each FSM state has a corresponding action. Advance with `mise run dev-loop --advance`.
+Each FSM state has a corresponding action. Advance with `mise run dev-loop --advance`.  
+Commit with `mise run dev-loop --commit` or pass a custom message: `mise run dev-loop --commit "feat: implement X"`.
 
 ```
 SYNC             → Read current-state.md, docs/11, issues/index.md; check for drift
@@ -194,11 +195,15 @@ TASK_SELECT      → Pick one Ready issue; set scope in current_task.json
 PLAN             → Create implementation plan; set plan_path in project_state.json
 PLAN_REVIEW_GATE → Review plan against review_checklist.md; revise if needed
 IMPLEMENT        → Implement the smallest slice of the plan
+                   → mise run dev-loop --commit    (commit code)
 SELF_REVIEW_GATE → Self-review code against review_checklist.md
+                   → mise run dev-loop --commit    (commit review fixes)
 VERIFY_FAST      → mise run fmt && mise run nextest (fast gates)
 VERIFY_FULL      → mise run gate; verify all acceptance criteria with evidence
 CLOSE_OR_SPLIT   → Move issue to issues/done/ or split into follow-ups
+                   → mise run dev-loop --commit    (commit index update)
 RETRO            → Write cycle report; log failure patterns; update guardrails
+                   → mise run dev-loop --advance   (auto-commits, resets to SYNC)
 → back to SYNC (loop restarts)
 ```
 

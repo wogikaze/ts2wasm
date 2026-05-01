@@ -940,7 +940,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_parse_int(&self, wat: &mut String) {
         wat.push_str(&format!(
             r##"
-  (func $parse_int (param $s i32) (result i32)
+  (func $parse_int (param $s i32) (param $radix i32) (result i32)
     (local $tag i32)
     (local.set $tag (i32.and (local.get $s) (i32.const {tag_mask})))
     ;; If number: return the number value
@@ -949,8 +949,8 @@ impl WatEmitter<'_> {
     ;; If not a string, return NaN (0 in our model)
     (if (i32.ne (local.get $tag) (i32.const {string_tag}))
       (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))
-    ;; Parse string to integer with auto-detected radix
-    (call $parse_int_string (local.get $s) (i32.const {zero})))
+    ;; Parse string to integer with the provided radix (0 = auto-detect)
+    (call $parse_int_string (local.get $s) (local.get $radix)))
 "##,
             tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
