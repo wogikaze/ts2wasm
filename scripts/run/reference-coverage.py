@@ -38,6 +38,8 @@ import tempfile
 import re
 import shutil
 import os
+import threading
+import itertools
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
@@ -625,6 +627,7 @@ def main():
     jobs = None
     sample = None
     category_pattern = None
+    server_mode = False
     
     i = 0
     while i < len(args):
@@ -694,6 +697,9 @@ def main():
                 sys.exit(1)
             category_pattern = args[i + 1]
             i += 2
+        elif args[i] == "--server":
+            server_mode = True
+            i += 1
         else:
             print(f"unknown option: {args[i]}", file=sys.stderr)
             usage()
@@ -808,6 +814,218 @@ def main():
     
     semantic_enabled = bool(shutil.which("node") and shutil.which("iwasm"))
     
+    if jobs is None:
+        jobs = os.cpu_count() or 4
+    
+    # Server-mode setup (shared across all threads)
+    use_server = server_mode
+    server_proc = None
+    server_lock = threading.Lock() if server_mode else None
+    server_counter = itertools.count(1) if server_mode else None
+    
+    if server_mode:
+        print(f"Starting ts2wasm server (1 process, {jobs} worker threads)...", file=sys.stderr)
+        server_proc = subprocess.Popen(
+            [str(TS2WASM_BINARY), "server"],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=sys.stderr,
+            cwd=REPO_ROOT,
+        )
+    
+    def _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics):
+        """Run node and iwasm for a build-pass file, updating result_metrics."""
+        node_source = test262_runner.build_test262_source(
+            file_path, source_code, metadata, target="node"
+        )
+        node_input = thread_tmp / "node.js"
+        node_input.write_text(node_source, encoding="utf-8")
+        
+        node_result = subprocess.run(
+            ["timeout", "8s", "node", str(node_input)],
+            capture_output=True,
+            cwd=REPO_ROOT,
+        )
+        wasm_result = subprocess.run(
+            ["timeout", "8s", "iwasm", str(out_wasm)],
+            capture_output=True,
+            cwd=REPO_ROOT,
+        )
+        
+        if node_result.returncode != 0:
+            result_metrics["blocked"] = True
+        elif wasm_result.returncode != 0:
+            result_metrics["runtime_error"] = True
+        elif node_result.stdout == wasm_result.stdout:
+            result_metrics["semantic_pass"] = True
+        else:
+            result_metrics["mismatch"] = True
+    
+    def _process_one_file(file_path):
+        """Process a single file for coverage measurement. Thread-safe."""
+        if not file_path.is_file():
+            return None
+        
+        detail_path = repo_relative(file_path)
+        result_metrics = {
+            "build_pass": False,
+            "semantic_pass": False,
+            "mismatch": False,
+            "runtime_error": False,
+            "blocked": False,
+            "fail": False,
+            "unsupported": False,
+            "diag_code": None,
+            "feature_label": None,
+            "detail_line": None,
+        }
+        
+        # Read source once
+        try:
+            source_code = file_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            return None
+        
+        # Check for expected negative parse syntax error
+        negative_phase, negative_type = parse_test262_negative_metadata(source_code)
+        if negative_phase == "parse" and negative_type == "SyntaxError":
+            result_metrics["unsupported"] = True
+            result_metrics["diag_code"] = "ExpectedNegativeSyntax"
+            result_metrics["feature_label"] = "negative-parse-syntaxerror"
+            if detail_output:
+                result_metrics["detail_line"] = f"{detail_path}: ExpectedNegativeSyntax: negative-parse-syntaxerror"
+            return result_metrics
+        
+        metadata = test262_runner.parse_test262_metadata(source_code)
+        test262_runner.HARNESS_DIR = test262_harness_dir_for(file_path)
+        build_source = test262_runner.build_test262_source(
+            file_path, source_code, metadata, target="wasm"
+        )
+        
+        if use_server:
+            # === Server mode: one-liner protocol ===
+            server_id = next(server_counter)
+            req = json.dumps({"id": server_id, "source": build_source})
+            with server_lock:
+                server_proc.stdin.write(req.encode("utf-8") + b"\n")
+                server_proc.stdin.flush()
+                resp_line = server_proc.stdout.readline()
+                if not resp_line:
+                    result_metrics["blocked"] = True
+                    if detail_output:
+                        result_metrics["detail_line"] = f"{detail_path}: blocked (server disconnected)"
+                    return result_metrics
+            resp = json.loads(resp_line.decode("utf-8"))
+            
+            if resp["status"] == "ok":
+                result_metrics["build_pass"] = True
+                
+                if semantic_enabled:
+                    # Fall back to subprocess for WASM + semantic comparison
+                    thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
+                    try:
+                        build_input = thread_tmp / "in.js"
+                        build_input.write_text(build_source, encoding="utf-8")
+                        out_wasm = thread_tmp / "out.wasm"
+                        
+                        build_result = subprocess.run(
+                            ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                            capture_output=True,
+                            cwd=REPO_ROOT
+                        )
+                        if build_result.returncode == 0:
+                            _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics)
+                    finally:
+                        shutil.rmtree(thread_tmp, ignore_errors=True)
+                
+                if detail_output and not result_metrics.get("detail_line"):
+                    result_metrics["detail_line"] = f"{detail_path}: build_pass"
+                return result_metrics
+            
+            if resp["status"] == "error":
+                diag_code = resp.get("code", "Unknown")
+                result_metrics["diag_code"] = diag_code
+                
+                if diag_code == "BackendIo":
+                    result_metrics["blocked"] = True
+                    if detail_output:
+                        result_metrics["detail_line"] = f"{detail_path}: blocked"
+                    return result_metrics
+                
+                result_metrics["unsupported"] = True
+                diag_label = feature_label(diag_code, None, str(file_path))
+                result_metrics["feature_label"] = diag_label
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: {diag_code}: {diag_label}"
+                return result_metrics
+            
+            result_metrics["blocked"] = True
+            if detail_output:
+                result_metrics["detail_line"] = f"{detail_path}: blocked (unknown status)"
+            return result_metrics
+        
+        # === Legacy subprocess mode ===
+        # Use per-thread temp dir to avoid file conflicts
+        thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
+        try:
+            # Write build input
+            metadata = test262_runner.parse_test262_metadata(source_code)
+            test262_runner.HARNESS_DIR = test262_harness_dir_for(file_path)
+            build_source = test262_runner.build_test262_source(
+                file_path, source_code, metadata, target="wasm"
+            )
+            build_input = thread_tmp / "in.js"
+            build_input.write_text(build_source, encoding="utf-8")
+            
+            out_wasm = thread_tmp / "out.wasm"
+            
+            # Build with ts2wasm
+            build_result = subprocess.run(
+                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                capture_output=True,
+                cwd=REPO_ROOT
+            )
+            
+            if build_result.returncode == 0:
+                result_metrics["build_pass"] = True
+                
+                if semantic_enabled:
+                    _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics)
+                
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: build_pass"
+                return result_metrics
+            
+            if build_result.returncode == 124:  # timeout
+                result_metrics["blocked"] = True
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: blocked"
+                return result_metrics
+            
+            # Extract diagnostic code
+            err_content = build_result.stderr.decode('utf-8', errors='ignore')
+            diag_match = re.search(r'\[([A-Za-z0-9_]+)\]', err_content)
+            diag_code = diag_match.group(1) if diag_match else "Unknown"
+            result_metrics["diag_code"] = diag_code
+            
+            if diag_code == "BackendIo":
+                result_metrics["blocked"] = True
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: blocked"
+            elif diag_code == "InvariantViolation":
+                result_metrics["fail"] = True
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: fail: InvariantViolation"
+            else:
+                result_metrics["unsupported"] = True
+                feat = feature_label(diag_code, err_content, str(file_path))
+                result_metrics["feature_label"] = feat
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: {diag_code}: {feat}"
+            return result_metrics
+        finally:
+            shutil.rmtree(thread_tmp, ignore_errors=True)
+    
     build_pass_count = 0
     semantic_pass_count = 0
     mismatch_count = 0
@@ -818,88 +1036,67 @@ def main():
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         
-        for file_path in files:
-            if not file_path.is_file():
-                continue
-            executed += 1
-            detail_path = repo_relative(file_path)
-
-            if is_expected_negative_parse_syntax_error(suite, file_path):
-                unsupported_count += 1
-                unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
-                unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
-                if detail_output:
-                    file_details.append(f"{detail_path}: ExpectedNegativeSyntax: negative-parse-syntaxerror")
-                continue
-            
-            out_wasm = tmp_dir / "out.wasm"
-            err_file = tmp_dir / "err.txt"
-            build_input, node_input = prepare_build_inputs(suite, file_path, tmp_dir)
-            
-            # Build with ts2wasm
-            result = subprocess.run(
-                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
-                capture_output=True,
-                cwd=REPO_ROOT
-            )
-            
-            if result.returncode == 0:
-                build_pass_count += 1
+        with ThreadPoolExecutor(max_workers=jobs) as executor:
+            futures = {executor.submit(_process_one_file, f): f for f in files}
+            for future in as_completed(futures):
+                result = future.result()
+                if result is None:
+                    continue
+                executed += 1
                 
-                if semantic_enabled:
-                    node_out = tmp_dir / "node.out"
-                    wasm_out = tmp_dir / "wasm.out"
-                    
-                    node_result = subprocess.run(
-                        ["timeout", "8s", "node", str(node_input)],
-                        capture_output=True,
-                        cwd=REPO_ROOT
-                    )
-                    wasm_result = subprocess.run(
-                        ["timeout", "8s", "iwasm", str(out_wasm)],
-                        capture_output=True,
-                        cwd=REPO_ROOT
-                    )
-                    
-                    if node_result.returncode != 0:
-                        blocked_count += 1
-                    elif wasm_result.returncode != 0:
-                        runtime_error_count += 1
-                    elif node_result.stdout == wasm_result.stdout:
+                if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
+                    unsupported_count += 1
+                    unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
+                    unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
+                    if result["detail_line"]:
+                        file_details.append(result["detail_line"])
+                    continue
+                
+                if result["build_pass"]:
+                    build_pass_count += 1
+                    if result["semantic_pass"]:
                         semantic_pass_count += 1
-                    else:
+                    elif result["mismatch"]:
                         mismatch_count += 1
+                    elif result["runtime_error"]:
+                        runtime_error_count += 1
+                    elif result["blocked"]:
+                        blocked_count += 1
+                    if result["detail_line"]:
+                        file_details.append(result["detail_line"])
+                    continue
                 
-                if detail_output:
-                    file_details.append(f"{detail_path}: build_pass")
-                continue
-            
-            if result.returncode == 124:  # timeout
-                blocked_count += 1
-                if detail_output:
-                    file_details.append(f"{detail_path}: blocked")
-                continue
-            
-            # Extract diagnostic code
-            err_content = result.stderr.decode('utf-8', errors='ignore')
-            diag_match = re.search(r'\[([A-Za-z0-9_]+)\]', err_content)
-            diag_code = diag_match.group(1) if diag_match else "Unknown"
-            
-            if diag_code == "BackendIo":
-                blocked_count += 1
-                if detail_output:
-                    file_details.append(f"{detail_path}: blocked")
-            elif diag_code == "InvariantViolation":
-                fail_count += 1
-                if detail_output:
-                    file_details.append(f"{detail_path}: fail: InvariantViolation")
-            else:
-                unsupported_count += 1
-                feature_label_result = feature_label(diag_code, err_content, str(file_path))
-                unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
-                unsupported_feature_counts[feature_label_result] = unsupported_feature_counts.get(feature_label_result, 0) + 1
-                if detail_output:
-                    file_details.append(f"{detail_path}: {diag_code}: {feature_label_result}")
+                if result["blocked"]:
+                    blocked_count += 1
+                    if result["detail_line"]:
+                        file_details.append(result["detail_line"])
+                    continue
+                
+                if result["fail"]:
+                    fail_count += 1
+                    if result["detail_line"]:
+                        file_details.append(result["detail_line"])
+                    continue
+                
+                if result["unsupported"]:
+                    unsupported_count += 1
+                    diag_code = result["diag_code"]
+                    feat = result["feature_label"]
+                    unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
+                    unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
+                    if result["detail_line"]:
+                        file_details.append(result["detail_line"])
+                    continue
+    
+        # Server cleanup
+        if server_mode and server_proc:
+            server_proc.stdin.write(json.dumps({"id": -1, "source": ""}).encode("utf-8") + b"\n")
+            server_proc.stdin.flush()
+            try:
+                server_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                server_proc.kill()
+                server_proc.wait()
     
     # JSONL output mode (test262 only, uses full harness with parallel execution)
     if jsonl_output and suite == "test262":

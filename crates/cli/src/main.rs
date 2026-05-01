@@ -66,8 +66,11 @@ fn run() -> Result<(), String> {
             )
             .map_err(|e| e.to_string())
         }
+        [command] if command == "server" => {
+            ts2wasm_compiler::server::run_server()
+        }
         _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm dump [--tokens|--ast|--resolved|--tir|--optimize|--lowered|--wat] [-O0|-O1|-O2|-O3] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
+            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm server\n       ts2wasm dump [--tokens|--ast|--resolved|--tir|--optimize|--lowered|--wat] [-O0|-O1|-O2|-O3] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
                 .to_owned(),
         ),
     }
