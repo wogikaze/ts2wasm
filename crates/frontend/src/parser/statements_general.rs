@@ -41,6 +41,11 @@ impl Parser {
 
     fn import_statement(&mut self) -> Result<Stmt, Diagnostic> {
         let import_span = self.expect(TokenKind::Import)?;
+        // Handle `import type { ... } from "..."` — the `type` keyword is a
+        // TypeScript-only compile-time annotation that is erased at runtime.
+        if self.peek_contextual_keyword("type") {
+            self.advance(); // consume the `type` token
+        }
         match self.peek() {
             Some(Token::String(_)) => {
                 let specifier = self.expect_module_specifier()?;
@@ -68,6 +73,8 @@ impl Parser {
             self.default_export_statement(export_span, default_span)
         } else if matches!(self.peek(), Some(Token::Class)) {
             self.unsupported_module_form(export_span, "class export")
+        } else if matches!(self.peek(), Some(Token::Function)) {
+            self.function_export_statement(export_span)
         } else {
             match self.peek() {
                 Some(Token::LeftBrace) => self.named_export_statement(export_span),
@@ -76,7 +83,6 @@ impl Parser {
                 _ => {
                     let form = match self.peek() {
                         Some(Token::Const | Token::Let | Token::Var) => "variable export",
-                        Some(Token::Function) => "function export",
                         Some(Token::Default) => "default export",
                         _ => "static export",
                     };
@@ -129,6 +135,38 @@ impl Parser {
             exported: local,
             exported_span: local_span,
             span: local_span,
+        };
+        let end = declaration.span().end;
+        Ok(Stmt::ExportDecl {
+            declaration: Box::new(declaration),
+            specifier,
+            span: Span {
+                start: export_span.start,
+                end,
+            },
+        })
+    }
+
+    /// Parse `export function name(...) { ... }` or `export function* name(...) { ... }`.
+    fn function_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
+        let declaration = self.function_statement()?;
+        let name = match &declaration {
+            Stmt::Function { name, .. } => name.clone(),
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "function_export_statement: function_statement did not return a Function"
+                        .to_owned(),
+                    span: None,
+                });
+            }
+        };
+        let specifier = ExportNamedSpecifier {
+            local: name.clone(),
+            local_span: export_span,
+            exported: name,
+            exported_span: export_span,
+            span: export_span,
         };
         let end = declaration.span().end;
         Ok(Stmt::ExportDecl {
