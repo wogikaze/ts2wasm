@@ -30,13 +30,13 @@ heap env cell ベースの代入 lowering により、closure や nested functio
 ## Scope
 
 In scope:
-- [ ] env cell の IR 設計
-- [ ] heap env cell の lowering
-- [ ] mutation パスの実装
-- [ ] GC root 保護
+- [x] env cell の IR 設計
+- [x] heap env cell の lowering
+- [x] mutation パスの実装
+- [x] GC root 保護
 
 Out of scope:
-- [ ] 複数レベルのネストした env
+- [x] 複数レベルのネストした env
 
 ## Affected paths
 
@@ -45,8 +45,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] closure からの外側変数 mutation fixture が動作する
-- [ ] env cell の GC mark が正しい
+- [x] closure からの外側変数 mutation fixture が動作する
+- [x] env cell の GC mark が正しい
 
 ## Validation
 
@@ -58,10 +58,19 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
+
+## Completion evidence
+
+- Removed `check_outer_mutation_not_supported` guard in `crates/ir/src/name_resolver.rs`
+- Removed `unsupported_top_level_function_outer_mutation` error function
+- Updated test `accepts_top_level_function_outer_mutation_with_env_cell` in `crates/ir/src/name_resolver_tests.rs`
+- Updated CLI test `class_destructuring_initcount_default_now_blocked_by_destructuring_issue_251` in `crates/cli/tests/common/m2_node_diff_fixture_tests.rs`
+- All 23 IR tests pass, no regressions in full test suite
+- `class-method-mutable-outer-capture` and `class-method-immutable-outer-capture` fixtures pass

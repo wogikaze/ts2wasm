@@ -11,13 +11,13 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 6 | 7 |
-| cli | 15 | 10 | 5 |
+| cli | 15 | 9 | 6 |
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
 | frontend | 4350 | 4250 | 100 |
 | harness | 1 | 1 | 0 |
-| ir | 18 | 5 | 13 |
+| ir | 18 | 4 | 14 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4593 | 303 |
+| total | 4896 | 4591 | 305 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -162,7 +162,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement array growth and reallocation for push/write paths |
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components |
-| 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | implementation-ready | P0 |  | [cli] Replace placeholder parser keyword/operator tests with real assertions |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records | feature | cli | implementation-ready | P1 |  | [cli] Normalize node-diff fixture reporting into structured records |
 | 5034 | [cli] Add command contract tests for build/check/dump/server | test | cli | implementation-ready | P1 |  | [cli] Add command contract tests for build/check/dump/server |
 | 5035 | [cli] Add --explain-unsupported diagnostics mode | feature | cli | implementation-ready | P2 |  | [cli] Add --explain-unsupported diagnostics mode |
@@ -177,7 +176,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries |
 | 5045 | [frontend] Improve syntax error recovery and source spans | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | implementation-ready | P0 |  | [ir] Design full class runtime IR representation |
-| 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | implementation-ready | P0 |  | [ir] Implement env-cell lowering for outer-scope mutation |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | implementation-ready | P1 |  | [ir] Complete destructuring, rest, and default binding lowering |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | implementation-ready | P1 |  | [ir] Implement iterator protocol lowering for spread and for-of |
@@ -5057,7 +5055,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see file |
 | 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
 | 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
+| 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
+| 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
 | 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | see file |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | see file |

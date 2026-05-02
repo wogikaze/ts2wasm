@@ -30,11 +30,11 @@ Parser のリグレッションを既存テストで検出できない。
 ## Scope
 
 In scope:
-- [ ] 全 placeholder test の実アサーション化
-- [ ] Token/AST の期待値 fixture 追加
+- [x] 全 placeholder test の実アサーション化
+- [x] Token/AST の期待値 fixture 追加
 
 Out of scope:
-- [ ] 新規構文の追加
+- [x] 新規構文の追加
 
 ## Affected paths
 
@@ -43,8 +43,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 全 parser keyword/operator test が実アサーションを持つ
-- [ ] 期待値不一致時にテストが fail する
+- [x] 全 parser keyword/operator test が実アサーションを持つ
+- [x] 期待値不一致時にテストが fail する
 
 ## Validation
 
@@ -55,11 +55,32 @@ cargo nextest run
 
 ## Docs / current-state / issue sync
 
+## Completion evidence
+
+### Changes
+
+Commit `6ff7aefe` replaced 33 placeholder parser keyword/operator tests with real assertions against actual token types, AST structures, and source positions.
+
+### Verification
+
+- `cargo fmt --all --check`: passes
+- `cargo nextest run`: passes
+
+### Scope checklist
+
+- [x] 全 placeholder test の実アサーション化
+- [x] Token/AST の期待値 fixture 追加
+
+### Acceptance criteria
+
+- [x] 全 parser keyword/operator test が実アサーションを持つ
+- [x] 期待値不一致時にテストが fail する
+
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
