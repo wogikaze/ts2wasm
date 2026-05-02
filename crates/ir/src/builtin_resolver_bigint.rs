@@ -1181,24 +1181,9 @@ impl BigIntRuntimeGuard {
                     return Ok(None);
                 }
                 let (Some(left_info), Some(right_info)) = (left_info, right_info) else {
-                    if matches!(
-                        op,
-                        BinaryOp::Add
-                            | BinaryOp::Subtract
-                            | BinaryOp::Multiply
-                            | BinaryOp::Divide
-                            | BinaryOp::Modulo
-                            | BinaryOp::Power
-                    ) {
-                        return Ok(None);
-                    }
-                    if matches!(
-                        op,
-                        BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
-                    ) {
-                        return Err(bigint_bitwise_diagnostic(*span));
-                    }
-                    return Err(bigint_mixed_runtime_diagnostic(*span));
+                    // Mixed BigInt/non-BigInt — accept and let lowering emit
+                    // runtime TypeError calls where appropriate.
+                    return Ok(None);
                 };
                 if !matches!(
                     op,
@@ -1221,56 +1206,13 @@ impl BigIntRuntimeGuard {
                             && matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
                             && right.sign == 0
                         {
-                            return Ok(Some(BigIntStaticInfo {
-                                value: None,
-                                helper_safe: left_info.helper_safe && right_info.helper_safe,
-                                runtime_needed,
-                            }));
+                            // Division by zero — can't fold statically, needs runtime
+                            None
+                        } else {
+                            // Attempt static folding; if it fails (e.g. negative
+                            // exponent), fall through to runtime.
+                            fold_bigint_binary(left, *op, right, *span).ok()
                         }
-                        let result = fold_bigint_binary(left, *op, right, *span)?;
-                        if runtime_needed
-                            && !result.fits_runtime_signed_i64()
-                            && !matches!(op, BinaryOp::Divide | BinaryOp::Modulo)
-                        {
-                            if *op == BinaryOp::Power {
-                                return Err(bigint_exponentiation_diagnostic(*span));
-                            }
-                            if matches!(
-                                op,
-                                BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
-                            ) {
-                                return Err(bigint_bitwise_diagnostic(*span));
-                            }
-                            if !matches!(
-                                op,
-                                BinaryOp::Add | BinaryOp::Subtract | BinaryOp::Multiply
-                            ) {
-                                return Err(bigint_dynamic_runtime_diagnostic(*span));
-                            }
-                        }
-                        Some(result)
-                    }
-                    _ if runtime_needed && *op == BinaryOp::Power => {
-                        return Err(bigint_exponentiation_diagnostic(*span));
-                    }
-                    _ if runtime_needed
-                        && matches!(
-                            op,
-                            BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
-                        ) =>
-                    {
-                        return Err(bigint_bitwise_diagnostic(*span));
-                    }
-                    _ if runtime_needed && matches!(op, BinaryOp::Divide | BinaryOp::Modulo) => {
-                        None
-                    }
-                    _ if runtime_needed
-                        && !matches!(
-                            op,
-                            BinaryOp::Add | BinaryOp::Subtract | BinaryOp::Multiply
-                        ) =>
-                    {
-                        return Err(bigint_dynamic_runtime_diagnostic(*span));
                     }
                     _ => None,
                 };

@@ -50,6 +50,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::BigIntBitwiseAnd => self.emit_bigint_bitwise_and(wat),
                 RuntimeFn::BigIntBitwiseOr => self.emit_bigint_bitwise_or(wat),
                 RuntimeFn::BigIntBitwiseXor => self.emit_bigint_bitwise_xor(wat),
+                RuntimeFn::BigIntLeftShift => self.emit_bigint_left_shift(wat),
+                RuntimeFn::BigIntRightShift => self.emit_bigint_right_shift(wat),
                 RuntimeFn::BigIntCompare => self.emit_bigint_compare(wat),
                 RuntimeFn::StringEqual => self.emit_string_equal(wat),
                 RuntimeFn::Concat => self.emit_concat(wat),

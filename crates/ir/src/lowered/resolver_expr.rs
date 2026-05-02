@@ -275,6 +275,47 @@ impl<'a> Resolver<'a> {
                         runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
                     })
+                } else if matches!(
+                    op,
+                    BinaryOp::BitwiseAnd | BinaryOp::BitwiseOr | BinaryOp::BitwiseXor
+                ) && (self.resolved_expr_is_bigint(left) || self.resolved_expr_is_bigint(right))
+                    && !(self.resolved_expr_is_bigint(left)
+                        && self.resolved_expr_is_bigint(right))
+                {
+                    // Mixed BigInt/non-BigInt bitwise → TypeError
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                        args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                    })
+                } else if matches!(
+                    op,
+                    BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift
+                ) && self.resolved_expr_is_bigint(left)
+                {
+                    // BigInt unsigned right shift (>>>) always throws
+                    // TypeError; use the mixed-arithmetic type error.
+                    if *op == BinaryOp::UnsignedRightShift {
+                        Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                            args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                        })
+                    } else if self.resolved_expr_is_bigint(right) {
+                        let runtime_fn = match op {
+                            BinaryOp::LeftShift => "BigIntLeftShift",
+                            BinaryOp::RightShift => "BigIntRightShift",
+                            _ => unreachable!("checked above"),
+                        };
+                        Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: runtime_fn.to_owned(),
+                            args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                        })
+                    } else {
+                        // Mixed BigInt/non-BigInt shift → TypeError
+                        Ok(LoweredExpr::RuntimeCall {
+                            runtime_fn: "BigIntMixedArithmeticTypeError".to_owned(),
+                            args: vec![self.lower_expr(left)?, self.lower_expr(right)?],
+                        })
+                    }
                 } else {
                     Ok(LoweredExpr::Binary {
                         left: Box::new(self.lower_expr(left)?),

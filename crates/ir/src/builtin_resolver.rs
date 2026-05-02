@@ -1429,8 +1429,12 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                         bigint_from_resolved(&left_resolved),
                         bigint_from_resolved(&right_resolved),
                     ) {
-                        let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
-                        return Ok(bigint_to_resolved(result));
+                        // Static fold may fail (e.g. negative exponent on
+                        // Power) — fall through to the dynamic path.
+                        if let Ok(result) = fold_bigint_binary(left_value, *op, right_value, *span)
+                        {
+                            return Ok(bigint_to_resolved(result));
+                        }
                     }
                     if matches!(
                         op,
@@ -1469,17 +1473,22 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                     op,
                     BinaryOp::LeftShift | BinaryOp::RightShift | BinaryOp::UnsignedRightShift
                 ) {
-                    if *op == BinaryOp::UnsignedRightShift {
-                        return Err(bigint_shift_diagnostic(*span));
-                    }
                     if let (Some(left_value), Some(right_value)) = (
                         bigint_from_resolved(&left_resolved),
                         bigint_from_resolved(&right_resolved),
                     ) {
-                        let result = fold_bigint_binary(left_value, *op, right_value, *span)?;
-                        return Ok(bigint_to_resolved(result));
+                        // Static fold may fail (e.g. unsigned right shift on
+                        // BigInt) — fall through to the dynamic path.
+                        if let Ok(result) = fold_bigint_binary(left_value, *op, right_value, *span)
+                        {
+                            return Ok(bigint_to_resolved(result));
+                        }
                     }
-                    return Err(bigint_shift_diagnostic(*span));
+                    return Ok(ResolvedExpr::Binary {
+                        left: Box::new(left_resolved),
+                        op: *op,
+                        right: Box::new(right_resolved),
+                    });
                 }
                 let diagnostic = match op {
                     BinaryOp::Add

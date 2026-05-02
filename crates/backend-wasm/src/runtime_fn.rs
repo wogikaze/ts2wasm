@@ -64,6 +64,8 @@ pub(crate) enum RuntimeFn {
     BigIntBitwiseAnd,
     BigIntBitwiseOr,
     BigIntBitwiseXor,
+    BigIntLeftShift,
+    BigIntRightShift,
     BigIntCompare,
     StringEqual,
     Concat,
@@ -532,6 +534,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "BigIntBitwiseAnd" => Some(RuntimeFn::BigIntBitwiseAnd),
         "BigIntBitwiseOr" => Some(RuntimeFn::BigIntBitwiseOr),
         "BigIntBitwiseXor" => Some(RuntimeFn::BigIntBitwiseXor),
+        "BigIntLeftShift" => Some(RuntimeFn::BigIntLeftShift),
+        "BigIntRightShift" => Some(RuntimeFn::BigIntRightShift),
         "ObjectKeys" => Some(RuntimeFn::ObjectKeys),
         "ObjectSpread" => Some(RuntimeFn::ObjectSpread),
         "ObjectValues" => Some(RuntimeFn::ObjectValues),
@@ -935,6 +939,8 @@ const PRIVATE_BRAND_TYPE_ERROR_RUNTIME_STRINGS: &[&str] = &[
     "message",
 ];
 const BIGINT_BITWISE_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_LEFT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
+const BIGINT_RIGHT_SHIFT_DEPS: &[RuntimeFn] = &[RuntimeFn::BigIntAdd];
 
 // String method dependencies
 const STRING_CHAR_AT_DEPS: &[RuntimeFn] =

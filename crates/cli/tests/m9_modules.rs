@@ -323,9 +323,6 @@ fn static_class_export_reports_issue_5005() {
 }
 
 #[test]
-fn static_default_export_reports_issue_5005_local_ref() {
-    assert_build_fails_with_unsupported_syntax(
-        "module-system/static-default-export-unsupported.ts",
-        "issue-5005: entry module export `default` references a local binding",
-    );
+fn static_default_export_local_ref_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-default-export-unsupported.ts");
 }

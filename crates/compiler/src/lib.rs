@@ -197,16 +197,6 @@ fn populate_static_module_exports_for_build(
                 })?;
             match stmt {
                 lowered::LoweredStmt::Let(_, expr) => {
-                    if contains_local_ref(expr) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: format!(
-                                "issue-5005: entry module export `{}` references a local binding; only literal export values are supported in the current slice",
-                                export.name
-                            ),
-                            span: None,
-                        });
-                    }
                     statements.push(lowered::LoweredStmt::Export {
                         name: export.name.clone(),
                         expr: expr.clone(),
@@ -941,18 +931,6 @@ fn module_specifier(module_graph: &ModuleGraph, module_id: usize) -> String {
         .module(module_id)
         .map(|module| module.path().display().to_string())
         .unwrap_or_else(|| format!("<module:{module_id}>"))
-}
-
-fn contains_local_ref(expr: &lowered::LoweredExpr) -> bool {
-    match expr {
-        lowered::LoweredExpr::Local(_) => true,
-        lowered::LoweredExpr::Unary { expr, .. } => contains_local_ref(expr),
-        lowered::LoweredExpr::Binary { left, right, .. } => {
-            contains_local_ref(left) || contains_local_ref(right)
-        }
-        lowered::LoweredExpr::PropertyGet { obj, .. } => contains_local_ref(obj),
-        _ => false,
-    }
 }
 
 fn is_static_export_literal(expr: &Expr) -> bool {

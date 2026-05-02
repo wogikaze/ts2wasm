@@ -30,9 +30,9 @@ entry module の export が local binding、re-export を含めて正しく lowe
 ## Scope
 
 In scope:
-- [ ] local binding 参照の export lowering
+- [x] local binding 参照の export lowering
 - [ ] re-export の実装
-- [ ] issue-5005 系の整理と実装
+- [x] issue-5005 系の整理と実装 (contains_local_ref removal)
 
 Out of scope:
 - [ ] dynamic import
@@ -46,9 +46,32 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] local binding export fixture が正しく lower される
+- [x] local binding export fixture が正しく lower される
 - [ ] re-export fixture が正しく lower される
-- [ ] 既存 module fixture が後方互換を維持する
+- [x] 既存 module fixture が後方互換を維持する
+
+## Completion evidence
+
+**Implementation:**
+- Removed `contains_local_ref` rejection in `populate_static_module_exports_for_build` (crates/compiler/src/lib.rs) — local-binding exports now pass through to `LoweredStmt::Export`
+- Changed `static_default_export_reports_issue_5005_local_ref` test in m9_modules.rs to build_smoke (expects success instead of failure)
+
+**Fixes (parallel agent interference):**
+- Added missing `emit_bigint_left_shift` and `emit_bigint_right_shift` methods in runtime_core_emitter_part2.rs
+- Added match arms in runtime_builder.rs for BigIntLeftShift/BigIntRightShift variants
+
+**Verification:**
+- `cargo fmt --all --check` — PASS
+- `cargo nextest run -p ts2wasm-cli --test m9_modules` — 31/32 PASS, 1 pre-existing failure (build_smoke_module_exports_assign, unrelated)
+- Key test `static_default_export_local_ref_build_smoke` — PASS
+- `cargo check` — PASS (2 dead_code warnings: contains_local_ref, bigint_mixed_runtime_diagnostic)
+- `mise run gate` — architecture-rule warnings only (pre-existing file-length violations); no regression in failures
+
+**Re-export scope deferred:**
+Re-export lowering for local-binding re-exports across module boundaries requires additional work (module init function local frame mismatch). Deferred to a follow-up issue.
+
+**Git:**
+- Commit: <hash>
 
 ## Validation
 

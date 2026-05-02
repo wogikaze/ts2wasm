@@ -434,6 +434,30 @@ impl WatEmitter<'_> {
         );
     }
 
+    pub(crate) fn emit_bigint_left_shift(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_left_shift (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.shl
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
+    pub(crate) fn emit_bigint_right_shift(&self, wat: &mut String) {
+        wat.push_str(
+            r#"
+  (func $bigint_right_shift (param $a i32) (param $b i32) (result i32)
+    (call $bigint_from_signed_i64
+      (i64.shr_s
+        (call $bigint_signed_i64 (local.get $a))
+        (call $bigint_signed_i64 (local.get $b)))))
+"#,
+        );
+    }
+
     pub(crate) fn emit_bigint_from_value(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

@@ -27,14 +27,6 @@ pub(super) fn bigint_dynamic_runtime_diagnostic(span: Span) -> Diagnostic {
     }
 }
 
-pub(super) fn bigint_mixed_runtime_diagnostic(span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: "issue-370: mixed Number/BigInt arithmetic TypeError parity is not implemented in the dynamic BigInt runtime slice".to_owned(),
-        span: Some(span),
-    }
-}
-
 pub(super) fn bigint_comparison_runtime_diagnostic(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
