@@ -229,10 +229,12 @@ fn static_combined_namespace_import_reports_issue_232_missing_module() {
 
 #[test]
 fn static_named_export_reports_issue_5005() {
-    assert_build_fails_with_unsupported_syntax(
-        "module-system/static-named-export-unsupported.ts",
-        "issue-5005: entry module export list with 1 export(s) is not in the current static export slice",
-    );
+    assert_fixture_build_smoke("module-system/static-named-export-unsupported.ts");
+}
+
+#[test]
+fn static_export_named_list_entry_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-export-named-list-entry.ts");
 }
 
 #[test]

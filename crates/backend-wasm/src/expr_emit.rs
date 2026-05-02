@@ -196,26 +196,19 @@ impl WatEmitter<'_> {
                 ));
             }
             LoweredExpr::PropertyDeleteDynamic { object, key } => {
-                let tmp = frame.heap_base_tmp();
-                self.emit_expr(wat, key, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", tmp));
-                self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
                 self.emit_expr(wat, object, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+                self.emit_expr(wat, key, indent, frame);
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
                 wat.push_str(&format!(
-                    "{pad}(i32.and (local.get {}) (i32.const {}))\n",
-                    tmp,
-                    ValueTag::HEAP_MASK
+                    "{pad}(call {})\n",
+                    RuntimeFn::ValueToStringInto.symbol()
                 ));
-                wat.push_str(&format!(
-                    "{pad}(i32.add (local.get {}) (i32.const {}))\n",
-                    tmp,
-                    Layout::STRING_HEADER_SIZE
-                ));
-                wat.push_str(&format!(
-                    "{pad}(i32.load (i32.and (local.get {}) (i32.const {})))\n",
-                    tmp,
-                    ValueTag::HEAP_MASK
-                ));
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
                 wat.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyDelete.symbol()
@@ -233,26 +226,19 @@ impl WatEmitter<'_> {
                 ));
             }
             LoweredExpr::PropertyInDynamic { obj, key } => {
-                let tmp = frame.heap_base_tmp();
-                self.emit_expr(wat, key, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", tmp));
-                self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
                 self.emit_expr(wat, obj, indent, frame);
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+                self.emit_expr(wat, key, indent, frame);
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
                 wat.push_str(&format!(
-                    "{pad}(i32.and (local.get {}) (i32.const {}))\n",
-                    tmp,
-                    ValueTag::HEAP_MASK
+                    "{pad}(call {})\n",
+                    RuntimeFn::ValueToStringInto.symbol()
                 ));
-                wat.push_str(&format!(
-                    "{pad}(i32.add (local.get {}) (i32.const {}))\n",
-                    tmp,
-                    Layout::STRING_HEADER_SIZE
-                ));
-                wat.push_str(&format!(
-                    "{pad}(i32.load (i32.and (local.get {}) (i32.const {})))\n",
-                    tmp,
-                    ValueTag::HEAP_MASK
-                ));
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
                 wat.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyHas.symbol()
@@ -679,30 +665,19 @@ impl WatEmitter<'_> {
                 self.emit_optional_property_get(wat, obj, key, indent, frame);
             }
             LoweredExpr::PropertyGetDynamic { obj, key } => {
-                // For dynamic keys, the key is a runtime string value
-                // We need to extract the string pointer and length from the key value
-                // Use heap_base_tmp as temporary storage for the key
-                let tmp = frame.heap_base_tmp();
-                self.emit_expr(wat, key, indent, frame);
-                wat.push_str(&format!("{pad}(local.set {})\n", tmp));
-                self.emit_gc_root_mirror_index(wat, &pad, tmp, frame);
                 self.emit_expr(wat, obj, indent, frame);
-                wat.push_str(&format!("{pad}(local.get {})\n", tmp));
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_base_tmp()));
+                self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+                self.emit_expr(wat, key, indent, frame);
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
                 wat.push_str(&format!(
-                    "{pad}(i32.and (local.get {}) (i32.const {}))\n",
-                    tmp,
-                    ValueTag::HEAP_MASK
+                    "{pad}(call {})\n",
+                    RuntimeFn::ValueToStringInto.symbol()
                 ));
-                wat.push_str(&format!(
-                    "{pad}(i32.add (local.get {}) (i32.const {}))\n",
-                    tmp,
-                    Layout::STRING_HEADER_SIZE
-                ));
-                wat.push_str(&format!(
-                    "{pad}(i32.load (i32.and (local.get {}) (i32.const {})))\n",
-                    tmp,
-                    ValueTag::HEAP_MASK
-                ));
+                wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_base_tmp()));
+                wat.push_str(&format!("{pad}(i32.const {})\n", Layout::SCRATCH_OFFSET));
+                wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
                 wat.push_str(&format!(
                     "{pad}(call {})\n",
                     RuntimeFn::PropertyGet.symbol()

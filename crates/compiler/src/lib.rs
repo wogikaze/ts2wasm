@@ -272,6 +272,7 @@ fn lower_static_named_import_bindings_for_build(
     let mut named_imports = Vec::new();
     let mut module_exports = Vec::new();
     let mut lowered_statement_index = 0;
+    let mut local_name_to_index: HashMap<String, usize> = HashMap::new();
 
     for stmt in program {
         match stmt {
@@ -328,6 +329,12 @@ fn lower_static_named_import_bindings_for_build(
                 let name = specifier.exported.clone();
                 rewritten.push(*declaration.clone());
                 let is_let_like = lowers_to_top_level_statement(declaration);
+                if let Stmt::Let {
+                    name: local_name, ..
+                } = declaration.as_ref()
+                {
+                    local_name_to_index.insert(local_name.clone(), index);
+                }
                 module_exports.push(ModuleExport {
                     name: name.clone(),
                     lowered_statement_index: index,
@@ -343,18 +350,27 @@ fn lower_static_named_import_bindings_for_build(
                 }
                 lowered_statement_index += 1;
             }
-            Stmt::ExportNamed { specifiers, span } => {
+            Stmt::ExportNamed { specifiers, .. } => {
                 if specifiers.is_empty() {
                     // export {} — no-op module marker
                 } else {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: format!(
-                            "issue-5005: entry module export list with {} export(s) is not in the current static export slice; only export const and export default are supported",
-                            specifiers.len()
-                        ),
-                        span: Some(*span),
-                    });
+                    for specifier in specifiers {
+                        let local_index = local_name_to_index
+                            .get(&specifier.local)
+                            .copied()
+                            .ok_or_else(|| Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-5005: entry module `export {{ {} }}` references unknown local binding `{}`",
+                                    specifier.exported, specifier.local
+                                ),
+                                span: Some(specifier.span),
+                            })?;
+                        module_exports.push(ModuleExport {
+                            name: specifier.exported.clone(),
+                            lowered_statement_index: local_index,
+                        });
+                    }
                 }
             }
             Stmt::ExportDefault { expr, span, .. } => {
@@ -364,6 +380,7 @@ fn lower_static_named_import_bindings_for_build(
                     expr: expr.clone(),
                     span: *span,
                 });
+                local_name_to_index.insert("__ts2wasm_default".to_owned(), index);
                 module_exports.push(ModuleExport {
                     name: "default".to_owned(),
                     lowered_statement_index: index,
@@ -371,6 +388,9 @@ fn lower_static_named_import_bindings_for_build(
                 lowered_statement_index += 1;
             }
             other => {
+                if let Stmt::Let { name, .. } = other {
+                    local_name_to_index.insert(name.clone(), lowered_statement_index);
+                }
                 rewritten.push(other.clone());
                 if lowers_to_top_level_statement(other) {
                     lowered_statement_index += 1;

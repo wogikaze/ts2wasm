@@ -307,18 +307,6 @@ impl<'a> Lexer<'a> {
                                 },
                             },
                         );
-                    } else if self.peek_char() == Some('=') {
-                        self.advance_char();
-                        self.add_token(
-                            &mut tokens,
-                            SpannedToken {
-                                kind: Token::GreaterEqual,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
-                                },
-                            },
-                        );
                     } else {
                         self.add_token(
                             &mut tokens,

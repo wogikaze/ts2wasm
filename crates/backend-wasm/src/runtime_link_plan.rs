@@ -536,6 +536,7 @@ impl RuntimeLinkPlan {
             }
             LoweredExpr::PropertyGetDynamic { obj, key } => {
                 self.add_required_runtime(RuntimeFn::PropertyGet);
+                self.add_required_runtime(RuntimeFn::ValueToStringInto);
                 self.collect_required_runtime_expr(obj);
                 self.collect_required_runtime_expr(key);
             }
@@ -609,6 +610,7 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(object);
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyDelete);
+                self.add_required_runtime(RuntimeFn::ValueToStringInto);
             }
             LoweredExpr::PropertyIn { obj, key: _ } => {
                 self.collect_required_runtime_expr(obj);
@@ -618,6 +620,7 @@ impl RuntimeLinkPlan {
                 self.collect_required_runtime_expr(obj);
                 self.collect_required_runtime_expr(key);
                 self.add_required_runtime(RuntimeFn::PropertyHas);
+                self.add_required_runtime(RuntimeFn::ValueToStringInto);
             }
         }
     }
