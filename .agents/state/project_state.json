@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "RETRO",
+  "fsm": "PLAN_REVIEW_GATE",
   "active_task_id": null,
-  "updated_at": "2026-05-02T04:18:24Z",
+  "updated_at": "2026-05-02T04:19:52Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "plans/5009-default-import-slice.md",
+  "plan_path": "plans/5009-namespace-import-slice.md",
   "verify_fast_streak_fails": 0
 }
