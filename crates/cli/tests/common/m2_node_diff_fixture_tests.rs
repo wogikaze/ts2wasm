@@ -1743,3 +1743,55 @@ fn core_expression_fixtures_match_node_output_under_iwasm() {
         assert_fixture_matches_node(fixture);
     }
 }
+
+#[test]
+fn typeof_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/typeof.ts");
+}
+
+#[test]
+fn ternary_fixture_reports_unsupported_syntax() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/ternary.ts",
+        "ternary operator not yet supported",
+    );
+}
+
+#[test]
+fn core_statement_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/core-statements/do-while.ts",
+        "fixtures/core-statements/for.ts",
+        "fixtures/core-statements/for-of.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn for_in_fixture_iwasm_traps() {
+    assert_fixture_iwasm_trap("fixtures/core-statements/for-in.ts");
+}
+
+#[test]
+fn stmt_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/stmt/let-decl.ts",
+        "fixtures/stmt/assign.ts",
+        "fixtures/stmt/expr-stmt.ts",
+        "fixtures/stmt/if.ts",
+        "fixtures/stmt/while.ts",
+        "fixtures/stmt/function-decl.ts",
+        "fixtures/stmt/return.ts",
+        "fixtures/stmt/switch.ts",
+        "fixtures/stmt/do-while.ts",
+        "fixtures/stmt/for.ts",
+        "fixtures/stmt/for-of.ts",
+        "fixtures/stmt/labeled.ts",
+        "fixtures/stmt/break.ts",
+        "fixtures/stmt/continue.ts",
+        "fixtures/stmt/export-named.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}

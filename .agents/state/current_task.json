@@ -1,11 +1,11 @@
 {
-  "id": 264,
-  "title": "Add broad expression fixture coverage",
+  "id": 265,
+  "title": "Add broad statement fixture coverage",
   "status": "selected",
-  "issue_path": "issues/open/264-implement-broad-expression-fixture-coverage.md",
-  "scope": "Inventory all Expr variants in the frontend AST and create fixture for each missing variant",
-  "acceptance": "Each Expr variant has at least one fixture",
+  "issue_path": "issues/open/265-implement-broad-statement-fixture-coverage.md",
+  "scope": "Inventory all Stmt variants in the frontend AST and create fixture for each missing variant",
+  "acceptance": "Each Stmt variant has at least one fixture",
   "commands": "cargo nextest run",
   "risk": "low",
-  "notes": "first expression coverage pass"
+  "notes": "first statement coverage pass"
 }

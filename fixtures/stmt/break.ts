@@ -1,0 +1,3 @@
+let i = 0;
+while (true) { i++; if (i >= 3) break; }
+console.log(i);

@@ -1,0 +1,3 @@
+let x = 0;
+if (true) { x = 1; } else { x = 2; }
+console.log(x);
