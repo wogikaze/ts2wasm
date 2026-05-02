@@ -1592,12 +1592,28 @@ mod tests {
     }
 
     #[test]
-    fn keeps_class_declaration_export_unsupported_for_narrow_slice() {
-        let err = parse_program("export class C {};").unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-055"));
-        assert!(err.message.contains("unsupported class export"));
-        assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
+    fn parses_export_class_declaration_with_exported_local_span() {
+        let program = parse_program("export class C {};").unwrap();
+        assert_eq!(program.len(), 1);
+
+        match &program[0] {
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                span,
+            } => {
+                assert_eq!(*span, Span { start: 0, end: 19 });
+                assert_eq!(specifier.local, "C");
+                assert_eq!(specifier.exported, "C");
+                match declaration.as_ref() {
+                    Stmt::ClassDecl { name, .. } => {
+                        assert_eq!(name, "C");
+                    }
+                    other => panic!("unexpected declaration: {other:?}"),
+                }
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
     }
 
     #[test]

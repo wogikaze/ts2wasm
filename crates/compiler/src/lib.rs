@@ -336,7 +336,7 @@ fn lower_static_named_import_bindings_for_build(
                     return Err(Diagnostic {
                         code: DiagCode::UnsupportedSyntax,
                         message: format!(
-                            "issue-5005: entry module `export {name}` uses a declaration form outside the current static export slice; only export const is supported"
+                            "issue-5005: entry module `export {name}` uses a declaration form outside the current static export slice; only export const and export default are supported"
                         ),
                         span: Some(declaration.span()),
                     });
