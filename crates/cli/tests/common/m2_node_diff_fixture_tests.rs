@@ -1726,3 +1726,20 @@ fn global_parsefloat_matches_node_under_iwasm() {
 fn global_isfinite_matches_node_under_iwasm() {
     assert_fixture_matches_node("fixtures/builtins-and-io/global-isfinite.ts");
 }
+
+#[test]
+fn core_expression_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/core-expressions/bigint.ts",
+        "fixtures/core-expressions/unary.ts",
+        "fixtures/core-expressions/logical-assign.ts",
+        "fixtures/core-expressions/function-expr.ts",
+        "fixtures/core-expressions/index-assign.ts",
+        "fixtures/core-expressions/optional-member.ts",
+        "fixtures/core-expressions/optional-call.ts",
+        "fixtures/core-expressions/optional-index.ts",
+        "fixtures/core-expressions/logical-property-assign.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
