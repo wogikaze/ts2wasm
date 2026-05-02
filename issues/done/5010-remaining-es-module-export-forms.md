@@ -3,10 +3,11 @@ id: 5010
 title: "Implement local named export (export { value } and export { value as alias }) for entry module"
 type: feature
 area: ir/compiler
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
 blocks: []
+status: done
 created: 2026-05-02
 updated: 2026-05-02
 ---

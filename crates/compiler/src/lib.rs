@@ -3,7 +3,7 @@ mod module_graph;
 pub mod server;
 mod test262_preprocessor;
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -399,7 +399,18 @@ fn lower_static_named_import_bindings_for_build(
                 if specifiers.is_empty() {
                     // export {} — no-op module marker
                 } else {
+                    let mut exported_names: HashSet<String> = HashSet::new();
                     for specifier in specifiers {
+                        if !exported_names.insert(specifier.exported.clone()) {
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-5005: duplicate export name `{}`",
+                                    specifier.exported
+                                ),
+                                span: Some(specifier.span),
+                            });
+                        }
                         let local_index = local_name_to_index
                             .get(&specifier.local)
                             .copied()
@@ -673,6 +684,69 @@ fn lower_static_named_import_bindings_for_build(
                     name: namespace.exported.clone(),
                     lowered_statement_index,
                 });
+                lowered_statement_index += 1;
+            }
+            Stmt::ImportDefaultNamespace {
+                default,
+                namespace,
+                source,
+                span,
+                ..
+            } => {
+                let dependency = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == source.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for combined default+namespace import `{}`",
+                            source.value
+                        ),
+                        span: Some(source.span),
+                    })?;
+                let exports = collect_literal_named_exports(dependency.resolved_path())?;
+
+                // Default import: `x` from `import x, * as ns from "./mod"`
+                let default_expr = exports.get("default").ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-233: module `{}` does not have a default export",
+                        source.value
+                    ),
+                    span: Some(source.span),
+                })?;
+                let default_binding = StaticNamedImportBinding {
+                    source_specifier: source.value.clone(),
+                    source_module_id: dependency.resolved_module_id(),
+                    source_path: dependency.resolved_path().to_path_buf(),
+                    imported_name: "default".to_owned(),
+                    local_name: default.local.clone(),
+                    lowered_statement_index,
+                    initializer: default_expr.clone(),
+                };
+                rewritten.push(Stmt::Let {
+                    name: default.local.clone(),
+                    expr: default_expr.clone(),
+                    span: default.local_span,
+                });
+                local_name_to_index.insert(default.local.clone(), lowered_statement_index);
+                named_imports.push(default_binding);
+                lowered_statement_index += 1;
+
+                // Namespace import: `* as ns` from `import x, * as ns from "./mod"`
+                let props: Vec<(String, Expr)> = exports
+                    .iter()
+                    .filter(|(k, _)| k.as_str() != "default")
+                    .map(|(k, v)| (k.clone(), v.clone()))
+                    .collect();
+                rewritten.push(Stmt::Let {
+                    name: namespace.local.clone(),
+                    expr: Expr::Object { props, span: *span },
+                    span: namespace.span,
+                });
+                local_name_to_index.insert(namespace.local.clone(), lowered_statement_index);
                 lowered_statement_index += 1;
             }
             other => {

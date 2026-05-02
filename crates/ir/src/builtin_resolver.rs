@@ -890,22 +890,9 @@ fn resolve_stmt_with_outer_bindings(
     outer_bindings: &HashSet<String>,
 ) -> Result<ResolvedStmt, Diagnostic> {
     match stmt {
-        Stmt::ImportSideEffect { span, .. }
-        | Stmt::ImportNamed { span, .. }
-        | Stmt::ImportDefault { span, .. }
-        | Stmt::ImportDefaultNamed { span, .. }
-        | Stmt::ImportNamespace { span, .. }
-        | Stmt::ImportDefaultNamespace { span, .. }
-        | Stmt::ExportNamed { span, .. }
-        | Stmt::ExportNamedFrom { span, .. }
-        | Stmt::ExportAllFrom { span, .. }
-        | Stmt::ExportNamespaceFrom { span, .. }
-        | Stmt::ExportDecl { span, .. }
-        | Stmt::ExportDefault { span, .. } => Err(Diagnostic {
-            code: DiagCode::UnsupportedSyntax,
-            message: "issue-055: static module declarations parse in the frontend but module resolution and loading are not implemented".to_owned(),
-            span: Some(*span),
-        }),
+        // Import/export forms are handled by the compiler's module rewrite path
+        // (lower_static_named_import_bindings_for_build) before reaching the resolver.
+        // They are still listed in the catch-all below for exhaustive matching and dump paths.
         Stmt::Let { name, expr, span } => {
             if let Some(pattern) = parse_binding_pattern(name, Some(*span))? {
                 Ok(ResolvedStmt::DestructureLet {
@@ -1297,6 +1284,27 @@ fn resolve_stmt_with_outer_bindings(
         }),
         Stmt::Continue { label, .. } => Ok(ResolvedStmt::Continue {
             label: label.clone(),
+        }),
+        // Import/export forms are handled by the compiler's module rewrite path
+        // (lower_static_named_import_bindings_for_build) before reaching the resolver.
+        // If they reach here (e.g. via dump), produce a clear diagnostic.
+        Stmt::ImportSideEffect { .. }
+        | Stmt::ImportNamed { .. }
+        | Stmt::ImportDefault { .. }
+        | Stmt::ImportDefaultNamed { .. }
+        | Stmt::ImportNamespace { .. }
+        | Stmt::ImportDefaultNamespace { .. }
+        | Stmt::ExportNamed { .. }
+        | Stmt::ExportNamedFrom { .. }
+        | Stmt::ExportAllFrom { .. }
+        | Stmt::ExportNamespaceFrom { .. }
+        | Stmt::ExportDecl { .. }
+        | Stmt::ExportDefault { .. } => Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message:
+                "issue-055: internal — static module declaration reached resolver without compiler rewrite"
+                    .to_owned(),
+            span: None,
         }),
     }
 }
