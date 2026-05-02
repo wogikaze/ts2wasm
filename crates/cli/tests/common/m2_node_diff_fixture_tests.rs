@@ -1428,8 +1428,13 @@ fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
-fn class_destructuring_initcount_default_uses_env_cell_for_outer_mutation() {
-    assert_fixture_matches_node("fixtures/core-semantics/class-dstr-initcount.ts");
+fn class_destructuring_initcount_default_now_blocked_by_destructuring_issue_251() {
+    super::assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/class-dstr-initcount-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
+        "issue-251: only literal default binding initializers are supported",
+        false,
+    );
 }
 
 #[test]
