@@ -1,11 +1,11 @@
 {
-  "id": 265,
-  "title": "Add broad statement fixture coverage",
-  "status": "selected",
-  "issue_path": "issues/open/265-implement-broad-statement-fixture-coverage.md",
-  "scope": "Inventory all Stmt variants in the frontend AST and create fixture for each missing variant",
-  "acceptance": "Each Stmt variant has at least one fixture",
-  "commands": "cargo nextest run",
-  "risk": "low",
-  "notes": "first statement coverage pass"
+  "id": null,
+  "title": null,
+  "status": "idle",
+  "issue_path": null,
+  "scope": null,
+  "acceptance": null,
+  "commands": null,
+  "risk": null,
+  "notes": ""
 }
