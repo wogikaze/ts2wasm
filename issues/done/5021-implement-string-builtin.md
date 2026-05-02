@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues (N/A — superseded by 067)
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue (N/A — superseded by 067)
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command (N/A — superseded)
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence (N/A — superseded)
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -98,15 +98,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -818,20 +818,26 @@ error: [UnsupportedBuiltin] issue-067: Annex B String.prototype.anchor is not su
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Closed as superseded by issue 067 (Investigate and classify unknown-unsupported cases).
+
+Triage evidence:
+- Diagnostic: `UnsupportedBuiltin` / `issue-067: Annex B String.prototype.anchor is not supported yet`
+- Parser/AST: OK — failure at resolved stage (runtime builtin not implemented)
+- Reference-triage duplicate detection confirms: issue 067 matches same reference path
+- Root cause: runtime missing Annex B String.prototype methods (anchor, big, blink, etc.) — not a parser issue
 
 Commits:
 
-- `...`
+- `N/A — triage-only, no code changes`
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: mise run reference-triage -- test262 reference/test262/test/annexB/built-ins/String/prototype/anchor/B.2.3.2.js
+result: UnsupportedBuiltin — confirmed duplicate with issue 067
+date: 2026-05-03
 ```
 
 Remaining risks:
 
-- none
+- none (tracked by issue 067)

@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4344 | 4248 | 96 |
+| frontend | 4344 | 4247 | 97 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4861 | 4573 | 288 |
+| total | 4861 | 4572 | 289 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
-| 5021 | Implement string-builtin support | feature | frontend/syntax | ready | P1 |  | string-builtin feature has 89 reference failures and needs smart-triage evidence before implementation starts. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5033,6 +5032,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module | feature | ir/compiler | see file |
 | 5011 | Represent or reject class runtime values in lowered IR | feature | ir/backend | see file |
 | 5017 | Implement html-comment support | spike | frontend/syntax | see `issues/done/5017-implement-html-comment.md` |
+| 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
