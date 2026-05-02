@@ -1,6 +1,60 @@
-use std::env;
 use std::path::PathBuf;
 use std::process::ExitCode;
+
+use clap::Parser;
+
+#[derive(Parser)]
+#[command(name = "ts2wasm")]
+enum Command {
+    /// Build a TypeScript source file to a WebAssembly binary
+    Build {
+        input: PathBuf,
+        #[arg(short = 'o')]
+        output: PathBuf,
+        /// Path to emit capability manifest JSON (alias: --emit-capabilities)
+        #[arg(long = "emit-manifest", alias = "emit-capabilities")]
+        manifest: Option<PathBuf>,
+        /// Reject node host imports
+        #[arg(long)]
+        host_deny: bool,
+    },
+    /// Check a TypeScript source file for parse errors
+    Check { input: PathBuf },
+    /// Run the LSP-style language server
+    Server,
+    /// Dump intermediate representations
+    Dump {
+        /// Dump token stream
+        #[arg(long)]
+        tokens: bool,
+        /// Dump AST
+        #[arg(long)]
+        ast: bool,
+        /// Dump name-resolved AST
+        #[arg(long)]
+        resolved: bool,
+        /// Dump typed IR
+        #[arg(long)]
+        tir: bool,
+        /// Dump optimized typed IR
+        #[arg(long)]
+        optimize: bool,
+        /// Dump lowered IR (alias: --ir)
+        #[arg(long)]
+        lowered: bool,
+        /// Dump WAT output
+        #[arg(long)]
+        wat: bool,
+        /// Unparse the AST back to source
+        #[arg(long)]
+        unparse: bool,
+        /// Optimization level (0-3, requires --optimize)
+        #[arg(short = 'O')]
+        opt: Option<u8>,
+        /// Input source file
+        input: PathBuf,
+    },
+}
 
 fn main() -> ExitCode {
     match run() {
@@ -13,118 +67,74 @@ fn main() -> ExitCode {
 }
 
 fn run() -> Result<(), String> {
-    let args = env::args().skip(1).collect::<Vec<_>>();
-    match args.as_slice() {
-        [command, input] if command == "check" => {
-            ts2wasm_cli::check_typescript_file(&PathBuf::from(input)).map_err(|e| e.to_string())
+    match Command::parse() {
+        Command::Build {
+            input,
+            output,
+            manifest,
+            host_deny,
+        } => {
+            if host_deny {
+                ts2wasm_cli::build_file_with_host_deny(&input, &output, manifest.as_deref(), true)
+                    .map_err(|e| e.to_string())
+            } else {
+                ts2wasm_cli::build_file_with_options(&input, &output, manifest.as_deref())
+                    .map_err(|e| e.to_string())
+            }
         }
-        [command, rest @ ..] if command == "dump" => run_dump(rest),
-        [command, input, flag, output] if command == "build" && flag == "-o" => {
-            ts2wasm_cli::build_file_with_options(
-                &PathBuf::from(input),
-                &PathBuf::from(output),
-                None,
-            )
-            .map_err(|e| e.to_string())
+        Command::Check { input } => {
+            ts2wasm_cli::check_typescript_file(&input).map_err(|e| e.to_string())
         }
-        [command, input, flag, output, emit_flag, manifest]
-            if command == "build"
-                && flag == "-o"
-                && matches!(emit_flag.as_str(), "--emit-manifest" | "--emit-capabilities") =>
-        {
-            ts2wasm_cli::build_file_with_options(
-                &PathBuf::from(input),
-                &PathBuf::from(output),
-                Some(&PathBuf::from(manifest)),
-            )
-            .map_err(|e| e.to_string())
-        }
-        [command, input, flag, output, host_deny_flag]
-            if command == "build"
-                && flag == "-o"
-                && host_deny_flag == "--host-deny" =>
-        {
-            ts2wasm_cli::build_file_with_host_deny(
-                &PathBuf::from(input),
-                &PathBuf::from(output),
-                None,
-                true,
-            )
-            .map_err(|e| e.to_string())
-        }
-        [command, input, flag, output, emit_flag, manifest, host_deny_flag]
-            if command == "build"
-                && flag == "-o"
-                && matches!(emit_flag.as_str(), "--emit-manifest" | "--emit-capabilities")
-                && host_deny_flag == "--host-deny" =>
-        {
-            ts2wasm_cli::build_file_with_host_deny(
-                &PathBuf::from(input),
-                &PathBuf::from(output),
-                Some(&PathBuf::from(manifest)),
-                true,
-            )
-            .map_err(|e| e.to_string())
-        }
-        [command] if command == "server" => {
-            ts2wasm_compiler::server::run_server()
-        }
-        _ => Err(
-            "usage: ts2wasm build <input.ts> -o <output.wasm> [--emit-manifest <output.manifest.json>] [--host-deny]\n       ts2wasm check <input.ts>\n       ts2wasm server\n       ts2wasm dump [--tokens|--ast|--resolved|--tir|--optimize|--lowered|--wat] [-O0|-O1|-O2|-O3] [--unparse] <input.ts>\n(deprecated alias: --emit-capabilities <output.manifest.json>)"
-                .to_owned(),
-        ),
-    }
-}
+        Command::Server => ts2wasm_compiler::server::run_server(),
+        Command::Dump {
+            tokens,
+            ast,
+            resolved,
+            tir,
+            optimize,
+            lowered,
+            wat,
+            unparse,
+            opt,
+            input,
+        } => {
+            let mut options = ts2wasm_cli::DumpOptions::default();
 
-fn run_dump(args: &[String]) -> Result<(), String> {
-    let mut options = ts2wasm_cli::DumpOptions::default();
-    let mut saw_optimization_level = false;
-    let mut input = None;
+            if tokens {
+                options.set_phase(ts2wasm_cli::DumpPhase::Tokens)?;
+            } else if ast {
+                options.set_phase(ts2wasm_cli::DumpPhase::Ast)?;
+            } else if resolved {
+                options.set_phase(ts2wasm_cli::DumpPhase::Resolved)?;
+            } else if tir {
+                options.set_phase(ts2wasm_cli::DumpPhase::TypedIr)?;
+            } else if optimize {
+                options.set_phase(ts2wasm_cli::DumpPhase::OptimizedIr)?;
+            } else if lowered {
+                options.set_phase(ts2wasm_cli::DumpPhase::Lowered)?;
+            } else if wat {
+                options.set_phase(ts2wasm_cli::DumpPhase::Wat)?;
+            }
 
-    for arg in args {
-        match arg.as_str() {
-            "--tokens" => options.set_phase(ts2wasm_cli::DumpPhase::Tokens)?,
-            "--ast" => options.set_phase(ts2wasm_cli::DumpPhase::Ast)?,
-            "--resolved" => options.set_phase(ts2wasm_cli::DumpPhase::Resolved)?,
-            "--tir" => options.set_phase(ts2wasm_cli::DumpPhase::TypedIr)?,
-            "--lowered" | "--ir" => options.set_phase(ts2wasm_cli::DumpPhase::Lowered)?,
-            "--wat" => options.set_phase(ts2wasm_cli::DumpPhase::Wat)?,
-            "--optimize" => options.set_phase(ts2wasm_cli::DumpPhase::OptimizedIr)?,
-            "--unparse" => options.unparse = true,
-            "-O0" => {
-                saw_optimization_level = true;
-                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O0);
-            }
-            "-O1" => {
-                saw_optimization_level = true;
-                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O1);
-            }
-            "-O2" => {
-                saw_optimization_level = true;
-                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O2);
-            }
-            "-O3" => {
-                saw_optimization_level = true;
-                options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O3);
-            }
-            _ if arg.starts_with('-') => return Err(format!("unknown dump option: {arg}")),
-            _ => {
-                if input.replace(PathBuf::from(arg)).is_some() {
-                    return Err("dump accepts exactly one input file".to_owned());
+            if let Some(level) = opt {
+                match level {
+                    0 => options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O0),
+                    1 => options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O1),
+                    2 => options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O2),
+                    3 => options.set_optimization_level(ts2wasm_cli::OptimizationLevel::O3),
+                    other => return Err(format!("invalid optimization level: {other}")),
+                }
+                if options.phase != ts2wasm_cli::DumpPhase::OptimizedIr {
+                    return Err("-O levels require --optimize".to_owned());
                 }
             }
+
+            options.unparse = unparse;
+
+            let output =
+                ts2wasm_cli::dump_file_with_options(&input, options).map_err(|e| e.to_string())?;
+            print!("{output}");
+            Ok(())
         }
     }
-
-    if saw_optimization_level && options.phase != ts2wasm_cli::DumpPhase::OptimizedIr {
-        return Err("dump -O levels require --optimize".to_owned());
-    }
-
-    let input = input.ok_or_else(|| {
-        "usage: ts2wasm dump [--tokens|--ast|--resolved|--tir|--optimize|--lowered|--wat] [-O0|-O1|-O2|-O3] [--unparse] <input.ts>"
-            .to_owned()
-    })?;
-    let output = ts2wasm_cli::dump_file_with_options(&input, options).map_err(|e| e.to_string())?;
-    print!("{output}");
-    Ok(())
 }

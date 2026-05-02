@@ -320,6 +320,51 @@ fn lower_static_named_import_bindings_for_build(
                     lowered_statement_index += 1;
                 }
             }
+            Stmt::ImportDefault {
+                specifier: default_specifier,
+                source,
+                ..
+            } => {
+                let dependency = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == source.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for default import `{}`",
+                            source.value
+                        ),
+                        span: Some(source.span),
+                    })?;
+                let exports = collect_literal_named_exports(dependency.resolved_path())?;
+                let expr = exports.get("default").ok_or_else(|| Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-233: module `{}` does not have a default export",
+                        source.value
+                    ),
+                    span: Some(source.span),
+                })?;
+                let binding = StaticNamedImportBinding {
+                    source_specifier: source.value.clone(),
+                    source_module_id: dependency.resolved_module_id(),
+                    source_path: dependency.resolved_path().to_path_buf(),
+                    imported_name: "default".to_owned(),
+                    local_name: default_specifier.local.clone(),
+                    lowered_statement_index,
+                    initializer: expr.clone(),
+                };
+                rewritten.push(Stmt::Let {
+                    name: binding.local_name.clone(),
+                    expr: binding.initializer.clone(),
+                    span: default_specifier.local_span,
+                });
+                local_name_to_index.insert(binding.local_name.clone(), lowered_statement_index);
+                named_imports.push(binding);
+                lowered_statement_index += 1;
+            }
             Stmt::ExportDecl {
                 declaration,
                 specifier,
@@ -469,20 +514,33 @@ fn collect_literal_named_exports(path: &Path) -> Result<BTreeMap<String, Expr>, 
             specifier,
             ..
         } = stmt
-            && let Stmt::Let { expr, .. } = declaration.as_ref()
         {
+            if let Stmt::Let { expr, .. } = declaration.as_ref() {
+                if !is_static_export_literal(expr) {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
+                            specifier.exported,
+                            path.display()
+                        ),
+                        span: Some(specifier.local_span),
+                    });
+                }
+                exports.insert(specifier.exported.clone(), expr.clone());
+            }
+        } else if let Stmt::ExportDefault { expr, .. } = stmt {
             if !is_static_export_literal(expr) {
                 return Err(Diagnostic {
                     code: DiagCode::UnsupportedSyntax,
                     message: format!(
-                        "issue-233: export `{}` in {} uses an initializer outside the current static named import build slice",
-                        specifier.exported,
+                        "issue-233: default export in {} uses a non-literal; only literal default exports are supported",
                         path.display()
                     ),
-                    span: Some(specifier.local_span),
+                    span: None,
                 });
             }
-            exports.insert(specifier.exported.clone(), expr.clone());
+            exports.insert("default".to_owned(), expr.clone());
         }
     }
 
@@ -717,22 +775,53 @@ fn validate_stmt(
     }
 }
 
+struct TempWatPath {
+    path: PathBuf,
+}
+
+impl TempWatPath {
+    fn new(wat: &str) -> Result<Self, Diagnostic> {
+        use std::sync::atomic::{AtomicU32, Ordering};
+        static WAT_COUNTER: AtomicU32 = AtomicU32::new(0);
+        let unique = WAT_COUNTER.fetch_add(1, Ordering::Relaxed);
+        let path =
+            std::env::temp_dir().join(format!("ts2wasm-{}-{}.wat", std::process::id(), unique));
+        fs::write(&path, wat).map_err(|error| Diagnostic {
+            code: DiagCode::BackendIo,
+            message: format!("failed to write temporary wat {}: {error}", path.display()),
+            span: None,
+        })?;
+        Ok(Self { path })
+    }
+
+    fn path(&self) -> &Path {
+        &self.path
+    }
+}
+
+impl Drop for TempWatPath {
+    fn drop(&mut self) {
+        let _ = fs::remove_file(&self.path);
+    }
+}
+
+fn truncate_wat_for_error(wat: &str, max_len: usize) -> String {
+    if wat.len() <= max_len {
+        wat.to_owned()
+    } else {
+        let truncated_len = max_len.saturating_sub(30);
+        format!(
+            "{}... (truncated, total {} bytes)",
+            &wat[..truncated_len],
+            wat.len()
+        )
+    }
+}
+
 fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
-    use std::sync::atomic::{AtomicU32, Ordering};
-    static WAT_COUNTER: AtomicU32 = AtomicU32::new(0);
-    let unique = WAT_COUNTER.fetch_add(1, Ordering::Relaxed);
-    let wat_path =
-        std::env::temp_dir().join(format!("ts2wasm-{}-{}.wat", std::process::id(), unique));
-    fs::write(&wat_path, wat).map_err(|error| Diagnostic {
-        code: DiagCode::BackendIo,
-        message: format!(
-            "failed to write temporary wat {}: {error}",
-            wat_path.display()
-        ),
-        span: None,
-    })?;
+    let temp_wat = TempWatPath::new(wat)?;
     let command_output = Command::new("wat2wasm")
-        .arg(&wat_path)
+        .arg(temp_wat.path())
         .arg("-o")
         .arg(output)
         .output()
@@ -741,8 +830,6 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
             message: format!("failed to execute wat2wasm: {error}"),
             span: None,
         })?;
-
-    let _ = fs::remove_file(&wat_path);
 
     if command_output.status.success() {
         Ok(())
@@ -753,7 +840,7 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
                 "wat2wasm failed\nstdout:\n{}\nstderr:\n{}\nwat:\n{}",
                 String::from_utf8_lossy(&command_output.stdout),
                 String::from_utf8_lossy(&command_output.stderr),
-                wat
+                truncate_wat_for_error(wat, 2000),
             ),
             span: None,
         })
