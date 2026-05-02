@@ -30,7 +30,46 @@ pub use ts2wasm_frontend::{
 };
 pub use ts2wasm_ir::OptimizationLevel;
 
-pub fn build_file(input: &Path, output: &Path) -> Result<(), Diagnostic> {
+/// A compilation result that carries a value plus a list of diagnostics
+/// (warnings, notes, etc.) that did not prevent compilation from completing.
+#[derive(Debug, Clone)]
+pub struct CompileReport<T> {
+    pub value: T,
+    pub diagnostics: Vec<Diagnostic>,
+}
+
+impl<T> CompileReport<T> {
+    /// Create a report with a value and no accumulated diagnostics.
+    pub fn ok(value: T) -> Self {
+        Self {
+            value,
+            diagnostics: Vec::new(),
+        }
+    }
+
+    /// Transform the value, preserving accumulated diagnostics.
+    pub fn map<U>(self, f: impl FnOnce(T) -> U) -> CompileReport<U> {
+        CompileReport {
+            value: f(self.value),
+            diagnostics: self.diagnostics,
+        }
+    }
+
+    /// Chain a fallible step: if the step succeeds, its result becomes the new
+    /// value and any previous diagnostics are carried forward.
+    pub fn and_then<U>(
+        self,
+        f: impl FnOnce(T) -> Result<U, Diagnostic>,
+    ) -> Result<CompileReport<U>, Diagnostic> {
+        let value = f(self.value)?;
+        Ok(CompileReport {
+            value,
+            diagnostics: self.diagnostics,
+        })
+    }
+}
+
+pub fn build_file(input: &Path, output: &Path) -> Result<CompileReport<()>, Diagnostic> {
     build_file_with_options(input, output, None)
 }
 
@@ -38,7 +77,7 @@ pub fn build_file_with_options(
     input: &Path,
     output: &Path,
     capability_manifest_output: Option<&Path>,
-) -> Result<(), Diagnostic> {
+) -> Result<CompileReport<()>, Diagnostic> {
     build_file_with_host_deny(input, output, capability_manifest_output, false)
 }
 
@@ -47,7 +86,7 @@ pub fn build_file_with_host_deny(
     output: &Path,
     capability_manifest_output: Option<&Path>,
     host_deny: bool,
-) -> Result<(), Diagnostic> {
+) -> Result<CompileReport<()>, Diagnostic> {
     let source = fs::read_to_string(input).map_err(|error| Diagnostic {
         code: DiagCode::BackendIo,
         message: format!("failed to read {}: {error}", input.display()),
@@ -72,13 +111,10 @@ pub fn build_file_with_host_deny(
         &module_graph,
         &static_module_binding.module_exports,
     )?;
-    lowered::validate_lowered(&lowered).map_err(|errs| {
-        errs.into_iter().next().unwrap_or(Diagnostic {
-            code: DiagCode::InvariantViolation,
-            message: "validate_lowered failed with empty diagnostic list".to_owned(),
-            span: None,
-        })
-    })?;
+    let diagnostics = match lowered::validate_lowered(&lowered) {
+        Ok(()) => vec![],
+        Err(errs) => errs,
+    };
     ensure_runtime_feature_gates(&lowered)?;
 
     if host_deny {
@@ -94,7 +130,11 @@ pub fn build_file_with_host_deny(
         })?;
     }
     let wat = backend::emit_wat(&lowered)?;
-    write_wasm_from_wat(&wat, output)
+    write_wasm_from_wat(&wat, output)?;
+    Ok(CompileReport {
+        value: (),
+        diagnostics,
+    })
 }
 
 fn validate_optimized_hir_slice(

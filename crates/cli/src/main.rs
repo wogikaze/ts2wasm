@@ -74,12 +74,19 @@ fn run() -> Result<(), String> {
             manifest,
             host_deny,
         } => {
-            if host_deny {
+            let result = if host_deny {
                 ts2wasm_cli::build_file_with_host_deny(&input, &output, manifest.as_deref(), true)
-                    .map_err(|e| e.to_string())
             } else {
                 ts2wasm_cli::build_file_with_options(&input, &output, manifest.as_deref())
-                    .map_err(|e| e.to_string())
+            };
+            match result {
+                Ok(report) => {
+                    for diag in &report.diagnostics {
+                        eprintln!("warning: {diag}");
+                    }
+                    Ok(())
+                }
+                Err(e) => Err(e.to_string()),
             }
         }
         Command::Check { input } => {

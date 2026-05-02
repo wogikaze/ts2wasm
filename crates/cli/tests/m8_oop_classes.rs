@@ -16,7 +16,7 @@ fn assert_fixture_build_smoke(fixture_path: &str) {
     ));
 
     match ts2wasm_cli::build_file(&fixture, &output_wasm) {
-        Ok(()) => {}
+        Ok(_) => {}
         Err(e) => panic!("Fixture {} should build but got error: {}", fixture_path, e),
     }
 }

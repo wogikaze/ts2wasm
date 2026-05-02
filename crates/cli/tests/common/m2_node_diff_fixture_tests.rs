@@ -1219,7 +1219,7 @@ fn date_to_string_fixture_builds_successfully() {
         std::process::id()
     ));
     match ts2wasm_cli::build_file(&fixture, &output_wasm) {
-        Ok(()) => {}
+        Ok(_) => {}
         Err(e) => panic!("date-to-string fixture should build but got error: {}", e),
     }
 }
