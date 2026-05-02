@@ -58,6 +58,11 @@ fn array_push_recursive_growth_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn string_includes_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/string-includes.ts");
+}
+
+#[test]
 fn abc451_depth8_live_set_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node_with_iwasm_timeout(
         "fixtures/core-semantics/abc451-depth8-live-set.ts",

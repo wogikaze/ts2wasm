@@ -1,8 +1,8 @@
 {
-  "id": null,
-  "title": null,
-  "status": "idle",
-  "issue_path": null,
+  "id": "5000",
+  "title": "Meta: TypeScript Compiler Parser Syntax Coverage",
+  "status": "selected",
+  "issue_path": "issues/open/5000-meta-tsc-parser-syntax.md",
   "scope": null,
   "acceptance": null,
   "commands": null,

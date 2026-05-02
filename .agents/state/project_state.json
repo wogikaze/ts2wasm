@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "TASK_SELECT",
+  "fsm": "RETRO",
   "active_task_id": null,
-  "updated_at": "2026-05-02T10:06:33Z",
+  "updated_at": "2026-05-02T10:14:56Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": null,
+  "plan_path": "docs/superpowers/plans/2026-05-02-tsc-parser-syntax.md",
   "verify_fast_streak_fails": 0
 }
