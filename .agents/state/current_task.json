@@ -1,11 +1,11 @@
 {
-  "id": 5004,
-  "title": "Meta: Runtime Builtins Coverage (test262)",
+  "id": 5000,
+  "title": "Meta: TypeScript Compiler Parser Syntax Coverage",
   "status": "selected",
-  "issue_path": "issues/open/5004-meta-runtime-builtins.md",
-  "scope": "Assess and improve runtime builtin coverage for test262 suite",
-  "acceptance": "Identify highest-impact missing builtins, file child issues for prioritized builtin families",
-  "commands": "cargo nextest run -E 'test(node_diff)'",
+  "issue_path": "issues/open/5000-meta-tsc-parser-syntax.md",
+  "scope": "Assess and improve parser syntax coverage for TypeScript compiler test suite",
+  "acceptance": "Identify highest-impact missing syntax constructs, file child issues for each prioritized parser feature gap",
+  "commands": "cargo nextest run -E 'test(parser)'",
   "risk": "low",
-  "notes": "Meta-issue for runtime builtins coverage tracking"
+  "notes": "Meta-issue for parser syntax coverage tracking"
 }
