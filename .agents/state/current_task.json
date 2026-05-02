@@ -3,9 +3,9 @@
   "title": "Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect)",
   "status": "selected",
   "issue_path": "issues/open/5009-remaining-es-module-export-forms.md",
-  "scope": "Implement import * as ns from \"./mod\" namespace import",
-  "acceptance": "import * as ns from \"./mod\" no longer hits issue-055",
+  "scope": "Implement import x from \"./mod\" default import",
+  "acceptance": "import x from \"./mod\" in entry module no longer hits issue-055",
   "commands": "cargo nextest run -E 'test(module)'",
   "risk": "low",
-  "notes": "next slice: namespace import"
+  "notes": "next slice: default import"
 }
