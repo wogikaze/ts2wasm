@@ -46,7 +46,14 @@ Expected:
 
 | Wave | Builtin | Status |
 |------|---------|--------|
-| 1 | String.prototype.includes | Done (fixture + test passing) |
+| 1 | String.prototype.includes | Done (fixture + node diff test passing) |
+| 1 | String.prototype.padStart | Done (fixture + node diff test passing) |
+| 1 | String.prototype.padEnd | Done (fixture + node diff test passing) |
+| 1 | String.prototype.repeat | Done (fixture + node diff test passing) |
+| 1 | String.prototype.charAt | Done (fixture + node diff test passing) |
+| 1 | String.prototype.indexOf | Done (fixture + node diff test passing) |
+| 1 | String.prototype.split | Done (fixture + node diff test passing) |
+| 1 | String.prototype.substring | Done (fixture + node diff test passing) |
 
 ## Validation
 

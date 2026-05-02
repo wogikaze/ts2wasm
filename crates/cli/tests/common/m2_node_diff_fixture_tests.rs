@@ -991,6 +991,21 @@ fn string_method_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn string_builtin_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/string-pad-start.ts",
+        "fixtures/builtins-and-io/string-pad-end.ts",
+        "fixtures/builtins-and-io/string-repeat.ts",
+        "fixtures/builtins-and-io/string-char-at.ts",
+        "fixtures/builtins-and-io/string-index-of.ts",
+        "fixtures/builtins-and-io/string-split.ts",
+        "fixtures/builtins-and-io/string-substring.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",

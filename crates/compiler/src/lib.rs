@@ -1151,15 +1151,13 @@ fn write_wasm_from_wat(wat: &str, output: &Path) -> Result<(), Diagnostic> {
     if command_output.status.success() {
         Ok(())
     } else {
-        // Debug: save WAT file for inspection
-        let _ = std::fs::write("/tmp/wat_debug_fail.wat", wat);
         Err(Diagnostic {
             code: DiagCode::BackendIo,
             message: format!(
                 "wat2wasm failed\nstdout:\n{}\nstderr:\n{}\nwat:\n{}",
                 String::from_utf8_lossy(&command_output.stdout),
                 String::from_utf8_lossy(&command_output.stderr),
-                truncate_wat_for_error(wat, 100000),
+                truncate_wat_for_error(wat, 2000),
             ),
             span: None,
         })
