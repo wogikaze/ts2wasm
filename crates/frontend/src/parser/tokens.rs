@@ -1,3 +1,49 @@
+/// Maps a keyword token to its string representation, for use as a property name.
+fn keyword_to_property_name(token: &Token) -> Option<&'static str> {
+    match token {
+        Token::Let => Some("let"),
+        Token::Const => Some("const"),
+        Token::Var => Some("var"),
+        Token::Function => Some("function"),
+        Token::Return => Some("return"),
+        Token::If => Some("if"),
+        Token::Else => Some("else"),
+        Token::While => Some("while"),
+        Token::True => Some("true"),
+        Token::False => Some("false"),
+        Token::Null => Some("null"),
+        Token::Undefined => Some("undefined"),
+        Token::This => Some("this"),
+        Token::Class => Some("class"),
+        Token::Try => Some("try"),
+        Token::Catch => Some("catch"),
+        Token::Throw => Some("throw"),
+        Token::Finally => Some("finally"),
+        Token::Extends => Some("extends"),
+        Token::Super => Some("super"),
+        Token::Static => Some("static"),
+        Token::Async => Some("async"),
+        Token::Await => Some("await"),
+        Token::Import => Some("import"),
+        Token::Export => Some("export"),
+        Token::Default => Some("default"),
+        Token::Case => Some("case"),
+        Token::Do => Some("do"),
+        Token::For => Some("for"),
+        Token::In => Some("in"),
+        Token::Of => Some("of"),
+        Token::New => Some("new"),
+        Token::TypeOf => Some("typeof"),
+        Token::InstanceOf => Some("instanceof"),
+        Token::Void => Some("void"),
+        Token::Delete => Some("delete"),
+        Token::Switch => Some("switch"),
+        Token::Break => Some("break"),
+        Token::Continue => Some("continue"),
+        _ => None,
+    }
+}
+
 impl Parser {
     fn expect_ident(&mut self) -> Result<(String, Span), Diagnostic> {
         match self.advance() {
@@ -61,16 +107,23 @@ impl Parser {
                 span,
             }) => Ok((name, span)),
             Some(SpannedToken {
-                kind: Token::Delete,
-                span,
-            }) => Ok((String::from("delete"), span)),
-            Some(SpannedToken {
                 kind: Token::PrivateIdentifier(name),
                 span,
             }) => Ok((format!("#{name}"), span)),
-            other => Err(Diagnostic {
+            Some(SpannedToken { kind, span }) => {
+                if let Some(name) = keyword_to_property_name(&kind) {
+                    Ok((name.to_owned(), span))
+                } else {
+                    Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("expected member property name, got {kind:?}"),
+                        span: self.peek_span(),
+                    })
+                }
+            }
+            None => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
-                message: format!("expected member property name, got {other:?}"),
+                message: "expected member property name, got None".to_owned(),
                 span: self.peek_span(),
             }),
         }
@@ -86,6 +139,11 @@ impl Parser {
             }
             Some(Token::String(s)) => {
                 let key = s.clone();
+                self.advance();
+                Ok(key)
+            }
+            Some(token) if keyword_to_property_name(token).is_some() => {
+                let key = keyword_to_property_name(token).unwrap().to_owned();
                 self.advance();
                 Ok(key)
             }

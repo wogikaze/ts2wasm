@@ -52,3 +52,16 @@ mise run reference-coverage -- tsc --limit 100 --detail
 ## Notes
 
 Child issues in this group have been bulk-updated to `class: blocked` with `depends_on: [5000]`.
+
+## Implementation Plan
+
+See `docs/superpowers/plans/2026-05-02-tsc-parser-syntax.md` for the full wave-based implementation plan.
+
+### Current implementation wave
+
+**Wave 1 (Simple Statement/Expression Fixes)** — in progress:
+
+1. [ ] Reserved words as property names (Task 1.1)
+2. [ ] `for...in` with type annotations (Task 1.2)
+3. [ ] Index signatures (Task 1.3)
+4. [ ] `this`/`super` keyword edge cases (Task 1.4)

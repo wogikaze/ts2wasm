@@ -715,6 +715,46 @@ mod tests {
     }
 
     #[test]
+    fn parses_keyword_tokens_as_object_literal_property_names() {
+        let stmts = parse_program("var obj = { if: 0, break: 3, function: 4, class: 5 };")
+            .unwrap();
+
+        match &stmts[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 4);
+                let names: Vec<&str> = props.iter().map(|(n, _)| n.as_str()).collect();
+                assert!(names.contains(&"if"));
+                assert!(names.contains(&"break"));
+                assert!(names.contains(&"function"));
+                assert!(names.contains(&"class"));
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_keyword_tokens_as_member_property_names() {
+        let stmts = parse_program("let a = obj.if; let b = obj.class; let c = obj.for;")
+            .unwrap();
+
+        assert_eq!(stmts.len(), 3);
+        for stmt in &stmts {
+            match stmt {
+                Stmt::Let {
+                    expr: Expr::Member { property, .. },
+                    ..
+                } => {
+                    assert!(["if", "class", "for"].contains(&property.as_str()));
+                }
+                other => panic!("unexpected statement: {other:?}"),
+            }
+        }
+    }
+
+    #[test]
     fn parses_delete_keyword_after_dot_as_member_property_name() {
         let program = parse_program("let ok = map.delete(\"a\");").unwrap();
 
