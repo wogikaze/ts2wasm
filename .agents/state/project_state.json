@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "SELF_REVIEW_GATE",
+  "fsm": "CLOSE_OR_SPLIT",
   "active_task_id": "5004",
-  "updated_at": "2026-05-02T02:03:53Z",
+  "updated_at": "2026-05-02T02:04:42Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/5004-runtime-builtins-coverage.md",
