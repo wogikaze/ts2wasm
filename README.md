@@ -16,6 +16,39 @@ See docs/08-roadmap-and-success.md for detailed success criteria.
 
 TypeScript / JavaScript の既存資産を、Node.js に処理を丸投げせず、可能な限り WebAssembly 実行環境へ持ち込む compiler/runtime プロジェクトである。AssemblyScript のような TypeScript 風の別言語ではなく、QuickJS/Javy のような JS engine 同梱にも寄せすぎない。生成 WASM、WASM 側 runtime、必要最小限の host shim を分離する。
 
+```mermaid
+flowchart TB
+    subgraph SRC["① Source"]
+        A[TypeScript / JavaScript]
+    end
+
+    subgraph CMP["② Compiler Pipeline"]
+        B[Frontend<br/>Lexer → Parser → AST]
+        C[IR Layer<br/>HIR → MIR → WasmIR<br/>Semantic Analysis]
+        D[Backend<br/>WAT / WASM Emission]
+    end
+
+    subgraph EXEC["③ Execution Tiers"]
+        E[Generated WASM<br/>WASI standalone]
+        F[＋ Host Shim<br/>WASI + minimal JS imports]
+        G[＋ Node.js host<br/>Full capability manifest]
+    end
+
+    subgraph VERIFY["④ Verification"]
+        H[Differential Testing<br/>Node.js vs WASM stdout]
+        I[Reference Coverage<br/>test262 / tsc suites]
+    end
+
+    A --> B --> C --> D
+    D --> E --> F --> G
+    E --> H
+    F --> H
+    G --> H
+    E --> I
+    F --> I
+    G --> I
+```
+
 ## Documentation map
 
 | Document | Role |
