@@ -1,11 +1,11 @@
 {
-  "id": 5004,
-  "title": "Meta: Runtime Builtins Coverage (test262)",
+  "id": 5008,
+  "title": "Implement static ES module export forms (default, named, namespace, re-export)",
   "status": "selected",
-  "issue_path": "issues/open/5004-meta-runtime-builtins.md",
-  "scope": "Assess and improve runtime builtin coverage for test262 suite",
-  "acceptance": "Identify highest-impact missing builtins, file child issues for prioritized builtin families",
-  "commands": "cargo nextest run -E 'test(node_diff)'",
+  "issue_path": "issues/open/5008-static-es-module-export-default-namespace-reexport.md",
+  "scope": "Implement static ES module export forms including default, named, namespace, and re-export",
+  "acceptance": "ExportDecl without import from another module no longer hits issue-055",
+  "commands": "cargo nextest run -E 'test(module)'",
   "risk": "low",
-  "notes": "Meta-issue for runtime builtins coverage tracking"
+  "notes": "implementation-ready feature issue"
 }
