@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 1 | 9 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4230 | 120 |
+| frontend | 4350 | 4231 | 119 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 5 | 13 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4575 | 321 |
+| total | 4896 | 4576 | 320 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -366,6 +366,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 433 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 434 | Implement loop constructs | spike | frontend/syntax | class: blocked | Implement loop constructs |
 | 435 | Implement method call support | spike | frontend/syntax | class: blocked | Implement method call support |
+| 436 | Implement module-resolution support | spike | frontend/syntax | class: triage-needed | Implement module-resolution support |
 | 437 | Implement name resolution | spike | frontend/resolver | class: blocked | Implement name resolution |
 | 438 | Implement negative-parse-syntaxerror support | spike | reference/triage | class: triage-needed | Implement negative-parse-syntaxerror support |
 | 439 | Implement new expression | spike | frontend/syntax | class: blocked | Implement new expression |
@@ -5028,7 +5029,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 | 423 | Implement Date object support | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
-| 436 | Implement module-resolution support | spike | frontend/syntax | see `issues/done/436-implement-module-resolution.md` |
 | 444 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
 | 2058 | Implement Duplicatepackage Module Resolution | spike | frontend/syntax | see `issues/done/2058-implement-duplicatePackage-module-resolution.md` |

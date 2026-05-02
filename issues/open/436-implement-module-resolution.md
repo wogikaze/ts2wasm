@@ -43,10 +43,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [x] Inspect the smart triage report below
-- [x] Confirm whether existing open/done issues already cover this bucket
-- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [ ] Inspect the smart triage report below
+- [ ] Confirm whether existing open/done issues already cover this bucket
+- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +68,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -380,3 +380,36 @@ date:
 Remaining risks:
 
 - none
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This issue was created as a generated triage bucket
+(`class: triage-needed`) for module-resolution failures across 40 test262
+cases. It was moved to `issues/done/` without any triage work completed: the
+`## Completion evidence` section is unfilled (commits placeholder `...`,
+validation result empty). The representative test case still fails with
+`UnsupportedTest262Metadata: test262 feature destructuring-assignment is not
+supported`. All acceptance criteria boxes were incorrectly checked despite no
+triage or code changes. No implementation commits reference this issue.
+
+**True-done checklist** (all must pass):
+
+1. **Complete at least one of**:
+   - Triage the representative path and confirm it is superseded by an existing
+     open/done issue, OR
+   - Split into implementation-ready child issues with exact reproduction
+     commands
+
+2. **Commands that must pass**:
+   ```sh
+   cargo fmt --all --check
+   cargo nextest run
+   ```
+
+3. **Specific evidence needed**:
+   - Representative test case is confirmed as duplicate/superseded, OR
+   - At least one child issue exists in `issues/open/` with exact
+     `mise run reference-triage -- ...` command, failing path, diagnostic code,
+     source context, and parser/TypeScript AST evidence
