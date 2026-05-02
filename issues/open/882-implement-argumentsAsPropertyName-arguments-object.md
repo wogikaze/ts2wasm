@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same reference path, same feature label, title overlap)
-- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
+- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
 - `issues/open/646-implement-arguments.md` - Implement Arguments (same feature label, title overlap)
 - `issues/open/647-implement-argumentsAsPropertyName-arguments-object.md` - Implement Argumentsaspropertyname Arguments Object (same reference path, same feature label, same group key, title overlap)
 - `issues/open/650-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same feature label, same group key, title overlap)

@@ -1170,7 +1170,9 @@ impl<'a> Resolver<'a> {
                 span: Some(span),
             });
         }
-        if block_contains_this(body) || block_contains_arguments(body) {
+        // Only reject this/arguments for spread calls, not all function-expr calls
+        let has_spread_args = args.iter().any(|a| matches!(a, ResolvedExpr::Spread(_)));
+        if has_spread_args && (block_contains_this(body) || block_contains_arguments(body)) {
             return Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: "issue-274: direct function-expression spread calls with `this` or `arguments` require broader call-expression runtime support".to_owned(),
@@ -1710,7 +1712,7 @@ impl<'a> Resolver<'a> {
             ),
             span: Some(span),
         })?;
-        let Some(slot) = self
+        let Some(mut slot) = self
             .class_private_fields
             .get(class_name)
             .and_then(|fields| fields.get(field_name))
@@ -1725,8 +1727,17 @@ impl<'a> Resolver<'a> {
                 span: Some(span),
             });
         };
+        slot += self.ancestor_private_slot_count(class_name);
         let brand = self.private_brand_for_class(class_name, Some(span))?;
         Ok((brand, slot))
+    }
+
+    fn root_class_name(&self, class_name: &str) -> String {
+        let mut current = class_name.to_owned();
+        while let Some(parent) = self.class_parents.get(&current).and_then(|p| p.clone()) {
+            current = parent;
+        }
+        current
     }
 
     pub(super) fn private_brand_for_class(
@@ -1734,14 +1745,15 @@ impl<'a> Resolver<'a> {
         class_name: &str,
         span: Option<Span>,
     ) -> Result<u32, Diagnostic> {
+        let root = self.root_class_name(class_name);
         let constructor = self
             .class_constructor_ids
-            .get(class_name)
+            .get(&root)
             .copied()
             .ok_or_else(|| Diagnostic {
                 code: DiagCode::InvariantViolation,
                 message: format!(
-                    "private brand lookup requires constructor for class `{class_name}`"
+                    "private brand lookup requires constructor for class `{root}`"
                 ),
                 span,
             })?;
@@ -1752,10 +1764,18 @@ impl<'a> Resolver<'a> {
         })
     }
 
+    pub(super) fn ancestor_private_slot_count(&self, class_name: &str) -> usize {
+        match self.class_parents.get(class_name).and_then(|p| p.as_ref()) {
+            Some(parent) => self.private_slot_count(parent),
+            None => 0,
+        }
+    }
+
     pub(super) fn private_slot_count(&self, class_name: &str) -> usize {
-        self.class_private_fields
+        let own = self.class_private_fields
             .get(class_name)
-            .map_or(0, HashMap::len)
+            .map_or(0, HashMap::len);
+        own + self.ancestor_private_slot_count(class_name)
     }
 
     pub(super) fn class_has_instance_private_brand(&self, class_name: &str) -> bool {

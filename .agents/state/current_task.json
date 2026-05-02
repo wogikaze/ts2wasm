@@ -1,30 +1,32 @@
 {
-  "id": "agent-225-close",
-  "title": "Close meta-issue 225 (eval Annex B - all children done)",
+  "id": "agent-350-derived-private",
+  "title": "Implement derived-class private element initialization",
   "status": "selected",
-  "issue_path": "issues/open/225-implement-eval-annexb-function-declarations.md",
+  "issue_path": "issues/open/350-implement-derived-class-private-init.md",
   "scope": {
     "allowed_files": [
-      "issues/"
+      "crates/ir/src/",
+      "crates/cli/src/backend/",
+      "fixtures/"
     ],
     "forbidden_files": [
-      "crates/",
-      "fixtures/"
+      "docs/"
     ]
   },
   "acceptance": [
-    "Issue 225 moved to done/, index updated"
+    "Derived class with private fields compiles and runs correctly under iwasm"
   ],
   "commands": {
     "fast": [
-      "mise run update-issue-index"
+      "cargo fmt --all --check",
+      "cargo nextest run"
     ],
     "full": [
-      "mise run check issues"
+      "mise run gate"
     ]
   },
   "risk": [
-    "none - meta close only"
+    "private slot layout changes may affect existing non-derived classes"
   ],
-  "notes": "Cycle 3 of 5"
+  "notes": "Cycle 4 of 5"
 }

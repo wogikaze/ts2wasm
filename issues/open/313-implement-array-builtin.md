@@ -1,25 +1,23 @@
 ---
 id: 313
 title: "Implement array-builtin support"
-type: spike
+type: feature
 area: runtime/builtins
 class: blocked
 priority: P1
-depends_on: []
+depends_on: [5005, 5004]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-02
 ---
 
 ## Summary
 
-Triage array-builtin feature across 31 failing reference test cases and split this bucket into implementation-ready child issues.
+Implement Array builtin method support for runtime (test262 coverage). Consolidated from generated fixture-bucket issues.
 
 ## Problem
 
 Reference test results show 31 cases fail with array-builtin diagnostic. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
-
-Problem: array-builtin feature has 31 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
@@ -41,17 +39,17 @@ This generated bucket is either split into implementation-ready child issues or 
 
 ## Scope
 
-In scope:
+This issue tracks Array builtin API implementation. Generated child fixture-bucket issues (3130-3139) have been consolidated back into this parent and archived to `.backup/`.
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+In scope:
+- [ ] Implement Array.prototype.indexOf, Array.prototype.lastIndexOf, Array.prototype.every, etc.
+- [ ] Add Node/iwasm differential fixture coverage for supported Array methods
+- [ ] Reduce test262 `array-builtin` unsupported count
 
 Out of scope:
-
-- Direct implementation from this generated bucket
-- Broad multi-feature fixes without child issue split
+- String builtins (tracked by issue 314)
+- Object builtins (tracked by issue 342)
+- JsxFactory/keepImportsInDts/keyRemappingKeyofResult (residual fixture buckets, originally misclassified under 313 prefix)
 
 ## Affected paths
 

@@ -191,7 +191,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/255-implement-private-class-element-runtime-semantics.md",
+    "path": "issues/done/255-implement-private-class-element-runtime-semantics.md",
     "title": "Implement private class element runtime semantics",
     "reason": "same feature label, title overlap"
   },

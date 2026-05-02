@@ -131,7 +131,7 @@ Follow-up issues:
 - `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md` - Support ABC451 D original submission without source rewrite (same feature label, same group key)
 - `issues/open/300-support-abc451-large-integer-number-boundary.md` - Support ABC451 large integer number boundary (same feature label, same group key)
 - `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
-- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key)
+- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key)
 - `issues/open/353-spread-iterator-protocol.md` - Implement iterator protocol integration for spread operator (same feature label, same group key, title overlap)
 - `issues/open/357-fix-abc451-depth8-iwasm-timeout.md` - Fix ABC451 depth-8 iwasm timeout (same feature label, same group key)
 - `issues/open/363-reduce-abc451-allocation-and-sweep-volume-after-bulk-copy-narrowing.md` - Reduce ABC451 allocation and sweep volume after bulk copy narrowing (same feature label, same group key)

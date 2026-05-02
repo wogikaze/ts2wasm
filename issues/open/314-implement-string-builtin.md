@@ -1,19 +1,19 @@
 ---
 id: 314
 title: "Implement string-builtin support"
-type: spike
+type: feature
 area: runtime/builtins
 class: blocked
 priority: P1
 depends_on: [5005, 5004]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-02
 ---
 
 ## Summary
 
-Triage string-builtin feature across 10 failing reference test cases and split this bucket into implementation-ready child issues.
+Implement String builtin method support for runtime (test262 coverage). Consolidated from generated fixture-bucket issues.
 
 ## Problem
 
@@ -41,17 +41,17 @@ This generated bucket is either split into implementation-ready child issues or 
 
 ## Scope
 
-In scope:
+This issue tracks String builtin API implementation. Generated child fixture-bucket issues (3140-3149) have been consolidated back into this parent and archived to `.backup/`.
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+In scope:
+- [ ] Implement String.prototype methods and String constructor features
+- [ ] Add Node/iwasm differential fixture coverage for supported String methods
+- [ ] Reduce test262 `string-builtin` unsupported count
 
 Out of scope:
-
-- Direct implementation from this generated bucket
-- Broad multi-feature fixes without child issue split
+- Array builtins (tracked by issue 313)
+- Object builtins (tracked by issue 342)
+- keyof/keyword/lambda residual fixture buckets (originally misclassified under 314 prefix)
 
 ## Affected paths
 

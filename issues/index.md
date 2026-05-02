@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4428 | 4337 | 91 |
+| frontend | 4396 | 4305 | 91 |
 | ir | 9 | 0 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 176 | 171 | 5 |
-| runtime | 190 | 62 | 128 |
+| reference | 175 | 170 | 5 |
+| runtime | 183 | 53 | 130 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4841 | 4572 | 269 |
+| total | 4801 | 4530 | 271 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -41,7 +41,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 255 | Implement private class element runtime semantics | meta | runtime/semantics | ready | P2 |  | Issue 248 tokenizes `#name` and parses private fields, methods, getters, and setters. The runtime slices now support ... |
 | 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
@@ -189,10 +188,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
 | 308 | Implement ABC451 depth-9 GC cadence policy | feature | runtime/memory | class: blocked | Implement ABC451 depth-9 GC cadence policy |
 | 309 | Reduce ABC451 depth-9 live allocation shape | feature | runtime/memory | class: blocked | Reduce ABC451 depth-9 live allocation shape |
-| 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | class: blocked | Fix test262 arguments object index assignment semantics |
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
-| 313 | Implement array-builtin support | spike | runtime/builtins | class: blocked | Implement array-builtin support |
-| 314 | Implement string-builtin support | spike | runtime/builtins | class: blocked | Implement string-builtin support |
+| 313 | Implement array-builtin support | feature | runtime/builtins | class: blocked | Implement array-builtin support |
+| 314 | Implement string-builtin support | feature | runtime/builtins | class: blocked | Implement string-builtin support |
 | 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: blocked | Fix Object.keys backend-io error |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
@@ -2929,26 +2927,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 3127 | Implement Jsxfactoryidentifier | spike | runtime/builtins | class: blocked | Implement Jsxfactoryidentifier |
 | 3128 | Implement Jsxfactoryidentifierasparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierasparameter |
 | 3129 | Implement Jsxfactoryidentifierwithabsentparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierwithabsentparameter |
-| 3130 | Implement Jsxfactorymissingerrorinsideaclass | spike | runtime/builtins | class: blocked | Implement Jsxfactorymissingerrorinsideaclass |
-| 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | runtime/builtins | class: blocked | Implement Jsxfactorynotidentifierorqualifiedname |
-| 3132 | Implement Jsxfactoryqualifiedname | spike | runtime/builtins | class: blocked | Implement Jsxfactoryqualifiedname |
-| 3133 | Implement Jsxfactoryqualifiednameresolutionerror | spike | frontend/syntax | class: blocked | Implement Jsxfactoryqualifiednameresolutionerror |
-| 3134 | Implement Jsxfactoryqualifiednamewithes | spike | runtime/builtins | class: blocked | Implement Jsxfactoryqualifiednamewithes |
-| 3135 | Implement Jsxpreservewithjsinput | spike | runtime/builtins | class: blocked | Implement Jsxpreservewithjsinput |
-| 3136 | Implement Jsxruntimepragma | spike | runtime/builtins | class: blocked | Implement Jsxruntimepragma |
-| 3137 | Implement Jsxspreadtag | spike | runtime/builtins | class: blocked | Implement Jsxspreadtag |
-| 3138 | Implement Keepimportsindts | spike | frontend/syntax | class: blocked | Implement Keepimportsindts |
-| 3139 | Implement Keyremappingkeyofresult | spike | frontend/syntax | class: blocked | Implement Keyremappingkeyofresult |
-| 3140 | Implement Keyofdoesntcontainsymbols | spike | frontend/syntax | class: blocked | Implement Keyofdoesntcontainsymbols |
-| 3141 | Implement Keyofgenericextendingclassdoublelayer | spike | frontend/syntax | class: blocked | Implement Keyofgenericextendingclassdoublelayer |
-| 3142 | Implement Keyofisliteralcontexualtype | spike | frontend/resolver | class: blocked | Implement Keyofisliteralcontexualtype |
-| 3143 | Implement Keyofmoduleobjecthascorrectkeys | spike | frontend/syntax | class: blocked | Implement Keyofmoduleobjecthascorrectkeys |
-| 3144 | Implement Keyofobjectwithglobalsymbolincluded | spike | frontend/syntax | class: blocked | Implement Keyofobjectwithglobalsymbolincluded |
-| 3145 | Implement Keywordexpressioninternalcomments | spike | frontend/syntax | class: blocked | Implement Keywordexpressioninternalcomments |
-| 3146 | Implement Keywordfield | spike | frontend/syntax | class: blocked | Implement Keywordfield |
-| 3147 | Implement Knockout | spike | frontend/syntax | class: blocked | Implement Knockout |
-| 3148 | Implement Lambdaargcrash | spike | frontend/syntax | class: blocked | Implement Lambdaargcrash |
-| 3149 | Implement Lambdaparamtypes | spike | frontend/resolver | class: blocked | Implement Lambdaparamtypes |
 | 3150 | Implement Lambdaparameterwithtupleargshascorrectassignability | spike | frontend/syntax | class: blocked | Implement Lambdaparameterwithtupleargshascorrectassignability |
 | 3151 | Implement Lambdapropself | spike | frontend/syntax | class: blocked | Implement Lambdapropself |
 | 3152 | Implement Largetupletypes | spike | frontend/syntax | class: blocked | Implement Largetupletypes |
@@ -3219,16 +3197,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 3417 | Implement Mutuallyrecursivecallbacks | spike | frontend/resolver | class: blocked | Implement Mutuallyrecursivecallbacks |
 | 3418 | Implement Mutuallyrecursivegenericbasetypes | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursivegenericbasetypes |
 | 3419 | Implement Mutuallyrecursiveinference | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursiveinference |
-| 3420 | Implement Mutuallyrecursiveinterfacedeclaration | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursiveinterfacedeclaration |
-| 3421 | Implement Namecollisionwithblockscopedvariable | spike | frontend/syntax | class: blocked | Implement Namecollisionwithblockscopedvariable |
-| 3422 | Implement Namecollisions | spike | frontend/syntax | class: blocked | Implement Namecollisions |
-| 3423 | Implement Namecollisionsinpropertyassignments | spike | frontend/syntax | class: blocked | Implement Namecollisionsinpropertyassignments |
-| 3424 | Implement Namedfunctionexpressionassignedtoclassproperty | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressionassignedtoclassproperty |
-| 3425 | Implement Namedfunctionexpressioncall | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressioncall |
-| 3426 | Implement Namedfunctionexpressioncallerrors | spike | frontend/resolver | class: blocked | Implement Namedfunctionexpressioncallerrors |
-| 3427 | Implement Namedfunctionexpressioninmodule | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressioninmodule |
-| 3428 | Implement Namedimportnonexistentname | spike | frontend/syntax | class: blocked | Implement Namedimportnonexistentname |
-| 3429 | Implement Namespacedisambiguationinunion | spike | frontend/syntax | class: blocked | Implement Namespacedisambiguationinunion |
 | 3430 | Implement Namespacemergedwithfunctionwithoverloadsusage | spike | frontend/syntax | class: blocked | Implement Namespacemergedwithfunctionwithoverloadsusage |
 | 3431 | Implement Namespacemergedwithimportaliasnocrash | spike | frontend/syntax | class: blocked | Implement Namespacemergedwithimportaliasnocrash |
 | 3432 | Implement Namespacenotmergedwithfunctiondefaultexport | spike | frontend/syntax | class: blocked | Implement Namespacenotmergedwithfunctiondefaultexport |
@@ -3249,16 +3217,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 3447 | Implement Narrowswitchoptionalchaincontainmentevolvingarraynocrash | spike | frontend/syntax | class: blocked | Implement Narrowswitchoptionalchaincontainmentevolvingarraynocrash |
 | 3448 | Implement Narrowtypebyinstanceof | spike | frontend/syntax | class: blocked | Implement Narrowtypebyinstanceof |
 | 3449 | Implement Narrowunknownbytypepredicate | spike | frontend/resolver | class: blocked | Implement Narrowunknownbytypepredicate |
-| 3450 | Implement Narrowedconstinmethod | spike | frontend/syntax | class: triage-needed | Implement Narrowedconstinmethod |
-| 3451 | Implement Narrowedimports | spike | frontend/syntax | class: blocked | Implement Narrowedimports |
-| 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | class: blocked | Implement Narrowingassignmentreadonlyrespectsassertion |
-| 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | class: blocked | Implement Narrowingbytypeofinswitch |
-| 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | class: blocked | Implement Narrowingconstrainedtypeparameter |
-| 3455 | Implement Narrowingdestructuring | spike | reference/triage | class: triage-needed | Implement Narrowingdestructuring |
-| 3456 | Implement Narrowingincaseclauseaftercaseclausewithreturn | spike | frontend/syntax | class: blocked | Implement Narrowingincaseclauseaftercaseclausewithreturn |
-| 3457 | Implement Narrowingmutualsubtypes | spike | frontend/syntax | class: blocked | Implement Narrowingmutualsubtypes |
-| 3458 | Implement Narrowingnoinfer | spike | frontend/syntax | class: blocked | Implement Narrowingnoinfer |
-| 3459 | Implement Narrowingofdottednames | spike | frontend/syntax | class: blocked | Implement Narrowingofdottednames |
 | 3460 | Implement Narrowingofqualifiednames | spike | frontend/syntax | class: blocked | Implement Narrowingofqualifiednames |
 | 3461 | Implement Narrowingpastlastassignment | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignment |
 | 3462 | Implement Narrowingpastlastassignmentinmodule | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignmentinmodule |
@@ -4776,6 +4734,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 252 | Implement destructuring assignment pattern parser support | feature | frontend/syntax | see `issues/done/252-implement-destructuring-assignment-pattern-parser.md` |
 | 253 | Implement optional chaining runtime semantics | feature | frontend/semantics | see file |
 | 254 | Implement class static block runtime semantics | feature | runtime/semantics | see `issues/done/254-implement-class-static-block-runtime-semantics.md` |
+| 255 | Implement private class element runtime semantics | meta | runtime/semantics | see file |
 | 256 | Lower returned immutable closures to heap closure values | feature | ir | see `issues/done/256-lower-returned-immutable-closures-to-heap-values.md` |
 | 257 | Emit heap closure allocation and dispatch | feature | backend | see `issues/done/257-emit-heap-closure-allocation-and-dispatch.md` |
 | 258 | Mark heap closure captures and add allocation-pressure fixture | feature | runtime | see `issues/done/258-mark-heap-closure-captures-and-add-allocation-pressure-fixture.md` |
@@ -4828,6 +4787,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 306 | Implement mutable direct eval block-function environments | feature | frontend/ir/runtime | see `issues/done/306-implement-mutable-direct-eval-block-function-environments.md` |
 | 307 | Investigate ABC451 depth-9 allocation performance | spike | runtime/performance | see `issues/done/307-investigate-abc451-depth9-allocation-performance.md` |
 | 310 | Fix activation-frame root liveness depth-8 regression | feature | runtime/memory | see `issues/done/310-fix-activation-frame-root-liveness-depth8-regression.md` |
+| 311 | Fix test262 arguments object index assignment semantics | bug | runtime/semantics | see `issues/done/311-fix-test262-arguments-object-index-assignment.md` |
 | 315 | Fix Math.max/min backend-io errors | feature | runtime/builtins | see `issues/done/315-fix-math-max-min-backend-io.md` |
 | 333 | Implement BigInt dynamic string exception parity | feature | runtime/builtins | see `issues/done/333-implement-bigint-dynamic-string-exception-parity.md` |
 | 334 | Array.prototype.map completion: sparse array, thisArg, and generic call | meta | runtime/builtins | see `issues/done/334-complete-array-map-sparse-thisarg-test262.md` |

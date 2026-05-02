@@ -8,7 +8,7 @@ priority: P1
 depends_on: [5004]
 blocks: []
 created: 2026-04-30
-updated: 2026-04-30
+updated: 2026-05-02
 ---
 
 ## Summary
@@ -36,6 +36,7 @@ The `object-builtin` unsupported count is reduced to 0 for the implemented subse
 
 In scope:
 
+- Generated child fixture-bucket issues (3420-3429) have been consolidated back into this parent and archived to `.backup/`.
 - [ ] Inventory test262 cases tagged `object-builtin` to identify which methods are most impactful
 - [ ] Implement Object.defineProperty
 - [ ] Implement Object.getOwnPropertyDescriptor

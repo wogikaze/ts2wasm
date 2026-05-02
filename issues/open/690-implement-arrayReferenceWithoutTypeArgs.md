@@ -188,7 +188,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/311-fix-test262-arguments-object-index-assignment.md",
+    "path": "issues/done/311-fix-test262-arguments-object-index-assignment.md",
     "title": "Fix test262 arguments object index assignment semantics",
     "reason": "same feature label, title overlap"
   },

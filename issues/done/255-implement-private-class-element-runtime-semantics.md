@@ -3,12 +3,14 @@ id: 255
 title: "Implement private class element runtime semantics"
 type: meta
 area: runtime/semantics
-class: ready
+class: done
 priority: P2
 depends_on: ["248"]
-blocks: [350, 351, 352]
+blocks: []
 created: 2026-04-29
-updated: 2026-04-30
+updated: 2026-05-02
+status: done
+completed: 2026-05-02
 ---
 
 ## Summary
@@ -47,9 +49,9 @@ Already completed (not tracked by child issues):
 - [x] Add Node/iwasm differential fixtures for supported private element behavior.
 
 Child issues:
-- [ ] Issue 350: Implement derived-class private element initialization
-- [ ] Issue 351: Implement full private brand storage and brand-checking semantics
-- [ ] Issue 352: Implement static private field ordering with static blocks
+- [x] Issue 350: Implement derived-class private element initialization
+- [x] Issue 351: Implement full private brand storage and brand-checking semantics
+- [x] Issue 352: Implement static private field ordering with static blocks
 
 Out of scope:
 
@@ -66,6 +68,13 @@ Child issues define their own affected paths. This meta issue spans:
 - `crates/cli/tests/`
 - `fixtures/`
 - `docs/language-reference/javascript-features.md`
+
+## Acceptance criteria
+
+This meta issue is complete when all child issues are moved to `done/`.
+
+- [x] All child issues (350, 351, 352) are moved to `done/`
+- [x] All already-completed items (internal slot representation, instance/static private elements, diagnostics, fixtures) are verified
 
 ## Validation
 

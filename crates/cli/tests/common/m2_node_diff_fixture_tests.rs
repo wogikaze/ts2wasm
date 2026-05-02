@@ -1229,6 +1229,7 @@ fn private_class_field_read_write_fixture_matches_node_output_under_iwasm() {
         "fixtures/core-semantics/private-class-derived-field-order.ts",
         "fixtures/core-semantics/private-class-derived-field-implicit.ts",
         "fixtures/core-semantics/private-class-derived-no-inherited-brand.ts",
+        "fixtures/core-semantics/private-class-derived-both-fields.ts",
         "fixtures/core-semantics/private-class-derived-method-call.ts",
         "fixtures/core-semantics/private-class-derived-accessor-direct.ts",
     ] {

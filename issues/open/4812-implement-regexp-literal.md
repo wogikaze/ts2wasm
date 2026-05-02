@@ -130,7 +130,7 @@ Follow-up issues:
 - `issues/open/3125-implement-jsxEmitWithAttributes.md` - Implement Jsxemitwithattributes (same feature label, same group key, title overlap)
 - `issues/open/3126-implement-jsxFactoryAndReactNamespace.md` - Implement Jsxfactoryandreactnamespace (same feature label, same group key, title overlap)
 - `issues/open/3127-implement-jsxFactoryIdentifier.md` - Implement Jsxfactoryidentifier (same feature label, same group key, title overlap)
-- `issues/open/3130-implement-jsxFactoryMissingErrorInsideAClass.md` - Implement Jsxfactorymissingerrorinsideaclass (same feature label, same group key, title overlap)
+- `issues/.backup/3130-implement-jsxFactoryMissingErrorInsideAClass.md` - Implement Jsxfactorymissingerrorinsideaclass (same feature label, same group key, title overlap)
 
 ## Smart triage
 

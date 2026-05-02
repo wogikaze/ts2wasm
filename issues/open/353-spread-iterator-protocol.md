@@ -5,7 +5,7 @@ type: feature
 area: runtime/semantics
 class: blocked
 priority: P2
-depends_on: [274, 401, 402]
+depends_on: [274]
 blocks: []
 created: 2026-04-30
 updated: 2026-05-01

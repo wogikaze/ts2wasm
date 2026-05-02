@@ -120,7 +120,7 @@ Follow-up issues:
 - `issues/open/194-implement-argumentsAsPropertyName.md` - Implement Argumentsaspropertyname (same feature label, same group key, title overlap)
 - `issues/open/197-implement-argumentsObjectIterator.md` - Implement Argumentsobjectiterator (same feature label, same group key, title overlap)
 - `issues/open/198-implement-argumentsPropertyNameInJsMode.md` - Implement Argumentspropertynameinjsmode (same feature label, same group key, title overlap)
-- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key, title overlap)
+- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, same group key, title overlap)
 - `issues/open/412-implement-arguments-object.md` - Implement arguments-object support (same feature label, same group key, title overlap)
 - `issues/open/413-implement-arity.md` - Implement arity support (same feature label, same group key, title overlap)
 - `issues/open/416-implement-async.md` - Implement async/await support (same feature label, same group key, title overlap)
@@ -214,7 +214,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/311-fix-test262-arguments-object-index-assignment.md",
+    "path": "issues/done/311-fix-test262-arguments-object-index-assignment.md",
     "title": "Fix test262 arguments object index assignment semantics",
     "reason": "same feature label, title overlap"
   },

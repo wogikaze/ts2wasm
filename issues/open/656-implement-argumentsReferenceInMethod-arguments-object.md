@@ -118,7 +118,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
+- `issues/done/311-fix-test262-arguments-object-index-assignment.md` - Fix test262 arguments object index assignment semantics (same feature label, title overlap)
 
 ## Smart triage
 
@@ -194,7 +194,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/311-fix-test262-arguments-object-index-assignment.md",
+    "path": "issues/done/311-fix-test262-arguments-object-index-assignment.md",
     "title": "Fix test262 arguments object index assignment semantics",
     "reason": "same feature label, title overlap"
   },
