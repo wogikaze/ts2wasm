@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TestStatus {
     Pass,
@@ -19,6 +21,48 @@ impl TestStatus {
     }
 }
 
+/// A typed tracking identifier for unsupported/blocked tests.
+///
+/// Supported formats:
+/// - `issue-NNN` — references a GitHub issue
+/// - `feature:xxx` — references a feature label
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TrackingId {
+    Issue(u32),
+    Feature(String),
+}
+
+impl std::fmt::Display for TrackingId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TrackingId::Issue(n) => write!(f, "issue-{n}"),
+            TrackingId::Feature(label) => write!(f, "feature:{label}"),
+        }
+    }
+}
+
+impl FromStr for TrackingId {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if let Some(num) = s.strip_prefix("issue-") {
+            let n: u32 = num
+                .parse()
+                .map_err(|_| format!("invalid issue number: {num}"))?;
+            Ok(TrackingId::Issue(n))
+        } else if let Some(label) = s.strip_prefix("feature:") {
+            if label.is_empty() {
+                return Err("feature label cannot be empty".to_owned());
+            }
+            Ok(TrackingId::Feature(label.to_owned()))
+        } else {
+            Err(format!(
+                "invalid tracking ID format: expected `issue-NNN` or `feature:xxx`, got `{s}`"
+            ))
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TestRecord {
     pub suite: String,
@@ -28,7 +72,7 @@ pub struct TestRecord {
     pub expected: Option<String>,
     pub actual: Option<String>,
     pub reason: Option<String>,
-    pub tracking: Option<String>,
+    pub tracking: Option<TrackingId>,
 }
 
 impl TestRecord {
@@ -49,7 +93,7 @@ impl TestRecord {
                 if self.reason.as_deref().unwrap_or("").is_empty() {
                     return Err(format!("reason is required for {}", self.status.as_str()));
                 }
-                if self.tracking.as_deref().unwrap_or("").is_empty() {
+                if self.tracking.is_none() {
                     return Err(format!("tracking is required for {}", self.status.as_str()));
                 }
                 Ok(())
@@ -90,7 +134,7 @@ impl TestRecord {
 
         if let Some(ref tracking) = self.tracking {
             json.push_str(",\"tracking\":\"");
-            json.push_str(&escape_json_string(tracking));
+            json.push_str(&escape_json_string(&tracking.to_string()));
             json.push('"');
         }
 
@@ -143,7 +187,7 @@ mod tests {
         assert!(unsupported.validate().is_err());
 
         unsupported.reason = Some("regexp split is not implemented".to_owned());
-        unsupported.tracking = Some("feature:regexp".to_owned());
+        unsupported.tracking = Some(TrackingId::Feature("regexp".to_owned()));
         assert!(unsupported.validate().is_ok());
     }
 
@@ -200,11 +244,43 @@ mod tests {
             expected: None,
             actual: None,
             reason: Some("has\nnewline".to_owned()),
-            tracking: Some("feature:test".to_owned()),
+            tracking: Some(TrackingId::Feature("test".to_owned())),
         };
         let json = record.to_json_line();
         // JSON should contain escaped characters
         assert!(json.contains("\\\"") || json.contains("test"));
         assert!(json.contains("\\n") || json.contains("newline"));
+    }
+
+    #[test]
+    fn tracking_id_display_issue() {
+        assert_eq!(TrackingId::Issue(5011).to_string(), "issue-5011");
+    }
+
+    #[test]
+    fn tracking_id_display_feature() {
+        assert_eq!(
+            TrackingId::Feature("regexp".to_owned()).to_string(),
+            "feature:regexp"
+        );
+    }
+
+    #[test]
+    fn tracking_id_from_str_issue() {
+        let id: TrackingId = "issue-5011".parse().unwrap();
+        assert_eq!(id, TrackingId::Issue(5011));
+    }
+
+    #[test]
+    fn tracking_id_from_str_feature() {
+        let id: TrackingId = "feature:regexp".parse().unwrap();
+        assert_eq!(id, TrackingId::Feature("regexp".to_owned()));
+    }
+
+    #[test]
+    fn tracking_id_from_str_invalid() {
+        assert!("build:foo".parse::<TrackingId>().is_err());
+        assert!("bug:bar".parse::<TrackingId>().is_err());
+        assert!("freeform".parse::<TrackingId>().is_err());
     }
 }

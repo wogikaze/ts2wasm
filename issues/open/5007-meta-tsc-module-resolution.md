@@ -8,16 +8,16 @@ priority: P2
 depends_on: [5005]
 blocks: []
 created: 2026-05-02
-updated: 2026-05-02
+updated: 2026-05-03
 ---
 
 ## Summary
 
-Covers TypeScript compiler test cases for module resolution (~30 issues). Module and import resolution is a subset of name resolution.
+Covers TypeScript compiler test cases for module resolution (~19 issues; 11 overload/type resolution issues moved to 5005). Module and import resolution is a subset of name resolution.
 
 ## Problem
 
-~30 tsc test cases fail due to module resolution gaps including base URL, paths, and module-name resolution.
+~19 tsc test cases (~30 originally, 11 reclassified as overload/type resolution → 5005) fail due to module resolution gaps including base URL, paths, and module-name resolution.
 
 ## Scope
 
@@ -40,7 +40,7 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] All 30 child issues dependency-linked to this meta
+- [ ] All ~19 child issues dependency-linked to this meta
 
 ## Validation
 

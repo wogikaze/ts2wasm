@@ -9,15 +9,15 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 2 | 0 | 2 |
+| abi | 7 | 5 | 2 |
 | backend | 13 | 6 | 7 |
-| cli | 6 | 2 | 4 |
+| cli | 15 | 11 | 4 |
 | compiler | 1 | 0 | 1 |
-| coverage | 7 | 2 | 5 |
+| coverage | 10 | 5 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4345 | 4248 | 97 |
+| frontend | 4350 | 4250 | 100 |
 | harness | 1 | 1 | 0 |
-| ir | 13 | 0 | 13 |
+| ir | 18 | 5 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4869 | 4580 | 289 |
+| total | 4896 | 4604 | 292 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -163,6 +163,33 @@ Issue files are the source of truth for work items. The generated section below 
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | implementation-ready | P0 |  | [cli] Replace placeholder parser keyword/operator tests with real assertions |
+| 5032 | [cli] Add deterministic external tool capability detection | feature | cli | implementation-ready | P0 |  | [cli] Add deterministic external tool capability detection |
+| 5033 | [cli] Normalize node-diff fixture reporting into structured records | feature | cli | implementation-ready | P1 |  | [cli] Normalize node-diff fixture reporting into structured records |
+| 5034 | [cli] Add command contract tests for build/check/dump/server | test | cli | implementation-ready | P1 |  | [cli] Add command contract tests for build/check/dump/server |
+| 5035 | [cli] Add --explain-unsupported diagnostics mode | feature | cli | implementation-ready | P2 |  | [cli] Add --explain-unsupported diagnostics mode |
+| 5036 | [compiler] Introduce CompileReport<T> for non-fatal diagnostics | feature | cli | implementation-ready | P0 |  | [compiler] Introduce CompileReport<T> for non-fatal diagnostics |
+| 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | implementation-ready | P0 |  | [compiler] Complete entry module export lowering for local references |
+| 5038 | [compiler] Harden module graph resolution and diagnostics | feature | cli | implementation-ready | P1 |  | [compiler] Harden module graph resolution and diagnostics |
+| 5039 | [compiler] Stabilize test262 preprocessor feature handling | feature | cli | implementation-ready | P1 |  | [compiler] Stabilize test262 preprocessor feature handling |
+| 5040 | [compiler] Add resource limits and cancellation to server batch compilation | feature | cli | implementation-ready | P2 |  | [compiler] Add resource limits and cancellation to server batch compilation |
+| 5041 | [frontend] Complete Expr AST fixture coverage | test | frontend | implementation-ready | P0 |  | [frontend] Complete Expr AST fixture coverage |
+| 5042 | [frontend] Complete Stmt AST fixture coverage | test | frontend | implementation-ready | P0 |  | [frontend] Complete Stmt AST fixture coverage |
+| 5043 | [frontend] Split large lexer/parser files by grammar responsibility | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility |
+| 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries |
+| 5045 | [frontend] Improve syntax error recovery and source spans | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans |
+| 5046 | [ir] Design full class runtime IR representation | feature | ir | implementation-ready | P0 |  | [ir] Design full class runtime IR representation |
+| 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | implementation-ready | P0 |  | [ir] Implement env-cell lowering for outer-scope mutation |
+| 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
+| 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | implementation-ready | P1 |  | [ir] Complete destructuring, rest, and default binding lowering |
+| 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | implementation-ready | P1 |  | [ir] Implement iterator protocol lowering for spread and for-of |
+| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | implementation-ready | P1 |  | [runtime-abi] Add ABI layout golden tests and versioning |
+| 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | implementation-ready | P1 |  | [runtime-abi] Validate runtime memory map for overlap and headroom |
+| 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | implementation-ready | P2 |  | [runtime-abi] Add typed wrappers for tagged values and heap pointers |
+| 5054 | [runtime-abi] Document value tags and object layout as public ABI | docs | abi | implementation-ready | P2 |  | [runtime-abi] Document value tags and object layout as public ABI |
+| 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants | test | abi | implementation-ready | P3 |  | [runtime-abi] Add backward-compatibility tests for ABI constants |
+| 5056 | [shared] Replace manual TestRecord JSON construction with serde serialization | refactor | coverage | implementation-ready | P1 |  | [shared] Replace manual TestRecord JSON construction with serde serialization |
+| 5057 | [shared] Version capability manifest schema and migration policy | feature | coverage | implementation-ready | P1 |  | [shared] Version capability manifest schema and migration policy |
+| 5058 | [shared] Deduplicate and canonicalize capability reasons/imports | refactor | coverage | implementation-ready | P2 |  | [shared] Deduplicate and canonicalize capability reasons/imports |
 | 5059 | [shared] Add typed tracking IDs for unsupported and blocked tests | feature | coverage | implementation-ready | P2 |  | [shared] Add typed tracking IDs for unsupported and blocked tests |
 | 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | implementation-ready | P3 |  | [shared] Provide shared fixture schemas for CLI/compiler/backend tests |
 <!-- generated:ready:end -->
@@ -208,7 +235,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 097 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 098 | Implement Accessordeclarationorder | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder |
 | 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes |
-| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
 | 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier |
 | 102 | Implement Accessorwithinitializer | spike | frontend/syntax | class: blocked | Implement Accessorwithinitializer |
 | 103 | Implement Accessorwithlineterminator | spike | frontend/syntax | class: blocked | Implement Accessorwithlineterminator |
@@ -226,7 +252,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
 | 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: blocked | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
 | 118 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
-| 119 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
 | 120 | Implement Aliasusageinarray | spike | frontend/syntax | class: blocked | Implement Aliasusageinarray |
 | 121 | Implement Aliasusageinfunctionexpression | spike | frontend/syntax | class: blocked | Implement Aliasusageinfunctionexpression |
 | 122 | Implement Aliasusageingenericfunction | spike | frontend/syntax | class: blocked | Implement Aliasusageingenericfunction |
@@ -240,7 +265,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 130 | Implement Aliasesinsystemmodule | spike | frontend/syntax | class: blocked | Implement Aliasesinsystemmodule |
 | 131 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | class: blocked | Implement Allowimportclausestomergewithtypes |
 | 132 | Implement Allowjsclassthistypecrash | spike | runtime/builtins | class: blocked | Implement Allowjsclassthistypecrash |
-| 133 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage |
 | 134 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 135 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
@@ -4843,7 +4867,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 077 | Implement Interfacedeclaration | spike | frontend/syntax | see `issues/done/077-implement-InterfaceDeclaration.md` |
 | 085 | Implement Abstractinterfaceidentifiername | spike | frontend/syntax | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
 | 095 | Implement Accessorbodyintypecontext | spike | frontend/syntax | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
+| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | see `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
+| 119 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | see `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` |
+| 133 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | see `issues/done/133-implement-allowJsCrossMonorepoPackage.md` |
 | 186 | Implement Anyindexedaccessarraynoexception | spike | frontend/syntax | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
 | 188 | Implement Anyisassignabletoobject | spike | frontend/syntax | see `issues/done/188-implement-anyIsAssignableToObject.md` |
 | 189 | Implement Anyisassignabletovoid | spike | frontend/syntax | see `issues/done/189-implement-anyIsAssignableToVoid.md` |

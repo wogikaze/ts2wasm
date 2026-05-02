@@ -111,6 +111,10 @@ Follow-up issues:
 
 ## Notes
 
+### Module resolution sub-classification
+
+2026-05-03: Of the 223 unknown-unsupported cases, a significant subset fail due to UnsupportedModule (import/export syntax at top level). These are not parser bugs — they are blocked on module resolution (5007). Cases triaged as module in earlier sessions include accessorInferredReturnTypeErrorInReturnStatement (→ done/100) and aliasUsageInAccessorsOfClass (→ done/119). Remaining module-blocked cases await individual triage.
+
 2026-04-28 child progress (`067-string-annexb-diagnostics-20260428T051924Z`):
 
 - Commit: `3071f1cb44e51bbac0e264e8bee4de4d4bd7f1c6`

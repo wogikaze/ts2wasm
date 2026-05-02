@@ -9,4 +9,4 @@ pub use capability::{
     CapabilityManifest, ClockCapabilities, FilesystemCapabilities, NodeHostCapabilities,
     WasiCapabilities,
 };
-pub use test_status::{TestRecord, TestStatus};
+pub use test_status::{TestRecord, TestStatus, TrackingId};

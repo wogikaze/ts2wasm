@@ -16,7 +16,7 @@ use iwasm_runtime::{
     run_iwasm_with_timeout_duration,
 };
 
-use ts2wasm_shared::{TestRecord, TestStatus};
+use ts2wasm_shared::{TestRecord, TestStatus, TrackingId};
 #[path = "common/m2_node_diff_fixture_tests.rs"]
 mod m2_node_diff_fixture_tests;
 
@@ -763,7 +763,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                     expected: None,
                     actual: None,
                     reason: Some("I/O or command execution failure".to_string()),
-                    tracking: Some("build:backend-io".to_string()),
+                    tracking: Some(TrackingId::Feature("backend-io".to_owned())),
                 },
                 "InvariantViolation" => TestRecord {
                     suite,
@@ -773,7 +773,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                     expected: None,
                     actual: None,
                     reason: Some("Internal compiler bug".to_string()),
-                    tracking: Some("bug:invariant-violation".to_string()),
+                    tracking: Some(TrackingId::Feature("invariant-violation".to_owned())),
                 },
                 _ => TestRecord {
                     suite,
@@ -783,7 +783,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                     expected: None,
                     actual: None,
                     reason: Some(format!("Unsupported syntax: {diag_code}/{feature_label}")),
-                    tracking: Some(format!("feature:{feature_label}")),
+                    tracking: Some(TrackingId::Feature(feature_label.to_string())),
                 },
             }
         }
@@ -803,7 +803,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                     expected: None,
                     actual: None,
                     reason: Some("iwasm timed out".to_string()),
-                    tracking: Some("runtime:iwasm-timeout".to_string()),
+                    tracking: Some(TrackingId::Feature("iwasm-timeout".to_owned())),
                 },
                 Ok(IwasmRunResult {
                     output,
@@ -816,7 +816,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                     expected: None,
                     actual: None,
                     reason: Some("iwasm execution failed".to_string()),
-                    tracking: Some("runtime:iwasm-fail".to_string()),
+                    tracking: Some(TrackingId::Feature("iwasm-fail".to_owned())),
                 },
                 Ok(IwasmRunResult {
                     output,
@@ -848,7 +848,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                                 "stdout mismatch: node={:?}, iwasm={:?}",
                                 node_output, iwasm_output
                             )),
-                            tracking: Some("runtime:stdout-mismatch".to_string()),
+                            tracking: Some(TrackingId::Feature("stdout-mismatch".to_owned())),
                         }
                     }
                 }
@@ -860,7 +860,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
                     expected: None,
                     actual: None,
                     reason: Some("Failed to execute iwasm".to_string()),
-                    tracking: Some("runtime:iwasm-unavailable".to_string()),
+                    tracking: Some(TrackingId::Feature("iwasm-unavailable".to_owned())),
                 },
             }
         }
@@ -872,7 +872,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
             expected: None,
             actual: None,
             reason: Some("Failed to build ts2wasm".to_string()),
-            tracking: Some("build:ts2wasm-unavailable".to_string()),
+            tracking: Some(TrackingId::Feature("ts2wasm-unavailable".to_owned())),
         },
     }
 }

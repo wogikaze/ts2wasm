@@ -1,7 +1,7 @@
 use serde_json::Value;
 use std::fs;
 use std::path::{Path, PathBuf};
-use ts2wasm_shared::{TestRecord, TestStatus};
+use ts2wasm_shared::{TestRecord, TestStatus, TrackingId};
 
 fn fixtures_path(relative: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -45,7 +45,7 @@ fn test_record_json_with_unsupported_reason() {
         expected: None,
         actual: None,
         reason: Some("UnsupportedSyntax: async not yet implemented".to_owned()),
-        tracking: Some("feature:async".to_owned()),
+        tracking: Some(TrackingId::Feature("async".to_owned())),
     };
 
     record.validate().expect("record should be valid");
@@ -178,7 +178,7 @@ fn test_record_validation_unsupported_requires_reason() {
     );
 
     record.reason = Some("not implemented".to_owned());
-    record.tracking = Some("feature:xyz".to_owned());
+    record.tracking = Some(TrackingId::Feature("xyz".to_owned()));
     assert!(
         record.validate().is_ok(),
         "should validate with reason and tracking"

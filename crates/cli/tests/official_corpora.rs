@@ -13,7 +13,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use ts2wasm_shared::{TestRecord, TestStatus};
+use ts2wasm_shared::{TestRecord, TestStatus, TrackingId};
 
 fn repo_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
@@ -90,7 +90,7 @@ fn classify_build_case(suite: &str, case: &str) -> TestRecord {
             expected: None,
             actual: None,
             reason: Some("official reference case is missing from reference/".to_owned()),
-            tracking: Some("reference:missing-case".to_owned()),
+            tracking: Some(TrackingId::Feature("missing-case".to_owned())),
         };
     }
 
@@ -110,7 +110,7 @@ fn classify_build_case(suite: &str, case: &str) -> TestRecord {
             expected: None,
             actual: None,
             reason: Some("failed to execute ts2wasm build".to_owned()),
-            tracking: Some("runner:command-exec".to_owned()),
+            tracking: Some(TrackingId::Feature("command-exec".to_owned())),
         };
     };
 
@@ -133,10 +133,15 @@ fn classify_build_case(suite: &str, case: &str) -> TestRecord {
     let stderr = String::from_utf8_lossy(&build.stderr).to_string();
     let diag_code = extract_diag_code(&stderr);
     let feature_label = feature_label_from_diag(&diag_code, &stderr, case);
-    let (status, tracking) = match diag_code.as_str() {
-        "BackendIo" => (TestStatus::Blocked, "build:backend-io".to_owned()),
-        "InvariantViolation" => (TestStatus::Fail, "bug:invariant-violation".to_owned()),
-        _ => (TestStatus::Unsupported, format!("feature:{feature_label}")),
+    let tracking = match diag_code.as_str() {
+        "BackendIo" => TrackingId::Feature("backend-io".to_owned()),
+        "InvariantViolation" => TrackingId::Feature("invariant-violation".to_owned()),
+        _ => TrackingId::Feature(feature_label.to_string()),
+    };
+    let status = match diag_code.as_str() {
+        "BackendIo" => TestStatus::Blocked,
+        "InvariantViolation" => TestStatus::Fail,
+        _ => TestStatus::Unsupported,
     };
 
     TestRecord {

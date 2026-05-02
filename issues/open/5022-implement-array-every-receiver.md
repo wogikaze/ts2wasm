@@ -5,9 +5,10 @@ type: feature
 area: runtime/builtins
 class: blocked
 priority: P1
-depends_on: [5004]
+depends_on: []
 blocks: []
 created: 2026-05-03
+updated: 2026-05-03
 updated: 2026-05-03
 ---
 
