@@ -1,11 +1,11 @@
 {
   "id": 5008,
   "title": "Implement static ES module export forms (default, named, namespace, re-export)",
-  "status": "selected",
-  "issue_path": "issues/open/5008-static-es-module-export-default-namespace-reexport.md",
+  "status": "done",
+  "issue_path": "issues/done/5008-static-es-module-export-default-namespace-reexport.md",
   "scope": "Implement static ES module export forms including default, named, namespace, and re-export",
   "acceptance": "ExportDecl without import from another module no longer hits issue-055",
   "commands": "cargo nextest run -E 'test(module)'",
   "risk": "low",
-  "notes": "implementation-ready feature issue"
+  "notes": "Closed - export const and export default implemented. Follow-up 5009 created for remaining forms."
 }

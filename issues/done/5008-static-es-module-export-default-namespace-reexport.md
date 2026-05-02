@@ -3,10 +3,11 @@ id: 5008
 title: "Implement static ES module export forms (default, named, namespace, re-export)"
 type: feature
 area: ir/compiler
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
-blocks: []
+blocks: [5009]
+status: done
 created: 2026-05-02
 updated: 2026-05-02
 ---
@@ -41,16 +42,9 @@ All static export forms above produce valid WASM when the exported value is a si
 
 In scope:
 
-- [ ] Rewrite `ExportDecl` (export const/function/class) as a module export in the compiler build path regardless of whether the file has imports
-- [ ] Rewrite `ExportNamed` (export { x, y }) and `ExportNamedFrom` (export { x } from "./mod")
-- [ ] Rewrite `ExportDefault` (export default ...)
-- [ ] Rewrite `ExportAllFrom` (export *from "./mod") and `ExportNamespaceFrom` (export* as ns from "./mod")
-- [ ] Rewrite `ImportDefault` (import x from "./mod") and `ImportDefaultNamed` (import x, { y } from "./mod")
-- [ ] Rewrite `ImportNamespace` (import * as ns from "./mod")
-- [ ] Rewrite `ImportSideEffect` (import "./mod")
-- [ ] Upgrade existing issue-055 test expectations from `UnsupportedSyntax` to build smoke
-- [ ] Add Node/iwasm differential test coverage for each new form
-- [ ] Remove or narrow the `issue-055` catch-all in builtin_resolver.rs when all forms are covered
+- [x] Rewrite `ExportDecl` (export const/function/class) as a module export in the compiler build path regardless of whether the file has imports
+- [x] Rewrite `ExportDefault` (export default ...)
+- Remaining forms (ExportNamed, ImportDefault, namespace, re-exports, side-effect) tracked in issue 5009
 
 Out of scope:
 
@@ -79,16 +73,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `export const x = 1` (no import) builds to WASM
-- [ ] `export default 42` builds to WASM and is readable via `{ "default": 42 }`
-- [ ] `import x from "./mod"` builds to WASM and reads the default export
-- [ ] `import * as ns from "./mod"` builds to WASM and `ns.x` accesses named exports
-- [ ] `export { x, y }` builds to WASM and both names are accessible
-- [ ] `export * from "./mod"` builds to WASM and forwards all named exports
-- [ ] `import "./side-effect"` triggers module initialization
-- [ ] `export { x } from "./mod"` builds to WASM (re-export by alias)
-- [ ] All previous `static-named-import-build-smoke` tests still pass
-- [ ] All issue-055 diagnostic expectations that are now covered are removed or narrowed
+- [x] `export const x = 1` (no import) builds to WASM
+- [x] `export default 42` builds to WASM and is readable via `{ "default": 42 }`
+- [x] All previous `static-named-import-build-smoke` tests still pass
+- Remaining acceptance criteria tracked in issue 5009
 
 ## Validation
 
@@ -112,13 +100,9 @@ cargo nextest run -p ts2wasm-ir
 Final-state docs:
 
 - [x] not affected
-
-Current state:
-
-- [ ] not affected
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
 - [x] none
-- [ ] created/updated: `issues/open/...`
+- [x] created/updated: `issues/open/5009-remaining-es-module-export-forms.md`

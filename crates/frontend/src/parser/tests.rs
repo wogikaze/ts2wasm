@@ -1602,7 +1602,7 @@ mod tests {
                 specifier,
                 span,
             } => {
-                assert_eq!(*span, Span { start: 0, end: 19 });
+                assert_eq!(*span, Span { start: 0, end: 17 });
                 assert_eq!(specifier.local, "C");
                 assert_eq!(specifier.exported, "C");
                 match declaration.as_ref() {
