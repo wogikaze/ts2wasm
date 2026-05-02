@@ -148,7 +148,7 @@ Follow-up issues:
 - `issues/open/094-implement-accessorAccidentalCallDiagnostic.md` - Implement Accessoraccidentalcalldiagnostic (same feature label, same group key, title overlap)
 - `issues/open/098-implement-accessorDeclarationOrder.md` - Implement Accessordeclarationorder (same feature label, same group key, title overlap)
 - `issues/open/099-implement-accessorInAmbientContextES.md` - Implement Accessorinambientcontextes (same feature label, same group key, title overlap)
-- `issues/open/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same feature label, same group key, title overlap)
+- `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same feature label, same group key, title overlap)
 - `issues/open/101-implement-accessorParameterAccessibilityModifier.md` - Implement Accessorparameteraccessibilitymodifier (same feature label, same group key, title overlap)
 - `issues/open/102-implement-accessorWithInitializer.md` - Implement Accessorwithinitializer (same feature label, same group key, title overlap)
 - `issues/open/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same feature label, same group key, title overlap)

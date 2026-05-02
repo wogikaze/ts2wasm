@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same group key, title overlap)
+- `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same group key, title overlap)
 - `issues/open/484-implement-accessorInferredReturnTypeErrorInReturnStatement.md` - Implement Accessorinferredreturntypeerrorinreturnstatement (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
@@ -185,7 +185,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md",
+    "path": "issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md",
     "title": "Implement Accessorinferredreturntypeerrorinreturnstatement",
     "reason": "same reference path, title overlap"
   },

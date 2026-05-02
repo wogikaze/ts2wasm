@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same group key, title overlap)
+- `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same group key, title overlap)
 
 ## Smart triage
 
@@ -184,7 +184,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/119-implement-aliasUsageInAccessorsOfClass.md",
+    "path": "issues/done/119-implement-aliasUsageInAccessorsOfClass.md",
     "title": "Implement Aliasusageinaccessorsofclass",
     "reason": "same reference path, title overlap"
   },
