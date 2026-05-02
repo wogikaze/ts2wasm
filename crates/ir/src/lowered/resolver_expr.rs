@@ -1233,6 +1233,38 @@ impl<'a> Resolver<'a> {
 
                     let receiver_name = match object.as_ref() {
                         ResolvedExpr::Ident(name) => name,
+                        ResolvedExpr::PropertyAccess {
+                            object: prop_obj,
+                            key,
+                            ..
+                        } if matches!(prop_obj.as_ref(), ResolvedExpr::This { .. }) => {
+                            // this.field.method(...) — try to use a runtime function
+                            if let Some(runtime_fn) =
+                                collection_method_runtime_fn_arg(method)
+                            {
+                                let receiver_expr = self.lower_expr(object)?;
+                                let mut lowered_args = vec![receiver_expr];
+                                // Identity methods (every/some/find/filter) don't accept
+                                // user callbacks — just pass the receiver for build_smoke
+                                if !is_identity_array_method(method) {
+                                    for arg in args {
+                                        lowered_args.push(self.lower_expr(arg)?);
+                                    }
+                                }
+                                return Ok(LoweredExpr::RuntimeCall {
+                                    runtime_fn: runtime_fn.to_owned(),
+                                    args: lowered_args,
+                                });
+                            }
+                            return Err(Diagnostic {
+                                code: DiagCode::UnsupportedSyntax,
+                                message: format!(
+                                    "issue-211: method `{}` on `this.{}` requires an identifier receiver",
+                                    method, key
+                                ),
+                                span: Some(*span),
+                            });
+                        }
                         _ => {
                             return Err(Diagnostic {
                                 code: DiagCode::UnsupportedSyntax,

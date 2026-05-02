@@ -106,6 +106,27 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
     }
 }
 
+pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static str> {
+    // Methods whose WASM runtime function takes only the receiver (no callback)
+    match method {
+        "every" => Some("ArrayEvery"),
+        "some" => Some("ArraySome"),
+        "find" => Some("ArrayFind"),
+        "filter" => Some("ArrayFilter"),
+        "push" => Some("ArrayPush"),
+        "pop" => Some("ArrayPop"),
+        "slice" => Some("ArraySlice"),
+        "join" => Some("ArrayJoin"),
+        "reverse" => Some("ArrayReverse"),
+        _ => None,
+    }
+}
+
+/// Returns true for array methods whose WASM runtime function doesn't accept user callbacks
+pub(super) fn is_identity_array_method(method: &str) -> bool {
+    matches!(method, "every" | "some" | "find" | "filter")
+}
+
 pub(super) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {
     match arg {
         ResolvedExpr::Number(_) => true,
