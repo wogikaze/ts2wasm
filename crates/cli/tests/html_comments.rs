@@ -4,6 +4,10 @@ use std::process::Command;
 #[path = "common/iwasm_runtime.rs"]
 mod iwasm_runtime;
 
+#[path = "common/capability.rs"]
+mod capability;
+
+use capability::{iwasm_command, node_command};
 use iwasm_runtime::run_iwasm_with_timeout;
 use ts2wasm_shared::test_helpers::temp_wasm_path;
 
@@ -35,7 +39,7 @@ fn html_comment_fixtures_match_node_output_under_iwasm() {
             .join(fixture);
         let output = temp_wasm_path(fixture);
 
-        let node = Command::new("node").arg(&fixture_path).output().unwrap();
+        let node = node_command().arg(&fixture_path).output().unwrap();
         assert!(
             node.status.success(),
             "node failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
@@ -57,7 +61,7 @@ fn html_comment_fixtures_match_node_output_under_iwasm() {
             String::from_utf8_lossy(&build.stderr)
         );
 
-        let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+        let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
             .unwrap_or_else(|err| panic!("iwasm execution failed for {fixture}: {err}"));
         assert!(
             !iwasm.timed_out,

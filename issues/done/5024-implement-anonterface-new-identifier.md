@@ -31,14 +31,16 @@ Reproduction:
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/anonterface.ts
 ```
 
+**Completion evidence (2026-05-03)**: The name resolver at name_resolver.rs:800 handles `Expr::Member` in `new` by extracting the property name as the class identifier. issue-062 is no longer emitted for anonterface.ts. The remaining error ("method C.m not found") is caused by TypeScript namespace erasure — separate concern.
+
 Failure: issue-062 — `new` expression requires a class-name identifier but receives a non-identifier type reference.
 
 ## Scope
 
 In scope:
 
-- [ ] Extend `new` expression resolution to non-identifier class references
-- [ ] Verify with `anonterface.ts` fixture
+- [x] Extend `new` expression resolution to non-identifier class references
+- [x] Verify with `anonterface.ts` fixture
 
 Out of scope:
 
@@ -53,8 +55,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `anonterface.ts` compiles without issue-062 diagnostic
-- [ ] Existing new expression fixtures continue to pass
+- [x] `anonterface.ts` compiles without issue-062 diagnostic
+- [x] Existing new expression fixtures continue to pass
 
 ## Validation
 

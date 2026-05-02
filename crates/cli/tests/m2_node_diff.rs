@@ -8,11 +8,15 @@ use std::time::{SystemTime, UNIX_EPOCH};
 #[path = "common/iwasm_runtime.rs"]
 mod iwasm_runtime;
 
+#[path = "common/capability.rs"]
+mod capability;
+
 use iwasm_runtime::{
     IwasmRunResult, run_iwasm_child_with_timeout, run_iwasm_with_timeout,
     run_iwasm_with_timeout_duration,
 };
 
+use capability::{iwasm_command, node_command};
 use ts2wasm_shared::test_helpers::{temp_wasm_path, unique_temp_dir};
 use ts2wasm_shared::{TestRecord, TestStatus, TrackingId};
 #[path = "common/m2_node_diff_fixture_tests.rs"]
@@ -28,7 +32,7 @@ fn assert_fixture_matches_node_with_iwasm_timeout(fixture: &str, iwasm_timeout: 
         .join(fixture);
     let output = temp_wasm_path(fixture);
 
-    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    let node = node_command().arg(&fixture_path).output().unwrap();
     assert!(
         node.status.success(),
         "node failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
@@ -51,7 +55,7 @@ fn assert_fixture_matches_node_with_iwasm_timeout(fixture: &str, iwasm_timeout: 
     );
     assert_no_precomputed_stdout(fixture, &output, &node.stdout);
 
-    let iwasm = run_iwasm_with_timeout_duration(Command::new("iwasm").arg(&output), iwasm_timeout)
+    let iwasm = run_iwasm_with_timeout_duration(iwasm_command().arg(&output), iwasm_timeout)
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -93,7 +97,7 @@ fn assert_fixture_iwasm_traps(fixture: &str) {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -139,7 +143,7 @@ fn assert_fixture_iwasm_trap(fixture: &str) {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -169,7 +173,7 @@ fn assert_fixture_node_bigint_syntaxerror_and_iwasm_trap(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
-    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    let node = node_command().arg(&fixture_path).output().unwrap();
     assert!(
         !node.status.success(),
         "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
@@ -189,7 +193,7 @@ fn assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
-    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    let node = node_command().arg(&fixture_path).output().unwrap();
     assert!(
         !node.status.success(),
         "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
@@ -217,7 +221,7 @@ fn assert_fixture_node_rangeerror_and_iwasm_reports_rangeerror(fixture: &str) {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -246,7 +250,7 @@ fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror(fixture: &str) {
     let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../..")
         .join(fixture);
-    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    let node = node_command().arg(&fixture_path).output().unwrap();
     assert!(
         !node.status.success(),
         "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
@@ -274,7 +278,7 @@ fn assert_fixture_node_typeerror_and_iwasm_reports_typeerror(fixture: &str) {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -321,7 +325,7 @@ fn assert_live_time_fixture_in_host_window(fixture: &str) {
     );
 
     let before = host_epoch_ms();
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     let after = host_epoch_ms();
 
@@ -361,7 +365,7 @@ fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
         .join(fixture);
     let output = temp_wasm_path(fixture);
 
-    let node = Command::new("node").arg(&fixture_path).output().unwrap();
+    let node = node_command().arg(&fixture_path).output().unwrap();
     assert!(
         !node.status.success(),
         "node unexpectedly accepted {fixture}\nstdout:\n{}\nstderr:\n{}",
@@ -388,7 +392,7 @@ fn assert_fixture_rejected_by_node_and_iwasm(fixture: &str) {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -420,11 +424,7 @@ fn assert_fixture_matches_js_baseline(fixture: &str, js_baseline: &str) {
         .join(fixture);
     let output = temp_wasm_path(fixture);
 
-    let node = Command::new("node")
-        .arg("-e")
-        .arg(js_baseline)
-        .output()
-        .unwrap();
+    let node = node_command().arg("-e").arg(js_baseline).output().unwrap();
     assert!(
         node.status.success(),
         "node baseline failed for {fixture}\nstdout:\n{}\nstderr:\n{}",
@@ -447,7 +447,7 @@ fn assert_fixture_matches_js_baseline(fixture: &str, js_baseline: &str) {
     );
     assert_no_precomputed_stdout(fixture, &output, &node.stdout);
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -484,7 +484,7 @@ fn assert_static_module_fixture_matches_node_variant(fixture: &str, node_entry_s
     )
     .expect("node module source should be written");
 
-    let node = Command::new("node")
+    let node = node_command()
         .arg(node_dir.join("entry.ts"))
         .output()
         .unwrap();
@@ -511,7 +511,7 @@ fn assert_static_module_fixture_matches_node_variant(fixture: &str, node_entry_s
     );
     assert_no_precomputed_stdout(fixture, &output, &node.stdout);
 
-    let iwasm = run_iwasm_with_timeout(Command::new("iwasm").arg(&output))
+    let iwasm = run_iwasm_with_timeout(iwasm_command().arg(&output))
         .unwrap_or_else(|e| panic!("iwasm execution failed for {fixture}: {e}"));
     assert!(
         !iwasm.timed_out,
@@ -695,7 +695,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
         .to_string();
 
     // Run Node.js
-    let node_result = Command::new("node").arg(fixture_path).output();
+    let node_result = node_command().arg(fixture_path).output();
 
     let node_output = match &node_result {
         Ok(output) => String::from_utf8_lossy(&output.stdout).to_string(),
@@ -752,7 +752,7 @@ pub fn run_differential_test(fixture_path: &Path) -> TestRecord {
         }
         Ok(_) => {
             // Build succeeded, run with iwasm
-            let iwasm_result = run_iwasm_with_timeout(Command::new("iwasm").arg(&wasm_path));
+            let iwasm_result = run_iwasm_with_timeout(iwasm_command().arg(&wasm_path));
 
             match iwasm_result {
                 Ok(IwasmRunResult {
@@ -1162,7 +1162,7 @@ fn assert_stdin_fixture_matches_node_baseline(
         .join(fixture);
     let output = temp_wasm_path(fixture);
 
-    let mut node = Command::new("node")
+    let mut node = node_command()
         .arg("-e")
         .arg(js_baseline)
         .stdin(Stdio::piped())
@@ -1192,7 +1192,7 @@ fn assert_stdin_fixture_matches_node_baseline(
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let mut iwasm = Command::new("iwasm")
+    let mut iwasm = iwasm_command()
         .arg(&output)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -1228,7 +1228,7 @@ fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
         .join(fixture);
     let output = temp_wasm_path(fixture);
 
-    let mut node = Command::new("node")
+    let mut node = node_command()
         .arg(&fixture_path)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -1257,7 +1257,7 @@ fn assert_stdin_fixture_matches_node(fixture: &str, stdin_input: &[u8]) {
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let mut iwasm = Command::new("iwasm")
+    let mut iwasm = iwasm_command()
         .arg(&output)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -1318,7 +1318,7 @@ fn assert_stdin_fixture_node_succeeds_and_iwasm_traps(fixture: &str, stdin_input
         .join(fixture);
     let output = temp_wasm_path(fixture);
 
-    let mut node = Command::new("node")
+    let mut node = node_command()
         .arg(&fixture_path)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -1348,7 +1348,7 @@ fn assert_stdin_fixture_node_succeeds_and_iwasm_traps(fixture: &str, stdin_input
         String::from_utf8_lossy(&build.stderr)
     );
 
-    let mut iwasm = Command::new("iwasm")
+    let mut iwasm = iwasm_command()
         .arg(&output)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
