@@ -157,6 +157,16 @@ fn populate_static_module_exports_for_build(
                 })?;
             match stmt {
                 lowered::LoweredStmt::Let(_, expr) => {
+                    if contains_local_ref(expr) {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: format!(
+                                "issue-5005: entry module export `{}` references a local binding; only literal export values are supported in the current slice",
+                                export.name
+                            ),
+                            span: None,
+                        });
+                    }
                     statements.push(lowered::LoweredStmt::Export {
                         name: export.name.clone(),
                         expr: expr.clone(),
@@ -317,13 +327,31 @@ fn lower_static_named_import_bindings_for_build(
                 let index = lowered_statement_index;
                 let name = specifier.exported.clone();
                 rewritten.push(*declaration.clone());
+                let is_let_like = lowers_to_top_level_statement(declaration);
                 module_exports.push(ModuleExport {
-                    name,
+                    name: name.clone(),
                     lowered_statement_index: index,
                 });
-                if lowers_to_top_level_statement(declaration) {
-                    lowered_statement_index += 1;
+                if !is_let_like {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-5005: entry module `export {name}` uses a declaration form outside the current static export slice; only export const is supported"
+                        ),
+                        span: Some(declaration.span()),
+                    });
                 }
+                lowered_statement_index += 1;
+            }
+            Stmt::ExportNamed { specifiers, span } => {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: format!(
+                        "issue-5005: entry module export list with {} export(s) is not in the current static export slice; only export const and export default are supported",
+                        specifiers.len()
+                    ),
+                    span: Some(*span),
+                });
             }
             Stmt::ExportDefault { expr, span, .. } => {
                 let index = lowered_statement_index;
@@ -474,6 +502,18 @@ fn module_specifier(module_graph: &ModuleGraph, module_id: usize) -> String {
         .module(module_id)
         .map(|module| module.path().display().to_string())
         .unwrap_or_else(|| format!("<module:{module_id}>"))
+}
+
+fn contains_local_ref(expr: &lowered::LoweredExpr) -> bool {
+    match expr {
+        lowered::LoweredExpr::Local(_) => true,
+        lowered::LoweredExpr::Unary { expr, .. } => contains_local_ref(expr),
+        lowered::LoweredExpr::Binary { left, right, .. } => {
+            contains_local_ref(left) || contains_local_ref(right)
+        }
+        lowered::LoweredExpr::PropertyGet { obj, .. } => contains_local_ref(obj),
+        _ => false,
+    }
 }
 
 fn is_static_export_literal(expr: &Expr) -> bool {

@@ -228,10 +228,10 @@ fn static_combined_namespace_import_reports_issue_232_missing_module() {
 }
 
 #[test]
-fn static_named_export_reports_issue_055() {
+fn static_named_export_reports_issue_5005() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-named-export-unsupported.ts",
-        "issue-055: unsupported named export",
+        "issue-5005: entry module export list with 1 export(s) is not in the current static export slice",
     );
 }
 
@@ -273,17 +273,17 @@ fn static_declaration_export_entry_build_smoke() {
 }
 
 #[test]
-fn static_class_export_reports_issue_055() {
+fn static_class_export_reports_issue_5005() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-class-export-unsupported.ts",
-        "issue-055: unsupported class export",
+        "issue-5005: entry module `export C` uses a declaration form outside the current static export slice",
     );
 }
 
 #[test]
-fn static_default_export_reports_issue_055() {
+fn static_default_export_reports_issue_5005_local_ref() {
     assert_build_fails_with_unsupported_syntax(
         "module-system/static-default-export-unsupported.ts",
-        "issue-055: unsupported default export",
+        "issue-5005: entry module export `default` references a local binding",
     );
 }
