@@ -9,7 +9,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 9 | 3 | 6 |
+| abi | 7 | 1 | 6 |
 | backend | 13 | 6 | 7 |
 | cli | 15 | 11 | 4 |
 | compiler | 1 | 0 | 1 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4898 | 4577 | 321 |
+| total | 4896 | 4575 | 321 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -183,8 +183,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | implementation-ready | P1 |  | [ir] Complete destructuring, rest, and default binding lowering |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | implementation-ready | P1 |  | [ir] Implement iterator protocol lowering for spread and for-of |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | implementation-ready | P2 |  | [runtime-abi] Add typed wrappers for tagged values and heap pointers |
-| 5054 | [runtime-abi] Document value tags and object layout as public ABI | docs | abi | implementation-ready | P2 |  | [runtime-abi] Document value tags and object layout as public ABI |
-| 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants | test | abi | implementation-ready | P3 |  | [runtime-abi] Add backward-compatibility tests for ABI constants |
 | 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | implementation-ready | P3 |  | [shared] Provide shared fixture schemas for CLI/compiler/backend tests |
 <!-- generated:ready:end -->
 
