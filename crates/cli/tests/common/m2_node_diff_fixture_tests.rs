@@ -63,6 +63,36 @@ fn string_includes_fixture_matches_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_index_of_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-index-of.ts");
+}
+
+#[test]
+fn array_includes_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-includes.ts");
+}
+
+#[test]
+fn array_find_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-find.ts");
+}
+
+#[test]
+fn array_filter_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-filter.ts");
+}
+
+#[test]
+fn array_every_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-every.ts");
+}
+
+#[test]
+fn array_some_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/array-some.ts");
+}
+
+#[test]
 fn abc451_depth8_live_set_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node_with_iwasm_timeout(
         "fixtures/core-semantics/abc451-depth8-live-set.ts",
@@ -246,6 +276,36 @@ fn static_named_module_import_fixtures_match_node_output_under_iwasm() {
 #[test]
 fn regexp_literal_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/core-semantics/regexp-literal.ts");
+}
+
+#[test]
+fn regexp_dot_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-dot.ts");
+}
+
+#[test]
+fn regexp_digit_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-digit.ts");
+}
+
+#[test]
+fn regexp_word_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-word.ts");
+}
+
+#[test]
+fn regexp_plus_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-plus.ts");
+}
+
+#[test]
+fn regexp_star_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-star.ts");
+}
+
+#[test]
+fn regexp_question_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/regexp-question.ts");
 }
 
 #[test]
@@ -1119,11 +1179,18 @@ fn date_live_time_fixtures_return_epoch_ms_within_host_window() {
 }
 
 #[test]
-fn date_to_string_fixture_reports_timezone_policy_diagnostic() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts",
-        "issue-050: Date.prototype.toString() requires timezone/host formatting policy",
-    );
+fn date_to_string_fixture_builds_successfully() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join("fixtures/builtins-and-io/date-to-string-timezone-unsupported.ts");
+    let output_wasm = std::env::temp_dir().join(format!(
+        "ts2wasm-date-to-string-{}.wasm",
+        std::process::id()
+    ));
+    match ts2wasm_cli::build_file(&fixture, &output_wasm) {
+        Ok(()) => {}
+        Err(e) => panic!("date-to-string fixture should build but got error: {}", e),
+    }
 }
 
 #[test]
@@ -1804,6 +1871,17 @@ fn stmt_fixtures_match_node_output_under_iwasm() {
         "fixtures/stmt/break.ts",
         "fixtures/stmt/continue.ts",
         "fixtures/stmt/export-named.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/object-freeze.ts",
+        "fixtures/builtins-and-io/object-assign.ts",
+        "fixtures/builtins-and-io/object-create.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

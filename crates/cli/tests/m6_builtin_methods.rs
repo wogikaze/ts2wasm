@@ -140,6 +140,46 @@ fn build_smoke_object_get_own_property_descriptor() {
 }
 
 #[test]
+fn build_smoke_object_freeze() {
+    let result = run_fixture("builtins-and-io/object-freeze.ts");
+    assert!(
+        result.is_ok(),
+        "Object.freeze should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_define_property() {
+    let result = run_fixture("builtins-and-io/object-define-property.ts");
+    assert!(
+        result.is_ok(),
+        "Object.defineProperty should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_assign() {
+    let result = run_fixture("builtins-and-io/object-assign.ts");
+    assert!(
+        result.is_ok(),
+        "Object.assign should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_object_create() {
+    let result = run_fixture("builtins-and-io/object-create.ts");
+    assert!(
+        result.is_ok(),
+        "Object.create should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_json_stringify_method() {
     let result = run_fixture("builtins-and-io/json-stringify.ts");
     assert!(
@@ -205,6 +245,36 @@ fn build_smoke_string_includes_method() {
     assert!(
         result.is_ok(),
         "String.includes should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_pad_start_method() {
+    let result = run_fixture("builtins-and-io/string-pad-start.ts");
+    assert!(
+        result.is_ok(),
+        "String.padStart should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_pad_end_method() {
+    let result = run_fixture("builtins-and-io/string-pad-end.ts");
+    assert!(
+        result.is_ok(),
+        "String.padEnd should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_string_repeat_method() {
+    let result = run_fixture("builtins-and-io/string-repeat.ts");
+    assert!(
+        result.is_ok(),
+        "String.repeat should build: {:?}",
         result.err()
     );
 }
@@ -346,6 +416,128 @@ fn build_smoke_array_reverse_method() {
     );
 }
 
+#[test]
+fn build_smoke_array_index_of_method() {
+    let result = run_fixture("builtins-and-io/array-index-of.ts");
+    assert!(
+        result.is_ok(),
+        "Array.indexOf should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_includes_method() {
+    let result = run_fixture("builtins-and-io/array-includes.ts");
+    assert!(
+        result.is_ok(),
+        "Array.includes should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_find_method() {
+    let result = run_fixture("builtins-and-io/array-find.ts");
+    assert!(
+        result.is_ok(),
+        "Array.find should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_filter_method() {
+    let result = run_fixture("builtins-and-io/array-filter.ts");
+    assert!(
+        result.is_ok(),
+        "Array.filter should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_every_method() {
+    let result = run_fixture("builtins-and-io/array-every.ts");
+    assert!(
+        result.is_ok(),
+        "Array.every should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_some_method() {
+    let result = run_fixture("builtins-and-io/array-some.ts");
+    assert!(
+        result.is_ok(),
+        "Array.some should build: {:?}",
+        result.err()
+    );
+}
+
+// RegExp literal expanded pattern support (dot, \d, \w, \s, +, *, ?)
+
+#[test]
+fn build_smoke_regexp_dot() {
+    let result = run_fixture("builtins-and-io/regexp-dot.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-dot should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_regexp_digit() {
+    let result = run_fixture("builtins-and-io/regexp-digit.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-digit should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_regexp_word() {
+    let result = run_fixture("builtins-and-io/regexp-word.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-word should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_regexp_plus() {
+    let result = run_fixture("builtins-and-io/regexp-plus.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-plus should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_regexp_star() {
+    let result = run_fixture("builtins-and-io/regexp-star.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-star should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_regexp_question() {
+    let result = run_fixture("builtins-and-io/regexp-question.ts");
+    assert!(
+        result.is_ok(),
+        "regexp-question should build: {:?}",
+        result.err()
+    );
+}
+
 // Global number functions (issue 341a)
 
 #[test]
@@ -374,4 +566,14 @@ fn build_smoke_global_parsefloat() {
 fn build_smoke_global_isfinite() {
     let result = run_fixture("builtins-and-io/global-isfinite.ts");
     assert!(result.is_ok(), "isFinite should build: {:?}", result.err());
+}
+
+#[test]
+fn build_smoke_date_to_string() {
+    let result = run_fixture("builtins-and-io/date-to-string-timezone-unsupported.ts");
+    assert!(
+        result.is_ok(),
+        "Date.toString should build: {:?}",
+        result.err()
+    );
 }

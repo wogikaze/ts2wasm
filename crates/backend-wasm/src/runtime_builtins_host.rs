@@ -106,31 +106,46 @@ impl WatEmitter<'_> {
         wat.push_str(&format!(
             r#"
   (func $math_pow (param $base i32) (param $exp i32) (result i32)
+    (local $base_tag i32)
+    (local $exp_tag i32)
     (local $base_n i32)
     (local $exp_n i32)
     (local $result i32)
     (local $i i32)
+    ;; Tag validation: if either value is not a number (NUMBER or heap OBJECT), return NaN-like (tagged 0)
+    (local.set $base_tag (i32.and (local.get $base) (i32.const {tag_mask})))
+    (local.set $exp_tag (i32.and (local.get $exp) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $base_tag) (i32.const {number_tag}))
+      (then
+        (if (i32.ne (local.get $base_tag) (i32.const {object_tag}))
+          (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))))
+    (if (i32.ne (local.get $exp_tag) (i32.const {number_tag}))
+      (then
+        (if (i32.ne (local.get $exp_tag) (i32.const {object_tag}))
+          (then (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag})))))))
     (local.set $base_n (call $number_to_i32 (local.get $base)))
     (local.set $exp_n (call $number_to_i32 (local.get $exp)))
-    ;; Simplified integer pow: base^exp
-    ;; Handle special cases: exp = 0 returns 1, exp < 0 returns undefined (not supported for integers)
-    (if (i32.lt_s (local.get $exp_n) (i32.const {zero}))
-      (then (return (i32.const {undefined}))))
+    ;; Per ECMAScript: any value^0 = 1 (including NaN/Infinity in full spec)
     (if (i32.eq (local.get $exp_n) (i32.const {zero}))
       (then (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))
+    ;; Negative exponent: not supported in the integer model, return undefined
+    (if (i32.lt_s (local.get $exp_n) (i32.const {zero}))
+      (then (return (i32.const {undefined}))))
+    ;; Integer pow loop: result = base^exp
     (local.set $result (i32.const 1))
     (local.set $i (local.get $exp_n))
     (block $pow_break
       (loop $pow_loop
-        (if (i32.eq (local.get $i) (i32.const {zero}))
-          (then (br $pow_break)))
+        (br_if $pow_break (i32.eqz (local.get $i)))
         (local.set $result (i32.mul (local.get $result) (local.get $base_n)))
         (local.set $i (i32.sub (local.get $i) (i32.const 1)))
         (br $pow_loop)))
     (call $number_from_i32 (local.get $result)))
 "#,
+            tag_mask = ValueTag::TAG_MASK,
             number_tag = ValueTag::NUMBER,
             number_shift = ValueTag::NUMBER_SHIFT,
+            object_tag = ValueTag::OBJECT,
             undefined = ValueTag::UNDEFINED,
             zero = RuntimeConst::ZERO,
         ));
@@ -214,6 +229,9 @@ impl WatEmitter<'_> {
         (local.set $gap_ptr (i32.add (local.get $space_base) (i32.const {header})))))
     (local.set $root_holder (call $alloc_heap (i32.const {root_holder_size})))
     (i32.store (local.get $root_holder) (i32.const {one}))
+    (i32.store
+      (i32.add (local.get $root_holder) (i32.const {object_flags}))
+      (i32.const {zero}))
     (i32.store
       (i32.add (local.get $root_holder) (i32.const {object_proto}))
       (i32.const {zero}))
@@ -619,6 +637,7 @@ impl WatEmitter<'_> {
             index_key_alloc_size = Layout::STRING_HEADER_SIZE + 16,
             array_header = Layout::ARRAY_HEADER_SIZE,
             object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,
             obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
             entry_shift = Layout::OBJECT_ENTRY_SHIFT,
@@ -678,6 +697,7 @@ impl WatEmitter<'_> {
         ;; Initialize an empty exports object once for this module ID.
         (local.set $exports (call $alloc_heap (i32.const {empty_obj_size})))
         (i32.store (local.get $exports) (i32.const {zero}))
+        (i32.store (i32.add (local.get $exports) (i32.const {object_flags})) (i32.const {zero}))
         (i32.store (i32.add (local.get $exports) (i32.const {object_proto})) (i32.const {zero}))
         (i32.store (i32.add (local.get $entry) (i32.const {value_offset}))
           (i32.or (local.get $exports) (i32.const {object_tag})))
@@ -686,6 +706,7 @@ impl WatEmitter<'_> {
 "#,
             entry_size = entry_size,
             empty_obj_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE),
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
             value_offset = 4,
             object_tag = ValueTag::OBJECT,
             object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
@@ -711,6 +732,7 @@ impl WatEmitter<'_> {
       (then
         (local.set $exports (call $alloc_heap (i32.const {empty_obj_size})))
         (i32.store (local.get $exports) (i32.const {zero}))
+        (i32.store (i32.add (local.get $exports) (i32.const {object_flags})) (i32.const {zero}))
         (i32.store (i32.add (local.get $exports) (i32.const {object_proto})) (i32.const {zero}))
         (i32.store (i32.add (local.get $entry) (i32.const {value_offset}))
           (i32.or (local.get $exports) (i32.const {object_tag})))
@@ -724,6 +746,7 @@ impl WatEmitter<'_> {
 "#,
             entry_size = Layout::MODULE_CACHE_ENTRY_SIZE,
             empty_obj_size = Layout::OBJECT_HEADER_SIZE + (16 * Layout::OBJECT_ENTRY_SIZE),
+            object_flags = Layout::OBJECT_FLAGS_OFFSET,
             value_offset = 4,
             object_tag = ValueTag::OBJECT,
             object_proto = Layout::OBJECT_PROTOTYPE_OFFSET,

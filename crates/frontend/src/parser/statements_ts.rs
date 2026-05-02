@@ -32,19 +32,12 @@ impl Parser {
         if matches!(self.peek(), Some(Token::Export))
             && matches!(self.peek_n(1), Some(Token::Ident(name)) if name == "module" || name == "namespace")
         {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedModule,
-                message: "issue-399: TypeScript namespace/internal module declarations require module ownership before runtime lowering".to_owned(),
-                span: self.peek_span(),
-            });
+            self.advance(); // consume 'export'
+            return self.consume_module_or_namespace_declaration();
         }
 
         if self.peek_contextual_keyword("module") || self.peek_contextual_keyword("namespace") {
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedModule,
-                message: "issue-399: TypeScript namespace/internal module declarations require module ownership before runtime lowering".to_owned(),
-                span: self.peek_span(),
-            });
+            return self.consume_module_or_namespace_declaration();
         }
 
         if self.peek_contextual_keyword("enum") {
@@ -265,18 +258,8 @@ impl Parser {
         declare_span: Span,
     ) -> Result<(), Diagnostic> {
         if self.peek_contextual_keyword("module") || self.peek_contextual_keyword("namespace") {
-            let kind = if self.peek_contextual_keyword("module") {
-                "module"
-            } else {
-                "namespace"
-            };
-            return Err(Diagnostic {
-                code: DiagCode::UnsupportedModule,
-                message: format!(
-                    "issue-400: ambient {kind} declarations require module ownership before runtime lowering"
-                ),
-                span: self.peek_span().or(Some(declare_span)),
-            });
+            self.consume_module_or_namespace_declaration()?;
+            return Ok(());
         }
 
         if self.peek_contextual_keyword("global") {
@@ -398,6 +381,39 @@ impl Parser {
         self.skip_balanced_brace_block(declare_span)?;
         self.consume(TokenKind::Semicolon);
         Ok(())
+    }
+
+    fn consume_module_or_namespace_declaration(&mut self) -> Result<bool, Diagnostic> {
+        // consume 'module' or 'namespace' keyword
+        self.advance();
+        // consume the name (identifier or dotted name, or string literal)
+        match self.peek() {
+            Some(Token::Ident(_)) => {
+                self.advance();
+                // consume dotted name parts: .Ident
+                while matches!(self.peek(), Some(Token::Dot))
+                    && matches!(self.peek_n(1), Some(Token::Ident(_)))
+                {
+                    self.advance(); // consume '.'
+                    self.advance(); // consume ident
+                }
+            }
+            Some(Token::String(_)) => {
+                self.advance();
+            }
+            _ => {} // no name (edge case, just continue)
+        }
+        // if '{' follows, skip balanced brace block
+        if matches!(self.peek(), Some(Token::LeftBrace)) {
+            let span = self.peek_span().unwrap_or(Span {
+                start: self.cursor,
+                end: self.cursor,
+            });
+            self.skip_balanced_brace_block(span)?;
+        } else if matches!(self.peek(), Some(Token::Semicolon)) {
+            self.consume(TokenKind::Semicolon);
+        }
+        Ok(true)
     }
 
     fn unsupported_typescript_syntax(&self, span: Span, message: &str) -> Diagnostic {

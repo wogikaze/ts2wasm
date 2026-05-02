@@ -495,11 +495,13 @@ impl WatEmitter<'_> {
     (local $base i32)
     (local.set $base (call $alloc_heap (i32.const {collection_size})))
     (i32.store (local.get $base) (i32.const {zero}))
+    (i32.store (i32.add (local.get $base) (i32.const {obj_flags})) (i32.const {zero}))
     (i32.store (i32.add (local.get $base) (i32.const {obj_proto})) (i32.const {zero}))
     (i32.or (local.get $base) (i32.const {object_tag})))
 "#,
             symbol = symbol,
             collection_size = Layout::OBJECT_HEADER_SIZE + (32 * Layout::OBJECT_ENTRY_SIZE),
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             zero = RuntimeConst::ZERO,
             object_tag = ValueTag::OBJECT,

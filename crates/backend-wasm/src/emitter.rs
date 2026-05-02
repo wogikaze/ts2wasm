@@ -662,6 +662,10 @@ impl<'a> WatEmitter<'a> {
             wat.push_str(&format!(
                 "{pad}    (i32.store (global.get ${global}) (i32.const 0))\n"
             ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const 0))\n",
+                Layout::OBJECT_FLAGS_OFFSET,
+            ));
             let parent_expr = parent
                 .map(|id| format!("global.get ${}", class_prototype_global(id)))
                 .unwrap_or_else(|| "i32.const 0".to_owned());
@@ -687,6 +691,10 @@ impl<'a> WatEmitter<'a> {
             ));
             wat.push_str(&format!(
                 "{pad}    (i32.store (global.get ${global}) (i32.const 0))\n"
+            ));
+            wat.push_str(&format!(
+                "{pad}    (i32.store (i32.add (global.get ${global}) (i32.const {})) (i32.const 0))\n",
+                Layout::OBJECT_FLAGS_OFFSET,
             ));
             let parent_expr = constructor
                 .parent()

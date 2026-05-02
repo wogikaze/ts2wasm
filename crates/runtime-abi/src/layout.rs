@@ -59,18 +59,25 @@ impl Layout {
     // ---- Object heap layout -----------------------------------------------
     /// Bytes before the property entries:
     /// - [0 .. 4): property count (i32)
-    /// - [4 .. 8): prototype pointer (raw object heap pointer, i32)
-    pub const OBJECT_HEADER_SIZE: u32 = 8;
+    /// - [4 .. 8): flags (i32, bit 0 = FROZEN, bit 1 = SEALED)
+    /// - [8 .. 12): prototype pointer (raw object heap pointer, i32)
+    pub const OBJECT_HEADER_SIZE: u32 = 12;
+    /// Offset of the flags field inside the object header.
+    pub const OBJECT_FLAGS_OFFSET: u32 = 4;
     /// Offset of the prototype pointer inside the object header.
-    pub const OBJECT_PROTOTYPE_OFFSET: u32 = 4;
+    pub const OBJECT_PROTOTYPE_OFFSET: u32 = 8;
     /// Offset where object entries start.
-    pub const OBJECT_ENTRIES_OFFSET: u32 = 8;
+    pub const OBJECT_ENTRIES_OFFSET: u32 = 12;
     /// Each entry: (i32 key_raw_value, i32 value) = 8 bytes; shift = 3.
     pub const OBJECT_ENTRY_SHIFT: u32 = 3;
     /// Byte offset of the value field within one property entry.
     pub const OBJECT_VALUE_OFFSET: u32 = 4;
     /// Size of one property entry in bytes.
     pub const OBJECT_ENTRY_SIZE: u32 = 8;
+    /// Bit 0 of flags: object is frozen (all properties non-writable, non-configurable).
+    pub const OBJECT_FLAG_FROZEN: u32 = 1;
+    /// Bit 1 of flags: object is sealed (properties non-configurable).
+    pub const OBJECT_FLAG_SEALED: u32 = 2;
 
     // ---- GC layout --------------------------------------------------------
     /// Bytes reserved immediately before each GC-managed heap payload.

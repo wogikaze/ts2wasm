@@ -1666,7 +1666,7 @@ impl Parser {
             // Skip TypeScript access modifiers before method/property name
             while matches!(self.peek(), Some(Token::Ident(name)) if matches!(
                 name.as_str(),
-                "public" | "private" | "protected" | "readonly" | "abstract" | "override"
+                "public" | "private" | "protected" | "readonly" | "abstract" | "override" | "accessor"
             )) {
                 self.advance();
             }

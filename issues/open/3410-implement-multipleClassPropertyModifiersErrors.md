@@ -2,10 +2,10 @@
 id: 3410
 title: "Implement Multipleclasspropertymodifierserrors"
 type: spike
-area: frontend/syntax
+area: runtime/builtins
 class: blocked
 priority: P1
-depends_on: [5000]
+depends_on: [5004]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

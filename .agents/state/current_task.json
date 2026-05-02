@@ -1,11 +1,11 @@
 {
-  "id": "5000",
-  "title": "Meta: TypeScript Compiler Parser Syntax Coverage",
+  "id": 5004,
+  "title": "Meta: Runtime Builtins Coverage (test262)",
   "status": "selected",
-  "issue_path": "issues/open/5000-meta-tsc-parser-syntax.md",
-  "scope": null,
-  "acceptance": null,
+  "issue_path": "issues/open/5004-meta-runtime-builtins.md",
+  "scope": "Add node diff (runtime) tests for string builtins that already have WASM implementations and build_smoke tests",
+  "acceptance": "At least one string builtin has both build_smoke and node_diff test passing, and is tracked in 5004 progress table",
   "commands": null,
-  "risk": null,
-  "notes": ""
+  "risk": "low",
+  "notes": "String.padStart/padEnd/repeat have WASM implementations + build_smoke tests. Add node diff tests."
 }

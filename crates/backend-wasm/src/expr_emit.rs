@@ -551,6 +551,11 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
                     frame.heap_base_tmp(),
+                    Layout::OBJECT_FLAGS_OFFSET,
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    frame.heap_base_tmp(),
                     Layout::OBJECT_PROTOTYPE_OFFSET,
                 ));
                 let child_frame = frame.child_temp_frame();
@@ -601,6 +606,11 @@ impl WatEmitter<'_> {
                     "{pad}(i32.store (local.get {}) (i32.const {}))\n",
                     frame.heap_base_tmp(),
                     prop_count,
+                ));
+                wat.push_str(&format!(
+                    "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (i32.const 0))\n",
+                    frame.heap_base_tmp(),
+                    Layout::OBJECT_FLAGS_OFFSET,
                 ));
                 wat.push_str(&format!(
                     "{pad}(i32.store (i32.add (local.get {}) (i32.const {})) (global.get ${}))\n",

@@ -2,10 +2,10 @@
 id: 1034
 title: "Implement Baseclassimprovedmismatcherrors"
 type: spike
-area: frontend/syntax
+area: frontend/semantics
 class: blocked
 priority: P1
-depends_on: [5000]
+depends_on: [5001]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

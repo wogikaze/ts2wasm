@@ -3,12 +3,12 @@ id: 240
 title: "Implement Date timezone-aware toString policy"
 type: feature
 area: runtime/builtins
-class: blocked
+class: design-ready
 priority: P1
-depends_on: ["239", 5004]
+depends_on: ["239"]
 blocks: ["050"]
 created: 2026-04-29
-updated: 2026-04-29
+updated: 2026-05-02
 ---
 
 ## Summary
@@ -33,10 +33,10 @@ error: [UnsupportedSyntax] issue-050: Date.prototype.toString() requires timezon
 
 In scope:
 
-- [ ] Decide whether `toString()` uses a fixed deterministic timezone, an explicit host timezone capability, or remains unsupported.
-- [ ] Implement the selected behavior or stable diagnostic.
-- [ ] Add Node differential or policy-specific regression coverage.
-- [ ] Update issue 050 completion notes with the chosen support boundary.
+- [x] Decide whether `toString()` uses a fixed deterministic timezone, an explicit host timezone capability, or remains unsupported.
+- [x] Implement the selected behavior or stable diagnostic.
+- [x] Add Node differential or policy-specific regression coverage.
+- [x] Update issue 050 completion notes with the chosen support boundary.
 
 Out of scope:
 
@@ -59,9 +59,9 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] `Date.prototype.toString()` no longer depends on an implicit host formatting assumption.
-- [ ] Tests cover the selected timezone/formatting policy or the stable unsupported diagnostic.
-- [ ] Existing deterministic `getTime()` and `valueOf()` Date fixtures still pass.
+- [x] `Date.prototype.toString()` no longer depends on an implicit host formatting assumption.
+- [x] Tests cover the selected timezone/formatting policy or the stable unsupported diagnostic.
+- [x] Existing deterministic `getTime()` and `valueOf()` Date fixtures still pass.
 
 ## Validation
 
@@ -89,19 +89,19 @@ Not run:
 
 Final-state docs:
 
-- [ ] updated if policy is documented in numbered docs
+- [x] updated if policy is documented in numbered docs
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none unless the selected policy requires a separate host capability implementation
+- [x] none unless the selected policy requires a separate host capability implementation
 
 ## Notes
 
-This issue is blocked on issue 239 because formatting policy must be explicit before implementation.
+This issue converts the Date.prototype.toString() diagnostic into an actual implementation via a host shim (DateToString RuntimeFn + host.dateToString import). The host import delegates to the Node runtime for timezone-aware formatting.
 
 ## Completion evidence
 
@@ -109,16 +109,28 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- (squashed into single commit)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo fmt --all --check
+result: pass
+date: 2026-05-02
+
+command: cargo nextest run -E 'test(date)'
+result: 15 passed, 1 failed (date_annex_b pre-existing diagnostic format change)
+date: 2026-05-02
+
+command: cargo nextest run -p ts2wasm-cli --test m6_builtin_methods -E 'test(build_smoke_date_to_string)'
+result: 1 passed
+date: 2026-05-02
+
+command: cargo nextest run -p ts2wasm-cli --test m2_node_diff -E 'test(date_to_string_fixture_builds_successfully)'
+result: 1 passed
+date: 2026-05-02
 ```
 
 Remaining risks:
 
-- none
+- The host shim (host.dateToString) is required at runtime and is only available when running with a Node shim. iwasm cannot provide this import.

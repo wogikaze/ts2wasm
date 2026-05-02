@@ -942,6 +942,9 @@ impl WatEmitter<'_> {
           (i32.shl (local.get $len) (i32.const {entry_shift})))))
     (i32.store (local.get $result_ptr) (i32.const {zero}))
     (i32.store
+      (i32.add (local.get $result_ptr) (i32.const {obj_flags}))
+      (i32.const {zero}))
+    (i32.store
       (i32.add (local.get $result_ptr) (i32.const {obj_proto}))
       (i32.const {zero}))
     (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
@@ -1274,6 +1277,7 @@ impl WatEmitter<'_> {
             str_header = Layout::STRING_HEADER_SIZE,
             array_header = Layout::ARRAY_HEADER_SIZE,
             obj_header = Layout::OBJECT_HEADER_SIZE,
+            obj_flags = Layout::OBJECT_FLAGS_OFFSET,
             obj_proto = Layout::OBJECT_PROTOTYPE_OFFSET,
             obj_entries = Layout::OBJECT_ENTRIES_OFFSET,
             elem_shift = Layout::ARRAY_ELEM_SHIFT,

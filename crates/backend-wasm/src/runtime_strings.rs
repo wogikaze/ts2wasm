@@ -536,5 +536,190 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_pad_start(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_pad_start (param $s i32) (param $target_len i32) (param $fill i32) (result i32)
+    (local $s_obj i32)
+    (local $f_obj i32)
+    (local $s_len i32)
+    (local $f_len i32)
+    (local $max_len i32)
+    (local $fill_needed i32)
+    (local $result_ptr i32)
+    (local $i i32)
+    (local $j i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $max_len (i32.shr_s (local.get $target_len) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $max_len) (i32.const {zero})) (then (local.set $max_len (i32.const {zero}))))
+    (if (i32.le_u (local.get $max_len) (local.get $s_len)) (then (return (local.get $s))))
+    ;; Default fill string to space if not a string
+    (if (i32.eqz (call $is_string (local.get $fill)))
+      (then
+        (local.set $fill_needed (i32.sub (local.get $max_len) (local.get $s_len)))
+        (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $max_len))))
+        (i32.store (local.get $result_ptr) (local.get $max_len))
+        (block $pad_spaces_done
+          (loop $pad_spaces
+            (br_if $pad_spaces_done (i32.ge_u (local.get $i) (local.get $fill_needed)))
+            (i32.store8 (i32.add (i32.add (local.get $result_ptr) (i32.const {header})) (local.get $i)) (i32.const {ascii_space}))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $pad_spaces)))
+        (call $copy
+          (i32.add (i32.add (local.get $s_obj) (i32.const {header})) (i32.const {zero}))
+          (i32.add (i32.add (local.get $result_ptr) (i32.const {header})) (local.get $fill_needed))
+          (local.get $s_len))
+        (return (i32.or (local.get $result_ptr) (i32.const {string_tag}))))
+    (local.set $f_obj (i32.and (local.get $fill) (i32.const {heap_mask})))
+    (local.set $f_len (i32.load (local.get $f_obj)))
+    (local.set $fill_needed (i32.sub (local.get $max_len) (local.get $s_len)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $max_len))))
+    (i32.store (local.get $result_ptr) (local.get $max_len))
+    ;; Fill with repeated fill string
+    (block $pad_done
+      (loop $pad_loop
+        (br_if $pad_done (i32.ge_u (local.get $i) (local.get $fill_needed)))
+        (i32.store8
+          (i32.add (i32.add (local.get $result_ptr) (i32.const {header})) (local.get $i))
+          (i32.load8_u (i32.add (i32.add (local.get $f_obj) (i32.const {header})) (local.get $j))))
+        (local.set $j (i32.add (local.get $j) (i32.const {one})))
+        (if (i32.ge_u (local.get $j) (local.get $f_len)) (then (local.set $j (i32.const {zero}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $pad_loop)))
+    ;; Copy original string after padding
+    (call $copy
+      (i32.add (i32.add (local.get $s_obj) (i32.const {header})) (i32.const {zero}))
+      (i32.add (i32.add (local.get $result_ptr) (i32.const {header})) (local.get $fill_needed))
+      (local.get $s_len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            ascii_space = 32,
+        ));
+    }
+
+    pub(super) fn emit_string_pad_end(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_pad_end (param $s i32) (param $target_len i32) (param $fill i32) (result i32)
+    (local $s_obj i32)
+    (local $f_obj i32)
+    (local $s_len i32)
+    (local $f_len i32)
+    (local $max_len i32)
+    (local $fill_needed i32)
+    (local $result_ptr i32)
+    (local $i i32)
+    (local $j i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $max_len (i32.shr_s (local.get $target_len) (i32.const {number_shift})))
+    (if (i32.lt_s (local.get $max_len) (i32.const {zero})) (then (local.set $max_len (i32.const {zero}))))
+    (if (i32.le_u (local.get $max_len) (local.get $s_len)) (then (return (local.get $s))))
+    ;; Default fill string to space if not a string
+    (if (i32.eqz (call $is_string (local.get $fill)))
+      (then
+        (local.set $fill_needed (i32.sub (local.get $max_len) (local.get $s_len)))
+        (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $max_len))))
+        (i32.store (local.get $result_ptr) (local.get $max_len))
+        ;; Copy original string first
+        (call $copy
+          (i32.add (i32.add (local.get $s_obj) (i32.const {header})) (i32.const {zero}))
+          (i32.add (local.get $result_ptr) (i32.const {header}))
+          (local.get $s_len))
+        ;; Fill remaining with spaces
+        (block $pad_spaces_done
+          (loop $pad_spaces
+            (br_if $pad_spaces_done (i32.ge_u (local.get $i) (local.get $fill_needed)))
+            (i32.store8 (i32.add (i32.add (local.get $result_ptr) (i32.const {header})) (i32.add (local.get $s_len) (local.get $i))) (i32.const {ascii_space}))
+            (local.set $i (i32.add (local.get $i) (i32.const {one})))
+            (br $pad_spaces)))
+        (return (i32.or (local.get $result_ptr) (i32.const {string_tag}))))
+    (local.set $f_obj (i32.and (local.get $fill) (i32.const {heap_mask})))
+    (local.set $f_len (i32.load (local.get $f_obj)))
+    (local.set $fill_needed (i32.sub (local.get $max_len) (local.get $s_len)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $max_len))))
+    (i32.store (local.get $result_ptr) (local.get $max_len))
+    ;; Copy original string first
+    (call $copy
+      (i32.add (i32.add (local.get $s_obj) (i32.const {header})) (i32.const {zero}))
+      (i32.add (local.get $result_ptr) (i32.const {header}))
+      (local.get $s_len))
+    ;; Fill remaining with repeated fill string
+    (block $pad_done
+      (loop $pad_loop
+        (br_if $pad_done (i32.ge_u (local.get $i) (local.get $fill_needed)))
+        (i32.store8
+          (i32.add (i32.add (local.get $result_ptr) (i32.const {header})) (i32.add (local.get $s_len) (local.get $i)))
+          (i32.load8_u (i32.add (i32.add (local.get $f_obj) (i32.const {header})) (local.get $j))))
+        (local.set $j (i32.add (local.get $j) (i32.const {one})))
+        (if (i32.ge_u (local.get $j) (local.get $f_len)) (then (local.set $j (i32.const {zero}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $pad_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            ascii_space = 32,
+        ));
+    }
+
+    pub(super) fn emit_string_repeat(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_repeat (param $s i32) (param $count i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $cnt i32)
+    (local $total_len i32)
+    (local $result_ptr i32)
+    (local $i i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $cnt (i32.shr_s (local.get $count) (i32.const {number_shift})))
+    (if (i32.le_s (local.get $cnt) (i32.const {zero}))
+      (then
+        (local.set $result_ptr (call $alloc_heap (i32.const {header})))
+        (i32.store (local.get $result_ptr) (i32.const {zero}))
+        (return (i32.or (local.get $result_ptr) (i32.const {string_tag})))))
+    (local.set $total_len (i32.mul (local.get $len) (local.get $cnt)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $total_len))))
+    (i32.store (local.get $result_ptr) (local.get $total_len))
+    (block $repeat_done
+      (loop $repeat_loop
+        (br_if $repeat_done (i32.ge_u (local.get $i) (local.get $cnt)))
+        (call $copy
+          (i32.add (local.get $obj) (i32.const {header}))
+          (i32.add (i32.add (local.get $result_ptr) (i32.const {header})) (i32.mul (local.get $i) (local.get $len)))
+          (local.get $len))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $repeat_loop)))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     // Array methods (M10)
 }

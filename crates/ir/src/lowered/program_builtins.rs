@@ -11,6 +11,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "abs" => Some("MathAbs".to_owned()),
                 "max" => Some("MathMax".to_owned()),
                 "min" => Some("MathMin".to_owned()),
+                "pow" => Some("MathPow".to_owned()),
                 "random" => Some("MathRandom".to_owned()),
                 _ => None,
             };
@@ -31,6 +32,10 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "getOwnPropertyDescriptor" => Some("ObjectGetOwnPropertyDescriptor".to_owned()),
                 "getPrototypeOf" => Some("ObjectGetPrototypeOf".to_owned()),
                 "setPrototypeOf" => Some("ObjectSetPrototypeOf".to_owned()),
+                "freeze" => Some("ObjectFreeze".to_owned()),
+                "defineProperty" => Some("ObjectDefineProperty".to_owned()),
+                "assign" => Some("ObjectAssign".to_owned()),
+                "create" => Some("ObjectCreate".to_owned()),
                 _ => None,
             };
         }
@@ -56,6 +61,9 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "slice" => Some("StringSlice".to_owned()),
         "indexOf" => Some("StringIndexOf".to_owned()),
         "includes" => Some("StringIncludes".to_owned()),
+        "padStart" => Some("StringPadStart".to_owned()),
+        "padEnd" => Some("StringPadEnd".to_owned()),
+        "repeat" => Some("StringRepeat".to_owned()),
         "split" => Some("StringSplit".to_owned()),
         "trim" => Some("StringTrim".to_owned()),
         "toUpperCase" => Some("StringToUpperCase".to_owned()),
@@ -449,16 +457,6 @@ pub(super) fn is_date_now_live_time_call(object: &ResolvedExpr, method: &str) ->
     matches!(object, ResolvedExpr::Ident(name) if name == "Date") && method == "now"
 }
 
-pub(super) fn unsupported_date_timezone_diagnostic(method: &str, span: Option<Span>) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-050: Date.prototype.{method}() requires timezone/host formatting policy; use getTime() or valueOf() for deterministic epoch milliseconds"
-        ),
-        span,
-    }
-}
-
 pub(super) fn is_annex_b_date_method(method: &str) -> bool {
     matches!(method, "getYear" | "setYear" | "toGMTString")
 }
@@ -651,17 +649,47 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         ));
     }
     let pattern = &raw[1..delimiter];
-    if pattern.chars().any(|ch| {
-        matches!(
+    let bytes = pattern.as_bytes();
+    let mut i = 0;
+    while i < bytes.len() {
+        let ch = bytes[i];
+        if ch == b'\\' {
+            if i + 1 < bytes.len() {
+                match bytes[i + 1] {
+                    b'd' | b'w' | b's' => {
+                        i += 2;
+                    }
+                    _ => {
+                        return Err(unsupported_regexp_literal(
+                            context,
+                            raw,
+                            "only \\d, \\w, \\s escape sequences are supported",
+                        ));
+                    }
+                }
+            } else {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "incomplete trailing escape sequence",
+                ));
+            }
+        } else if matches!(
             ch,
-            '^' | '$' | '.' | '*' | '+' | '?' | '(' | ')' | '[' | ']' | '{' | '}' | '|' | '\\'
-        )
-    }) {
-        return Err(unsupported_regexp_literal(
-            context,
-            raw,
-            "only plain literal byte patterns are supported",
-        ));
+            b'^' | b'$' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|'
+        ) {
+            return Err(unsupported_regexp_literal(
+                context,
+                raw,
+                "only plain literal byte patterns and . \\d \\w \\s + * ? are supported",
+            ));
+        } else {
+            i += 1;
+        }
+        // Consume optional quantifier (but don't allow at pattern start)
+        if i < bytes.len() && matches!(bytes[i], b'+' | b'*' | b'?') {
+            i += 1;
+        }
     }
     Ok(())
 }

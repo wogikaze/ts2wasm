@@ -975,7 +975,20 @@ impl<'a> Resolver<'a> {
                         Some(*span),
                     ))
                 } else if method == "toString" && self.is_date_receiver(object) {
-                    Err(unsupported_date_timezone_diagnostic(method, Some(*span)))
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "DateToString".to_owned(),
+                        args: vec![self.lower_expr(object)?],
+                    })
                 } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {
                     if let Some(diagnostic) = unsupported_annex_b_string_method(method, *span) {
                         Err(diagnostic)
@@ -998,6 +1011,36 @@ impl<'a> Resolver<'a> {
                             span: Some(*span),
                         })
                     }
+                } else if (method == "indexOf" || method == "includes")
+                    && self.is_known_array_expr(object)
+                    && !args.is_empty()
+                {
+                    let mut lowered_args = vec![self.lower_expr(object)?];
+                    lowered_args.extend(
+                        args.iter()
+                            .map(|e| self.lower_expr(e))
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: if method == "indexOf" {
+                            "ArrayIndexOf".to_owned()
+                        } else {
+                            "ArrayIncludes".to_owned()
+                        },
+                        args: lowered_args,
+                    })
+                } else if (method == "find" || method == "filter" || method == "every" || method == "some")
+                    && is_identity_arrow_callback(args)
+                    && self.is_known_array_expr(object)
+                {
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: format!(
+                            "Array{}{}",
+                            method[0..1].to_uppercase(),
+                            &method[1..]
+                        ),
+                        args: vec![self.lower_expr(object)?],
+                    })
                 } else if let Some(runtime_fn) = resolve_method_to_runtime_fn(object, method) {
                     if runtime_fn == "ArrayPush" && args.len() != 1 {
                         if !matches!(object.as_ref(), ResolvedExpr::Ident(_)) {

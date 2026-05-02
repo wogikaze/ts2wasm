@@ -135,6 +135,8 @@ pub(crate) enum RuntimeFn {
     DateNow,
     DateEpochMsNowNumber,
     DateGetTime,
+    /// Issue 240: Date.prototype.toString() via host shim.
+    DateToString,
     /// M10: String methods
     StringCharAt,
     StringSubstring,
@@ -142,6 +144,12 @@ pub(crate) enum RuntimeFn {
     StringIndexOf,
     /// String.prototype.includes
     StringIncludes,
+    /// String.prototype.padStart
+    StringPadStart,
+    /// String.prototype.padEnd
+    StringPadEnd,
+    /// String.prototype.repeat
+    StringRepeat,
     StringSplit,
     StringTrim,
     StringToUpperCase,
@@ -152,6 +160,8 @@ pub(crate) enum RuntimeFn {
     RegExpTest,
     /// Issue 051: String.prototype.match for literal-backed plain byte patterns.
     RegExpMatch,
+    /// Issue 066: Shared helper for character-level pattern matching (dot, \d, \w, \s, literals).
+    RegexpMatchInner,
     /// M10: Array methods
     ArrayPush,
     ArrayPushGrow,
@@ -166,6 +176,18 @@ pub(crate) enum RuntimeFn {
     ArraySortNumeric,
     ArrayJoin,
     ArrayReverse,
+    /// Array.prototype.indexOf
+    ArrayIndexOf,
+    /// Array.prototype.includes
+    ArrayIncludes,
+    /// Array.prototype.find (identity callback: find first truthy element)
+    ArrayFind,
+    /// Array.prototype.filter (identity callback: filter truthy elements)
+    ArrayFilter,
+    /// Array.prototype.every (identity callback: check all truthy)
+    ArrayEvery,
+    /// Array.prototype.some (identity callback: check any truthy)
+    ArraySome,
     /// M10: Object statics
     ObjectKeys,
     ObjectSpread,
@@ -175,6 +197,14 @@ pub(crate) enum RuntimeFn {
     ObjectGetOwnPropertyDescriptor,
     ObjectGetPrototypeOf,
     ObjectSetPrototypeOf,
+    /// Object.freeze(obj) — sets the OBJECT_FLAG_FROZEN flag
+    ObjectFreeze,
+    /// Object.defineProperty(obj, prop, descriptor)
+    ObjectDefineProperty,
+    /// Object.assign(target, ...sources) — copies own enumerable properties
+    ObjectAssign,
+    /// Object.create(proto, propertiesObject)
+    ObjectCreate,
     /// Instanceof operator
     InstanceOf,
     /// M10: Math functions
@@ -268,6 +298,7 @@ pub(crate) enum HostImport {
     DecodeURI,
     Escape,
     Unescape,
+    DateToString,
 }
 
 impl HostImport {
@@ -426,6 +457,14 @@ impl HostImport {
                 params: "param i32",
                 result: "result i32",
             },
+            Self::DateToString => HostImportSpec {
+                module: "host",
+                name: "dateToString",
+                wat_symbol: "$host_date_to_string",
+                abi: HostAbi::NodeShim,
+                params: "param i32",
+                result: "result i32",
+            },
         }
     }
 
@@ -453,6 +492,7 @@ impl HostImport {
             Self::DecodeURI => "host.decodeURI",
             Self::Escape => "host.escape",
             Self::Unescape => "host.unescape",
+            Self::DateToString => "host.dateToString",
         }
     }
 }
@@ -500,12 +540,19 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ObjectGetOwnPropertyDescriptor" => Some(RuntimeFn::ObjectGetOwnPropertyDescriptor),
         "ObjectGetPrototypeOf" => Some(RuntimeFn::ObjectGetPrototypeOf),
         "ObjectSetPrototypeOf" => Some(RuntimeFn::ObjectSetPrototypeOf),
+        "ObjectFreeze" => Some(RuntimeFn::ObjectFreeze),
+        "ObjectDefineProperty" => Some(RuntimeFn::ObjectDefineProperty),
+        "ObjectAssign" => Some(RuntimeFn::ObjectAssign),
+        "ObjectCreate" => Some(RuntimeFn::ObjectCreate),
         "$instanceof" => Some(RuntimeFn::InstanceOf),
         "StringCharAt" => Some(RuntimeFn::StringCharAt),
         "StringSubstring" => Some(RuntimeFn::StringSubstring),
         "StringSlice" => Some(RuntimeFn::StringSlice),
         "StringIndexOf" => Some(RuntimeFn::StringIndexOf),
         "StringIncludes" => Some(RuntimeFn::StringIncludes),
+        "StringPadStart" => Some(RuntimeFn::StringPadStart),
+        "StringPadEnd" => Some(RuntimeFn::StringPadEnd),
+        "StringRepeat" => Some(RuntimeFn::StringRepeat),
         "StringSplit" => Some(RuntimeFn::StringSplit),
         "StringTrim" => Some(RuntimeFn::StringTrim),
         "StringToUpperCase" => Some(RuntimeFn::StringToUpperCase),
@@ -528,6 +575,12 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArraySortNumeric" => Some(RuntimeFn::ArraySortNumeric),
         "ArrayJoin" => Some(RuntimeFn::ArrayJoin),
         "ArrayReverse" => Some(RuntimeFn::ArrayReverse),
+        "ArrayIndexOf" => Some(RuntimeFn::ArrayIndexOf),
+        "ArrayIncludes" => Some(RuntimeFn::ArrayIncludes),
+        "ArrayFind" => Some(RuntimeFn::ArrayFind),
+        "ArrayFilter" => Some(RuntimeFn::ArrayFilter),
+        "ArrayEvery" => Some(RuntimeFn::ArrayEvery),
+        "ArraySome" => Some(RuntimeFn::ArraySome),
         "MapNew" => Some(RuntimeFn::MapNew),
         "MapGet" => Some(RuntimeFn::MapGet),
         "MapSet" => Some(RuntimeFn::MapSet),
@@ -547,6 +600,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateNewLive" => Some(RuntimeFn::DateNewLive),
         "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
+        "DateToString" => Some(RuntimeFn::DateToString),
         "IsNaN" => Some(RuntimeFn::IsNaN),
         "ParseInt" => Some(RuntimeFn::ParseInt),
         "ParseFloat" => Some(RuntimeFn::ParseFloat),
@@ -586,6 +640,7 @@ pub(crate) enum Capability {
     HostDecodeURI,
     HostEscape,
     HostUnescape,
+    HostDateToString,
 }
 
 impl Capability {
@@ -611,6 +666,7 @@ impl Capability {
             Self::HostDecodeURI => "host.decodeURI",
             Self::HostEscape => "host.escape",
             Self::HostUnescape => "host.unescape",
+            Self::HostDateToString => "host.dateToString",
         }
     }
 }
@@ -809,6 +865,7 @@ const IMPORT_ENCODE_URI: &[HostImport] = &[HostImport::EncodeURI];
 const IMPORT_DECODE_URI: &[HostImport] = &[HostImport::DecodeURI];
 const IMPORT_ESCAPE: &[HostImport] = &[HostImport::Escape];
 const IMPORT_UNESCAPE: &[HostImport] = &[HostImport::Unescape];
+const IMPORT_DATE_TO_STRING: &[HostImport] = &[HostImport::DateToString];
 const CAP_STDIN_READ: &[Capability] = &[Capability::StdinRead];
 const CAP_STDOUT_WRITE: &[Capability] = &[Capability::StdoutWrite];
 const CAP_WASI_CLOCK_REALTIME: &[Capability] = &[Capability::WasiClockRealtime];
@@ -828,6 +885,7 @@ const CAP_HOST_ENCODE_URI: &[Capability] = &[Capability::HostEncodeURI];
 const CAP_HOST_DECODE_URI: &[Capability] = &[Capability::HostDecodeURI];
 const CAP_HOST_ESCAPE: &[Capability] = &[Capability::HostEscape];
 const CAP_HOST_UNESCAPE: &[Capability] = &[Capability::HostUnescape];
+const CAP_HOST_DATE_TO_STRING: &[Capability] = &[Capability::HostDateToString];
 const VTS_RUNTIME_STRINGS: &[&str] = &[
     RuntimeString::UNDEFINED,
     RuntimeString::NULL,
@@ -887,6 +945,12 @@ const STRING_SLICE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_PAD_START_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_PAD_END_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
+const STRING_REPEAT_DEPS: &[RuntimeFn] =
+    &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,
@@ -899,11 +963,11 @@ const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeF
 const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
-const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::RegexpMatchInner];
 const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,
-    RuntimeFn::MemEqual,
     RuntimeFn::StringSubstring,
+    RuntimeFn::RegexpMatchInner,
 ];
 
 // Array method dependencies
@@ -939,6 +1003,12 @@ const ARRAY_JOIN_DEPS: &[RuntimeFn] = &[
     RuntimeFn::Copy,
 ];
 const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
+const ARRAY_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const ARRAY_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const ARRAY_FIND_DEPS: &[RuntimeFn] = &[];
+const ARRAY_FILTER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_EVERY_DEPS: &[RuntimeFn] = &[];
+const ARRAY_SOME_DEPS: &[RuntimeFn] = &[];
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
@@ -957,6 +1027,18 @@ const OBJECT_GET_OWN_PROPERTY_DESCRIPTOR_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertySet,
 ];
 const OBJECT_PROTOTYPE_DEPS: &[RuntimeFn] = &[];
+const OBJECT_FREEZE_DEPS: &[RuntimeFn] = &[];
+const OBJECT_DEFINE_PROPERTY_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::ValueToStringInto,
+    RuntimeFn::PropertySet,
+];
+const OBJECT_ASSIGN_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::ObjectKeys,
+    RuntimeFn::PropertyGet,
+    RuntimeFn::PropertySet,
+];
+const OBJECT_CREATE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const INDEX_DEPS: &[RuntimeFn] = &[
     RuntimeFn::PropertyGet,
     RuntimeFn::ValueToStringInto,

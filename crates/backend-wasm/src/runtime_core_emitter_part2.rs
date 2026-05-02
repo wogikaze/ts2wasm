@@ -306,6 +306,9 @@ impl WatEmitter<'_> {
     (local.set $error_obj (call $alloc_heap (i32.const {object_size})))
     (i32.store (local.get $error_obj) (i32.const 1))
     (i32.store
+      (i32.add (local.get $error_obj) (i32.const {object_flags_offset}))
+      (i32.const 0))
+    (i32.store
       (i32.add (local.get $error_obj) (i32.const {object_prototype_offset}))
       (global.get ${prototype_global}))
     (i32.store
@@ -321,6 +324,7 @@ impl WatEmitter<'_> {
             message_offset = message_offset,
             message_len = diagnostic_message.len() as i32,
             object_size = object_size,
+            object_flags_offset = Layout::OBJECT_FLAGS_OFFSET,
             object_prototype_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
             object_entries_offset = Layout::OBJECT_ENTRIES_OFFSET,
             message_value_offset = Layout::OBJECT_ENTRIES_OFFSET + Layout::OBJECT_VALUE_OFFSET,

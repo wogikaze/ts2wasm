@@ -80,6 +80,9 @@ impl WatEmitter<'_> {
     (local.set $base (call $alloc_heap (i32.const {date_size})))
     (i32.store (local.get $base) (i32.const 0))
     (i32.store
+      (i32.add (local.get $base) (i32.const {flags_offset}))
+      (i32.const 0))
+    (i32.store
       (i32.add (local.get $base) (i32.const {prototype_offset}))
       (i32.const 0))
     (i32.store
@@ -88,6 +91,7 @@ impl WatEmitter<'_> {
     (i32.or (local.get $base) (i32.const {object_tag})))
 "#,
             date_size = Layout::OBJECT_HEADER_SIZE + 4,
+            flags_offset = Layout::OBJECT_FLAGS_OFFSET,
             prototype_offset = Layout::OBJECT_PROTOTYPE_OFFSET,
             epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
             object_tag = ValueTag::OBJECT,
@@ -129,6 +133,21 @@ impl WatEmitter<'_> {
             tag_mask = ValueTag::TAG_MASK,
             object_tag = ValueTag::OBJECT,
             undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
+        ));
+    }
+
+    pub(super) fn emit_date_to_string(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $date_to_string (param $date i32) (result i32)
+    (call $host_date_to_string
+      (i32.load
+        (i32.add
+          (i32.and (local.get $date) (i32.const {heap_mask}))
+          (i32.const {epoch_offset})))))
+"#,
             heap_mask = ValueTag::HEAP_MASK,
             epoch_offset = Layout::OBJECT_ENTRIES_OFFSET,
         ));

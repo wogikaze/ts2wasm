@@ -2,10 +2,10 @@
 id: 3548
 title: "Implement Noimplicitanynamelessparameter"
 type: spike
-area: frontend/syntax
+area: frontend/resolver
 class: blocked
 priority: P1
-depends_on: [5000]
+depends_on: [5005]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

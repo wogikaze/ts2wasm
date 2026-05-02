@@ -176,37 +176,41 @@ mod tests {
     }
 
     #[test]
-    fn rejects_ambient_module_declarations_as_module_owned() {
-        let err = parse_program(r#"declare module "fs" { export var value: string; }"#)
-            .expect_err("ambient external module should remain module-owned");
-        assert_eq!(err.code, DiagCode::UnsupportedModule);
-        assert!(err.message.contains("issue-400"));
-        assert!(err.message.contains("ambient module"));
-        assert_eq!(err.span, Some(Span { start: 8, end: 14 }));
+    fn parses_ambient_module_declarations_as_erased_syntax() {
+        let program = parse_program(r#"declare module "fs" { export var value: string; }"#)
+            .expect("ambient external module should be erased");
+        assert!(program.is_empty());
 
-        let err = parse_program("declare namespace Foo.Bar { export var foo; };")
-            .expect_err("ambient namespace should remain module-owned");
-        assert_eq!(err.code, DiagCode::UnsupportedModule);
-        assert!(err.message.contains("ambient namespace"));
-        assert_eq!(err.span, Some(Span { start: 8, end: 17 }));
+        let program = parse_program("declare namespace Foo.Bar { export var foo; };")
+            .expect("ambient namespace should be erased");
+        assert!(program.is_empty());
+
+        let program = parse_program("declare module 'path' { import * as fs from 'fs'; };")
+            .expect("ambient module with string literal name should be erased");
+        assert!(program.is_empty());
+
+        let program = parse_program("declare namespace Single { }")
+            .expect("ambient simple namespace should be erased");
+        assert!(program.is_empty());
     }
 
     #[test]
-    fn rejects_typescript_namespace_declarations_as_module_owned() {
+    fn parses_typescript_namespace_declarations_as_erased_syntax() {
         for source in [
             "namespace M { export namespace N { } }",
             "export namespace M { }",
             "module M { }",
         ] {
-            let err = parse_program(source)
-                .expect_err("namespace/internal module declarations are module-owned");
-            assert_eq!(err.code, DiagCode::UnsupportedModule);
-            assert!(
-                err.message.contains("namespace/internal module declarations"),
-                "unexpected diagnostic for {source}: {err:?}"
-            );
-            assert!(err.span.is_some(), "diagnostic should preserve a span");
+            let stmts = parse_program(source)
+                .unwrap_or_else(|e| panic!("namespace/internal module declarations should be erased: {source}: {e:?}"));
+            assert!(stmts.is_empty(), "expected no runtime statements for {source}");
         }
+
+        // Verify that runtime statements after erasure still parse correctly
+        let program = parse_program("namespace M { } let x = 1;")
+            .expect("namespace followed by runtime code should parse");
+        assert_eq!(program.len(), 1);
+        assert!(matches!(program[0], Stmt::Let { .. }));
     }
 
     #[test]
@@ -1881,6 +1885,32 @@ mod tests {
             }
             other => panic!("unexpected export statement: {other:?}"),
         }
+    }
+
+    #[test]
+    fn parses_class_accessor_fields() {
+        let stmts = parse_program(
+            "class Foo { accessor x = 5; accessor y: string; accessor z: number = 10; accessor w; }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { body, name, .. } = &stmts[0] else {
+            panic!("expected class declaration");
+        };
+        assert_eq!(name, "Foo");
+        // Accessor field declarations are consumed (erased syntax) — the class should parse
+        // successfully without errors
+        assert!(body.is_empty(), "accessor fields should be erased from body");
+    }
+
+    #[test]
+    fn parses_class_with_static_accessor_field() {
+        let stmts = parse_program("class C { static accessor count = 0; }").unwrap();
+
+        let Stmt::ClassDecl { body, .. } = &stmts[0] else {
+            panic!("expected class declaration");
+        };
+        assert!(body.is_empty(), "static accessor field should be erased from body");
     }
 
     #[test]

@@ -77,8 +77,9 @@ fn canonical_manifest_from_link_plan(plan: &RuntimeLinkPlan) -> CapabilityManife
             Capability::HostEncodeURI
             | Capability::HostDecodeURI
             | Capability::HostEscape
-            | Capability::HostUnescape => {
-                // Node host capabilities for URI encoding/decoding
+            | Capability::HostUnescape
+            | Capability::HostDateToString => {
+                // Node host capabilities for URI encoding/decoding and Date
             }
         }
     }

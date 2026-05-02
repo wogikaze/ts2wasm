@@ -474,8 +474,8 @@ fn lowering_routes_date_now_to_live_time_runtime_call() {
 }
 
 #[test]
-fn lowering_rejects_unsupported_regexp_test_pattern() {
-    let program = parse_and_resolve("let ok = /a*/.test(\"aaa\");");
+fn lowering_rejects_unsupported_regexp_test_pattern_character_class() {
+    let program = parse_and_resolve("let ok = /[abc]/.test(\"aaa\");");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
 
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
@@ -484,8 +484,16 @@ fn lowering_rejects_unsupported_regexp_test_pattern() {
 }
 
 #[test]
-fn lowering_rejects_unsupported_new_regexp_pattern() {
-    let program = parse_and_resolve("let r = new RegExp(\"a*\");");
+fn lowering_accepts_star_regexp_test_pattern() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve("let ok = /a*/.test(\"aaa\");"))
+            .is_ok()
+    );
+}
+
+#[test]
+fn lowering_rejects_unsupported_new_regexp_pattern_character_class() {
+    let program = parse_and_resolve("let r = new RegExp(\"[abc]\");");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
 
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
@@ -517,8 +525,8 @@ fn lowering_rejects_duplicate_new_regexp_flags() {
 }
 
 #[test]
-fn lowering_rejects_unsupported_string_match_regexp_pattern() {
-    let program = parse_and_resolve("let hit = \"aaa\".match(/a*/);");
+fn lowering_rejects_unsupported_string_match_regexp_pattern_character_class() {
+    let program = parse_and_resolve("let hit = \"aaa\".match(/[abc]/);");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
 
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
@@ -528,8 +536,8 @@ fn lowering_rejects_unsupported_string_match_regexp_pattern() {
 }
 
 #[test]
-fn lowering_rejects_unsupported_regexp_exec_pattern() {
-    let program = parse_and_resolve("let hit = /a*/.exec(\"aaa\");");
+fn lowering_rejects_unsupported_regexp_exec_pattern_character_class() {
+    let program = parse_and_resolve("let hit = /[abc]/.exec(\"aaa\");");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
 
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
@@ -539,8 +547,8 @@ fn lowering_rejects_unsupported_regexp_exec_pattern() {
 }
 
 #[test]
-fn lowering_rejects_unsupported_direct_new_regexp_exec_pattern() {
-    let program = parse_and_resolve("let hit = new RegExp(\"a*\").exec(\"aaa\");");
+fn lowering_rejects_unsupported_direct_new_regexp_exec_pattern_character_class() {
+    let program = parse_and_resolve("let hit = new RegExp(\"[abc]\").exec(\"aaa\");");
     let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
 
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
