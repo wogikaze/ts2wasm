@@ -159,7 +159,7 @@ impl NameResolver {
                 })
             }
             Stmt::Assign { name, expr, span } => {
-                if self.is_unsupported_top_level_function_outer_mutation(name) {
+                if self.check_outer_mutation_not_supported(name) {
                     return Err(unsupported_top_level_function_outer_mutation(name, *span));
                 }
                 self.resolve_identifier(name, *span)?;
@@ -247,10 +247,16 @@ impl NameResolver {
                     span: *span,
                 })
             }
-            Stmt::ClassDecl { .. } => {
-                // Class declarations not yet supported in name resolution
-                // Pass through for now
-                Ok(stmt.clone())
+            Stmt::ClassDecl { span, .. } => {
+                // Class declarations are parsed but not yet supported in the backend.
+                // Return an UnsupportedSyntax diagnostic rather than silently passing through,
+                // so callers get a clear error instead of opaque Wasm validation failures.
+                Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "issue-XXX: class declarations are parsed but not yet supported in compilation"
+                        .to_owned(),
+                    span: Some(*span),
+                })
             }
             Stmt::TryCatch {
                 try_block,
@@ -624,7 +630,7 @@ impl NameResolver {
                 })
             }
             Expr::Assign { name, expr, span } => {
-                if self.is_unsupported_top_level_function_outer_mutation(name) {
+                if self.check_outer_mutation_not_supported(name) {
                     return Err(unsupported_top_level_function_outer_mutation(name, *span));
                 }
                 self.resolve_identifier(name, *span)?;
@@ -640,7 +646,7 @@ impl NameResolver {
                 expr,
                 span,
             } => {
-                if self.is_unsupported_top_level_function_outer_mutation(name) {
+                if self.check_outer_mutation_not_supported(name) {
                     return Err(unsupported_top_level_function_outer_mutation(name, *span));
                 }
                 self.resolve_identifier(name, *span)?;
@@ -918,7 +924,16 @@ impl NameResolver {
             .any(|scope| scope.contains_key(name))
     }
 
-    fn is_unsupported_top_level_function_outer_mutation(&self, name: &str) -> bool {
+    /// Check if we're trying to mutate a binding declared in an enclosing (non-immediate) scope
+    /// from within a top-level function (function_depth == 1). This is a lowered IR limitation:
+    /// the current lowering strategy does not support re-binding outer-scope locals from a nested
+    /// function. A proper fix would implement lexical capture mutation analysis (env cell assignment).
+    ///
+    /// TODO: Replace this with general mutation analysis. The `name == "initCount"` check below is
+    /// a known special case: `initCount` appears in test262 fixtures (e.g. `S8.7.2_A3.js`) where a
+    /// top-level function assigns to a binding declared outside its own scope. Once
+    /// env-cell-based mutation lowering is in place, this ad-hoc check should be removed.
+    fn check_outer_mutation_not_supported(&self, name: &str) -> bool {
         name == "initCount"
             && self.function_depth == 1
             && self
