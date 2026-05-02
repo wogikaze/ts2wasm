@@ -1071,7 +1071,20 @@ impl Parser {
             }
         }
         if self.consume(TokenKind::Colon) {
-            self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+            self.skip_type_annotation_until(&[TokenKind::LeftBrace, TokenKind::Semicolon])?;
+        }
+        if self.consume(TokenKind::Semicolon) {
+            // Function signature without body (overload)
+            return Ok(Stmt::Function {
+                name,
+                params,
+                body: Vec::new(),
+                is_generator: false,
+                span: Span {
+                    start: start.start,
+                    end: start.end,
+                },
+            });
         }
         let body = self.block()?;
         let end = body.last().map(|stmt| stmt.span().end).unwrap_or(start.end);
@@ -1643,6 +1656,19 @@ impl Parser {
                 "public" | "private" | "protected" | "readonly" | "abstract" | "override"
             )) {
                 self.advance();
+            }
+
+            // Skip TypeScript index signature: [key: Type]: ReturnType;
+            if matches!(self.peek(), Some(Token::LeftBracket)) {
+                self.skip_balanced_bracket_block()?;
+                if self.consume(TokenKind::Colon) {
+                    self.skip_type_annotation_until(&[
+                        TokenKind::Semicolon,
+                        TokenKind::RightBrace,
+                    ]).ok();
+                }
+                self.consume(TokenKind::Semicolon);
+                continue;
             }
 
             let (mut method_name, mut method_span) = self.expect_ident()?;

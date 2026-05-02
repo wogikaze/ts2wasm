@@ -185,6 +185,9 @@ impl WatEmitter<'_> {
                 RuntimeFn::DecodeURI => self.emit_decode_uri(wat),
                 RuntimeFn::Escape => self.emit_escape(wat),
                 RuntimeFn::Unescape => self.emit_unescape(wat),
+                RuntimeFn::StringIncludes => {
+                    // StringIncludes runtime function declared but not yet emitted
+                }
             }
         }
     }

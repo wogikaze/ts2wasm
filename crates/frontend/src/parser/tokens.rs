@@ -246,6 +246,29 @@ impl Parser {
         })
     }
 
+    /// Skip from an opening `[` to its matching `]`.
+    fn skip_balanced_bracket_block(&mut self) -> Result<(), Diagnostic> {
+        self.expect(TokenKind::LeftBracket)?;
+        let mut depth = 1usize;
+        while let Some(token) = self.advance() {
+            match token.kind {
+                Token::LeftBracket => depth += 1,
+                Token::RightBracket => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Ok(());
+                    }
+                }
+                _ => {}
+            }
+        }
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "unterminated TypeScript index signature".to_owned(),
+            span: self.prev_span(),
+        })
+    }
+
     fn consume(&mut self, kind: TokenKind) -> bool {
         self.consume_span(kind).is_some()
     }

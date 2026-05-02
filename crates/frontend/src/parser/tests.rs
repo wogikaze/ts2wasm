@@ -795,6 +795,41 @@ mod tests {
     }
 
     #[test]
+    fn skips_class_index_signature() {
+        let stmts = parse_program("class Foo { [key: string]: number; }").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::ClassDecl { name, body, .. } = &stmts[0] else {
+            panic!("expected ClassDecl, got {:?}", stmts[0]);
+        };
+        assert_eq!(name, "Foo");
+        // Index signature is skipped (not added to body members)
+        assert!(body.is_empty());
+    }
+
+    #[test]
+    fn skips_class_multiple_index_signatures() {
+        let stmts = parse_program("class Foo {\n  [key: string]: number;\n  [key: number]: string;\n}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::ClassDecl { name, body, .. } = &stmts[0] else {
+            panic!("expected ClassDecl, got {:?}", stmts[0]);
+        };
+        assert_eq!(name, "Foo");
+        assert!(body.is_empty());
+    }
+
+    #[test]
+    fn skips_class_index_signature_with_method() {
+        let stmts = parse_program("class Foo {\n  [key: string]: number;\n  bar() { return 42; }\n}").unwrap();
+        assert_eq!(stmts.len(), 1);
+        let Stmt::ClassDecl { name, body, .. } = &stmts[0] else {
+            panic!("expected ClassDecl, got {:?}", stmts[0]);
+        };
+        assert_eq!(name, "Foo");
+        assert_eq!(body.len(), 1);
+        // bar() should be parsed as a method
+    }
+
+    #[test]
     fn parses_numeric_object_keys() {
         let stmts = parse_program("var obj = { 0: \"a\", 1: \"b\" };").unwrap();
 
@@ -837,6 +872,58 @@ mod tests {
         };
         // All three members should parse successfully (at minimum the class parsed)
         assert!(!body.is_empty());
+    }
+
+    #[test]
+    fn parses_enum_declarations_as_erased_syntax() {
+        let stmts = parse_program("enum E { A, B, C }").unwrap();
+        // Enum should be erased — no statements emitted
+        assert!(stmts.is_empty());
+    }
+
+    #[test]
+    fn parses_enum_with_values_as_erased_syntax() {
+        let stmts = parse_program("enum E { A = 1, B, C }").unwrap();
+        assert!(stmts.is_empty());
+    }
+
+    #[test]
+    fn parses_enum_with_trailing_comma_as_erased_syntax() {
+        let stmts = parse_program("enum E { A, B, }").unwrap();
+        assert!(stmts.is_empty());
+    }
+
+    #[test]
+    fn parses_enum_followed_by_let_declaration() {
+        let stmts = parse_program("enum E { A, B }\nlet x = 1;").unwrap();
+        assert_eq!(stmts.len(), 1);
+        assert!(matches!(&stmts[0], Stmt::Let { name, .. } if name == "x"));
+    }
+
+    #[test]
+    fn parses_function_overload_signature_without_body() {
+        let stmts = parse_program("function foo(x: number): number;").unwrap();
+
+        assert_eq!(stmts.len(), 1);
+        let Stmt::Function { name, body, .. } = &stmts[0] else {
+            panic!("expected Function statement");
+        };
+        assert_eq!(name, "foo");
+        assert!(body.is_empty()); // no body since it's a signature
+    }
+
+    #[test]
+    fn parses_function_overloads_followed_by_implementation() {
+        let stmts = parse_program(
+            "function foo(a: string): string;\nfunction foo(a: number): number;\nfunction foo(x: any): any { return x; }",
+        )
+        .unwrap();
+
+        assert_eq!(stmts.len(), 3);
+        // All three should parse as Function statements
+        for stmt in &stmts {
+            assert!(matches!(stmt, Stmt::Function { .. }));
+        }
     }
 
     #[test]
