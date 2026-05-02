@@ -1428,11 +1428,8 @@ fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
-fn class_destructuring_initcount_default_reports_issue_292_with_span() {
-    assert_build_fails_with_unsupported_syntax(
-        "fixtures/core-semantics/class-dstr-initcount-unsupported.ts",
-        "issue-292: top-level function mutation of outer binding `initCount` requires mutable outer environment lowering",
-    );
+fn class_destructuring_initcount_default_uses_env_cell_for_outer_mutation() {
+    assert_fixture_matches_node("fixtures/core-semantics/class-dstr-initcount.ts");
 }
 
 #[test]

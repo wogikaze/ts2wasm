@@ -30,13 +30,13 @@ tag/value の誤った操作が compile-time で検出されない。
 ## Scope
 
 In scope:
-- [ ] TaggedValue wrapper
-- [ ] HeapPtr wrapper
-- [ ] LocalRawValue wrapper
-- [ ] 既存コードの移行
+- [x] TaggedValue wrapper
+- [x] HeapPtr wrapper
+- [x] LocalRawValue wrapper
+- [x] 既存コードの移行
 
 Out of scope:
-- [ ] backend の型変更
+- [x] backend の型変更
 
 ## Affected paths
 
@@ -46,9 +46,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] wrapper 型が定義される
-- [ ] 既存テストが通過する
-- [ ] 誤った操作が compile error になる
+- [x] wrapper 型が定義される
+- [x] 既存テストが通過する
+- [x] 誤った操作が compile error になる
 
 ## Validation
 
@@ -60,10 +60,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

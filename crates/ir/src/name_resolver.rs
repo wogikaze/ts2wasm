@@ -159,9 +159,6 @@ impl NameResolver {
                 })
             }
             Stmt::Assign { name, expr, span } => {
-                if self.check_outer_mutation_not_supported(name) {
-                    return Err(unsupported_top_level_function_outer_mutation(name, *span));
-                }
                 self.resolve_identifier(name, *span)?;
                 Ok(Stmt::Assign {
                     name: name.clone(),
@@ -656,9 +653,6 @@ impl NameResolver {
                 })
             }
             Expr::Assign { name, expr, span } => {
-                if self.check_outer_mutation_not_supported(name) {
-                    return Err(unsupported_top_level_function_outer_mutation(name, *span));
-                }
                 self.resolve_identifier(name, *span)?;
                 Ok(Expr::Assign {
                     name: name.clone(),
@@ -672,9 +666,6 @@ impl NameResolver {
                 expr,
                 span,
             } => {
-                if self.check_outer_mutation_not_supported(name) {
-                    return Err(unsupported_top_level_function_outer_mutation(name, *span));
-                }
                 self.resolve_identifier(name, *span)?;
                 Ok(Expr::LogicalAssign {
                     name: name.clone(),
@@ -992,29 +983,6 @@ impl NameResolver {
             .any(|scope| scope.contains_key(name))
     }
 
-    /// Check if we're mutating a binding from an enclosing (non-immediate) scope within a
-    /// top-level function (function_depth == 1). The lowered IR does not support env-cell-based
-    /// assignment, so this pattern must be rejected regardless of the variable name.
-    ///
-    /// This is a purely structural check: `initCount`, `x`, `whatever` — all are handled the same
-    /// way. There is no ad-hoc name matching.
-    ///
-    /// TODO: Replace this with env-cell-based mutation lowering so arbitrary outer-scope
-    /// mutations from nested functions are supported.
-    fn check_outer_mutation_not_supported(&self, name: &str) -> bool {
-        self.function_depth == 1
-            && self
-                .scopes
-                .last()
-                .is_none_or(|scope| !scope.contains_key(name))
-            && self
-                .scopes
-                .iter()
-                .rev()
-                .skip(1)
-                .any(|scope| scope.contains_key(name))
-    }
-
     fn is_unshadowed_function_constructor(&self, expr: &Expr) -> bool {
         matches!(expr, Expr::Ident { name, .. } if name == "Function")
             && !self.is_user_declared("Function")
@@ -1198,16 +1166,6 @@ fn unsupported_class_value(name: &str, span: Span) -> Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: format!(
             "issue-5011: class `{name}` cannot be used as a value — class runtime is not yet supported"
-        ),
-        span: Some(span),
-    }
-}
-
-fn unsupported_top_level_function_outer_mutation(name: &str, span: Span) -> Diagnostic {
-    Diagnostic {
-        code: DiagCode::UnsupportedSyntax,
-        message: format!(
-            "issue-292: top-level function mutation of outer binding `{name}` requires mutable outer environment lowering"
         ),
         span: Some(span),
     }

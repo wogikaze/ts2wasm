@@ -243,7 +243,7 @@ mod tests {
     }
 
     #[test]
-    fn rejects_top_level_function_outer_mutation_with_span_for_issue_292() {
+    fn accepts_top_level_function_outer_mutation_with_env_cell() {
         let program = vec![
             Stmt::Let {
                 name: "initCount".to_string(),
@@ -277,11 +277,12 @@ mod tests {
             },
         ];
 
-        let err = name_resolver::resolve_names(&program).unwrap_err();
-        assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-        assert!(err.message.contains("issue-292"));
-        assert!(err.message.contains("initCount"));
-        assert_eq!(err.span.map(|span| (span.start, span.end)), Some((28, 54)));
+        let result = name_resolver::resolve_names(&program);
+        assert!(
+            result.is_ok(),
+            "env-cell-based outer mutation should now be accepted: {:?}",
+            result.err()
+        );
     }
 
     #[test]

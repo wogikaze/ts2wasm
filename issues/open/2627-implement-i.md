@@ -123,7 +123,7 @@ Follow-up issues:
 - `issues/open/196-implement-argumentsObjectCreatesRestForJs.md` - Implement Argumentsobjectcreatesrestforjs (same feature label, same group key, title overlap)
 - `issues/open/314-implement-string-builtin.md` - Implement string-builtin support (same feature label, same group key, title overlap)
 - `issues/open/421-implement-class.md` - Implement class syntax (same feature label, same group key, title overlap)
-- `issues/done/423-implement-date.md` - Implement Date object support (same feature label, same group key, title overlap)
+- `issues/open/423-implement-date.md` - Implement Date object support (same feature label, same group key, title overlap)
 - `issues/open/427-implement-duplicate-local.md` - Implement duplicate-local support (same feature label, same group key, title overlap)
 - `issues/open/430-implement-function.md` - Implement function support (same feature label, same group key, title overlap)
 

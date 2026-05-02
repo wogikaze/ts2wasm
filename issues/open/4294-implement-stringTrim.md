@@ -146,3 +146,34 @@ Remaining risks:
 ## Close note
 
 Already implemented. `RuntimeFn::StringTrim` exists in the codebase with WAT emitter, fixture, and tests. No further work needed.
+
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This is a generated triage bucket issue. It was
+created as a `class: blocked` spike with `depends_on` pointing to a parent
+meta-issue (5004 or 5007). When the parent meta-issue was moved to
+`issues/done/`, this child issue was dragged along without any implementation
+or triage work. The `## Completion evidence` section is unfilled (commits
+placeholder `...`, validation result empty). Zero implementation commits
+reference this issue.
+
+**True-done checklist** (all must pass):
+
+1. **Triage the representative failure path**: Confirm it is superseded by an
+   existing open/done issue OR split into implementation-ready child issues
+   with exact reproduction commands.
+
+2. **Commands that must pass**:
+   ```sh
+   cargo fmt --all --check
+   cargo nextest run
+   ```
+
+3. **Specific evidence needed**:
+   - Issue URL or child issue path documenting the triage outcome
+   - Or: the exact failing reference path has a matching open/done issue
+   - Or: the failing test case no longer reproduces the original diagnostic
+

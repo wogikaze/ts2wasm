@@ -126,7 +126,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
+- `issues/open/133-implement-allowJsCrossMonorepoPackage.md` - Implement Allowjscrossmonorepopackage (same feature label, same group key, title overlap)
 - `issues/open/169-implement-ambiguousOverloadResolution.md` - Implement Ambiguousoverloadresolution (same feature label, same group key, title overlap)
 - `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` - Implement tsgo declaration emit: package-json exports and subpath reexport cases (same feature label, same group key, title overlap)
 - `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` - Implement tsgo declaration emit: subpath import declaration emit cases (same feature label, same group key, title overlap)
