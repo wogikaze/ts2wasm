@@ -1000,6 +1000,8 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
         "fixtures/builtins-and-io/string-index-of.ts",
         "fixtures/builtins-and-io/string-split.ts",
         "fixtures/builtins-and-io/string-substring.ts",
+        "fixtures/builtins-and-io/string-char-code-at.ts",
+        "fixtures/builtins-and-io/string-from-char-code.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

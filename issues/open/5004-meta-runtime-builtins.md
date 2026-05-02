@@ -54,6 +54,8 @@ Expected:
 | 1 | String.prototype.indexOf | Done (fixture + node diff test passing) |
 | 1 | String.prototype.split | Done (fixture + node diff test passing) |
 | 1 | String.prototype.substring | Done (fixture + node diff test passing) |
+| 1 | String.prototype.charCodeAt | Done (fixture + node diff test passing) |
+| 1 | String.fromCharCode | Done (fixture + node diff test passing) |
 
 ## Validation
 
