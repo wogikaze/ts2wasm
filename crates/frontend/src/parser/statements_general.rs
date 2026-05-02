@@ -1302,11 +1302,16 @@ impl Parser {
         // Try to parse a simple identifier or variable declaration
         let is_for_in_of = if matches!(self.peek(), Some(Token::Var | Token::Let | Token::Const)) {
             self.advance();
-            if let Some(Token::Ident(_)) = self.peek() {
-                self.advance();
-                matches!(self.peek(), Some(Token::In | Token::Of))
-            } else {
-                false
+            match self.peek() {
+                Some(Token::Ident(_)) => {
+                    self.advance();
+                    // Skip optional TypeScript type annotation (`: Type`) in for-in/of
+                    if self.consume(TokenKind::Colon) {
+                        let _ = self.skip_type_annotation_until(&[TokenKind::In, TokenKind::Of]);
+                    }
+                    matches!(self.peek(), Some(Token::In | Token::Of))
+                }
+                _ => false,
             }
         } else if matches!(self.peek(), Some(Token::Ident(_))) {
             self.advance();
@@ -1323,6 +1328,10 @@ impl Parser {
                 self.advance();
             }
             let (var_name, _) = self.expect_ident()?;
+            // Skip optional TypeScript type annotation (`: Type`) in for-in/of
+            if self.consume(TokenKind::Colon) {
+                self.skip_type_annotation_until(&[TokenKind::In, TokenKind::Of])?;
+            }
 
             if self.consume(TokenKind::In) {
                 let iter = self.expression()?;

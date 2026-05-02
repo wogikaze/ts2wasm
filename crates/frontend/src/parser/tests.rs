@@ -771,6 +771,30 @@ mod tests {
     }
 
     #[test]
+    fn parses_for_in_with_type_annotation_on_variable() {
+        let stmts =
+            parse_program("var expr: any;\nfor (var a: number in expr) {}").unwrap();
+
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForIn { var, .. } = &stmts[1] else {
+            panic!("expected ForIn statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "a");
+    }
+
+    #[test]
+    fn parses_for_of_with_type_annotation_on_variable() {
+        let stmts =
+            parse_program("var items: any[];\nfor (var x: string of items) {}").unwrap();
+
+        assert_eq!(stmts.len(), 2);
+        let Stmt::ForOf { var, .. } = &stmts[1] else {
+            panic!("expected ForOf statement, got {:?}", stmts[1]);
+        };
+        assert_eq!(var, "x");
+    }
+
+    #[test]
     fn parses_constructor_parameter_properties_as_this_assignments() {
         let program = parse_program(
             "class Box { constructor(public x = 1, private readonly y?: number) {} }",
