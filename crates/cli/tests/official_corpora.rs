@@ -13,11 +13,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+use ts2wasm_shared::test_helpers::repo_root;
 use ts2wasm_shared::{TestRecord, TestStatus, TrackingId};
-
-fn repo_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
 
 fn reference_path(relative: &str) -> PathBuf {
     repo_root().join("reference").join(relative)

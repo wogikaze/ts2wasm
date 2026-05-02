@@ -2,6 +2,7 @@
 
 pub mod abi;
 pub mod capability;
+pub mod test_helpers;
 pub mod test_status;
 
 pub use abi::{AbiFunction, AbiType, RuntimeAbi};

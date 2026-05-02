@@ -108,9 +108,8 @@ mod tests {
         emit_canonical_manifest_json, emit_wasm_binary_mvp, emit_wat, emitter::LocalFrame,
     };
     use std::fs;
-    use std::path::{Path, PathBuf};
+    use std::path::Path;
     use std::process::Command;
-    use std::time::{SystemTime, UNIX_EPOCH};
     use ts2wasm_frontend::DiagCode;
     use ts2wasm_frontend::{Lexer, Parser};
     use ts2wasm_ir::lowered::{
@@ -119,6 +118,7 @@ mod tests {
     };
     use ts2wasm_ir::{builtin_resolver, lowered, name_resolver};
     use ts2wasm_runtime_abi::{Layout, ValueTag};
+    use ts2wasm_shared::test_helpers::unique_temp_dir;
 
     #[test]
     fn emit_wat_rejects_residual_method_call_before_emission() {
@@ -1190,13 +1190,5 @@ mod tests {
             String::from_utf8_lossy(&output.stderr)
         );
         String::from_utf8(output.stdout).expect("iwasm stdout should be UTF-8")
-    }
-
-    fn unique_temp_dir(label: &str) -> PathBuf {
-        let unique = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("system clock should be after UNIX_EPOCH")
-            .as_nanos();
-        std::env::temp_dir().join(format!("ts2wasm-{label}-{unique}-{}", std::process::id()))
     }
 }

@@ -1,14 +1,7 @@
 use serde_json::Value;
 use std::fs;
-use std::path::{Path, PathBuf};
+use ts2wasm_shared::test_helpers::fixture_path;
 use ts2wasm_shared::{TestRecord, TestStatus, TrackingId};
-
-fn fixtures_path(relative: &str) -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("../..")
-        .join("fixtures")
-        .join(relative)
-}
 
 #[test]
 fn test_record_json_serialization() {
@@ -96,7 +89,7 @@ fn test_record_json_escaping() {
 
 #[test]
 fn test_pass_fixture_exists() {
-    let fixture = fixtures_path("test-infrastructure/pass-fixture.ts");
+    let fixture = fixture_path("fixtures/test-infrastructure/pass-fixture.ts");
     assert!(fixture.exists(), "pass-fixture.ts should exist");
 
     let content = fs::read_to_string(&fixture).expect("should read fixture");
@@ -105,7 +98,7 @@ fn test_pass_fixture_exists() {
 
 #[test]
 fn test_fail_fixture_exists() {
-    let fixture = fixtures_path("test-infrastructure/fail-fixture.ts");
+    let fixture = fixture_path("fixtures/test-infrastructure/fail-fixture.ts");
     assert!(fixture.exists(), "fail-fixture.ts should exist");
 
     let content = fs::read_to_string(&fixture).expect("should read fixture");
@@ -114,7 +107,7 @@ fn test_fail_fixture_exists() {
 
 #[test]
 fn test_unsupported_fixture_exists() {
-    let fixture = fixtures_path("test-infrastructure/unsupported-fixture.ts");
+    let fixture = fixture_path("fixtures/test-infrastructure/unsupported-fixture.ts");
     assert!(fixture.exists(), "unsupported-fixture.ts should exist");
 
     let content = fs::read_to_string(&fixture).expect("should read fixture");
