@@ -553,6 +553,45 @@ fn lower_static_named_import_bindings_for_build(
                     lowered_statement_index += 1;
                 }
             }
+            Stmt::ExportAllFrom { source, .. } => {
+                let dependency = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == source.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for re-export `{}`",
+                            source.value
+                        ),
+                        span: Some(source.span),
+                    })?;
+                let exports = collect_literal_named_exports(dependency.resolved_path())?;
+                for (export_name, expr) in &exports {
+                    let local_name = format!("__ts2wasm_re_{export_name}");
+                    rewritten.push(Stmt::Let {
+                        name: local_name.clone(),
+                        expr: expr.clone(),
+                        span: source.span,
+                    });
+                    local_name_to_index.insert(local_name.clone(), lowered_statement_index);
+                    named_imports.push(StaticNamedImportBinding {
+                        source_specifier: source.value.clone(),
+                        source_module_id: dependency.resolved_module_id(),
+                        source_path: dependency.resolved_path().to_path_buf(),
+                        imported_name: export_name.clone(),
+                        local_name: local_name.clone(),
+                        lowered_statement_index,
+                        initializer: expr.clone(),
+                    });
+                    module_exports.push(ModuleExport {
+                        name: export_name.clone(),
+                        lowered_statement_index,
+                    });
+                    lowered_statement_index += 1;
+                }
+            }
             other => {
                 if let Stmt::Let { name, .. } = other {
                     local_name_to_index.insert(name.clone(), lowered_statement_index);

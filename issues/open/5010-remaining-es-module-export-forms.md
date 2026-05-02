@@ -25,7 +25,7 @@ Issues 5008-5009 implemented the simpler export forms (ExportDecl, ExportDefault
 ## Scope
 
 - [x] Rewrite `ImportDefaultNamed` for `import x, { y } from "./mod"`
-- [ ] Rewrite `ExportAllFrom` for `export * from "./mod"`
+- [x] Rewrite `ExportAllFrom` for `export * from "./mod"`
 - [ ] Rewrite `ExportNamedFrom` for `export { x } from "./mod"`
 - [ ] Rewrite `ExportNamespaceFrom` for `export * as ns from "./mod"`
 - [ ] Add Node/iwasm differential test coverage for new forms
@@ -34,7 +34,7 @@ Issues 5008-5009 implemented the simpler export forms (ExportDecl, ExportDefault
 ## Acceptance criteria
 
 - [x] `import x, { y } from "./mod"` builds to WASM
-- [ ] `export * from "./mod"` builds to WASM and forwards named exports
+- [x] `export * from "./mod"` builds to WASM and forwards named exports
 - [ ] `export { x } from "./mod"` builds to WASM (re-export by alias)
 - [ ] `export * as ns from "./mod"` builds to WASM
 - [ ] All previous `static-*-build-smoke` tests still pass
