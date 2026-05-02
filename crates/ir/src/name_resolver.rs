@@ -248,10 +248,9 @@ impl NameResolver {
                 })
             }
             Stmt::ClassDecl { .. } => {
-                // Pass-through at the name resolution level — class bodies are resolved as nested
-                // functions by the lowered program builder (program.rs). The lowered resolver
-                // converts this to LoweredStmt::Expr(Undefined). The LoweredStmt::ClassDecl
-                // variant is reserved for future runtime class support. See also validate.rs.
+                // Pass-through at the name resolution level — class methods are lowered as
+                // standalone functions by the lowered program builder (program.rs). The class
+                // statement itself is dropped. See the LIMITATION comment in program.rs.
                 Ok(stmt.clone())
             }
             Stmt::TryCatch {

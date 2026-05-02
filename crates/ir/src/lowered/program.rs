@@ -219,6 +219,15 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 static_blocks,
                 ..
             } => {
+                // LIMITATION: Class declarations are partially supported. Constructor and methods
+                // are lowered as standalone functions with env-cell capture support. The class
+                // binding (constructor function, prototype chain) IS NOT emitted — the statement
+                // is dropped. This means:
+                //   - Class method bodies work (env cells, captures, `this`)
+                //   - `new C()`, `C.prototype`, `C.staticMethod` reference the class as a value
+                //     and will produce incorrect runtime results (undefined)
+                // TODO: Implement full class runtime support (constructor, prototype, extends,
+                // static members, private elements). tracker: <future-issue>
                 let mut initializers = Vec::new();
                 for (field, initializer, span) in static_private_fields {
                     initializers.push(ClassStaticInitializer::PrivateField {
