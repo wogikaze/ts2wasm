@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/423-implement-date.md` - Implement Date object support (same feature label, same group key, title overlap)
+- `issues/done/423-implement-date.md` - Implement Date object support (same feature label, same group key, title overlap)
 
 ## Smart triage
 

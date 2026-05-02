@@ -16,16 +16,17 @@ Issue files are the source of truth for work items. The generated section below 
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
 | frontend | 4431 | 4336 | 95 |
-| ir | 13 | 1 | 12 |
+| harness | 1 | 1 | 0 |
+| ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 176 | 171 | 5 |
-| runtime | 190 | 60 | 130 |
+| reference | 205 | 200 | 5 |
+| runtime | 160 | 25 | 135 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4848 | 4570 | 278 |
+| total | 4848 | 4564 | 284 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +158,6 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
-| 5011 | Represent or reject class runtime values in lowered IR | feature | ir/backend | design | P3 |  | Represent or reject class runtime values in lowered IR |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -305,12 +305,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 312 | Triage test262 blocked P0 window | spike | reference | class: triage-needed | Triage test262 blocked P0 window |
 | 313 | Implement array-builtin support | feature | runtime/builtins | class: blocked | Implement array-builtin support |
 | 314 | Implement string-builtin support | feature | runtime/builtins | class: blocked | Implement string-builtin support |
-| 316 | Fix Object.keys backend-io error | feature | runtime/builtins | class: blocked | Fix Object.keys backend-io error |
+| 316 | Fix Object.keys backend-io error | feature | harness | class: blocked | Fix Object.keys backend-io error |
 | 335 | Implement full Math.pow number semantics | feature | runtime/builtins | class: blocked | Implement full Math.pow number semantics |
 | 336 | Implement test262 includes directive processing | feature | cli/reference | class: blocked | Implement test262 includes directive processing |
 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | feature | runtime/builtins | class: blocked | Implement Object builtin method coverage (1,721 test262 cases) |
 | 343 | Implement DuplicateLocal diagnostic detection (66 test262 cases) | feature | frontend/resolver | class: blocked | Implement DuplicateLocal diagnostic detection (66 test262 cases) |
-| 344 | Implement legacy global builtin bindings (8 test262 cases) | feature | runtime/builtins | class: blocked | Implement legacy global builtin bindings (8 test262 cases) |
 | 345 | Implement TypeScript type alias coverage for tsc suite (23 cases) | feature | frontend/syntax | class: blocked | Implement TypeScript type alias coverage for tsc suite (23 cases) |
 | 353 | Implement iterator protocol integration for spread operator | feature | runtime/semantics | class: blocked | Implement iterator protocol integration for spread operator |
 | 357 | Fix ABC451 depth-8 iwasm timeout | bug | runtime/memory | class: blocked | Fix ABC451 depth-8 iwasm timeout |
@@ -330,11 +329,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
 | 417 | Implement async-iteration support | spike | frontend/syntax | class: triage-needed | Implement async-iteration support |
 | 418 | Implement break/continue | spike | frontend/syntax | class: blocked | Implement break/continue |
-| 419 | Implement built-in API support | spike | runtime/builtins | class: blocked | Implement built-in API support |
+| 419 | Implement built-in API support | spike | reference/triage | class: blocked | Implement built-in API support |
 | 420 | Implement call expression support | spike | frontend/syntax | class: blocked | Implement call expression support |
 | 421 | Implement class syntax | spike | frontend/syntax | class: triage-needed | Implement class syntax |
 | 422 | Implement class-accessor support | spike | frontend/syntax | class: triage-needed | Implement class-accessor support |
-| 423 | Implement Date object support | spike | runtime/builtins | class: blocked | Implement Date object support |
 | 424 | Implement declaration-emit support | spike | frontend/syntax | class: blocked | Implement declaration-emit support |
 | 425 | Implement destructuring | spike | frontend/syntax | class: blocked | Implement destructuring |
 | 426 | Implement duplicate-function support | spike | reference/triage | class: triage-needed | Implement duplicate-function support |
@@ -355,7 +353,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 441 | Implement object literal enhancements | spike | frontend/syntax | class: blocked | Implement object literal enhancements |
 | 442 | Implement parser syntax extensions | spike | frontend/syntax | class: blocked | Implement parser syntax extensions |
 | 443 | Implement property access support | spike | frontend/syntax | class: blocked | Implement property access support |
-| 444 | Implement RegExp literal support | spike | runtime/builtins | class: blocked | Implement RegExp literal support |
 | 445 | Implement runtime-subset support | spike | reference/triage | class: triage-needed | Implement runtime-subset support |
 | 446 | Implement scope-analysis support | spike | frontend/syntax | class: blocked | Implement scope-analysis support |
 | 447 | Implement spread operator | spike | frontend/syntax | class: blocked | Implement spread operator |
@@ -1050,7 +1047,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1136 | Implement Checkjsobjectliteralindexsignatures | spike | frontend/syntax | class: blocked | Implement Checkjsobjectliteralindexsignatures |
 | 1137 | Implement Checkjstypedefnounusedlocalmarked | spike | frontend/syntax | class: blocked | Implement Checkjstypedefnounusedlocalmarked |
 | 1138 | Implement Checkjsdoctypetagonexportassignment | spike | frontend/syntax | class: blocked | Implement Checkjsdoctypetagonexportassignment |
-| 1139 | Implement Checkjsxnotseterror | spike | runtime/builtins | class: blocked | Implement Checkjsxnotseterror |
+| 1139 | Implement Checkjsxnotseterror | spike | reference/triage | class: blocked | Implement Checkjsxnotseterror |
 | 1140 | Implement Checkmergedglobalumdsymbol | spike | frontend/syntax | class: blocked | Implement Checkmergedglobalumdsymbol |
 | 1141 | Implement Checksupercallbeforethisaccess | spike | frontend/syntax | class: blocked | Implement Checksupercallbeforethisaccess |
 | 1142 | Implement Checksupercallbeforethisaccessing Class | spike | frontend/syntax | class: blocked | Implement Checksupercallbeforethisaccessing Class |
@@ -2141,7 +2138,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2227 | Implement Excesspropertycheckingintersectionwithconditional | spike | frontend/syntax | class: blocked | Implement Excesspropertycheckingintersectionwithconditional |
 | 2228 | Implement Excesspropertycheckswithnestedintersections | spike | frontend/syntax | class: blocked | Implement Excesspropertycheckswithnestedintersections |
 | 2229 | Implement Excesspropertyerrorforfunctiontypes | spike | frontend/syntax | class: blocked | Implement Excesspropertyerrorforfunctiontypes |
-| 2230 | Implement Excessivestackdepthflatarray | spike | runtime/builtins | class: blocked | Implement Excessivestackdepthflatarray |
+| 2230 | Implement Excessivestackdepthflatarray | spike | reference/triage | class: blocked | Implement Excessivestackdepthflatarray |
 | 2231 | Implement Excessivelylargetuplespread | spike | frontend/syntax | class: blocked | Implement Excessivelylargetuplespread |
 | 2232 | Implement Exhaustiveswitchcheckcircularity | spike | frontend/syntax | class: blocked | Implement Exhaustiveswitchcheckcircularity |
 | 2233 | Implement Exhaustiveswitchwithwideningliteraltypes | spike | frontend/syntax | class: blocked | Implement Exhaustiveswitchwithwideningliteraltypes |
@@ -2332,7 +2329,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2418 | Implement Forloopendingmultilinecomments | spike | frontend/syntax | class: blocked | Implement Forloopendingmultilinecomments |
 | 2419 | Implement Forloopwithdestructuringdoesnotelidefollowingstatement | spike | frontend/syntax | class: blocked | Implement Forloopwithdestructuringdoesnotelidefollowingstatement |
 | 2420 | Implement Forofstringconstituents | spike | frontend/syntax | class: blocked | Implement Forofstringconstituents |
-| 2421 | Implement Foroftransformsexpression | spike | runtime/builtins | class: blocked | Implement Foroftransformsexpression |
+| 2421 | Implement Foroftransformsexpression | spike | reference/triage | class: blocked | Implement Foroftransformsexpression |
 | 2422 | Implement Forstatementinnercomments | spike | frontend/syntax | class: blocked | Implement Forstatementinnercomments |
 | 2423 | Implement Formattopartsfractionalsecond | spike | frontend/resolver | class: blocked | Implement Formattopartsfractionalsecond |
 | 2424 | Implement Forwarddeclaredcommontypes | spike | frontend/resolver | class: blocked | Implement Forwarddeclaredcommontypes |
@@ -2783,7 +2780,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 2869 | Implement Inheritedmodulemembersforclodule | spike | frontend/syntax | class: blocked | Implement Inheritedmodulemembersforclodule |
 | 2870 | Implement Inheritedoverloadedspecializedsignatures | spike | frontend/syntax | class: blocked | Implement Inheritedoverloadedspecializedsignatures |
 | 2871 | Implement Initializepropertieswithrenamedlet | spike | frontend/syntax | class: blocked | Implement Initializepropertieswithrenamedlet |
-| 2872 | Implement Initializeddestructuringassignmenttypes | spike | runtime/builtins | class: blocked | Implement Initializeddestructuringassignmenttypes |
+| 2872 | Implement Initializeddestructuringassignmenttypes | spike | reference/triage | class: blocked | Implement Initializeddestructuringassignmenttypes |
 | 2873 | Implement Initializerwiththispropertyaccess | spike | frontend/syntax | class: blocked | Implement Initializerwiththispropertyaccess |
 | 2874 | Implement Inlineconditionalhassimilarassignability | spike | frontend/syntax | class: blocked | Implement Inlineconditionalhassimilarassignability |
 | 2875 | Implement Inlinemappedtypemodifierdeclarationemit | spike | frontend/syntax | class: blocked | Implement Inlinemappedtypemodifierdeclarationemit |
@@ -3008,7 +3005,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3094 | Implement Jsfilecompilationpublicmethodsyntaxofclass | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationpublicmethodsyntaxofclass |
 | 3095 | Implement Jsfilecompilationrestparamjsdocfunction | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationrestparamjsdocfunction |
 | 3096 | Implement Jsfilecompilationshorthandproperty | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationshorthandproperty |
-| 3097 | Implement Jsfilecompilationtypeargumentsyntaxofcall | spike | runtime/builtins | class: blocked | Implement Jsfilecompilationtypeargumentsyntaxofcall |
+| 3097 | Implement Jsfilecompilationtypeargumentsyntaxofcall | spike | reference/triage | class: blocked | Implement Jsfilecompilationtypeargumentsyntaxofcall |
 | 3098 | Implement Jsfilecompilationtypeassertions | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationtypeassertions |
 | 3099 | Implement Jsfilecompilationtypeparametersyntaxofclass | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationtypeparametersyntaxofclass |
 | 3100 | Implement Jsfilecompilationtypeparametersyntaxofclassexpression | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationtypeparametersyntaxofclassexpression |
@@ -3036,19 +3033,19 @@ Issue files are the source of truth for work items. The generated section below 
 | 3122 | Implement Jsdoctypecastnotypenocrash | spike | frontend/resolver | class: blocked | Implement Jsdoctypecastnotypenocrash |
 | 3123 | Implement Jsdoctypedefnocrash | spike | frontend/syntax | class: blocked | Implement Jsdoctypedefnocrash |
 | 3124 | Implement Jsonfileimportcheckscallcorrectlytwice | spike | frontend/syntax | class: blocked | Implement Jsonfileimportcheckscallcorrectlytwice |
-| 3125 | Implement Jsxemitwithattributes | spike | runtime/builtins | class: blocked | Implement Jsxemitwithattributes |
-| 3126 | Implement Jsxfactoryandreactnamespace | spike | runtime/builtins | class: blocked | Implement Jsxfactoryandreactnamespace |
-| 3127 | Implement Jsxfactoryidentifier | spike | runtime/builtins | class: blocked | Implement Jsxfactoryidentifier |
+| 3125 | Implement Jsxemitwithattributes | spike | reference/triage | class: blocked | Implement Jsxemitwithattributes |
+| 3126 | Implement Jsxfactoryandreactnamespace | spike | reference/triage | class: blocked | Implement Jsxfactoryandreactnamespace |
+| 3127 | Implement Jsxfactoryidentifier | spike | reference/triage | class: blocked | Implement Jsxfactoryidentifier |
 | 3128 | Implement Jsxfactoryidentifierasparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierasparameter |
 | 3129 | Implement Jsxfactoryidentifierwithabsentparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierwithabsentparameter |
-| 3130 | Implement Jsxfactorymissingerrorinsideaclass | spike | runtime/builtins | class: blocked | Implement Jsxfactorymissingerrorinsideaclass |
-| 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | runtime/builtins | class: blocked | Implement Jsxfactorynotidentifierorqualifiedname |
-| 3132 | Implement Jsxfactoryqualifiedname | spike | runtime/builtins | class: blocked | Implement Jsxfactoryqualifiedname |
+| 3130 | Implement Jsxfactorymissingerrorinsideaclass | spike | reference/triage | class: blocked | Implement Jsxfactorymissingerrorinsideaclass |
+| 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | reference/triage | class: blocked | Implement Jsxfactorynotidentifierorqualifiedname |
+| 3132 | Implement Jsxfactoryqualifiedname | spike | reference/triage | class: blocked | Implement Jsxfactoryqualifiedname |
 | 3133 | Implement Jsxfactoryqualifiednameresolutionerror | spike | frontend/syntax | class: blocked | Implement Jsxfactoryqualifiednameresolutionerror |
-| 3134 | Implement Jsxfactoryqualifiednamewithes | spike | runtime/builtins | class: blocked | Implement Jsxfactoryqualifiednamewithes |
-| 3135 | Implement Jsxpreservewithjsinput | spike | runtime/builtins | class: blocked | Implement Jsxpreservewithjsinput |
-| 3136 | Implement Jsxruntimepragma | spike | runtime/builtins | class: blocked | Implement Jsxruntimepragma |
-| 3137 | Implement Jsxspreadtag | spike | runtime/builtins | class: blocked | Implement Jsxspreadtag |
+| 3134 | Implement Jsxfactoryqualifiednamewithes | spike | reference/triage | class: blocked | Implement Jsxfactoryqualifiednamewithes |
+| 3135 | Implement Jsxpreservewithjsinput | spike | reference/triage | class: blocked | Implement Jsxpreservewithjsinput |
+| 3136 | Implement Jsxruntimepragma | spike | reference/triage | class: blocked | Implement Jsxruntimepragma |
+| 3137 | Implement Jsxspreadtag | spike | reference/triage | class: blocked | Implement Jsxspreadtag |
 | 3138 | Implement Keepimportsindts | spike | frontend/syntax | class: blocked | Implement Keepimportsindts |
 | 3139 | Implement Keyremappingkeyofresult | spike | frontend/syntax | class: blocked | Implement Keyremappingkeyofresult |
 | 3140 | Implement Keyofdoesntcontainsymbols | spike | frontend/syntax | class: blocked | Implement Keyofdoesntcontainsymbols |
@@ -3688,8 +3685,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 3774 | Implement Parseinvalidnames | spike | frontend/syntax | class: blocked | Implement Parseinvalidnames |
 | 3775 | Implement Parseinvalidnullabletypes | spike | frontend/syntax | class: triage-needed | Implement Parseinvalidnullabletypes |
 | 3776 | Implement Parsejsxelementinunaryexpressionnocrash Jsx | spike | frontend/syntax | class: blocked | Implement Parsejsxelementinunaryexpressionnocrash Jsx |
-| 3777 | Implement Parsejsxelementinunaryexpressionnocrash Regexp Literal | spike | runtime/builtins | class: blocked | Implement Parsejsxelementinunaryexpressionnocrash Regexp Literal |
-| 3778 | Implement Parsejsxextends | spike | runtime/builtins | class: blocked | Implement Parsejsxextends |
+| 3777 | Implement Parsejsxelementinunaryexpressionnocrash Regexp Literal | spike | reference/triage | class: blocked | Implement Parsejsxelementinunaryexpressionnocrash Regexp Literal |
+| 3778 | Implement Parsejsxextends | spike | reference/triage | class: blocked | Implement Parsejsxextends |
 | 3779 | Implement Parseobjectliteralswithouttypes | spike | frontend/syntax | class: blocked | Implement Parseobjectliteralswithouttypes |
 | 3780 | Implement Parsetypes | spike | frontend/syntax | class: triage-needed | Implement Parsetypes |
 | 3781 | Implement Parseunaryexpressionnotypeassertioninjsx | spike | frontend/syntax | class: blocked | Implement Parseunaryexpressionnotypeassertioninjsx |
@@ -3910,13 +3907,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 3996 | Implement Compiler | spike | frontend/syntax | class: blocked | Implement Compiler |
 | 3997 | Implement Referencesatisfiesexpression | spike | frontend/syntax | class: blocked | Implement Referencesatisfiesexpression |
 | 3998 | Implement Referencetypespreferedtopathifpossible | spike | frontend/syntax | class: blocked | Implement Referencetypespreferedtopathifpossible |
-| 3999 | Implement Regexpwithopenbracketincharclass | spike | runtime/builtins | class: blocked | Implement Regexpwithopenbracketincharclass |
-| 4000 | Implement Regexpwithslashincharclass | spike | runtime/builtins | class: blocked | Implement Regexpwithslashincharclass |
+| 3999 | Implement Regexpwithopenbracketincharclass | spike | reference/triage | class: blocked | Implement Regexpwithopenbracketincharclass |
+| 4000 | Implement Regexpwithslashincharclass | spike | reference/triage | class: blocked | Implement Regexpwithslashincharclass |
 | 4001 | Implement Regexmatchall | spike | frontend/syntax | class: blocked | Implement Regexmatchall |
 | 4002 | Implement Regexpexecandmatchtypeusages | spike | frontend/syntax | class: blocked | Implement Regexpexecandmatchtypeusages |
-| 4003 | Implement Regularexpressioncharacterclassrangeorder | spike | runtime/builtins | class: blocked | Implement Regularexpressioncharacterclassrangeorder |
-| 4004 | Implement Regularexpressionextendedunicodeescapes | spike | runtime/builtins | class: blocked | Implement Regularexpressionextendedunicodeescapes |
-| 4005 | Implement Regularexpressionscanning | spike | runtime/builtins | class: blocked | Implement Regularexpressionscanning |
+| 4003 | Implement Regularexpressioncharacterclassrangeorder | spike | reference/triage | class: blocked | Implement Regularexpressioncharacterclassrangeorder |
+| 4004 | Implement Regularexpressionextendedunicodeescapes | spike | reference/triage | class: blocked | Implement Regularexpressionextendedunicodeescapes |
+| 4005 | Implement Regularexpressionscanning | spike | reference/triage | class: blocked | Implement Regularexpressionscanning |
 | 4006 | Implement Regularexpressionwithnonbmpflags | spike | frontend/syntax | class: blocked | Implement Regularexpressionwithnonbmpflags |
 | 4007 | Implement Relatedviadiscriminatedtypenoerror Name Resolution | spike | frontend/resolver | class: blocked | Implement Relatedviadiscriminatedtypenoerror Name Resolution |
 | 4008 | Implement Relatedviadiscriminatedtypenoerror Parser Syntax | spike | frontend/syntax | class: blocked | Implement Relatedviadiscriminatedtypenoerror Parser Syntax |
@@ -4202,10 +4199,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 4288 | Implement Stringliteralobjectliteraldeclaration | spike | frontend/syntax | class: blocked | Implement Stringliteralobjectliteraldeclaration |
 | 4289 | Implement Stringliteralpropertynamewithlinecontinuation | spike | frontend/syntax | class: blocked | Implement Stringliteralpropertynamewithlinecontinuation |
 | 4290 | Implement Stringliteralserrors | spike | frontend/syntax | class: triage-needed | Implement Stringliteralserrors |
-| 4291 | Implement Stringmatchall | spike | runtime/builtins | class: blocked | Implement Stringmatchall |
+| 4291 | Implement Stringmatchall | spike | reference/triage | class: blocked | Implement Stringmatchall |
 | 4292 | Implement Stringpropcodegen | spike | frontend/syntax | class: blocked | Implement Stringpropcodegen |
 | 4293 | Implement Stringrawtype | spike | frontend/resolver | class: blocked | Implement Stringrawtype |
-| 4294 | Implement Stringtrim | spike | runtime/builtins | class: blocked | Implement Stringtrim |
 | 4295 | Implement Stripmembersoptionality | spike | frontend/resolver | class: blocked | Implement Stripmembersoptionality |
 | 4296 | Implement Structural | spike | frontend/syntax | class: blocked | Implement Structural |
 | 4297 | Implement Structuraltypeindeclarefileformodule | spike | frontend/syntax | class: blocked | Implement Structuraltypeindeclarefileformodule |
@@ -4390,8 +4386,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 4476 | Implement Tslibnotfounddifferentmodules | spike | reference/triage | class: triage-needed | Implement Tslibnotfounddifferentmodules |
 | 4477 | Implement Tslibreexporthelpers | spike | frontend/syntax | class: blocked | Implement Tslibreexporthelpers |
 | 4478 | Implement Tsxdefaultimports | spike | frontend/syntax | class: blocked | Implement Tsxdefaultimports |
-| 4479 | Implement Tsxfragmentchildrencheck | spike | runtime/builtins | class: blocked | Implement Tsxfragmentchildrencheck |
-| 4480 | Implement Tsxresolveexternalmoduleexportstypes | spike | runtime/builtins | class: blocked | Implement Tsxresolveexternalmoduleexportstypes |
+| 4479 | Implement Tsxfragmentchildrencheck | spike | reference/triage | class: blocked | Implement Tsxfragmentchildrencheck |
+| 4480 | Implement Tsxresolveexternalmoduleexportstypes | spike | reference/triage | class: blocked | Implement Tsxresolveexternalmoduleexportstypes |
 | 4481 | Implement Tsxtypeargumentpartialdefinitionstillerrors | spike | frontend/syntax | class: blocked | Implement Tsxtypeargumentpartialdefinitionstillerrors |
 | 4482 | Implement Tupletypeinference Name Resolution | spike | frontend/resolver | class: blocked | Implement Tupletypeinference Name Resolution |
 | 4483 | Implement Tupletypeinference Type System | spike | frontend/syntax | class: blocked | Implement Tupletypeinference Type System |
@@ -4594,7 +4590,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4680 | Implement Unresolvableselfreferencingawaitedunion | spike | frontend/syntax | class: blocked | Implement Unresolvableselfreferencingawaitedunion |
 | 4681 | Implement Unresolvedtypeassertionsymbol | spike | frontend/syntax | class: blocked | Implement Unresolvedtypeassertionsymbol |
 | 4682 | Implement Unspecializedconstraints | spike | frontend/syntax | class: blocked | Implement Unspecializedconstraints |
-| 4683 | Implement Unterminatedregexatendofsource | spike | runtime/builtins | class: blocked | Implement Unterminatedregexatendofsource |
+| 4683 | Implement Unterminatedregexatendofsource | spike | reference/triage | class: blocked | Implement Unterminatedregexatendofsource |
 | 4684 | Implement Unterminatedstringliteralwithbackslash | spike | frontend/syntax | class: blocked | Implement Unterminatedstringliteralwithbackslash |
 | 4685 | Implement Untypedargumentinlambdaexpression | spike | frontend/resolver | class: blocked | Implement Untypedargumentinlambdaexpression |
 | 4686 | Implement Untypedfunctioncallswithtypeparameters | spike | frontend/syntax | class: triage-needed | Implement Untypedfunctioncallswithtypeparameters |
@@ -4608,7 +4604,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4694 | Implement Unusedimportdeclaration | spike | frontend/syntax | class: blocked | Implement Unusedimportdeclaration |
 | 4695 | Implement Unusedimportwithspread | spike | frontend/syntax | class: blocked | Implement Unusedimportwithspread |
 | 4696 | Implement Unusedimports Import Export | spike | frontend/syntax | class: blocked | Implement Unusedimports Import Export |
-| 4697 | Implement Unusedimports Regexp Literal | spike | runtime/builtins | class: blocked | Implement Unusedimports Regexp Literal |
+| 4697 | Implement Unusedimports Regexp Literal | spike | reference/triage | class: blocked | Implement Unusedimports Regexp Literal |
 | 4698 | Implement Unusedinterfaceinnamespace | spike | frontend/syntax | class: blocked | Implement Unusedinterfaceinnamespace |
 | 4699 | Implement Unusedinvalidtypearguments | spike | frontend/syntax | class: blocked | Implement Unusedinvalidtypearguments |
 | 4700 | Implement Unusedlocalproperty | spike | frontend/syntax | class: blocked | Implement Unusedlocalproperty |
@@ -4687,7 +4683,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 4773 | Implement Variancerepeatedlypropegateswithunreliableflag | spike | frontend/syntax | class: blocked | Implement Variancerepeatedlypropegateswithunreliableflag |
 | 4774 | Implement Verbatim | spike | frontend/syntax | class: blocked | Implement Verbatim |
 | 4775 | Implement Verbatimmodulesyntaxdefaultvalue | spike | frontend/syntax | class: blocked | Implement Verbatimmodulesyntaxdefaultvalue |
-| 4776 | Implement Verbatimmodulesyntaxreactreference | spike | runtime/builtins | class: blocked | Implement Verbatimmodulesyntaxreactreference |
+| 4776 | Implement Verbatimmodulesyntaxreactreference | spike | reference/triage | class: blocked | Implement Verbatimmodulesyntaxreactreference |
 | 4777 | Implement Vissyntax | spike | frontend/syntax | class: blocked | Implement Vissyntax |
 | 4778 | Implement Visibilityofcrossmoduletypeusage | spike | frontend/syntax | class: blocked | Implement Visibilityofcrossmoduletypeusage |
 | 4779 | Implement Visibilityoftypeparameters | spike | frontend/syntax | class: blocked | Implement Visibilityoftypeparameters |
@@ -4723,7 +4719,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4809 | Implement name resolution | spike | frontend/resolver | class: blocked | Implement name resolution |
 | 4810 | Implement object literal enhancements | spike | frontend/syntax | class: blocked | Implement object literal enhancements |
 | 4811 | Implement parser syntax extensions | spike | frontend/syntax | class: blocked | Implement parser syntax extensions |
-| 4812 | Implement RegExp literal support | spike | runtime/builtins | class: blocked | Implement RegExp literal support |
 | 4813 | Implement type-system support | spike | frontend/syntax | class: blocked | Implement type-system support |
 | 4814 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | 5000 | Meta: TypeScript Compiler Semantic Analysis Coverage |
@@ -4959,6 +4954,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 341c | Implement Boolean global | feature | runtime/builtins | see `issues/done/341c-boolean-global.md` |
 | 341d | Implement globalThis binding | feature | runtime/builtins | see `issues/done/341d-globalthis-binding.md` |
 | 341e | Implement encodeURI, decodeURI, escape, unescape | feature | runtime/builtins | see file |
+| 344 | Implement legacy global builtin bindings (8 test262 cases) | feature | runtime/builtins | see file |
 | 346 | Implement TypeScript declaration emit coverage for tsgo suite (16 cases) | feature | frontend/syntax | see `issues/done/346-implement-tsgo-declaration-emit.md` |
 | 347 | Parser and resolver support for direct eval and eval-code scope | feature | frontend/semantics | see `issues/done/347-parser-resolver-direct-eval-scope.md` |
 | 348 | Lowering block-level function declarations in direct eval code | feature | ir | see `issues/done/348-lowering-eval-block-function-declarations.md` |
@@ -5014,10 +5010,15 @@ Issue files are the source of truth for work items. The generated section below 
 | 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | see file |
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
+| 423 | Implement Date object support | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
+| 444 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
+| 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
+| 4812 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/4812-implement-regexp-literal.md` |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | see file |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) | feature | ir/compiler | see file |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module | feature | ir/compiler | see file |
+| 5011 | Represent or reject class runtime values in lowered IR | feature | ir/backend | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract

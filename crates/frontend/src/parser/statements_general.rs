@@ -1637,6 +1637,14 @@ impl Parser {
                 continue;
             }
 
+            // Skip TypeScript access modifiers before method/property name
+            while matches!(self.peek(), Some(Token::Ident(name)) if matches!(
+                name.as_str(),
+                "public" | "private" | "protected" | "readonly" | "abstract" | "override"
+            )) {
+                self.advance();
+            }
+
             let (mut method_name, mut method_span) = self.expect_ident()?;
             if (method_name == "get" || method_name == "set")
                 && matches!(self.peek(), Some(Token::Ident(_)))
@@ -1668,6 +1676,18 @@ impl Parser {
                 continue;
             }
 
+            // Field with initializer but no type annotation: `x = expr` or `x;`
+            if matches!(self.peek(), Some(Token::Equal)) {
+                self.expect(TokenKind::Equal)?;
+                let _ = self.expression()?;
+                self.consume(TokenKind::Semicolon);
+                continue;
+            }
+            if matches!(self.peek(), Some(Token::Semicolon)) {
+                self.expect(TokenKind::Semicolon)?;
+                continue;
+            }
+
             self.expect(TokenKind::LeftParen)?;
             let mut params = Vec::new();
             let mut parameter_property_assignments = Vec::new();
@@ -1690,7 +1710,32 @@ impl Parser {
                 }
             }
             if self.consume(TokenKind::Colon) {
-                self.skip_type_annotation_until(&[TokenKind::LeftBrace])?;
+                // Skip return type annotation — accept either method body `{` or signature-only `;`
+                self.skip_type_annotation_until(&[
+                    TokenKind::LeftBrace,
+                    TokenKind::Semicolon,
+                ])?;
+            }
+
+            let parsed_name = if is_static {
+                format!("static::{method_name}")
+            } else {
+                method_name.clone()
+            };
+
+            if self.consume(TokenKind::Semicolon) {
+                // Method signature without body (e.g. abstract method, overload)
+                body.push(Stmt::Function {
+                    name: parsed_name,
+                    params,
+                    body: Vec::new(),
+                    is_generator: false,
+                    span: Span {
+                        start: method_span.start,
+                        end: method_span.end,
+                    },
+                });
+                continue;
             }
 
             let mut method_body = self.block()?;
@@ -1705,11 +1750,6 @@ impl Parser {
                 .last()
                 .map(|s| s.span().end)
                 .unwrap_or(method_span.end);
-            let parsed_name = if is_static {
-                format!("static::{method_name}")
-            } else {
-                method_name
-            };
 
             body.push(Stmt::Function {
                 name: parsed_name,

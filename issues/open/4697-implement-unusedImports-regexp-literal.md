@@ -2,7 +2,7 @@
 id: 4697
 title: "Implement Unusedimports Regexp Literal"
 type: spike
-area: runtime/builtins
+area: reference/triage
 class: blocked
 priority: P1
 depends_on: [5004]
@@ -121,7 +121,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/066-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, title overlap)
-- `issues/open/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, title overlap)
+- `issues/done/444-implement-regexp-literal.md` - Implement RegExp literal support (same feature label, title overlap)
 - `issues/done/051-implement-regexp.md` - Implement RegExp (same feature label, title overlap)
 
 ## Smart triage

@@ -795,6 +795,51 @@ mod tests {
     }
 
     #[test]
+    fn parses_numeric_object_keys() {
+        let stmts = parse_program("var obj = { 0: \"a\", 1: \"b\" };").unwrap();
+
+        match &stmts[0] {
+            Stmt::Let {
+                expr: Expr::Object { props, .. },
+                ..
+            } => {
+                assert_eq!(props.len(), 2);
+                assert_eq!(props[0].0, "0");
+                assert_eq!(props[1].0, "1");
+            }
+            other => panic!("unexpected statement: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn parses_class_with_public_methods() {
+        let stmts = parse_program(
+            "class C { public foo() { return 1; } private bar() { return 2; } }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { body, .. } = &stmts[0] else {
+            panic!("expected class declaration");
+        };
+        assert_eq!(body.len(), 2);
+        // Both methods should be present (access modifiers are erased)
+    }
+
+    #[test]
+    fn parses_class_with_protected_abstract_readonly_members() {
+        let stmts = parse_program(
+            "class C { protected x: number; abstract y(): void; readonly z = 1; }",
+        )
+        .unwrap();
+
+        let Stmt::ClassDecl { body, .. } = &stmts[0] else {
+            panic!("expected class declaration");
+        };
+        // All three members should parse successfully (at minimum the class parsed)
+        assert!(!body.is_empty());
+    }
+
+    #[test]
     fn parses_constructor_parameter_properties_as_this_assignments() {
         let program = parse_program(
             "class Box { constructor(public x = 1, private readonly y?: number) {} }",

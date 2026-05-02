@@ -142,6 +142,11 @@ impl Parser {
                 self.advance();
                 Ok(key)
             }
+            Some(Token::Number(value)) => {
+                let key = value.to_string();
+                self.advance();
+                Ok(key)
+            }
             Some(token) if keyword_to_property_name(token).is_some() => {
                 let key = keyword_to_property_name(token).unwrap().to_owned();
                 self.advance();

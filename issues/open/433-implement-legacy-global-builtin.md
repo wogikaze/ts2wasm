@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/067-implement-unknown-unsupported.md` - Investigate and classify unknown-unsupported cases (same reference path)
-- `issues/open/344-implement-legacy-global-builtin-bindings.md` - Implement legacy global builtin bindings (8 test262 cases) (same feature label, same group key, title overlap)
+- `issues/done/344-implement-legacy-global-builtin-bindings.md` - Implement legacy global builtin bindings (8 test262 cases) (same feature label, same group key, title overlap)
 - `issues/done/060-investigate-unknown-unsupported-cases.md` - Investigate and classify unknown-unsupported diagnostic cases (same feature label, same group key)
 - `issues/done/224-implement-annexb-html-comments.md` - Implement Annex B HTML-like comments (same feature label, same group key, title overlap)
 - `issues/done/228-implement-logical-assignment-operators.md` - Implement logical assignment operators (same feature label, same group key, title overlap)
