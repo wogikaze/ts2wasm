@@ -227,7 +227,7 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
                 //   - `new C()`, `C.prototype`, `C.staticMethod` reference the class as a value
                 //     and will produce incorrect runtime results (undefined)
                 // TODO: Implement full class runtime support (constructor, prototype, extends,
-                // static members, private elements). tracker: <future-issue>
+                // static members, private elements). Tracked as issue 5011.
                 let mut initializers = Vec::new();
                 for (field, initializer, span) in static_private_fields {
                     initializers.push(ClassStaticInitializer::PrivateField {

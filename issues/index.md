@@ -15,8 +15,8 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4428 | 4336 | 92 |
-| ir | 12 | 1 | 11 |
+| frontend | 4431 | 4338 | 93 |
+| ir | 13 | 2 | 11 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 176 | 171 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4844 | 4570 | 274 |
+| total | 4848 | 4573 | 275 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -41,9 +41,12 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
+| 264 | Add broad expression fixture coverage | feature | frontend/syntax | implementation-ready | P2 |  | Add broad expression fixture coverage |
+| 265 | Add broad statement fixture coverage | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module | feature | ir/compiler | implementation-ready | P1 |  | `export { ... }` references local bindings by name, but the compiler's module rewrite path only handles `ExportDecl` ... |
+| 5011 | Represent or reject class runtime values in lowered IR | feature | ir/backend | design | P3 |  | Represent or reject class runtime values in lowered IR |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4659,6 +4662,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 025 | Migrate ir module to ir crate | refactor | ir | see `issues/done/025-migrate-ir-module-to-ir-crate.md` |
 | 026 | Migrate backend module to backend-wasm crate | refactor | runtime | see `issues/done/026-migrate-backend-module-to-backend-wasm-crate.md` |
 | 027 | Migrate frontend code to frontend crate | refactor | frontend | see `issues/done/027-migrate-frontend-code-to-frontend-crate.md` |
+| 028 | Migrate lexer/parser/AST to frontend crate | refactor | frontend | see `issues/done/028-migrate-lexer-parser-ast-to-frontend-crate.md` |
 | 029 | Implement typeof operator | feature | runtime/semantics | see `issues/done/029-implement-typeof-operator.md` |
 | 030 | Implement instanceof operator | feature | runtime/semantics | see `issues/done/030-implement-instanceof-operator.md` |
 | 031 | Implement in operator | feature | runtime/semantics | see `issues/done/031-implement-in-operator.md` |
