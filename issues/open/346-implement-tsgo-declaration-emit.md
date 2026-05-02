@@ -119,3 +119,24 @@ Similar to type alias erasure, many `declare` declarations are compile-time only
   - `crates/frontend/src/parser/tests.rs`
 - The issue file was moved from `issues/open/` to `issues/done/`.
 - `issues/index.md` was regenerated via `mise run update-issue-index`.
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This is a `triage-needed` issue (class: triage-needed) with `depends_on: [399]`. It was moved to `done/` with completion evidence that claims credit for parser changes made under unrelated issues (issue-400, issue-410). No implementation commits reference #346. The `class: triage-needed` in `done/` violates the project convention — issues needing triage cannot be considered done.
+
+**True-done checklist** (all must pass):
+
+1. **Verify tsgo declaration-emit coverage**: The tsgo declaration-emit count was 16 when this issue was created. Confirm the current count is 0 (not just reduced).
+
+2. **Commands that must pass**:
+   ```sh
+   cargo fmt --all --check
+   cargo nextest run
+   mise run reference-coverage -- tsgo --limit 166
+   ```
+
+3. **Specific evidence needed**:
+   - Show that mise run reference-coverage reports `declaration-emit: 0` for tsgo suite
+   - OR: formally mark this issue as superseded by specific child issues (400, 409, 410) with documented evidence

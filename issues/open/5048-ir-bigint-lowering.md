@@ -64,3 +64,25 @@ Current state:
 
 Follow-up issues:
 - [ ] none
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: Created directly in `issues/done/` as part of a review-derived batch (commit `2c655baf`, issues 5026-5060) without any implementation. The `## Completion evidence` section is entirely absent. All scope/acceptance checkboxes remain unchecked. No git commits reference #5048. The health check `mise run check issues` also flags this because unchecked items are invalid in `done/`.
+
+**True-done checklist** (all must pass):
+
+1. **Implement BigInt/Number mixed, shift, bitwise, exponentiation, and StringToBigInt lowering through the IR pipeline**.
+
+2. **Commands that must pass**:
+   ```sh
+   cargo fmt --all --check
+   cargo nextest run
+   ```
+
+3. **Specific evidence needed**:
+   - BigInt/Number mixed fixture lowering passes
+   - BigInt shift/bitwise/exponentiation fixture lowering passes
+   - All scope and acceptance checkboxes checked
+   - Completion evidence section filled with commit SHAs and validation results

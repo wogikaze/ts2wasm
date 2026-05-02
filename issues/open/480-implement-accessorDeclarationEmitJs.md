@@ -217,7 +217,7 @@ Duplicate candidates:
   },
   {
     "state": "done",
-    "path": "issues/done/346-implement-tsgo-declaration-emit.md",
+    "path": "issues/open/346-implement-tsgo-declaration-emit.md",
     "title": "Implement TypeScript declaration emit coverage for tsgo suite (16 cases)",
     "reason": "same feature label, title overlap"
   },
