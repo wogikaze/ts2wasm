@@ -1,10 +1,10 @@
 {
   "version": 1,
   "fsm": "IMPLEMENT",
-  "active_task_id": "agent-350-derived-private",
-  "updated_at": "2026-05-01T23:04:36Z",
+  "active_task_id": "274",
+  "updated_at": "2026-05-02T01:47:48Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "plans/350-derived-private-init.md",
+  "plan_path": "plans/274-spread-operator.md",
   "verify_fast_streak_fails": 0
 }

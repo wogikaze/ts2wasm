@@ -1,32 +1,11 @@
 {
-  "id": "agent-350-derived-private",
-  "title": "Implement derived-class private element initialization",
+  "id": "274",
+  "title": "Implement spread operator",
   "status": "selected",
-  "issue_path": "issues/open/350-implement-derived-class-private-init.md",
-  "scope": {
-    "allowed_files": [
-      "crates/ir/src/",
-      "crates/cli/src/backend/",
-      "fixtures/"
-    ],
-    "forbidden_files": [
-      "docs/"
-    ]
-  },
-  "acceptance": [
-    "Derived class with private fields compiles and runs correctly under iwasm"
-  ],
-  "commands": {
-    "fast": [
-      "cargo fmt --all --check",
-      "cargo nextest run"
-    ],
-    "full": [
-      "mise run gate"
-    ]
-  },
-  "risk": [
-    "private slot layout changes may affect existing non-derived classes"
-  ],
-  "notes": "Cycle 4 of 5"
+  "issue_path": "issues/open/274-implement-spread-operator.md",
+  "scope": "Implement spread operator semantics for arrays, objects, and function calls",
+  "acceptance": "Spread operator works for array literals, object literals, and call expressions",
+  "commands": "cargo nextest run -E 'test(spread) or test(node_diff)'; mise run reference-coverage -- test262 --limit 2000",
+  "risk": "medium",
+  "notes": "Selected from Ready queue"
 }
