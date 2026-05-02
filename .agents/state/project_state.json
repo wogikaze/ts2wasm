@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "CLOSE_OR_SPLIT",
+  "fsm": "RETRO",
   "active_task_id": "5000",
-  "updated_at": "2026-05-02T02:01:07Z",
+  "updated_at": "2026-05-02T02:01:18Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/5000-parser-syntax-coverage.md",
