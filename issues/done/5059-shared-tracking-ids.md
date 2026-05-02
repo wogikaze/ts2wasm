@@ -30,12 +30,12 @@ tracking ID が `issue-xxx` / `feature:xxx` 形式に制約され、validation �
 ## Scope
 
 In scope:
-- [ ] tracking ID の型定義
-- [ ] validation の追加
-- [ ] 既存 tracking ID の移行
+- [x] tracking ID の型定義
+- [x] validation の追加
+- [x] 既存 tracking ID の移行
 
 Out of scope:
-- [ ] 新規 feature の追加
+- [x] 新規 feature の追加
 
 ## Affected paths
 
@@ -44,9 +44,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] tracking ID が型付けされる
-- [ ] 不正な形式が validation で検出される
-- [ ] 既存の正しい tracking ID が移行される
+- [x] tracking ID が型付けされる
+- [x] 不正な形式が validation で検出される
+- [x] 既存の正しい tracking ID が移行される
 
 ## Validation
 
@@ -58,10 +58,23 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
+
+## Completion evidence
+
+Implemented `TrackingId` enum with `Issue(u32)` and `Feature(String)` variants
+in `crates/shared/src/test_status.rs`. Added `Display` and `FromStr` with format
+validation. Replaced `tracking: Option<String>` with `tracking: Option<TrackingId>`
+in `TestRecord`. Migrated all tracking IDs in `m2_node_diff.rs`, `official_corpora.rs`,
+and `test_infrastructure.rs` to the typed format.
+
+Validation: `cargo test -p ts2wasm-shared` (19 pass, 6 new tracking ID tests),
+`cargo nextest run` (pass, 2 pre-existing failures unrelated).
+
+Commits: `864d842f`
