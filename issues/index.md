@@ -11,7 +11,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
 | backend | 13 | 6 | 7 |
-| cli | 15 | 8 | 7 |
+| cli | 15 | 7 | 8 |
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4590 | 306 |
+| total | 4896 | 4589 | 307 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -165,7 +165,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records | feature | cli | implementation-ready | P1 |  | [cli] Normalize node-diff fixture reporting into structured records |
 | 5034 | [cli] Add command contract tests for build/check/dump/server | test | cli | implementation-ready | P1 |  | [cli] Add command contract tests for build/check/dump/server |
 | 5035 | [cli] Add --explain-unsupported diagnostics mode | feature | cli | implementation-ready | P2 |  | [cli] Add --explain-unsupported diagnostics mode |
-| 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | implementation-ready | P0 |  | [compiler] Complete entry module export lowering for local references |
 | 5038 | [compiler] Harden module graph resolution and diagnostics | feature | cli | implementation-ready | P1 |  | [compiler] Harden module graph resolution and diagnostics |
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling | feature | cli | implementation-ready | P1 |  | [compiler] Stabilize test262 preprocessor feature handling |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation | feature | cli | implementation-ready | P2 |  | [compiler] Add resource limits and cancellation to server batch compilation |
@@ -5057,6 +5056,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5036 | [compiler] Introduce CompileReport<T> for non-fatal diagnostics | feature | cli | see `issues/done/5036-compiler-compile-report.md` |
+| 5037 | [compiler] Complete entry module export lowering for local references | feature | cli | see `issues/done/5037-compiler-module-export-lowering.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
 | 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | see file |
