@@ -1506,6 +1506,64 @@ impl Parser {
                                     end: start.start,
                                 });
                             let key_start = key_span.start;
+
+                            // Handle getter/setter accessor in object literals: { get foo() {} }
+                            if (key == "get" || key == "set")
+                                && matches!(self.peek(), Some(Token::Ident(_)))
+                            {
+                                let accessor_kind = key.clone();
+                                let (prop_name, _) = self.expect_ident()?;
+                                self.consume_typescript_generic_parameter_list().ok();
+                                if self.consume(TokenKind::LeftParen) {
+                                    let mut params = Vec::new();
+                                    if !self.consume(TokenKind::RightParen) {
+                                        loop {
+                                            let param = self.parse_param(false)?;
+                                            let is_rest = param.is_rest;
+                                            params.push((param.name, param.default, is_rest));
+                                            if self.consume(TokenKind::RightParen) {
+                                                break;
+                                            }
+                                            if is_rest {
+                                                return Err(self.invalid_rest_binding_diagnostic(param.span));
+                                            }
+                                            self.expect(TokenKind::Comma)?;
+                                        }
+                                    }
+                                    if self.consume(TokenKind::Colon) {
+                                        self.skip_type_annotation_until(&[TokenKind::LeftBrace]).ok();
+                                    }
+                                    // Try to consume function body; if absent (ambient/getter without body),
+                                    // use an empty body
+                                    let body = if self.consume(TokenKind::LeftBrace) {
+                                        let stmts = self.statement_body()?;
+                                        self.expect(TokenKind::RightBrace)?;
+                                        stmts
+                                    } else {
+                                        Vec::new()
+                                    };
+                                    let end = self.prev_span().map(|s| s.end).unwrap_or(key_start);
+                                    let expr = Expr::FunctionExpr {
+                                        name: format!("{accessor_kind} {prop_name}"),
+                                        params,
+                                        body,
+                                        span: Span { start: key_start, end },
+                                    };
+                                    props.push((prop_name, expr));
+                                    if self.consume(TokenKind::RightBrace) {
+                                        break;
+                                    }
+                                    if self.consume(TokenKind::Comma) {
+                                        if self.consume(TokenKind::RightBrace) {
+                                            break;
+                                        }
+                                        continue;
+                                    }
+                                    self.expect(TokenKind::Comma)?;
+                                } else {
+                                    // Not an accessor, fall through to normal property handling
+                                }
+                            }
                             if let Some(val) = self.parse_object_literal_method(key.clone(), key_start)? {
                                 props.push((key, val));
                             } else if matches!(self.peek(), Some(Token::Colon)) {

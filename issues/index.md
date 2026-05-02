@@ -13,20 +13,20 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 8 | 1 | 7 |
 | cli | 5 | 1 | 4 |
 | compiler | 1 | 0 | 1 |
-| coverage | 5 | 0 | 5 |
+| coverage | 7 | 2 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4344 | 4247 | 97 |
+| frontend | 4345 | 4248 | 97 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
-| runtime | 259 | 121 | 138 |
+| runtime | 258 | 120 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4861 | 4572 | 289 |
+| total | 4863 | 4574 | 289 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,6 +157,8 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
+| 5059 | [shared] Add typed tracking IDs for unsupported and blocked tests | feature | coverage | implementation-ready | P2 |  | [shared] Add typed tracking IDs for unsupported and blocked tests |
+| 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | implementation-ready | P3 |  | [shared] Provide shared fixture schemas for CLI/compiler/backend tests |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -233,7 +235,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 131 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | class: blocked | Implement Allowimportclausestomergewithtypes |
 | 132 | Implement Allowjsclassthistypecrash | spike | runtime/builtins | class: blocked | Implement Allowjsclassthistypecrash |
 | 133 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage |
-| 134 | Implement Allowjscheckjstypeparameternocrash | spike | runtime/builtins | class: blocked | Implement Allowjscheckjstypeparameternocrash |
+| 134 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 135 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
 | 137 | Implement Alwaysstrictalreadyusestrict | spike | frontend/syntax | class: blocked | Implement Alwaysstrictalreadyusestrict |

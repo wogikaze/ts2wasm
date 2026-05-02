@@ -1691,13 +1691,12 @@ impl Parser {
             }
 
             let (mut method_name, mut method_span) = self.expect_property_name()?;
-            let mut is_accessor = false;
             if (method_name == "get" || method_name == "set")
                 && matches!(self.peek(), Some(Token::Ident(_)))
             {
-                is_accessor = true;
+                let prefix = if method_name == "get" { "get " } else { "set " };
                 let (next_name, next_span) = self.expect_ident()?;
-                method_name = next_name;
+                method_name = format!("{prefix}{next_name}");
                 method_span = next_span;
             }
 

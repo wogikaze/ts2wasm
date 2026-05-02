@@ -37,6 +37,22 @@ Reference test results show 9 cases fail in directory `APISample` with diagnosti
 
 Problem: APISample has 9 reference failures — 1 parser, 5 module, 1 runtime, 2 other.
 
+### Implementation feasibility
+
+| File | Feasibility | Action |
+|------|------------|--------|
+| APISample_Watch.ts | **Blocked** – module resolution needed | Wait for 5005 |
+| APISample_WatchWithDefaults.ts | **Blocked** – module resolution needed | Wait for 5005 |
+| APISample_WatchWithOwnWatchHost.ts | **Blocked** – module resolution needed | Wait for 5005 |
+| APISample_compile.ts | **Blocked** – module resolution needed | Wait for 5005 |
+| APISample_parseConfig.ts | **Blocked** – module resolution needed | Wait for 5005 |
+| APISample_jsdoc.ts | **Blocked** – JSDoc not supported | Separate issue |
+| APISample_transform.ts | **Blocked** – transform API pattern | Separate issue |
+| APISample_linter.ts | **Implementable** – `<` token in multi-file directive | Parser issue (#5000) |
+| APISample_watcher.ts | → **split to 5023** (runtime: arrow function) | Issue 5023 |
+
+Of 9 files, only **APISample_linter.ts** is independently implementable today.
+
 ## Current failure
 
 Representative reproduction:

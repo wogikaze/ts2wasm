@@ -109,6 +109,14 @@ Follow-up issues:
 
 ## Notes
 
+### Implementation feasibility: NOT IMPLEMENTABLE
+
+`TransportStream.ts` is a binary file (589 bytes, 2 lines). TypeScript itself reports `"File appears to be binary."`. The raw content starts with `G@` followed by binary null bytes — this is test transport stream data, not parsable TypeScript source.
+
+Our compiler correctly rejects this as `unsupported character: @ at 20..21`.
+
+**Recommendation**: This issue should be **closed as won't-fix** — it is test data included in the TypeScript compiler test suite for binary stream transport, not a valid compiler input.
+
 ## Affected test files
 
 - `reference/typescript/tests/cases/compiler/TransportStream.ts`

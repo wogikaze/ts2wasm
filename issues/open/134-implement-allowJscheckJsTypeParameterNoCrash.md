@@ -2,10 +2,10 @@
 id: 134
 title: "Implement Allowjscheckjstypeparameternocrash"
 type: spike
-area: runtime/builtins
+area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5004]
+depends_on: [5000]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,9 +17,17 @@ Triage allowJscheckJsTypeParameterNoCrash across 1 failing reference test cases 
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `allowJscheckJsTypeParameterNoCrash` with diagnostics: parser-syntax. Root cause is a module/import issue (UnsupportedModule): the test uses allowJs with module imports that the module system cannot resolve. This is not a parser or semantics issue.
+Reference test results show 1 cases fail in directory `allowJscheckJsTypeParameterNoCrash` with diagnostics: parser-syntax.
 
-Problem: allowJscheckJsTypeParameterNoCrash fails due to UnsupportedModule (import/export).
+### Root cause
+
+First compilation error is `expected Equal, got Some(Less) at 241..242 (line 11, column 27)` — the parser fails on generic type alias syntax `type WatchHandler<T> = (val: T) => void;`. The `<T>` after the type name is interpreted as a comparison operator rather than a generic type parameter list.
+
+This IS a parser issue: generic type alias declarations are not supported.
+
+Note: the test file also uses `// @filename: app.js` multi-file test harness directives and `import {vextend} from './func'` module imports, but the primary (first) compilation error is the generic type alias. Module issues would follow after parser support is added.
+
+Problem: allowJscheckJsTypeParameterNoCrash fails due to parser — generic type alias `WatchHandler<T>` not supported.
 
 ## Current failure
 

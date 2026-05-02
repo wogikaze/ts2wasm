@@ -109,7 +109,13 @@ Follow-up issues:
 
 ## Notes
 
-## Affected test files
+### Implementation feasibility: NOT IMPLEMENTABLE (as-is)
+
+The raw test file `APILibCheck.ts` uses `// @filename:` multi-file test harness directives. Our compiler does not support this TypeScript test harness pattern. The first error is `expected Semicolon, got Some(LeftBrace)` on a JSON block following `@filename` — the raw file is not valid standalone TypeScript.
+
+**Options:**
+- Close as won't-fix: multi-file harness is a reference testing concern, not a compiler feature gap
+- Block on module resolution (5005): needs multi-file harness or manual decomposition
 
 - `reference/typescript/tests/cases/compiler/APILibCheck.ts`
 
