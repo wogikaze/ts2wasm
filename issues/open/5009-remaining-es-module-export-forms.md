@@ -30,7 +30,8 @@ Issue 5008 implemented `export const x = 1` (ExportDecl) and `export default <ex
 
 - [x] Rewrite `ExportNamed` in `lower_static_named_import_bindings_for_build` for `export { x, y }`
 - [x] Rewrite `ImportDefault` for `import x from "./mod"`
-- [ ] Rewrite `ImportDefaultNamed`, `ImportNamespace`, `ImportSideEffect` forms
+- [x] Rewrite `ImportNamespace` for `import * as ns from "./mod"`
+- [ ] Rewrite `ImportDefaultNamed`, `ImportSideEffect` forms
 - [ ] Rewrite `ExportNamedFrom`, `ExportAllFrom`, `ExportNamespaceFrom` re-export forms
 - [ ] Add Node/iwasm differential test coverage for each new form
 - [ ] Narrow the `issue-055` catch-all in builtin_resolver.rs
@@ -39,7 +40,7 @@ Issue 5008 implemented `export const x = 1` (ExportDecl) and `export default <ex
 
 - [x] `export { x, y }` builds to WASM and both names are accessible
 - [x] `import x from "./mod"` builds to WASM and reads the default export
-- [ ] `import * as ns from "./mod"` builds to WASM and `ns.x` accesses named exports
+- [x] `import * as ns from "./mod"` builds to WASM and `ns.x` accesses named exports
 - [ ] `import "./side-effect"` triggers module initialization
 - [ ] `export * from "./mod"` builds to WASM and forwards all named exports
 - [ ] `export { x } from "./mod"` builds to WASM (re-export by alias)
