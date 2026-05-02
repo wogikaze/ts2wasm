@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4346 | 4251 | 95 |
+| frontend | 4346 | 4250 | 96 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 205 | 200 | 5 |
-| runtime | 255 | 117 | 138 |
+| runtime | 258 | 120 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4858 | 4571 | 287 |
+| total | 4861 | 4573 | 288 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,6 +157,7 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
+| 5021 | Implement string-builtin support | feature | frontend/syntax | ready | P1 |  | string-builtin feature has 89 reference failures and needs smart-triage evidence before implementation starts. |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4729,11 +4730,13 @@ Issue files are the source of truth for work items. The generated section below 
 | 5014 | Implement eval support | spike | frontend/syntax | class: triage-needed | Implement eval support |
 | 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
 | 5016 | Implement function resolution | spike | frontend/resolver | class: triage-needed | Implement function resolution |
-| 5017 | Implement html-comment support | spike | frontend/syntax | class: triage-needed | Implement html-comment support |
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5019 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5021 | Implement string-builtin support | spike | frontend/syntax | class: triage-needed | Implement string-builtin support |
+| 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | class: blocked | Implement Array.prototype.every receiver semantics for 2dArrays |
+| 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | class: blocked | Implement API Sample watcher arrow function return |
+| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | class: blocked | Implement anonymous interface new expression identifier |
+| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | class: blocked | Implement any as return type instanceof constructor RHS |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5029,6 +5032,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) | feature | ir/compiler | see file |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module | feature | ir/compiler | see file |
 | 5011 | Represent or reject class runtime values in lowered IR | feature | ir/backend | see file |
+| 5017 | Implement html-comment support | spike | frontend/syntax | see `issues/done/5017-implement-html-comment.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract

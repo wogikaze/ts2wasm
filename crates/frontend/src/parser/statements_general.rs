@@ -1666,9 +1666,13 @@ impl Parser {
             }
 
             // Skip TypeScript access modifiers before method/property name
+            // Also skip keyword tokens (const, var, let, export) that may appear
+            // as invalid property modifiers in some TypeScript test cases.
             while matches!(self.peek(), Some(Token::Ident(name)) if matches!(
                 name.as_str(),
                 "public" | "private" | "protected" | "readonly" | "abstract" | "override" | "accessor"
+            )) || matches!(self.peek(), Some(
+                Token::Const | Token::Var | Token::Let | Token::Export
             )) {
                 self.advance();
             }
@@ -1686,10 +1690,12 @@ impl Parser {
                 continue;
             }
 
-            let (mut method_name, mut method_span) = self.expect_ident()?;
+            let (mut method_name, mut method_span) = self.expect_property_name()?;
+            let mut is_accessor = false;
             if (method_name == "get" || method_name == "set")
                 && matches!(self.peek(), Some(Token::Ident(_)))
             {
+                is_accessor = true;
                 let (next_name, next_span) = self.expect_ident()?;
                 method_name = next_name;
                 method_span = next_span;
@@ -1931,6 +1937,11 @@ impl Parser {
                     end,
                 },
             });
+        }
+
+        // Skip TypeScript type annotation: `#name: type;` or `#name: type = expr;`
+        if self.consume(TokenKind::Colon) {
+            self.skip_type_annotation_until(&[TokenKind::Equal, TokenKind::Semicolon])?;
         }
 
         let value = if self.consume(TokenKind::Equal) {

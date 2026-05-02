@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "SYNC",
-  "active_task_id": null,
-  "updated_at": "2026-05-02T15:54:23Z",
+  "fsm": "RETRO",
+  "active_task_id": "5000",
+  "updated_at": "2026-05-02T16:12:12Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": null,
+  "plan_path": "/home/wogikaze/.claude/plans/tsc-parser-syntax-5000.md",
   "verify_fast_streak_fails": 0
 }

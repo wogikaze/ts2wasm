@@ -1,9 +1,9 @@
 ---
 id: 5021
 title: "Implement string-builtin support"
-type: spike
+type: feature
 area: frontend/syntax
-class: triage-needed
+class: ready
 priority: P1
 depends_on: []
 blocks: []

@@ -59,6 +59,76 @@ impl Parser {
         }
     }
 
+    /// Expect a property name token: identifier, number literal, string literal,
+    /// or any keyword token (which can be used as a property name in JavaScript).
+    /// Returns the string representation (e.g., `"0"`, `"foo"`, `"const"`) and span.
+    fn expect_property_name(&mut self) -> Result<(String, Span), Diagnostic> {
+        match self.advance() {
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
+            }) => Ok((name, span)),
+            Some(SpannedToken {
+                kind: Token::Number(n),
+                span,
+            }) => Ok((n.to_string(), span)),
+            Some(SpannedToken {
+                kind: Token::String(s),
+                span,
+            }) => Ok((s, span)),
+            Some(SpannedToken {
+                kind,
+                span,
+            }) => {
+                // Keywords that can be used as property names in JavaScript
+                let name = match &kind {
+                    Token::Let => "let",
+                    Token::Const => "const",
+                    Token::Var => "var",
+                    Token::Function => "function",
+                    Token::Return => "return",
+                    Token::If => "if",
+                    Token::Else => "else",
+                    Token::While => "while",
+                    Token::This => "this",
+                    Token::Class => "class",
+                    Token::Try => "try",
+                    Token::Catch => "catch",
+                    Token::Throw => "throw",
+                    Token::Finally => "finally",
+                    Token::Extends => "extends",
+                    Token::Super => "super",
+                    Token::Static => "static",
+                    Token::Async => "async",
+                    Token::Await => "await",
+                    Token::Import => "import",
+                    Token::Export => "export",
+                    Token::TypeOf => "typeof",
+                    Token::Void => "void",
+                    Token::Delete => "delete",
+                    Token::New => "new",
+                    Token::In => "in",
+                    Token::InstanceOf => "instanceof",
+                    Token::True => "true",
+                    Token::False => "false",
+                    Token::Null => "null",
+                    Token::Undefined => "undefined",
+                    _ => return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!("expected property name, got {kind:?}"),
+                        span: self.peek_span(),
+                    }),
+                };
+                Ok((name.to_string(), span))
+            }
+            None => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "expected property name, got end of input".to_owned(),
+                span: None,
+            }),
+        }
+    }
+
     fn expect_private_ident(&mut self) -> Result<(String, Span), Diagnostic> {
         match self.advance() {
             Some(SpannedToken {
