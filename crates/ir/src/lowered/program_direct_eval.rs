@@ -69,6 +69,9 @@ pub(super) fn collect_direct_eval_block_function_env_from_stmts(
                     env,
                 );
             }
+            ResolvedStmt::Block { statements, .. } => {
+                collect_direct_eval_block_function_env_from_stmts(statements, env);
+            }
             ResolvedStmt::Function { .. }
             | ResolvedStmt::ClassDecl { .. }
             | ResolvedStmt::Let(_, _)
@@ -198,6 +201,9 @@ pub(super) fn collect_direct_eval_function_assignment_env(
             }
             ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
                 collect_direct_eval_function_assignment_expr(function_name, expr, env);
+            }
+            ResolvedStmt::Block { statements, .. } => {
+                collect_direct_eval_function_assignment_env(function_name, statements, env);
             }
             ResolvedStmt::Function { .. }
             | ResolvedStmt::ClassDecl { .. }

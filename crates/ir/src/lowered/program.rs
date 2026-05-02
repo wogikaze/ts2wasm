@@ -514,6 +514,11 @@ fn collect_array_map_callback_function_names_in_stmt(
         ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
             collect_array_map_callback_function_names_in_expr(expr, names);
         }
+        ResolvedStmt::Block { statements, .. } => {
+            for stmt in statements {
+                collect_array_map_callback_function_names_in_stmt(stmt, names);
+            }
+        }
         ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
@@ -1075,6 +1080,9 @@ fn scan_dense_array_returns(
                     all_returns_dense,
                 );
             }
+            ResolvedStmt::Block { statements, .. } => {
+                scan_dense_array_returns(statements, dense_locals, saw_return, all_returns_dense);
+            }
             ResolvedStmt::Function { .. }
             | ResolvedStmt::DestructureLet { .. }
             | ResolvedStmt::Throw(_)
@@ -1158,6 +1166,9 @@ fn collect_declared_function_names(stmts: &[ResolvedStmt], names: &mut HashSet<S
             ResolvedStmt::Labeled { body, .. } => {
                 collect_declared_function_names(std::slice::from_ref(body.as_ref()), names);
             }
+            ResolvedStmt::Block { statements, .. } => {
+                collect_declared_function_names(statements, names);
+            }
             ResolvedStmt::Let(_, _)
             | ResolvedStmt::DestructureLet { .. }
             | ResolvedStmt::Assign(_, _)
@@ -1212,6 +1223,7 @@ fn stmt_returns_any_name(stmt: &ResolvedStmt, names: &HashSet<String>) -> bool {
             .iter()
             .any(|(_, body)| block_returns_any_name(body, names)),
         ResolvedStmt::Labeled { body, .. } => stmt_returns_any_name(body, names),
+        ResolvedStmt::Block { statements, .. } => block_returns_any_name(statements, names),
         ResolvedStmt::Function { .. }
         | ResolvedStmt::Let(_, _)
         | ResolvedStmt::DestructureLet { .. }
@@ -1286,6 +1298,7 @@ fn stmt_contains_this(stmt: &ResolvedStmt) -> bool {
         ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
             expr_contains_this(expr)
         }
+        ResolvedStmt::Block { statements, .. } => block_contains_this(statements),
         ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
@@ -1410,6 +1423,9 @@ fn stmt_has_direct_return(stmt: &ResolvedStmt) -> bool {
         | ResolvedStmt::ForIn { body, .. }
         | ResolvedStmt::ForOf { body, .. } => direct_iife_body_has_unsupported_return(body),
         ResolvedStmt::Labeled { body, .. } => stmt_has_direct_return(body),
+        ResolvedStmt::Block { statements, .. } => {
+            direct_iife_body_has_unsupported_return(statements)
+        }
         ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Let(_, _)
@@ -1483,6 +1499,7 @@ fn stmt_contains_arguments(stmt: &ResolvedStmt) -> bool {
         ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
             expr_contains_arguments(expr)
         }
+        ResolvedStmt::Block { statements, .. } => block_contains_arguments(statements),
         ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }

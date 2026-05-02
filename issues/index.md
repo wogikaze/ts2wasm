@@ -9,11 +9,11 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 7 | 5 | 2 |
+| abi | 7 | 3 | 4 |
 | backend | 13 | 6 | 7 |
 | cli | 15 | 11 | 4 |
 | compiler | 1 | 0 | 1 |
-| coverage | 10 | 2 | 8 |
+| coverage | 10 | 1 | 9 |
 | docs | 2 | 0 | 2 |
 | frontend | 4350 | 4230 | 120 |
 | harness | 1 | 1 | 0 |
@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
-| runtime | 258 | 120 | 138 |
+| runtime | 258 | 117 | 141 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4581 | 315 |
+| total | 4896 | 4575 | 321 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -182,12 +182,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | implementation-ready | P1 |  | [ir] Complete destructuring, rest, and default binding lowering |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | implementation-ready | P1 |  | [ir] Implement iterator protocol lowering for spread and for-of |
-| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | implementation-ready | P1 |  | [runtime-abi] Add ABI layout golden tests and versioning |
-| 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | implementation-ready | P1 |  | [runtime-abi] Validate runtime memory map for overlap and headroom |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | implementation-ready | P2 |  | [runtime-abi] Add typed wrappers for tagged values and heap pointers |
 | 5054 | [runtime-abi] Document value tags and object layout as public ABI | docs | abi | implementation-ready | P2 |  | [runtime-abi] Document value tags and object layout as public ABI |
 | 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants | test | abi | implementation-ready | P3 |  | [runtime-abi] Add backward-compatibility tests for ABI constants |
-| 5058 | [shared] Deduplicate and canonicalize capability reasons/imports | refactor | coverage | implementation-ready | P2 |  | [shared] Deduplicate and canonicalize capability reasons/imports |
 | 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | implementation-ready | P3 |  | [shared] Provide shared fixture schemas for CLI/compiler/backend tests |
 <!-- generated:ready:end -->
 
@@ -4741,10 +4738,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5019 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | class: blocked | Implement Array.prototype.every receiver semantics for 2dArrays |
 | 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | class: blocked | Implement API Sample watcher arrow function return |
-| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | class: blocked | Implement anonymous interface new expression identifier |
-| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | class: blocked | Implement any as return type instanceof constructor RHS |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5065,8 +5059,14 @@ Issue files are the source of truth for work items. The generated section below 
 | 5011 | Represent or reject class runtime values in lowered IR | feature | ir/backend | see file |
 | 5017 | Implement html-comment support | spike | frontend/syntax | see `issues/done/5017-implement-html-comment.md` |
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
+| 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | see file |
+| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
+| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
+| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
+| 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | see file |
 | 5056 | [shared] Replace manual TestRecord JSON construction with serde serialization | refactor | coverage | see `issues/done/5056-shared-serde-serialization.md` |
 | 5057 | [shared] Version capability manifest schema and migration policy | feature | coverage | see `issues/done/5057-shared-manifest-versioning.md` |
+| 5058 | [shared] Deduplicate and canonicalize capability reasons/imports | refactor | coverage | see `issues/done/5058-shared-deduplicate-capabilities.md` |
 | 5059 | [shared] Add typed tracking IDs for unsupported and blocked tests | feature | coverage | see `issues/done/5059-shared-tracking-ids.md` |
 <!-- generated:done:end -->
 

@@ -669,6 +669,9 @@ impl<'a> Resolver<'a> {
                 expr: self.lower_expr(expr)?,
             }),
             ResolvedStmt::ClassDecl { .. } => Ok(LoweredStmt::Expr(LoweredExpr::Undefined)),
+            ResolvedStmt::Block { statements, .. } => {
+                Ok(LoweredStmt::Block(self.lower_block(statements)?))
+            }
         }
     }
 

@@ -109,10 +109,23 @@ impl CapabilityManifest {
     }
 
     pub fn to_json(&self) -> String {
-        let mut out = serde_json::to_string_pretty(self)
+        let mut canonical = self.clone();
+        canonical.canonicalize();
+        let mut out = serde_json::to_string_pretty(&canonical)
             .expect("CapabilityManifest should always serialize to valid JSON");
         out.push('\n');
         out
+    }
+
+    /// Deduplicate and canonically order capability reasons and node host imports.
+    pub fn canonicalize(&mut self) {
+        for reasons in self.capability_reasons.values_mut() {
+            let mut seen = std::collections::BTreeSet::new();
+            reasons.retain(|r| seen.insert(r.clone()));
+        }
+        let mut seen = std::collections::BTreeSet::new();
+        self.node_host.imports.retain(|i| seen.insert(i.clone()));
+        self.node_host.imports.sort();
     }
 }
 
@@ -213,5 +226,56 @@ mod tests {
         assert_eq!(SCHEMA_VERSION, 1);
         let manifest = CapabilityManifest::new_wasi();
         assert_eq!(manifest.schema_version, SCHEMA_VERSION);
+    }
+
+    #[test]
+    fn capability_reasons_deduplicated_in_to_json() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.require_wasi_env("fs.readFileSync");
+        manifest.require_wasi_env("fs.readFileSync");
+        manifest.require_wasi_env("console.log");
+
+        let json = manifest.to_json();
+        assert!(json.contains("\"wasi.env\""));
+        let count_fs = json.matches("fs.readFileSync").count();
+        let count_console = json.matches("console.log").count();
+        assert_eq!(count_fs, 1, "duplicate reason should appear only once");
+        assert_eq!(count_console, 1, "unique reason should appear once");
+    }
+
+    #[test]
+    fn node_host_imports_deduplicated_and_sorted() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.require_node_host("host.timer.setTimeout", "setTimeout");
+        manifest.require_node_host("host.timer.setTimeout", "setTimeout again");
+        manifest.require_node_host("host.fs.readFileSync", "readFileSync");
+
+        manifest.canonicalize();
+
+        assert_eq!(
+            manifest.node_host.imports,
+            vec!["host.fs.readFileSync", "host.timer.setTimeout"],
+            "imports should be deduplicated and sorted"
+        );
+        // Reasons with different values are preserved (only exact duplicates removed)
+        let timer_reasons = manifest
+            .capability_reasons
+            .get("host.timer.setTimeout")
+            .unwrap();
+        assert_eq!(timer_reasons.len(), 2, "two distinct reasons preserved");
+    }
+
+    #[test]
+    fn duplicate_reason_values_are_deduplicated() {
+        let mut manifest = CapabilityManifest::new_wasi();
+        manifest.require_wasi_env("console.log");
+        manifest.require_wasi_env("console.log");
+        manifest.require_wasi_env("console.log");
+
+        manifest.canonicalize();
+
+        let reasons = manifest.capability_reasons.get("wasi.env").unwrap();
+        assert_eq!(reasons.len(), 1, "triple duplicate deduped to one");
+        assert_eq!(reasons[0], "console.log");
     }
 }

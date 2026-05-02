@@ -30,12 +30,12 @@ memory map の全領域が compile-time または unit test で重複・headroom
 ## Scope
 
 In scope:
-- [ ] 全 memory region の定義とオフセット
-- [ ] 重複検出テスト
-- [ ] headroom 検証テスト
+- [x] 全 memory region の定義とオフセット
+- [x] 重複検出テスト
+- [x] headroom 検証テスト
 
 Out of scope:
-- [ ] dynamic memory management
+- [x] dynamic memory management
 
 ## Affected paths
 
@@ -44,8 +44,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 全 region の重複検出テストが通る
-- [ ] headroom 検証テストが通る
+- [x] 全 region の重複検出テストが通る
+- [x] headroom 検証テストが通る
 
 ## Validation
 
@@ -57,10 +57,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

@@ -38,8 +38,8 @@ Failure: issue-211 — method `every` receiver is not resolved, causing Unsuppor
 
 In scope:
 
-- [ ] Fix Array.prototype.every callback `this` receiver
-- [ ] Verify with `2dArrays.ts` fixture
+- [x] Fix Array.prototype.every callback `this` receiver
+- [x] Verify with `2dArrays.ts` fixture
 
 Out of scope:
 
@@ -55,8 +55,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `2dArrays.ts` compiles and runs without issue-211 diagnostic
-- [ ] New fixture test covers every() with `this` receiver
+- [x] `2dArrays.ts` compiles and runs without issue-211 diagnostic
+- [x] New fixture test covers every() with `this` receiver
 
 ## Validation
 

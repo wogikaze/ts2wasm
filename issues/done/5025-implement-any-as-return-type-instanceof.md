@@ -37,8 +37,8 @@ Failure: issue-207 — instanceof RHS is not recognized as a supported class con
 
 In scope:
 
-- [ ] Extend instanceof RHS resolution to constructors resolved through return types
-- [ ] Verify with `anyAsReturnTypeForNewOnCall.ts` fixture
+- [x] Extend instanceof RHS resolution to constructors resolved through return types
+- [x] Verify with `anyAsReturnTypeForNewOnCall.ts` fixture
 
 Out of scope:
 
@@ -53,8 +53,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `anyAsReturnTypeForNewOnCall.ts` compiles without issue-207 diagnostic
-- [ ] Existing instanceof fixtures continue to pass
+- [x] `anyAsReturnTypeForNewOnCall.ts` compiles without issue-207 diagnostic
+- [x] Existing instanceof fixtures continue to pass
 
 ## Validation
 

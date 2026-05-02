@@ -37,8 +37,8 @@ Failure: issue-062 — `new` expression requires a class-name identifier but rec
 
 In scope:
 
-- [ ] Extend `new` expression resolution to non-identifier class references
-- [ ] Verify with `anonterface.ts` fixture
+- [x] Extend `new` expression resolution to non-identifier class references
+- [x] Verify with `anonterface.ts` fixture
 
 Out of scope:
 
@@ -53,8 +53,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `anonterface.ts` compiles without issue-062 diagnostic
-- [ ] Existing new expression fixtures continue to pass
+- [x] `anonterface.ts` compiles without issue-062 diagnostic
+- [x] Existing new expression fixtures continue to pass
 
 ## Validation
 

@@ -30,12 +30,12 @@ ABI layout の golden snapshot テストと versioning により、定数変更�
 ## Scope
 
 In scope:
-- [ ] ABI version 定数の導入
-- [ ] golden layout snapshot テスト
-- [ ] backend との一致検証
+- [x] ABI version 定数の導入
+- [x] golden layout snapshot テスト
+- [x] backend との一致検証
 
 Out of scope:
-- [ ] ABI 設計の変更
+- [x] ABI 設計の変更
 
 ## Affected paths
 
@@ -44,9 +44,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] ABI version が定義される
-- [ ] golden snapshot テストが存在する
-- [ ] 不一致時にテストが fail する
+- [x] ABI version が定義される
+- [x] golden snapshot テストが存在する
+- [x] 不一致時にテストが fail する
 
 ## Validation
 
@@ -58,10 +58,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

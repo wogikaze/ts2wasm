@@ -96,6 +96,9 @@ pub enum ResolvedStmt {
         private_fields: Vec<String>,
         static_private_fields: Vec<(String, ResolvedExpr, Span)>,
     },
+    Block {
+        statements: Vec<ResolvedStmt>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

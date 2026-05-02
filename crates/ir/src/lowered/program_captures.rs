@@ -173,6 +173,9 @@ pub(super) fn collect_declared_names_in_stmts(stmts: &[ResolvedStmt], names: &mu
                 }
             }
             ResolvedStmt::Labeled { body, .. } => collect_declared_names_in_stmt(body, names),
+            ResolvedStmt::Block { statements, .. } => {
+                collect_declared_names_in_stmts(statements, names);
+            }
             ResolvedStmt::ClassDecl { name, .. } => {
                 names.insert(name.clone());
             }
@@ -271,6 +274,9 @@ pub(super) fn collect_stmt_captures(
             ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
                 collect_expr_captures(expr, excluded, captures);
             }
+            ResolvedStmt::Block { statements, .. } => {
+                collect_stmt_captures(statements, excluded, captures);
+            }
             ResolvedStmt::Function { .. }
             | ResolvedStmt::ClassDecl { .. }
             | ResolvedStmt::Break { .. }
@@ -361,6 +367,7 @@ pub(super) fn stmt_assigns_any_name(stmt: &ResolvedStmt, names: &[String]) -> bo
         ResolvedStmt::Export { expr, .. } | ResolvedStmt::ModuleExportsAssign { expr } => {
             expr_assigns_any_name(expr, names)
         }
+        ResolvedStmt::Block { statements, .. } => block_assigns_any_name(statements, names),
         ResolvedStmt::Function { .. }
         | ResolvedStmt::ClassDecl { .. }
         | ResolvedStmt::Break { .. }
