@@ -86,13 +86,13 @@ Do not touch:
 
 ## Acceptance criteria
 
-- `const value = 1; export { value };` builds to WASM and produces export `"value" = 1`
-- `const value = 1; export { value as renamed };` builds to WASM and produces export `"renamed" = 1`
-- `const a = 1; const b = 2; export { a, b };` builds to WASM with exports `"a"` and `"b"`
-- `export { missing };` with no local `missing` produces clear diagnostic
-- `const a = 1; const b = 2; export { a as value, b as value };` (duplicate) produces clear diagnostic
-- `export { value } from "./mod"` still produces clear issue-5005 diagnostic (not implemented)
-- All previous module tests still pass
+- [x] `const value = 1; export { value };` builds to WASM and produces export `"value" = 1`
+- [x] `const value = 1; export { value as renamed };` builds to WASM and produces export `"renamed" = 1`
+- [x] `const a = 1; const b = 2; export { a, b };` builds to WASM with exports `"a"` and `"b"`
+- [x] `export { missing };` with no local `missing` produces clear diagnostic
+- [x] `const a = 1; const b = 2; export { a as value, b as value };` (duplicate) produces clear diagnostic
+- [x] `export { value } from "./mod"` still produces clear issue-5005 diagnostic (not implemented)
+- [x] All previous module tests still pass
 
 ## Validation
 
