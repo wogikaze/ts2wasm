@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "PLAN_REVIEW_GATE",
+  "fsm": "RETRO",
   "active_task_id": null,
-  "updated_at": "2026-05-02T03:20:59Z",
+  "updated_at": "2026-05-02T03:21:24Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/5000-parser-syntax-coverage.md",
