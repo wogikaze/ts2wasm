@@ -245,7 +245,11 @@ fn compile_source(path: &Path) -> Result<(), Diagnostic> {
     let lowered = lowered::lower_program(&resolved)?;
     let lowered =
         lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)?;
-    let lowered = populate_static_module_exports_for_build(lowered, &module_graph)?;
+    let lowered = populate_static_module_exports_for_build(
+        lowered,
+        &module_graph,
+        &static_module_binding.module_exports,
+    )?;
 
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {

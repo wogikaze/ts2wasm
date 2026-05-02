@@ -268,11 +268,8 @@ fn static_bare_module_import_reports_issue_232_unsupported_specifier() {
 }
 
 #[test]
-fn static_declaration_export_reports_issue_055() {
-    assert_build_fails_with_unsupported_syntax(
-        "module-system/static-declaration-export-unsupported.ts",
-        "issue-055: unsupported declaration export",
-    );
+fn static_declaration_export_entry_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-declaration-export-unsupported.ts");
 }
 
 #[test]

@@ -67,7 +67,11 @@ pub fn build_file_with_host_deny(
     let lowered = lowered::lower_program(&resolved)?;
     let lowered =
         lower_static_named_import_reads_for_build(lowered, &static_module_binding.named_imports)?;
-    let lowered = populate_static_module_exports_for_build(lowered, &module_graph)?;
+    let lowered = populate_static_module_exports_for_build(
+        lowered,
+        &module_graph,
+        &static_module_binding.module_exports,
+    )?;
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
             code: DiagCode::InvariantViolation,
@@ -135,7 +139,49 @@ fn validate_host_deny(lowered: &lowered::LoweredProgram) -> Result<(), Diagnosti
 fn populate_static_module_exports_for_build(
     mut lowered: lowered::LoweredProgram,
     module_graph: &ModuleGraph,
+    module_exports: &[ModuleExport],
 ) -> Result<lowered::LoweredProgram, Diagnostic> {
+    if !module_exports.is_empty() {
+        let mut statements = Vec::new();
+        for export in module_exports {
+            let stmt = lowered
+                .top_level_statements
+                .get(export.lowered_statement_index)
+                .ok_or_else(|| Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "entry module export `{}` lowered statement index {} out of range",
+                        export.name, export.lowered_statement_index
+                    ),
+                    span: None,
+                })?;
+            match stmt {
+                lowered::LoweredStmt::Let(_, expr) => {
+                    statements.push(lowered::LoweredStmt::Export {
+                        name: export.name.clone(),
+                        expr: expr.clone(),
+                    });
+                }
+                other => {
+                    return Err(Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "entry module export `{}` maps to non-let statement: {other:?}",
+                            export.name
+                        ),
+                        span: None,
+                    });
+                }
+            }
+        }
+        lowered.modules.push(lowered::ModuleInfo {
+            id: 0,
+            specifier: "<entry>".to_owned(),
+            statements,
+            locals_count: 0,
+        });
+    }
+
     for step in module_graph.dependency_first_initialization_steps() {
         if step.module_id() == 0 {
             continue;
@@ -185,9 +231,16 @@ fn populate_static_module_exports_for_build(
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
+struct ModuleExport {
+    name: String,
+    lowered_statement_index: usize,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 struct StaticModuleBindingLowering {
     rewritten_program: Vec<Stmt>,
     named_imports: Vec<StaticNamedImportBinding>,
+    module_exports: Vec<ModuleExport>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -207,6 +260,7 @@ fn lower_static_named_import_bindings_for_build(
 ) -> Result<StaticModuleBindingLowering, Diagnostic> {
     let mut rewritten = Vec::new();
     let mut named_imports = Vec::new();
+    let mut module_exports = Vec::new();
     let mut lowered_statement_index = 0;
 
     for stmt in program {
@@ -255,6 +309,22 @@ fn lower_static_named_import_bindings_for_build(
                     lowered_statement_index += 1;
                 }
             }
+            Stmt::ExportDecl {
+                declaration,
+                specifier,
+                ..
+            } => {
+                let index = lowered_statement_index;
+                let name = specifier.exported.clone();
+                rewritten.push(*declaration.clone());
+                module_exports.push(ModuleExport {
+                    name,
+                    lowered_statement_index: index,
+                });
+                if lowers_to_top_level_statement(declaration) {
+                    lowered_statement_index += 1;
+                }
+            }
             other => {
                 rewritten.push(other.clone());
                 if lowers_to_top_level_statement(other) {
@@ -267,6 +337,7 @@ fn lower_static_named_import_bindings_for_build(
     Ok(StaticModuleBindingLowering {
         rewritten_program: rewritten,
         named_imports,
+        module_exports,
     })
 }
 
@@ -1065,8 +1136,9 @@ console.log(value);
             &static_module_binding.named_imports,
         )
         .expect("static named import reads should lower through module exports");
-        let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph)
-            .expect("static module exports should populate lowered metadata");
+        let lowered_program =
+            populate_static_module_exports_for_build(lowered_program, &graph, &[])
+                .expect("static module exports should populate lowered metadata");
 
         match &lowered_program.top_level_statements[0] {
             lowered::LoweredStmt::Let(_, lowered::LoweredExpr::PropertyGet { obj, key }) => {
@@ -1130,8 +1202,9 @@ export const value = 1;
             functions: vec![],
             modules: vec![],
         };
-        let lowered_program = populate_static_module_exports_for_build(lowered_program, &graph)
-            .expect("static module exports should populate lowered metadata");
+        let lowered_program =
+            populate_static_module_exports_for_build(lowered_program, &graph, &[])
+                .expect("static module exports should populate lowered metadata");
 
         let module_ids = lowered_program
             .modules
