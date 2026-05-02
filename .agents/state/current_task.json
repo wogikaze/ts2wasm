@@ -1,11 +1,11 @@
 {
-  "id": "5004",
-  "title": "Meta: Runtime Builtins Coverage (test262)",
+  "id": 274,
+  "title": "Implement spread operator",
   "status": "selected",
-  "issue_path": "issues/open/5004-meta-runtime-builtins-coverage.md",
-  "scope": "Unknown - needs investigation",
-  "acceptance": null,
-  "commands": null,
-  "risk": "unknown",
-  "notes": "Selected from Ready queue for dev-loop cycle"
+  "issue_path": "issues/open/274-implement-spread-operator.md",
+  "scope": "Implement spread operator semantics for array literals, object literals, and function call arguments",
+  "acceptance": "IR/lowering handles spread in array/object literals and call args; node_diff tests pass",
+  "commands": "cargo nextest run -E 'test(spread) or test(node_diff)'",
+  "risk": "medium",
+  "notes": "Resolver_extra fix already applied for IIFE this/arguments"
 }
