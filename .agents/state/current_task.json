@@ -3,9 +3,9 @@
   "title": "Meta: Runtime Builtins Coverage (test262)",
   "status": "selected",
   "issue_path": "issues/open/5004-meta-runtime-builtins.md",
-  "scope": "Fix precomputed stdout false positives in string builtin node diff tests by removing fixtures that embed constant output",
-  "acceptance": "string_builtin_fixtures_match_node_output_under_iwasm passes with 7 fixtures",
+  "scope": "Fix string builtin node diff test by removing fixtures that embed constant-folded WASM output (charCodeAt, fromCharCode); add node diff for string-slice",
+  "acceptance": "string_builtin_fixtures_match_node_output_under_iwasm passes with clean fixtures",
   "commands": null,
   "risk": "low",
-  "notes": "string-from-char-code.ts and string-char-code-at.ts embed constant-folded values in WASM, triggering assert_no_precomputed_stdout false positive"
+  "notes": "string-from-char-code and string-char-code-at encode output as WASM constants, triggering assert_no_precomputed_stdout false positive"
 }
