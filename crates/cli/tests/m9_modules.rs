@@ -243,6 +243,16 @@ fn static_default_import_entry_build_smoke() {
 }
 
 #[test]
+fn static_namespace_import_entry_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-namespace-import-entry.ts");
+}
+
+#[test]
+fn static_side_effect_import_entry_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-side-effect-import-entry.ts");
+}
+
+#[test]
 fn static_re_export_reports_issue_232_missing_module() {
     assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-re-export-unsupported.ts",

@@ -432,6 +432,50 @@ fn lower_static_named_import_bindings_for_build(
                 });
                 lowered_statement_index += 1;
             }
+            Stmt::ImportSideEffect { specifier, span } => {
+                let _ = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == specifier.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for side-effect import `{}`",
+                            specifier.value
+                        ),
+                        span: Some(*span),
+                    })?;
+                // No binding — side-effect import only triggers initialization
+            }
+            Stmt::ImportNamespace {
+                specifier: ns_specifier,
+                source,
+                span,
+            } => {
+                let dependency = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == source.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for namespace import `{}`",
+                            source.value
+                        ),
+                        span: Some(source.span),
+                    })?;
+                let exports = collect_literal_named_exports(dependency.resolved_path())?;
+                let props: Vec<(String, Expr)> = exports.into_iter().collect();
+                rewritten.push(Stmt::Let {
+                    name: ns_specifier.local.clone(),
+                    expr: Expr::Object { props, span: *span },
+                    span: ns_specifier.local_span,
+                });
+                local_name_to_index.insert(ns_specifier.local.clone(), lowered_statement_index);
+                lowered_statement_index += 1;
+            }
             other => {
                 if let Stmt::Let { name, .. } = other {
                     local_name_to_index.insert(name.clone(), lowered_statement_index);
