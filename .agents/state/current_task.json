@@ -1,11 +1,11 @@
 {
-  "id": null,
-  "title": null,
-  "status": "idle",
-  "issue_path": null,
-  "scope": null,
-  "acceptance": null,
-  "commands": null,
-  "risk": null,
-  "notes": ""
+  "id": 264,
+  "title": "Add broad expression fixture coverage",
+  "status": "selected",
+  "issue_path": "issues/open/264-implement-broad-expression-fixture-coverage.md",
+  "scope": "Inventory all Expr variants in the frontend AST and create fixture for each missing variant",
+  "acceptance": "Each Expr variant has at least one fixture",
+  "commands": "cargo nextest run",
+  "risk": "low",
+  "notes": "first expression coverage pass"
 }
