@@ -83,3 +83,29 @@ This is a **bounded, curated** set of known failure classes. It replaces unbound
 - [ ] Type predicate assertion in IR lowering for index expression kinds
 
 _Add the next real incident as `FP-004+`; do not keep placeholder stubs._
+
+## FP-004: Parallel agent introduces enum variant without updating all match arms
+
+**Trigger**
+
+- Multiple agents modifying the same crate concurrently
+- Adding new variants to `RuntimeFn` or similar exhaustively-matched enums
+
+**Check**
+
+- All `match` blocks on the modified enum are updated with new variant arms:
+  - `spec()` / `symbol()` / `manifest_name()` in `runtime_fn_impl.rs`
+  - `emit_*` method dispatch in `runtime_builder.rs`
+  - `emission_order()` and `all()` arrays in `runtime_fn_impl.rs`
+- Compilation with `cargo check --all-targets` (catches missing arms)
+
+**Required action**
+
+- After adding an enum variant, run `cargo check` before any test or gate
+- Verify all match blocks in the same file and in dependent files are exhaustive
+- For `RuntimeFn` specifically, check: `runtime_fn_impl.rs` (spec, symbol, manifest_name, emission_order, all), `runtime_builder.rs` (emit dispatch), `runtime_fn.rs` (deps constants, runtime_fn_from_name)
+
+**Guards to add on recurrence**
+
+- [ ] Item in `review_checklist.md` to verify exhaustive matches after enum changes
+- [ ] Pre-commit hook or script that greps for common match patterns when enum variants change
