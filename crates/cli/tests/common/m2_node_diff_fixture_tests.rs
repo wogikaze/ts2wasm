@@ -1099,15 +1099,15 @@ fn json_parse_invalid_unicode_escape_rejected_under_node_and_iwasm() {
 
 #[test]
 fn json_stringify_replacer_unsupported_forms_report_issue_052() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_unsupported_builtin(
         "fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts",
         "issue-052: JSON.stringify array replacer property lists outside the supported static String/Number property-name and ignored-entry subset are not supported yet",
     );
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_unsupported_builtin(
         "fixtures/builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts",
         "issue-052: JSON.stringify array replacer property lists outside the supported static String/Number property-name and ignored-entry subset are not supported yet",
     );
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_unsupported_builtin(
         "fixtures/builtins-and-io/json-stringify-space-boxed-unsupported.ts",
         "issue-052e: JSON.stringify space currently supports numeric/string primitives, selected boxed Number/String literals, and ignored object/function values; broader object coercion is not supported yet",
     );
@@ -1880,6 +1880,7 @@ fn stmt_fixtures_match_node_output_under_iwasm() {
 fn object_builtin_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/object-freeze.ts",
+        "fixtures/builtins-and-io/object-define-property.ts",
         "fixtures/builtins-and-io/object-assign.ts",
         "fixtures/builtins-and-io/object-create.ts",
     ] {

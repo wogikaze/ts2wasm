@@ -2,10 +2,10 @@
 id: 419
 title: "Implement built-in API support"
 type: spike
-area: reference/triage
+area: runtime/builtins
 class: blocked
 priority: P1
-depends_on: [5000, 5004]
+depends_on: [5004]
 blocks: []
 created: 2026-05-01
 updated: 2026-05-01

@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4343 | 4248 | 95 |
+| frontend | 4338 | 4243 | 95 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 205 | 200 | 5 |
-| runtime | 248 | 112 | 136 |
+| reference | 204 | 199 | 5 |
+| runtime | 254 | 117 | 137 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4848 | 4563 | 285 |
+| total | 4848 | 4562 | 286 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -169,13 +169,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 021 | Implement full wasm backend | feature | backend | class: blocked | Implement full wasm backend |
 | 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
-| 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | class: blocked | Implement broader JSON.stringify replacer semantics |
 | 064 | Implement name resolution (triaged - superseded by test262 metadata issues) | spike | frontend/resolver | class: blocked | Implement name resolution (triaged - superseded by test262 metadata issues) |
 | 066 | Implement RegExp literal support | spike | runtime/builtins | class: blocked | Implement RegExp literal support |
 | 067 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 068 | Implement unsupported expression types | spike | frontend/semantics | class: blocked | Implement unsupported expression types |
-| 069 | Implement Apilibcheck | spike | frontend/syntax | class: blocked | Implement Apilibcheck |
-| 070 | Implement Apisample | spike | frontend/syntax | class: blocked | Implement Apisample |
+| 069 | Implement Apilibcheck | spike | runtime/builtins | class: blocked | Implement Apilibcheck |
+| 070 | Implement Apisample | spike | runtime/builtins | class: blocked | Implement Apisample |
 | 071 | Implement Arrowfunctionexpression | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression |
 | 072 | Implement Classdeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclaration |
 | 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
@@ -328,7 +327,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
 | 417 | Implement async-iteration support | spike | frontend/syntax | class: triage-needed | Implement async-iteration support |
 | 418 | Implement break/continue | spike | frontend/syntax | class: blocked | Implement break/continue |
-| 419 | Implement built-in API support | spike | reference/triage | class: blocked | Implement built-in API support |
+| 419 | Implement built-in API support | spike | runtime/builtins | class: blocked | Implement built-in API support |
 | 420 | Implement call expression support | spike | frontend/syntax | class: blocked | Implement call expression support |
 | 421 | Implement class syntax | spike | frontend/syntax | class: triage-needed | Implement class syntax |
 | 422 | Implement class-accessor support | spike | frontend/syntax | class: triage-needed | Implement class-accessor support |
@@ -931,8 +930,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 1021 | Implement Awaitunionpromise | spike | reference/triage | class: triage-needed | Implement Awaitunionpromise |
 | 1022 | Implement Awaitedtype | spike | reference/triage | class: triage-needed | Implement Awaitedtype |
 | 1023 | Implement Awaitedtypecrash | spike | reference/triage | class: triage-needed | Implement Awaitedtypecrash |
-| 1024 | Implement Awaitedtypenolib | spike | frontend/syntax | class: blocked | Implement Awaitedtypenolib |
-| 1025 | Implement Awaitedtypestrictnull | spike | frontend/syntax | class: blocked | Implement Awaitedtypestrictnull |
+| 1024 | Implement Awaitedtypenolib | spike | runtime/builtins | class: blocked | Implement Awaitedtypenolib |
+| 1025 | Implement Awaitedtypestrictnull | spike | runtime/builtins | class: blocked | Implement Awaitedtypestrictnull |
 | 1026 | Implement Badarrayindex | spike | frontend/syntax | class: triage-needed | Implement Badarrayindex |
 | 1027 | Implement Badarraysyntax | spike | frontend/syntax | class: blocked | Implement Badarraysyntax |
 | 1028 | Implement Badexternalmodulereference | spike | frontend/syntax | class: blocked | Implement Badexternalmodulereference |
@@ -2978,7 +2977,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3068 | Implement Jsfileclasspropertytype | spike | frontend/resolver | class: blocked | Implement Jsfileclasspropertytype |
 | 3069 | Implement Jsfileclassselfreferencedproperty | spike | frontend/syntax | class: blocked | Implement Jsfileclassselfreferencedproperty |
 | 3070 | Implement Jsfilecompilationabstractmodifier | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationabstractmodifier |
-| 3071 | Implement Jsfilecompilationawaitmodifier | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationawaitmodifier |
+| 3071 | Implement Jsfilecompilationawaitmodifier | spike | runtime/builtins | class: blocked | Implement Jsfilecompilationawaitmodifier |
 | 3072 | Implement Jsfilecompilationbinddeepexportsassignment | spike | frontend/resolver | class: blocked | Implement Jsfilecompilationbinddeepexportsassignment |
 | 3073 | Implement Jsfilecompilationbinderrors | spike | reference/triage | class: triage-needed | Implement Jsfilecompilationbinderrors |
 | 3074 | Implement Jsfilecompilationbindmultipledefaultexports | spike | frontend/syntax | class: blocked | Implement Jsfilecompilationbindmultipledefaultexports |
@@ -4794,6 +4793,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 052a | Close JSON supported subset contract | docs | runtime/builtins | see `issues/done/052a-close-json-supported-subset-contract.md` |
 | 052b | Implement JSON non-integer number representation | feature | runtime/builtins | see `issues/done/052b-implement-json-noninteger-number-representation.md` |
 | 052c | Implement JSON UTF-16 and surrogate string handling | feature | runtime/builtins | see `issues/done/052c-implement-json-utf16-surrogate-strings.md` |
+| 052d | Implement broader JSON.stringify replacer semantics | feature | runtime/builtins | see `issues/done/052d-implement-json-stringify-broader-replacer-semantics.md` |
 | 052e | Complete JSON.stringify boxed argument edge cases | feature | runtime/builtins | see `issues/done/052e-complete-json-stringify-boxed-argument-edge-cases.md` |
 | 052f | Implement JSON.parse throw-compatible diagnostics | feature | runtime/builtins | see `issues/done/052f-implement-json-parse-throw-compatible-diagnostics.md` |
 | 052g | Implement JSON.stringify function replacer callbacks | feature | runtime/builtins | see `issues/done/052g-implement-json-stringify-function-replacer-callbacks.md` |

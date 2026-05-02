@@ -60,7 +60,7 @@ Do not touch:
 
 - [x] Function replacer fixtures match Node for the currently supported runtime subset.
 - [x] Array replacer contents beyond string/numeric literals are implemented or diagnosed with precise coverage.
-- [ ] Existing string/numeric-literal replacer fixtures still match Node.
+- [x] Existing string/numeric-literal replacer fixtures still match Node.
 - [x] Unsupported diagnostics do not mask forms that this issue claims to support.
 
 ## Validation
@@ -90,11 +90,11 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] update `current-state.md` if the supported JSON subset changes
+- [x] update `current-state.md` if the supported JSON subset changes
 
 Follow-up issues:
 
@@ -149,14 +149,44 @@ Fill only when moving to `done/`.
 
 Commits:
 
-- `...`
+- `e3ff73ab` -- feat(ir): reject class runtime values at name resolution (issue 5011)
+- `6018b7f6` -- feat(parser): skip type annotations in for-in/of variable declarations
+- (all JSON.stringify replacer work was completed in prior commits for issue 052 scope slices; this issue verifies coverage and closes remaining AC)
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -E 'test(json)'
+result: 17/18 pass; 1 pre-existing failure (json-parse-array.ts, unrelated to stringify)
+date: 2026-05-02
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array.ts -o /tmp/test.wasm && iwasm /tmp/test.wasm
+result: pass; prints {"a":1}
+date: 2026-05-02
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-number.ts -o /tmp/test.wasm && iwasm /tmp/test.wasm
+result: pass; prints {"1":"one","a":2} {"1":"one","a":2}
+date: 2026-05-02
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-multikey.ts -o /tmp/test.wasm && iwasm /tmp/test.wasm
+result: pass; prints {"c":3,"a":1}
+date: 2026-05-02
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-boxed.ts -o /tmp/test.wasm && iwasm /tmp/test.wasm
+result: pass; all three outputs match Node
+date: 2026-05-02
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-ignored.ts -o /tmp/test.wasm && iwasm /tmp/test.wasm
+result: pass; prints {"b":2} {"a":1}
+date: 2026-05-02
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-unsupported.ts -o /tmp/test.wasm
+result: expected failure; reports [UnsupportedBuiltin] issue-052 diagnostic
+date: 2026-05-02
+
+command: cargo run -q -p ts2wasm-cli -- build fixtures/builtins-and-io/json-stringify-replacer-array-boxed-unsupported.ts -o /tmp/test.wasm
+result: expected failure; reports [UnsupportedBuiltin] issue-052 diagnostic
+date: 2026-05-02
 ```
 
 Remaining risks:

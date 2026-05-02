@@ -1925,4 +1925,16 @@ mod tests {
         );
         assert_eq!(err.span, Some(Span { start: 0, end: 6 }));
     }
+
+    #[test]
+    fn parses_arrow_function_with_access_modifier_param() {
+        let stmts = parse_program("var v = (public x: string) => { };").unwrap();
+        assert_eq!(stmts.len(), 1);
+    }
+
+    #[test]
+    fn parses_arrow_function_with_private_param() {
+        let stmts = parse_program("var v = (private x: number) => x + 1;").unwrap();
+        assert_eq!(stmts.len(), 1);
+    }
 }

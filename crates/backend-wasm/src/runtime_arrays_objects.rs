@@ -1739,18 +1739,21 @@ impl WatEmitter<'_> {
     (local $tag i32)
     (local $key_len i32)
     (local $value i32)
+    (local $desc_prop_offset i32)
     (local.set $tag (i32.and (local.get $obj) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {object_tag}))
       (then (return (local.get $obj))))
+    ;; Store key string at scratch_offset
     (local.set $key_len (call $value_to_string_into (local.get $key) (i32.const {scratch_offset})))
-    ;; Try to read "value" from descriptor object
-    (i32.store8 (i32.const {scratch_offset}) (i32.const 118))
-    (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 1)) (i32.const 97))
-    (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 2)) (i32.const 108))
-    (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 3)) (i32.const 117))
-    (i32.store8 (i32.add (i32.const {scratch_offset}) (i32.const 4)) (i32.const 101))
+    ;; Write "value" at scratch_offset + 64 so it doesn't clobber the key
+    (local.set $desc_prop_offset (i32.add (i32.const {scratch_offset}) (i32.const 64)))
+    (i32.store8 (local.get $desc_prop_offset) (i32.const 118))
+    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 1)) (i32.const 97))
+    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 2)) (i32.const 108))
+    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 3)) (i32.const 117))
+    (i32.store8 (i32.add (local.get $desc_prop_offset) (i32.const 4)) (i32.const 101))
     (local.set $value
-      (call $property_get (local.get $desc) (i32.const {scratch_offset}) (i32.const 5)))
+      (call $property_get (local.get $desc) (local.get $desc_prop_offset) (i32.const 5)))
     (drop
       (call $property_set
         (local.get $obj)

@@ -3,13 +3,13 @@ impl Parser {
         let is_rest = self.consume(TokenKind::DotDotDot);
         let mut is_parameter_property = false;
 
-        if allow_parameter_property {
-            while self.peek_parameter_property_modifier()
-                && matches!(self.peek_n(1), Some(Token::Ident(_)))
-            {
+        while self.peek_parameter_property_modifier()
+            && matches!(self.peek_n(1), Some(Token::Ident(_)))
+        {
+            if allow_parameter_property {
                 is_parameter_property = true;
-                self.advance();
             }
+            self.advance();
         }
 
         let binding = self.parse_binding_pattern()?;

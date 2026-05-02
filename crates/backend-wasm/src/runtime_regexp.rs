@@ -49,7 +49,7 @@ impl WatEmitter<'_> {
                             (i32.or
                               (i32.eq (local.get $byte) (i32.const 0x0D))
                               (i32.eq (local.get $byte) (i32.const 0x0C))))))))))))
-    (i32.const 0))
+    (i32.const 0))))
 "#,
         );
     }

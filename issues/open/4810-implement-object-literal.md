@@ -119,7 +119,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/052-implement-json.md` - Implement JSON (same feature label, same group key, title overlap)
-- `issues/open/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
+- `issues/done/052d-implement-json-stringify-broader-replacer-semantics.md` - Implement broader JSON.stringify replacer semantics (same feature label, same group key, title overlap)
 - `issues/open/1118-implement-castNewObjectBug.md` - Implement Castnewobjectbug (same feature label, same group key, title overlap)
 - `issues/open/1128-implement-chainedSpecializationToObjectTypeLiteral.md` - Implement Chainedspecializationtoobjecttypeliteral (same feature label, same group key, title overlap)
 - `issues/open/1136-implement-checkJsObjectLiteralIndexSignatures.md` - Implement Checkjsobjectliteralindexsignatures (same feature label, same group key, title overlap)
