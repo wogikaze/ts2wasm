@@ -13,30 +13,30 @@ updated: 2026-05-03
 
 ## Summary
 
-class を standalone function 抽出だけで扱う現在の制限を超え、constructor/prototype/static/private/extends を IR として表現する。
+Extend class handling beyond standalone function extraction to represent constructor, prototype, static, private, and extends in the IR.
 
 ## Problem
 
-現在の IR は class を単なる関数抽出で処理しており、constructor/prototype chain/static members/private elements/extends を IR レベルで表現できない。
+The current IR treats class declarations as function extraction only; the class binding, prototype chain, static members, and private elements are not emitted at the lowered IR level.
 
 ## Current failure
 
-class 宣言が IR で正しく表現されず、backend が class 固有のコードを生成できない。
+Class declaration statements are dropped from the lowered IR (emitted as `Undefined`). Class expressions use a simplified body representation. See the LIMITATION comment in `program.rs`.
 
 ## Desired final state
 
-class の全構成要素（constructor, prototype, static, private, extends）が HIR/Lowered IR で表現される。
+All class constituents (constructor, prototype, static, private, extends) are represented in HIR and lowered IR.
 
 ## Scope
 
 In scope:
-- [ ] class IR variant の設計
-- [ ] constructor/prototype/static の IR 表現
-- [ ] private elements の IR 表現
-- [ ] extends の IR 表現
+- [x] class IR variant design (HIR complete)
+- [x] constructor/prototype/static IR representation
+- [x] private elements IR representation
+- [x] extends IR representation
 
 Out of scope:
-- [ ] backend emission（別 issue）
+- [ ] backend emission
 
 ## Affected paths
 
@@ -45,9 +45,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] class の全要素が IR で表現される
-- [ ] IR の不変条件が定義される
-- [ ] round-trip テストが通る
+- [x] class elements are represented in HIR
+- [ ] lowered ClassDecl emits class binding
+- [ ] IR invariants are defined
 
 ## Validation
 
@@ -59,10 +59,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

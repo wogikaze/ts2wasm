@@ -13,29 +13,29 @@ updated: 2026-05-03
 
 ## Summary
 
-BigInt/Number 混在、shift、bitwise、exponentiation、StringToBigInt 境界などを runtime と整合する形で拡張する。
+BigInt/Number mixed operations, shift, bitwise, exponentiation, and StringToBigInt boundaries need widening in alignment with the runtime.
 
 ## Problem
 
-現在の BigInt lowering は signed-i64/first-limb の狭いスライスに制限されており、BigInt/Number 混在演算や shift/bitwise/exponentiation が未対応。
+Current BigInt lowering is restricted to signed-i64/first-limb slice, leaving BigInt/Number mixed ops, shift, bitwise, exponentiation, and StringToBigInt boundaries unsupported.
 
 ## Current failure
 
-BigInt/Number 混在演算や BigInt shift/bitwise を含む fixture が unsupported になる。
+BigInt/Number mixed ops and BigInt shift/bitwise/exponentiation fixtures report `UnsupportedSyntax` diagnostics.
 
 ## Desired final state
 
-BigInt/Number 混在、shift、bitwise、exponentiation、StringToBigInt の lowering が実装される。
+BigInt/Number mixed, shift, bitwise, exponentiation, and StringToBigInt lowering is implemented through the IR pipeline.
 
 ## Scope
 
 In scope:
-- [ ] BigInt/Number 混在演算の lowering
-- [ ] BigInt shift/bitwise/exponentiation の lowering
-- [ ] StringToBigInt 境界の実装
+- [ ] BigInt/Number mixed operation lowering
+- [ ] BigInt shift/bitwise/exponentiation lowering
+- [ ] StringToBigInt boundary implementation
 
 Out of scope:
-- [ ] 任意精度演算の完全互換
+- [ ] arbitrary precision full compatibility
 
 ## Affected paths
 
@@ -44,8 +44,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] BigInt/Number 混在 fixture の lowering が通る
-- [ ] BigInt shift/bitwise/exponentiation fixture の lowering が通る
+- [ ] BigInt/Number mixed fixture lowering passes
+- [ ] BigInt shift/bitwise/exponentiation fixture lowering passes
 
 ## Validation
 
