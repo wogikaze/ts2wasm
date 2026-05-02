@@ -301,6 +301,7 @@ pub(super) fn collect_direct_eval_function_assignment_expr(
         }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }

@@ -1492,6 +1492,10 @@ impl BigIntRuntimeGuard {
                 BigIntRuntimeGuard::default().visit_stmts(body)?;
                 Ok(None)
             }
+            Expr::ClassExpr { body, .. } => {
+                BigIntRuntimeGuard::default().visit_stmts(body)?;
+                Ok(None)
+            }
             Expr::Number { .. }
             | Expr::String { .. }
             | Expr::Bool { .. }

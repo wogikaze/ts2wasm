@@ -243,6 +243,7 @@ impl Parser {
             let block_stmts = self.block()?;
             match block_stmts.as_slice() {
                 [Stmt::Return { expr, .. }] => expr.clone(),
+                [Stmt::Expr { expr, .. }] => expr.clone(),
                 [] => Expr::Undefined {
                     span: Span { start: 0, end: 0 },
                 },
@@ -1603,6 +1604,10 @@ impl Parser {
                 kind: Token::Function,
                 span,
             }) => self.function_expression(span),
+            Some(SpannedToken {
+                kind: Token::Class,
+                span,
+            }) => self.class_expression(span),
             other => Err(Diagnostic {
                 code: DiagCode::UnsupportedSyntax,
                 message: format!("unsupported expression: {other:?}"),
@@ -1775,6 +1780,7 @@ fn parser_expr_is_bigint_literal_operand(expr: &Expr) -> bool {
             parser_expr_is_bigint_literal_operand(expr)
         }
         Expr::FunctionExpr { .. }
+        | Expr::ClassExpr { .. }
         | Expr::Number { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }

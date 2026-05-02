@@ -1579,6 +1579,40 @@ impl Parser {
         self.class_decl_body(name, extends, start.start)
     }
 
+    fn class_expression(&mut self, start: Span) -> Result<Expr, Diagnostic> {
+        let name = if matches!(self.peek(), Some(Token::Ident(_))) {
+            let (name, _) = self.expect_ident()?;
+            name
+        } else {
+            String::new()
+        };
+
+        let _ = self.consume_typescript_generic_parameter_list()?;
+        let extends = self.class_extends()?;
+        self.skip_class_implements()?;
+
+        let class_decl = self.class_decl_body(name, extends, start.start)?;
+        let Stmt::ClassDecl {
+            name,
+            extends,
+            body,
+            static_blocks,
+            private_elements,
+            span,
+        } = class_decl
+        else {
+            unreachable!("class_decl_body always returns ClassDecl")
+        };
+        Ok(Expr::ClassExpr {
+            name,
+            extends,
+            body,
+            static_blocks,
+            private_elements,
+            span,
+        })
+    }
+
     fn class_expression_statement(
         &mut self,
         binding_name: String,

@@ -510,6 +510,33 @@ impl NameResolver {
                 span: *span,
             }),
             Expr::This { span } => Ok(Expr::This { span: *span }),
+            Expr::ClassExpr {
+                name,
+                extends,
+                body,
+                static_blocks,
+                private_elements,
+                span,
+            } => {
+                self.enter_scope();
+                if !name.is_empty() {
+                    self.declare_binding(name, Some(*span))?;
+                }
+                let resolved_extends =
+                    extends.as_ref().map(|e| self.resolve_expr(e)).transpose()?;
+                let _ = static_blocks;
+                let _ = private_elements;
+                let resolved_body = self.resolve_block(body)?;
+                self.exit_scope();
+                Ok(Expr::ClassExpr {
+                    name: name.clone(),
+                    extends: resolved_extends.map(Box::new),
+                    body: resolved_body,
+                    static_blocks: static_blocks.clone(),
+                    private_elements: private_elements.clone(),
+                    span: *span,
+                })
+            }
             Expr::FunctionExpr {
                 name,
                 params,
@@ -770,6 +797,7 @@ impl NameResolver {
                 // Extract callee identifier directly to bypass class-value check
                 let callee_name = match expr.as_ref() {
                     Expr::Ident { name, .. } => name.clone(),
+                    Expr::Member { property, .. } => property.clone(),
                     _ => {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -1295,6 +1323,7 @@ fn expr_contains_bigint_literal(expr: &Expr) -> bool {
                 || expr_contains_bigint_literal(value)
         }
         Expr::FunctionExpr { .. }
+        | Expr::ClassExpr { .. }
         | Expr::Number { .. }
         | Expr::String { .. }
         | Expr::Bool { .. }

@@ -1,5 +1,7 @@
 use std::str::FromStr;
 
+use serde::Serialize;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TestStatus {
     Pass,
@@ -18,6 +20,12 @@ impl TestStatus {
             Self::Blocked => "blocked",
             Self::SkipWithReason => "skip-with-reason",
         }
+    }
+}
+
+impl Serialize for TestStatus {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.as_str())
     }
 }
 
@@ -63,7 +71,13 @@ impl FromStr for TrackingId {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+impl Serialize for TrackingId {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct TestRecord {
     pub suite: String,
     pub case: String,
@@ -103,60 +117,8 @@ impl TestRecord {
 
     /// Serialize to JSON Lines format (one JSON object per line)
     pub fn to_json_line(&self) -> String {
-        let mut json = String::from("{");
-        json.push_str("\"suite\":\"");
-        json.push_str(&escape_json_string(&self.suite));
-        json.push_str("\",\"case\":\"");
-        json.push_str(&escape_json_string(&self.case));
-        json.push_str("\",\"target\":\"");
-        json.push_str(&escape_json_string(&self.target));
-        json.push_str("\",\"status\":\"");
-        json.push_str(self.status.as_str());
-        json.push('"');
-
-        if let Some(ref expected) = self.expected {
-            json.push_str(",\"expected\":\"");
-            json.push_str(&escape_json_string(expected));
-            json.push('"');
-        }
-
-        if let Some(ref actual) = self.actual {
-            json.push_str(",\"actual\":\"");
-            json.push_str(&escape_json_string(actual));
-            json.push('"');
-        }
-
-        if let Some(ref reason) = self.reason {
-            json.push_str(",\"reason\":\"");
-            json.push_str(&escape_json_string(reason));
-            json.push('"');
-        }
-
-        if let Some(ref tracking) = self.tracking {
-            json.push_str(",\"tracking\":\"");
-            json.push_str(&escape_json_string(&tracking.to_string()));
-            json.push('"');
-        }
-
-        json.push('}');
-        json
+        serde_json::to_string(self).expect("TestRecord serialization should not fail")
     }
-}
-
-/// Escape special JSON characters in a string
-fn escape_json_string(s: &str) -> String {
-    let mut result = String::new();
-    for c in s.chars() {
-        match c {
-            '"' => result.push_str("\\\""),
-            '\\' => result.push_str("\\\\"),
-            '\n' => result.push_str("\\n"),
-            '\r' => result.push_str("\\r"),
-            '\t' => result.push_str("\\t"),
-            _ => result.push(c),
-        }
-    }
-    result
 }
 
 #[cfg(test)]
@@ -282,5 +244,24 @@ mod tests {
         assert!("build:foo".parse::<TrackingId>().is_err());
         assert!("bug:bar".parse::<TrackingId>().is_err());
         assert!("freeform".parse::<TrackingId>().is_err());
+    }
+
+    #[test]
+    fn serde_round_trip() {
+        let record = TestRecord {
+            suite: "test262".to_owned(),
+            case: r#"special"chars"#.to_owned(),
+            target: "wasm-iwasm".to_owned(),
+            status: TestStatus::Unsupported,
+            expected: None,
+            actual: None,
+            reason: Some("some reason".to_owned()),
+            tracking: Some(TrackingId::Issue(5056)),
+        };
+        let json = record.to_json_line();
+        // serde_json output is valid JSON that contains our fields
+        assert!(json.contains("\"suite\":\"test262\""));
+        assert!(json.contains("\"case\":\"special"));
+        assert!(json.contains("\"tracking\":\"issue-5056\""));
     }
 }

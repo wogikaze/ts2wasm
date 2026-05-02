@@ -106,6 +106,7 @@ pub(super) fn collect_arrow_captures(expr: &ResolvedExpr, params: &[String], cap
         }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::ModuleLoad { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
@@ -435,6 +436,7 @@ pub(super) fn expr_assigns_any_name(expr: &ResolvedExpr, names: &[String]) -> bo
         }
         ResolvedExpr::ArrowFn { .. }
         | ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::This { .. }
         | ResolvedExpr::Ident(_)
         | ResolvedExpr::ModuleLoad { .. }

@@ -473,6 +473,14 @@ pub enum Expr {
         value: Box<Expr>,
         span: Span,
     },
+    ClassExpr {
+        name: String,
+        extends: Option<Box<Expr>>,
+        body: Vec<Stmt>,
+        static_blocks: Vec<ClassStaticBlock>,
+        private_elements: Vec<ClassPrivateElement>,
+        span: Span,
+    },
     This {
         span: Span,
     },
@@ -569,6 +577,7 @@ impl Expr {
             | Self::Spread { span, .. }
             | Self::PropertyAssign { span, .. }
             | Self::IndexAssign { span, .. }
+            | Self::ClassExpr { span, .. }
             | Self::This { span } => *span,
         }
     }

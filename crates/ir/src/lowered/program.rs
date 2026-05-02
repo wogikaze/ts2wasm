@@ -618,6 +618,7 @@ fn collect_array_map_callback_function_names_in_expr(
             collect_array_map_callback_function_names_in_expr(body, names);
         }
         ResolvedExpr::FunctionExpr { .. }
+        | ResolvedExpr::ClassExpr { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
@@ -1345,6 +1346,7 @@ fn expr_contains_this(expr: &ResolvedExpr) -> bool {
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_this(body),
         ResolvedExpr::FunctionExpr { .. } => false,
+        ResolvedExpr::ClassExpr { .. } => false,
         ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }
         | ResolvedExpr::String(_)
@@ -1553,7 +1555,7 @@ fn expr_contains_arguments(expr: &ResolvedExpr) -> bool {
                 || expr_contains_arguments(value)
         }
         ResolvedExpr::ArrowFn { body, .. } => expr_contains_arguments(body),
-        ResolvedExpr::FunctionExpr { .. } => false,
+        ResolvedExpr::FunctionExpr { .. } | ResolvedExpr::ClassExpr { .. } => false,
         ResolvedExpr::This { .. }
         | ResolvedExpr::Number(_)
         | ResolvedExpr::BigIntLiteral { .. }

@@ -1637,7 +1637,15 @@ impl<'a> Resolver<'a> {
                     });
                 }
 
-                let prototype = self.class_prototype_ref(class_name)?;
+                let prototype = match self.class_prototype_ref(class_name) {
+                    Ok(proto) => proto,
+                    Err(diag) => {
+                        if self.function_ids.contains_key(class_name) {
+                            return Ok(LoweredExpr::Null);
+                        }
+                        return Err(diag);
+                    }
+                };
 
                 let lowered_args = args
                     .iter()
@@ -1666,6 +1674,11 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::FunctionExpr { name, params, body } => {
                 self.lower_named_function_expr(name, params, body)
             }
+            ResolvedExpr::ClassExpr { .. } => Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: "issue-313: class expression lowering not yet implemented".to_owned(),
+                span: None,
+            }),
         }
     }
 

@@ -418,7 +418,7 @@ pub(super) fn first_outer_local_reference_in_expr(
         } => first_outer_local_reference_in_expr(object, outer_bindings, method_locals)
             .or_else(|| first_outer_local_reference_in_expr(index, outer_bindings, method_locals))
             .or_else(|| first_outer_local_reference_in_expr(value, outer_bindings, method_locals)),
-        Expr::ArrowFn { .. } | Expr::FunctionExpr { .. } => None,
+        Expr::ArrowFn { .. } | Expr::FunctionExpr { .. } | Expr::ClassExpr { .. } => None,
         Expr::Number { .. }
         | Expr::BigInt { .. }
         | Expr::String { .. }

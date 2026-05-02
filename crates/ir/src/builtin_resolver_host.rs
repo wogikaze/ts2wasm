@@ -358,6 +358,7 @@ pub(super) fn span_of_expr(expr: &Expr) -> Option<Span> {
         | Expr::Ternary { span, .. }
         | Expr::ArrowFn { span, .. }
         | Expr::FunctionExpr { span, .. }
+        | Expr::ClassExpr { span, .. }
         | Expr::Spread { span, .. }
         | Expr::PropertyAssign { span, .. }
         | Expr::IndexAssign { span, .. } => Some(*span),

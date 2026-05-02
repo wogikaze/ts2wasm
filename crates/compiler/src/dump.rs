@@ -857,6 +857,13 @@ fn unparse_expr(expr: &Expr) -> String {
             unparse_expr(index),
             unparse_expr(value)
         ),
+        Expr::ClassExpr { name, .. } => {
+            if name.is_empty() {
+                "class { ... }".to_owned()
+            } else {
+                format!("class {name} {{ ... }}")
+            }
+        }
         Expr::This { .. } => "this".to_owned(),
     }
 }

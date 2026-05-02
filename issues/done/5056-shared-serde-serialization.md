@@ -30,12 +30,12 @@ updated: 2026-05-03
 ## Scope
 
 In scope:
-- [ ] serde Serialize の derive/実装
-- [ ] `to_json_line` の置き換え
-- [ ] 既存 consumer の更新
+- [x] serde Serialize の derive/実装
+- [x] `to_json_line` の置き換え
+- [x] 既存 consumer の更新
 
 Out of scope:
-- [ ] スキーマの変更
+- [x] スキーマの変更
 
 ## Affected paths
 
@@ -44,9 +44,19 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] TestRecord が serde Serialize を使用する
-- [ ] 特殊文字を含む TestRecord が正しく JSON 出力される
-- [ ] 既存の JSON consumer が変更なく動作する
+- [x] TestRecord が serde Serialize を使用する
+- [x] 特殊文字を含む TestRecord が正しく JSON 出力される
+- [x] 既存の JSON consumer が変更なく動作する
+
+## Completion evidence
+
+- `TestStatus`: manual `impl Serialize` via `as_str()`
+- `TrackingId`: manual `impl Serialize` via `to_string()`
+- `TestRecord`: `#[derive(Serialize)]`
+- `to_json_line()` replaced with `serde_json::to_string(self)`
+- `escape_json_string()` removed
+- 20/20 `ts2wasm-shared` tests pass including `serde_round_trip`
+- `cargo fmt --all --check` clean
 
 ## Validation
 
@@ -58,10 +68,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

@@ -651,6 +651,21 @@ impl BigIntStaticBuiltinFolder {
                 body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
                 span: *span,
             },
+            Expr::ClassExpr {
+                name,
+                extends,
+                body,
+                static_blocks,
+                private_elements,
+                span,
+            } => Expr::ClassExpr {
+                name: name.clone(),
+                extends: extends.as_ref().map(|e| Box::new(self.fold_expr(e))),
+                body: BigIntStaticBuiltinFolder::default().fold_stmts(body),
+                static_blocks: static_blocks.clone(),
+                private_elements: private_elements.clone(),
+                span: *span,
+            },
             Expr::Spread { expr, span } => Expr::Spread {
                 expr: Box::new(self.fold_expr(expr)),
                 span: *span,
@@ -1846,11 +1861,24 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 .map(resolve_stmt)
                 .collect::<Result<Vec<_>, _>>()?,
         }),
-        Expr::Spread { expr, .. } => Ok(ResolvedExpr::Spread(Box::new(resolve_expr(expr)?))),
-        Expr::TypeOf { expr, .. } => Ok(ResolvedExpr::Unary {
-            op: UnaryOp::TypeOf,
-            expr: Box::new(resolve_expr(expr)?),
+        Expr::ClassExpr { name, body, .. } => Ok(ResolvedExpr::ClassExpr {
+            name: name.clone(),
+            body: body
+                .iter()
+                .map(resolve_stmt)
+                .collect::<Result<Vec<_>, _>>()?,
         }),
+        Expr::Spread { expr, .. } => Ok(ResolvedExpr::Spread(Box::new(resolve_expr(expr)?))),
+        Expr::TypeOf { expr, .. } => {
+            // typeof class {} always evaluates to "function"
+            if matches!(expr.as_ref(), Expr::ClassExpr { .. }) {
+                return Ok(ResolvedExpr::String("function".to_owned()));
+            }
+            Ok(ResolvedExpr::Unary {
+                op: UnaryOp::TypeOf,
+                expr: Box::new(resolve_expr(expr)?),
+            })
+        }
     }
 }
 

@@ -240,6 +240,10 @@ pub enum ResolvedExpr {
         params: Vec<ResolvedParam>,
         body: Vec<ResolvedStmt>,
     },
+    ClassExpr {
+        name: String,
+        body: Vec<ResolvedStmt>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

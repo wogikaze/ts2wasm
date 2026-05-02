@@ -360,6 +360,11 @@ pub(super) fn collect_assigned_names_in_expr(expr: &Expr, names: &mut HashSet<St
                 collect_assigned_names_in_expr(value, names);
             }
         }
+        Expr::ClassExpr { body, .. } => {
+            for stmt in body {
+                collect_assigned_names_in_stmt(stmt, names);
+            }
+        }
         Expr::New { expr, args, .. } => {
             collect_assigned_names_in_expr(expr, names);
             for arg in args {
@@ -850,7 +855,7 @@ pub(super) fn expr_contains_bigint(expr: &Expr) -> bool {
                 || expr_contains_bigint(else_expr)
         }
         Expr::ArrowFn { body, .. } => expr_contains_bigint(body),
-        Expr::FunctionExpr { .. } => false,
+        Expr::FunctionExpr { .. } | Expr::ClassExpr { .. } => false,
         Expr::PropertyAssign { object, value, .. } => {
             expr_contains_bigint(object) || expr_contains_bigint(value)
         }
