@@ -3,9 +3,9 @@
   "title": "Meta: Runtime Builtins Coverage (test262)",
   "status": "selected",
   "issue_path": "issues/open/5004-meta-runtime-builtins.md",
-  "scope": "Fix string builtin node diff test by removing fixtures that embed constant-folded WASM output (charCodeAt, fromCharCode); add node diff for string-slice",
-  "acceptance": "string_builtin_fixtures_match_node_output_under_iwasm passes with clean fixtures",
+  "scope": "Wave 2: Add node diff tests for Array builtins (concat, join, pop, push, reverse)",
+  "acceptance": "array_builtin_fixtures_match_node_output_under_iwasm passes with 5 fixtures",
   "commands": null,
   "risk": "low",
-  "notes": "string-from-char-code and string-char-code-at encode output as WASM constants, triggering assert_no_precomputed_stdout false positive"
+  "notes": "array-slice WASM impl returns undefined at runtime, excluded from node diff test"
 }

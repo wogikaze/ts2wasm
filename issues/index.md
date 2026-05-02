@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 204 | 199 | 5 |
-| runtime | 254 | 117 | 137 |
+| runtime | 254 | 116 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4848 | 4562 | 286 |
+| total | 4848 | 4561 | 287 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,7 +157,6 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
-| 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5015,6 +5014,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
 | 4812 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/4812-implement-regexp-literal.md` |
+| 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | see file |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | see file |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) | feature | ir/compiler | see file |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module | feature | ir/compiler | see file |

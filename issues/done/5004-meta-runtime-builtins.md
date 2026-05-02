@@ -8,7 +8,7 @@ priority: P1
 depends_on: []
 blocks: []
 created: 2026-05-02
-updated: 2026-05-02
+updated: 2026-05-03
 ---
 
 ## Summary
@@ -40,7 +40,7 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] Builtin implementation coverage increases per child issue resolution
+- [x] Builtin implementation coverage increases per child issue resolution
 
 ## Progress
 

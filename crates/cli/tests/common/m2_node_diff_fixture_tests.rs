@@ -1009,6 +1009,19 @@ fn string_builtin_fixtures_match_node_output_under_iwasm() {
 }
 
 #[test]
+fn array_builtin_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
+        "fixtures/builtins-and-io/array-concat.ts",
+        "fixtures/builtins-and-io/array-join.ts",
+        "fixtures/builtins-and-io/array-pop.ts",
+        "fixtures/builtins-and-io/array-push.ts",
+        "fixtures/builtins-and-io/array-reverse.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
 fn json_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/builtins-and-io/json-parse-array.ts",

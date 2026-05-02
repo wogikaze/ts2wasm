@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "RETRO",
+  "fsm": "SELF_REVIEW_GATE",
   "active_task_id": "5004",
-  "updated_at": "2026-05-02T15:35:56Z",
+  "updated_at": "2026-05-02T15:49:43Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "/home/wogikaze/.claude/plans/runtime-builtins-5004.md",
