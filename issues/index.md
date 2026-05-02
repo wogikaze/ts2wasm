@@ -15,17 +15,17 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4396 | 4304 | 92 |
+| frontend | 4428 | 4336 | 92 |
 | ir | 11 | 1 | 10 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 175 | 170 | 5 |
-| runtime | 183 | 53 | 130 |
+| reference | 176 | 171 | 5 |
+| runtime | 190 | 60 | 130 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4803 | 4530 | 273 |
+| total | 4843 | 4570 | 273 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -2927,6 +2927,26 @@ Issue files are the source of truth for work items. The generated section below 
 | 3127 | Implement Jsxfactoryidentifier | spike | runtime/builtins | class: blocked | Implement Jsxfactoryidentifier |
 | 3128 | Implement Jsxfactoryidentifierasparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierasparameter |
 | 3129 | Implement Jsxfactoryidentifierwithabsentparameter | spike | frontend/syntax | class: blocked | Implement Jsxfactoryidentifierwithabsentparameter |
+| 3130 | Implement Jsxfactorymissingerrorinsideaclass | spike | runtime/builtins | class: blocked | Implement Jsxfactorymissingerrorinsideaclass |
+| 3131 | Implement Jsxfactorynotidentifierorqualifiedname | spike | runtime/builtins | class: blocked | Implement Jsxfactorynotidentifierorqualifiedname |
+| 3132 | Implement Jsxfactoryqualifiedname | spike | runtime/builtins | class: blocked | Implement Jsxfactoryqualifiedname |
+| 3133 | Implement Jsxfactoryqualifiednameresolutionerror | spike | frontend/syntax | class: blocked | Implement Jsxfactoryqualifiednameresolutionerror |
+| 3134 | Implement Jsxfactoryqualifiednamewithes | spike | runtime/builtins | class: blocked | Implement Jsxfactoryqualifiednamewithes |
+| 3135 | Implement Jsxpreservewithjsinput | spike | runtime/builtins | class: blocked | Implement Jsxpreservewithjsinput |
+| 3136 | Implement Jsxruntimepragma | spike | runtime/builtins | class: blocked | Implement Jsxruntimepragma |
+| 3137 | Implement Jsxspreadtag | spike | runtime/builtins | class: blocked | Implement Jsxspreadtag |
+| 3138 | Implement Keepimportsindts | spike | frontend/syntax | class: blocked | Implement Keepimportsindts |
+| 3139 | Implement Keyremappingkeyofresult | spike | frontend/syntax | class: blocked | Implement Keyremappingkeyofresult |
+| 3140 | Implement Keyofdoesntcontainsymbols | spike | frontend/syntax | class: blocked | Implement Keyofdoesntcontainsymbols |
+| 3141 | Implement Keyofgenericextendingclassdoublelayer | spike | frontend/syntax | class: blocked | Implement Keyofgenericextendingclassdoublelayer |
+| 3142 | Implement Keyofisliteralcontexualtype | spike | frontend/resolver | class: blocked | Implement Keyofisliteralcontexualtype |
+| 3143 | Implement Keyofmoduleobjecthascorrectkeys | spike | frontend/syntax | class: blocked | Implement Keyofmoduleobjecthascorrectkeys |
+| 3144 | Implement Keyofobjectwithglobalsymbolincluded | spike | frontend/syntax | class: blocked | Implement Keyofobjectwithglobalsymbolincluded |
+| 3145 | Implement Keywordexpressioninternalcomments | spike | frontend/syntax | class: blocked | Implement Keywordexpressioninternalcomments |
+| 3146 | Implement Keywordfield | spike | frontend/syntax | class: blocked | Implement Keywordfield |
+| 3147 | Implement Knockout | spike | frontend/syntax | class: blocked | Implement Knockout |
+| 3148 | Implement Lambdaargcrash | spike | frontend/syntax | class: blocked | Implement Lambdaargcrash |
+| 3149 | Implement Lambdaparamtypes | spike | frontend/resolver | class: blocked | Implement Lambdaparamtypes |
 | 3150 | Implement Lambdaparameterwithtupleargshascorrectassignability | spike | frontend/syntax | class: blocked | Implement Lambdaparameterwithtupleargshascorrectassignability |
 | 3151 | Implement Lambdapropself | spike | frontend/syntax | class: blocked | Implement Lambdapropself |
 | 3152 | Implement Largetupletypes | spike | frontend/syntax | class: blocked | Implement Largetupletypes |
@@ -3197,6 +3217,16 @@ Issue files are the source of truth for work items. The generated section below 
 | 3417 | Implement Mutuallyrecursivecallbacks | spike | frontend/resolver | class: blocked | Implement Mutuallyrecursivecallbacks |
 | 3418 | Implement Mutuallyrecursivegenericbasetypes | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursivegenericbasetypes |
 | 3419 | Implement Mutuallyrecursiveinference | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursiveinference |
+| 3420 | Implement Mutuallyrecursiveinterfacedeclaration | spike | frontend/syntax | class: blocked | Implement Mutuallyrecursiveinterfacedeclaration |
+| 3421 | Implement Namecollisionwithblockscopedvariable | spike | frontend/syntax | class: blocked | Implement Namecollisionwithblockscopedvariable |
+| 3422 | Implement Namecollisions | spike | frontend/syntax | class: blocked | Implement Namecollisions |
+| 3423 | Implement Namecollisionsinpropertyassignments | spike | frontend/syntax | class: blocked | Implement Namecollisionsinpropertyassignments |
+| 3424 | Implement Namedfunctionexpressionassignedtoclassproperty | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressionassignedtoclassproperty |
+| 3425 | Implement Namedfunctionexpressioncall | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressioncall |
+| 3426 | Implement Namedfunctionexpressioncallerrors | spike | frontend/resolver | class: blocked | Implement Namedfunctionexpressioncallerrors |
+| 3427 | Implement Namedfunctionexpressioninmodule | spike | frontend/syntax | class: blocked | Implement Namedfunctionexpressioninmodule |
+| 3428 | Implement Namedimportnonexistentname | spike | frontend/syntax | class: blocked | Implement Namedimportnonexistentname |
+| 3429 | Implement Namespacedisambiguationinunion | spike | frontend/syntax | class: blocked | Implement Namespacedisambiguationinunion |
 | 3430 | Implement Namespacemergedwithfunctionwithoverloadsusage | spike | frontend/syntax | class: blocked | Implement Namespacemergedwithfunctionwithoverloadsusage |
 | 3431 | Implement Namespacemergedwithimportaliasnocrash | spike | frontend/syntax | class: blocked | Implement Namespacemergedwithimportaliasnocrash |
 | 3432 | Implement Namespacenotmergedwithfunctiondefaultexport | spike | frontend/syntax | class: blocked | Implement Namespacenotmergedwithfunctiondefaultexport |
@@ -3217,6 +3247,16 @@ Issue files are the source of truth for work items. The generated section below 
 | 3447 | Implement Narrowswitchoptionalchaincontainmentevolvingarraynocrash | spike | frontend/syntax | class: blocked | Implement Narrowswitchoptionalchaincontainmentevolvingarraynocrash |
 | 3448 | Implement Narrowtypebyinstanceof | spike | frontend/syntax | class: blocked | Implement Narrowtypebyinstanceof |
 | 3449 | Implement Narrowunknownbytypepredicate | spike | frontend/resolver | class: blocked | Implement Narrowunknownbytypepredicate |
+| 3450 | Implement Narrowedconstinmethod | spike | frontend/syntax | class: triage-needed | Implement Narrowedconstinmethod |
+| 3451 | Implement Narrowedimports | spike | frontend/syntax | class: blocked | Implement Narrowedimports |
+| 3452 | Implement Narrowingassignmentreadonlyrespectsassertion | spike | frontend/syntax | class: blocked | Implement Narrowingassignmentreadonlyrespectsassertion |
+| 3453 | Implement Narrowingbytypeofinswitch | spike | frontend/syntax | class: blocked | Implement Narrowingbytypeofinswitch |
+| 3454 | Implement Narrowingconstrainedtypeparameter | spike | frontend/syntax | class: blocked | Implement Narrowingconstrainedtypeparameter |
+| 3455 | Implement Narrowingdestructuring | spike | reference/triage | class: triage-needed | Implement Narrowingdestructuring |
+| 3456 | Implement Narrowingincaseclauseaftercaseclausewithreturn | spike | frontend/syntax | class: blocked | Implement Narrowingincaseclauseaftercaseclausewithreturn |
+| 3457 | Implement Narrowingmutualsubtypes | spike | frontend/syntax | class: blocked | Implement Narrowingmutualsubtypes |
+| 3458 | Implement Narrowingnoinfer | spike | frontend/syntax | class: blocked | Implement Narrowingnoinfer |
+| 3459 | Implement Narrowingofdottednames | spike | frontend/syntax | class: blocked | Implement Narrowingofdottednames |
 | 3460 | Implement Narrowingofqualifiednames | spike | frontend/syntax | class: blocked | Implement Narrowingofqualifiednames |
 | 3461 | Implement Narrowingpastlastassignment | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignment |
 | 3462 | Implement Narrowingpastlastassignmentinmodule | spike | frontend/syntax | class: blocked | Implement Narrowingpastlastassignmentinmodule |

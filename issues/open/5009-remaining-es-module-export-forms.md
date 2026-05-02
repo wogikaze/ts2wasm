@@ -28,7 +28,7 @@ Issue 5008 implemented `export const x = 1` (ExportDecl) and `export default <ex
 
 ## Scope
 
-- [ ] Rewrite `ExportNamed` in `lower_static_named_import_bindings_for_build` for `export { x, y }`
+- [x] Rewrite `ExportNamed` in `lower_static_named_import_bindings_for_build` for `export { x, y }`
 - [ ] Rewrite `ImportDefault` for `import x from "./mod"`
 - [ ] Rewrite `ImportDefaultNamed`, `ImportNamespace`, `ImportSideEffect` forms
 - [ ] Rewrite `ExportNamedFrom`, `ExportAllFrom`, `ExportNamespaceFrom` re-export forms

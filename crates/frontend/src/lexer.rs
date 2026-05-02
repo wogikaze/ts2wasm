@@ -213,19 +213,26 @@ impl<'a> Lexer<'a> {
             } else if ch == '`' {
                 // End of template literal
                 self.advance_char();
-                break;
+                return Ok(SpannedToken {
+                    kind: Token::TemplateLiteral(literal),
+                    span: Span {
+                        start,
+                        end: self.cursor,
+                    },
+                });
             } else {
                 literal.push(ch);
             }
             self.advance_char();
         }
 
-        Ok(SpannedToken {
-            kind: Token::TemplateLiteral(literal),
-            span: Span {
+        Err(Diagnostic {
+            code: DiagCode::UnsupportedSyntax,
+            message: "unterminated template literal".to_owned(),
+            span: Some(Span {
                 start,
                 end: self.cursor,
-            },
+            }),
         })
     }
 
@@ -579,18 +586,6 @@ impl<'a> Lexer<'a> {
                             &mut tokens,
                             SpannedToken {
                                 kind: Token::Arrow,
-                                span: Span {
-                                    start,
-                                    end: self.cursor,
-                                },
-                            },
-                        );
-                    } else if self.peek_char() == Some('=') {
-                        self.advance_char();
-                        self.add_token(
-                            &mut tokens,
-                            SpannedToken {
-                                kind: Token::GreaterEqual,
                                 span: Span {
                                     start,
                                     end: self.cursor,
@@ -1543,6 +1538,16 @@ impl<'a> Lexer<'a> {
                         start,
                         end: self.cursor,
                     },
+                });
+            }
+            if ch == '\n' || ch == '\r' {
+                return Err(Diagnostic {
+                    code: DiagCode::UnsupportedSyntax,
+                    message: "raw newline in string literal is not allowed".to_owned(),
+                    span: Some(Span {
+                        start: self.cursor.saturating_sub(1),
+                        end: self.cursor,
+                    }),
                 });
             }
             value.push(ch);

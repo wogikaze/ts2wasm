@@ -78,7 +78,19 @@ pub fn program_requires_read_stdin_bytes_runtime(program: &LoweredProgram) -> bo
 }
 
 pub(crate) fn align_to(value: u32, alignment: u32) -> u32 {
-    (value + alignment - 1) & !(alignment - 1)
+    debug_assert!(
+        alignment.is_power_of_two(),
+        "align_to: alignment {} must be a power of two",
+        alignment
+    );
+    let aligned = value + alignment - 1;
+    debug_assert!(
+        aligned >= value,
+        "align_to: value {} + alignment {} - 1 overflowed",
+        value,
+        alignment
+    );
+    aligned & !(alignment - 1)
 }
 
 pub(crate) fn wat_bytes(bytes: &[u8]) -> String {

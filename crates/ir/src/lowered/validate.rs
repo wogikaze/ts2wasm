@@ -545,7 +545,52 @@ fn validate_expr(
                 check_local_id(*capture, local_count, errors);
             }
         }
-        _ => {}
+        LoweredExpr::String(_) => {}
+        LoweredExpr::Bool(_) => {}
+        LoweredExpr::Null => {}
+        LoweredExpr::Undefined => {}
+        LoweredExpr::PropertyIn { obj, .. } => {
+            validate_expr(obj, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertyInDynamic { obj, key } => {
+            validate_expr(obj, local_count, num_funcs, program, errors, true);
+            validate_expr(key, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertyDelete { object, .. } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertyDeleteDynamic { object, key } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(key, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::PropertyGetDynamic { obj, key } => {
+            validate_expr(obj, local_count, num_funcs, program, errors, true);
+            validate_expr(key, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::OptionalPropertyGet { obj, .. } => {
+            validate_expr(obj, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::OptionalIndex { object, index } => {
+            validate_expr(object, local_count, num_funcs, program, errors, true);
+            validate_expr(index, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::OptionalCall { callee, call } => {
+            validate_expr(callee, local_count, num_funcs, program, errors, true);
+            validate_expr(call, local_count, num_funcs, program, errors, true);
+        }
+        LoweredExpr::ModuleLoad { module_id } => {
+            if program.modules.iter().all(|m| m.id != *module_id) && *module_id != 0 {
+                // module_id 0 refers to the entry module; other IDs must exist in program.modules
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "ModuleLoad references module_id {} which is not in the program's module list",
+                        module_id
+                    ),
+                    span: None,
+                });
+            }
+        }
     }
 }
 
