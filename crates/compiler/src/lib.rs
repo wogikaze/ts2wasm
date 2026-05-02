@@ -344,14 +344,18 @@ fn lower_static_named_import_bindings_for_build(
                 lowered_statement_index += 1;
             }
             Stmt::ExportNamed { specifiers, span } => {
-                return Err(Diagnostic {
-                    code: DiagCode::UnsupportedSyntax,
-                    message: format!(
-                        "issue-5005: entry module export list with {} export(s) is not in the current static export slice; only export const and export default are supported",
-                        specifiers.len()
-                    ),
-                    span: Some(*span),
-                });
+                if specifiers.is_empty() {
+                    // export {} — no-op module marker
+                } else {
+                    return Err(Diagnostic {
+                        code: DiagCode::UnsupportedSyntax,
+                        message: format!(
+                            "issue-5005: entry module export list with {} export(s) is not in the current static export slice; only export const and export default are supported",
+                            specifiers.len()
+                        ),
+                        span: Some(*span),
+                    });
+                }
             }
             Stmt::ExportDefault { expr, span, .. } => {
                 let index = lowered_statement_index;
