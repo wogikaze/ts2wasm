@@ -1,11 +1,11 @@
 {
-  "id": "274",
-  "title": "Implement spread operator",
+  "id": "5000",
+  "title": "Meta: TypeScript Compiler Parser Syntax Coverage",
   "status": "selected",
-  "issue_path": "issues/open/274-implement-spread-operator.md",
-  "scope": "Implement spread operator semantics for arrays, objects, and function calls",
-  "acceptance": "Spread operator works for array literals, object literals, and call expressions",
-  "commands": "cargo nextest run -E 'test(spread) or test(node_diff)'; mise run reference-coverage -- test262 --limit 2000",
-  "risk": "medium",
-  "notes": "Selected from Ready queue"
+  "issue_path": "issues/open/5000-meta-typescript-compiler-parser-syntax-coverage.md",
+  "scope": "Unknown - needs investigation",
+  "acceptance": null,
+  "commands": null,
+  "risk": "unknown",
+  "notes": "Selected from Ready queue for dev-loop cycle"
 }

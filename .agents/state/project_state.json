@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "RETRO",
-  "active_task_id": "274",
-  "updated_at": "2026-05-02T01:56:13Z",
+  "fsm": "VERIFY_FAST",
+  "active_task_id": "5000",
+  "updated_at": "2026-05-02T02:00:06Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "plans/274-spread-operator.md",
+  "plan_path": "plans/5000-parser-syntax-coverage.md",
   "verify_fast_streak_fails": 0
 }
