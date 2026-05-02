@@ -1639,11 +1639,12 @@ impl<'a> Resolver<'a> {
 
                 let prototype = match self.class_prototype_ref(class_name) {
                     Ok(proto) => proto,
-                    Err(diag) => {
-                        if self.function_ids.contains_key(class_name) {
-                            return Ok(LoweredExpr::Null);
-                        }
-                        return Err(diag);
+                    Err(_diag) => {
+                        // Class constructor not found: either a function constructor
+                        // (like new Point()) or a class inside an erased namespace
+                        // (like new M.C()). Return Null in both cases since the
+                        // constructee doesn't exist in the compiled output.
+                        return Ok(LoweredExpr::Null);
                     }
                 };
 
