@@ -5,7 +5,7 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5000]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,7 +17,7 @@ Triage accessorWithoutBody across 2 failing reference test cases and split this 
 
 ## Problem
 
-Reference test results show 2 cases fail in directory `accessorWithoutBody` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `accessorWithoutBody` with diagnostics: class-accessor. Root cause is a parser issue: object literal getter/setter syntax (`get foo()`, `set foo(a)`) without a body is not handled. This requires parser additions (~30-50 lines) to support accessor syntax in object literals.
 
 Problem: accessorWithoutBody has 2 reference failures and needs smart-triage evidence before implementation starts.
 

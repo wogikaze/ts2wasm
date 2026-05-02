@@ -15,13 +15,13 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4347 | 4252 | 95 |
+| frontend | 4346 | 4251 | 95 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 205 | 200 | 5 |
-| runtime | 254 | 116 | 138 |
+| runtime | 255 | 117 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
@@ -195,7 +195,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 091 | Implement Accessinstancememberfromstaticmethod | spike | frontend/syntax | class: blocked | Implement Accessinstancememberfromstaticmethod |
 | 092 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | class: blocked | Implement Accessoverriddenbaseclassmember |
 | 093 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/syntax | class: blocked | Implement Accessstaticmemberfrominstancemethod |
-| 094 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/syntax | class: blocked | Implement Accessoraccidentalcalldiagnostic |
+| 094 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/resolver | class: blocked | Implement Accessoraccidentalcalldiagnostic |
 | 096 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 097 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 098 | Implement Accessordeclarationorder | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder |
@@ -231,7 +231,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 129 | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer | spike | frontend/syntax | class: blocked | Implement Aliaswithinterfaceexportassignmentusedinvarinitializer |
 | 130 | Implement Aliasesinsystemmodule | spike | frontend/syntax | class: blocked | Implement Aliasesinsystemmodule |
 | 131 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | class: blocked | Implement Allowimportclausestomergewithtypes |
-| 132 | Implement Allowjsclassthistypecrash | spike | frontend/semantics | class: blocked | Implement Allowjsclassthistypecrash |
+| 132 | Implement Allowjsclassthistypecrash | spike | runtime/builtins | class: blocked | Implement Allowjsclassthistypecrash |
 | 133 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage |
 | 134 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/semantics | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 135 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |

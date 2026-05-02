@@ -17,7 +17,23 @@ Triage class-accessor feature across 90 failing reference test cases and split t
 
 ## Problem
 
-Reference test results show 90 cases fail with class-accessor diagnostic. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 90 cases fail with class-accessor diagnostic.
+
+### Triage breakdown (6 sampled files)
+
+| # | File | True cause | Category |
+|---|------|-----------|----------|
+| 1 | accessorAccidentalCallDiagnostic | Resolver: type parameter method call (issue-211) | `frontend/resolver` |
+| 2 | accessorDeclarationOrder | Parser: `class_private_element()` skips `#name: type;` | **`frontend/syntax`** (5-10 line fix) |
+| 3 | accessorInferredReturnTypeErrorInReturnStatement | Module: `export var` → UnsupportedModule | `module` resolution pending |
+| 4 | accessorWithoutBody1 | Parser: object literal `get foo()` (no body) | **`frontend/syntax`** (30-50 line fix) |
+| 5 | accessorWithoutBody2 | Parser: object literal `set foo(a)` (no body) | **`frontend/syntax`** (30-50 line fix) |
+| 6 | aliasUsageInAccessorsOfClass | Module: `import ... = require(...)` → UnsupportedModule | `module` resolution pending |
+
+**Result: 3 of 6 sampled files are true parser issues.**
+Remaining 3 are resolver (1) and module (2) issues — reclassified to their respective areas.
+
+The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
 Problem: class-accessor feature has 90 reference failures and needs smart-triage evidence before implementation starts.
 
@@ -65,6 +81,8 @@ Expected:
 Do not touch:
 
 - unrelated runtime/backend code unless `reference-triage` proves the failure is not frontend-owned
+
+Note: After triage, 3 of 6 sampled issues are not frontend/syntax — reclassify to `frontend/resolver` and `module` as appropriate.
 
 ## Acceptance criteria
 

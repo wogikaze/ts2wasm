@@ -5,7 +5,7 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5000]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,7 +17,7 @@ Triage accessorDeclarationOrder across 1 failing reference test cases and split 
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorDeclarationOrder` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `accessorDeclarationOrder` with diagnostics: class-accessor. Root cause is a parser issue: `class_private_element()` does not handle `#name: type;` (private field type annotation). This requires a small parser fix (~5-10 lines) to skip the type annotation in class private elements.
 
 Problem: accessorDeclarationOrder has 1 reference failures and needs smart-triage evidence before implementation starts.
 

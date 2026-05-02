@@ -2,10 +2,10 @@
 id: 094
 title: "Implement Accessoraccidentalcalldiagnostic"
 type: spike
-area: frontend/syntax
+area: frontend/resolver
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5005]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,7 +17,7 @@ Triage accessorAccidentalCallDiagnostic across 1 failing reference test cases an
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorAccidentalCallDiagnostic` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `accessorAccidentalCallDiagnostic` with diagnostics: class-accessor. Root cause is a resolver issue: method calls on type parameters cannot be resolved (issue-211: function-valued local calls). This belongs in the resolver domain, not parser.
 
 Problem: accessorAccidentalCallDiagnostic has 1 reference failures and needs smart-triage evidence before implementation starts.
 

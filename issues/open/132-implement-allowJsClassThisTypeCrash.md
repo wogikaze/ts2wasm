@@ -2,10 +2,10 @@
 id: 132
 title: "Implement Allowjsclassthistypecrash"
 type: spike
-area: frontend/semantics
+area: runtime/builtins
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5004]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,7 +17,7 @@ Triage allowJsClassThisTypeCrash across 1 failing reference test cases and split
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `allowJsClassThisTypeCrash` with diagnostics: function. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `allowJsClassThisTypeCrash` with diagnostics: function. Root cause is a runtime issue (issue-062e): nested function `this` closure capture is not supported. This is not a parser/semantics issue but a runtime closure limitation.
 
 Problem: allowJsClassThisTypeCrash has 1 reference failures and needs smart-triage evidence before implementation starts.
 
