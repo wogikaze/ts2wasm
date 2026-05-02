@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 6 | 7 |
 | cli | 15 | 11 | 4 |
 | compiler | 1 | 0 | 1 |
-| coverage | 10 | 3 | 7 |
+| coverage | 10 | 2 | 8 |
 | docs | 2 | 0 | 2 |
 | frontend | 4350 | 4230 | 120 |
 | harness | 1 | 1 | 0 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4582 | 314 |
+| total | 4896 | 4581 | 315 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -187,7 +187,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | implementation-ready | P2 |  | [runtime-abi] Add typed wrappers for tagged values and heap pointers |
 | 5054 | [runtime-abi] Document value tags and object layout as public ABI | docs | abi | implementation-ready | P2 |  | [runtime-abi] Document value tags and object layout as public ABI |
 | 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants | test | abi | implementation-ready | P3 |  | [runtime-abi] Add backward-compatibility tests for ABI constants |
-| 5057 | [shared] Version capability manifest schema and migration policy | feature | coverage | implementation-ready | P1 |  | [shared] Version capability manifest schema and migration policy |
 | 5058 | [shared] Deduplicate and canonicalize capability reasons/imports | refactor | coverage | implementation-ready | P2 |  | [shared] Deduplicate and canonicalize capability reasons/imports |
 | 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | implementation-ready | P3 |  | [shared] Provide shared fixture schemas for CLI/compiler/backend tests |
 <!-- generated:ready:end -->
@@ -5067,6 +5066,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5017 | Implement html-comment support | spike | frontend/syntax | see `issues/done/5017-implement-html-comment.md` |
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
 | 5056 | [shared] Replace manual TestRecord JSON construction with serde serialization | refactor | coverage | see `issues/done/5056-shared-serde-serialization.md` |
+| 5057 | [shared] Version capability manifest schema and migration policy | feature | coverage | see `issues/done/5057-shared-manifest-versioning.md` |
 | 5059 | [shared] Add typed tracking IDs for unsupported and blocked tests | feature | coverage | see `issues/done/5059-shared-tracking-ids.md` |
 <!-- generated:done:end -->
 

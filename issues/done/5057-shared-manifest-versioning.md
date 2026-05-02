@@ -30,12 +30,12 @@ schema version が明示され、version 間の互換性と migration 方針が�
 ## Scope
 
 In scope:
-- [ ] schema version の明示
-- [ ] backward compatibility 方針
-- [ ] migration 手順の文書化
+- [x] schema version の明示
+- [x] backward compatibility 方針
+- [x] migration 手順の文書化
 
 Out of scope:
-- [ ] manifest content の変更
+- [x] manifest content の変更
 
 ## Affected paths
 
@@ -45,8 +45,17 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] schema version が明示される
-- [ ] migration 方針が文書化される
+- [x] schema version が明示される
+- [x] migration 方針が文書化される
+
+## Completion evidence
+
+- Added `pub const SCHEMA_VERSION: u32 = 1` to `crates/shared/src/capability.rs`
+- Updated `new_wasi()` and `validate()` to use the named constant
+- Added `schema_version_is_explicit_named_constant` test
+- Added "Schema versioning and migration policy" section to `docs/11-shared-definitions.md`
+- 21/21 `ts2wasm-shared` tests pass
+- `cargo fmt --all --check` clean
 
 ## Validation
 
@@ -58,10 +67,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] docs/11-shared-definitions.md — added schema versioning section
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

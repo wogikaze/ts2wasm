@@ -96,6 +96,23 @@ Node host が必要な場合は、`standalone` を `false` にし、`node_host.i
 }
 ```
 
+### Schema versioning and migration policy
+
+The capability manifest has an explicit `schema_version` field, currently `1`. The named constant `ts2wasm_shared::capability::SCHEMA_VERSION` defines the current version.
+
+**Backward compatibility:**
+- Consumers MUST accept `schema_version >= 1` and MAY ignore unknown fields.
+- New fields MUST be optional or have sensible defaults so existing consumers are not broken.
+- Removing or renaming fields is a breaking change and MUST bump `schema_version`.
+
+**Migration procedure:**
+1. Bump `SCHEMA_VERSION` in `crates/shared/src/capability.rs`.
+2. Update `validate()` to accept both old and new versions during transition.
+3. Update `docs/11-shared-definitions.md` examples to show the new schema.
+4. Regenerate all reference manifest fixtures.
+5. Update any downstream consumers (web-ui / scripts) that parse manifest JSON.
+6. Document the breaking change and version delta in this section.
+
 ## Optimization and safety modes
 
 CLI の optimization level と semantic safety mode は別概念として扱う。`-O3` でも observable JavaScript semantics は壊さない。意味論差分を許す実験は `unsafe-fast` として明示的に分離する。

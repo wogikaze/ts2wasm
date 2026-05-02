@@ -1,6 +1,12 @@
 use serde::Serialize;
 use std::collections::BTreeMap;
 
+/// Current capability manifest schema version.
+///
+/// Bump this when making backward-incompatible changes to the manifest JSON schema.
+/// See `docs/11-shared-definitions.md` for the migration policy.
+pub const SCHEMA_VERSION: u32 = 1;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct CapabilityManifest {
     pub schema_version: u32,
@@ -14,7 +20,7 @@ pub struct CapabilityManifest {
 impl CapabilityManifest {
     pub fn new_wasi() -> Self {
         Self {
-            schema_version: 1,
+            schema_version: SCHEMA_VERSION,
             target: "wasm32-wasi".to_owned(),
             standalone: true,
             wasi: WasiCapabilities::default(),
@@ -24,7 +30,7 @@ impl CapabilityManifest {
     }
 
     pub fn validate(&self) -> Result<(), String> {
-        if self.schema_version != 1 {
+        if self.schema_version != SCHEMA_VERSION {
             return Err("unsupported capability manifest schema_version".to_owned());
         }
 
@@ -200,5 +206,12 @@ mod tests {
         assert!(manifest.standalone);
         assert!(!manifest.node_host.required);
         assert!(manifest.validate().is_ok());
+    }
+
+    #[test]
+    fn schema_version_is_explicit_named_constant() {
+        assert_eq!(SCHEMA_VERSION, 1);
+        let manifest = CapabilityManifest::new_wasi();
+        assert_eq!(manifest.schema_version, SCHEMA_VERSION);
     }
 }
