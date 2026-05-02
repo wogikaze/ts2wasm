@@ -1,11 +1,11 @@
 {
-  "id": 5010,
-  "title": "Combined import and re-export forms (ImportDefaultNamed, ExportNamedFrom, ExportAllFrom, ExportNamespaceFrom)",
-  "status": "selected",
-  "issue_path": "issues/open/5010-remaining-es-module-export-forms.md",
-  "scope": "Implement import x, { y } from \"./mod\" combined default + named import",
-  "acceptance": "import x, { y } from \"./mod\" no longer hits issue-055",
-  "commands": "cargo nextest run -E 'test(module)'",
-  "risk": "low",
-  "notes": "next slice: ImportDefaultNamed"
+  "id": null,
+  "title": null,
+  "status": "idle",
+  "issue_path": null,
+  "scope": null,
+  "acceptance": null,
+  "commands": null,
+  "risk": null,
+  "notes": ""
 }

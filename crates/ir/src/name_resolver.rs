@@ -248,10 +248,10 @@ impl NameResolver {
                 })
             }
             Stmt::ClassDecl { .. } => {
-                // Class declarations are parsed and partially lowered through the pipeline
-                // (class body methods are resolved as nested functions). Full class feature
-                // support (extends, static blocks, private elements, etc.) is not yet complete.
-                // Pass through to allow existing class-based fixtures to continue working.
+                // Pass-through at the name resolution level — class bodies are resolved as nested
+                // functions by the lowered program builder (program.rs). The lowered resolver
+                // converts this to LoweredStmt::Expr(Undefined). The LoweredStmt::ClassDecl
+                // variant is reserved for future runtime class support. See also validate.rs.
                 Ok(stmt.clone())
             }
             Stmt::TryCatch {
@@ -920,18 +920,17 @@ impl NameResolver {
             .any(|scope| scope.contains_key(name))
     }
 
-    /// Check if we're trying to mutate a binding declared in an enclosing (non-immediate) scope
-    /// from within a top-level function (function_depth == 1). This is a lowered IR limitation:
-    /// the current lowering strategy does not support re-binding outer-scope locals from a nested
-    /// function. A proper fix would implement lexical capture mutation analysis (env cell assignment).
+    /// Check if we're mutating a binding from an enclosing (non-immediate) scope within a
+    /// top-level function (function_depth == 1). The lowered IR does not support env-cell-based
+    /// assignment, so this pattern must be rejected regardless of the variable name.
     ///
-    /// TODO: Replace this with general mutation analysis. The `name == "initCount"` check below is
-    /// a known special case: `initCount` appears in test262 fixtures (e.g. `S8.7.2_A3.js`) where a
-    /// top-level function assigns to a binding declared outside its own scope. Once
-    /// env-cell-based mutation lowering is in place, this ad-hoc check should be removed.
+    /// This is a purely structural check: `initCount`, `x`, `whatever` — all are handled the same
+    /// way. There is no ad-hoc name matching.
+    ///
+    /// TODO: Replace this with env-cell-based mutation lowering so arbitrary outer-scope
+    /// mutations from nested functions are supported.
     fn check_outer_mutation_not_supported(&self, name: &str) -> bool {
-        name == "initCount"
-            && self.function_depth == 1
+        self.function_depth == 1
             && self
                 .scopes
                 .last()

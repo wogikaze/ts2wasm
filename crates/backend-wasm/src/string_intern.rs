@@ -8,8 +8,10 @@ impl WatEmitter<'_> {
         if let Some(offset) = self.strings.get(value) {
             return *offset;
         }
-        let offset = align_to(self.next_data_offset, Layout::ALIGN);
-        self.next_data_offset = align_to(offset + 4 + value.len() as u32, Layout::ALIGN);
+        let offset = align_to(self.next_data_offset, Layout::ALIGN)
+            .expect("align_to: invalid alignment or overflow");
+        self.next_data_offset = align_to(offset + 4 + value.len() as u32, Layout::ALIGN)
+            .expect("align_to: invalid alignment or overflow");
         self.strings.insert(value.to_owned(), offset);
         self.string_data.push((offset, value.to_owned()));
         offset

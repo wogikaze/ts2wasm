@@ -77,20 +77,13 @@ pub fn program_requires_read_stdin_bytes_runtime(program: &LoweredProgram) -> bo
         .contains(&runtime_fn::RuntimeFn::ReadStdinBytes)
 }
 
-pub(crate) fn align_to(value: u32, alignment: u32) -> u32 {
-    debug_assert!(
-        alignment.is_power_of_two(),
-        "align_to: alignment {} must be a power of two",
-        alignment
-    );
-    let aligned = value + alignment - 1;
-    debug_assert!(
-        aligned >= value,
-        "align_to: value {} + alignment {} - 1 overflowed",
-        value,
-        alignment
-    );
-    aligned & !(alignment - 1)
+pub(crate) fn align_to(value: u32, alignment: u32) -> Option<u32> {
+    if alignment == 0 || !alignment.is_power_of_two() {
+        return None;
+    }
+    value
+        .checked_add(alignment - 1)
+        .map(|aligned| aligned & !(alignment - 1))
 }
 
 pub(crate) fn wat_bytes(bytes: &[u8]) -> String {

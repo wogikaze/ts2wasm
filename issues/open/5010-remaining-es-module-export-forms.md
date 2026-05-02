@@ -24,7 +24,7 @@ Issues 5008-5009 implemented the simpler export forms (ExportDecl, ExportDefault
 
 ## Scope
 
-- [ ] Rewrite `ImportDefaultNamed` for `import x, { y } from "./mod"`
+- [x] Rewrite `ImportDefaultNamed` for `import x, { y } from "./mod"`
 - [ ] Rewrite `ExportAllFrom` for `export * from "./mod"`
 - [ ] Rewrite `ExportNamedFrom` for `export { x } from "./mod"`
 - [ ] Rewrite `ExportNamespaceFrom` for `export * as ns from "./mod"`
@@ -33,7 +33,7 @@ Issues 5008-5009 implemented the simpler export forms (ExportDecl, ExportDefault
 
 ## Acceptance criteria
 
-- [ ] `import x, { y } from "./mod"` builds to WASM
+- [x] `import x, { y } from "./mod"` builds to WASM
 - [ ] `export * from "./mod"` builds to WASM and forwards named exports
 - [ ] `export { x } from "./mod"` builds to WASM (re-export by alias)
 - [ ] `export * as ns from "./mod"` builds to WASM

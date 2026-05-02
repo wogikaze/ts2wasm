@@ -5,6 +5,7 @@ Checks:
 - Duplicate IDs within open/done
 - ID collision between open/done
 - Filename ID matches body ID
+- Sequential IDs (no gaps in numeric range)
 - Done issues have no unchecked items
 - Sub-issue validity
 - Depends on references exist
@@ -147,6 +148,30 @@ def main() -> int:
     done_ids = {i.name_id for i in by_state["done"]}
     for issue_id in sorted(open_ids & done_ids):
         err(errors, f"id present in both issues/open/ and issues/done/: {issue_id}")
+
+    # Sequential IDs (no gaps in numeric range) — only check the 5000+ range
+    # to avoid conflicts with the legacy hex-suffix sub-issue scheme (<1000).
+    all_ids = {norm_id(i) for i in open_ids | done_ids}
+    modern_nums: set[int] = set()
+    for i in all_ids:
+        m = re.match(r"^(5\d{3,})", i)
+        if m:
+            modern_nums.add(int(m.group(1)))
+    if len(modern_nums) > 1:
+        sorted_nums = sorted(modern_nums)
+        expected = set(range(sorted_nums[0], sorted_nums[-1] + 1))
+        missing = sorted(expected - modern_nums)
+        if missing:
+            chunks: list[list[int]] = []
+            for n in missing:
+                if not chunks or n != chunks[-1][-1] + 1:
+                    chunks.append([n])
+                else:
+                    chunks[-1].append(n)
+            gap_desc = "; ".join(
+                f"{c[0]}-{c[-1]}" if len(c) > 1 else str(c[0]) for c in chunks
+            )
+            err(errors, f"non-sequential IDs: gaps found in 5000+ range: {gap_desc}")
 
     # ID mismatch
     for issue in issues:
