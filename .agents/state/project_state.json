@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "PLAN_REVIEW_GATE",
+  "fsm": "RETRO",
   "active_task_id": null,
-  "updated_at": "2026-05-02T03:06:30Z",
+  "updated_at": "2026-05-02T03:08:02Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/5004-runtime-builtins-coverage.md",
