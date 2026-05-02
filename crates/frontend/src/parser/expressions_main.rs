@@ -867,7 +867,9 @@ impl Parser {
                     end,
                 },
             })
-        } else if self.consume_typescript_const_angle_assertion() {
+        } else if self.consume_typescript_const_angle_assertion()
+            || self.try_consume_typescript_angle_type_assertion()?
+        {
             self.unary()
         } else if let Some(await_span) = self.consume_span(TokenKind::Await) {
             let expr = self.unary()?;
@@ -1154,6 +1156,21 @@ impl Parser {
             return false;
         }
         true
+    }
+
+    fn try_consume_typescript_angle_type_assertion(&mut self) -> Result<bool, Diagnostic> {
+        let start = self.cursor;
+        let Some(less_span) = self.consume_span(TokenKind::Less) else {
+            return Ok(false);
+        };
+
+        match self.skip_typescript_angle_list_after_less(less_span, "type assertion") {
+            Ok(_) => Ok(true),
+            Err(_) => {
+                self.cursor = start;
+                Ok(false)
+            }
+        }
     }
 
     fn consume_typescript_generic_parameter_list(&mut self) -> Result<bool, Diagnostic> {
