@@ -1,8 +1,5 @@
-use std::collections::hash_map::DefaultHasher;
 use std::fs;
-use std::hash::Hash;
-use std::hash::Hasher;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::process::Command;
 use std::process::Stdio;
 use std::time::Duration;
@@ -16,6 +13,7 @@ use iwasm_runtime::{
     run_iwasm_with_timeout_duration,
 };
 
+use ts2wasm_shared::test_helpers::{temp_wasm_path, unique_temp_dir};
 use ts2wasm_shared::{TestRecord, TestStatus, TrackingId};
 #[path = "common/m2_node_diff_fixture_tests.rs"]
 mod m2_node_diff_fixture_tests;
@@ -535,14 +533,6 @@ fn assert_static_module_fixture_matches_node_variant(fixture: &str, node_entry_s
     );
 }
 
-fn unique_temp_dir(label: &str) -> PathBuf {
-    let unique = std::time::SystemTime::now()
-        .duration_since(std::time::UNIX_EPOCH)
-        .expect("system time should be after UNIX_EPOCH")
-        .as_nanos();
-    std::env::temp_dir().join(format!("ts2wasm-{label}-{unique}-{}", std::process::id()))
-}
-
 fn assert_build_fails_with_unsupported_syntax(fixture: &str, expected: &str) {
     assert_build_fails_with_unsupported_syntax_impl(fixture, expected, true);
 }
@@ -665,33 +655,6 @@ fn assert_no_precomputed_stdout(fixture: &str, output: &Path, expected_stdout: &
             .any(|window| window == expected_stdout),
         "compiled wasm embeds precomputed stdout for {fixture}"
     );
-}
-
-fn temp_wasm_path(fixture: &str) -> PathBuf {
-    let mut hasher = DefaultHasher::new();
-    fixture.hash(&mut hasher);
-    let hash = hasher.finish();
-    let safe_name: String = fixture
-        .chars()
-        .map(|ch| {
-            if ch.is_ascii_alphanumeric() || ch == '_' || ch == '-' {
-                ch
-            } else {
-                '_'
-            }
-        })
-        .collect::<String>();
-
-    let safe_name = if safe_name.is_empty() {
-        "fixture".to_string()
-    } else {
-        safe_name
-    };
-
-    std::env::temp_dir().join(format!(
-        "ts2wasm-{safe_name}-{hash:016x}-{}.wasm",
-        std::process::id()
-    ))
 }
 
 const CLASS_SEMANTIC_GAP_FIXTURES: &[&str] = &[

@@ -1,30 +1,17 @@
 use std::fs;
-use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use ts2wasm_frontend::validate_type_reference_directives;
-
-fn repo_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
-}
-
-fn fixture_path(fixture: &str) -> PathBuf {
-    repo_root().join(fixture)
-}
-
-fn temp_wasm_path(name: &str) -> PathBuf {
-    std::env::temp_dir().join(format!(
-        "ts2wasm-type-reference-directive-{}-{}.wasm",
-        name,
-        std::process::id()
-    ))
-}
+use ts2wasm_shared::test_helpers::fixture_path;
 
 #[test]
 fn missing_reference_types_directive_reports_issue_227() {
     let fixture = "fixtures/typescript-directives/reference-types-missing.ts";
     let fixture_path = fixture_path(fixture);
-    let output = temp_wasm_path("missing");
+    let output = std::env::temp_dir().join(format!(
+        "ts2wasm-type-reference-directive-missing-{}.wasm",
+        std::process::id()
+    ));
 
     let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
@@ -48,7 +35,10 @@ fn missing_reference_types_directive_reports_issue_227() {
 fn ts_ignore_suppresses_reference_types_directive_for_build() {
     let fixture = "fixtures/typescript-directives/reference-types-ts-ignore.ts";
     let fixture_path = fixture_path(fixture);
-    let output = temp_wasm_path("ts-ignore");
+    let output = std::env::temp_dir().join(format!(
+        "ts2wasm-type-reference-directive-ts-ignore-{}.wasm",
+        std::process::id()
+    ));
 
     let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
         .arg("build")
