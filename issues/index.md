@@ -31,10 +31,124 @@ Issue files are the source of truth for work items. The generated section below 
 ## Reading rules
 
 - Start with `Ready queue`.
+- Check `Dependency graph` for implementation order and parent-child relationships between meta issues.
 - Check `Blocked queue` only after ready work is exhausted.
 - Do not use `done/` as current project truth.
 - For docs work, verify whether the issue updates final-state docs, `current-state.md` (repo root), or follow-up issues.
 - For implementation work, verify acceptance criteria and validation commands before starting.
+
+## Dependency graph
+
+<!-- generated:dep-graph:start -->
+
+### Meta issue dependency tree
+
+```
+5000 (Meta: TypeScript Compiler Parser Syntax Coverage) [P1] ch:1172
+│   ├── 5001 (Meta: TypeScript Compiler Semantic Analysis Coverage) [P1] ch:2112
+│   ├── 5002 (Meta: TypeScript Compiler Type System Coverage) [P1] ch:243 (also ← 5005)
+│   ├── 5005 (Meta: TypeScript Compiler Name Resolution Coverage) [P1] ch:428
+│   │   ├── 5006 (Meta: TypeScript Compiler Scope Analysis Coverage) [P2] ch:32
+│   │   └── 5007 (Meta: TypeScript Compiler Module Resolution Coverage) [P2] ch:30
+│   └── 5003 (Meta: TypeScript Compiler Declaration Emit Coverage) [P2] ch:104 (also ← 5001)
+5004 (Meta: Runtime Builtins Coverage (test262)) [P1] ch:45
+```
+
+### Multi-parent notes
+
+- **5003** (Meta: TypeScript Compiler Declaration Emit Coverage) also depends on **5001** (Meta: TypeScript Compiler Semantic Analysis Coverage) — shown under primary parent in tree above
+- **5002** (Meta: TypeScript Compiler Type System Coverage) also depends on **5005** (Meta: TypeScript Compiler Name Resolution Coverage) — shown under primary parent in tree above
+
+### Meta issue overview
+
+| Order | ID | Title | Area | Priority | Level | Depends on | Child count |
+|-----:|---:|------|------|--------:|------:|-----------:|-----------:|
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | frontend/syntax | P1 | 0 | - | 1172 |
+| 2 | 5004 | Meta: Runtime Builtins Coverage (test262) | runtime/builtins | P1 | 0 | - | 45 |
+| 3 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | frontend/semantics | P1 | 1 | 5000 | 2112 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | frontend/resolver | P1 | 1 | 5000 | 428 |
+| 5 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | frontend/syntax | P2 | 2 | 5000, 5001 | 104 |
+| 6 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | frontend/resolver | P2 | 2 | 5005 | 30 |
+| 7 | 5002 | Meta: TypeScript Compiler Type System Coverage | frontend/semantics | P1 | 2 | 5000, 5005 | 243 |
+| 8 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | frontend/resolver | P2 | 2 | 5005 | 32 |
+
+### Topological order (design-ready + key runtime blocked)
+
+| Order | ID | Title | Area | Class | Priority | Level | Depends on |
+|-----:|---:|------|------|-------|--------:|------:|-----------:|
+| 1 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | frontend/syntax | design-ready | P1 | 0 | - |
+| 2 | 5004 | Meta: Runtime Builtins Coverage (test262) | runtime/builtins | design-ready | P1 | 0 | - |
+| 3 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | frontend/semantics | design-ready | P1 | 1 | 5000 |
+| 4 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | frontend/resolver | design-ready | P1 | 1 | 5000 |
+| 5 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | frontend/syntax | design-ready | P2 | 2 | 5000, 5001 |
+| 6 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | frontend/resolver | design-ready | P2 | 2 | 5005 |
+| 7 | 5002 | Meta: TypeScript Compiler Type System Coverage | frontend/semantics | design-ready | P1 | 2 | 5000, 5005 |
+| 8 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | frontend/resolver | design-ready | P2 | 2 | 5005 |
+| 9 | 5011 | Represent or reject class runtime values in lowered IR | ir/backend | design | P3 | 0 | - |
+| 10 | 316 | Fix Object.keys backend-io error | runtime/builtins | blocked | P0 | 1 | 5004 |
+| 11 | 4284 | Implement Stringincludes | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 12 | 4683 | Implement Unterminatedregexatendofsource | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 13 | 4000 | Implement Regexpwithslashincharclass | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 14 | 4479 | Implement Tsxfragmentchildrencheck | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 15 | 4291 | Implement Stringmatchall | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 16 | 313 | Implement array-builtin support | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 17 | 3135 | Implement Jsxpreservewithjsinput | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 18 | 2230 | Implement Excessivestackdepthflatarray | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 19 | 4812 | Implement RegExp literal support | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 20 | 2421 | Implement Foroftransformsexpression | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 21 | 444 | Implement RegExp literal support | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 22 | 4003 | Implement Regularexpressioncharacterclassrangeorder | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 23 | 3778 | Implement Parsejsxextends | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 24 | 3777 | Implement Parsejsxelementinunaryexpressionnocrash Regexp Literal | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 25 | 336 | Implement test262 includes directive processing | cli/reference | blocked | P1 | 0 | 050 |
+| 26 | 3130 | Implement Jsxfactorymissingerrorinsideaclass | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 27 | 300 | Support ABC451 large integer number boundary | runtime | blocked | P1 | 0 | 308, 309 |
+| 28 | 2872 | Implement Initializeddestructuringassignmenttypes | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 29 | 1139 | Implement Checkjsxnotseterror | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 30 | 052 | Implement JSON | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 31 | 342 | Implement Object builtin method coverage (1,721 test262 cases) | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 32 | 240 | Implement Date timezone-aware toString policy | runtime/builtins | blocked | P1 | 1 | 239, 5004 |
+| 33 | 429 | Implement eval support | reference/triage | blocked | P1 | 2 | 5005 |
+| 34 | 3134 | Implement Jsxfactoryqualifiednamewithes | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 35 | 4005 | Implement Regularexpressionscanning | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 36 | 052d | Implement broader JSON.stringify replacer semantics | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 37 | 423 | Implement Date object support | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 38 | 3137 | Implement Jsxspreadtag | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 39 | 066 | Implement RegExp literal support | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 40 | 4294 | Implement Stringtrim | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 41 | 3125 | Implement Jsxemitwithattributes | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 42 | 363 | Reduce ABC451 allocation and sweep volume after bulk copy narrowing | runtime/memory | blocked | P1 | 0 | 362, 364 |
+| 43 | 3097 | Implement Jsfilecompilationtypeargumentsyntaxofcall | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 44 | 3131 | Implement Jsxfactorynotidentifierorqualifiedname | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 45 | 294 | Support ABC451 D original submission without source rewrite | frontend/runtime | blocked | P1 | 0 | 274 |
+| 46 | 3126 | Implement Jsxfactoryandreactnamespace | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 47 | 309 | Reduce ABC451 depth-9 live allocation shape | runtime/memory | blocked | P1 | 0 | 308 |
+| 48 | 017b | Implement GC strategy | runtime/memory | blocked | P1 | 0 | 217, 218, 219, 220, 221 |
+| 49 | 4697 | Implement Unusedimports Regexp Literal | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 50 | 357 | Fix ABC451 depth-8 iwasm timeout | runtime/memory | blocked | P1 | 0 | 385, 386 |
+| 51 | 3127 | Implement Jsxfactoryidentifier | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 52 | 419 | Implement built-in API support | runtime/builtins | blocked | P1 | 1 | 5000, 5004 |
+| 53 | 050 | Implement Date | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 54 | 3136 | Implement Jsxruntimepragma | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 55 | 4776 | Implement Verbatimmodulesyntaxreactreference | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 56 | 365 | Reduce ABC451 array-growth allocation and copy pressure | runtime/memory | blocked | P1 | 0 | 364, 366, 367 |
+| 57 | 314 | Implement string-builtin support | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 58 | 4480 | Implement Tsxresolveexternalmoduleexportstypes | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 59 | 3999 | Implement Regexpwithopenbracketincharclass | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 60 | 308 | Implement ABC451 depth-9 GC cadence policy | runtime/memory | blocked | P1 | 0 | 309 |
+| 61 | 4004 | Implement Regularexpressionextendedunicodeescapes | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 62 | 3132 | Implement Jsxfactoryqualifiedname | runtime/builtins | blocked | P1 | 1 | 5004 |
+| 63 | 335 | Implement full Math.pow number semantics | runtime/builtins | blocked | P2 | 1 | 5004 |
+| 64 | 021 | Implement full wasm backend | backend | blocked | P2 | 0 | 008, 020 |
+| 65 | 407 | Implement key-preserving Map entry storage for spread iteration | runtime/semantics | blocked | P2 | 0 | 353 |
+| 66 | 374 | Design broader object ToPrimitive for mixed BigInt comparisons | runtime/semantics | blocked | P2 | 0 | 259, 261 |
+| 67 | 382 | Multi-limb BigInt addition and subtraction | runtime/semantics | blocked | P2 | 0 | 259, 260, 393, 394 |
+| 68 | 369 | Implement full multi-limb BigInt arithmetic | runtime/semantics | blocked | P2 | 0 | 259, 260, 393, 394, 383, 391, 392 |
+| 69 | 370 | Implement BigInt arithmetic RangeError and TypeError parity | runtime/semantics | blocked | P2 | 0 | 260, 380, 381 |
+| 70 | 353 | Implement iterator protocol integration for spread operator | runtime/semantics | blocked | P2 | 0 | 274 |
+| 71 | 344 | Implement legacy global builtin bindings (8 test262 cases) | runtime/builtins | blocked | P3 | 1 | 5004 |
+
+<!-- generated:dep-graph:end -->
 
 ## Ready queue
 

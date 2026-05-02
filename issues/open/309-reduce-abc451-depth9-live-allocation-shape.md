@@ -5,7 +5,7 @@ type: feature
 area: runtime/memory
 class: blocked
 priority: P1
-depends_on: []
+depends_on: [308]
 blocks: [308, 300]
 created: 2026-04-29
 updated: 2026-05-01
