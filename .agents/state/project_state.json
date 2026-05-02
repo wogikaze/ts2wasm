@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "SELF_REVIEW_GATE",
+  "fsm": "RETRO",
   "active_task_id": null,
-  "updated_at": "2026-05-02T06:24:45Z",
+  "updated_at": "2026-05-02T06:36:50Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/264-broad-expression-fixtures.md",
