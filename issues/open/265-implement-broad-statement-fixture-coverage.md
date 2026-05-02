@@ -34,7 +34,7 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] Every Stmt variant has at least one fixture under `fixtures/stmt/`
+- [ ] Every Stmt variant has at least one fixture under fixtures/stmt/
 - [ ] `mise run check fixtures` passes
 
 ## Validation

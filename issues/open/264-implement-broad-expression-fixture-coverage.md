@@ -34,7 +34,7 @@ Out of scope:
 
 ## Acceptance criteria
 
-- [ ] Every Expr variant has at least one fixture under `fixtures/expr/`
+- [ ] Every Expr variant has at least one fixture under fixtures/expr/
 - [ ] `mise run check fixtures` passes
 
 ## Validation

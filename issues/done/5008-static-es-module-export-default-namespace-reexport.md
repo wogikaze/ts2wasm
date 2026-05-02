@@ -105,4 +105,4 @@ Final-state docs:
 Follow-up issues:
 
 - [x] none
-- [x] created/updated: `issues/open/5010-remaining-es-module-export-forms.md`
+- [x] created/updated: `issues/done/5010-remaining-es-module-export-forms.md`
