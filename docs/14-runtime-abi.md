@@ -592,6 +592,12 @@ payload_ptr             : type-specific payload
 - `GC_SWEEP_NEXT_OFFSET`: 8
 - `GC_RESERVED_OFFSET`: 12
 
+`RuntimeConst::ABI_VERSION` (現在値: 1) は layout/tag/offset 定数が変更された
+ときにインクリメントする。`layout.rs` の `abi_layout_golden_snapshot` テストが
+全定数を文字列スナップショットとして記録しており、定数を変更するたびに
+スナップショット期待値を更新し、同時に `ABI_VERSION` をバンプしなければ
+コンパイルが通らない構造になっている。
+
 ### GC Trigger Points
 
 GC は以下のタイミングで実行:

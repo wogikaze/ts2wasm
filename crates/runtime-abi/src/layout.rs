@@ -446,4 +446,16 @@ HEAP_MASK=-8 HEAP_TAG=7";
              Expected:\n{expected}"
         );
     }
+    #[test]
+    #[allow(clippy::assertions_on_constants)]
+    fn backward_compat_v1_archive_matches_current() {
+        use crate::consts::RuntimeConst;
+        assert!(
+            RuntimeConst::ABI_VERSION <= 1,
+            "ABI v{} backward-compat archive needed: constants changed since v1.
+             When v1 modules exist in CI artifacts, create a `compat/v1-snapshot.txt`
+             reference file and compare current constants against it.",
+            RuntimeConst::ABI_VERSION
+        );
+    }
 }
