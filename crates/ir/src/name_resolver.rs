@@ -554,6 +554,10 @@ impl NameResolver {
                         span: *span,
                     });
                 }
+                // Reject class name used as value — class runtime is not yet supported
+                if self.classes.contains_key(name) {
+                    return Err(unsupported_class_value(name, *span));
+                }
                 // Check if it's a variable in scope or allowed global
                 if self.is_declared(name) {
                     Ok(Expr::Ident {
@@ -691,7 +695,7 @@ impl NameResolver {
                 if self.is_unshadowed_test262_ishtmldda_member(object, property) {
                     return Err(unsupported_annex_b_ishtmldda(*span));
                 }
-                let resolved_object = self.resolve_expr(object)?;
+                let resolved_object = self.resolve_member_target(object)?;
                 Ok(Expr::Member {
                     object: Box::new(resolved_object),
                     property: property.clone(),
@@ -703,7 +707,7 @@ impl NameResolver {
                 property,
                 span,
             } => {
-                let resolved_object = self.resolve_expr(object)?;
+                let resolved_object = self.resolve_member_target(object)?;
                 Ok(Expr::OptionalMember {
                     object: Box::new(resolved_object),
                     property: property.clone(),
@@ -715,7 +719,7 @@ impl NameResolver {
                 index,
                 span,
             } => {
-                let resolved_object = self.resolve_expr(object)?;
+                let resolved_object = self.resolve_member_target(object)?;
                 let resolved_index = self.resolve_expr(index)?;
                 Ok(Expr::OptionalIndex {
                     object: Box::new(resolved_object),
@@ -763,11 +767,25 @@ impl NameResolver {
                 span: *span,
             }),
             Expr::New { expr, args, span } => {
-                if self.is_unshadowed_function_constructor(expr) {
+                // Extract callee identifier directly to bypass class-value check
+                let callee_name = match expr.as_ref() {
+                    Expr::Ident { name, .. } => name.clone(),
+                    _ => {
+                        return Err(Diagnostic {
+                            code: DiagCode::UnsupportedSyntax,
+                            message: "issue-062: new requires a class name identifier".to_owned(),
+                            span: Some(*span),
+                        });
+                    }
+                };
+                if callee_name == "Function" && !self.is_user_declared("Function") {
                     return Err(unsupported_function_constructor(*span));
                 }
                 Ok(Expr::New {
-                    expr: Box::new(self.resolve_expr(expr)?),
+                    expr: Box::new(Expr::Ident {
+                        name: callee_name,
+                        span: *span,
+                    }),
                     args: args
                         .iter()
                         .map(|a| self.resolve_expr(a))
@@ -781,7 +799,7 @@ impl NameResolver {
                 value,
                 span,
             } => Ok(Expr::PropertyAssign {
-                object: Box::new(self.resolve_expr(object)?),
+                object: Box::new(self.resolve_member_target(object)?),
                 property: property.clone(),
                 value: Box::new(self.resolve_expr(value)?),
                 span: *span,
@@ -792,7 +810,7 @@ impl NameResolver {
                 value,
                 span,
             } => Ok(Expr::IndexAssign {
-                object: Box::new(self.resolve_expr(object)?),
+                object: Box::new(self.resolve_member_target(object)?),
                 index: Box::new(self.resolve_expr(index)?),
                 value: Box::new(self.resolve_expr(value)?),
                 span: *span,
@@ -848,6 +866,33 @@ impl NameResolver {
                 expr: Box::new(self.resolve_expr(expr)?),
                 span: *span,
             }),
+        }
+    }
+
+    /// Resolve an expression used as a member access target (e.g., `obj.prop`, `obj[0]`).
+    /// Allows class name identifiers through without triggering the class-value rejection,
+    /// since `Counter.staticMethod()` and similar patterns work at runtime.
+    fn resolve_member_target(&mut self, expr: &Expr) -> Result<Expr, Diagnostic> {
+        match expr {
+            Expr::Ident { name, span } => {
+                // Validate the identifier exists (function, class, variable, or allowed global)
+                if self.functions.contains_key(name)
+                    || self.is_implicit_arguments(name)
+                    || self.is_declared(name)
+                    || self.allowed_globals.contains(name)
+                {
+                    return Ok(Expr::Ident {
+                        name: name.clone(),
+                        span: *span,
+                    });
+                }
+                Err(Diagnostic {
+                    code: DiagCode::UnresolvedName,
+                    message: format!("unresolved name: `{name}`"),
+                    span: Some(*span),
+                })
+            }
+            _ => self.resolve_expr(expr),
         }
     }
 
@@ -1072,9 +1117,29 @@ impl NameResolver {
                 message: format!("unresolved name: `{name}`"),
                 span: Some(span),
             })
+        } else if self.is_class_only(name) {
+            Err(Diagnostic {
+                code: DiagCode::UnsupportedSyntax,
+                message: format!(
+                    "issue-5011: class `{name}` used as a value is not yet supported; class declarations are partially supported (methods work, constructor/prototype/class-value not yet implemented)"
+                ),
+                span: Some(span),
+            })
         } else {
             Ok(())
         }
+    }
+
+    fn is_class_only(&self, name: &str) -> bool {
+        self.classes.contains_key(name)
+            && !self.functions.contains_key(name)
+            && !self.allowed_globals.contains(name)
+            && !self.is_implicit_arguments(name)
+            && !self
+                .scopes
+                .iter()
+                .rev()
+                .any(|scope| scope.contains_key(name))
     }
 
     fn is_implicit_arguments(&self, name: &str) -> bool {
@@ -1096,6 +1161,16 @@ fn unsupported_arguments_outside_function(span: Span) -> Diagnostic {
         message:
             "issue-062d: `arguments` is only supported inside non-arrow functions in this milestone"
                 .to_owned(),
+        span: Some(span),
+    }
+}
+
+fn unsupported_class_value(name: &str, span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-5011: class `{name}` cannot be used as a value — class runtime is not yet supported"
+        ),
         span: Some(span),
     }
 }

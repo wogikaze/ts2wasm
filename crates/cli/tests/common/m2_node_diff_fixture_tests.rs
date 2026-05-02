@@ -1305,6 +1305,14 @@ fn class_static_block_unsupported_forms_report_issue_254() {
 }
 
 #[test]
+fn class_value_unsupported_reports_issue_5011() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/core-semantics/class-value-unsupported.ts",
+        "issue-5011:",
+    );
+}
+
+#[test]
 fn this_receiver_method_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-semantics/this-receiver-method.ts",

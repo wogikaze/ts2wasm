@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "TASK_SELECT",
-  "active_task_id": null,
-  "updated_at": "2026-05-02T07:52:41Z",
+  "fsm": "SELF_REVIEW_GATE",
+  "active_task_id": "5011",
+  "updated_at": "2026-05-02T09:42:58Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": null,
+  "plan_path": "/home/wogikaze/.claude/plans/structured-shimmying-whistle.md",
   "verify_fast_streak_fails": 0
 }
