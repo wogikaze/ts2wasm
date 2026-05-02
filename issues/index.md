@@ -10,8 +10,8 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 2 | 0 | 2 |
-| backend | 8 | 1 | 7 |
-| cli | 5 | 1 | 4 |
+| backend | 13 | 6 | 7 |
+| cli | 6 | 2 | 4 |
 | compiler | 1 | 0 | 1 |
 | coverage | 7 | 2 | 5 |
 | docs | 2 | 0 | 2 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4863 | 4574 | 289 |
+| total | 4869 | 4580 | 289 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -157,6 +157,12 @@ Issue files are the source of truth for work items. The generated section below 
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
+| 5026 | [backend-wasm] Implement real class declaration emission | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement real class declaration emission |
+| 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime | feature | backend | implementation-ready | P0 |  | [backend-wasm] Replace throw-as-return with catchable exception runtime |
+| 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement array growth and reallocation for push/write paths |
+| 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP |
+| 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components |
+| 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | implementation-ready | P0 |  | [cli] Replace placeholder parser keyword/operator tests with real assertions |
 | 5059 | [shared] Add typed tracking IDs for unsupported and blocked tests | feature | coverage | implementation-ready | P2 |  | [shared] Add typed tracking IDs for unsupported and blocked tests |
 | 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | implementation-ready | P3 |  | [shared] Provide shared fixture schemas for CLI/compiler/backend tests |
 <!-- generated:ready:end -->

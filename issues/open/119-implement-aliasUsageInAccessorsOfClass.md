@@ -5,7 +5,7 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5007]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,9 +17,15 @@ Triage aliasUsageInAccessorsOfClass across 1 failing reference test cases and sp
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `aliasUsageInAccessorsOfClass` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `aliasUsageInAccessorsOfClass` with diagnostics: class-accessor.
 
-Problem: aliasUsageInAccessorsOfClass has 1 reference failures and needs smart-triage evidence before implementation starts.
+### Root cause
+
+The test file uses `import Backbone = require("./aliasUsage1_backbone")` — TypeScript `import = require` syntax for module imports. Our compiler rejects this as `UnsupportedModule`. The file also uses `@Filename:` multi-file test harness directives with three separate module files.
+
+This is a **module resolution issue**, not a parser issue or class-accessor issue.
+
+Problem: aliasUsageInAccessorsOfClass fails due to UnsupportedModule (`import = require`).
 
 ## Current failure
 

@@ -5,7 +5,7 @@ type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5007]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,9 +17,15 @@ Triage accessorInferredReturnTypeErrorInReturnStatement across 1 failing referen
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `accessorInferredReturnTypeErrorInReturnStatement` with diagnostics: class-accessor. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `accessorInferredReturnTypeErrorInReturnStatement` with diagnostics: class-accessor.
 
-Problem: accessorInferredReturnTypeErrorInReturnStatement has 1 reference failures and needs smart-triage evidence before implementation starts.
+### Root cause
+
+The test file starts with `export var basePrototype = { ... }` — top-level `export var` requires module support. Our compiler rejects this as `UnsupportedModule`. The accessor syntax inside the object literal is not reached because the module-level export fails first.
+
+This is a **module resolution issue**, not a parser issue or class-accessor issue.
+
+Problem: accessorInferredReturnTypeErrorInReturnStatement fails due to UnsupportedModule (`export var`).
 
 ## Current failure
 
