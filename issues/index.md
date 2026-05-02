@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4338 | 4243 | 95 |
+| frontend | 4347 | 4252 | 95 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 204 | 199 | 5 |
+| reference | 205 | 200 | 5 |
 | runtime | 254 | 116 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4848 | 4561 | 287 |
+| total | 4858 | 4571 | 287 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4724,6 +4724,16 @@ Issue files are the source of truth for work items. The generated section below 
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | 5000 | Meta: TypeScript Compiler Name Resolution Coverage |
 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | 5005 | Meta: TypeScript Compiler Scope Analysis Coverage |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | meta | frontend/resolver | 5005 | Meta: TypeScript Compiler Module Resolution Coverage |
+| 5012 | Implement Date object support | spike | frontend/syntax | class: triage-needed | Implement Date object support |
+| 5013 | Implement duplicate-local support | spike | reference/triage | class: triage-needed | Implement duplicate-local support |
+| 5014 | Implement eval support | spike | frontend/syntax | class: triage-needed | Implement eval support |
+| 5015 | Implement function support | spike | frontend/syntax | class: triage-needed | Implement function support |
+| 5016 | Implement function resolution | spike | frontend/resolver | class: triage-needed | Implement function resolution |
+| 5017 | Implement html-comment support | spike | frontend/syntax | class: triage-needed | Implement html-comment support |
+| 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
+| 5019 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
+| 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
+| 5021 | Implement string-builtin support | spike | frontend/syntax | class: triage-needed | Implement string-builtin support |
 <!-- generated:blocked:end -->
 
 ## Done queue
