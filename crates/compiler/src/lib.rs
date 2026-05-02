@@ -178,7 +178,7 @@ fn populate_static_module_exports_for_build(
             id: 0,
             specifier: "<entry>".to_owned(),
             statements,
-            locals_count: 0,
+            locals_count: lowered.top_level_locals.len(),
         });
     }
 

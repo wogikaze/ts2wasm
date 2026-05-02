@@ -1,11 +1,11 @@
 {
-  "id": 5008,
-  "title": "Implement static ES module export forms (default, named, namespace, re-export)",
+  "id": 5000,
+  "title": "Meta: TypeScript Compiler Parser Syntax Coverage",
   "status": "selected",
-  "issue_path": "issues/open/5008-static-es-module-export-default-namespace-reexport.md",
-  "scope": "Implement static ES module export forms including default, named, namespace, and re-export",
-  "acceptance": "ExportDecl without import from another module no longer hits issue-055",
-  "commands": "cargo nextest run",
+  "issue_path": "issues/open/5000-meta-tsc-parser-syntax.md",
+  "scope": "Assess and improve parser syntax coverage for TypeScript compiler test suite",
+  "acceptance": "Identify highest-impact missing syntax constructs, file child issues for each prioritized parser feature gap",
+  "commands": "cargo nextest run -E 'test(parser)'",
   "risk": "low",
-  "notes": "implementation-ready feature issue"
+  "notes": "Meta-issue for parser syntax coverage tracking"
 }
