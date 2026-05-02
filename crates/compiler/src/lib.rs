@@ -641,6 +641,40 @@ fn lower_static_named_import_bindings_for_build(
                     lowered_statement_index += 1;
                 }
             }
+            Stmt::ExportNamespaceFrom {
+                namespace,
+                source,
+                span,
+                ..
+            } => {
+                let dependency = module_graph
+                    .entry()
+                    .dependencies()
+                    .iter()
+                    .find(|dependency| dependency.specifier() == source.value)
+                    .ok_or_else(|| Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "module graph has no dependency for namespace re-export `{}`",
+                            source.value
+                        ),
+                        span: Some(source.span),
+                    })?;
+                let exports = collect_literal_named_exports(dependency.resolved_path())?;
+                let props: Vec<(String, Expr)> = exports.into_iter().collect();
+                let local_name = format!("__ts2wasm_ns_{}", namespace.exported);
+                rewritten.push(Stmt::Let {
+                    name: local_name.clone(),
+                    expr: Expr::Object { props, span: *span },
+                    span: namespace.span,
+                });
+                local_name_to_index.insert(local_name.clone(), lowered_statement_index);
+                module_exports.push(ModuleExport {
+                    name: namespace.exported.clone(),
+                    lowered_statement_index,
+                });
+                lowered_statement_index += 1;
+            }
             other => {
                 if let Stmt::Let { name, .. } = other {
                     local_name_to_index.insert(name.clone(), lowered_statement_index);

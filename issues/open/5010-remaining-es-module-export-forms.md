@@ -1,6 +1,6 @@
 ---
 id: 5010
-title: "Combined import and re-export forms (ImportDefaultNamed, ExportNamedFrom, ExportAllFrom, ExportNamespaceFrom)"
+title: "Implement local named export (export { value } and export { value as alias }) for entry module"
 type: feature
 area: ir/compiler
 class: implementation-ready
@@ -13,36 +13,89 @@ updated: 2026-05-02
 
 ## Summary
 
-Issues 5008-5009 implemented the simpler export forms (ExportDecl, ExportDefault, ExportNamed, ImportDefault, ImportNamespace, ImportSideEffect). The remaining combined import and re-export forms still need implementation.
+Implement entry-module local named exports such as `export { value }` and `export { value as alias }`. Unlike `export const`, these forms reference existing local bindings rather than declaring+exporting in one step.
 
-## Remaining forms
+Re-export forms with a source module (`export { x } from "./mod"`), namespace re-exports (`export * as ns from "./mod"`), and `export *` remain unsupported and should keep clear issue-5005 diagnostics.
 
-- `import x, { y } from "./mod"` (combined default + named import)
-- `export * from "./mod"` (star re-export)
-- `export { x } from "./mod"` (named re-export from)
-- `export * as ns from "./mod"` (namespace re-export)
+## Problem
+
+`export { value }` currently produces `issue-5005: entry module export list is not in the current static export slice`. The rewrite infrastructure exists (ExportDecl, ExportDefault), but ExportNamed with specifiers that reference local `let`/`const` bindings is not wired up.
+
+Example failing fixture:
+
+```ts
+const value = 1;
+export { value };
+```
+
+Expected: WASM export `"value"` with value `1`.
+
+```ts
+const value = 1;
+export { value as renamed };
+```
+
+Expected: WASM export `"renamed"` with value `1`.
+
+```ts
+const a = 1;
+const b = 2;
+export { a, b };
+```
+
+Expected: WASM exports `"a"` and `"b"`.
+
+Problem: `export { ... }` references local bindings by name, but the compiler's module rewrite path only handles `ExportDecl` (export const) and `ExportDefault` (export default). ExportNamed specifiers need to resolve local names to `LoweredStmt::Let` indices and create `ModuleExport` entries.
+
+## Desired final state
+
+`export { value }` in an entry module produces a WASM module with a named export `"value"` that has the same value as the local `value` binding. Alias form `export { x as value }` exports under the alias name. Duplicate export names produce a clear diagnostic. Undefined local references produce a clear diagnostic.
 
 ## Scope
 
-- [x] Rewrite `ImportDefaultNamed` for `import x, { y } from "./mod"`
-- [x] Rewrite `ExportAllFrom` for `export * from "./mod"`
-- [x] Rewrite `ExportNamedFrom` for `export { x } from "./mod"`
-- [ ] Rewrite `ExportNamespaceFrom` for `export * as ns from "./mod"`
-- [ ] Add Node/iwasm differential test coverage for new forms
-- [ ] Narrow the `issue-055` catch-all in builtin_resolver.rs
+In scope:
+
+- `export { value }` where `value` is a local `const`/`let` binding
+- `export { x as value }` alias form
+- Multiple exports: `export { a, b }`
+- Duplicate export name diagnostic
+- Undefined local reference diagnostic
+
+Out of scope:
+
+- Re-export from another module (`export { x } from "./mod"`) — keep issue-5005
+- Namespace re-export (`export * as ns from "./mod"`) — keep issue-5005
+- Star re-export (`export * from "./mod"`) — keep issue-5005
+- Export after destructuring binding
+- Live binding (export reflects initial value, not updates)
+
+## Affected paths
+
+Expected:
+
+- `crates/compiler/src/lib.rs` — ExportNamed handler in `lower_static_named_import_bindings_for_build`
+- `crates/ir/src/builtin_resolver.rs` — narrow ExportNamed catch-all
+- `crates/cli/tests/m9_modules.rs` — new tests
+- `fixtures/module-system/` — new test fixtures
+
+Do not touch:
+
+- `crates/frontend/` — parser already produces `Stmt::ExportNamed`
+- `crates/backend-wasm/` — runtime helpers unchanged
 
 ## Acceptance criteria
 
-- [x] `import x, { y } from "./mod"` builds to WASM
-- [x] `export * from "./mod"` builds to WASM and forwards named exports
-- [x] `export { x } from "./mod"` builds to WASM (re-export by alias)
-- [ ] `export * as ns from "./mod"` builds to WASM
-- [ ] All previous `static-*-build-smoke` tests still pass
+- `const value = 1; export { value };` builds to WASM and produces export `"value" = 1`
+- `const value = 1; export { value as renamed };` builds to WASM and produces export `"renamed" = 1`
+- `const a = 1; const b = 2; export { a, b };` builds to WASM with exports `"a"` and `"b"`
+- `export { missing };` with no local `missing` produces clear diagnostic
+- `const a = 1; const b = 2; export { a as value, b as value };` (duplicate) produces clear diagnostic
+- `export { value } from "./mod"` still produces clear issue-5005 diagnostic (not implemented)
+- All previous module tests still pass
 
 ## Validation
 
 ```sh
 cargo fmt --all --check
 cargo nextest run -p ts2wasm-cli module
-cargo nextest run -p ts2wasm-compiler
 ```

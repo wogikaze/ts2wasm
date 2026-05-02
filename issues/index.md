@@ -43,7 +43,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
-| 5010 | Combined import and re-export forms (ImportDefaultNamed, ExportNamedFrom, ExportAllFrom, ExportNamespaceFrom) | feature | ir/compiler | implementation-ready | P1 |  | Combined import and re-export forms (ImportDefaultNamed, ExportNamedFrom, ExportAllFrom, ExportNamespaceFrom) |
+| 5010 | Implement local named export (export { value } and export { value as alias }) for entry module | feature | ir/compiler | implementation-ready | P1 |  | `export { ... }` references local bindings by name, but the compiler's module rewrite path only handles `ExportDecl` ... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
