@@ -230,6 +230,11 @@ fn static_star_re_export_entry_build_smoke() {
 }
 
 #[test]
+fn static_named_re_export_from_entry_build_smoke() {
+    assert_fixture_build_smoke("module-system/static-named-re-export-from-entry.ts");
+}
+
+#[test]
 fn static_combined_namespace_import_reports_issue_232_missing_module() {
     assert_build_fails_with_module_graph_diagnostic(
         "module-system/static-combined-namespace-import-unsupported.ts",

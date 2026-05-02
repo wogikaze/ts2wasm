@@ -2,9 +2,9 @@
   "version": 1,
   "fsm": "RETRO",
   "active_task_id": null,
-  "updated_at": "2026-05-02T04:56:25Z",
+  "updated_at": "2026-05-02T05:02:07Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "plans/5010-star-re-export.md",
+  "plan_path": "plans/5010-named-re-export-from.md",
   "verify_fast_streak_fails": 0
 }
