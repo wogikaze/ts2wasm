@@ -36,7 +36,7 @@ The `object-builtin` unsupported count is reduced to 0 for the implemented subse
 
 In scope:
 
-- Generated child fixture-bucket issues (3420-3429) have been consolidated back into this parent and archived to `.backup/`.
+- Generated child fixture-bucket issues (3420-3429) have been consolidated back into this parent and archived (now in `issues/open/`).
 - [ ] Inventory test262 cases tagged `object-builtin` to identify which methods are most impactful
 - [ ] Implement Object.defineProperty
 - [ ] Implement Object.getOwnPropertyDescriptor

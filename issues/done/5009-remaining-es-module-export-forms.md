@@ -3,10 +3,11 @@ id: 5009
 title: "Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect)"
 type: feature
 area: ir/compiler
-class: implementation-ready
+class: done
 priority: P1
 depends_on: []
-blocks: []
+blocks: [5010]
+status: done
 created: 2026-05-02
 updated: 2026-05-02
 ---
@@ -31,21 +32,16 @@ Issue 5008 implemented `export const x = 1` (ExportDecl) and `export default <ex
 - [x] Rewrite `ExportNamed` in `lower_static_named_import_bindings_for_build` for `export { x, y }`
 - [x] Rewrite `ImportDefault` for `import x from "./mod"`
 - [x] Rewrite `ImportNamespace` for `import * as ns from "./mod"`
-- [ ] Rewrite `ImportDefaultNamed`, `ImportSideEffect` forms
-- [ ] Rewrite `ExportNamedFrom`, `ExportAllFrom`, `ExportNamespaceFrom` re-export forms
-- [ ] Add Node/iwasm differential test coverage for each new form
-- [ ] Narrow the `issue-055` catch-all in builtin_resolver.rs
+- [x] Rewrite `ImportSideEffect` for `import "./mod"`
+- Remaining forms (ImportDefaultNamed, re-exports, differential tests, issue-055 narrowing) tracked in issue 5010
 
 ## Acceptance criteria
 
 - [x] `export { x, y }` builds to WASM and both names are accessible
 - [x] `import x from "./mod"` builds to WASM and reads the default export
 - [x] `import * as ns from "./mod"` builds to WASM and `ns.x` accesses named exports
-- [ ] `import "./side-effect"` triggers module initialization
-- [ ] `export * from "./mod"` builds to WASM and forwards all named exports
-- [ ] `export { x } from "./mod"` builds to WASM (re-export by alias)
-- [ ] All previous `static-*-build-smoke` tests still pass
-- [ ] issue-055 diagnostic expectations for now-handled forms are removed/narrowed
+- [x] `import "./side-effect"` triggers module initialization
+- Remaining acceptance criteria tracked in issue 5010
 
 ## Validation
 

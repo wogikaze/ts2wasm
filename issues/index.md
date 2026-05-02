@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
 | frontend | 4428 | 4336 | 92 |
-| ir | 11 | 1 | 10 |
+| ir | 12 | 1 | 11 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 176 | 171 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4843 | 4570 | 273 |
+| total | 4844 | 4570 | 274 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -43,7 +43,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
-| 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) | feature | ir/compiler | implementation-ready | P1 |  | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) |
+| 5010 | Combined import and re-export forms (ImportDefaultNamed, ExportNamedFrom, ExportAllFrom, ExportNamespaceFrom) | feature | ir/compiler | implementation-ready | P1 |  | Combined import and re-export forms (ImportDefaultNamed, ExportNamedFrom, ExportAllFrom, ExportNamespaceFrom) |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4899,6 +4899,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | see file |
+| 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) | feature | ir/compiler | see file |
 <!-- generated:done:end -->
 
 ## Index generation contract

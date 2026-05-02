@@ -39,7 +39,7 @@ The `type-alias` unsupported count in the tsc suite is reduced to 0. Type alias 
 
 In scope:
 
-- Generated child fixture-bucket issues (3450-3459) have been consolidated back into this parent and archived to `.backup/`.
+- Generated child fixture-bucket issues (3450-3459) have been consolidated back into this parent and archived (now in `issues/open/`).
 - [x] `type X = ...` parse/erase implemented via tsc oracle (issue 399)
 - [x] Generic type aliases (`type Container<T> = { value: T }`) work
 - [x] Union/intersection type aliases work

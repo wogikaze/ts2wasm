@@ -41,7 +41,7 @@ This generated bucket is either split into implementation-ready child issues or 
 
 ## Scope
 
-This issue tracks String builtin API implementation. Generated child fixture-bucket issues (3140-3149) have been consolidated back into this parent and archived to `.backup/`.
+This issue tracks String builtin API implementation. Generated child fixture-bucket issues (3140-3149) have been consolidated back into this parent and archived (now in `issues/open/`).
 
 In scope:
 - [ ] Implement String.prototype methods and String constructor features

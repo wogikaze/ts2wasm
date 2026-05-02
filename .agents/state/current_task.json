@@ -1,11 +1,11 @@
 {
-  "id": 5009,
-  "title": "Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect)",
+  "id": 5010,
+  "title": "Combined import and re-export forms (ImportDefaultNamed, ExportNamedFrom, ExportAllFrom, ExportNamespaceFrom)",
   "status": "selected",
-  "issue_path": "issues/open/5009-remaining-es-module-export-forms.md",
-  "scope": "Implement import \"./mod\" side-effect import",
-  "acceptance": "import \"./mod\" no longer hits issue-055",
+  "issue_path": "issues/open/5010-remaining-es-module-export-forms.md",
+  "scope": "Implement import x, { y } from \"./mod\" combined default + named import",
+  "acceptance": "import x, { y } from \"./mod\" no longer hits issue-055",
   "commands": "cargo nextest run -E 'test(module)'",
   "risk": "low",
-  "notes": "next slice: side-effect import"
+  "notes": "next slice: ImportDefaultNamed"
 }
