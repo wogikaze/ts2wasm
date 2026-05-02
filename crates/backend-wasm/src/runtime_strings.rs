@@ -178,13 +178,13 @@ impl WatEmitter<'_> {
     (local $h_len i32)
     (local $n_len i32)
     (local $i i32)
-    (if (i32.eqz (call $is_string (local.get $haystack))) (then (return (i32.const {false}))))
-    (if (i32.eqz (call $is_string (local.get $needle))) (then (return (i32.const {false}))))
+    (if (i32.eqz (call $is_string (local.get $haystack))) (then (return (i32.const {false_tag}))))
+    (if (i32.eqz (call $is_string (local.get $needle))) (then (return (i32.const {false_tag}))))
     (local.set $h_obj (i32.and (local.get $haystack) (i32.const {heap_mask})))
     (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
     (local.set $h_len (i32.load (local.get $h_obj)))
     (local.set $n_len (i32.load (local.get $n_obj)))
-    (if (i32.eqz (local.get $n_len)) (then (return (i32.const {true}))))
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.const {true_tag}))))
     (block $not_found
       (loop $search
         (br_if $not_found (i32.gt_u (local.get $i) (i32.sub (local.get $h_len) (local.get $n_len))))
@@ -192,15 +192,15 @@ impl WatEmitter<'_> {
               (i32.add (i32.add (local.get $h_obj) (i32.const {header})) (local.get $i))
               (i32.add (local.get $n_obj) (i32.const {header}))
               (local.get $n_len))
-          (then (return (i32.const {true}))))
+          (then (return (i32.const {true_tag}))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $search)))
-    (i32.const {false}))
+    (i32.const {false_tag}))
 "#,
             heap_mask = ValueTag::HEAP_MASK,
             header = Layout::STRING_HEADER_SIZE,
-            true = RuntimeConst::TRUE,
-            false = RuntimeConst::FALSE,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
             one = RuntimeConst::ONE,
         ));
     }

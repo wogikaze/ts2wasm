@@ -200,6 +200,16 @@ fn build_smoke_string_index_of_method() {
 }
 
 #[test]
+fn build_smoke_string_includes_method() {
+    let result = run_fixture("builtins-and-io/string-includes.ts");
+    assert!(
+        result.is_ok(),
+        "String.includes should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_string_split_method() {
     let result = run_fixture("builtins-and-io/string-split.ts");
     assert!(
