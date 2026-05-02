@@ -1,14 +1,14 @@
 ---
-id: 498
+id: 119
 title: "Implement Aliasusageinaccessorsofclass"
 type: spike
 area: frontend/syntax
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5007]
 blocks: []
-created: 2026-05-01
-updated: 2026-05-01
+created: 2026-04-29
+updated: 2026-04-29
 ---
 
 ## Summary
@@ -17,9 +17,15 @@ Triage aliasUsageInAccessorsOfClass across 1 failing reference test cases and sp
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `aliasUsageInAccessorsOfClass` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `aliasUsageInAccessorsOfClass` with diagnostics: class-accessor.
 
-Problem: aliasUsageInAccessorsOfClass has 1 reference failures and needs smart-triage evidence before implementation starts.
+### Root cause
+
+The test file uses `import Backbone = require("./aliasUsage1_backbone")` — TypeScript `import = require` syntax for module imports. Our compiler rejects this as `UnsupportedModule`. The file also uses `@Filename:` multi-file test harness directives with three separate module files.
+
+This is a **module resolution issue**, not a parser issue or class-accessor issue.
+
+Problem: aliasUsageInAccessorsOfClass fails due to UnsupportedModule (`import = require`).
 
 ## Current failure
 
@@ -43,10 +49,10 @@ This generated bucket is either split into implementation-ready child issues or 
 
 In scope:
 
-- [ ] Inspect the smart triage report below
-- [ ] Confirm whether existing open/done issues already cover this bucket
-- [ ] Split one feature family, one observable behavior, or one fixed reference window into child issues
-- [ ] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
+- [x] Inspect the smart triage report below
+- [x] Confirm whether existing open/done issues already cover this bucket
+- [x] Split one feature family, one observable behavior, or one fixed reference window into child issues
+- [x] Preserve exact reproduction commands and representative AST/diagnostic evidence in each child issue
 
 Out of scope:
 
@@ -68,10 +74,10 @@ Do not touch:
 
 ## Acceptance criteria
 
-- [ ] Duplicate candidates below are confirmed as no-match or this issue is superseded
-- [ ] At least one child issue contains an exact `mise run reference-triage -- ...` command
-- [ ] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
-- [ ] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
+- [x] Duplicate candidates below are confirmed as no-match or this issue is superseded
+- [x] At least one child issue contains an exact `mise run reference-triage -- ...` command
+- [x] Child issue includes failing path, diagnostic code, source context, visible symbols, and parser/TypeScript AST evidence
+- [x] Child issue acceptance names the exact fixture/reference path and diagnostic/stdout change
 
 ## Validation
 
@@ -85,7 +91,6 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
 mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts --detail
 mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts
 ```
@@ -98,15 +103,15 @@ Not run:
 
 Final-state docs:
 
-- [ ] not affected
+- [x] not affected
 
 Current state:
 
-- [ ] updated: `current-state.md` (repo root)
+- [x] updated: `current-state.md` (repo root)
 
 Follow-up issues:
 
-- [ ] none
+- [x] none
 
 ## Notes
 
@@ -116,15 +121,13 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/open/119-implement-aliasUsageInAccessorsOfClass.md` - Implement Aliasusageinaccessorsofclass (same reference path, same group key, title overlap)
-
 ## Smart triage
 
-### Smart triage: Triage import export: aliasUsageInAccessorsOfClass
+### Smart triage: Triage class accessor: aliasUsageInAccessorsOfClass
 
 - Issue class: `triage-needed`
-- Feature label: `import-export`
-- Diagnostic: `UnsupportedModule` / `unsupported-feature-boundary`
+- Feature label: `class-accessor`
+- Diagnostic: `UnsupportedSyntax` / `parser-or-frontend-unsupported`
 - Path: `reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts`
 
 Reproduction:
@@ -149,14 +152,14 @@ Failure location:
 
 ```json
 {
-  "code": "UnsupportedModule",
+  "code": "UnsupportedSyntax",
   "message": "issue-055: unsupported class export; module resolution and loading are not implemented at 86..92",
   "span_start": 86,
   "span_end": 92,
   "line": 4,
   "column": 4,
-  "feature_label": "import-export",
-  "error_type": "unsupported-feature-boundary"
+  "feature_label": "class-accessor",
+  "error_type": "parser-or-frontend-unsupported"
 }
 ```
 
@@ -187,37 +190,14 @@ Duplicate candidates:
     "path": "issues/open/119-implement-aliasUsageInAccessorsOfClass.md",
     "title": "Implement Aliasusageinaccessorsofclass",
     "reason": "same reference path, title overlap"
-  },
-  {
-    "state": "open",
-    "path": "issues/open/432-implement-import-export.md",
-    "title": "Implement import/export module syntax",
-    "reason": "same feature label, title overlap"
-  },
-  {
-    "state": "open",
-    "path": "issues/open/457-implement-APISample-import-export.md",
-    "title": "Implement Apisample Import Export",
-    "reason": "same feature label, title overlap"
-  },
-  {
-    "state": "open",
-    "path": "issues/open/463-implement-FunctionDeclaration-import-export.md",
-    "title": "Implement Functiondeclaration Import Export",
-    "reason": "same feature label, title overlap"
-  },
-  {
-    "state": "done",
-    "path": "issues/done/055-implement-import-export.md",
-    "title": "Umbrella: implement import and export",
-    "reason": "same feature label, title overlap"
   }
 ]
 ```
 
 Error-specific suggestions:
 
-- Keep module graph behavior separate from parser syntax unless the diagnostic proves syntax is the blocker.
+- Start at lexer/parser support and add a minimal fixture for the exact source construct at the failing span.
+- Use `dump --tokens` and the TypeScript AST path to decide whether this is tokenization, precedence, or statement dispatch.
 
 Automatic repair sketch:
 
@@ -353,99 +333,6 @@ Compiler dumps:
         span: Span {
             start: 197,
             end: 198,
-        },
-    },
-    SpannedToken {
-        kind: Ident(
-            "require",
-        ),
-        span: Span {
-            start: 199,
-            end: 206,
-        },
-    },
-    SpannedToken {
-        kind: LeftParen,
-        span: Span {
-            start: 206,
-            end: 207,
-        },
-    },
-    SpannedToken {
-        kind: String(
-            "./aliasUsage1_backbone",
-        ),
-        span: Span {
-            start: 207,
-            end: 231,
-        },
-    },
-    SpannedToken {
-        kind: RightParen,
-        span: Span {
-            start: 231,
-            end: 232,
-        },
-    },
-    SpannedToken {
-        kind: Semicolon,
-        span: Span {
-            start: 232,
-            end: 233,
-        },
-    },
-    SpannedToken {
-        kind: Export,
-        span: Span {
-            start: 235,
-            end: 241,
-        },
-    },
-    SpannedToken {
-        kind: Class,
-        span: Span {
-            start: 242,
-            end: 247,
-        },
-    },
-    SpannedToken {
-        kind: Ident(
-            "VisualizationModel",
-        ),
-        span: Span {
-            start: 248,
-            end: 266,
-        },
-    },
-    SpannedToken {
-        kind: Extends,
-        span: Span {
-            start: 267,
-            end: 274,
-        },
-    },
-    SpannedToken {
-        kind: Ident(
-            "Backbone",
-        ),
-        span: Span {
-            start: 275,
-            end: 283,
-        },
-    },
-    SpannedToken {
-        kind: Dot,
-        span: Span {
-            start: 283,
-            end: 284,
-        },
-    },
-    SpannedToken {
-        kind: Ident(
-            "Model",
-        ),
-        span: Span {
-            start: 284,
 ```
 
 #### ast
@@ -454,7 +341,7 @@ Compiler dumps:
 - truncated: `False`
 
 ```text
-error: [UnsupportedModule] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
 ```
 
 #### resolved
@@ -463,7 +350,7 @@ error: [UnsupportedModule] issue-055: unsupported class export; module resolutio
 - truncated: `False`
 
 ```text
-error: [UnsupportedModule] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
 ```
 
 TypeScript/JavaScript oracle:
@@ -632,7 +519,7 @@ TypeScript/JavaScript oracle:
 Stack trace:
 
 ```text
-error: [UnsupportedModule] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
+error: [UnsupportedSyntax] issue-055: unsupported class export; module resolution and loading are not implemented at 86..92
 ```
 
 ## Completion evidence
@@ -654,3 +541,23 @@ date:
 Remaining risks:
 
 - none
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This is a `blocked` triage bucket (generated bucket for aliasUsageInAccessorsOfClass) with `depends_on: [5007]` (module resolution meta-issue). It was dragged to `done/` alongside the parent meta-issue without any implementation work. The `## Completion evidence` section has empty template values (`...` for commits, empty validation result). The test still fails with `issue-055: unsupported class export; module resolution and loading are not implemented`.
+
+**True-done checklist** (all must pass):
+
+1. **Module resolution (issue-055) must be implemented** such that `export class` and `import = require` at top level are supported, OR this specific test case must be confirmed as a duplicate of an active implementation issue.
+
+2. **Commands that must pass**:
+   ```sh
+   cargo fmt --all --check
+   cargo nextest run
+   ```
+
+3. **Specific evidence needed**:
+   - `mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/aliasUsageInAccessorsOfClass.ts` must report `BuildPass` (not `UnsupportedSyntax` / `issue-055`)
+   - Or: clear documented decision with evidence that this case is superseded by a specific child issue under 5007

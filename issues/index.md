@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4250 | 100 |
+| frontend | 4350 | 4252 | 98 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 4 | 14 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4589 | 307 |
+| total | 4896 | 4591 | 305 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -220,6 +220,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 097 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 098 | Implement Accessordeclarationorder | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder |
 | 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes |
+| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
 | 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier |
 | 102 | Implement Accessorwithinitializer | spike | frontend/syntax | class: blocked | Implement Accessorwithinitializer |
 | 103 | Implement Accessorwithlineterminator | spike | frontend/syntax | class: blocked | Implement Accessorwithlineterminator |
@@ -237,6 +238,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
 | 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: blocked | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
 | 118 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
+| 119 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
 | 120 | Implement Aliasusageinarray | spike | frontend/syntax | class: blocked | Implement Aliasusageinarray |
 | 121 | Implement Aliasusageinfunctionexpression | spike | frontend/syntax | class: blocked | Implement Aliasusageinfunctionexpression |
 | 122 | Implement Aliasusageingenericfunction | spike | frontend/syntax | class: blocked | Implement Aliasusageingenericfunction |
@@ -4851,9 +4853,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 077 | Implement Interfacedeclaration | spike | frontend/syntax | see `issues/done/077-implement-InterfaceDeclaration.md` |
 | 085 | Implement Abstractinterfaceidentifiername | spike | frontend/syntax | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
 | 095 | Implement Accessorbodyintypecontext | spike | frontend/syntax | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
-| 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | see `issues/done/100-implement-accessorInferredReturnTypeErrorInReturnStatement.md` |
 | 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
-| 119 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | see `issues/done/119-implement-aliasUsageInAccessorsOfClass.md` |
 | 186 | Implement Anyindexedaccessarraynoexception | spike | frontend/syntax | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
 | 188 | Implement Anyisassignabletoobject | spike | frontend/syntax | see `issues/done/188-implement-anyIsAssignableToObject.md` |
 | 189 | Implement Anyisassignabletovoid | spike | frontend/syntax | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
