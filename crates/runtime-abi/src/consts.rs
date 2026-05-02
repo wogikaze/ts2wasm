@@ -5,6 +5,8 @@ impl RuntimeConst {
     pub const ONE: i32 = 1;
     pub const TEN: i32 = 10;
     pub const STDOUT_FD: i32 = 1;
+    pub const TRUE: i32 = 1;
+    pub const FALSE: i32 = 0;
     pub const ASCII_ZERO: i32 = 48;
     pub const ASCII_MINUS: i32 = 45;
 }

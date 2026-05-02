@@ -140,6 +140,8 @@ pub(crate) enum RuntimeFn {
     StringSubstring,
     StringSlice,
     StringIndexOf,
+    /// String.prototype.includes
+    StringIncludes,
     StringSplit,
     StringTrim,
     StringToUpperCase,
@@ -503,6 +505,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringSubstring" => Some(RuntimeFn::StringSubstring),
         "StringSlice" => Some(RuntimeFn::StringSlice),
         "StringIndexOf" => Some(RuntimeFn::StringIndexOf),
+        "StringIncludes" => Some(RuntimeFn::StringIncludes),
         "StringSplit" => Some(RuntimeFn::StringSplit),
         "StringTrim" => Some(RuntimeFn::StringTrim),
         "StringToUpperCase" => Some(RuntimeFn::StringToUpperCase),
@@ -883,6 +886,7 @@ const STRING_SUBSTRING_DEPS: &[RuntimeFn] =
 const STRING_SLICE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_SPLIT_DEPS: &[RuntimeFn] = &[
     RuntimeFn::AllocHeap,
     RuntimeFn::Copy,

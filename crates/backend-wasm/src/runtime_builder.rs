@@ -113,6 +113,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringSubstring => self.emit_string_substring(wat),
                 RuntimeFn::StringSlice => self.emit_string_slice(wat),
                 RuntimeFn::StringIndexOf => self.emit_string_index_of(wat),
+                RuntimeFn::StringIncludes => self.emit_string_includes(wat),
                 RuntimeFn::StringSplit => self.emit_string_split(wat),
                 RuntimeFn::StringTrim => self.emit_string_trim(wat),
                 RuntimeFn::StringToUpperCase => self.emit_string_to_upper_case(wat),
@@ -185,9 +186,6 @@ impl WatEmitter<'_> {
                 RuntimeFn::DecodeURI => self.emit_decode_uri(wat),
                 RuntimeFn::Escape => self.emit_escape(wat),
                 RuntimeFn::Unescape => self.emit_unescape(wat),
-                RuntimeFn::StringIncludes => {
-                    // StringIncludes runtime function declared but not yet emitted
-                }
             }
         }
     }

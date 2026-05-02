@@ -2,7 +2,7 @@
 id: 3135
 title: "Implement Jsxpreservewithjsinput"
 type: spike
-area: runtime/builtins
+area: reference/triage
 class: blocked
 priority: P1
 depends_on: [5004]

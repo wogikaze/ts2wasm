@@ -2,10 +2,10 @@
 id: 316
 title: "Fix Object.keys backend-io error"
 type: feature
-area: runtime/builtins
+area: harness
 class: blocked
 priority: P0
-depends_on: [5004]
+depends_on: [5004, 336]
 blocks: []
 created: 2026-04-30
 updated: 2026-04-30
@@ -142,6 +142,12 @@ Follow-up issues:
 - [ ] create an implementation child after harness-backed reproduction exists
 
 ## Notes
+
+**Updated 2026-05-02**: This is now classified as a harness infrastructure issue, not a runtime bug.
+
+- Object.keys runtime implementation is complete: `RuntimeFn::ObjectKeys` exists with WAT emitter and passes `build_smoke`.
+- The remaining blocker is test262 includes directive (`$ERROR`, `assert` harness helpers) not being resolved — tracked by issue 336.
+- Once 336 is resolved (test262 includes support), this issue can be re-validated with the full test262 built-ins scan.
 
 ## Completion evidence
 

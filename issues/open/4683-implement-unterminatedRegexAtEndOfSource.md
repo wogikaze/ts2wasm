@@ -2,7 +2,7 @@
 id: 4683
 title: "Implement Unterminatedregexatendofsource"
 type: spike
-area: runtime/builtins
+area: reference/triage
 class: blocked
 priority: P1
 depends_on: [5004]

@@ -89,9 +89,10 @@ mise run reference-coverage -- tsc --path-filter "reservedWords" --detail
 #### Task 1.3: Index signatures (~6 issues)
 
 **Files:**
-- Modify: `crates/frontend/src/parser/statements_ts.rs`
+- Modify: `crates/frontend/src/parser/statements_general.rs` (class body: skip `[key: Type]: ReturnType`)
+- Modify: `crates/frontend/src/parser/tokens.rs` (add `skip_balanced_bracket_block` helper)
 
-- [ ] **Step 1-6:** Accept `[key: Type]: ValueType` in interface body parser → TDD cycle
+- [x] **Implemented:** Skip `[key: Type]: ReturnType;` in class body by detecting `[` before `expect_ident()`
 
 #### Task 1.4: `this`/`super` edge cases (~8 issues)
 

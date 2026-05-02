@@ -61,7 +61,7 @@ See `docs/superpowers/plans/2026-05-02-tsc-parser-syntax.md` for the full wave-b
 
 **Wave 1 (Simple Statement/Expression Fixes)** — in progress:
 
-1. [ ] Reserved words as property names (Task 1.1)
-2. [ ] `for...in` with type annotations (Task 1.2)
-3. [ ] Index signatures (Task 1.3)
+1. [x] Reserved words as property names (Task 1.1)
+2. [x] `for...in` with type annotations (Task 1.2)
+3. [x] Index signatures (Task 1.3)
 4. [ ] `this`/`super` keyword edge cases (Task 1.4)

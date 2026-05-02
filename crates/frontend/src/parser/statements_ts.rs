@@ -52,10 +52,10 @@ impl Parser {
                 start: self.cursor,
                 end: self.cursor,
             });
-            return Err(self.unsupported_typescript_syntax(
-                enum_span,
-                "TypeScript enum declarations require an explicit frontend transform before runtime lowering",
-            ));
+            self.advance(); // consume 'enum'
+            self.expect_ident()?; // consume enum name
+            self.skip_balanced_brace_block(enum_span)?; // skip { ... } body
+            return Ok(true);
         }
 
         Ok(false)

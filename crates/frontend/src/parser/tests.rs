@@ -217,11 +217,9 @@ mod tests {
         assert!(err.message.contains("issue-400"));
         assert_eq!(err.span, Some(Span { start: 8, end: 14 }));
 
-        let err = parse_program("enum RuntimeEnum { A }")
-            .expect_err("runtime enum lowering requires an explicit transform");
-        assert_eq!(err.code, DiagCode::UnsupportedTypeScriptSyntax);
-        assert!(err.message.contains("enum declarations"));
-        assert_eq!(err.span, Some(Span { start: 0, end: 4 }));
+        // enum declarations are now erased as TypeScript-only syntax
+        let stmts = parse_program("enum RuntimeEnum { A }").unwrap();
+        assert!(stmts.is_empty());
 
         let err = parse_program("declare const runtimeValue = 1;")
             .expect_err("ambient declarations with initializers are not erased");

@@ -169,6 +169,42 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_includes(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_includes (param $haystack i32) (param $needle i32) (result i32)
+    (local $h_obj i32)
+    (local $n_obj i32)
+    (local $h_len i32)
+    (local $n_len i32)
+    (local $i i32)
+    (if (i32.eqz (call $is_string (local.get $haystack))) (then (return (i32.const {false}))))
+    (if (i32.eqz (call $is_string (local.get $needle))) (then (return (i32.const {false}))))
+    (local.set $h_obj (i32.and (local.get $haystack) (i32.const {heap_mask})))
+    (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
+    (local.set $h_len (i32.load (local.get $h_obj)))
+    (local.set $n_len (i32.load (local.get $n_obj)))
+    (if (i32.eqz (local.get $n_len)) (then (return (i32.const {true}))))
+    (block $not_found
+      (loop $search
+        (br_if $not_found (i32.gt_u (local.get $i) (i32.sub (local.get $h_len) (local.get $n_len))))
+        (if (call $mem_equal
+              (i32.add (i32.add (local.get $h_obj) (i32.const {header})) (local.get $i))
+              (i32.add (local.get $n_obj) (i32.const {header}))
+              (local.get $n_len))
+          (then (return (i32.const {true}))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $search)))
+    (i32.const {false}))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            true = RuntimeConst::TRUE,
+            false = RuntimeConst::FALSE,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(super) fn emit_string_split(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

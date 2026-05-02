@@ -72,6 +72,7 @@ Implement constructor function objects, prototype chain, `extends`, `new`, `supe
 
 ## Acceptance criteria
 
-- [ ] Class-value usage (e.g. `new C()`, `export const y = C`, `C.prototype`) produces a diagnostic
-- [ ] Class method compilation continues to work
-- [ ] No silent runtime correctness bugs from erased class values
+- [x] Class name used as pure value (`const y = C`, `export { C }`) rejected with UnsupportedSyntax diagnostic
+- [x] `new C()` and `C.staticMethod()` continue to work
+- [x] Class method/constructor compilation continues to work
+- [x] No silent runtime correctness bugs from erased class values (rejected at name resolution)

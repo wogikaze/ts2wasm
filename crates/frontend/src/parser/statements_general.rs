@@ -1573,6 +1573,7 @@ impl Parser {
         let (name, _) = self.expect_ident()?;
 
         let extends = self.class_extends()?;
+        self.skip_class_implements()?;
 
         self.class_decl_body(name, extends, start.start)
     }
@@ -1587,6 +1588,7 @@ impl Parser {
             self.advance();
         }
         let extends = self.class_extends()?;
+        self.skip_class_implements()?;
         let mut class_decl = self.class_decl_body(binding_name, extends, start.start)?;
         let semi = self.expect(TokenKind::Semicolon)?;
         if let Stmt::ClassDecl { span, .. } = &mut class_decl {
@@ -1602,6 +1604,17 @@ impl Parser {
         } else {
             Ok(None)
         }
+    }
+
+    fn skip_class_implements(&mut self) -> Result<(), Diagnostic> {
+        if self.peek_contextual_keyword("implements") {
+            self.advance(); // consume 'implements'
+            // Skip the comma-separated type list until '{'
+            while !self.is_at_end() && !matches!(self.peek(), Some(Token::LeftBrace)) {
+                self.advance();
+            }
+        }
+        Ok(())
     }
 
     fn class_decl_body(

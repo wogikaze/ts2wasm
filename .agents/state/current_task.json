@@ -1,11 +1,11 @@
 {
-  "id": 5011,
-  "title": "Represent or reject class runtime values in lowered IR",
+  "id": "5000",
+  "title": "Meta: TypeScript Compiler Parser Syntax Coverage",
   "status": "selected",
-  "issue_path": "issues/open/5011-class-runtime-value-semantics.md",
-  "scope": "Design and implement approach for class runtime value handling - either Option A (warning diagnostics) or Option B (structural rejection) from the issue",
-  "acceptance": "Class-value usage produces a diagnostic; class method compilation continues to work; no silent runtime bugs from erased class values",
-  "commands": "cargo test",
-  "risk": "medium",
-  "notes": "needs design decision first"
+  "issue_path": "issues/open/5000-meta-tsc-parser-syntax.md",
+  "scope": null,
+  "acceptance": null,
+  "commands": null,
+  "risk": null,
+  "notes": ""
 }

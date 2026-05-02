@@ -55,6 +55,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "substring" => Some("StringSubstring".to_owned()),
         "slice" => Some("StringSlice".to_owned()),
         "indexOf" => Some("StringIndexOf".to_owned()),
+        "includes" => Some("StringIncludes".to_owned()),
         "split" => Some("StringSplit".to_owned()),
         "trim" => Some("StringTrim".to_owned()),
         "toUpperCase" => Some("StringToUpperCase".to_owned()),

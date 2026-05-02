@@ -2,7 +2,7 @@
 id: 3130
 title: "Implement Jsxfactorymissingerrorinsideaclass"
 type: spike
-area: runtime/builtins
+area: reference/triage
 class: blocked
 priority: P1
 depends_on: [5004]
