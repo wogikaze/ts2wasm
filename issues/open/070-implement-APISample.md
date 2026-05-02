@@ -17,9 +17,25 @@ Triage APISample across 9 failing reference test cases and split this bucket int
 
 ## Problem
 
-Reference test results show 9 cases fail in directory `APISample` with diagnostics: jsdoc, parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 9 cases fail in directory `APISample` with diagnostics: jsdoc, parser-syntax.
 
-Problem: APISample has 9 reference failures and needs smart-triage evidence before implementation starts.
+### Triage breakdown
+
+| File | True cause | Category |
+|------|-----------|----------|
+| APISample_Watch.ts | Module: UnsupportedModule (import/export) | module |
+| APISample_WatchWithDefaults.ts | Module: UnsupportedModule (import/export) | module |
+| APISample_WatchWithOwnWatchHost.ts | Module: UnsupportedModule (import/export) | module |
+| APISample_compile.ts | Module: UnsupportedModule (import/export) | module |
+| APISample_parseConfig.ts | Module: UnsupportedModule (import/export) | module |
+| APISample_jsdoc.ts | jsdoc / JSDoc annotation | frontend |
+| APISample_transform.ts | Parser / transform API | frontend |
+| APISample_linter.ts | Parser: `<` token (multi-file test directive) | **parser** |
+| APISample_watcher.ts | Runtime: issue-062k (arrow function body) → **split to 5023** | **runtime** |
+
+**Result: 1 of 9 is a true parser issue.** 5 are module issues, 1 runtime (split), 1 jsdoc, 1 transform.
+
+Problem: APISample has 9 reference failures — 1 parser, 5 module, 1 runtime, 2 other.
 
 ## Current failure
 

@@ -17,9 +17,9 @@ Triage APILibCheck across 1 failing reference test cases and split this bucket i
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `APILibCheck` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `APILibCheck` with diagnostics: parser-syntax. Root cause is a module/import issue (UnsupportedModule): the test uses TypeScript API imports that the module system cannot resolve. This is not a parser issue.
 
-Problem: APILibCheck has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: APILibCheck has 1 reference failure due to UnsupportedModule (import/export).
 
 ## Current failure
 

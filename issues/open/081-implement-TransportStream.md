@@ -2,10 +2,10 @@
 id: 081
 title: "Implement Transportstream"
 type: spike
-area: frontend/syntax
-class: blocked
-priority: P1
-depends_on: [5000]
+area: reference/triage
+class: triage-needed
+priority: P2
+depends_on: []
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,9 +17,9 @@ Triage TransportStream across 1 failing reference test cases and split this buck
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `TransportStream` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `TransportStream` with diagnostics: parser-syntax. Root cause: `TransportStream.ts` is a binary test data file, not parsable TypeScript source. This is not a parser bug but a reference/triage classification issue.
 
-Problem: TransportStream has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: TransportStream is binary test data, not a compiler issue.
 
 ## Current failure
 

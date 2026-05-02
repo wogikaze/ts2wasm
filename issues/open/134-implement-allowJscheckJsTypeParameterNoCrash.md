@@ -2,10 +2,10 @@
 id: 134
 title: "Implement Allowjscheckjstypeparameternocrash"
 type: spike
-area: frontend/semantics
+area: runtime/builtins
 class: blocked
 priority: P1
-depends_on: [5001]
+depends_on: [5004]
 blocks: []
 created: 2026-04-29
 updated: 2026-04-29
@@ -17,9 +17,9 @@ Triage allowJscheckJsTypeParameterNoCrash across 1 failing reference test cases 
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `allowJscheckJsTypeParameterNoCrash` with diagnostics: parser-syntax. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `allowJscheckJsTypeParameterNoCrash` with diagnostics: parser-syntax. Root cause is a module/import issue (UnsupportedModule): the test uses allowJs with module imports that the module system cannot resolve. This is not a parser or semantics issue.
 
-Problem: allowJscheckJsTypeParameterNoCrash has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: allowJscheckJsTypeParameterNoCrash fails due to UnsupportedModule (import/export).
 
 ## Current failure
 

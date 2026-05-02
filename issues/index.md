@@ -15,13 +15,13 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4346 | 4250 | 96 |
+| frontend | 4344 | 4248 | 96 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 205 | 200 | 5 |
-| runtime | 258 | 120 | 138 |
+| reference | 206 | 201 | 5 |
+| runtime | 259 | 121 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
@@ -184,7 +184,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 078 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 079 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
 | 080 | Implement Systemmoduleforstatementnoinitializer | spike | frontend/syntax | class: blocked | Implement Systemmoduleforstatementnoinitializer |
-| 081 | Implement Transportstream | spike | frontend/syntax | class: blocked | Implement Transportstream |
+| 081 | Implement Transportstream | spike | reference/triage | class: triage-needed | Implement Transportstream |
 | 082 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 083 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 084 | Implement Abstractclassunioninstantiation | spike | frontend/syntax | class: blocked | Implement Abstractclassunioninstantiation |
@@ -234,7 +234,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 131 | Implement Allowimportclausestomergewithtypes | spike | frontend/syntax | class: blocked | Implement Allowimportclausestomergewithtypes |
 | 132 | Implement Allowjsclassthistypecrash | spike | runtime/builtins | class: blocked | Implement Allowjsclassthistypecrash |
 | 133 | Implement Allowjscrossmonorepopackage | spike | frontend/syntax | class: blocked | Implement Allowjscrossmonorepopackage |
-| 134 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/semantics | class: blocked | Implement Allowjscheckjstypeparameternocrash |
+| 134 | Implement Allowjscheckjstypeparameternocrash | spike | runtime/builtins | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 135 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
 | 137 | Implement Alwaysstrictalreadyusestrict | spike | frontend/syntax | class: blocked | Implement Alwaysstrictalreadyusestrict |
