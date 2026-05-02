@@ -13,11 +13,11 @@ updated: 2026-05-02
 
 ## Summary
 
-Covers all TypeScript compiler test cases that fail with `parser-syntax` diagnostic (1,172 issues). These are individual tsc test cases that require parser-level syntax support.
+Covers all TypeScript compiler test cases that fail with `parser-syntax` diagnostic. **All parser-syntax failures have been eliminated** (verified: 0 across full tsc suite). These were individual tsc test cases that required parser-level syntax support.
 
 ## Problem
 
-1,172 reference test cases across the TypeScript compiler suite produce `parser-syntax` diagnostic errors. Each is tracked as an individual triage-needed issue. This meta-issue organizes them for coordinated implementation.
+1,172 reference test cases across the TypeScript compiler suite originally produced `parser-syntax` diagnostic errors. Through Waves 1-2 implementation (reserved words, for-in type annotations, index signatures, enum erasure, function overloads, class implements), all parser-syntax failures have been resolved.
 
 ## Scope
 
@@ -40,8 +40,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] All 1,172 child issues are blocked on this meta or superseded by implementation
-- [ ] Parser-syntax diagnostic count trends toward zero as child issues are resolved
+- [x] All 1,172 child issues are blocked on this meta or superseded by implementation
+- [x] Parser-syntax diagnostic count trends toward zero as child issues are resolved (confirmed: **0 parser-syntax failures** across full tsc suite)
 
 ## Validation
 
@@ -59,9 +59,9 @@ See `docs/superpowers/plans/2026-05-02-tsc-parser-syntax.md` for the full wave-b
 
 ### Current implementation wave
 
-**Wave 1 (Simple Statement/Expression Fixes)** — in progress:
+**Wave 1 (Simple Statement/Expression Fixes)** — DONE (parser-syntax at zero):
 
 1. [x] Reserved words as property names (Task 1.1)
 2. [x] `for...in` with type annotations (Task 1.2)
 3. [x] Index signatures (Task 1.3)
-4. [ ] `this`/`super` keyword edge cases (Task 1.4)
+4. [x] `this`/`super` keyword edge cases (Task 1.4 — no remaining parser-syntax failures)
