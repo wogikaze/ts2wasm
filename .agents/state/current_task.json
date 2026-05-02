@@ -1,11 +1,11 @@
 {
-  "id": 274,
-  "title": "Implement spread operator",
+  "id": 5000,
+  "title": "Meta: TypeScript Compiler Parser Syntax Coverage",
   "status": "selected",
-  "issue_path": "issues/open/274-implement-spread-operator.md",
-  "scope": "Implement spread operator semantics for array literals, object literals, and function call arguments",
-  "acceptance": "IR/lowering handles spread in array/object literals and call args; node_diff tests pass",
-  "commands": "cargo nextest run -E 'test(spread) or test(node_diff)'",
-  "risk": "medium",
-  "notes": "Resolver_extra fix already applied for IIFE this/arguments"
+  "issue_path": "issues/open/5000-meta-tsc-parser-syntax.md",
+  "scope": "Assess and improve parser syntax coverage for TypeScript compiler test suite",
+  "acceptance": "Identify highest-impact missing syntax constructs, file child issues for each prioritized parser feature gap",
+  "commands": "cargo nextest run -E 'test(parser)'",
+  "risk": "low",
+  "notes": "Meta-issue for parser syntax coverage tracking"
 }
