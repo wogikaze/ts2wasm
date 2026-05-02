@@ -72,7 +72,7 @@ impl Parser {
             let default_span = self.expect(TokenKind::Default)?;
             self.default_export_statement(export_span, default_span)
         } else if matches!(self.peek(), Some(Token::Class)) {
-            self.unsupported_module_form(export_span, "class export")
+            self.class_export_statement(export_span)
         } else if matches!(self.peek(), Some(Token::Function)) {
             self.function_export_statement(export_span)
         } else {
@@ -156,6 +156,37 @@ impl Parser {
                 return Err(Diagnostic {
                     code: DiagCode::InvariantViolation,
                     message: "function_export_statement: function_statement did not return a Function"
+                        .to_owned(),
+                    span: None,
+                });
+            }
+        };
+        let specifier = ExportNamedSpecifier {
+            local: name.clone(),
+            local_span: export_span,
+            exported: name,
+            exported_span: export_span,
+            span: export_span,
+        };
+        let end = declaration.span().end;
+        Ok(Stmt::ExportDecl {
+            declaration: Box::new(declaration),
+            specifier,
+            span: Span {
+                start: export_span.start,
+                end,
+            },
+        })
+    }
+
+    fn class_export_statement(&mut self, export_span: Span) -> Result<Stmt, Diagnostic> {
+        let declaration = self.class_statement()?;
+        let name = match &declaration {
+            Stmt::ClassDecl { name, .. } => name.clone(),
+            _ => {
+                return Err(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: "class_export_statement: class_statement did not return a ClassDecl"
                         .to_owned(),
                     span: None,
                 });
