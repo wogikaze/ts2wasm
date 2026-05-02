@@ -325,6 +325,19 @@ fn lower_static_named_import_bindings_for_build(
                     lowered_statement_index += 1;
                 }
             }
+            Stmt::ExportDefault { expr, span, .. } => {
+                let index = lowered_statement_index;
+                rewritten.push(Stmt::Let {
+                    name: "__ts2wasm_default".to_owned(),
+                    expr: expr.clone(),
+                    span: *span,
+                });
+                module_exports.push(ModuleExport {
+                    name: "default".to_owned(),
+                    lowered_statement_index: index,
+                });
+                lowered_statement_index += 1;
+            }
             other => {
                 rewritten.push(other.clone());
                 if lowers_to_top_level_statement(other) {
