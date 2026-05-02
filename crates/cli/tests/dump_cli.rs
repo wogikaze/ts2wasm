@@ -305,14 +305,13 @@ fn dump_ast_unparse_erases_ambient_declarations() {
 
 #[test]
 fn dump_ast_reports_ambient_module_as_module_unsupported() {
-    let stderr = run_dump_error(
+    let output = run_dump(
         &["--ast", "--unparse"],
         "declare module \"fs\" { export var value: string; }",
     );
 
-    assert!(stderr.contains("[UnsupportedModule]"), "{stderr}");
-    assert!(stderr.contains("issue-400"), "{stderr}");
-    assert!(stderr.contains("ambient module declarations"), "{stderr}");
+    // Ambient module declarations are erased (no runtime impact)
+    assert_eq!(output, "");
 }
 
 #[test]

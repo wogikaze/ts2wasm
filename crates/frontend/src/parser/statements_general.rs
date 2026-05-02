@@ -1572,6 +1572,7 @@ impl Parser {
         let start = self.expect(TokenKind::Class)?;
         let (name, _) = self.expect_ident()?;
 
+        let _ = self.consume_typescript_generic_parameter_list()?;
         let extends = self.class_extends()?;
         self.skip_class_implements()?;
 
@@ -1587,6 +1588,7 @@ impl Parser {
         if matches!(self.peek(), Some(Token::Ident(_))) {
             self.advance();
         }
+        let _ = self.consume_typescript_generic_parameter_list()?;
         let extends = self.class_extends()?;
         self.skip_class_implements()?;
         let mut class_decl = self.class_decl_body(binding_name, extends, start.start)?;
@@ -1694,6 +1696,9 @@ impl Parser {
             }
 
             let _ = self.consume_typescript_generic_parameter_list()?;
+
+            // Skip TypeScript definite assignment assertion (`!` after field name)
+            self.consume(TokenKind::Bang);
 
             if matches!(self.peek(), Some(Token::Colon)) {
                 self.expect(TokenKind::Colon)?;

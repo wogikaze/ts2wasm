@@ -867,7 +867,7 @@ impl WatEmitter<'_> {
     (local $i i32)
     (local $elem i32)
     (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
-    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {neg_one}))))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {neg_one_tagged}))))
     (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
     (local.set $len (i32.load (local.get $obj)))
     (local.set $i (i32.const {zero}))
@@ -881,7 +881,7 @@ impl WatEmitter<'_> {
               (i32.add
                 (i32.const {array_header})
                 (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        (if (call $strict_equal (local.get $elem) (local.get $search))
+        (if (i32.eq (call $strict_equal (local.get $elem) (local.get $search)) (i32.const {true_tag}))
           (then
             (return
               (i32.or
@@ -889,7 +889,7 @@ impl WatEmitter<'_> {
                 (i32.const {number_tag})))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $scan)))
-    (i32.const {neg_one}))
+    (i32.const {neg_one_tagged}))
 "#,
             tag_mask = ValueTag::TAG_MASK,
             array_tag = ValueTag::ARRAY,
@@ -900,7 +900,8 @@ impl WatEmitter<'_> {
             number_tag = ValueTag::NUMBER,
             zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
-            neg_one = -1,
+            neg_one_tagged = ((-1_i32) << 3) | 4,
+            true_tag = ValueTag::TRUE,
         ));
     }
 
@@ -929,7 +930,7 @@ impl WatEmitter<'_> {
               (i32.add
                 (i32.const {array_header})
                 (i32.shl (local.get $i) (i32.const {elem_shift}))))))
-        (if (call $strict_equal (local.get $elem) (local.get $search))
+        (if (i32.eq (call $strict_equal (local.get $elem) (local.get $search)) (i32.const {true_tag}))
           (then (return (i32.const {true}))))
         (local.set $i (i32.add (local.get $i) (i32.const {one})))
         (br $scan)))
@@ -944,6 +945,7 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             true = ValueTag::TRUE,
             false = ValueTag::FALSE,
+            true_tag = ValueTag::TRUE,
         ));
     }
 

@@ -1256,15 +1256,19 @@ impl Parser {
         let mut paren_depth = 0usize;
         let mut bracket_depth = 0usize;
         let mut brace_depth = 0usize;
+        let mut angle_depth = 0usize;
         let mut consumed_type_token = false;
 
         while !self.is_at_end() {
-            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
             if at_top_level
                 && consumed_type_token
                 && (self.peek_contextual_keyword("as")
                     || self.peek_contextual_keyword("satisfies")
-                    || self.peek().is_some_and(is_typescript_expression_type_stop))
+                    || self.peek().is_some_and(|t| {
+                        is_typescript_expression_type_stop(t)
+                            && !matches!(t, Token::LeftBrace | Token::Less)
+                    }))
             {
                 return Ok(());
             }
@@ -1272,7 +1276,8 @@ impl Parser {
             if at_top_level
                 && !consumed_type_token
                 && self.peek().is_some_and(|t| {
-                    is_typescript_expression_type_stop(t) && !matches!(t, Token::LeftBrace)
+                    is_typescript_expression_type_stop(t)
+                        && !matches!(t, Token::LeftBrace | Token::Less)
                 })
             {
                 break;
@@ -1282,6 +1287,7 @@ impl Parser {
                 Some(Token::LeftParen) => paren_depth += 1,
                 Some(Token::LeftBracket) => bracket_depth += 1,
                 Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::Less) => angle_depth += 1,
                 Some(Token::RightParen) => {
                     if paren_depth == 0 {
                         break;
@@ -1299,6 +1305,12 @@ impl Parser {
                         break;
                     }
                     brace_depth -= 1;
+                }
+                Some(Token::Greater) => {
+                    if angle_depth == 0 {
+                        break;
+                    }
+                    angle_depth -= 1;
                 }
                 None => break,
                 _ => {}

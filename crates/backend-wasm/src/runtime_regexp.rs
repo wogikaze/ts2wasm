@@ -10,46 +10,39 @@ impl WatEmitter<'_> {
             r#"
   (func $regexp_match_inner (param $kind i32) (param $lit_val i32) (param $byte i32) (result i32)
     (if (i32.eq (local.get $kind) (i32.const 0))
-      (then (return (i32.eq (local.get $lit_val) (local.get $byte))))
-      (else
-        (if (i32.eq (local.get $kind) (i32.const 1))
-          (then (return (i32.ne (local.get $byte) (i32.const 0x0A))))
-          (else
-            (if (i32.eq (local.get $kind) (i32.const 2))
-              (then
-                (return
-                  (i32.and
-                    (i32.ge_u (local.get $byte) (i32.const 0x30))
-                    (i32.le_u (local.get $byte) (i32.const 0x39)))))
-              (else
-                (if (i32.eq (local.get $kind) (i32.const 3))
-                  (then
-                    (return
-                      (i32.or
-                        (i32.and
-                          (i32.ge_u (local.get $byte) (i32.const 0x30))
-                          (i32.le_u (local.get $byte) (i32.const 0x39)))
-                        (i32.or
-                          (i32.and
-                            (i32.ge_u (local.get $byte) (i32.const 0x41))
-                            (i32.le_u (local.get $byte) (i32.const 0x5A)))
-                          (i32.or
-                            (i32.and
-                              (i32.ge_u (local.get $byte) (i32.const 0x61))
-                              (i32.le_u (local.get $byte) (i32.const 0x7A)))
-                            (i32.eq (local.get $byte) (i32.const 0x5F)))))))
-                  (else
-                    (return
-                      (i32.or
-                        (i32.eq (local.get $byte) (i32.const 0x20))
-                        (i32.or
-                          (i32.eq (local.get $byte) (i32.const 0x09))
-                          (i32.or
-                            (i32.eq (local.get $byte) (i32.const 0x0A))
-                            (i32.or
-                              (i32.eq (local.get $byte) (i32.const 0x0D))
-                              (i32.eq (local.get $byte) (i32.const 0x0C))))))))))))
-    (i32.const 0))))
+      (then (return (i32.eq (local.get $lit_val) (local.get $byte)))))
+    (if (i32.eq (local.get $kind) (i32.const 1))
+      (then (return (i32.ne (local.get $byte) (i32.const 0x0A)))))
+    (if (i32.eq (local.get $kind) (i32.const 2))
+      (then (return
+        (i32.and
+          (i32.ge_u (local.get $byte) (i32.const 0x30))
+          (i32.le_u (local.get $byte) (i32.const 0x39))))))
+    (if (i32.eq (local.get $kind) (i32.const 3))
+      (then (return
+        (i32.or
+          (i32.and
+            (i32.ge_u (local.get $byte) (i32.const 0x30))
+            (i32.le_u (local.get $byte) (i32.const 0x39)))
+          (i32.or
+            (i32.and
+              (i32.ge_u (local.get $byte) (i32.const 0x41))
+              (i32.le_u (local.get $byte) (i32.const 0x5A)))
+            (i32.or
+              (i32.and
+                (i32.ge_u (local.get $byte) (i32.const 0x61))
+                (i32.le_u (local.get $byte) (i32.const 0x7A)))
+              (i32.eq (local.get $byte) (i32.const 0x5F))))))))
+    (return
+      (i32.or
+        (i32.eq (local.get $byte) (i32.const 0x20))
+        (i32.or
+          (i32.eq (local.get $byte) (i32.const 0x09))
+          (i32.or
+            (i32.eq (local.get $byte) (i32.const 0x0A))
+            (i32.or
+              (i32.eq (local.get $byte) (i32.const 0x0D))
+              (i32.eq (local.get $byte) (i32.const 0x0C))))))))
 "#,
         );
     }
@@ -132,7 +125,7 @@ impl WatEmitter<'_> {
                         (if (i32.eq (local.get $ch) (i32.const 0x77))
                           (then (local.set $kind (i32.const 3)))
                           (else
-                            (local.set $kind (i32.const 4)))))
+                            (local.set $kind (i32.const 4))))))
                     (local.set $lit_val (i32.const 0)))
                   (else
                     (local.set $kind (i32.const 0))
@@ -222,7 +215,7 @@ impl WatEmitter<'_> {
                             (if (i32.eqz (local.get $ch))
                               (then (br $star_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
-                            (br $star_loop))))))))
+                            (br $star_loop)))))))))
             (br $match_loop)))
         (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
         (br $search)))
@@ -322,7 +315,7 @@ impl WatEmitter<'_> {
                         (if (i32.eq (local.get $ch) (i32.const 0x77))
                           (then (local.set $kind (i32.const 3)))
                           (else
-                            (local.set $kind (i32.const 4)))))
+                            (local.set $kind (i32.const 4))))))
                     (local.set $lit_val (i32.const 0)))
                   (else
                     (local.set $kind (i32.const 0))
@@ -412,7 +405,7 @@ impl WatEmitter<'_> {
                             (if (i32.eqz (local.get $ch))
                               (then (br $star_loop_exit)))
                             (local.set $i (i32.add (local.get $i) (i32.const {one})))
-                            (br $star_loop))))))))
+                            (br $star_loop)))))))))
             (br $match_loop)))
         (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
         (br $search)))

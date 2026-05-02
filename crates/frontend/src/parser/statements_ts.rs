@@ -91,11 +91,12 @@ impl Parser {
         let mut paren_depth = 0usize;
         let mut bracket_depth = 0usize;
         let mut brace_depth = 0usize;
+        let mut angle_depth = 0usize;
         let mut consumed_type_token = false;
         let mut previous_token_can_end_body = false;
 
         while !self.is_at_end() {
-            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0;
+            let at_top_level = paren_depth == 0 && bracket_depth == 0 && brace_depth == 0 && angle_depth == 0;
             if at_top_level
                 && consumed_type_token
                 && self.peek().is_some_and(|token| {
@@ -114,6 +115,7 @@ impl Parser {
                 Some(Token::LeftParen) => paren_depth += 1,
                 Some(Token::LeftBracket) => bracket_depth += 1,
                 Some(Token::LeftBrace) => brace_depth += 1,
+                Some(Token::Less) => angle_depth += 1,
                 Some(Token::RightParen) => {
                     if paren_depth == 0 {
                         return Ok(());
@@ -131,6 +133,14 @@ impl Parser {
                         return Ok(());
                     }
                     brace_depth -= 1;
+                }
+                Some(Token::Greater) => {
+                    if angle_depth == 0 {
+                        // Unmatched '>' at top level — could be comparison or end of generic
+                        // Let it through; the semicolon check will handle termination
+                    } else {
+                        angle_depth -= 1;
+                    }
                 }
                 None => break,
                 _ => {}
@@ -169,6 +179,7 @@ impl Parser {
                 | Token::RightParen
                 | Token::RightBracket
                 | Token::RightBrace
+                | Token::Greater
         )
     }
 
