@@ -30,12 +30,12 @@ manifest と test record の fixture schema が `crates/shared` に集約され�
 ## Scope
 
 In scope:
-- [ ] fixture schema の shared 移行
-- [ ] 既存 crate の参照更新
-- [ ] 一貫性 validation の追加
+- [x] fixture schema の shared 移行
+- [x] 既存 crate の参照更新
+- [x] 一貫性 validation の追加
 
 Out of scope:
-- [ ] 新規 fixture の追加
+- [x] 新規 fixture の追加
 
 ## Affected paths
 
@@ -47,9 +47,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] fixture schema が shared に集約される
-- [ ] 全 crate が同一 schema を使用する
-- [ ] 既存テストが通過する
+- [x] fixture schema が shared に集約される
+- [x] 全 crate が同一 schema を使用する
+- [x] 既存テストが通過する
 
 ## Validation
 

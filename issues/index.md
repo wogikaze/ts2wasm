@@ -13,7 +13,7 @@ Issue files are the source of truth for work items. The generated section below 
 | backend | 13 | 6 | 7 |
 | cli | 15 | 11 | 4 |
 | compiler | 1 | 0 | 1 |
-| coverage | 10 | 1 | 9 |
+| coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
 | frontend | 4350 | 4231 | 119 |
 | harness | 1 | 1 | 0 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4576 | 320 |
+| total | 4896 | 4575 | 321 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -183,7 +183,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | implementation-ready | P1 |  | [ir] Complete destructuring, rest, and default binding lowering |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | implementation-ready | P1 |  | [ir] Implement iterator protocol lowering for spread and for-of |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | implementation-ready | P2 |  | [runtime-abi] Add typed wrappers for tagged values and heap pointers |
-| 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | implementation-ready | P3 |  | [shared] Provide shared fixture schemas for CLI/compiler/backend tests |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -5068,6 +5067,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5057 | [shared] Version capability manifest schema and migration policy | feature | coverage | see `issues/done/5057-shared-manifest-versioning.md` |
 | 5058 | [shared] Deduplicate and canonicalize capability reasons/imports | refactor | coverage | see `issues/done/5058-shared-deduplicate-capabilities.md` |
 | 5059 | [shared] Add typed tracking IDs for unsupported and blocked tests | feature | coverage | see `issues/done/5059-shared-tracking-ids.md` |
+| 5060 | [shared] Provide shared fixture schemas for CLI/compiler/backend tests | feature | coverage | see `issues/done/5060-shared-fixture-schemas.md` |
 <!-- generated:done:end -->
 
 ## Index generation contract
