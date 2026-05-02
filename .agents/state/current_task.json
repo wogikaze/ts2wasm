@@ -1,11 +1,11 @@
 {
-  "id": 5004,
-  "title": "Meta: Runtime Builtins Coverage (test262)",
-  "status": "selected",
-  "issue_path": "issues/open/5004-meta-runtime-builtins.md",
-  "scope": "Wave 2: Add node diff tests for Array builtins (concat, join, pop, push, reverse)",
-  "acceptance": "array_builtin_fixtures_match_node_output_under_iwasm passes with 5 fixtures",
+  "id": null,
+  "title": null,
+  "status": "idle",
+  "issue_path": null,
+  "scope": null,
+  "acceptance": null,
   "commands": null,
-  "risk": "low",
-  "notes": "array-slice WASM impl returns undefined at runtime, excluded from node diff test"
+  "risk": null,
+  "notes": ""
 }

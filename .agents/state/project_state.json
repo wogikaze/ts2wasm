@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "RETRO",
-  "active_task_id": "5004",
-  "updated_at": "2026-05-02T15:54:15Z",
+  "fsm": "SYNC",
+  "active_task_id": null,
+  "updated_at": "2026-05-02T15:54:23Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "/home/wogikaze/.claude/plans/runtime-builtins-5004.md",
+  "plan_path": null,
   "verify_fast_streak_fails": 0
 }
