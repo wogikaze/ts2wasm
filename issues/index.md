@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4431 | 4338 | 93 |
+| frontend | 4431 | 4337 | 94 |
 | ir | 13 | 1 | 12 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4848 | 4572 | 276 |
+| total | 4848 | 4571 | 277 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -41,7 +41,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 264 | Add broad expression fixture coverage | feature | frontend/syntax | implementation-ready | P2 |  | Add broad expression fixture coverage |
 | 265 | Add broad statement fixture coverage | feature | frontend/syntax | implementation-ready | P2 |  | Add broad statement fixture coverage |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
@@ -4786,6 +4785,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 261 | Implement BigInt equality comparison and coercion boundaries | feature | runtime/semantics | see `issues/done/261-implement-bigint-equality-comparison-coercion.md` |
 | 262 | Implement BigInt builtins and string conversion | feature | runtime/builtins | see `issues/done/262-implement-bigint-builtins-and-string-conversion.md` |
 | 263 | Implement BigInt dynamic mul/div/rem signed-i64 runtime slice | feature | runtime/semantics | see `issues/done/263-implement-bigint-dynamic-mul-div-rem-signed-i64-slice.md` |
+| 264 | Add broad expression fixture coverage | feature | frontend/syntax | see file |
 | 266 | Implement test262 test harness and host-defined functions | feature | tests/harness | see file |
 | 267 | Implement interactive web UI for test results | feature | coverage | see `issues/done/267-implement-interactive-web-ui-for-test-results.md` |
 | 267a | Implement web UI data generation and script integration | feature | coverage | see `issues/done/267a-web-ui-data-generation-and-script-integration.md` |
