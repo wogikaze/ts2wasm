@@ -16,7 +16,7 @@ Issue files are the source of truth for work items. The generated section below 
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
 | frontend | 4396 | 4304 | 92 |
-| ir | 9 | 0 | 9 |
+| ir | 10 | 1 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 175 | 170 | 5 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4801 | 4529 | 272 |
+| total | 4802 | 4530 | 272 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -43,6 +43,7 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
+| 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | implementation-ready | P1 |  | `export const x = 1` (ExportDecl) currently hits `issue-055` when the file has no `import` from another module, becau... |
 <!-- generated:ready:end -->
 
 ## Blocked queue
