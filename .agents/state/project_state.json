@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "IMPLEMENT",
+  "fsm": "CLOSE_OR_SPLIT",
   "active_task_id": null,
-  "updated_at": "2026-05-02T02:13:19Z",
+  "updated_at": "2026-05-02T02:27:16Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/274-spread-operator.md",

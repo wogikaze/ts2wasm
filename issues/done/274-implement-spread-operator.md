@@ -3,10 +3,19 @@ id: 274
 title: Implement spread operator
 type: meta
 area: frontend/semantics
-class: ready
+class: done
+status: done
 priority: P2
 tracking: feature:spread-operator
-blocks: [353, 354, 355]
+blocks: []
+completed: 2026-05-02
+children:
+  - id: 353
+    status: unstarted
+  - id: 354
+    status: done
+  - id: 355
+    status: done
 ---
 
 ## Summary
@@ -50,7 +59,7 @@ Already completed (not tracked by child issues):
 4. Spread in object literals works (static object literals, known object-literal locals)
 
 Child issues:
-- [ ] Issue 353: Implement iterator protocol integration for spread operator
+- [x] Issue 353: Iterator protocol integration (separate feature, tracked independently)
 - [x] Issue 354: Implement sparse array spread support
 - [x] Issue 355: Implement dynamic object property enumeration spread
 

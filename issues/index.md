@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4396 | 4305 | 91 |
+| frontend | 4396 | 4304 | 92 |
 | ir | 9 | 0 | 9 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
@@ -25,7 +25,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4801 | 4530 | 271 |
+| total | 4801 | 4529 | 272 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -41,7 +41,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 274 | Implement spread operator | meta | frontend/semantics | ready | P2 |  | Implement spread operator |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design-ready | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
 <!-- generated:ready:end -->
@@ -4755,6 +4754,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 271 | Implement Array.prototype.push | feature | runtime/builtins | see `issues/done/271-implement-array-prototype-push.md` |
 | 272 | Implement Set | feature | runtime/builtins | see `issues/done/272-implement-set.md` |
 | 273 | Implement recursive function calls | feature | runtime/semantics | see `issues/done/273-implement-recursive-function-calls.md` |
+| 274 | Implement spread operator | meta | frontend/semantics | see file |
 | 275 | Implement Set size and clear | feature | runtime/builtins | see `issues/done/275-implement-set-size-clear.md` |
 | 276 | Implement Set constructor from supported iterables | feature | runtime/builtins | see `issues/done/276-implement-set-constructor-from-supported-iterables.md` |
 | 277 | Implement Set SameValueZero identity | feature | runtime/builtins | see `issues/done/277-implement-set-samevaluezero-identity.md` |

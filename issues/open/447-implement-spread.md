@@ -127,7 +127,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/193-implement-arguments.md` - Implement Arguments (same feature label, same group key, title overlap)
-- `issues/open/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
+- `issues/done/274-implement-spread-operator.md` - Implement spread operator (same feature label, same group key, title overlap)
 - `issues/open/294-support-abc451-d-original-submission-without-source-rewrite.md` - Support ABC451 D original submission without source rewrite (same feature label, same group key)
 - `issues/open/300-support-abc451-large-integer-number-boundary.md` - Support ABC451 large integer number boundary (same feature label, same group key)
 - `issues/open/309-reduce-abc451-depth9-live-allocation-shape.md` - Reduce ABC451 depth-9 live allocation shape (same feature label, same group key)
@@ -264,7 +264,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/open/274-implement-spread-operator.md",
+    "path": "issues/done/274-implement-spread-operator.md",
     "title": "Implement spread operator",
     "reason": "same feature label, title overlap"
   },
