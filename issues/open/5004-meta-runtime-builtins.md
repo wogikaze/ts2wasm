@@ -42,6 +42,12 @@ Expected:
 
 - [ ] Builtin implementation coverage increases per child issue resolution
 
+## Progress
+
+| Wave | Builtin | Status |
+|------|---------|--------|
+| 1 | String.prototype.includes | Done (fixture + test passing) |
+
 ## Validation
 
 ```sh

@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 5 | 0 | 5 |
 | docs | 2 | 0 | 2 |
-| frontend | 4431 | 4335 | 96 |
+| frontend | 4431 | 4336 | 95 |
 | harness | 1 | 1 | 0 |
 | ir | 13 | 0 | 13 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4848 | 4563 | 285 |
+| total | 4848 | 4564 | 284 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,9 +156,8 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 | 5000 | Meta: TypeScript Compiler Semantic Analysis Coverage |
+| 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | design-ready | P1 |  | Meta: Runtime Builtins Coverage (test262) |
-| 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 | 5000 | Meta: TypeScript Compiler Name Resolution Coverage |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4722,8 +4721,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 4811 | Implement parser syntax extensions | spike | frontend/syntax | class: blocked | Implement parser syntax extensions |
 | 4813 | Implement type-system support | spike | frontend/syntax | class: blocked | Implement type-system support |
 | 4814 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
+| 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | 5000 | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | 5000, 5005 | Meta: TypeScript Compiler Type System Coverage |
 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | meta | frontend/syntax | 5000, 5001 | Meta: TypeScript Compiler Declaration Emit Coverage |
+| 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | 5000 | Meta: TypeScript Compiler Name Resolution Coverage |
 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | 5005 | Meta: TypeScript Compiler Scope Analysis Coverage |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | meta | frontend/resolver | 5005 | Meta: TypeScript Compiler Module Resolution Coverage |
 <!-- generated:blocked:end -->
@@ -5014,7 +5015,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
 | 4812 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/4812-implement-regexp-literal.md` |
-| 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | see file |
 | 5009 | Remaining static ES module export forms (named list, default import, namespace, re-export, side-effect) | feature | ir/compiler | see file |
 | 5010 | Implement local named export (export { value } and export { value as alias }) for entry module | feature | ir/compiler | see file |
