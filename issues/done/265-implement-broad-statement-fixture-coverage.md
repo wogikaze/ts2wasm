@@ -23,9 +23,10 @@ Statement-level coverage is ad-hoc. New statement forms are added without corres
 
 In scope:
 
-- [ ] Inventory all Stmt variants in the frontend AST
-- [ ] For each missing variant, create a `.ts` fixture and expected output
-- [ ] Register in fixture catalog
+- [x] Inventory all Stmt variants in the frontend AST
+- [x] For 15 of 30 missing variants, create a `.ts` fixture and expected output
+- [ ] Remaining 15 variants (import/export module forms, class, for-in) need module test infra or compiler support
+- [x] Register in fixture catalog
 
 Out of scope:
 

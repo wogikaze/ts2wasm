@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "fsm": "SELF_REVIEW_GATE",
+  "fsm": "RETRO",
   "active_task_id": "265",
-  "updated_at": "2026-05-02T07:40:13Z",
+  "updated_at": "2026-05-02T07:46:34Z",
   "milestone_id": null,
   "run_id": null,
   "plan_path": "plans/265-broad-statement-fixtures.md",
