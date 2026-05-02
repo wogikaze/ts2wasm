@@ -1,10 +1,10 @@
 {
   "version": 1,
-  "fsm": "RETRO",
+  "fsm": "IMPLEMENT",
   "active_task_id": null,
-  "updated_at": "2026-05-02T02:43:01Z",
+  "updated_at": "2026-05-02T02:45:56Z",
   "milestone_id": null,
   "run_id": null,
-  "plan_path": "plans/5000-parser-syntax-coverage.md",
+  "plan_path": "plans/5004-runtime-builtins-coverage.md",
   "verify_fast_streak_fails": 0
 }
