@@ -9,7 +9,7 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 7 | 1 | 6 |
+| abi | 7 | 2 | 5 |
 | backend | 13 | 6 | 7 |
 | cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
-| runtime | 258 | 120 | 138 |
+| runtime | 258 | 122 | 136 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4502 | 394 |
+| total | 4896 | 4505 | 391 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -169,6 +169,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries |
 | 5045 | [frontend] Improve syntax error recovery and source spans | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
+| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | implementation-ready | P1 |  | [runtime-abi] Add ABI layout golden tests and versioning |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | implementation-ready | P1 |  | [runtime-abi] Validate runtime memory map for overlap and headroom |
 <!-- generated:ready:end -->
 
@@ -4665,6 +4666,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5019 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
+| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | class: blocked | Implement anonymous interface new expression identifier |
+| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | class: blocked | Implement any as return type instanceof constructor RHS |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5043,8 +5046,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
 | 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | see file |
 | 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see `issues/done/5023-implement-api-sample-watcher-arrow.md` |
-| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
-| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records | feature | cli | see file |
@@ -5059,7 +5060,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | see `issues/done/5049-ir-destructuring.md` |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | see `issues/done/5050-ir-iterator-protocol.md` |
-| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | see file |
 | 5054 | [runtime-abi] Document value tags and object layout as public ABI | docs | abi | see file |
 | 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants | test | abi | see file |

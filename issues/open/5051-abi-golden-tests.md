@@ -65,3 +65,25 @@ Current state:
 
 Follow-up issues:
 - [x] none
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This issue was created in the review-derived
+batch (commit `2c655baf`) and placed in `issues/done/` without any
+implementation work. There are zero feat/fix commits referencing #5051.
+No completion evidence section exists. The issue has never been implemented.
+
+**True-done checklist** (all must pass):
+
+1. Implement ABI layout golden tests and versioning
+2. Add completion evidence section with implementation details
+3. Verify with acceptance criteria
+
+**Commands that must pass**:
+
+```sh
+cargo fmt --all --check
+cargo nextest run
+```
