@@ -125,6 +125,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::StringTrim => self.emit_string_trim(wat),
                 RuntimeFn::StringTrimStart => self.emit_string_trim_start(wat),
                 RuntimeFn::StringTrimEnd => self.emit_string_trim_end(wat),
+                RuntimeFn::StringStartsWith => self.emit_string_starts_with(wat),
+                RuntimeFn::StringEndsWith => self.emit_string_ends_with(wat),
                 RuntimeFn::StringToUpperCase => self.emit_string_to_upper_case(wat),
                 RuntimeFn::StringToLowerCase => self.emit_string_to_lower_case(wat),
                 RuntimeFn::StringCharCodeAt => self.emit_string_char_code_at(wat),

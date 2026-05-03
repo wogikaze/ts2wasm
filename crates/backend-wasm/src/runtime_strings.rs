@@ -575,6 +575,98 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_starts_with(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_starts_with (param $s i32) (param $search i32) (param $position i32) (result i32)
+    (local $s_obj i32)
+    (local $search_obj i32)
+    (local $s_len i32)
+    (local $search_len i32)
+    (local $start i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {false_tag}))))
+    (if (i32.eqz (call $is_string (local.get $search))) (then (return (i32.const {false_tag}))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $search_len (i32.load (local.get $search_obj)))
+    ;; Decode position from tagged value
+    (if (i32.eq (local.get $position) (i32.const {undefined}))
+      (then (local.set $start (i32.const {zero})))
+      (else (local.set $start (i32.shr_s (local.get $position) (i32.const {shift})))))
+    ;; Clamp position to [0, len]
+    (if (i32.lt_s (local.get $start) (i32.const {zero})) (then (local.set $start (i32.const {zero}))))
+    (if (i32.gt_u (local.get $start) (local.get $s_len)) (then (local.set $start (local.get $s_len))))
+    ;; Search longer than remaining → false
+    (if (i32.gt_u (local.get $search_len) (i32.sub (local.get $s_len) (local.get $start)))
+      (then (return (i32.const {false_tag}))))
+    ;; Empty search string → true
+    (if (i32.eqz (local.get $search_len)) (then (return (i32.const {true_tag}))))
+    ;; Check prefix: return tagged bool
+    (if (result i32)
+      (call $mem_equal
+        (i32.add (i32.add (local.get $s_obj) (i32.const {header})) (local.get $start))
+        (i32.add (local.get $search_obj) (i32.const {header}))
+        (local.get $search_len))
+      (then (i32.const {true_tag}))
+      (else (i32.const {false_tag}))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
+            shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
+    pub(super) fn emit_string_ends_with(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_ends_with (param $s i32) (param $search i32) (param $end_position i32) (result i32)
+    (local $s_obj i32)
+    (local $search_obj i32)
+    (local $s_len i32)
+    (local $search_len i32)
+    (local $end i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {false_tag}))))
+    (if (i32.eqz (call $is_string (local.get $search))) (then (return (i32.const {false_tag}))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $search_len (i32.load (local.get $search_obj)))
+    ;; Decode end_position from tagged value; default to len
+    (if (i32.eq (local.get $end_position) (i32.const {undefined}))
+      (then (local.set $end (local.get $s_len)))
+      (else (local.set $end (i32.shr_s (local.get $end_position) (i32.const {shift})))))
+    ;; Clamp end to [0, len]
+    (if (i32.lt_s (local.get $end) (i32.const {zero})) (then (local.set $end (i32.const {zero}))))
+    (if (i32.gt_u (local.get $end) (local.get $s_len)) (then (local.set $end (local.get $s_len))))
+    ;; Search longer than available → false
+    (if (i32.gt_u (local.get $search_len) (local.get $end))
+      (then (return (i32.const {false_tag}))))
+    ;; Empty search string → true
+    (if (i32.eqz (local.get $search_len)) (then (return (i32.const {true_tag}))))
+    ;; Check suffix at position (end - search_len)
+    (if (result i32)
+      (call $mem_equal
+        (i32.add (i32.add (local.get $s_obj) (i32.const {header})) (i32.sub (local.get $end) (local.get $search_len)))
+        (i32.add (local.get $search_obj) (i32.const {header}))
+        (local.get $search_len))
+      (then (i32.const {true_tag}))
+      (else (i32.const {false_tag}))))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            true_tag = ValueTag::TRUE,
+            false_tag = ValueTag::FALSE,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
+            shift = ValueTag::NUMBER_SHIFT,
+        ));
+    }
+
     pub(super) fn emit_string_to_upper_case(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"

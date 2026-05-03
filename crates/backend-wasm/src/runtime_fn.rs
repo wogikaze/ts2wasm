@@ -165,6 +165,10 @@ pub(crate) enum RuntimeFn {
     StringTrimStart,
     /// String.prototype.trimEnd / trimRight
     StringTrimEnd,
+    /// String.prototype.startsWith
+    StringStartsWith,
+    /// String.prototype.endsWith
+    StringEndsWith,
     /// Issue 051: RegExp.prototype.test for literal-backed plain byte patterns.
     RegExpTest,
     /// Issue 051: String.prototype.match for literal-backed plain byte patterns.
@@ -583,6 +587,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringReplace" => Some(RuntimeFn::StringReplace),
         "StringTrimStart" => Some(RuntimeFn::StringTrimStart),
         "StringTrimEnd" => Some(RuntimeFn::StringTrimEnd),
+        "StringStartsWith" => Some(RuntimeFn::StringStartsWith),
+        "StringEndsWith" => Some(RuntimeFn::StringEndsWith),
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
@@ -977,6 +983,8 @@ const STRING_SLICE_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_STARTS_WITH_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
+const STRING_ENDS_WITH_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::MemEqual];
 const STRING_PAD_START_DEPS: &[RuntimeFn] =
     &[RuntimeFn::AllocHeap, RuntimeFn::Copy, RuntimeFn::IsString];
 const STRING_PAD_END_DEPS: &[RuntimeFn] =

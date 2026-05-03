@@ -733,7 +733,11 @@ impl WatEmitter<'_> {
                     self.emit_private_brand_check(wat, args, indent, frame);
                     return;
                 }
-                if runtime_fn == "StringIncludes" && args.len() == 2 {
+                if (runtime_fn == "StringIncludes"
+                    || runtime_fn == "StringStartsWith"
+                    || runtime_fn == "StringEndsWith")
+                    && args.len() == 2
+                {
                     // No position specified, default to 0 (undefined → start from beginning)
                     for arg in args {
                         self.emit_expr(wat, arg, indent, frame);

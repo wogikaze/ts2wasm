@@ -71,6 +71,8 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "trimEnd" => Some("StringTrimEnd".to_owned()),
         "trimLeft" => Some("StringTrimStart".to_owned()),
         "trimRight" => Some("StringTrimEnd".to_owned()),
+        "startsWith" => Some("StringStartsWith".to_owned()),
+        "endsWith" => Some("StringEndsWith".to_owned()),
         "toUpperCase" => Some("StringToUpperCase".to_owned()),
         "toLowerCase" => Some("StringToLowerCase".to_owned()),
         "charCodeAt" => Some("StringCharCodeAt".to_owned()),
@@ -112,6 +114,14 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "lastIndexOf") => Some("ArrayLastIndexOf"),
         ("Array", "forEach") => Some("ArrayForEach"),
         ("Array", "map") => Some("ArrayMap"),
+        ("Array", "indexOf") => Some("ArrayIndexOf"),
+        ("Array", "includes") => Some("ArrayIncludes"),
+        ("Array", "sort") => Some("ArraySortNumeric"),
+        ("Array", "slice") => Some("ArraySlice"),
+        ("Array", "every") => Some("ArrayEvery"),
+        ("Array", "some") => Some("ArraySome"),
+        ("Array", "find") => Some("ArrayFind"),
+        ("Array", "filter") => Some("ArrayFilter"),
         _ => None,
     }
 }
@@ -128,6 +138,9 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "slice" => Some("ArraySlice"),
         "join" => Some("ArrayJoin"),
         "reverse" => Some("ArrayReverse"),
+        "indexOf" => Some("ArrayIndexOf"),
+        "includes" => Some("ArrayIncludes"),
+        "sort" => Some("ArraySortNumeric"),
         _ => None,
     }
 }
