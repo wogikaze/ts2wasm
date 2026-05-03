@@ -326,6 +326,25 @@ fn resolve_local_specifier(
                                 return canonicalize_existing_path(&main_path);
                             }
                         }
+                        // Check package.json exports field (dot-separated key)
+                        if let Some(exports) = pkg.get("exports") {
+                            if let Some(export_str) = exports.as_str() {
+                                let exp_path = parent.join(export_str);
+                                if exp_path.is_file() {
+                                    return canonicalize_existing_path(&exp_path);
+                                }
+                            } else if let Some(export_map) = exports.as_object() {
+                                // Check "." key (main entry)
+                                if let Some(default_export) = export_map.get(".") {
+                                    if let Some(val) = default_export.as_str() {
+                                        let exp_path = parent.join(val);
+                                        if exp_path.is_file() {
+                                            return canonicalize_existing_path(&exp_path);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
