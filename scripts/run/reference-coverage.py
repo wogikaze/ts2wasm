@@ -642,6 +642,8 @@ def main():
     category_pattern = None
     server_mode = True
     auto_issues = False
+    suite_detail_rows = []
+    suite_detail_counter = [0]
     
     i = 0
     while i < len(args):
@@ -849,6 +851,54 @@ def main():
             stderr=sys.stderr,
             cwd=REPO_ROOT,
         )
+
+    def _suite_detail_status(metrics):
+        if metrics["build_pass"]:
+            if metrics["semantic_pass"]:
+                return "pass"
+            if metrics["mismatch"]:
+                return "mismatch"
+            if metrics["runtime_error"]:
+                return "runtime_error"
+            if metrics["blocked"]:
+                return "blocked"
+            return "pass"
+        if metrics["blocked"]:
+            return "blocked"
+        if metrics["fail"]:
+            return "fail"
+        if metrics["unsupported"]:
+            return "unsupported"
+        return "unsupported"
+
+    def _append_suite_detail(metrics):
+        status = _suite_detail_status(metrics)
+        reason = None
+        detail_line = metrics.get("detail_line") or ""
+        if detail_line:
+            parts = detail_line.split(": ", 1)
+            if len(parts) == 2:
+                reason = parts[1]
+        if reason is None:
+            diag_code = metrics.get("diag_code")
+            feature = metrics.get("feature_label")
+            if diag_code and feature:
+                reason = f"{diag_code}/{feature}"
+            elif diag_code:
+                reason = diag_code
+        if reason is None and status != "pass":
+            reason = status
+        suite_detail_rows.append({
+            "id": str(suite_detail_counter[0]),
+            "suite": suite,
+            "case": metrics.get("file_path"),
+            "name": metrics.get("case_name"),
+            "target": "wasm-iwasm",
+            "status": status,
+            "count": 1,
+            "reason": reason,
+        })
+        suite_detail_counter[0] += 1
     
     def _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics):
         """Run node and iwasm for a build-pass file, updating result_metrics."""
@@ -939,6 +989,9 @@ def main():
         
         detail_path = repo_relative(file_path)
         result_metrics = {
+            "file_path": str(file_path),
+            "detail_path": detail_path,
+            "case_name": file_path.name,
             "build_pass": False,
             "semantic_pass": False,
             "mismatch": False,
@@ -1101,6 +1154,11 @@ def main():
                         results_by_id[item["id"]], item, semantic_enabled, tmp_dir
                     )
                     executed += 1
+                    if detail_output:
+                        result.setdefault("file_path", str(item["file_path"]))
+                        result.setdefault("detail_path", item["detail_path"])
+                        result.setdefault("case_name", item["file_path"].name)
+                        _append_suite_detail(result)
                     if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
                         unsupported_count += 1
                         unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
@@ -1139,6 +1197,8 @@ def main():
             # Phase 3: Process early results (negative-parse-syntaxerror etc.)
             for result in early_results:
                 executed += 1
+                if detail_output:
+                    _append_suite_detail(result)
                 if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
                     unsupported_count += 1
                     unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
@@ -1154,6 +1214,8 @@ def main():
                     if result is None:
                         continue
                     executed += 1
+                    if detail_output:
+                        _append_suite_detail(result)
                     
                     if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
                         unsupported_count += 1
@@ -1358,6 +1420,14 @@ def main():
     if web_ui:
         write_coverage_result(summary)
         refresh_web_ui_data()
+    if detail_output and suite_detail_rows:
+        results_dir = REPO_ROOT / "artifacts" / "coverage" / "results"
+        results_dir.mkdir(parents=True, exist_ok=True)
+        results_path = results_dir / f"{suite}-results.jsonl"
+        with results_path.open("w", encoding="utf-8") as handle:
+            for record in suite_detail_rows:
+                handle.write(json.dumps(record, sort_keys=True))
+                handle.write("\n")
 
     if json_output:
         print(json.dumps(summary, indent=2))
