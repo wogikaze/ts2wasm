@@ -148,6 +148,15 @@ impl WatEmitter<'_> {
                           (then
                             (local.set $quant (i32.const 3))
                             (local.set $p (i32.add (local.get $p) (i32.const {one})))))))))))
+            (if (i32.ge_u (local.get $i) (local.get $i_len))
+              (then
+                (if (i32.ge_u (local.get $p) (local.get $delimiter))
+                  (then (return (i32.const {true_tag}))))
+                (if (i32.eq (local.get $quant) (i32.const 0))
+                  (then (br $match_fail)))
+                (if (i32.eq (local.get $quant) (i32.const 1))
+                  (then (br $match_fail)))
+                (br $match_loop)))
             (if (i32.eq (local.get $quant) (i32.const 0))
               (then
                 (local.set $ch
