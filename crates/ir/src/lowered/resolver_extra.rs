@@ -2651,6 +2651,59 @@ impl<'a> Resolver<'a> {
 
                 result_expr = LoweredExpr::Local(found);
             }
+            "findIndex" => {
+                let found = self.alloc_temp();
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1)));
+
+                let elem = self.alloc_temp();
+                while_body.push(LoweredStmt::Let(
+                    elem,
+                    LoweredExpr::ArrayGet {
+                        arr: Box::new(arr_ref()),
+                        index: Box::new(LoweredExpr::Local(i)),
+                    },
+                ));
+
+                let pred = self.alloc_temp();
+                let call_args = {
+                    let explicit_args = vec![
+                        LoweredExpr::Local(elem),
+                        LoweredExpr::Local(i),
+                        arr_ref(),
+                    ];
+                    let mut call_args: Vec<LoweredExpr> = explicit_args
+                        .into_iter()
+                        .take(param_count)
+                        .collect();
+                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::User(func_id),
+                        args: call_args,
+                    }
+                };
+                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::If {
+                    condition: LoweredExpr::Local(pred),
+                    then_body: vec![
+                        LoweredStmt::Assign(
+                            found,
+                            LoweredExpr::Local(i),
+                        ),
+                        LoweredStmt::Break { label: None },
+                    ],
+                    else_body: vec![],
+                });
+                while_body.push(LoweredStmt::Assign(
+                    i,
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(i)),
+                        op: LoweredBinaryOp::Add,
+                        right: Box::new(LoweredExpr::Number(1)),
+                    },
+                ));
+
+                result_expr = LoweredExpr::Local(found);
+            }
             "some" => {
                 let found = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(
@@ -2898,6 +2951,19 @@ impl<'a> Resolver<'a> {
                     left: Box::new(result_expr.clone()),
                     op: LoweredBinaryOp::StrictEqual,
                     right: Box::new(LoweredExpr::Undefined),
+                }),
+            },
+            "findIndex" => LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(i)),
+                    op: LoweredBinaryOp::Less,
+                    right: Box::new(LoweredExpr::Local(len_local)),
+                }),
+                op: LoweredBinaryOp::And,
+                right: Box::new(LoweredExpr::Binary {
+                    left: Box::new(result_expr.clone()),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Number(-1)),
                 }),
             },
             "some" => LoweredExpr::Binary {
