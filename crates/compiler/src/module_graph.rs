@@ -365,7 +365,7 @@ fn module_resolution_candidates(
         .extension()
         .and_then(|extension| extension.to_str())
     {
-        Some("ts" | "js" | "d.ts") => Ok(vec![raw_candidate.to_path_buf()]),
+        Some("ts" | "js" | "d.ts" | "tsx") => Ok(vec![raw_candidate.to_path_buf()]),
         Some(extension) => Err(Diagnostic {
             code: DiagCode::UnsupportedModule,
             message: format!(
@@ -378,6 +378,7 @@ fn module_resolution_candidates(
             raw_candidate.with_extension("ts"),
             raw_candidate.with_extension("js"),
             raw_candidate.with_extension("d.ts"),
+            raw_candidate.with_extension("tsx"),
         ]),
     }
 }
