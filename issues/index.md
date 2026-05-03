@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4171 | 179 |
+| frontend | 4350 | 4172 | 178 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 2 | 16 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 206 | 198 | 8 |
+| reference | 206 | 201 | 5 |
 | runtime | 258 | 122 | 136 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4501 | 395 |
+| total | 4896 | 4505 | 391 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -307,6 +307,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 197 | Implement Argumentsobjectiterator | spike | frontend/semantics | class: blocked | Implement Argumentsobjectiterator |
 | 198 | Implement Argumentspropertynameinjsmode | spike | frontend/semantics | class: blocked | Implement Argumentspropertynameinjsmode |
 | 199 | Implement Compiler | spike | frontend/syntax | class: blocked | Implement Compiler |
+| 200 | Implement parser syntax extensions | spike | frontend/syntax | class: triage-needed | Implement parser syntax extensions |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
@@ -396,6 +397,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 480 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 481 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 484 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
+| 486 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
 | 488 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
 | 490 | Implement Addmorecallsignaturestobasesignature | spike | frontend/resolver | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 491 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
@@ -459,6 +461,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 566 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 567 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 570 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
+| 572 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
 | 574 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
 | 576 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 577 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
@@ -663,6 +666,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 801 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 802 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
 | 805 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
+| 807 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
 | 809 | Implement Accessors | spike | frontend/syntax | class: blocked | Implement Accessors |
 | 811 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 812 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
@@ -4771,7 +4775,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 189 | Implement Anyisassignabletovoid | spike | frontend/syntax | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
 | 190 | Implement Anymappedtypeserror | spike | frontend/syntax | see `issues/done/190-implement-anyMappedTypesError.md` |
 | 191 | Implement Anyplusany | spike | frontend/syntax | see `issues/done/191-implement-anyPlusAny.md` |
-| 200 | Implement parser syntax extensions | spike | frontend/syntax | see `issues/done/200-implement-parser-syntax.md` |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | see `issues/done/202-implement-regexp-literal-support.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
 | 204 | Add typed IR dump command | feature | cli | see `issues/done/204-add-typed-ir-dump.md` |
@@ -4960,7 +4963,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 482 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/482-implement-accessorDeclarationOrder.md` |
 | 483 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/483-implement-accessorInAmbientContextES.md` |
 | 485 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/485-implement-accessorParameterAccessibilityModifier.md` |
-| 486 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/486-implement-accessorWithLineTerminator.md` |
 | 487 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/487-implement-accessorWithoutBody.md` |
 | 489 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/489-implement-accessorsInAmbientContext.md` |
 | 495 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/495-implement-aliasInaccessibleModule.md` |
@@ -4983,7 +4985,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 568 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/568-implement-accessorDeclarationOrder.md` |
 | 569 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
 | 571 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
-| 572 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/572-implement-accessorWithLineTerminator.md` |
 | 573 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
 | 575 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
 | 581 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
@@ -5014,7 +5015,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 803 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/803-implement-accessorDeclarationOrder.md` |
 | 804 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/804-implement-accessorInAmbientContextES.md` |
 | 806 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/806-implement-accessorParameterAccessibilityModifier.md` |
-| 807 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/807-implement-accessorWithLineTerminator.md` |
 | 808 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/808-implement-accessorWithoutBody.md` |
 | 810 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/810-implement-accessorsInAmbientContext.md` |
 | 816 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/816-implement-aliasInaccessibleModule.md` |

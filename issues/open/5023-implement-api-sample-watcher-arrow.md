@@ -86,3 +86,17 @@ cargo nextest run
    - `APISample_watcher.ts` reference test produces no issue-062k diagnostic
    - Existing arrow function fixtures unchanged and passing
    - Completion evidence section filled with commit SHAs and validation results
+
+## Completion evidence
+
+**Implementation commit**: `a6e26936` (feat(ir): support arrow function block bodies)
+
+**APISample_watcher.ts result**: The issue-062k diagnostic is gone. Remaining diagnostic is a separate parser issue (`expected Semicolon, got Some(Ident("rootFileNames"))`) unrelated to arrow functions.
+
+**Changes**:
+- `crates/ir/src/lowered/resolver_extra.rs`: Added `body_stmts` parameter to `lower_arrow_fn` and `lower_arrow_fn_with_self`; merged body_stmts with final return; collect captures from both body and body_stmts
+- `crates/ir/src/lowered/resolver.rs`: Pass body_stmts from ArrowFn to lower_arrow_fn_with_self in Let statement handler
+- `crates/ir/src/lowered/resolver_expr.rs`: Pass body_stmts from ArrowFn to lower_arrow_fn
+- `crates/ir/src/name_resolver.rs`: Removed debug eprintln statements
+
+**Validation**: `cargo fmt --all --check` passes. `cargo nextest run` passes (210 passed, 2 pre-existing timeouts, 4 skipped).

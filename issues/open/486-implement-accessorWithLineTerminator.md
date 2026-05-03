@@ -1,5 +1,5 @@
 ---
-id: 572
+id: 486
 title: "Implement Accessorwithlineterminator"
 type: spike
 area: reference/triage
@@ -116,7 +116,6 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/103-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same group key, title overlap)
-- `issues/done/486-implement-accessorWithLineTerminator.md` - Implement Accessorwithlineterminator (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -195,12 +194,6 @@ Duplicate candidates:
     "path": "issues/open/103-implement-accessorWithLineTerminator.md",
     "title": "Implement Accessorwithlineterminator",
     "reason": "same reference path, title overlap"
-  },
-  {
-    "state": "open",
-    "path": "issues/done/486-implement-accessorWithLineTerminator.md",
-    "title": "Implement Accessorwithlineterminator",
-    "reason": "same reference path, same feature label, title overlap"
   }
 ]
 ```
@@ -490,3 +483,28 @@ Remaining risks:
 ## Status
 
 Superseded by issue #103. Duplicate from separate coverage run.
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This issue has `class: triage-needed` in `issues/done/`.
+The "Status" note claims supersedence by issue #103, but issue #103 was itself
+identified as false-done and moved back to `issues/open/`. The supersedence chain
+is therefore invalid. No implementation commits, no close note, no completion
+evidence.
+
+**True-done checklist** (all must pass):
+
+1. Perform actual triage review
+2. Either create child implementation issue(s) or confirm this issue is legitimately
+   superseded by a truly resolved issue
+3. Update `class` from `triage-needed` to appropriate value
+4. Fill in completion evidence section with triage results
+
+**Commands that must pass**:
+
+```sh
+cargo fmt --all --check
+cargo nextest run
+```

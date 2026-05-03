@@ -89,3 +89,26 @@ cargo nextest run
    - `anyAsReturnTypeForNewOnCall.ts` reference test produces exit code 0 (no issue-207 diagnostic)
    - Existing instanceof fixtures unchanged and passing
    - Or: clear documented decision that this feature is out-of-scope with explanation
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This issue was previously re-opened as a parent-drag
+false-done (child of meta-issue 5004), but was batch-closed back to
+`issues/done/` by a subsequent close-cycle commit without any implementation work.
+No completion evidence, no close note, no implementation commits referencing this
+issue ID.
+
+**True-done checklist** (all must pass):
+
+1. Implement the feature described in this issue
+2. Fill in completion evidence with implementation details
+3. Verify with acceptance criteria
+
+**Commands that must pass**:
+
+```sh
+cargo fmt --all --check
+cargo nextest run
+```

@@ -162,3 +162,27 @@ date: 2026-04-29
 Remaining risks:
 
 - The old 51-case generated bucket should not be selected directly again; future failures must be represented by exact reference-backed child issues.
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This issue has `class: triage-needed` and was moved to
+`issues/done/` as part of a batch close cycle without actual triage completion.
+All scope/acceptance checkboxes were batch-checked (`[x]`) but there is no "Status"
+note, no close note, and no implementation commits. No completion evidence is filled.
+
+**True-done checklist** (all must pass):
+
+1. Perform actual triage review
+2. Either create child implementation issue(s) or confirm this issue is superseded
+   by an existing issue (with "Status" note)
+3. Update `class` from `triage-needed` to appropriate value
+4. Remove stale open/ copy if one exists
+
+**Commands that must pass**:
+
+```sh
+cargo fmt --all --check
+cargo nextest run
+```
