@@ -308,6 +308,28 @@ fn resolve_local_specifier(
         if candidate.is_file() {
             return canonicalize_existing_path(candidate);
         }
+        // Check for package.json in parent directory
+        if let Some(parent) = candidate.parent() {
+            let pkg_json = parent.join("package.json");
+            if pkg_json.is_file() {
+                if let Ok(pkg_content) = std::fs::read_to_string(&pkg_json) {
+                    if let Ok(pkg) = serde_json::from_str::<serde_json::Value>(&pkg_content) {
+                        if let Some(types) = pkg.get("types").and_then(|v| v.as_str()) {
+                            let types_path = parent.join(types);
+                            if types_path.is_file() {
+                                return canonicalize_existing_path(&types_path);
+                            }
+                        }
+                        if let Some(main) = pkg.get("main").and_then(|v| v.as_str()) {
+                            let main_path = parent.join(main);
+                            if main_path.is_file() {
+                                return canonicalize_existing_path(&main_path);
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     let error_msg = if is_local_relative_specifier(&specifier.value) {
