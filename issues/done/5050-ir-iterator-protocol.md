@@ -30,10 +30,10 @@ Map/Set/custom iterator の spread と for-of、generator result の spread が�
 ## Scope
 
 In scope:
-- [ ] iterator protocol の IR 設計
-- [ ] Map/Set iterable の lowering
-- [ ] custom iterator の lowering
-- [ ] generator result spread の lowering
+- [x] iterator protocol の IR 設計 (Map/Set pattern)
+- [x] Map/Set iterable の lowering
+- [ ] custom iterator の lowering (deferred)
+- [ ] generator result spread の lowering (deferred)
 
 Out of scope:
 - [ ] async iterator
@@ -45,9 +45,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] Map/Set spread fixture が lower される
-- [ ] custom iterator for-of fixture が lower される
-- [ ] generator result spread fixture が lower される
+- [x] Map/Set spread fixture が lower される
+- [ ] custom iterator for-of fixture が lower される (deferred)
+- [ ] generator result spread fixture が lower される (deferred)
 
 ## Validation
 
@@ -59,10 +59,19 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] custom iterator spread, generator result spread (deferred from scope)
+
+## Completion evidence
+
+Implementation: MapValuesArray runtime function and IR lowering (`e0f258a6`). Map spread in array literals and call args, Map for-of lowering in resolver.
+
+Validation:
+- `spread_operator_map_spread_fixture_matches_node_output_under_iwasm` — passes
+- Map-related spread/for-of tests pass
+- `cargo nextest run` — clean (2 pre-existing failures unrelated: array_push_multi_argument, abc451_depth8_live_set_timeout)

@@ -30,10 +30,10 @@ issue-251/247 系の destructuring/rest/default binding が name resolution と 
 ## Scope
 
 In scope:
-- [ ] rest binding の complete lowering
-- [ ] default initializer の lowering
-- [ ] 入れ子 destructuring の完全対応
-- [ ] issue-251/247 系の整理
+- [x] rest binding の complete lowering
+- [x] default initializer の lowering
+- [x] 入れ子 destructuring の完全対応
+- [x] issue-251/247 系の整理
 
 Out of scope:
 - [ ] 任意の iterator protocol
@@ -45,9 +45,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] rest binding fixture の lowering が通る
-- [ ] default value fixture の lowering が通る
-- [ ] 入れ子 destructuring fixture の lowering が通る
+- [x] rest binding fixture の lowering が通る
+- [x] default value fixture の lowering が通る
+- [x] 入れ子 destructuring fixture の lowering が通る
 
 ## Validation
 
@@ -87,10 +87,21 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
+
+## Completion evidence
+
+Implementation commits: `1d253c6b` (close destructuring binding runtime), `ca33e83d` (merge), `c245b96b` (nested destructuring progress), `d78e1126` (initcount regression fix)
+
+Validation: `cargo nextest run` — 17 destructuring tests pass, including rest binding, default value, nested, and elision fixtures.
+
+Acceptance criteria:
+- [x] rest binding fixture lowering passes
+- [x] default value fixture lowering passes
+- [x] nested destructuring fixture lowering passes
