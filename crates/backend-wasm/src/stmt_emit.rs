@@ -604,13 +604,8 @@ impl WatEmitter<'_> {
                     RuntimeFn::ModuleExportsAssign.symbol(),
                 ));
             }
-            LoweredStmt::ClassDecl {
-                name: _,
-                extends: _,
-                constructor: _,
-                methods: _,
-            } => {
-                // Placeholder for class declarations - will be implemented in Phase D
+            LoweredStmt::ClassDecl { .. } => {
+                // Placeholder for class declarations - backend emission deferred to issue 5011/5026
                 wat.push_str(&format!("{pad};; TODO: implement class declaration\n"));
             }
         }

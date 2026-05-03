@@ -466,7 +466,7 @@ impl<'a> WatEmitter<'a> {
                 self.collect_expr_strings(expr);
             }
             LoweredStmt::ClassDecl { .. } => {
-                // Class declarations should not appear in lowered program
+                // Class declarations are now live in IR; backend emission deferred
             }
         }
     }

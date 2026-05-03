@@ -893,10 +893,16 @@ impl NameResolver {
                         }
                     }
                 }
+                eprintln!("DEBUG ArrowFn: body_stmts={}", body_stmts.len());
+                for s in body_stmts {
+                    eprintln!("DEBUG ArrowFn stmt: {:?}", s);
+                }
+                eprintln!("DEBUG ArrowFn body before resolve: {:?}", body);
                 let resolved_body_stmts = body_stmts
                     .iter()
                     .map(|s| self.resolve_stmt(s))
                     .collect::<Result<Vec<_>, _>>()?;
+                eprintln!("DEBUG ArrowFn scopes: {:?}", self.scopes);
                 let resolved_body = self.resolve_expr(body)?;
                 self.exit_scope();
                 Ok(Expr::ArrowFn {
