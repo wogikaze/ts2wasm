@@ -6,9 +6,11 @@ use ts2wasm_frontend::{
     DiagCode, Diagnostic, Lexer, ModuleSpecifier, Parser, Stmt, validate_type_reference_directives,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub struct ModuleGraph {
     modules: Vec<ModuleNode>,
+    /// Cycle diagnostics collected during graph building (non-fatal).
+    cycle_diagnostics: Vec<Diagnostic>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -43,6 +45,10 @@ impl ModuleGraph {
 
     pub fn module(&self, id: usize) -> Option<&ModuleNode> {
         self.modules.get(id)
+    }
+
+    pub fn cycle_diagnostics(&self) -> &[Diagnostic] {
+        &self.cycle_diagnostics
     }
 
     pub fn dependency_first_initialization_steps(&self) -> Vec<ModuleInitializationStep> {
@@ -145,6 +151,7 @@ pub fn build_entry_module_graph(
     builder.visit_module(entry_path, entry_program)?;
     Ok(ModuleGraph {
         modules: builder.modules,
+        cycle_diagnostics: builder.cycle_diagnostics,
     })
 }
 
@@ -152,6 +159,10 @@ pub fn build_entry_module_graph(
 struct ModuleGraphBuilder {
     modules: Vec<ModuleNode>,
     module_ids_by_path: HashMap<PathBuf, usize>,
+    /// Paths currently being visited (for cycle detection).
+    visiting: Vec<PathBuf>,
+    /// Cycle diagnostics accumulated during graph building (non-fatal).
+    cycle_diagnostics: Vec<Diagnostic>,
 }
 
 impl ModuleGraphBuilder {
@@ -162,6 +173,7 @@ impl ModuleGraphBuilder {
 
         let module_id = self.modules.len();
         self.module_ids_by_path.insert(path.clone(), module_id);
+        self.visiting.push(path.clone());
         self.modules.push(ModuleNode {
             id: module_id,
             path: path.clone(),
@@ -170,6 +182,21 @@ impl ModuleGraphBuilder {
 
         for specifier in collect_static_module_specifiers(program) {
             let resolved_path = resolve_local_specifier(&path, specifier)?;
+
+            // Cycle detection: if resolved path is currently being visited,
+            // a dependency chain forms a cycle. ES modules support cyclic
+            // imports, so this is a warning, not a hard error.
+            if self.visiting.contains(&resolved_path) {
+                self.cycle_diagnostics.push(Diagnostic {
+                    code: DiagCode::UnsupportedModule,
+                    message: format!(
+                        "issue-5038: module cycle detected involving `{}`",
+                        resolved_path.display()
+                    ),
+                    span: Some(specifier.span),
+                });
+            }
+
             let resolved_module_id = if let Some(existing_id) =
                 self.module_ids_by_path.get(&resolved_path)
             {
@@ -190,6 +217,8 @@ impl ModuleGraphBuilder {
                 resolved_path,
             });
         }
+
+        self.visiting.pop();
 
         Ok(module_id)
     }
@@ -478,6 +507,111 @@ export const value = nested;
                 .contains("unsupported non-local module specifier")
         );
         assert_eq!(err.span, Some(span_of(source, "\"pkg\"")));
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detects_direct_cycle_with_diagnostic() {
+        let dir = unique_temp_dir("cycle-dir");
+        fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let a = dir.join("a.ts");
+        let b = dir.join("b.ts");
+
+        fs::write(
+            &entry,
+            "import { a_val } from \"./a\";\nexport const entry_val = a_val;\n",
+        )
+        .expect("entry written");
+        fs::write(
+            &a,
+            "import { b_val } from \"./b\";\nexport const a_val = b_val;\n",
+        )
+        .expect("a written");
+        fs::write(
+            &b,
+            "import { a_val } from \"./a\";\nexport const b_val = a_val;\n",
+        )
+        .expect("b written");
+
+        let program = parse_module_source(
+            "import { a_val } from \"./a\";\nexport const entry_val = a_val;\n",
+        )
+        .expect("entry should parse");
+
+        // Cycles are detected but do not prevent graph construction.
+        let graph =
+            build_entry_module_graph(&entry, &program).expect("graph should build despite cycle");
+        let diagnostics = graph.cycle_diagnostics();
+        assert!(
+            !diagnostics.is_empty(),
+            "expected cycle diagnostics, got none"
+        );
+        for diag in diagnostics {
+            assert_eq!(diag.code, DiagCode::UnsupportedModule);
+            assert!(
+                diag.message.contains("cycle"),
+                "expected cycle message, got: {}",
+                diag.message
+            );
+        }
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn detects_self_import_cycle_with_diagnostic() {
+        let dir = unique_temp_dir("self-cycle");
+        fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+
+        fs::write(
+            &entry,
+            "import { val } from \"./entry\";\nexport const val = 1;\n",
+        )
+        .expect("entry written");
+
+        let program =
+            parse_module_source("import { val } from \"./entry\";\nexport const val = 1;\n")
+                .expect("entry should parse");
+
+        let graph = build_entry_module_graph(&entry, &program)
+            .expect("graph should build despite self-import");
+        let diagnostics = graph.cycle_diagnostics();
+        assert!(
+            !diagnostics.is_empty(),
+            "expected self-import cycle diagnostic, got none"
+        );
+
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn produces_dependency_first_init_order() {
+        let dir = unique_temp_dir("order");
+        fs::create_dir_all(&dir).expect("temp dir should be created");
+        let entry = dir.join("entry.ts");
+        let lib = dir.join("lib.ts");
+
+        fs::write(
+            &entry,
+            "import { val } from \"./lib\";\nexport const result = val;\n",
+        )
+        .expect("entry written");
+        fs::write(&lib, "export const val = 42;\n").expect("lib written");
+
+        let program =
+            parse_module_source("import { val } from \"./lib\";\nexport const result = val;\n")
+                .expect("entry should parse");
+
+        let graph = build_entry_module_graph(&entry, &program).expect("graph should build");
+        let steps = graph.dependency_first_initialization_steps();
+
+        // lib (dep) before entry
+        assert_eq!(steps.len(), 2);
+        assert_eq!(steps[0].module_id(), 1);
+        assert_eq!(steps[1].module_id(), 0);
 
         let _ = fs::remove_dir_all(&dir);
     }
