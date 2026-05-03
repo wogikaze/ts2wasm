@@ -1388,6 +1388,81 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype.at(index) — returns element at index, supports negative indexing
+    pub(super) fn emit_array_at(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_at (param $arr i32) (param $idx i32) (result i32)
+    (local $arr_tag i32)
+    (local $idx_tag i32)
+    (local $raw_i i32)
+    (local $len i32)
+    (local.set $arr_tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $arr_tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $idx_tag (i32.and (local.get $idx) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $idx_tag) (i32.const {number_tag})) (then (return (i32.const {undefined}))))
+    (local.set $raw_i (i32.shr_s (local.get $idx) (i32.const {number_shift})))
+    ;; Normalize negative index: if i < 0, i = max(0, len + i)
+    (if (i32.lt_s (local.get $raw_i) (i32.const {zero}))
+      (then
+        (local.set $raw_i
+          (i32.add
+            (i32.load (i32.and (local.get $arr) (i32.const {heap_mask})))
+            (local.get $raw_i)))
+        ;; Clamp to zero if still negative
+        (if (i32.lt_s (local.get $raw_i) (i32.const {zero}))
+          (then (return (i32.const {undefined}))))))
+    ;; Re-tag the index and delegate to $array_get
+    (return
+      (call $array_get
+        (local.get $arr)
+        (i32.or (i32.shl (local.get $raw_i) (i32.const {number_shift})) (i32.const {number_tag})))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            number_tag = ValueTag::NUMBER,
+            heap_mask = ValueTag::HEAP_MASK,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Array.prototype.fill(value) — fills all elements with value
+    pub(super) fn emit_array_fill(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_fill (param $arr i32) (param $val i32) (result i32)
+    (local $tag i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $i i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $loop
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (i32.store
+          (i32.add (local.get $obj) (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (local.get $val))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $loop)))
+    (local.get $arr))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Object methods (M10)
 
     pub(super) fn emit_object_keys(&self, wat: &mut String) {
@@ -2091,12 +2166,12 @@ impl WatEmitter<'_> {
     }
 
     pub(super) fn emit_object_is(&self, wat: &mut String) {
-        wat.push_str(&format!(
+        wat.push_str(
             r#"
   (func $object_is (param $a i32) (param $b i32) (result i32)
     (return (call $strict_equal (local.get $a) (local.get $b))))
 "#,
-        ));
+        );
     }
 
     pub(super) fn emit_instanceof(&self, wat: &mut String) {

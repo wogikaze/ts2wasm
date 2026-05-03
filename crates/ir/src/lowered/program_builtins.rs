@@ -124,6 +124,8 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "find") => Some("ArrayFind"),
         ("Array", "filter") => Some("ArrayFilter"),
         ("Array", "concat") => Some("ArrayConcat"),
+        ("Array", "at") => Some("ArrayAt"),
+        ("Array", "fill") => Some("ArrayFill"),
         _ => None,
     }
 }
@@ -143,6 +145,8 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "indexOf" => Some("ArrayIndexOf"),
         "includes" => Some("ArrayIncludes"),
         "sort" => Some("ArraySortNumeric"),
+        "at" => Some("ArrayAt"),
+        "fill" => Some("ArrayFill"),
         _ => None,
     }
 }
@@ -512,6 +516,30 @@ pub(super) fn unsupported_annex_b_date_method_diagnostic(method: &str, span: Opt
         code: DiagCode::UnsupportedSyntax,
         message: format!(
             "issue-241: Date.prototype.{method} is Annex B legacy Date behavior and is not supported in the deterministic Date epoch slice"
+        ),
+        span,
+    }
+}
+
+pub(super) fn is_local_tz_date_method(method: &str) -> bool {
+    matches!(
+        method,
+        "getFullYear"
+            | "getMonth"
+            | "getDate"
+            | "getHours"
+            | "getMinutes"
+            | "getSeconds"
+            | "getMilliseconds"
+            | "getDay"
+    )
+}
+
+pub(super) fn unsupported_local_tz_date_method_diagnostic(method: &str, span: Option<Span>) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedSyntax,
+        message: format!(
+            "issue-NNN: Date.prototype.{method} requires host timezone support and is not yet available in WASM targets"
         ),
         span,
     }

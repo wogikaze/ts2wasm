@@ -100,14 +100,14 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
             matches!(representation, ClosureRepresentation::HeapObject)
         }
         LoweredExpr::Block { stmts, result } => {
-            stmts.iter().any(|s| stmt_may_collect(s)) || expr_may_collect(result)
+            stmts.iter().any(stmt_may_collect) || expr_may_collect(result)
         }
     }
 }
 
 pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
     match stmt {
-        LoweredStmt::Block(stmts) => stmts.iter().any(|s| stmt_may_collect(s)),
+        LoweredStmt::Block(stmts) => stmts.iter().any(stmt_may_collect),
         LoweredStmt::Let(_, expr) | LoweredStmt::Assign(_, expr) => expr_may_collect(expr),
         LoweredStmt::Expr(expr) => expr_may_collect(expr),
         LoweredStmt::If {
@@ -116,11 +116,11 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
             else_body,
         } => {
             expr_may_collect(condition)
-                || then_body.iter().any(|s| stmt_may_collect(s))
-                || else_body.iter().any(|s| stmt_may_collect(s))
+                || then_body.iter().any(stmt_may_collect)
+                || else_body.iter().any(stmt_may_collect)
         }
         LoweredStmt::While { condition, body } | LoweredStmt::DoWhile { condition, body } => {
-            expr_may_collect(condition) || body.iter().any(|s| stmt_may_collect(s))
+            expr_may_collect(condition) || body.iter().any(stmt_may_collect)
         }
         LoweredStmt::For {
             init,
@@ -129,12 +129,12 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
             body,
         } => {
             init.as_ref().is_some_and(|i| stmt_may_collect(i))
-                || condition.as_ref().is_some_and(|c| expr_may_collect(c))
-                || update.as_ref().is_some_and(|u| expr_may_collect(u))
-                || body.iter().any(|s| stmt_may_collect(s))
+                || condition.as_ref().is_some_and(expr_may_collect)
+                || update.as_ref().is_some_and(expr_may_collect)
+                || body.iter().any(stmt_may_collect)
         }
         LoweredStmt::ForIn { body, .. } | LoweredStmt::ForOf { body, .. } => {
-            body.iter().any(|s| stmt_may_collect(s))
+            body.iter().any(stmt_may_collect)
         }
         LoweredStmt::Return(expr) | LoweredStmt::Throw(expr) => expr_may_collect(expr),
         LoweredStmt::TryCatch {
@@ -143,19 +143,19 @@ pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
             finally_body,
             ..
         } => {
-            try_body.iter().any(|s| stmt_may_collect(s))
+            try_body.iter().any(stmt_may_collect)
                 || catch_body
                     .as_ref()
-                    .is_some_and(|b| b.iter().any(|s| stmt_may_collect(s)))
+                    .is_some_and(|b| b.iter().any(stmt_may_collect))
                 || finally_body
                     .as_ref()
-                    .is_some_and(|b| b.iter().any(|s| stmt_may_collect(s)))
+                    .is_some_and(|b| b.iter().any(stmt_may_collect))
         }
         LoweredStmt::Switch { expr, cases } => {
             expr_may_collect(expr)
                 || cases
                     .iter()
-                    .any(|(_, stmts)| stmts.iter().any(|s| stmt_may_collect(s)))
+                    .any(|(_, stmts)| stmts.iter().any(stmt_may_collect))
         }
         LoweredStmt::Labeled { body, .. } => stmt_may_collect(body),
         LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => false,

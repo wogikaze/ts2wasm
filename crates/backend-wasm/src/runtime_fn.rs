@@ -140,6 +140,15 @@ pub(crate) enum RuntimeFn {
     DateGetTime,
     /// Issue 240: Date.prototype.toString() via host shim.
     DateToString,
+    /// UTC Date getters — pure WAT math (no host shim needed).
+    DateGetUtcMilliseconds,
+    DateGetUtcSeconds,
+    DateGetUtcMinutes,
+    DateGetUtcHours,
+    DateGetUtcDay,
+    DateGetUtcDate,
+    DateGetUtcMonth,
+    DateGetUtcFullYear,
     /// M10: String methods
     StringCharAt,
     StringSubstring,
@@ -211,6 +220,10 @@ pub(crate) enum RuntimeFn {
     ArrayForEach,
     /// Array.prototype.map (identity callback: creates new array with same elements)
     ArrayMap,
+    /// Array.prototype.at(index) — returns element at index, supports negative indexing
+    ArrayAt,
+    /// Array.prototype.fill(value) — fills all elements with value
+    ArrayFill,
     /// M10: Object statics
     ObjectKeys,
     ObjectSpread,
@@ -620,6 +633,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayLastIndexOf" => Some(RuntimeFn::ArrayLastIndexOf),
         "ArrayForEach" => Some(RuntimeFn::ArrayForEach),
         "ArrayMap" => Some(RuntimeFn::ArrayMap),
+        "ArrayAt" => Some(RuntimeFn::ArrayAt),
+        "ArrayFill" => Some(RuntimeFn::ArrayFill),
         "MapNew" => Some(RuntimeFn::MapNew),
         "MapGet" => Some(RuntimeFn::MapGet),
         "MapSet" => Some(RuntimeFn::MapSet),
@@ -641,6 +656,14 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "DateNow" => Some(RuntimeFn::DateNow),
         "DateGetTime" => Some(RuntimeFn::DateGetTime),
         "DateToString" => Some(RuntimeFn::DateToString),
+        "DateGetUtcMilliseconds" => Some(RuntimeFn::DateGetUtcMilliseconds),
+        "DateGetUtcSeconds" => Some(RuntimeFn::DateGetUtcSeconds),
+        "DateGetUtcMinutes" => Some(RuntimeFn::DateGetUtcMinutes),
+        "DateGetUtcHours" => Some(RuntimeFn::DateGetUtcHours),
+        "DateGetUtcDay" => Some(RuntimeFn::DateGetUtcDay),
+        "DateGetUtcDate" => Some(RuntimeFn::DateGetUtcDate),
+        "DateGetUtcMonth" => Some(RuntimeFn::DateGetUtcMonth),
+        "DateGetUtcFullYear" => Some(RuntimeFn::DateGetUtcFullYear),
         "IsNaN" => Some(RuntimeFn::IsNaN),
         "ParseInt" => Some(RuntimeFn::ParseInt),
         "ParseFloat" => Some(RuntimeFn::ParseFloat),
@@ -1067,6 +1090,8 @@ const ARRAY_REDUCE_RIGHT_DEPS: &[RuntimeFn] = &[];
 const ARRAY_LAST_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const ARRAY_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const ARRAY_MAP_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+const ARRAY_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayGet];
+const ARRAY_FILL_DEPS: &[RuntimeFn] = &[];
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];

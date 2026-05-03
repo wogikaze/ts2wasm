@@ -1010,6 +1010,11 @@ impl<'a> Resolver<'a> {
                         runtime_fn: "DateGetTime".to_owned(),
                         args: vec![self.lower_expr(object)?],
                     })
+                } else if is_local_tz_date_method(method) && self.is_date_receiver(object) {
+                    Err(unsupported_local_tz_date_method_diagnostic(
+                        method,
+                        Some(*span),
+                    ))
                 } else if is_annex_b_date_method(method) && self.is_date_receiver(object) {
                     Err(unsupported_annex_b_date_method_diagnostic(
                         method,
@@ -1028,6 +1033,43 @@ impl<'a> Resolver<'a> {
                     }
                     Ok(LoweredExpr::RuntimeCall {
                         runtime_fn: "DateToString".to_owned(),
+                        args: vec![self.lower_expr(object)?],
+                    })
+                } else if self.is_date_receiver(object)
+                    && matches!(
+                        method.as_str(),
+                        "getUTCMilliseconds"
+                            | "getUTCSeconds"
+                            | "getUTCMinutes"
+                            | "getUTCHours"
+                            | "getUTCDay"
+                            | "getUTCDate"
+                            | "getUTCMonth"
+                            | "getUTCFullYear"
+                    ) {
+                    if !args.is_empty() {
+                        return Err(Diagnostic {
+                            code: DiagCode::ArityMismatch,
+                            message: format!(
+                                "Date.prototype.{method} expects 0 arguments, got {}",
+                                args.len()
+                            ),
+                            span: Some(*span),
+                        });
+                    }
+                    let runtime_fn = match method.as_str() {
+                        "getUTCMilliseconds" => "DateGetUtcMilliseconds",
+                        "getUTCSeconds" => "DateGetUtcSeconds",
+                        "getUTCMinutes" => "DateGetUtcMinutes",
+                        "getUTCHours" => "DateGetUtcHours",
+                        "getUTCDay" => "DateGetUtcDay",
+                        "getUTCDate" => "DateGetUtcDate",
+                        "getUTCMonth" => "DateGetUtcMonth",
+                        "getUTCFullYear" => "DateGetUtcFullYear",
+                        _ => unreachable!(),
+                    };
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: runtime_fn.to_owned(),
                         args: vec![self.lower_expr(object)?],
                     })
                 } else if matches!(object.as_ref(), ResolvedExpr::String(_)) {

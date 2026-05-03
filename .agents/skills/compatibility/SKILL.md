@@ -17,7 +17,7 @@ mise run clippy
 mise run nextest
 ```
 
-- If test262 or differential work is in scope: `mise run test262` (and pipe through `mise run test-differential-reporter` / `mise run test-regression-gate` with the project’s file conventions; see `scripts` headers)
+- If test262 or differential work is in scope: `mise run test262` (and pipe through `mise run test-differential-reporter` with the project’s file conventions; see `scripts` headers)
 - If reference-suite coverage is relevant: `mise run reference-coverage` (as documented for that script)
 
 ## Decision Order

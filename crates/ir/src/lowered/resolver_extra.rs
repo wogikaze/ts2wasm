@@ -2474,6 +2474,7 @@ impl<'a> Resolver<'a> {
     /// Lower a callback method on a variable array (Ident receiver).
     /// receiver must be a LoweredExpr::Local.
     /// init_expr is the initial value for reduce (if applicable).
+    #[allow(clippy::too_many_arguments, clippy::needless_late_init)]
     fn lower_variable_array_callback_method(
         &mut self,
         method: &str,

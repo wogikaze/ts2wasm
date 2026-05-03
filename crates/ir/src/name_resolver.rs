@@ -651,6 +651,9 @@ impl NameResolver {
                 if self.is_unshadowed_function_constructor(callee) {
                     return Err(unsupported_function_constructor(*span));
                 }
+                if self.is_unshadowed_eval(callee) {
+                    return Err(unsupported_eval_diagnostic(*span));
+                }
                 let resolved_callee = self.resolve_expr(callee)?;
                 let resolved_args = args
                     .iter()
@@ -809,6 +812,9 @@ impl NameResolver {
                 };
                 if callee_name == "Function" && !self.is_user_declared("Function") {
                     return Err(unsupported_function_constructor(*span));
+                }
+                if callee_name == "eval" && !self.is_user_declared("eval") {
+                    return Err(unsupported_eval_diagnostic(*span));
                 }
                 Ok(Expr::New {
                     expr: Box::new(Expr::Ident {
@@ -1070,6 +1076,10 @@ impl NameResolver {
             && !self.is_user_declared("Function")
     }
 
+    fn is_unshadowed_eval(&self, expr: &Expr) -> bool {
+        matches!(expr, Expr::Ident { name, .. } if name == "eval") && !self.is_user_declared("eval")
+    }
+
     fn bigint_number_model_gap(&self, left: &Expr, right: &Expr, span: Span) -> Option<Diagnostic> {
         let other = if expr_contains_bigint_literal(left) {
             Some(right)
@@ -1229,6 +1239,14 @@ fn unsupported_function_constructor(span: Span) -> Diagnostic {
     Diagnostic {
         code: DiagCode::UnsupportedSyntax,
         message: "issue-062: dynamic Function constructor is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
+        span: Some(span),
+    }
+}
+
+fn unsupported_eval_diagnostic(span: Span) -> Diagnostic {
+    Diagnostic {
+        code: DiagCode::UnsupportedEval,
+        message: "issue-429: direct eval is not supported; runtime code evaluation is intentionally not implemented".to_owned(),
         span: Some(span),
     }
 }

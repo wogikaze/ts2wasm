@@ -113,6 +113,9 @@ mv issues/open/NNN-your-title.md issues/done/
 # index 更新 + チェック
 mise run update-issue-index
 mise run check issues
+
+# Discord 報告（必須）
+mise run discord-report
 ```
 
 ## 6) ast-grep（最小運用）

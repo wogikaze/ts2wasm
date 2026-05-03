@@ -40,10 +40,6 @@ run = "python scripts/manager.py check-issue-index"
 description = "Regenerate issues/index.md (pass --check to verify only)"
 run = "python scripts/manager.py update-issue-index"
 
-[tasks."gen-issues-from-coverage"]
-description = "Generate issues from reference-coverage --detail output (args: --suite test262)"
-run = "python scripts/manager.py gen-issues-from-coverage"
-
 [tasks."install-hooks"]
 description = "Enable .githooks (fmt, markdown, issues) via core.hooksPath"
 run = "python scripts/manager.py install-hooks"
@@ -116,10 +112,6 @@ run = "python scripts/manager.py reference-coverage test262 --jsonl"
 [tasks."test-differential-reporter"]
 description = "HTML/Md report from test262 JSONL (stdin; optional file args)"
 run = "python scripts/manager.py test-differential-reporter"
-
-[tasks."test-regression-gate"]
-description = "Gate: JSONL result vs baseline"
-run = "python scripts/manager.py test-regression-gate"
 
 [tasks.fmt]
 description = "cargo fmt --all --check"

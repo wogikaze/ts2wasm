@@ -246,17 +246,17 @@ fn validate_stmt(
             static_methods,
             ..
         } => {
-            if let Some(ctor_id) = constructor {
-                if ctor_id.0 >= num_funcs {
-                    errors.push(Diagnostic {
-                        code: DiagCode::InvariantViolation,
-                        message: format!(
-                            "ClassDecl constructor FuncId {} is out of range (program has {} function(s))",
-                            ctor_id.0, num_funcs
-                        ),
-                        span: None,
-                    });
-                }
+            if let Some(ctor_id) = constructor
+                && ctor_id.0 >= num_funcs
+            {
+                errors.push(Diagnostic {
+                    code: DiagCode::InvariantViolation,
+                    message: format!(
+                        "ClassDecl constructor FuncId {} is out of range (program has {} function(s))",
+                        ctor_id.0, num_funcs
+                    ),
+                    span: None,
+                });
             }
             for (_, method_id) in methods.iter().chain(static_methods.iter()) {
                 if method_id.0 >= num_funcs {

@@ -1142,6 +1142,76 @@ fn assert_build_fails_with_issue_062_function_constructor(fixture: &str) {
     );
 }
 
+#[test]
+fn direct_eval_fixture_reports_issue_429() {
+    let fixture = "fixtures/core-semantics/direct-eval-unsupported.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "direct eval fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedEval]"),
+        "expected UnsupportedEval diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-429: direct eval is not supported"),
+        "expected issue-linked eval diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("runtime code evaluation is intentionally not implemented"),
+        "expected dynamic evaluation policy diagnostic for {fixture}, got:\n{stderr}"
+    );
+}
+
+#[test]
+fn new_eval_fixture_reports_issue_429() {
+    let fixture = "fixtures/core-semantics/new-eval-unsupported.ts";
+    let fixture_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../..")
+        .join(fixture);
+    let output = temp_wasm_path(fixture);
+
+    let build = Command::new(env!("CARGO_BIN_EXE_ts2wasm"))
+        .arg("build")
+        .arg(&fixture_path)
+        .arg("-o")
+        .arg(&output)
+        .output()
+        .unwrap();
+
+    assert!(
+        !build.status.success(),
+        "new eval fixture should not build successfully"
+    );
+    let stderr = String::from_utf8_lossy(&build.stderr);
+    assert!(
+        stderr.contains("[UnsupportedEval]"),
+        "expected UnsupportedEval diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("issue-429: direct eval is not supported"),
+        "expected issue-linked eval diagnostic for {fixture}, got:\n{stderr}"
+    );
+    assert!(
+        stderr.contains("runtime code evaluation is intentionally not implemented"),
+        "expected dynamic evaluation policy diagnostic for {fixture}, got:\n{stderr}"
+    );
+}
+
 fn assert_stdin_fixture_matches_node_baseline(
     fixture: &str,
     js_baseline: &str,

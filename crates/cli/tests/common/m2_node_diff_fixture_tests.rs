@@ -1287,6 +1287,19 @@ fn date_annex_b_fixtures_report_issue_241() {
 }
 
 #[test]
+fn date_utc_getters_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/builtins-and-io/date-utc-getters.ts");
+}
+
+#[test]
+fn date_local_getters_fixture_reports_unsupported() {
+    assert_build_fails_with_unsupported_syntax(
+        "fixtures/builtins-and-io/date-local-getters-unsupported.ts",
+        "Date.prototype.getFullYear requires host timezone support",
+    );
+}
+
+#[test]
 fn switch_fallthrough_fixture_matches_node_output_under_iwasm() {
     assert_fixture_matches_node("fixtures/control-flow-and-exceptions/switch-fallthrough.ts");
 }

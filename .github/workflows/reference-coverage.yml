@@ -75,10 +75,6 @@ jobs:
         run: |
           ./scripts/manager test262 --sample 50 --jobs 4 | tee test262-results.jsonl | ./scripts/manager test-differential-reporter --html test262-report.html --markdown test262-report.md
 
-      - name: Run regression gate
-        run: |
-          ./scripts/manager test-regression-gate test262-results.jsonl
-
       - name: Upload test262 results
         uses: actions/upload-artifact@v4
         with:

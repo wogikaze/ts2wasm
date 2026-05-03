@@ -1261,21 +1261,22 @@ impl<'a> WatEmitter<'a> {
         for stmt in stmts {
             match stmt {
                 LoweredStmt::ClassDecl {
-                    constructor,
+                    constructor: Some(ctor_id),
                     extends,
                     ..
                 } => {
-                    if let Some(ctor_id) = constructor {
-                        let parent = extends
-                            .as_ref()
-                            .and_then(|name| class_name_to_ctor.get(name))
-                            .copied();
-                        prototypes.entry(*ctor_id).or_insert(parent);
-                        if let Some(parent_id) = parent {
-                            prototypes.entry(parent_id).or_insert(None);
-                        }
+                    let parent = extends
+                        .as_ref()
+                        .and_then(|name| class_name_to_ctor.get(name))
+                        .copied();
+                    prototypes.entry(*ctor_id).or_insert(parent);
+                    if let Some(parent_id) = parent {
+                        prototypes.entry(parent_id).or_insert(None);
                     }
                 }
+                LoweredStmt::ClassDecl {
+                    constructor: None, ..
+                } => {}
                 LoweredStmt::Block(statements) => {
                     Self::collect_class_decl_prototypes(statements, prototypes, class_name_to_ctor);
                 }
@@ -1293,15 +1294,16 @@ impl<'a> WatEmitter<'a> {
             match stmt {
                 LoweredStmt::ClassDecl {
                     name,
-                    constructor,
+                    constructor: Some(ctor_id),
                     methods,
                     ..
                 } => {
-                    if let Some(ctor_id) = constructor {
-                        class_name_to_ctor.insert(name.clone(), *ctor_id);
-                        method_counts.insert(*ctor_id, methods.len());
-                    }
+                    class_name_to_ctor.insert(name.clone(), *ctor_id);
+                    method_counts.insert(*ctor_id, methods.len());
                 }
+                LoweredStmt::ClassDecl {
+                    constructor: None, ..
+                } => {}
                 LoweredStmt::Block(statements) => {
                     Self::compute_class_decl_metadata(
                         statements,

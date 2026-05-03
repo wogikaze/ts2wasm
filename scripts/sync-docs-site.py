@@ -12,7 +12,7 @@ import shutil
 import sys
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def resolve_path(raw, fallback):
@@ -27,6 +27,41 @@ def resolve_path(raw, fallback):
 def sync_tree(source: Path, destination: Path) -> bool:
     if not source.exists():
         return False
+
+    # Prevent recursive copy: destination must not overlap with source.
+    # Both must be resolved (realpath) to detect cases like
+    #   source=…/ts2wasm-docs/coverage/web-ui/public/data
+    #   dest  =…/ts2wasm-docs/coverage/web-ui/public/data   (same → self-copy)
+    # or source=…/ts2wasm-docs/dashboard  dest=…/ts2wasm-docs  (source inside dest).
+    try:
+        src_resolved = source.resolve(strict=False)
+        dst_resolved = destination.resolve(strict=False)
+        if src_resolved == dst_resolved:
+            print(
+                f"WARNING: source and destination are the same path: {src_resolved}",
+                file=sys.stderr,
+            )
+            return False
+        # destination must not be a parent of source
+        if dst_resolved in src_resolved.parents:
+            print(
+                f"WARNING: destination {dst_resolved} is a parent of source {src_resolved} "
+                "(would cause recursive copy)",
+                file=sys.stderr,
+            )
+            return False
+        # source must not be a parent of destination
+        if src_resolved in dst_resolved.parents:
+            print(
+                f"WARNING: source {src_resolved} is a parent of destination {dst_resolved} "
+                "(would cause recursive copy)",
+                file=sys.stderr,
+            )
+            return False
+    except (ValueError, OSError) as exc:
+        print(f"WARNING: could not resolve paths ({exc}); skipping sync_tree", file=sys.stderr)
+        return False
+
     if destination.exists():
         shutil.rmtree(destination)
     destination.parent.mkdir(parents=True, exist_ok=True)
@@ -70,22 +105,24 @@ def main() -> int:
             copied = True
 
     if sync_dashboard:
-        # Default dashboard publish target from this repo. If already built with
-        # build-dashboard-site into a custom location, copy from there as well.
-        dashboard_src = Path(os.environ.get("TS2WASM_DASHBOARD_SRC_DIR", ""))
-        if not dashboard_src:
+        dashboard_src_raw = os.environ.get("TS2WASM_DASHBOARD_SRC_DIR", "")
+        if dashboard_src_raw:
+            dashboard_src = resolve_path(dashboard_src_raw, None)
+        else:
             dashboard_src = REPO_ROOT / "site" / "docs" / "public" / "dashboard"
-        dashboard_src = resolve_path(str(dashboard_src), dashboard_src)
-        copied = sync_tree(dashboard_src, docs_repo / "dashboard") or copied
+        if dashboard_src:
+            copied = sync_tree(dashboard_src, docs_repo / "dashboard") or copied
 
     if sync_webui_data:
-        # Keep precedence consistent with gen/web-ui-data and reference-coverage:
-        # direct web-ui data dir overrides docs repo path + standard subdir.
-        web_ui_dir = resolve_path(
-            os.environ.get("TS2WASM_WEB_UI_DATA_DIR", ""),
-            docs_repo / "coverage" / "web-ui" / "public" / "data",
-        )
-        copied = sync_tree(web_ui_dir, docs_repo / "coverage" / "web-ui" / "public" / "data") or copied
+        web_ui_src_raw = os.environ.get("TS2WASM_WEB_UI_DATA_DIR", "")
+        # When the env var is unset the source is inside the main repo, not inside
+        # docs_repo — the default is the generated data under REPO_ROOT.
+        if not web_ui_src_raw:
+            web_ui_src = REPO_ROOT / "site" / "docs" / "coverage" / "web-ui" / "public" / "data"
+        else:
+            web_ui_src = resolve_path(web_ui_src_raw, None)
+        if web_ui_src:
+            copied = sync_tree(web_ui_src, docs_repo / "coverage" / "web-ui" / "public" / "data") or copied
 
     if not copied:
         print(

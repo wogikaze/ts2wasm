@@ -344,6 +344,7 @@ def generate_dashboard_redirect():
 
 <script>
 (function() {
+  if (typeof window === 'undefined') return;
   const pathname = window.location.pathname;
   const dashboardStart = pathname.indexOf('/dashboard');
   const rootPrefix = dashboardStart === -1 ? '' : pathname.slice(0, dashboardStart);
@@ -366,10 +367,17 @@ def main():
     """Main generation function."""
     print("Generating site content...")
     
-    # Clean output directory
+    # Clean output directory (preserve public/ for static assets like dashboard bundle)
     if SITE_DOCS.exists():
-        shutil.rmtree(SITE_DOCS)
-    SITE_DOCS.mkdir(parents=True, exist_ok=True)
+        for item in list(SITE_DOCS.iterdir()):
+            if item.name == "public":
+                continue
+            if item.is_dir():
+                shutil.rmtree(item)
+            else:
+                item.unlink()
+    else:
+        SITE_DOCS.mkdir(parents=True, exist_ok=True)
 
     refresh_coverage_dashboard_data()
     

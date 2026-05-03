@@ -181,7 +181,7 @@ mise run gate-fast
 - `fmt`, `clippy`, `nextest`
 - `update-issue-index`, `gen-issues-from-coverage`
 - `update-coverage-matrix`, `coverage-report`, `reference-coverage`, `reference-triage`
-- `test262`, `test-differential-reporter`, `test-regression-gate`
+- `test262`, `test-differential-reporter`
 - `benchmark-tracker`, `install-hooks`
 
 旧 `check-*` task は互換 alias として残っています。通常は `mise run check <part>` を使ってください。

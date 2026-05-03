@@ -113,6 +113,14 @@ impl WatEmitter<'_> {
                 RuntimeFn::DateEpochMsNowNumber => self.emit_date_epoch_ms_now_number(wat),
                 RuntimeFn::DateGetTime => self.emit_date_get_time(wat),
                 RuntimeFn::DateToString => self.emit_date_to_string(wat),
+                RuntimeFn::DateGetUtcMilliseconds => self.emit_date_get_utc_milliseconds(wat),
+                RuntimeFn::DateGetUtcSeconds => self.emit_date_get_utc_seconds(wat),
+                RuntimeFn::DateGetUtcMinutes => self.emit_date_get_utc_minutes(wat),
+                RuntimeFn::DateGetUtcHours => self.emit_date_get_utc_hours(wat),
+                RuntimeFn::DateGetUtcDay => self.emit_date_get_utc_day(wat),
+                RuntimeFn::DateGetUtcDate => self.emit_date_get_utc_date(wat),
+                RuntimeFn::DateGetUtcMonth => self.emit_date_get_utc_month(wat),
+                RuntimeFn::DateGetUtcFullYear => self.emit_date_get_utc_full_year(wat),
                 RuntimeFn::StringCharAt => self.emit_string_char_at(wat),
                 RuntimeFn::StringSubstring => self.emit_string_substring(wat),
                 RuntimeFn::StringSlice => self.emit_string_slice(wat),
@@ -215,6 +223,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayLastIndexOf => self.emit_array_last_index_of(wat),
                 RuntimeFn::ArrayForEach => self.emit_array_for_each(wat),
                 RuntimeFn::ArrayMap => self.emit_array_map(wat),
+                RuntimeFn::ArrayAt => self.emit_array_at(wat),
+                RuntimeFn::ArrayFill => self.emit_array_fill(wat),
             }
         }
     }

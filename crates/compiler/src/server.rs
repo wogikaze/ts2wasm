@@ -184,7 +184,6 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
         let next_idx = Arc::clone(&next_idx);
         let timed_out = Arc::clone(&timed_out);
         let tmpdir = Arc::clone(&shared_tmpdir);
-        let deadline = deadline;
 
         let handle = std::thread::Builder::new()
             .name(format!("ts2wasm-server-worker-{worker_id}"))

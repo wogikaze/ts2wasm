@@ -17,7 +17,7 @@ mise run clippy
 mise run nextest
 ```
 
-- test262または差分作業がスコープ内の場合: `mise run test262`（プロジェクトのファイル規約に従って`mise run test-differential-reporter` / `mise run test-regression-gate`にパイプ。`scripts`ヘッダーを参照）
+- test262または差分作業がスコープ内の場合: `mise run test262`（プロジェクトのファイル規約に従って`mise run test-differential-reporter`にパイプ。`scripts`ヘッダーを参照）
 - 参照スイートカバレッジが関連する場合: `mise run reference-coverage`（そのスクリプトのドキュメント通り）
 
 ## 決定順序
