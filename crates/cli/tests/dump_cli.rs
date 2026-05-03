@@ -507,14 +507,20 @@ fn dump_ast_reports_unterminated_ts_interface_declaration() {
 
 #[test]
 fn dump_ast_reports_unterminated_ts_type_alias() {
-    let output = run_dump(&["--ast", "--unparse"], "type Id = number;\nlet x: Id = 1;\n");
+    let output = run_dump(
+        &["--ast", "--unparse"],
+        "type Id = number;\nlet x: Id = 1;\n",
+    );
     assert_eq!(output, "let x = 1;\n");
 }
 
 #[test]
 fn dump_ast_reports_unterminated_ambient_class_extends() {
     let stderr = run_dump_error(&["--ast"], "declare class C extends ");
-    assert!(stderr.contains("unterminated ambient class extends"), "{stderr}");
+    assert!(
+        stderr.contains("unterminated ambient class extends"),
+        "{stderr}"
+    );
 }
 
 #[test]
@@ -527,21 +533,30 @@ fn dump_ast_reports_unterminated_ambient_function() {
 fn dump_ast_reports_unterminated_array_binding() {
     let stderr = run_dump_error(&["--ast", "--unparse"], "let [a, = arr;");
     assert!(stderr.contains("issue-247"), "{stderr}");
-    assert!(stderr.contains("expected binding identifier or pattern"), "{stderr}");
+    assert!(
+        stderr.contains("expected binding identifier or pattern"),
+        "{stderr}"
+    );
 }
 
 #[test]
 fn dump_ast_reports_unterminated_object_binding() {
     let stderr = run_dump_error(&["--ast", "--unparse"], "let {a, = obj;");
     assert!(stderr.contains("issue-247"), "{stderr}");
-    assert!(stderr.contains("expected object binding property key"), "{stderr}");
+    assert!(
+        stderr.contains("expected object binding property key"),
+        "{stderr}"
+    );
 }
 
 #[test]
 fn dump_ast_reports_destructuring_rest_must_be_final() {
     let stderr = run_dump_error(&["--ast", "--unparse"], "let [...a, b] = arr;");
     assert!(stderr.contains("issue-247"), "{stderr}");
-    assert!(stderr.contains("rest binding must be the final element"), "{stderr}");
+    assert!(
+        stderr.contains("rest binding must be the final element"),
+        "{stderr}"
+    );
 }
 
 #[test]

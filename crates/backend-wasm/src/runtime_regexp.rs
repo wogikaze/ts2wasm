@@ -357,7 +357,7 @@ impl WatEmitter<'_> {
                           (i32.const {number_tag}))
                         (i32.or
                           (i32.shl (local.get $i) (i32.const {number_shift}))
-                          (i32.const {number_tag})))))
+                          (i32.const {number_tag}))))))
                 (if (i32.eq (local.get $quant) (i32.const 0))
                   (then (br $match_fail)))
                 (if (i32.eq (local.get $quant) (i32.const 1))
