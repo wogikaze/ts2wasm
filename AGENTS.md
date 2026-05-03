@@ -57,12 +57,8 @@ mise run reference-coverage -- test262 --limit 50  # カバレッジ計測（ram
 mise run update-coverage-matrix       # カバレッジ表更新
 mise run test262 -- --sample 50 --jobs 4  # test262詳細JSONL実行（= reference-coverage test262 --jsonl）
 mise run reference-coverage -- test262 --jsonl --sample 50 --jobs 4  # 同上
-# web-ui データ生成（test262/reference-coverage 実行時に自動生成されるが、手動でも可能）
-mise run web-ui-data                    # artifacts/coverage/results/ から web-ui JSON を再生成
-# web-ui のビルド（dev server で見るだけなら不要）
-cd web-ui && npm run build
-# web-ui 開発サーバー
-mise run serve-web-ui
+# coverage dashboard データ生成（test262/reference-coverage 実行時に自動生成されるが、手動でも可能）
+mise run coverage-dashboard-data          # artifacts/coverage/results/ から dashboard JSON を再生成
 
 # Issue追加（カバレッジ結果から自動生成）
 mise run reference-coverage -- test262 --limit 500 --detail | \
@@ -70,12 +66,12 @@ mise run reference-coverage -- test262 --limit 500 --detail | \
 mise run reference-triage -- test262 reference/test262/test/path/to/case.js
 ```
 
-## 5) web-ui と issues の更新
+## 5) coverage dashboard と issues の更新
 
-### web-ui 自動更新
+### coverage dashboard 自動更新
 
-- `mise run reference-coverage` および `mise run test262` は**デフォルトで** web-ui データ（`web-ui/public/data/`）を自動生成します（`--no-web-ui` でスキップ可能）。
-- ブラウザで確認するには dev server: `mise run serve-web-ui`（`http://localhost:5173`）にアクセス後、ハードリロード（Ctrl+Shift+R）。
+- `mise run reference-coverage` および `mise run test262` は**デフォルトで** coverage dashboard データ（`site/docs/coverage/web-ui/public/data/`）を自動生成します（`--no-dashboard-data` でスキップ可能）。
+- ブラウザで確認するには `cd site && npm run dev`（`http://localhost:5173`）にアクセス後、`/coverage` を開きます。
 - `npm run build` していない場合、`dist/` のデータは古いままなので注意。
 
 ### test262 結果から issue を生成する手順

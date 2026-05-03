@@ -15,7 +15,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_COVERAGE_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
-DEFAULT_OUT_DIR = REPO_ROOT / "web-ui" / "public" / "data"
+DEFAULT_OUT_DIR = REPO_ROOT / "site" / "docs" / "coverage" / "web-ui" / "public" / "data"
 
 STATUS_MAP = {
     "pass": "pass",
@@ -303,8 +303,13 @@ def build_history(artifacts):
     history = []
     for item in artifacts:
         suite = item.get("suite") or item.get("suite_name") or "unknown"
+        executed = int(item.get("executed", 0) or item.get("total", 0) or 0)
+        denominator = int(item.get("denominator", 0) or item.get("total", 0) or 0)
         history.append({
-            "run_id": f"{suite}-{item.get('executed', 0)}",
+            "run_id": f"{suite}-{executed}",
+            "suite": suite,
+            "executed": executed,
+            "denominator": denominator,
             "timestamp": item["_source_mtime"],
             "passed": int(item.get("build_pass", 0) or 0),
             "failed": int(item.get("fail", 0) or 0) + int(item.get("blocked", 0) or 0),
@@ -323,10 +328,10 @@ def build_metadata(artifacts, jsonl_paths, generated_at):
         "sources": [item["_source_path"] for item in artifacts]
         + [path.relative_to(REPO_ROOT).as_posix() for path in jsonl_paths],
         "output_files": [
-            "web-ui/public/data/test-results.json",
-            "web-ui/public/data/coverage.json",
-            "web-ui/public/data/history.json",
-            "web-ui/public/data/metadata.json",
+            "site/docs/coverage/web-ui/public/data/test-results.json",
+            "site/docs/coverage/web-ui/public/data/coverage.json",
+            "site/docs/coverage/web-ui/public/data/history.json",
+            "site/docs/coverage/web-ui/public/data/metadata.json",
         ],
         "notes": [
             "Coverage totals are derived from artifacts/coverage/results/*.json.",
@@ -345,7 +350,15 @@ def write_json(path, data):
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--coverage-dir", type=Path, default=DEFAULT_COVERAGE_DIR)
-    parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
+    parser.add_argument(
+        "--out-dir",
+        type=Path,
+        default=None,
+        help=(
+            "Output directory for JSON artifacts. If omitted, writes to "
+            "site/docs/coverage/web-ui/public/data."
+        ),
+    )
     parser.add_argument(
         "--test-jsonl",
         type=Path,
@@ -359,7 +372,11 @@ def parse_args():
 def main():
     args = parse_args()
     coverage_dir = args.coverage_dir if args.coverage_dir.is_absolute() else REPO_ROOT / args.coverage_dir
-    out_dir = args.out_dir if args.out_dir.is_absolute() else REPO_ROOT / args.out_dir
+    if args.out_dir is None:
+        out_dirs = [DEFAULT_OUT_DIR]
+    else:
+        out_dir = args.out_dir if args.out_dir.is_absolute() else REPO_ROOT / args.out_dir
+        out_dirs = [out_dir]
     explicit_jsonl_paths = [
         path if path.is_absolute() else REPO_ROOT / path
         for path in args.test_jsonl
@@ -381,9 +398,12 @@ def main():
         "metadata.json": build_metadata(artifacts, jsonl_paths, generated_at),
     }
     for filename, data in outputs.items():
-        write_json(out_dir / filename, data)
+        for out_dir in out_dirs:
+            write_json(out_dir / filename, data)
 
-    print(f"generated {len(outputs)} files under {out_dir.relative_to(REPO_ROOT)}")
+    print("generated 4 files under:")
+    for out_dir in out_dirs:
+        print(f"  - {out_dir.relative_to(REPO_ROOT)}")
 
 
 if __name__ == "__main__":

@@ -2,12 +2,12 @@
 
 The ts2wasm web UI is a static reporting interface for test results, reference
 coverage, and historical run comparison. It is built from generated JSON data
-under `web-ui/public/data/` and can be served by the Vite development server or
+under `site/docs/coverage/web-ui/public/data/` and can be served by the Vite development server or
 by any static file host after `npm run build`.
 
 ## Data Contract
 
-The UI reads these files from `web-ui/public/data/`:
+The UI reads these files from `site/docs/coverage/web-ui/public/data/`:
 
 | File | Purpose |
 |---|---|
@@ -19,34 +19,28 @@ The UI reads these files from `web-ui/public/data/`:
 Generate the data before running or deploying the UI:
 
 ```bash
-mise run web-ui-data
+mise run coverage-dashboard-data
 ```
 
 Reference and test262 runs can refresh the same files as part of a local run:
 
 ```bash
-mise run reference-coverage -- test262 --limit 50 --web-ui
-mise run test262 -- --sample 50 --web-ui
+mise run reference-coverage -- test262 --limit 50 --dashboard-data
+mise run test262 -- --sample 50 --dashboard-data
 ```
 
 ## Local Use
 
-Install dependencies once:
+Start the documentation site to view the dashboard in `/coverage`:
 
 ```bash
-cd web-ui
-npm install
-```
-
-Start the local UI:
-
-```bash
-mise run web-ui-data
-cd web-ui
+mise run coverage-dashboard-data
+cd site
 npm run dev
 ```
 
-The development server serves the report at `http://localhost:5173`.
+The development server serves the report at `http://localhost:5173` and refreshes
+under `/coverage`.
 
 ## Local Live Mode
 
@@ -58,7 +52,7 @@ http://localhost:5173/?live=1
 ```
 
 When `live=1` is present, the Test Results tab polls
-`web-ui/public/data/test-results.json`, updates the summary counters and visible
+`site/docs/coverage/web-ui/public/data/test-results.json`, updates the summary counters and visible
 rows without a page reload, and displays the live connection state plus the last
 successful refresh time. The default poll interval is two seconds. Local
 debugging can override it with `liveIntervalMs`:
@@ -68,7 +62,7 @@ http://localhost:5173/?live=1&liveIntervalMs=500
 ```
 
 Live mode is intended for local development loops where a test runner or helper
-command refreshes `web-ui/public/data/test-results.json` during the run. Static
+command refreshes `site/docs/coverage/web-ui/public/data/test-results.json` during the run. Static
 deployment continues to use the generated JSON snapshot without requiring a live
 server.
 
@@ -77,14 +71,12 @@ server.
 Build the static bundle after generating fresh data:
 
 ```bash
-mise run web-ui-data
-cd web-ui
+mise run coverage-dashboard-data
+cd site
 npm run build
 ```
 
-Deploy the generated `web-ui/dist/` directory to the static host. The deployed
-bundle is self-contained except for the JSON files copied into the build output
-from `web-ui/public/data/`.
+This generates a build containing coverage dashboard pages under `site/docs/coverage/web-ui`.
 
 ## Views
 
@@ -118,7 +110,7 @@ restored on reload. If no stored preference exists, the UI follows the browser
 Use these checks when changing the UI, generator, or documentation:
 
 ```bash
-cd web-ui && npm run build
+cd site && npm run build
 cargo fmt --all --check
 mise run update-issue-index -- --check
 mise run check issues

@@ -85,9 +85,9 @@ run = "python scripts/manager.py repo-metrics"
 description = "Generate language coverage report from language-reference (args: --format text|markdown)"
 run = "python scripts/manager.py coverage-report"
 
-[tasks."web-ui-data"]
-description = "Generate web-ui/public/data JSON from coverage/test artifacts"
-run = "python scripts/manager.py web-ui-data"
+[tasks."coverage-dashboard-data"]
+description = "Generate coverage dashboard JSON under site/docs/coverage/web-ui/public/data"
+run = "python scripts/manager.py coverage-dashboard-data"
 
 [tasks."discord-report"]
 description = "Send or validate a Discord cycle report payload"
@@ -217,17 +217,6 @@ run = "python scripts/gen-site.py && cd site && npm run build"
 description = "Serve documentation site locally for development"
 run = "cd site && npm run dev"
 
-[tasks."gen-web-ui-data"]
-description = "Generate web UI data from test results and coverage"
-run = "python scripts/gen/web-ui-data.py"
-
-[tasks."build-web-ui"]
-description = "Build web UI for production"
-run = "cd web-ui && npm run build"
-
-[tasks."serve-web-ui"]
-description = "Serve web UI locally for development"
-run = "cd web-ui && npm run dev"
 
 [tasks."dev-loop"]
 description = "Autonomous compiler development loop driver: status, advance, reset, check"

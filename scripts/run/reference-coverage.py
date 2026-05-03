@@ -3,7 +3,7 @@
 
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
-      [--paths-file PATH] [--path-filter TEXT] [--web-ui]
+      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data]
       [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server]
 
 Suites:
@@ -22,7 +22,7 @@ Notes:
   - --detail: output per-file details (file-path: diag-code: feature-label)
   - --paths-file: run a deterministic subset listed as repo-relative or suite-relative paths
   - --path-filter: run only files whose repo-relative path contains TEXT (repeatable)
-  - --web-ui: refresh web-ui/public/data after writing this suite coverage result
+  - --dashboard-data: refresh dashboard data after writing this suite coverage result
   - --jsonl: output results as JSONL (test262 only, enables full harness with parallel exec)
   - --jobs N: number of parallel jobs (default: CPU count)
   - --sample N: max files per category (test262 only, uses category-based sampling)
@@ -195,7 +195,7 @@ def resolve_suite_paths(suite, path_filters=None):
 def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
-    print("      [--paths-file PATH] [--path-filter TEXT] [--web-ui] [--no-web-ui]")
+  print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
     print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server]")
     print()
     print("Suites:")
@@ -668,10 +668,10 @@ def main():
                 sys.exit(1)
             path_filters.append(args[i + 1])
             i += 2
-        elif args[i] == "--web-ui":
+        elif args[i] == "--dashboard-data":
             web_ui = True
             i += 1
-        elif args[i] == "--no-web-ui":
+        elif args[i] == "--no-dashboard-data":
             web_ui = False
             i += 1
         elif args[i] == "--jsonl":
