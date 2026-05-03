@@ -121,6 +121,7 @@ pub(crate) enum RuntimeFn {
     MapSet,
     MapHas,
     MapDelete,
+    MapValuesArray,
     SetNew,
     SetAdd,
     SetHas,
@@ -590,6 +591,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MapSet" => Some(RuntimeFn::MapSet),
         "MapHas" => Some(RuntimeFn::MapHas),
         "MapDelete" => Some(RuntimeFn::MapDelete),
+        "MapValuesArray" => Some(RuntimeFn::MapValuesArray),
         "SetNew" => Some(RuntimeFn::SetNew),
         "SetAdd" => Some(RuntimeFn::SetAdd),
         "SetHas" => Some(RuntimeFn::SetHas),
@@ -1063,6 +1065,7 @@ const SET_SIZE_DEPS: &[RuntimeFn] = &[];
 const SET_CLEAR_DEPS: &[RuntimeFn] = &[];
 const SET_FROM_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::SetNew, RuntimeFn::SetAdd];
 const SET_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
+const MAP_VALUES_ARRAY_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NEW_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap];
 const DATE_NOW_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber];
 const DATE_NEW_LIVE_DEPS: &[RuntimeFn] = &[RuntimeFn::DateEpochMsNowNumber, RuntimeFn::DateNew];

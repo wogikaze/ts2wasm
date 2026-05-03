@@ -630,14 +630,20 @@ impl<'a> Resolver<'a> {
                 let var_id = self.declare_local(var)?;
                 let lowered_iter = if let ResolvedExpr::Ident(name) = iter
                     && let Ok(local_id) = self.resolve_local(name)
-                    && self
-                        .local_classes
-                        .get(&local_id)
-                        .is_some_and(|class_name| class_name == "Set")
                 {
-                    LoweredExpr::RuntimeCall {
-                        runtime_fn: "SetValuesArray".to_owned(),
-                        args: vec![LoweredExpr::Local(local_id)],
+                    let class_name = self.local_classes.get(&local_id);
+                    if class_name.is_some_and(|c| c == "Set") {
+                        LoweredExpr::RuntimeCall {
+                            runtime_fn: "SetValuesArray".to_owned(),
+                            args: vec![LoweredExpr::Local(local_id)],
+                        }
+                    } else if class_name.is_some_and(|c| c == "Map") {
+                        LoweredExpr::RuntimeCall {
+                            runtime_fn: "MapValuesArray".to_owned(),
+                            args: vec![LoweredExpr::Local(local_id)],
+                        }
+                    } else {
+                        self.lower_expr(iter)?
                     }
                 } else {
                     self.lower_expr(iter)?
@@ -748,7 +754,14 @@ fn binding_param_names<'a>(
 ) -> Result<Vec<String>, Diagnostic> {
     let mut names = Vec::new();
     for (param, span) in params {
-        if let Some(pattern) = parse_binding_pattern(param, span)? {
+        if let Some(inner) = param.strip_prefix("...") {
+            // Rest param: extract inner names from binding pattern
+            if let Some(pattern) = parse_binding_pattern(inner, span)? {
+                names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
+            } else {
+                names.push(param.to_owned());
+            }
+        } else if let Some(pattern) = parse_binding_pattern(param, span)? {
             names.extend(pattern.names().into_iter().map(ToOwned::to_owned));
         } else {
             names.push(param.to_owned());

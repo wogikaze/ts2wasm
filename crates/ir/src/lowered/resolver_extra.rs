@@ -24,8 +24,8 @@ impl<'a> Resolver<'a> {
                         return Err(Self::unsupported_generator_spread_diagnostic());
                     } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
-                    } else if self.is_known_map_local_spread_operand(spread_expr.as_ref()) {
-                        return Err(Self::unsupported_map_spread_diagnostic());
+                    } else if let Some(map_array) = self.lower_map_spread_operand(spread_expr.as_ref())? {
+                        lowered_args.push(map_array);
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -83,6 +83,7 @@ impl<'a> Resolver<'a> {
                 element,
                 ResolvedArrayElement::Present(ResolvedExpr::Spread(spread_expr))
                     if self.is_known_set_local_spread_operand(spread_expr.as_ref())
+                        || self.is_known_map_local_spread_operand(spread_expr.as_ref())
                         || self.is_known_dense_array_local_spread_operand(spread_expr.as_ref())
             )
         }) {
@@ -120,16 +121,18 @@ impl<'a> Resolver<'a> {
                         continue;
                     }
 
+                    if let Some(map_array) = self.lower_map_spread_operand(spread_expr.as_ref())? {
+                        Self::flush_array_segment(&mut segments, &mut pending_dense);
+                        segments.push(map_array);
+                        continue;
+                    }
+
                     if self.is_generator_call_spread_operand(spread_expr.as_ref()) {
                         return Err(Self::unsupported_generator_spread_diagnostic());
                     }
 
                     if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
-                    }
-
-                    if self.is_known_map_local_spread_operand(spread_expr.as_ref()) {
-                        return Err(Self::unsupported_map_spread_diagnostic());
                     }
 
                     return Err(Diagnostic {
@@ -507,8 +510,6 @@ impl<'a> Resolver<'a> {
                         return Err(Self::unsupported_generator_spread_diagnostic());
                     } else if self.resolved_expr_has_symbol_iterator_property(spread_expr.as_ref()) {
                         return Err(Self::unsupported_symbol_iterator_spread_diagnostic());
-                    } else if self.is_known_map_local_spread_operand(spread_expr.as_ref()) {
-                        return Err(Self::unsupported_map_spread_diagnostic());
                     } else {
                         return Err(Diagnostic {
                             code: DiagCode::UnsupportedSyntax,
@@ -584,6 +585,29 @@ impl<'a> Resolver<'a> {
         {
             return Ok(Some(LoweredExpr::RuntimeCall {
                 runtime_fn: "SetValuesArray".to_owned(),
+                args: vec![LoweredExpr::Local(local_id)],
+            }));
+        }
+        Ok(None)
+    }
+
+    pub(super) fn lower_map_spread_operand(
+        &mut self,
+        spread_expr: &ResolvedExpr,
+    ) -> Result<Option<LoweredExpr>, Diagnostic> {
+        let ResolvedExpr::Ident(name) = spread_expr else {
+            return Ok(None);
+        };
+        let Ok(local_id) = self.resolve_local(name) else {
+            return Ok(None);
+        };
+        if self
+            .local_classes
+            .get(&local_id)
+            .is_some_and(|class_name| class_name == "Map")
+        {
+            return Ok(Some(LoweredExpr::RuntimeCall {
+                runtime_fn: "MapValuesArray".to_owned(),
                 args: vec![LoweredExpr::Local(local_id)],
             }));
         }
@@ -1322,7 +1346,7 @@ impl<'a> Resolver<'a> {
             .map(|name| ResolvedParam {
                 name: name.clone(),
                 default: None,
-                is_rest: false,
+                is_rest: name.starts_with("..."),
                 span: None,
             })
             .collect::<Vec<_>>();
@@ -1983,16 +2007,6 @@ impl<'a> Resolver<'a> {
             code: DiagCode::UnsupportedSyntax,
             message:
                 "issue-353: custom iterable spread via Symbol.iterator requires iterator protocol runtime support in this milestone"
-                    .to_owned(),
-            span: None,
-        }
-    }
-
-    pub(super) fn unsupported_map_spread_diagnostic() -> Diagnostic {
-        Diagnostic {
-            code: DiagCode::UnsupportedRuntimeSubset,
-            message:
-                "issue-353/407: Map spread requires key-preserving Map iterator entry storage before iterator protocol lowering"
                     .to_owned(),
             span: None,
         }

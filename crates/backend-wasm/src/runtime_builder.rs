@@ -96,6 +96,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::MapSet => self.emit_map_set(wat),
                 RuntimeFn::MapHas => self.emit_map_has(wat),
                 RuntimeFn::MapDelete => self.emit_map_delete(wat),
+                RuntimeFn::MapValuesArray => self.emit_map_values_array(wat),
                 RuntimeFn::SetNew => self.emit_set_new(wat),
                 RuntimeFn::SetAdd => self.emit_set_add(wat),
                 RuntimeFn::SetHas => self.emit_set_has(wat),

@@ -910,10 +910,9 @@ fn destructuring_binding_unsupported_forms_report_issue_251() {
         "issue-251:",
         true,
     );
-    // Rest param binding pattern in arrow: no "runtime slice" keywords → stays as UnsupportedSyntax
-    assert_build_fails_with_unsupported_syntax(
+    // Rest param binding pattern in arrow: now supported (issue-5049)
+    assert_fixture_matches_node(
         "fixtures/core-semantics/destructuring-binding-param-rest-unsupported.ts",
-        "issue-251:",
     );
     // Object rest with dynamic source: contains "in this runtime slice" → reclassified to UnsupportedRuntimeSubset
     assert_build_fails_with_diagnostic(

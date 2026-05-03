@@ -1713,6 +1713,20 @@ fn lower_function(
         }
         if param.is_rest {
             // Rest parameters are populated by call lowering/emission.
+            // For rest params with binding patterns like (...[value]),
+            // also generate destructuring code to extract inner bindings.
+            if let Some(inner) = param.name.strip_prefix("...")
+                && let Some(rest_pattern) = parse_binding_pattern(inner, param.span)?
+            {
+                    let param_local = resolver.resolve_local(&param.name)?;
+                    body_with_defaults.extend(
+                        resolver.lower_binding_pattern_declarations(
+                            &rest_pattern,
+                            LoweredExpr::Local(param_local),
+                            None,
+                        )?,
+                    );
+                }
             continue;
         } else if let Some(default) = &param.default {
             let param_local = resolver.resolve_local(&param.name)?;
