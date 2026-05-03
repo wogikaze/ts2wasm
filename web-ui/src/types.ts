@@ -46,6 +46,9 @@ export interface CoverageData {
 
 export interface HistoricalData {
   run_id: string;
+  suite?: string;
+  executed?: number;
+  denominator?: number;
   timestamp: string;
   passed: number;
   failed: number;

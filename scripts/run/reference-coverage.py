@@ -195,7 +195,7 @@ def resolve_suite_paths(suite, path_filters=None):
 def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
-  print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
+    print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
     print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server]")
     print()
     print("Suites:")

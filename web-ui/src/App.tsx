@@ -31,6 +31,17 @@ const priorityColors = {
   Future: '#6b7280',
 }
 
+const trendColors = [
+  '#22c55e',
+  '#3b82f6',
+  '#f97316',
+  '#eab308',
+  '#ef4444',
+  '#14b8a6',
+  '#a855f7',
+  '#ec4899',
+]
+
 interface RunDeltas {
   passed: number | null
   failed: number | null
@@ -42,8 +53,17 @@ interface RunDeltas {
 interface TrendRun extends HistoricalData {
   displayTime: string
   trendLabel: string
+  seriesKey: string
+  passRate: number
+  totalDuration: number
   deltas: RunDeltas
   regressionReasons: string[]
+}
+
+interface TrendChartRow {
+  timestamp: string
+  displayTime: string
+  [key: string]: string | number
 }
 
 type ThemePreference = 'dark' | 'light'
@@ -132,14 +152,39 @@ function worsenedByThreshold(current: number, previous: number) {
   return previous > 0 && (current - previous) / previous > PERF_REGRESSION_THRESHOLD
 }
 
+function trendSuiteName(run: HistoricalData) {
+  return run.suite || run.run_id.replace(/-\d+$/, '') || 'unknown'
+}
+
+function trendExecutedCount(run: HistoricalData) {
+  return Number(run.executed ?? run.passed + run.failed + run.skipped)
+}
+
+function trendDenominatorCount(run: HistoricalData) {
+  const executed = trendExecutedCount(run)
+  return Number(run.denominator ?? executed)
+}
+
+function trendSeriesKey(run: HistoricalData) {
+  const suite = trendSuiteName(run)
+  const executed = trendExecutedCount(run)
+  const denominator = trendDenominatorCount(run)
+  return `${suite} (${executed.toLocaleString()}/${denominator.toLocaleString()})`
+}
+
 function buildTrendRuns(history: HistoricalData[]): TrendRun[] {
   const chronological = [...history].sort((a, b) => {
     const timeDelta = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
     return timeDelta || a.run_id.localeCompare(b.run_id)
   })
+  const previousBySeries = new Map<string, TrendRun>()
 
-  return chronological.map((run, index) => {
-    const previous = chronological[index - 1]
+  return chronological.map((run) => {
+    const seriesKey = trendSeriesKey(run)
+    const executed = trendExecutedCount(run)
+    const passRate = executed > 0 ? (run.passed / executed) * 100 : 0
+    const totalDuration = run.compile_time + run.runtime
+    const previous = previousBySeries.get(seriesKey)
     const deltas: RunDeltas = previous
       ? {
           passed: run.passed - previous.passed,
@@ -163,14 +208,35 @@ function buildTrendRuns(history: HistoricalData[]): TrendRun[] {
       previous && worsenedByThreshold(run.runtime, previous.runtime) ? 'runtime +20%' : null,
     ].filter((reason): reason is string => Boolean(reason))
 
-    return {
+    const trendRun = {
       ...run,
       displayTime: new Date(run.timestamp).toLocaleString(),
-      trendLabel: `${run.run_id}`,
+      trendLabel: new Date(run.timestamp).toLocaleString(),
+      seriesKey,
+      passRate,
+      totalDuration,
       deltas,
       regressionReasons,
     }
+    previousBySeries.set(seriesKey, trendRun)
+    return trendRun
   })
+}
+
+function buildTrendChartRows(runs: TrendRun[], valueForRun: (run: TrendRun) => number): TrendChartRow[] {
+  const rowsByTimestamp = new Map<string, TrendChartRow>()
+  for (const run of runs) {
+    const row = rowsByTimestamp.get(run.timestamp) ?? {
+      timestamp: run.timestamp,
+      displayTime: new Date(run.timestamp).toLocaleString(),
+    }
+    row[run.seriesKey] = valueForRun(run)
+    rowsByTimestamp.set(run.timestamp, row)
+  }
+
+  return Array.from(rowsByTimestamp.values()).sort((a, b) => (
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  ))
 }
 
 function csvCell(value: unknown) {
@@ -294,6 +360,15 @@ function App() {
   const trendRuns = useMemo(() => buildTrendRuns(history), [history])
   const historyRows = useMemo(() => [...trendRuns].reverse(), [trendRuns])
   const latestTrend = trendRuns[trendRuns.length - 1]
+  const trendSeries = useMemo(() => (
+    Array.from(new Set(trendRuns.map(run => run.seriesKey))).sort()
+  ), [trendRuns])
+  const resultTrendRows = useMemo(() => (
+    buildTrendChartRows(trendRuns, run => run.passRate)
+  ), [trendRuns])
+  const performanceTrendRows = useMemo(() => (
+    buildTrendChartRows(trendRuns, run => run.totalDuration)
+  ), [trendRuns])
 
   const currentExportName = `ts2wasm-${activeTab}`
   const nextTheme = theme === 'dark' ? 'light' : 'dark'
@@ -880,15 +955,24 @@ function App() {
                 <h3 className="text-lg font-semibold mb-4">Result Trend</h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trendRuns} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                    <LineChart data={resultTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="trendLabel" stroke="#9ca3af" />
-                      <YAxis stroke="#9ca3af" />
-                      <Tooltip />
+                      <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
+                      <YAxis stroke="#9ca3af" domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
+                      <Tooltip formatter={(value) => [formatPercent(chartNumber(value)), 'pass rate']} />
                       <Legend />
-                      <Line type="monotone" dataKey="passed" name="Passed" stroke="#22c55e" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="failed" name="Failed" stroke="#ef4444" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="skipped" name="Skipped" stroke="#eab308" strokeWidth={2} dot={false} />
+                      {trendSeries.map((series, index) => (
+                        <Line
+                          key={series}
+                          type="monotone"
+                          dataKey={series}
+                          name={series}
+                          stroke={trendColors[index % trendColors.length]}
+                          strokeWidth={2}
+                          dot
+                          connectNulls={false}
+                        />
+                      ))}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
@@ -898,14 +982,24 @@ function App() {
                 <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={trendRuns} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                    <LineChart data={performanceTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="trendLabel" stroke="#9ca3af" />
+                      <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
                       <YAxis stroke="#9ca3af" />
                       <Tooltip formatter={(value) => [`${chartNumber(value)}s`, 'duration']} />
                       <Legend />
-                      <Line type="monotone" dataKey="compile_time" name="Compile" stroke="#3b82f6" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="runtime" name="Runtime" stroke="#f97316" strokeWidth={2} dot={false} />
+                      {trendSeries.map((series, index) => (
+                        <Line
+                          key={series}
+                          type="monotone"
+                          dataKey={series}
+                          name={series}
+                          stroke={trendColors[index % trendColors.length]}
+                          strokeWidth={2}
+                          dot
+                          connectNulls={false}
+                        />
+                      ))}
                     </LineChart>
                   </ResponsiveContainer>
                 </div>

@@ -13,6 +13,8 @@ import os
 import re
 import json
 import shutil
+import subprocess
+import sys
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List, Any
@@ -28,6 +30,7 @@ REFERENCE_DIR = PROJECT_ROOT / "reference"
 COVERAGE_WEB_UI_DIR = SITE_DOCS / "coverage" / "web-ui"
 WEB_UI_DATA_DIR = COVERAGE_WEB_UI_DIR / "public" / "data"
 SITE_DASHBOARD_DIST_INDEX = SITE_DOCS / "public" / "dashboard" / "index.html"
+WEB_UI_DATA_SCRIPT = PROJECT_ROOT / "scripts" / "gen" / "web-ui-data.py"
 
 
 def read_json_safe(path: Path) -> Dict[str, Any]:
@@ -296,6 +299,10 @@ def process_coverage():
     
     (coverage_output / "index.md").write_text(content, encoding="utf-8")
 
+def refresh_coverage_dashboard_data():
+    """Refresh dashboard JSON inside site/docs after the output tree is reset."""
+    subprocess.check_call([sys.executable, str(WEB_UI_DATA_SCRIPT)], cwd=PROJECT_ROOT)
+
 def generate_home():
     """Generate home page with dashboard."""
     home_content = """# ts2wasm
@@ -329,6 +336,32 @@ TypeScript to WebAssembly compiler - Documentation and Test Explorer
     
     (SITE_DOCS / "index.md").write_text(home_content, encoding="utf-8")
 
+def generate_dashboard_redirect():
+    """Generate a docs route that redirects to the static dashboard bundle."""
+    dashboard_dir = SITE_DOCS / "dashboard"
+    ensure_dir(dashboard_dir / "index.md")
+    content = """# Coverage Dashboard
+
+<script>
+(function() {
+  const pathname = window.location.pathname;
+  const dashboardStart = pathname.indexOf('/dashboard');
+  const rootPrefix = dashboardStart === -1 ? '' : pathname.slice(0, dashboardStart);
+  const normalizedPrefix = rootPrefix.endsWith('/') ? rootPrefix.slice(0, -1) : rootPrefix;
+  const target = `${normalizedPrefix}/dashboard/index.html`;
+  if (window.location.pathname !== target) {
+    window.location.replace(target);
+  }
+})();
+</script>
+
+<noscript>
+  Redirect failed because JavaScript is disabled.
+  <a href="/dashboard/index.html">Open Coverage Dashboard</a>.
+</noscript>
+"""
+    (dashboard_dir / "index.md").write_text(content, encoding="utf-8")
+
 def main():
     """Main generation function."""
     print("Generating site content...")
@@ -337,9 +370,12 @@ def main():
     if SITE_DOCS.exists():
         shutil.rmtree(SITE_DOCS)
     SITE_DOCS.mkdir(parents=True, exist_ok=True)
+
+    refresh_coverage_dashboard_data()
     
     # Generate content
     generate_home()
+    generate_dashboard_redirect()
     copy_docs()
     process_issues()
     process_fixtures()
