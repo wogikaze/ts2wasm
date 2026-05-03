@@ -183,14 +183,21 @@ impl WatEmitter<'_> {
                 wat.push_str(&format!("{pad}(return)\n"));
             }
             LoweredStmt::Throw(expr) => {
-                // Exception runtime is not implemented yet; model throw as immediate return.
+                // Evaluate the thrown value, store to $exception_pending,
+                // then let the enclosing try-catch's br_if catch it.
                 self.emit_expr(wat, expr, indent, frame);
                 if frame.uses_activation_roots() {
+                    // Stack has the thrown value. Save to local, pop GC frame, then set global.
                     wat.push_str(&format!("{pad}(local.set {})\n", frame.heap_value_tmp()));
                     self.emit_gc_activation_frame_pop(wat, frame, indent);
-                    wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp()));
+                    wat.push_str(&format!(
+                        "{pad}(global.set $exception_pending (local.get {}))\n",
+                        frame.heap_value_tmp(),
+                    ));
+                } else {
+                    // Value is on wasm stack — consume directly.
+                    wat.push_str(&format!("{pad}(global.set $exception_pending)\n"));
                 }
-                wat.push_str(&format!("{pad}(return)\n"));
             }
             LoweredStmt::DoWhile { body, condition } => {
                 let exit_label = gen_label("do_exit");

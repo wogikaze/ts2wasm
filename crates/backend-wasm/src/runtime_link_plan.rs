@@ -180,7 +180,10 @@ impl RuntimeLinkPlan {
                 | LoweredStmt::Assign(_, expr)
                 | LoweredStmt::Expr(expr)
                 | LoweredStmt::Return(expr)
-                | LoweredStmt::Throw(expr) => self.collect_required_runtime_expr(expr),
+                | LoweredStmt::Throw(expr) => {
+                    self.add_required_globals(GLOBALS_EXCEPTION_RUNTIME);
+                    self.collect_required_runtime_expr(expr);
+                }
                 LoweredStmt::If {
                     condition,
                     then_body,
