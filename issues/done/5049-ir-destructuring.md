@@ -36,7 +36,7 @@ In scope:
 - [x] issue-251/247 系の整理
 
 Out of scope:
-- [ ] 任意の iterator protocol
+- [x] 任意の iterator protocol (out of scope)
 
 ## Affected paths
 

@@ -36,7 +36,7 @@ In scope:
 - [x] extends IR representation
 
 Out of scope:
-- [ ] backend emission
+- [x] backend emission (tracked by 5026)
 
 ## Affected paths
 
@@ -46,8 +46,8 @@ Expected:
 ## Acceptance criteria
 
 - [x] class elements are represented in HIR
-- [ ] lowered ClassDecl emits class binding
-- [ ] IR invariants are defined
+- [x] lowered ClassDecl emits class binding (FuncId-based variant with constructor/methods/static_methods/private_fields)
+- [x] IR invariants are defined (FuncId validation in validate.rs)
 
 ## Validation
 
@@ -65,4 +65,13 @@ Current state:
 - [x] not affected
 
 Follow-up issues:
-- [x] none
+- [x] backend emission (tracked by 5026)
+
+## Completion evidence
+
+Implementation:
+1. program.rs: Phase 2 ClassDecl handler now emits `LoweredStmt::ClassDecl` with FuncId-based fields (`constructor: Option<FuncId>`, `methods: Vec<(String, FuncId)>`, `static_methods: Vec<(String, FuncId)>`, `private_fields: Vec<String>`) before static initializers (correct JS semantics). Previously the statement was dropped with a LIMITATION comment.
+2. validate.rs: Updated from dead-variant comment to active FuncId range validation for constructor and all methods.
+3. ir_lowering.rs: Three tests updated to account for ClassDecl emission shifting top_level_statements indices, with assertions verifying ClassDecl fields.
+
+Validation: `cargo nextest run` — 56 ir_lowering tests pass, 0 regressions from this change (2 pre-existing m2_node_diff failures confirmed on base commit).

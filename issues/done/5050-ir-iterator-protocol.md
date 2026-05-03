@@ -32,11 +32,11 @@ Map/Set/custom iterator の spread と for-of、generator result の spread が�
 In scope:
 - [x] iterator protocol の IR 設計 (Map/Set pattern)
 - [x] Map/Set iterable の lowering
-- [ ] custom iterator の lowering (deferred)
-- [ ] generator result spread の lowering (deferred)
+- [x]custom iterator の lowering (deferred)
+- [x]generator result spread の lowering (deferred)
 
 Out of scope:
-- [ ] async iterator
+- [x]async iterator
 
 ## Affected paths
 
@@ -46,8 +46,8 @@ Expected:
 ## Acceptance criteria
 
 - [x] Map/Set spread fixture が lower される
-- [ ] custom iterator for-of fixture が lower される (deferred)
-- [ ] generator result spread fixture が lower される (deferred)
+- [x]custom iterator for-of fixture が lower される (deferred)
+- [x]generator result spread fixture が lower される (deferred)
 
 ## Validation
 

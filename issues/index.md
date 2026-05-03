@@ -17,16 +17,16 @@ Issue files are the source of truth for work items. The generated section below 
 | docs | 2 | 0 | 2 |
 | frontend | 4350 | 4172 | 178 |
 | harness | 1 | 1 | 0 |
-| ir | 18 | 2 | 16 |
+| ir | 18 | 1 | 17 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
-| runtime | 258 | 122 | 136 |
+| runtime | 258 | 120 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4505 | 391 |
+| total | 4896 | 4502 | 394 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -168,7 +168,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility |
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries |
 | 5045 | [frontend] Improve syntax error recovery and source spans | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans |
-| 5046 | [ir] Design full class runtime IR representation | feature | ir | implementation-ready | P0 |  | [ir] Design full class runtime IR representation |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
 | 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | implementation-ready | P1 |  | [runtime-abi] Validate runtime memory map for overlap and headroom |
 <!-- generated:ready:end -->
@@ -4666,9 +4665,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5019 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
-| 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | class: blocked | Implement API Sample watcher arrow function return |
-| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | class: blocked | Implement anonymous interface new expression identifier |
-| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | class: blocked | Implement any as return type instanceof constructor RHS |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5046,6 +5042,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 5017 | Implement html-comment support | spike | frontend/syntax | see `issues/done/5017-implement-html-comment.md` |
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
 | 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | see file |
+| 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see `issues/done/5023-implement-api-sample-watcher-arrow.md` |
+| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
+| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records | feature | cli | see file |
@@ -5056,6 +5055,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 5038 | [compiler] Harden module graph resolution and diagnostics | feature | cli | see file |
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling | feature | cli | see file |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation | feature | cli | see file |
+| 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | see `issues/done/5049-ir-destructuring.md` |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | see `issues/done/5050-ir-iterator-protocol.md` |
