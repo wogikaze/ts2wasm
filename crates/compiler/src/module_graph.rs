@@ -369,6 +369,16 @@ fn resolve_local_specifier(
                             }
                         }
                         // Check package.json exports field (dot-separated key)
+                        if let Some(imports) = pkg.get("imports").and_then(|v| v.as_object()) {
+                            if let Some(dot) = imports.get("#").or_else(|| imports.get(".")) {
+                                if let Some(val) = dot.as_str() {
+                                    let imp_path = parent.join(val);
+                                    if imp_path.is_file() {
+                                        return canonicalize_existing_path(&imp_path);
+                                    }
+                                }
+                            }
+                        }
                         if let Some(exports) = pkg.get("exports") {
                             if let Some(export_str) = exports.as_str() {
                                 let exp_path = parent.join(export_str);
