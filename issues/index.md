@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4254 | 96 |
+| frontend | 4350 | 4249 | 101 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 4 | 14 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4590 | 306 |
+| total | 4896 | 4585 | 311 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -390,7 +390,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 464 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
 | 465 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 466 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
-| 467 | Implement Transportstream | spike | frontend/syntax | class: blocked | Implement Transportstream |
 | 468 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 469 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 470 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
@@ -476,7 +475,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 550 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
 | 551 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 552 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
-| 553 | Implement Transportstream | spike | frontend/syntax | class: blocked | Implement Transportstream |
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
@@ -559,7 +557,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 633 | Implement Amdmoduleconstenumusage | spike | frontend/syntax | class: blocked | Implement Amdmoduleconstenumusage |
 | 634 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 635 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
-| 636 | Implement Anonterface | spike | frontend/syntax | class: blocked | Implement Anonterface |
 | 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
 | 638 | Implement Anonymousclassexpression | spike | frontend/syntax | class: blocked | Implement Anonymousclassexpression |
 | 639 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
@@ -711,7 +708,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 785 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
 | 786 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 787 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
-| 788 | Implement Transportstream | spike | frontend/syntax | class: blocked | Implement Transportstream |
 | 789 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 790 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 791 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
@@ -794,7 +790,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 868 | Implement Amdmoduleconstenumusage | spike | frontend/syntax | class: blocked | Implement Amdmoduleconstenumusage |
 | 869 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 870 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
-| 871 | Implement Anonterface | spike | frontend/syntax | class: blocked | Implement Anonterface |
 | 872 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
 | 873 | Implement Anonymousclassexpression | spike | frontend/syntax | class: blocked | Implement Anonymousclassexpression |
 | 874 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
@@ -5038,6 +5033,11 @@ Issue files are the source of truth for work items. The generated section below 
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 | 444 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
+| 467 | Implement Transportstream | spike | frontend/syntax | see `issues/done/467-implement-TransportStream.md` |
+| 553 | Implement Transportstream | spike | frontend/syntax | see `issues/done/553-implement-TransportStream.md` |
+| 636 | Implement Anonterface | spike | frontend/syntax | see `issues/done/636-implement-anonterface.md` |
+| 788 | Implement Transportstream | spike | frontend/syntax | see `issues/done/788-implement-TransportStream.md` |
+| 871 | Implement Anonterface | spike | frontend/syntax | see `issues/done/871-implement-anonterface.md` |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | see file |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | meta | frontend/resolver | see file |

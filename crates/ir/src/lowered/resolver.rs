@@ -311,7 +311,7 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
-                let lowered = if let ResolvedExpr::ArrowFn { params, body } = expr {
+                let lowered = if let ResolvedExpr::ArrowFn { params, body, .. } = expr {
                     self.lower_arrow_fn_with_self(params, body, Some(name))?
                 } else {
                     self.lower_expr(expr)?
@@ -885,7 +885,7 @@ fn is_string_split_result_expr(expr: &ResolvedExpr) -> bool {
 }
 
 fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
-    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+    let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
     let [param] = params.as_slice() else {
@@ -895,7 +895,7 @@ fn is_identity_arrow_callback(args: &[ResolvedExpr]) -> bool {
 }
 
 fn is_number_double_arrow_callback(args: &[ResolvedExpr]) -> bool {
-    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+    let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
     let [param] = params.as_slice() else {
@@ -921,7 +921,7 @@ fn is_number_double_arrow_callback(args: &[ResolvedExpr]) -> bool {
 }
 
 fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> {
-    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+    let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return None;
     };
     let [param] = params.as_slice() else {
@@ -952,7 +952,7 @@ fn string_split_arrow_separator(args: &[ResolvedExpr]) -> Option<&ResolvedExpr> 
 }
 
 fn string_constructor_arrow_callback(args: &[ResolvedExpr]) -> bool {
-    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+    let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
     let [param] = params.as_slice() else {
@@ -971,7 +971,7 @@ fn string_constructor_arrow_callback(args: &[ResolvedExpr]) -> bool {
 }
 
 fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
-    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+    let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
     let [param] = params.as_slice() else {
@@ -984,7 +984,7 @@ fn unary_plus_arrow_callback(args: &[ResolvedExpr]) -> bool {
 }
 
 fn numeric_ascending_sort_arrow_callback(args: &[ResolvedExpr]) -> bool {
-    let [ResolvedExpr::ArrowFn { params, body }] = args else {
+    let [ResolvedExpr::ArrowFn { params, body, .. }] = args else {
         return false;
     };
     let [left_param, right_param] = params.as_slice() else {

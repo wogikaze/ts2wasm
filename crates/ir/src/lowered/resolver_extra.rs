@@ -288,7 +288,7 @@ impl<'a> Resolver<'a> {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         match callback {
-            ResolvedExpr::ArrowFn { params, body } => {
+            ResolvedExpr::ArrowFn { params, body, .. } => {
                 if params.len() > 3 {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 }

@@ -122,7 +122,7 @@ Follow-up issues:
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, title overlap)
 - `issues/open/464-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same reference path, same feature label, same group key, title overlap)
 - `issues/open/466-implement-ParameterList.md` - Implement Parameterlist (same feature label, same group key, title overlap)
-- `issues/open/467-implement-TransportStream.md` - Implement Transportstream (same feature label, same group key, title overlap)
+- `issues/done/467-implement-TransportStream.md (closed as duplicate)` - Implement Transportstream (same feature label, same group key, title overlap)
 - `issues/open/471-implement-abstractPropertyBasics.md` - Implement Abstractpropertybasics (same feature label, same group key, title overlap)
 - `issues/open/472-implement-abstractPropertyInConstructor.md` - Implement Abstractpropertyinconstructor (same feature label, same group key, title overlap)
 - `issues/open/473-implement-abstractPropertyNegative.md` - Implement Abstractpropertynegative (same feature label, same group key, title overlap)
