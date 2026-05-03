@@ -15,18 +15,18 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4246 | 104 |
+| frontend | 4350 | 4127 | 223 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 4 | 14 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
-| reference | 206 | 201 | 5 |
+| reference | 206 | 198 | 8 |
 | runtime | 258 | 122 | 136 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4581 | 315 |
+| total | 4896 | 4459 | 437 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -190,15 +190,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 068 | Implement unsupported expression types | spike | frontend/semantics | class: blocked | Implement unsupported expression types |
 | 069 | Implement Apilibcheck | spike | runtime/builtins | class: blocked | Implement Apilibcheck |
 | 070 | Implement Apisample | spike | runtime/builtins | class: blocked | Implement Apisample |
-| 071 | Implement Arrowfunctionexpression | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression |
-| 072 | Implement Classdeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclaration |
-| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
-| 074 | Implement Declarationerrorsnoemitonerror | spike | frontend/syntax | class: blocked | Implement Declarationerrorsnoemitonerror |
 | 075 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
 | 076 | Implement Functiondeclaration | spike | frontend/syntax | class: blocked | Implement Functiondeclaration |
-| 078 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 079 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
-| 080 | Implement Systemmoduleforstatementnoinitializer | spike | frontend/syntax | class: blocked | Implement Systemmoduleforstatementnoinitializer |
 | 081 | Implement Transportstream | spike | reference/triage | class: triage-needed | Implement Transportstream |
 | 082 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 083 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
@@ -209,30 +203,18 @@ Issue files are the source of truth for work items. The generated section below 
 | 089 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | class: blocked | Implement Acceptsymbolasweaktype |
 | 090 | Implement Acceptablealias | spike | frontend/syntax | class: blocked | Implement Acceptablealias |
 | 091 | Implement Accessinstancememberfromstaticmethod | spike | frontend/syntax | class: blocked | Implement Accessinstancememberfromstaticmethod |
-| 092 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | class: blocked | Implement Accessoverriddenbaseclassmember |
 | 093 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/syntax | class: blocked | Implement Accessstaticmemberfrominstancemethod |
 | 094 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/resolver | class: blocked | Implement Accessoraccidentalcalldiagnostic |
 | 096 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 097 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
-| 098 | Implement Accessordeclarationorder | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder |
-| 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes |
 | 100 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
-| 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier |
-| 102 | Implement Accessorwithinitializer | spike | frontend/syntax | class: blocked | Implement Accessorwithinitializer |
-| 103 | Implement Accessorwithlineterminator | spike | frontend/syntax | class: blocked | Implement Accessorwithlineterminator |
-| 104 | Implement Accessorwithrestparam | spike | frontend/syntax | class: blocked | Implement Accessorwithrestparam |
-| 105 | Implement Accessorwithoutbody | spike | frontend/syntax | class: blocked | Implement Accessorwithoutbody |
 | 106 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
-| 107 | Implement Accessorsemit | spike | frontend/syntax | class: blocked | Implement Accessorsemit |
-| 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext |
 | 109 | Implement Addmorecallsignaturestobasesignature | spike | frontend/resolver | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 111 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
 | 112 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
 | 113 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: blocked | Implement Aliasdoesnotduplicatesignatures |
 | 114 | Implement Aliaserrors | spike | frontend/syntax | class: blocked | Implement Aliaserrors |
-| 115 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule |
 | 116 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
-| 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | class: blocked | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased |
 | 118 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
 | 119 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
 | 120 | Implement Aliasusageinarray | spike | frontend/syntax | class: blocked | Implement Aliasusageinarray |
@@ -252,35 +234,18 @@ Issue files are the source of truth for work items. The generated section below 
 | 134 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 135 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 136 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
-| 137 | Implement Alwaysstrictalreadyusestrict | spike | frontend/syntax | class: blocked | Implement Alwaysstrictalreadyusestrict |
-| 138 | Implement Alwaysstrictmodule | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule |
-| 139 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict |
 | 140 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends |
 | 141 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclaredbeforebase |
-| 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | class: blocked | Implement Ambientclassmergesoverloadswithinterface |
-| 143 | Implement Ambientclassoverloadforfunction | spike | frontend/syntax | class: blocked | Implement Ambientclassoverloadforfunction |
 | 144 | Implement Ambientconstliterals | spike | frontend/syntax | class: blocked | Implement Ambientconstliterals |
-| 145 | Implement Ambientenum | spike | frontend/syntax | class: blocked | Implement Ambientenum |
-| 146 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
 | 147 | Implement Ambienterrors | spike | frontend/syntax | class: blocked | Implement Ambienterrors |
 | 148 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
 | 149 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
-| 150 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulereopen |
 | 151 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithinternalimportdeclaration |
-| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration |
-| 153 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativemodulename |
 | 154 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
-| 155 | Implement Ambientfundule | spike | frontend/syntax | class: blocked | Implement Ambientfundule |
-| 156 | Implement Ambientgetters | spike | frontend/syntax | class: blocked | Implement Ambientgetters |
 | 157 | Implement Ambientmoduleexports | spike | frontend/syntax | class: blocked | Implement Ambientmoduleexports |
-| 158 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithclassdeclarationwithextends |
 | 159 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithtemplateliterals |
 | 160 | Implement Ambientmodules | spike | frontend/syntax | class: blocked | Implement Ambientmodules |
-| 161 | Implement Ambientnamerestrictions | spike | frontend/syntax | class: blocked | Implement Ambientnamerestrictions |
-| 162 | Implement Ambientpropertydeclarationinjs | spike | frontend/syntax | class: blocked | Implement Ambientpropertydeclarationinjs |
 | 163 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
-| 164 | Implement Ambientstatement | spike | frontend/syntax | class: blocked | Implement Ambientstatement |
-| 165 | Implement Ambientwithstatements | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements |
 | 166 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: blocked | Implement Ambiguouscallswherereturntypesagree |
 | 167 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
 | 168 | Implement Ambiguousoverload | spike | frontend/semantics | class: blocked | Implement Ambiguousoverload |
@@ -295,10 +260,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 177 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
 | 178 | Implement Anonterface | spike | frontend/syntax | class: blocked | Implement Anonterface |
 | 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
-| 181 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
 | 182 | Implement Anyandunknownhavefalsycomponents | spike | frontend/syntax | class: blocked | Implement Anyandunknownhavefalsycomponents |
-| 183 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall |
-| 184 | Implement Anydeclare | spike | frontend/syntax | class: blocked | Implement Anydeclare |
 | 185 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: blocked | Implement Anyidenticaltoitself |
 | 187 | Implement Anyinferenceanonymousfunctions | spike | frontend/syntax | class: blocked | Implement Anyinferenceanonymousfunctions |
 | 192 | Implement Argsinscope | spike | frontend/syntax | class: blocked | Implement Argsinscope |
@@ -308,7 +270,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 196 | Implement Argumentsobjectcreatesrestforjs | spike | frontend/resolver | class: blocked | Implement Argumentsobjectcreatesrestforjs |
 | 197 | Implement Argumentsobjectiterator | spike | frontend/semantics | class: blocked | Implement Argumentsobjectiterator |
 | 198 | Implement Argumentspropertynameinjsmode | spike | frontend/semantics | class: blocked | Implement Argumentspropertynameinjsmode |
-| 199 | Implement Compiler | spike | frontend/syntax | class: blocked | Implement Compiler |
 | 201 | Investigate and classify unknown-unsupported cases | spike | reference/triage | class: triage-needed | Investigate and classify unknown-unsupported cases |
 | 294 | Support ABC451 D original submission without source rewrite | feature | frontend/runtime | class: blocked | Support ABC451 D original submission without source rewrite |
 | 300 | Support ABC451 large integer number boundary | feature | runtime | class: blocked | Support ABC451 large integer number boundary |
@@ -380,13 +341,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 456 | Implement Apisample Arrow Function | spike | frontend/syntax | class: blocked | Implement Apisample Arrow Function |
 | 457 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
 | 458 | Implement Apisample Jsdoc | spike | frontend/syntax | class: blocked | Implement Apisample Jsdoc |
-| 459 | Implement Arrowfunctionexpression | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression |
-| 460 | Implement Classdeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclaration |
-| 461 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
 | 462 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
-| 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export |
 | 464 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
-| 465 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 466 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
 | 468 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 469 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
@@ -397,25 +353,17 @@ Issue files are the source of truth for work items. The generated section below 
 | 474 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | class: blocked | Implement Acceptsymbolasweaktype |
 | 475 | Implement Acceptablealias | spike | frontend/syntax | class: blocked | Implement Acceptablealias |
 | 476 | Implement Accessinstancememberfromstaticmethod | spike | frontend/resolver | class: blocked | Implement Accessinstancememberfromstaticmethod |
-| 477 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | class: blocked | Implement Accessoverriddenbaseclassmember |
 | 478 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/resolver | class: blocked | Implement Accessstaticmemberfrominstancemethod |
 | 479 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/syntax | class: blocked | Implement Accessoraccidentalcalldiagnostic |
 | 480 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 481 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
-| 482 | Implement Accessordeclarationorder | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder |
-| 483 | Implement Accessorinambientcontextes | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes |
 | 484 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
-| 485 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier |
-| 486 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
-| 487 | Implement Accessorwithoutbody | spike | frontend/syntax | class: blocked | Implement Accessorwithoutbody |
 | 488 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
-| 489 | Implement Accessorsinambientcontext | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext |
 | 490 | Implement Addmorecallsignaturestobasesignature | spike | frontend/resolver | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 491 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
 | 492 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
 | 493 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: blocked | Implement Aliasdoesnotduplicatesignatures |
 | 494 | Implement Aliaserrors | spike | frontend/syntax | class: blocked | Implement Aliaserrors |
-| 495 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule |
 | 496 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
 | 497 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
 | 498 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
@@ -436,42 +384,25 @@ Issue files are the source of truth for work items. The generated section below 
 | 513 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 514 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 515 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
-| 516 | Implement Alwaysstrictmodule | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule |
-| 517 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict |
-| 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends |
 | 519 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclaredbeforebase |
 | 520 | Implement Ambientconstliterals | spike | frontend/syntax | class: blocked | Implement Ambientconstliterals |
-| 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
 | 522 | Implement Ambienterrors | spike | runtime/builtins | class: blocked | Implement Ambienterrors |
 | 523 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
 | 524 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
-| 525 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulereopen |
 | 526 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithinternalimportdeclaration |
-| 527 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration |
-| 528 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativemodulename |
 | 529 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
-| 530 | Implement Ambientfundule | spike | frontend/syntax | class: blocked | Implement Ambientfundule |
 | 531 | Implement Ambientmoduleexports | spike | frontend/syntax | class: blocked | Implement Ambientmoduleexports |
-| 532 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithclassdeclarationwithextends |
 | 533 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithtemplateliterals |
 | 534 | Implement Ambientmodules | spike | frontend/syntax | class: blocked | Implement Ambientmodules |
-| 535 | Implement Ambientnamerestrictions | spike | frontend/syntax | class: blocked | Implement Ambientnamerestrictions |
 | 536 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
-| 537 | Implement Ambientstatement | spike | frontend/syntax | class: blocked | Implement Ambientstatement |
-| 538 | Implement Ambientwithstatements | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements |
 | 539 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: blocked | Implement Ambiguouscallswherereturntypesagree |
 | 540 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
 | 541 | Implement Apilibcheck | spike | frontend/syntax | class: blocked | Implement Apilibcheck |
 | 542 | Implement Apisample Arrow Function | spike | frontend/syntax | class: blocked | Implement Apisample Arrow Function |
 | 543 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
 | 544 | Implement Apisample Jsdoc | spike | frontend/syntax | class: blocked | Implement Apisample Jsdoc |
-| 545 | Implement Arrowfunctionexpression | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression |
-| 546 | Implement Classdeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclaration |
-| 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
 | 548 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
-| 549 | Implement Functiondeclaration Import Export | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export |
 | 550 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
-| 551 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 552 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
@@ -482,25 +413,17 @@ Issue files are the source of truth for work items. The generated section below 
 | 560 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | class: blocked | Implement Acceptsymbolasweaktype |
 | 561 | Implement Acceptablealias | spike | frontend/syntax | class: blocked | Implement Acceptablealias |
 | 562 | Implement Accessinstancememberfromstaticmethod | spike | frontend/resolver | class: blocked | Implement Accessinstancememberfromstaticmethod |
-| 563 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | class: blocked | Implement Accessoverriddenbaseclassmember |
 | 564 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/resolver | class: blocked | Implement Accessstaticmemberfrominstancemethod |
 | 565 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/syntax | class: blocked | Implement Accessoraccidentalcalldiagnostic |
 | 566 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 567 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
-| 568 | Implement Accessordeclarationorder | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder |
-| 569 | Implement Accessorinambientcontextes | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes |
 | 570 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
-| 571 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier |
-| 572 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
-| 573 | Implement Accessorwithoutbody | spike | frontend/syntax | class: blocked | Implement Accessorwithoutbody |
 | 574 | Implement Accessors | spike | frontend/syntax | class: triage-needed | Implement Accessors |
-| 575 | Implement Accessorsinambientcontext | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext |
 | 576 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 577 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
 | 578 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
 | 579 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: blocked | Implement Aliasdoesnotduplicatesignatures |
 | 580 | Implement Aliaserrors | spike | frontend/syntax | class: blocked | Implement Aliaserrors |
-| 581 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule |
 | 582 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
 | 583 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
 | 584 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
@@ -521,29 +444,17 @@ Issue files are the source of truth for work items. The generated section below 
 | 599 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 600 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 601 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
-| 602 | Implement Alwaysstrictmodule | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule |
-| 603 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict |
-| 604 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends |
 | 605 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclaredbeforebase |
 | 606 | Implement Ambientconstliterals | spike | frontend/syntax | class: blocked | Implement Ambientconstliterals |
-| 607 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
 | 608 | Implement Ambienterrors | spike | runtime/builtins | class: blocked | Implement Ambienterrors |
 | 609 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
 | 610 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
-| 611 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulereopen |
 | 612 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithinternalimportdeclaration |
-| 613 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration |
-| 614 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativemodulename |
 | 615 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
-| 616 | Implement Ambientfundule | spike | frontend/syntax | class: blocked | Implement Ambientfundule |
 | 617 | Implement Ambientmoduleexports | spike | frontend/syntax | class: blocked | Implement Ambientmoduleexports |
-| 618 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithclassdeclarationwithextends |
 | 619 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithtemplateliterals |
 | 620 | Implement Ambientmodules | spike | frontend/syntax | class: blocked | Implement Ambientmodules |
-| 621 | Implement Ambientnamerestrictions | spike | frontend/syntax | class: blocked | Implement Ambientnamerestrictions |
 | 622 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
-| 623 | Implement Ambientstatement | spike | frontend/syntax | class: blocked | Implement Ambientstatement |
-| 624 | Implement Ambientwithstatements | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements |
 | 625 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: blocked | Implement Ambiguouscallswherereturntypesagree |
 | 626 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
 | 627 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: blocked | Implement Ambiguousoverloadresolution |
@@ -556,10 +467,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 634 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 635 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
 | 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
-| 639 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
 | 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
-| 641 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall |
-| 642 | Implement Anydeclare | spike | frontend/syntax | class: blocked | Implement Anydeclare |
 | 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: blocked | Implement Anyidenticaltoitself |
 | 644 | Implement Anyinferenceanonymousfunctions | spike | frontend/syntax | class: blocked | Implement Anyinferenceanonymousfunctions |
 | 645 | Implement Argsinscope | spike | frontend/syntax | class: blocked | Implement Argsinscope |
@@ -697,13 +605,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 777 | Implement Apisample Arrow Function | spike | frontend/syntax | class: blocked | Implement Apisample Arrow Function |
 | 778 | Implement Apisample Import Export | spike | frontend/syntax | class: blocked | Implement Apisample Import Export |
 | 779 | Implement Apisample Jsdoc | spike | frontend/syntax | class: blocked | Implement Apisample Jsdoc |
-| 780 | Implement Arrowfunctionexpression | spike | frontend/syntax | class: blocked | Implement Arrowfunctionexpression |
-| 781 | Implement Classdeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclaration |
-| 782 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | class: blocked | Implement Classdeclarationwithinvalidconstonpropertydeclaration |
 | 783 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
-| 784 | Implement Functiondeclaration Import Export | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export |
 | 785 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
-| 786 | Implement Memberaccessordeclaration | spike | frontend/syntax | class: blocked | Implement Memberaccessordeclaration |
 | 787 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
 | 789 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 790 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
@@ -714,25 +617,17 @@ Issue files are the source of truth for work items. The generated section below 
 | 795 | Implement Acceptsymbolasweaktype | spike | frontend/resolver | class: blocked | Implement Acceptsymbolasweaktype |
 | 796 | Implement Acceptablealias | spike | frontend/syntax | class: blocked | Implement Acceptablealias |
 | 797 | Implement Accessinstancememberfromstaticmethod | spike | frontend/resolver | class: blocked | Implement Accessinstancememberfromstaticmethod |
-| 798 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | class: blocked | Implement Accessoverriddenbaseclassmember |
 | 799 | Implement Accessstaticmemberfrominstancemethod | spike | frontend/resolver | class: blocked | Implement Accessstaticmemberfrominstancemethod |
 | 800 | Implement Accessoraccidentalcalldiagnostic | spike | frontend/syntax | class: blocked | Implement Accessoraccidentalcalldiagnostic |
 | 801 | Implement Accessordeclarationemitjs | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitjs |
 | 802 | Implement Accessordeclarationemitvisibilityerrors | spike | frontend/syntax | class: blocked | Implement Accessordeclarationemitvisibilityerrors |
-| 803 | Implement Accessordeclarationorder | spike | frontend/syntax | class: blocked | Implement Accessordeclarationorder |
-| 804 | Implement Accessorinambientcontextes | spike | frontend/syntax | class: blocked | Implement Accessorinambientcontextes |
 | 805 | Implement Accessorinferredreturntypeerrorinreturnstatement | spike | frontend/syntax | class: blocked | Implement Accessorinferredreturntypeerrorinreturnstatement |
-| 806 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | class: blocked | Implement Accessorparameteraccessibilitymodifier |
-| 807 | Implement Accessorwithlineterminator | spike | reference/triage | class: triage-needed | Implement Accessorwithlineterminator |
-| 808 | Implement Accessorwithoutbody | spike | frontend/syntax | class: blocked | Implement Accessorwithoutbody |
 | 809 | Implement Accessors | spike | frontend/syntax | class: blocked | Implement Accessors |
-| 810 | Implement Accessorsinambientcontext | spike | frontend/syntax | class: blocked | Implement Accessorsinambientcontext |
 | 811 | Implement Addmorecallsignaturestobasesignature | spike | frontend/syntax | class: blocked | Implement Addmorecallsignaturestobasesignature |
 | 812 | Implement Aliasassignments | spike | frontend/syntax | class: blocked | Implement Aliasassignments |
 | 813 | Implement Aliasbug | spike | frontend/syntax | class: blocked | Implement Aliasbug |
 | 814 | Implement Aliasdoesnotduplicatesignatures | spike | frontend/syntax | class: blocked | Implement Aliasdoesnotduplicatesignatures |
 | 815 | Implement Aliaserrors | spike | frontend/syntax | class: blocked | Implement Aliaserrors |
-| 816 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | class: blocked | Implement Aliasinaccessiblemodule |
 | 817 | Implement Aliasinstantiationexpressiongenericintersectionnocrash | spike | frontend/syntax | class: blocked | Implement Aliasinstantiationexpressiongenericintersectionnocrash |
 | 818 | Implement Aliasonmergedmoduleinterface | spike | frontend/syntax | class: blocked | Implement Aliasonmergedmoduleinterface |
 | 819 | Implement Aliasusageinaccessorsofclass | spike | frontend/syntax | class: blocked | Implement Aliasusageinaccessorsofclass |
@@ -753,29 +648,16 @@ Issue files are the source of truth for work items. The generated section below 
 | 834 | Implement Allowjscheckjstypeparameternocrash | spike | frontend/syntax | class: blocked | Implement Allowjscheckjstypeparameternocrash |
 | 835 | Implement Allowsyntheticdefaultimports | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimports |
 | 836 | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration | spike | frontend/syntax | class: blocked | Implement Allowsyntheticdefaultimportscanpaintcrossmoduledeclaration |
-| 837 | Implement Alwaysstrictmodule | spike | frontend/syntax | class: blocked | Implement Alwaysstrictmodule |
-| 838 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | class: blocked | Implement Alwaysstrictnoimplicitusestrict |
-| 839 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclarationwithextends |
-| 840 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | class: blocked | Implement Ambientclassdeclaredbeforebase |
 | 841 | Implement Ambientconstliterals | spike | frontend/syntax | class: blocked | Implement Ambientconstliterals |
-| 842 | Implement Ambientenumelementinitializer | spike | frontend/syntax | class: blocked | Implement Ambientenumelementinitializer |
 | 843 | Implement Ambienterrors | spike | runtime/builtins | class: blocked | Implement Ambienterrors |
 | 844 | Implement Ambientexportdefaulterrors | spike | frontend/syntax | class: blocked | Implement Ambientexportdefaulterrors |
 | 845 | Implement Ambientexternalmoduleinanotherexternalmodule | spike | frontend/syntax | class: blocked | Implement Ambientexternalmoduleinanotherexternalmodule |
-| 846 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulereopen |
 | 847 | Implement Ambientexternalmodulewithinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithinternalimportdeclaration |
-| 848 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration |
-| 849 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithrelativemodulename |
 | 850 | Implement Ambientexternalmodulewithoutinternalimportdeclaration | spike | frontend/syntax | class: blocked | Implement Ambientexternalmodulewithoutinternalimportdeclaration |
-| 851 | Implement Ambientfundule | spike | frontend/syntax | class: blocked | Implement Ambientfundule |
 | 852 | Implement Ambientmoduleexports | spike | frontend/syntax | class: blocked | Implement Ambientmoduleexports |
-| 853 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithclassdeclarationwithextends |
 | 854 | Implement Ambientmodulewithtemplateliterals | spike | frontend/syntax | class: blocked | Implement Ambientmodulewithtemplateliterals |
 | 855 | Implement Ambientmodules | spike | frontend/syntax | class: blocked | Implement Ambientmodules |
-| 856 | Implement Ambientnamerestrictions | spike | frontend/syntax | class: blocked | Implement Ambientnamerestrictions |
 | 857 | Implement Ambientrequirefunction | spike | frontend/syntax | class: blocked | Implement Ambientrequirefunction |
-| 858 | Implement Ambientstatement | spike | frontend/syntax | class: blocked | Implement Ambientstatement |
-| 859 | Implement Ambientwithstatements | spike | frontend/syntax | class: blocked | Implement Ambientwithstatements |
 | 860 | Implement Ambiguouscallswherereturntypesagree | spike | frontend/syntax | class: blocked | Implement Ambiguouscallswherereturntypesagree |
 | 861 | Implement Ambiguousgenericassertion | spike | frontend/syntax | class: blocked | Implement Ambiguousgenericassertion |
 | 862 | Implement Ambiguousoverloadresolution | spike | frontend/resolver | class: blocked | Implement Ambiguousoverloadresolution |
@@ -788,10 +670,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 869 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 870 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
 | 872 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
-| 874 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
 | 875 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
-| 876 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall |
-| 877 | Implement Anydeclare | spike | frontend/syntax | class: blocked | Implement Anydeclare |
 | 878 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: blocked | Implement Anyidenticaltoitself |
 | 879 | Implement Anyinferenceanonymousfunctions | spike | frontend/syntax | class: blocked | Implement Anyinferenceanonymousfunctions |
 | 880 | Implement Argsinscope | spike | frontend/syntax | class: blocked | Implement Argsinscope |
@@ -3910,7 +3789,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 3993 | Implement Reexportnamealiasedandhoisted | spike | frontend/syntax | class: blocked | Implement Reexportnamealiasedandhoisted |
 | 3994 | Implement Reexportwrittencorrectlyindeclaration | spike | frontend/syntax | class: blocked | Implement Reexportwrittencorrectlyindeclaration |
 | 3995 | Implement Reexportedmissingalias | spike | frontend/syntax | class: blocked | Implement Reexportedmissingalias |
-| 3996 | Implement Compiler | spike | frontend/syntax | class: blocked | Implement Compiler |
 | 3997 | Implement Referencesatisfiesexpression | spike | frontend/syntax | class: blocked | Implement Referencesatisfiesexpression |
 | 3998 | Implement Referencetypespreferedtopathifpossible | spike | frontend/syntax | class: blocked | Implement Referencetypespreferedtopathifpossible |
 | 3999 | Implement Regexpwithopenbracketincharclass | spike | reference/triage | class: blocked | Implement Regexpwithopenbracketincharclass |
@@ -4841,16 +4719,55 @@ Issue files are the source of truth for work items. The generated section below 
 | 064a | Resolve Date global builtin namespace | feature | frontend | see `issues/done/064a-resolve-date-global-builtin-namespace.md` |
 | 065 | Implement parser syntax extensions | feature | frontend/syntax | see `issues/done/065-implement-parser-syntax.md` |
 | 065a | Merge duplicate parser syntax issue into 059 | cleanup | issues | see `issues/done/065a-merge-duplicate-parser-syntax-issue-into-059.md` |
+| 071 | Implement Arrowfunctionexpression | spike | frontend/syntax | see `issues/done/071-implement-ArrowFunctionExpression.md` |
+| 072 | Implement Classdeclaration | spike | frontend/syntax | see `issues/done/072-implement-ClassDeclaration.md` |
+| 073 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/073-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
+| 074 | Implement Declarationerrorsnoemitonerror | spike | frontend/syntax | see `issues/done/074-implement-DeclarationErrorsNoEmitOnError.md` |
 | 077 | Implement Interfacedeclaration | spike | frontend/syntax | see `issues/done/077-implement-InterfaceDeclaration.md` |
+| 078 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/078-implement-MemberAccessorDeclaration.md` |
+| 080 | Implement Systemmoduleforstatementnoinitializer | spike | frontend/syntax | see `issues/done/080-implement-SystemModuleForStatementNoInitializer.md` |
 | 085 | Implement Abstractinterfaceidentifiername | spike | frontend/syntax | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
+| 092 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/092-implement-accessOverriddenBaseClassMember.md` |
 | 095 | Implement Accessorbodyintypecontext | spike | frontend/syntax | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
+| 098 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/098-implement-accessorDeclarationOrder.md` |
+| 099 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/099-implement-accessorInAmbientContextES.md` |
+| 101 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/101-implement-accessorParameterAccessibilityModifier.md` |
+| 102 | Implement Accessorwithinitializer | spike | frontend/syntax | see `issues/done/102-implement-accessorWithInitializer.md` |
+| 103 | Implement Accessorwithlineterminator | spike | frontend/syntax | see `issues/done/103-implement-accessorWithLineTerminator.md` |
+| 104 | Implement Accessorwithrestparam | spike | frontend/syntax | see `issues/done/104-implement-accessorWithRestParam.md` |
+| 105 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/105-implement-accessorWithoutBody.md` |
+| 107 | Implement Accessorsemit | spike | frontend/syntax | see `issues/done/107-implement-accessorsEmit.md` |
+| 108 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/108-implement-accessorsInAmbientContext.md` |
 | 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
+| 115 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/115-implement-aliasInaccessibleModule.md` |
+| 117 | Implement Aliasofgenericfunctionwithrestbehavedsameasunaliased | spike | frontend/syntax | see `issues/done/117-implement-aliasOfGenericFunctionWithRestBehavedSameAsUnaliased.md` |
+| 137 | Implement Alwaysstrictalreadyusestrict | spike | frontend/syntax | see `issues/done/137-implement-alwaysStrictAlreadyUseStrict.md` |
+| 138 | Implement Alwaysstrictmodule | spike | frontend/syntax | see `issues/done/138-implement-alwaysStrictModule.md` |
+| 139 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | see `issues/done/139-implement-alwaysStrictNoImplicitUseStrict.md` |
+| 142 | Implement Ambientclassmergesoverloadswithinterface | spike | frontend/syntax | see `issues/done/142-implement-ambientClassMergesOverloadsWithInterface.md` |
+| 143 | Implement Ambientclassoverloadforfunction | spike | frontend/syntax | see `issues/done/143-implement-ambientClassOverloadForFunction.md` |
+| 145 | Implement Ambientenum | spike | frontend/syntax | see `issues/done/145-implement-ambientEnum.md` |
+| 146 | Implement Ambientenumelementinitializer | spike | frontend/syntax | see `issues/done/146-implement-ambientEnumElementInitializer.md` |
+| 150 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | see `issues/done/150-implement-ambientExternalModuleReopen.md` |
+| 152 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | see `issues/done/152-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
+| 153 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | see `issues/done/153-implement-ambientExternalModuleWithRelativeModuleName.md` |
+| 155 | Implement Ambientfundule | spike | frontend/syntax | see `issues/done/155-implement-ambientFundule.md` |
+| 156 | Implement Ambientgetters | spike | frontend/syntax | see `issues/done/156-implement-ambientGetters.md` |
+| 158 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/158-implement-ambientModuleWithClassDeclarationWithExtends.md` |
+| 161 | Implement Ambientnamerestrictions | spike | frontend/syntax | see `issues/done/161-implement-ambientNameRestrictions.md` |
+| 162 | Implement Ambientpropertydeclarationinjs | spike | frontend/syntax | see `issues/done/162-implement-ambientPropertyDeclarationInJs.md` |
+| 164 | Implement Ambientstatement | spike | frontend/syntax | see `issues/done/164-implement-ambientStatement.md` |
+| 165 | Implement Ambientwithstatements | spike | frontend/syntax | see `issues/done/165-implement-ambientWithStatements.md` |
 | 180 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/180-implement-anonymousClassExpression.md` |
+| 181 | Implement Anonymousmodules | spike | frontend/syntax | see `issues/done/181-implement-anonymousModules.md` |
+| 183 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | see `issues/done/183-implement-anyAsReturnTypeForNewOnCall.md` |
+| 184 | Implement Anydeclare | spike | frontend/syntax | see `issues/done/184-implement-anyDeclare.md` |
 | 186 | Implement Anyindexedaccessarraynoexception | spike | frontend/syntax | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
 | 188 | Implement Anyisassignabletoobject | spike | frontend/syntax | see `issues/done/188-implement-anyIsAssignableToObject.md` |
 | 189 | Implement Anyisassignabletovoid | spike | frontend/syntax | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
 | 190 | Implement Anymappedtypeserror | spike | frontend/syntax | see `issues/done/190-implement-anyMappedTypesError.md` |
 | 191 | Implement Anyplusany | spike | frontend/syntax | see `issues/done/191-implement-anyPlusAny.md` |
+| 199 | Implement Compiler | spike | frontend/syntax | see `issues/done/199-implement-reference-typescript-tests-cases-compiler.md` |
 | 200 | Implement parser syntax extensions | spike | frontend/syntax | see `issues/done/200-implement-parser-syntax.md` |
 | 202 | Implement RegExp literal support | feature | frontend/semantics | see `issues/done/202-implement-regexp-literal-support.md` |
 | 203 | Reconcile partial feature semantics and placeholder completions | cleanup | docs/issues | see `issues/done/203-reconcile-partial-feature-semantics.md` |
@@ -5031,14 +4948,97 @@ Issue files are the source of truth for work items. The generated section below 
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 | 444 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
+| 459 | Implement Arrowfunctionexpression | spike | frontend/syntax | see `issues/done/459-implement-ArrowFunctionExpression.md` |
+| 460 | Implement Classdeclaration | spike | frontend/syntax | see `issues/done/460-implement-ClassDeclaration.md` |
+| 461 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/461-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
+| 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/463-implement-FunctionDeclaration-import-export.md` |
+| 465 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/465-implement-MemberAccessorDeclaration.md` |
 | 467 | Implement Transportstream | spike | frontend/syntax | see `issues/done/467-implement-TransportStream.md` |
+| 477 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/477-implement-accessOverriddenBaseClassMember.md` |
+| 482 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/482-implement-accessorDeclarationOrder.md` |
+| 483 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/483-implement-accessorInAmbientContextES.md` |
+| 485 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/485-implement-accessorParameterAccessibilityModifier.md` |
+| 486 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/486-implement-accessorWithLineTerminator.md` |
+| 487 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/487-implement-accessorWithoutBody.md` |
+| 489 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/489-implement-accessorsInAmbientContext.md` |
+| 495 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/495-implement-aliasInaccessibleModule.md` |
+| 516 | Implement Alwaysstrictmodule | spike | frontend/syntax | see `issues/done/516-implement-alwaysStrictModule.md` |
+| 517 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | see `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` |
+| 518 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/518-implement-ambientClassDeclarationWithExtends.md` |
+| 521 | Implement Ambientenumelementinitializer | spike | frontend/syntax | see `issues/done/521-implement-ambientEnumElementInitializer.md` |
+| 525 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | see `issues/done/525-implement-ambientExternalModuleReopen.md` |
+| 527 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | see `issues/done/527-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
+| 528 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | see `issues/done/528-implement-ambientExternalModuleWithRelativeModuleName.md` |
+| 530 | Implement Ambientfundule | spike | frontend/syntax | see `issues/done/530-implement-ambientFundule.md` |
+| 532 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/532-implement-ambientModuleWithClassDeclarationWithExtends.md` |
+| 535 | Implement Ambientnamerestrictions | spike | frontend/syntax | see `issues/done/535-implement-ambientNameRestrictions.md` |
+| 537 | Implement Ambientstatement | spike | frontend/syntax | see `issues/done/537-implement-ambientStatement.md` |
+| 538 | Implement Ambientwithstatements | spike | frontend/syntax | see `issues/done/538-implement-ambientWithStatements.md` |
+| 545 | Implement Arrowfunctionexpression | spike | frontend/syntax | see `issues/done/545-implement-ArrowFunctionExpression.md` |
+| 546 | Implement Classdeclaration | spike | frontend/syntax | see `issues/done/546-implement-ClassDeclaration.md` |
+| 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
+| 549 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/549-implement-FunctionDeclaration-import-export.md` |
+| 551 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/551-implement-MemberAccessorDeclaration.md` |
 | 553 | Implement Transportstream | spike | frontend/syntax | see `issues/done/553-implement-TransportStream.md` |
+| 563 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/563-implement-accessOverriddenBaseClassMember.md` |
+| 568 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/568-implement-accessorDeclarationOrder.md` |
+| 569 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
+| 571 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/571-implement-accessorParameterAccessibilityModifier.md` |
+| 572 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/572-implement-accessorWithLineTerminator.md` |
+| 573 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/573-implement-accessorWithoutBody.md` |
+| 575 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/575-implement-accessorsInAmbientContext.md` |
+| 581 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/581-implement-aliasInaccessibleModule.md` |
+| 602 | Implement Alwaysstrictmodule | spike | frontend/syntax | see `issues/done/602-implement-alwaysStrictModule.md` |
+| 603 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | see `issues/done/603-implement-alwaysStrictNoImplicitUseStrict.md` |
+| 604 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/604-implement-ambientClassDeclarationWithExtends.md` |
+| 607 | Implement Ambientenumelementinitializer | spike | frontend/syntax | see `issues/done/607-implement-ambientEnumElementInitializer.md` |
+| 611 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | see `issues/done/611-implement-ambientExternalModuleReopen.md` |
+| 613 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | see `issues/done/613-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
+| 614 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | see `issues/done/614-implement-ambientExternalModuleWithRelativeModuleName.md` |
+| 616 | Implement Ambientfundule | spike | frontend/syntax | see `issues/done/616-implement-ambientFundule.md` |
+| 618 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/618-implement-ambientModuleWithClassDeclarationWithExtends.md` |
+| 621 | Implement Ambientnamerestrictions | spike | frontend/syntax | see `issues/done/621-implement-ambientNameRestrictions.md` |
+| 623 | Implement Ambientstatement | spike | frontend/syntax | see `issues/done/623-implement-ambientStatement.md` |
+| 624 | Implement Ambientwithstatements | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |
 | 636 | Implement Anonterface | spike | frontend/syntax | see `issues/done/636-implement-anonterface.md` |
 | 638 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
+| 639 | Implement Anonymousmodules | spike | frontend/syntax | see `issues/done/639-implement-anonymousModules.md` |
+| 641 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | see `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` |
+| 642 | Implement Anydeclare | spike | frontend/syntax | see `issues/done/642-implement-anyDeclare.md` |
+| 780 | Implement Arrowfunctionexpression | spike | frontend/syntax | see `issues/done/780-implement-ArrowFunctionExpression.md` |
+| 781 | Implement Classdeclaration | spike | frontend/syntax | see `issues/done/781-implement-ClassDeclaration.md` |
+| 782 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/782-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
+| 784 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/784-implement-FunctionDeclaration-import-export.md` |
+| 786 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/786-implement-MemberAccessorDeclaration.md` |
 | 788 | Implement Transportstream | spike | frontend/syntax | see `issues/done/788-implement-TransportStream.md` |
+| 798 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/798-implement-accessOverriddenBaseClassMember.md` |
+| 803 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/803-implement-accessorDeclarationOrder.md` |
+| 804 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/804-implement-accessorInAmbientContextES.md` |
+| 806 | Implement Accessorparameteraccessibilitymodifier | spike | frontend/syntax | see `issues/done/806-implement-accessorParameterAccessibilityModifier.md` |
+| 807 | Implement Accessorwithlineterminator | spike | reference/triage | see `issues/done/807-implement-accessorWithLineTerminator.md` |
+| 808 | Implement Accessorwithoutbody | spike | frontend/syntax | see `issues/done/808-implement-accessorWithoutBody.md` |
+| 810 | Implement Accessorsinambientcontext | spike | frontend/syntax | see `issues/done/810-implement-accessorsInAmbientContext.md` |
+| 816 | Implement Aliasinaccessiblemodule | spike | frontend/syntax | see `issues/done/816-implement-aliasInaccessibleModule.md` |
+| 837 | Implement Alwaysstrictmodule | spike | frontend/syntax | see `issues/done/837-implement-alwaysStrictModule.md` |
+| 838 | Implement Alwaysstrictnoimplicitusestrict | spike | frontend/syntax | see `issues/done/838-implement-alwaysStrictNoImplicitUseStrict.md` |
+| 839 | Implement Ambientclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/839-implement-ambientClassDeclarationWithExtends.md` |
+| 840 | Implement Ambientclassdeclaredbeforebase | spike | frontend/syntax | see `issues/done/840-implement-ambientClassDeclaredBeforeBase.md` |
+| 842 | Implement Ambientenumelementinitializer | spike | frontend/syntax | see `issues/done/842-implement-ambientEnumElementInitializer.md` |
+| 846 | Implement Ambientexternalmodulereopen | spike | frontend/syntax | see `issues/done/846-implement-ambientExternalModuleReopen.md` |
+| 848 | Implement Ambientexternalmodulewithrelativeexternalimportdeclaration | spike | frontend/syntax | see `issues/done/848-implement-ambientExternalModuleWithRelativeExternalImportDeclaration.md` |
+| 849 | Implement Ambientexternalmodulewithrelativemodulename | spike | frontend/syntax | see `issues/done/849-implement-ambientExternalModuleWithRelativeModuleName.md` |
+| 851 | Implement Ambientfundule | spike | frontend/syntax | see `issues/done/851-implement-ambientFundule.md` |
+| 853 | Implement Ambientmodulewithclassdeclarationwithextends | spike | frontend/syntax | see `issues/done/853-implement-ambientModuleWithClassDeclarationWithExtends.md` |
+| 856 | Implement Ambientnamerestrictions | spike | frontend/syntax | see `issues/done/856-implement-ambientNameRestrictions.md` |
+| 858 | Implement Ambientstatement | spike | frontend/syntax | see `issues/done/858-implement-ambientStatement.md` |
+| 859 | Implement Ambientwithstatements | spike | frontend/syntax | see `issues/done/859-implement-ambientWithStatements.md` |
 | 871 | Implement Anonterface | spike | frontend/syntax | see `issues/done/871-implement-anonterface.md` |
 | 873 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/873-implement-anonymousClassExpression.md` |
+| 874 | Implement Anonymousmodules | spike | frontend/syntax | see `issues/done/874-implement-anonymousModules.md` |
+| 876 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | see `issues/done/876-implement-anyAsReturnTypeForNewOnCall.md` |
+| 877 | Implement Anydeclare | spike | frontend/syntax | see `issues/done/877-implement-anyDeclare.md` |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
+| 3996 | Implement Compiler | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | see file |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | meta | frontend/resolver | see file |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | see file |

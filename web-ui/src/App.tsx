@@ -16,7 +16,7 @@ import {
   YAxis,
 } from 'recharts'
 import { useTestData, useCoverageData, useHistoricalData } from './hooks/useData'
-import type { CoverageData, HistoricalData, TestResult, TestSummary } from './types'
+import type { CoverageData, HistoricalData, TestResult } from './types'
 import './index.css'
 
 const PERF_REGRESSION_THRESHOLD = 0.2
@@ -654,7 +654,7 @@ function App() {
                                     {test.error_line !== undefined ? <span className="rounded border border-gray-700 bg-gray-800 px-2 py-1">error line: {test.error_line}</span> : null}
                                     {test.case ? <span className="max-w-full truncate rounded border border-gray-700 bg-gray-800 px-2 py-1" title={test.case}>case: {test.case}</span> : null}
                                   </div>
-                                  <DetailBlock title={test.status === 'error' ? 'Build Error / Reason' : 'Reason'} value={test.reason || test.error} tone="error" />
+                                  <DetailBlock title={test.error ? 'Build Error / Reason' : 'Reason'} value={test.reason || test.error} tone="error" />
                                   <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                                     <DetailBlock title="Expected" value={test.expected} />
                                     <DetailBlock title="Actual" value={test.actual} />

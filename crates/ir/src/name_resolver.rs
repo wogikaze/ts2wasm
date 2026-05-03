@@ -893,11 +893,11 @@ impl NameResolver {
                         }
                     }
                 }
-                let resolved_body = self.resolve_expr(body)?;
                 let resolved_body_stmts = body_stmts
                     .iter()
                     .map(|s| self.resolve_stmt(s))
                     .collect::<Result<Vec<_>, _>>()?;
+                let resolved_body = self.resolve_expr(body)?;
                 self.exit_scope();
                 Ok(Expr::ArrowFn {
                     params: params.clone(),
