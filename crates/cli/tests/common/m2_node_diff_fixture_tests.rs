@@ -896,21 +896,31 @@ fn destructuring_binding_object_rest_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn destructuring_binding_unsupported_forms_report_issue_251() {
-    assert_build_fails_with_unsupported_syntax(
+    // Call-expression default value: contains "in this runtime slice" → reclassified to UnsupportedRuntimeSubset
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/destructuring-binding-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-251:",
+        true,
     );
-    assert_build_fails_with_unsupported_syntax(
+    // Function param with call-expression default: same reason
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/destructuring-binding-param-default-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-251:",
+        true,
     );
+    // Rest param binding pattern in arrow: no "runtime slice" keywords → stays as UnsupportedSyntax
     assert_build_fails_with_unsupported_syntax(
         "fixtures/core-semantics/destructuring-binding-param-rest-unsupported.ts",
         "issue-251:",
     );
-    assert_build_fails_with_unsupported_syntax(
+    // Object rest with dynamic source: contains "in this runtime slice" → reclassified to UnsupportedRuntimeSubset
+    assert_build_fails_with_diagnostic(
         "fixtures/core-semantics/destructuring-binding-object-rest-unsupported.ts",
+        "[UnsupportedRuntimeSubset]",
         "issue-251:",
+        true,
     );
 }
 
@@ -968,6 +978,36 @@ fn same_scope_duplicate_local_still_reports_duplicate_local() {
         "[DuplicateLocal]",
         "duplicate local",
         true,
+    );
+}
+
+#[test]
+fn duplicate_function_decl_reports_duplicate_function() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/duplicate-function-decl-unsupported.ts",
+        "[DuplicateFunction]",
+        "duplicate function",
+        false,
+    );
+}
+
+#[test]
+fn duplicate_class_decl_reports_duplicate_local() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/duplicate-class-decl-unsupported.ts",
+        "[DuplicateLocal]",
+        "duplicate local",
+        false,
+    );
+}
+
+#[test]
+fn function_let_conflict_reports_duplicate_local() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-semantics/function-let-conflict-unsupported.ts",
+        "[DuplicateLocal]",
+        "conflicts with function declaration",
+        false,
     );
 }
 
@@ -1728,12 +1768,8 @@ fn spread_operator_custom_iterable_reaches_issue_353() {
 }
 
 #[test]
-fn spread_operator_map_local_reaches_issue_353_and_407() {
-    assert_build_fails_with_issue_diagnostic(
-        "fixtures/core-semantics/spread-array-map-unsupported.ts",
-        "issue-353/407:",
-        false,
-    );
+fn spread_operator_map_spread_fixture_matches_node_output_under_iwasm() {
+    assert_fixture_matches_node("fixtures/core-semantics/spread-array-map-unsupported.ts");
 }
 
 #[test]

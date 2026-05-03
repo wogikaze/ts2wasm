@@ -1,6 +1,6 @@
 use ts2wasm_frontend::{ArrayLiteralElement, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
 
-use crate::binding_pattern::{is_binding_pattern_text, parse_binding_pattern};
+use crate::binding_pattern::parse_binding_pattern;
 
 /// Resolves variable and function names in lexical scope.
 /// This pass runs before builtin resolution to catch unresolved names early.
@@ -94,12 +94,26 @@ impl NameResolver {
         // First pass: collect all function declarations (hoisting)
         for stmt in program {
             if let Stmt::Function { name, span, .. } = stmt {
+                if self.functions.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!("duplicate local variable: `{name}`"),
+                        span: Some(*span),
+                    });
+                }
                 self.functions.insert(name.clone(), Some(*span));
             }
         }
         // First pass: collect all class declarations (hoisting)
         for stmt in program {
             if let Stmt::ClassDecl { name, span, .. } = stmt {
+                if self.classes.contains_key(name) {
+                    return Err(Diagnostic {
+                        code: DiagCode::DuplicateLocal,
+                        message: format!("duplicate local variable: `{name}`"),
+                        span: Some(*span),
+                    });
+                }
                 self.classes.insert(name.clone(), Some(*span));
             }
         }
@@ -218,15 +232,18 @@ impl NameResolver {
                 self.enter_scope();
                 self.function_depth += 1;
                 for (param_name, default, is_rest) in params {
-                    if *is_rest && is_binding_pattern_text(param_name) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-251: rest parameter binding patterns are not supported"
-                                .to_owned(),
-                            span: Some(*span),
-                        });
-                    }
                     self.declare_binding(param_name, Some(*span))?;
+                    if *is_rest {
+                        // For rest params with binding patterns like (...[value]),
+                        // also declare the inner names from the pattern
+                        if let Some(inner) = param_name.strip_prefix("...")
+                            && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
+                        {
+                            for name in pattern.names() {
+                                self.declare_variable(name, Some(*span))?;
+                            }
+                        }
+                    }
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
@@ -546,15 +563,18 @@ impl NameResolver {
                     self.declare_binding(name, Some(*span))?;
                 }
                 for (param_name, default, is_rest) in params {
-                    if *is_rest && is_binding_pattern_text(param_name) {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-251: rest parameter binding patterns are not supported"
-                                .to_owned(),
-                            span: Some(*span),
-                        });
-                    }
                     self.declare_binding(param_name, Some(*span))?;
+                    if *is_rest {
+                        // For rest params with binding patterns like (...[value]),
+                        // also declare the inner names from the pattern
+                        if let Some(inner) = param_name.strip_prefix("...")
+                            && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
+                        {
+                            for name in pattern.names() {
+                                self.declare_variable(name, Some(*span))?;
+                            }
+                        }
+                    }
                     if let Some(default_expr) = default {
                         self.resolve_expr(default_expr)?;
                     }
@@ -857,17 +877,16 @@ impl NameResolver {
             Expr::ArrowFn { params, body, span } => {
                 self.enter_scope();
                 for param in params {
-                    if let Some(rest_binding) = param.strip_prefix("...")
-                        && is_binding_pattern_text(rest_binding)
-                    {
-                        return Err(Diagnostic {
-                            code: DiagCode::UnsupportedSyntax,
-                            message: "issue-251: rest parameter binding patterns are not supported"
-                                .to_owned(),
-                            span: Some(*span),
-                        });
-                    }
                     self.declare_binding(param, Some(*span))?;
+                    // For rest params with binding patterns like (...[value]),
+                    // also declare the inner names from the pattern
+                    if let Some(inner) = param.strip_prefix("...")
+                        && let Some(pattern) = parse_binding_pattern(inner, Some(*span))?
+                    {
+                        for name in pattern.names() {
+                            self.declare_variable(name, Some(*span))?;
+                        }
+                    }
                 }
                 let resolved_body = self.resolve_expr(body)?;
                 self.exit_scope();
@@ -947,6 +966,17 @@ impl NameResolver {
     }
 
     fn declare_variable(&mut self, name: &str, span: Option<Span>) -> Result<(), Diagnostic> {
+        // In the top-level scope, check hoisted declarations (functions, classes) for conflicts.
+        // Nested scopes can shadow outer functions/classes.
+        if self.scopes.len() == 1
+            && (self.functions.contains_key(name) || self.classes.contains_key(name))
+        {
+            return Err(Diagnostic {
+                code: DiagCode::DuplicateLocal,
+                message: format!("duplicate local variable: `{name}`"),
+                span,
+            });
+        }
         let current_scope = self.scopes.last_mut().unwrap();
         if current_scope.contains_key(name) {
             Err(Diagnostic {
