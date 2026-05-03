@@ -1117,6 +1117,19 @@ impl<'a> Resolver<'a> {
                         },
                         args: lowered_args,
                     })
+                } else if method == "concat"
+                    && self.is_known_array_expr(object)
+                {
+                    let mut lowered_args = vec![self.lower_expr(object)?];
+                    lowered_args.extend(
+                        args.iter()
+                            .map(|e| self.lower_expr(e))
+                            .collect::<Result<Vec<_>, _>>()?,
+                    );
+                    Ok(LoweredExpr::RuntimeCall {
+                        runtime_fn: "ArrayConcat".to_owned(),
+                        args: lowered_args,
+                    })
                 } else if (method == "find" || method == "findIndex" || method == "findLast" || method == "findLastIndex" || method == "filter" || method == "every" || method == "some")
                     && is_identity_arrow_callback(args)
                     && self.is_known_array_expr(object)
