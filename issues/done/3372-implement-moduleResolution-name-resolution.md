@@ -147,3 +147,8 @@ date:
 Remaining risks:
 
 - none
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

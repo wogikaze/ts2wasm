@@ -1,6 +1,6 @@
 ---
-id: 3384
-title: "Implement Moduleresolutionwithrequireandimport"
+id: 2058
+title: "Implement Duplicatepackage Module Resolution"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage moduleResolutionWithRequireAndImport across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage duplicatePackage-module-resolution across 2 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `moduleResolutionWithRequireAndImport` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `duplicatePackage-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: moduleResolutionWithRequireAndImport has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: duplicatePackage-module-resolution has 2 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithRequireAndImport.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithRequireAndImport.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts --detail
 ```
 
 ## Desired final state
@@ -85,9 +85,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithRequireAndImport.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithRequireAndImport.ts
+mise run reference-coverage -- tsc --limit 4
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts
 ```
 
 Not run:
@@ -112,7 +112,8 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithRequireAndImport.ts`
+- `reference/typescript/tests/cases/compiler/duplicatePackage_subModule.ts`
+- `reference/typescript/tests/cases/compiler/duplicatePackage_withErrors.ts`
 
 ## Duplicate detection
 
@@ -172,3 +173,8 @@ reference this issue.
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
 
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

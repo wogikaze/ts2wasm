@@ -1,6 +1,6 @@
 ---
-id: 4056
-title: "Implement Resolutioncandidatefrompackagejsonfield Module Resolution"
+id: 4034
+title: "Implement Requireofjsonfilewithmodulenoderesolutionemitnone"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage resolutionCandidateFromPackageJsonField-module-resolution across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage requireOfJsonFileWithModuleNodeResolutionEmitNone across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `resolutionCandidateFromPackageJsonField-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `requireOfJsonFileWithModuleNodeResolutionEmitNone` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: resolutionCandidateFromPackageJsonField-module-resolution has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: requireOfJsonFileWithModuleNodeResolutionEmitNone has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/resolutionCandidateFromPackageJsonField2.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitNone.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/resolutionCandidateFromPackageJsonField2.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitNone.ts --detail
 ```
 
 ## Desired final state
@@ -86,8 +86,8 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/resolutionCandidateFromPackageJsonField2.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/resolutionCandidateFromPackageJsonField2.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitNone.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitNone.ts
 ```
 
 Not run:
@@ -112,7 +112,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/resolutionCandidateFromPackageJsonField2.ts`
+- `reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitNone.ts`
 
 ## Duplicate detection
 
@@ -172,3 +172,8 @@ reference this issue.
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
 
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

@@ -1,6 +1,6 @@
 ---
-id: 3374
-title: "Implement Moduleresolutionastypereferencedirectiveambient"
+id: 3376
+title: "Implement Moduleresolutionnoresolve"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage moduleResolutionAsTypeReferenceDirectiveAmbient across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage moduleResolutionNoResolve across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `moduleResolutionAsTypeReferenceDirectiveAmbient` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `moduleResolutionNoResolve` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: moduleResolutionAsTypeReferenceDirectiveAmbient has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: moduleResolutionNoResolve has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveAmbient.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionNoResolve.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveAmbient.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionNoResolve.ts --detail
 ```
 
 ## Desired final state
@@ -86,8 +86,8 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveAmbient.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveAmbient.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionNoResolve.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionNoResolve.ts
 ```
 
 Not run:
@@ -112,7 +112,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveAmbient.ts`
+- `reference/typescript/tests/cases/compiler/moduleResolutionNoResolve.ts`
 
 ## Duplicate detection
 
@@ -141,3 +141,8 @@ date:
 Remaining risks:
 
 - none
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

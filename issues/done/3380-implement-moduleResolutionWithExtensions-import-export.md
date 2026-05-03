@@ -1,6 +1,6 @@
 ---
-id: 3385
-title: "Implement Moduleresolutionwithsuffixes Import Export"
+id: 3380
+title: "Implement Moduleresolutionwithextensions Import Export"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage moduleResolutionWithSuffixes-import-export across 12 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage moduleResolutionWithExtensions-import-export across 5 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 12 cases fail in directory `moduleResolutionWithSuffixes-import-export` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 5 cases fail in directory `moduleResolutionWithExtensions-import-export` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: moduleResolutionWithSuffixes-import-export has 12 reference failures and needs smart-triage evidence before implementation starts.
+Problem: moduleResolutionWithExtensions-import-export has 5 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_notSpecified.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_notSpecified.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported.ts --detail
 ```
 
 ## Desired final state
@@ -85,9 +85,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 24
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_notSpecified.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_notSpecified.ts
+mise run reference-coverage -- tsc --limit 10
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported.ts
 ```
 
 Not run:
@@ -112,17 +112,11 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_notSpecified.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_empty.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_oneBlank.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_oneNotFound.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_one.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_one_dirModuleWithIndex.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_one_jsModule.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_one_externalTSModule.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_threeLastIsBlank2.ts`
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithSuffixes_threeLastIsBlank1.ts`
-- ... and 2 more files
+- `reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported.ts`
+- `reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported2.ts`
+- `reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_withAmbientPresent.ts`
+- `reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_notSupported3.ts`
+- `reference/typescript/tests/cases/compiler/moduleResolutionWithExtensions_withPaths.ts`
 
 ## Duplicate detection
 
@@ -159,3 +153,8 @@ date:
 Remaining risks:
 
 - none
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

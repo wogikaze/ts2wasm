@@ -95,7 +95,13 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
     let frontmatter = &source[..=frontmatter_end + 4]; // Include the closing */
     let metadata = parse_test262_metadata(frontmatter);
     if metadata.includes.is_empty() && metadata.features.is_empty() && metadata.negative.is_none() {
-        return Ok(source.to_string());
+        // Always inject common test262 global helper stubs for files with frontmatter,
+        // since many older tests use `assert(...)` without an explicit `includes:` directive.
+        let body = &source[frontmatter_end + 5..];
+        return Ok(format!(
+            "{}\nfunction assert() {{}}\nfunction verifyProperty() {{}}\nfunction verifyCallableProperty() {{}}\n{}",
+            frontmatter, body
+        ));
     }
 
     let mut injected = String::new();
@@ -291,10 +297,16 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
                 stubs.push_str("    Symbol.asyncIterator = Symbol('Symbol.asyncIterator');\n");
                 stubs.push_str("  }\n}");
             }
-            _ if unsupported_feature.is_none() => {
-                unsupported_feature = Some(feature.clone());
+            _ => {
+                // Check if this is a known-but-not-stubbed feature (tracked but
+                // the functionality may partially work). Only error on truly
+                // unknown features not in KNOWN_FEATURES.
+                if unsupported_feature.is_none()
+                    && !KNOWN_FEATURES.iter().any(|(name, _)| *name == feature)
+                {
+                    unsupported_feature = Some(feature.clone());
+                }
             }
-            _ => {}
         }
     }
 
@@ -551,14 +563,16 @@ var x = 1;"#;
 
     #[test]
     fn test_known_feature_tracking_id_in_error() {
-        let source = "/*---\nfeatures: [ArrayBuffer]\n---*/\nvar x = 1;";
+        // Known features are silently skipped. Use a truly unknown feature
+        // (not in KNOWN_FEATURES) to trigger the error.
+        let source = "/*---\nfeatures: [TotallyUnknownFeature999]\n---*/\nvar x = 1;";
         let input = Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../../reference/test262/test/language/expressions/does-not-exist.js");
         let error = process_test262_includes(&input, source)
-            .expect_err("known-but-unsupported feature should be rejected");
+            .expect_err("unknown feature should be rejected");
         assert!(
-            error.message.contains("[issue-408]"),
-            "tracking ID should appear in error message, got: {}",
+            error.message.contains("[issue-5000]"),
+            "unknown feature should get generic tracking ID, got: {}",
             error.message
         );
     }

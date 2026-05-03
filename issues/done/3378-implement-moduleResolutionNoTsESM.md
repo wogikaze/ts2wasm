@@ -1,6 +1,6 @@
 ---
-id: 3382
-title: "Implement Moduleresolutionwithmodule"
+id: 3378
+title: "Implement Moduleresolutionnotsesm"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage moduleResolutionWithModule across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage moduleResolutionNoTsESM across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `moduleResolutionWithModule` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `moduleResolutionNoTsESM` with diagnostics: import-export. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: moduleResolutionWithModule has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: moduleResolutionNoTsESM has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithModule.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionNoTsESM.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithModule.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionNoTsESM.ts --detail
 ```
 
 ## Desired final state
@@ -86,8 +86,8 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionWithModule.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionWithModule.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionNoTsESM.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionNoTsESM.ts
 ```
 
 Not run:
@@ -112,7 +112,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/moduleResolutionWithModule.ts`
+- `reference/typescript/tests/cases/compiler/moduleResolutionNoTsESM.ts`
 
 ## Duplicate detection
 
@@ -141,3 +141,8 @@ date:
 Remaining risks:
 
 - none
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

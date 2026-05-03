@@ -178,3 +178,8 @@ reference this issue.
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
 
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

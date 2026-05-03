@@ -1,6 +1,6 @@
 ---
-id: 3375
-title: "Implement Moduleresolutionastypereferencedirectivescoped"
+id: 4036
+title: "Implement Requireofjsonfilewithmodulenoderesolutionemitumd"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage moduleResolutionAsTypeReferenceDirectiveScoped across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage requireOfJsonFileWithModuleNodeResolutionEmitUmd across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `moduleResolutionAsTypeReferenceDirectiveScoped` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `requireOfJsonFileWithModuleNodeResolutionEmitUmd` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: moduleResolutionAsTypeReferenceDirectiveScoped has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: requireOfJsonFileWithModuleNodeResolutionEmitUmd has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveScoped.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveScoped.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts --detail
 ```
 
 ## Desired final state
@@ -86,8 +86,8 @@ Impacted commands:
 
 ```sh
 mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveScoped.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveScoped.ts
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts
 ```
 
 Not run:
@@ -112,7 +112,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/moduleResolutionAsTypeReferenceDirectiveScoped.ts`
+- `reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitUmd.ts`
 
 ## Duplicate detection
 
@@ -172,3 +172,8 @@ reference this issue.
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
 
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

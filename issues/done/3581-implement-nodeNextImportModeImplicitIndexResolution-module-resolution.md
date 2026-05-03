@@ -1,6 +1,6 @@
 ---
-id: 3795
-title: "Implement Pathmappingbasedmoduleresolution Module Resolution"
+id: 3581
+title: "Implement Nodenextimportmodeimplicitindexresolution Module Resolution"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage pathMappingBasedModuleResolution-module-resolution across 5 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage nodeNextImportModeImplicitIndexResolution-module-resolution across 1 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 5 cases fail in directory `pathMappingBasedModuleResolution-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 1 cases fail in directory `nodeNextImportModeImplicitIndexResolution-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: pathMappingBasedModuleResolution-module-resolution has 5 reference failures and needs smart-triage evidence before implementation starts.
+Problem: nodeNextImportModeImplicitIndexResolution-module-resolution has 1 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/nodeNextImportModeImplicitIndexResolution.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/nodeNextImportModeImplicitIndexResolution.ts --detail
 ```
 
 ## Desired final state
@@ -85,9 +85,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 10
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts
+mise run reference-coverage -- tsc --limit 2
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/nodeNextImportModeImplicitIndexResolution.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/nodeNextImportModeImplicitIndexResolution.ts
 ```
 
 Not run:
@@ -112,11 +112,7 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_classic.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution5_node.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution8_classic.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution8_node.ts`
-- `reference/typescript/tests/cases/compiler/pathMappingBasedModuleResolution_withExtensionInName.ts`
+- `reference/typescript/tests/cases/compiler/nodeNextImportModeImplicitIndexResolution.ts`
 
 ## Duplicate detection
 
@@ -176,3 +172,8 @@ reference this issue.
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
 
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

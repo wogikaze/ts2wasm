@@ -413,3 +413,8 @@ triage or code changes. No implementation commits reference this issue.
    - At least one child issue exists in `issues/open/` with exact
      `mise run reference-triage -- ...` command, failing path, diagnostic code,
      source context, and parser/TypeScript AST evidence
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005

@@ -1,6 +1,6 @@
 ---
-id: 4033
-title: "Implement Requireofjsonfilewithmodulenoderesolutionemitesnext"
+id: 4241
+title: "Implement Staticinstanceresolution Module Resolution"
 type: spike
 area: frontend/syntax
 class: blocked
@@ -13,26 +13,26 @@ updated: 2026-05-01
 
 ## Summary
 
-Triage requireOfJsonFileWithModuleNodeResolutionEmitEsNext across 1 failing reference test cases and split this bucket into implementation-ready child issues.
+Triage staticInstanceResolution-module-resolution across 2 failing reference test cases and split this bucket into implementation-ready child issues.
 
 ## Problem
 
-Reference test results show 1 cases fail in directory `requireOfJsonFileWithModuleNodeResolutionEmitEsNext` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
+Reference test results show 2 cases fail in directory `staticInstanceResolution-module-resolution` with diagnostics: module-resolution. The compiler cannot handle these syntax/semantics, preventing compilation of code in this category.
 
-Problem: requireOfJsonFileWithModuleNodeResolutionEmitEsNext has 1 reference failures and needs smart-triage evidence before implementation starts.
+Problem: staticInstanceResolution-module-resolution has 2 reference failures and needs smart-triage evidence before implementation starts.
 
 ## Current failure
 
 Representative reproduction:
 
 ```sh
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEsNext.ts
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/staticInstanceResolution.ts
 ```
 
 Coverage window:
 
 ```sh
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEsNext.ts --detail
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/staticInstanceResolution.ts --detail
 ```
 
 ## Desired final state
@@ -85,9 +85,9 @@ cargo nextest run
 Impacted commands:
 
 ```sh
-mise run reference-coverage -- tsc --limit 2
-mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEsNext.ts --detail
-mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEsNext.ts
+mise run reference-coverage -- tsc --limit 4
+mise run reference-coverage -- tsc --path-filter reference/typescript/tests/cases/compiler/staticInstanceResolution.ts --detail
+mise run reference-triage -- tsc reference/typescript/tests/cases/compiler/staticInstanceResolution.ts
 ```
 
 Not run:
@@ -112,7 +112,8 @@ Follow-up issues:
 
 ## Affected test files
 
-- `reference/typescript/tests/cases/compiler/requireOfJsonFileWithModuleNodeResolutionEmitEsNext.ts`
+- `reference/typescript/tests/cases/compiler/staticInstanceResolution.ts`
+- `reference/typescript/tests/cases/compiler/staticInstanceResolution4.ts`
 
 ## Duplicate detection
 
@@ -172,3 +173,8 @@ reference this issue.
    - Or: the exact failing reference path has a matching open/done issue
    - Or: the failing test case no longer reproduces the original diagnostic
 
+## Close note
+
+Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+
+superseded-by: 5005
