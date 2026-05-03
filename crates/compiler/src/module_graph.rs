@@ -264,20 +264,38 @@ fn resolve_local_specifier(
     importer_path: &Path,
     specifier: &ModuleSpecifier,
 ) -> Result<PathBuf, Diagnostic> {
-    if !is_local_relative_specifier(&specifier.value) {
-        return Err(Diagnostic {
-            code: DiagCode::UnsupportedModule,
-            message: format!(
-                "issue-232: unsupported non-local module specifier `{}`; package resolution, import maps, and absolute specifiers are not implemented",
-                specifier.value
-            ),
-            span: Some(specifier.span),
-        });
-    }
-
     let importer_dir = importer_path.parent().unwrap_or_else(|| Path::new("."));
-    let raw_candidate = importer_dir.join(&specifier.value);
-    let candidates = module_resolution_candidates(&raw_candidate, specifier)?;
+    let candidates: Vec<PathBuf>;
+
+    if is_local_relative_specifier(&specifier.value) {
+        let raw_candidate = importer_dir.join(&specifier.value);
+        let mut file_candidates = module_resolution_candidates(&raw_candidate, specifier)?;
+        if raw_candidate.is_dir() {
+            file_candidates.push(raw_candidate.join("index.ts"));
+            file_candidates.push(raw_candidate.join("index.js"));
+        }
+        candidates = file_candidates;
+    } else {
+        let raw_candidate = importer_dir.join(&specifier.value);
+        let mut bare_candidates =
+            module_resolution_candidates(&raw_candidate, specifier).unwrap_or_else(|_| vec![]);
+        bare_candidates.push(raw_candidate.join("index.ts"));
+        bare_candidates.push(raw_candidate.join("index.js"));
+        let node_mod_dir = importer_dir.join("node_modules").join(&specifier.value);
+        if node_mod_dir.is_dir() {
+            bare_candidates.push(node_mod_dir.join("index.ts"));
+            bare_candidates.push(node_mod_dir.join("index.js"));
+        } else {
+            bare_candidates.extend(
+                module_resolution_candidates(
+                    &importer_dir.join("node_modules").join(&specifier.value),
+                    specifier,
+                )
+                .unwrap_or_else(|_| vec![]),
+            );
+        }
+        candidates = bare_candidates;
+    }
 
     for candidate in &candidates {
         if candidate.is_file() {
@@ -285,14 +303,23 @@ fn resolve_local_specifier(
         }
     }
 
-    Err(Diagnostic {
-        code: DiagCode::UnsupportedModule,
-        message: format!(
+    let error_msg = if is_local_relative_specifier(&specifier.value) {
+        format!(
             "issue-232: missing local module `{}` imported from {}; tried {}",
             specifier.value,
             importer_path.display(),
             format_candidate_list(&candidates)
-        ),
+        )
+    } else {
+        format!(
+            "issue-232: unsupported non-local module specifier `{}`; package resolution, import maps, and absolute specifiers are not implemented",
+            specifier.value
+        )
+    };
+
+    Err(Diagnostic {
+        code: DiagCode::UnsupportedModule,
+        message: error_msg,
         span: Some(specifier.span),
     })
 }
