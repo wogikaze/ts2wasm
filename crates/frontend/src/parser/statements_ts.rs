@@ -329,7 +329,7 @@ impl Parser {
         declare_span: Span,
     ) -> Result<(), Diagnostic> {
         self.expect(TokenKind::Function)?;
-        self.expect_ident()?;
+        let (name, name_span) = self.expect_ident()?;
         self.consume_typescript_generic_parameter_list()?;
         self.skip_type_annotation_until(&[TokenKind::Semicolon])
             .map_err(|_| {
@@ -339,6 +339,15 @@ impl Parser {
                 )
             })?;
         self.expect(TokenKind::Semicolon)?;
+        // Emit a function with empty body so the name is registered in scope.
+        // This allows calls to `declare function` names to resolve at compile time.
+        self.pending_statements.push(Stmt::Function {
+            name,
+            params: Vec::new(),
+            body: Vec::new(),
+            is_generator: false,
+            span: name_span,
+        });
         Ok(())
     }
 

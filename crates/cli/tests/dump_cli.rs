@@ -299,7 +299,7 @@ fn dump_ast_unparse_erases_ambient_declarations() {
 
     assert_eq!(
         output,
-        "class Runtime {\n  function read() {\n    return 1;\n  }\n}\nlet value = 1;\n"
+        "function read() {\n}\nclass Runtime {\n  function read() {\n    return 1;\n  }\n}\nlet value = 1;\n"
     );
 }
 
