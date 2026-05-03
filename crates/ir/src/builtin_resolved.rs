@@ -237,6 +237,7 @@ pub enum ResolvedExpr {
     ArrowFn {
         params: Vec<String>,
         body: Box<ResolvedExpr>,
+        body_stmts: Vec<ResolvedStmt>,
     },
     FunctionExpr {
         name: String,

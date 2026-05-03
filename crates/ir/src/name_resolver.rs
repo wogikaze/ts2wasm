@@ -874,7 +874,12 @@ impl NameResolver {
                 else_expr: Box::new(self.resolve_expr(else_expr)?),
                 span: *span,
             }),
-            Expr::ArrowFn { params, body, span } => {
+            Expr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                span,
+            } => {
                 self.enter_scope();
                 for param in params {
                     self.declare_binding(param, Some(*span))?;
@@ -889,10 +894,15 @@ impl NameResolver {
                     }
                 }
                 let resolved_body = self.resolve_expr(body)?;
+                let resolved_body_stmts = body_stmts
+                    .iter()
+                    .map(|s| self.resolve_stmt(s))
+                    .collect::<Result<Vec<_>, _>>()?;
                 self.exit_scope();
                 Ok(Expr::ArrowFn {
                     params: params.clone(),
                     body: Box::new(resolved_body),
+                    body_stmts: resolved_body_stmts,
                     span: *span,
                 })
             }

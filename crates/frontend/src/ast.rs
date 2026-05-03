@@ -449,6 +449,7 @@ pub enum Expr {
     ArrowFn {
         params: Vec<String>,
         body: Box<Expr>,
+        body_stmts: Vec<Stmt>,
         span: Span,
     },
     FunctionExpr {

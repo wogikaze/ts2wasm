@@ -109,7 +109,7 @@ Current state:
 
 Follow-up issues:
 
-- [x] created: `issues/open/336-implement-test262-includes-directive.md`
+- [x] created: `issues/done/336-implement-test262-includes-directive.md`
 - [x] created: `issues/done/337-implement-test262-features-directive.md`
 
 ## Notes

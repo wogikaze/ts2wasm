@@ -238,23 +238,25 @@ impl Parser {
         }
         self.expect(TokenKind::Arrow)?;
 
-        // Body can be an expression or a simple `{ return expr; }` block.
+        // Body can be an expression or a block with statements.
+        let mut body_stmts = Vec::new();
         let body = if matches!(self.peek(), Some(Token::LeftBrace)) {
             let block_stmts = self.block()?;
-            match block_stmts.as_slice() {
-                [Stmt::Return { expr, .. }] => expr.clone(),
-                [Stmt::Expr { expr, .. }] => expr.clone(),
-                [] => Expr::Undefined {
+            match block_stmts.split_last() {
+                Some((Stmt::Return { expr, .. }, rest)) => {
+                    body_stmts = rest.to_vec();
+                    expr.clone()
+                }
+                Some((last_stmt, rest)) => {
+                    body_stmts = rest.to_vec();
+                    body_stmts.push(last_stmt.clone());
+                    Expr::Undefined {
+                        span: Span { start: 0, end: 0 },
+                    }
+                }
+                None => Expr::Undefined {
                     span: Span { start: 0, end: 0 },
                 },
-                _ => {
-                    return Err(Diagnostic {
-                        code: DiagCode::UnsupportedSyntax,
-                        message: "arrow function block bodies support a single return statement in this milestone"
-                            .to_owned(),
-                        span: Some(start_span),
-                    });
-                }
             }
         } else {
             self.ternary()?
@@ -264,6 +266,7 @@ impl Parser {
         Ok(Expr::ArrowFn {
             params,
             body: Box::new(body),
+            body_stmts,
             span: Span {
                 start: start_span.start,
                 end,

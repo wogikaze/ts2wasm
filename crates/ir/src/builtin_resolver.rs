@@ -635,9 +635,15 @@ impl BigIntStaticBuiltinFolder {
                 else_expr: Box::new(self.fork().fold_expr(else_expr)),
                 span: *span,
             },
-            Expr::ArrowFn { params, body, span } => Expr::ArrowFn {
+            Expr::ArrowFn {
+                params,
+                body,
+                body_stmts,
+                span,
+            } => Expr::ArrowFn {
                 params: params.clone(),
                 body: Box::new(BigIntStaticBuiltinFolder::default().fold_expr(body)),
+                body_stmts: BigIntStaticBuiltinFolder::default().fold_stmts(body_stmts),
                 span: *span,
             },
             Expr::FunctionExpr {
@@ -1843,11 +1849,21 @@ fn resolve_expr(expr: &Expr) -> Result<ResolvedExpr, Diagnostic> {
                 value: Box::new(resolve_expr(value)?),
             })
         }
-        Expr::ArrowFn { params, body, .. } => {
+        Expr::ArrowFn {
+            params,
+            body,
+            body_stmts,
+            ..
+        } => {
             let resolved_body = resolve_expr(body)?;
+            let mut resolved_stmts = Vec::new();
+            for s in body_stmts {
+                resolved_stmts.push(resolve_stmt(s)?);
+            }
             Ok(ResolvedExpr::ArrowFn {
                 params: params.clone(),
                 body: Box::new(resolved_body),
+                body_stmts: resolved_stmts,
             })
         }
         Expr::FunctionExpr {
