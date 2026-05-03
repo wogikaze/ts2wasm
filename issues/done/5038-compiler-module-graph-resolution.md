@@ -30,14 +30,14 @@ module graph resolution が以下を確実に診断する：missing module、cyc
 ## Scope
 
 In scope:
-- [ ] missing module 診断の追加
-- [ ] cycle 検出と診断
-- [ ] default/named export mismatch 診断
-- [ ] graph order 検証
+- [x] missing module 診断の追加
+- [x] cycle 検出と診断
+- [x] default/named export mismatch 診断
+- [x] graph order 検証
 
 Out of scope:
-- [ ] 外部 package resolution
-- [ ] dynamic import
+- [x] 外部 package resolution
+- [x] dynamic import
 
 ## Affected paths
 
@@ -47,8 +47,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 各エラーケースの診断 test fixture が追加される
-- [ ] 診断が source span 付きで報告される
+- [x] 各エラーケースの診断 test fixture が追加される
+- [x] 診断が source span 付きで報告される
 
 ## Validation
 
@@ -60,10 +60,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

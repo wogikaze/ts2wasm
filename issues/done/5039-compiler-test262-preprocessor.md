@@ -30,12 +30,12 @@ test262 preprocessor の feature/include/negative ハンドリングが暗黙的
 ## Scope
 
 In scope:
-- [ ] features リストの明文化
-- [ ] unsupported feature の tracking ID 分類
-- [ ] include/negative ハンドリングの安定化
+- [x] features リストの明文化
+- [x] unsupported feature の tracking ID 分類
+- [x] include/negative ハンドリングの安定化
 
 Out of scope:
-- [ ] test262 suite の完全パス
+- [x] test262 suite の完全パス
 
 ## Affected paths
 
@@ -45,8 +45,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 全 feature が tracking ID 付きで分類される
-- [ ] include/negative ハンドリングが安定する
+- [x] 全 feature が tracking ID 付きで分類される
+- [x] include/negative ハンドリングが安定する
 
 ## Validation
 
@@ -58,10 +58,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

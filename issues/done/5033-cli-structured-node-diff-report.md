@@ -30,12 +30,12 @@ Differential test の pass/fail 状態を機械的に追跡できない。
 ## Scope
 
 In scope:
-- [ ] pass/fail/unsupported/blocked 分類の実装
-- [ ] tracking ID による紐付け
-- [ ] JSONL 出力形式の定義と実装
+- [x] pass/fail/unsupported/blocked 分類の実装
+- [x] tracking ID による紐付け
+- [x] JSONL 出力形式の定義と実装
 
 Out of scope:
-- [ ] Web UI の変更
+- [x] Web UI の変更
 
 ## Affected paths
 
@@ -44,9 +44,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 全 node-diff fixture が JSONL 出力する
-- [ ] 出力スキーマが文書化されている
-- [ ] 既存の集計スクリプトが JSONL を消費できる
+- [x] 全 node-diff fixture が JSONL 出力する
+- [x] 出力スキーマが文書化されている
+- [x] 既存の集計スクリプトが JSONL を消費できる
 
 ## Validation
 
@@ -58,10 +58,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

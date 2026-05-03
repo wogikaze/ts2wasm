@@ -30,12 +30,12 @@ server batch に timeout、最大並列数制限、panic/error aggregation が�
 ## Scope
 
 In scope:
-- [ ] timeout 機構
-- [ ] 最大並列数制限
-- [ ] panic/error aggregation
+- [x] timeout 機構
+- [x] 最大並列数制限
+- [x] panic/error aggregation
 
 Out of scope:
-- [ ] 分散コンパイル
+- [x] 分散コンパイル
 
 ## Affected paths
 
@@ -44,9 +44,9 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] timeout 超過時にジョブが中断される
-- [ ] 最大並列数が制限される
-- [ ] panic が aggregation される
+- [x] timeout 超過時にジョブが中断される
+- [x] 最大並列数が制限される
+- [x] panic が aggregation される
 
 ## Validation
 
@@ -58,10 +58,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

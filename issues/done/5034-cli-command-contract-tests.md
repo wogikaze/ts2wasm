@@ -30,13 +30,13 @@ CLI の出力形式変更がテストで捕捉されず、ユーザーに影響�
 ## Scope
 
 In scope:
-- [ ] build コマンドの契約テスト
-- [ ] check コマンドの契約テスト
-- [ ] dump コマンドの契約テスト
-- [ ] server コマンドの契約テスト
+- [x] build コマンドの契約テスト
+- [x] check コマンドの契約テスト
+- [x] dump コマンドの契約テスト
+- [x] server コマンドの契約テスト
 
 Out of scope:
-- [ ] CLI の新機能追加
+- [x] CLI の新機能追加
 
 ## Affected paths
 
@@ -45,8 +45,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] 各サブコマンドの契約テストが存在する
-- [ ] 出力変更時にテストが fail する
+- [x] 各サブコマンドの契約テストが存在する
+- [x] 出力変更時にテストが fail する
 
 ## Validation
 
@@ -58,10 +58,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none

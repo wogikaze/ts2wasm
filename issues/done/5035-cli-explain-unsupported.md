@@ -30,12 +30,12 @@ unsupported エラー時に tracking issue や回避策が表示されない。
 ## Scope
 
 In scope:
-- [ ] `--explain-unsupported` CLI フラグの追加
-- [ ] tracking issue の紐付け
-- [ ] 該当 fixture の表示
+- [x] `--explain-unsupported` CLI フラグの追加
+- [x] tracking issue の紐付け
+- [x] 該当 fixture の表示
 
 Out of scope:
-- [ ] unsupported ケースの自動修正
+- [x] unsupported ケースの自動修正
 
 ## Affected paths
 
@@ -44,8 +44,8 @@ Expected:
 
 ## Acceptance criteria
 
-- [ ] `--explain-unsupported` が tracking issue を表示する
-- [ ] 該当 fixture パスが表示される
+- [x] `--explain-unsupported` が tracking issue を表示する
+- [x] 該当 fixture パスが表示される
 
 ## Validation
 
@@ -57,10 +57,10 @@ cargo nextest run
 ## Docs / current-state / issue sync
 
 Final-state docs:
-- [ ] not affected
+- [x] not affected
 
 Current state:
-- [ ] not affected
+- [x] not affected
 
 Follow-up issues:
-- [ ] none
+- [x] none
