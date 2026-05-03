@@ -117,8 +117,8 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/092-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
-- `issues/open/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
-- `issues/open/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
+- `issues/done/460-implement-ClassDeclaration.md` - Implement Classdeclaration (same feature label, same group key, title overlap)
+- `issues/done/477-implement-accessOverriddenBaseClassMember.md` - Implement Accessoverriddenbaseclassmember (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -211,7 +211,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/477-implement-accessOverriddenBaseClassMember.md",
+    "path": "issues/done/477-implement-accessOverriddenBaseClassMember.md",
     "title": "Implement Accessoverriddenbaseclassmember",
     "reason": "same reference path, same feature label"
   },

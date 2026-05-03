@@ -119,7 +119,7 @@ Follow-up issues:
 - `issues/open/090-implement-acceptableAlias.md` - Implement Acceptablealias (same reference path, same group key, title overlap)
 - `issues/open/475-implement-acceptableAlias.md` - Implement Acceptablealias (same reference path, same feature label, same group key, title overlap)
 - `issues/open/543-implement-APISample-import-export.md` - Implement Apisample Import Export (same feature label, same group key, title overlap)
-- `issues/open/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
+- `issues/done/549-implement-FunctionDeclaration-import-export.md` - Implement Functiondeclaration Import Export (same feature label, same group key, title overlap)
 - `issues/open/561-implement-acceptableAlias.md` - Implement Acceptablealias (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage

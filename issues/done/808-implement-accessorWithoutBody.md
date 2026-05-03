@@ -119,8 +119,8 @@ Follow-up issues:
 
 - `issues/open/105-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same reference path, same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
-- `issues/open/487-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same reference path, same feature label, same group key, title overlap)
-- `issues/open/573-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same reference path, same feature label, same group key, title overlap)
+- `issues/done/487-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same reference path, same feature label, same group key, title overlap)
+- `issues/done/573-implement-accessorWithoutBody.md` - Implement Accessorwithoutbody (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

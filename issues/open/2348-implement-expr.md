@@ -125,7 +125,7 @@ Follow-up issues:
 - `issues/open/425-implement-destructuring.md` - Implement destructuring (same feature label, same group key, title overlap)
 - `issues/open/441-implement-object-literal.md` - Implement object literal enhancements (same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/open/459-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
+- `issues/done/459-implement-ArrowFunctionExpression.md` - Implement Arrowfunctionexpression (same feature label, same group key, title overlap)
 
 ## Smart triage
 

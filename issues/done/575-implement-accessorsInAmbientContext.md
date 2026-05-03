@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/108-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same group key, title overlap)
-- `issues/open/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same feature label, same group key, title overlap)
+- `issues/done/489-implement-accessorsInAmbientContext.md` - Implement Accessorsinambientcontext (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -208,7 +208,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/489-implement-accessorsInAmbientContext.md",
+    "path": "issues/done/489-implement-accessorsInAmbientContext.md",
     "title": "Implement Accessorsinambientcontext",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -220,7 +220,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },

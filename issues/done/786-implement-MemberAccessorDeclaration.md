@@ -118,8 +118,8 @@ Follow-up issues:
 
 - `issues/open/078-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
-- `issues/open/465-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
-- `issues/open/551-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/done/465-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
+- `issues/done/551-implement-MemberAccessorDeclaration.md` - Implement Memberaccessordeclaration (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

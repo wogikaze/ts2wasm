@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/open/101-implement-accessorParameterAccessibilityModifier.md` - Implement Accessorparameteraccessibilitymodifier (same reference path, same feature label, same group key, title overlap)
 - `issues/open/422-implement-class-accessor.md` - Implement class-accessor support (same feature label, same group key, title overlap)
-- `issues/open/485-implement-accessorParameterAccessibilityModifier.md` - Implement Accessorparameteraccessibilitymodifier (same reference path, same feature label, same group key, title overlap)
+- `issues/done/485-implement-accessorParameterAccessibilityModifier.md` - Implement Accessorparameteraccessibilitymodifier (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -198,7 +198,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/485-implement-accessorParameterAccessibilityModifier.md",
+    "path": "issues/done/485-implement-accessorParameterAccessibilityModifier.md",
     "title": "Implement Accessorparameteraccessibilitymodifier",
     "reason": "same reference path, same feature label, title overlap"
   }

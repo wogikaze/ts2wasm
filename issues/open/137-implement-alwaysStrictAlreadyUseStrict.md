@@ -435,3 +435,22 @@ date:
 Remaining risks:
 
 - none
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This generated triage spike issue was copy-closed to `issues/done/` as part of a batch close cycle without actual triage completion. The done/ copy only differs from open/ in checkbox state ([ ] → [x]) with no "Status" note, no child issues created, no implementation commits, and empty completion evidence. The checkboxes were batch-checked without evidence that the triage was actually performed.
+
+**True-done checklist** (all must pass):
+
+1. Perform actual triage review of the reference failure case
+2. Either create child implementation issue(s) or confirm this issue is superseded by an existing issue (with "Status" note)
+3. Fill in completion evidence section with triage results
+4. Remove stale open/ copy if it exists
+
+**Commands that must pass**:
+
+```sh
+cargo fmt --all --check
+cargo nextest run
+```

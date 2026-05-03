@@ -118,7 +118,7 @@ Follow-up issues:
 
 - `issues/open/146-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same group key, title overlap)
 - `issues/open/521-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
-- `issues/open/607-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
+- `issues/done/607-implement-ambientEnumElementInitializer.md` - Implement Ambientenumelementinitializer (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

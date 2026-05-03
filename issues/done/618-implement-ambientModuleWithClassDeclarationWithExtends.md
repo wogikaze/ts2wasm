@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/158-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same group key, title overlap)
-- `issues/open/532-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
+- `issues/done/532-implement-ambientModuleWithClassDeclarationWithExtends.md` - Implement Ambientmodulewithclassdeclarationwithextends (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -207,7 +207,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/532-implement-ambientModuleWithClassDeclarationWithExtends.md",
+    "path": "issues/done/532-implement-ambientModuleWithClassDeclarationWithExtends.md",
     "title": "Implement Ambientmodulewithclassdeclarationwithextends",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -219,7 +219,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },

@@ -117,7 +117,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/139-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same group key, title overlap)
-- `issues/open/517-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
+- `issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md` - Implement Alwaysstrictnoimplicitusestrict (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -209,7 +209,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/517-implement-alwaysStrictNoImplicitUseStrict.md",
+    "path": "issues/done/517-implement-alwaysStrictNoImplicitUseStrict.md",
     "title": "Implement Alwaysstrictnoimplicitusestrict",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -221,7 +221,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },

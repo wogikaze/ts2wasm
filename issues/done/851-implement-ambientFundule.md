@@ -117,8 +117,8 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/155-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same group key, title overlap)
-- `issues/open/530-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same feature label, same group key, title overlap)
-- `issues/open/616-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same feature label, same group key, title overlap)
+- `issues/done/530-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same feature label, same group key, title overlap)
+- `issues/done/616-implement-ambientFundule.md` - Implement Ambientfundule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 

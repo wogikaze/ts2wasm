@@ -123,7 +123,7 @@ Follow-up issues:
 
 - `issues/open/138-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same reference path, same feature label, same group key, title overlap)
 - `issues/open/432-implement-import-export.md` - Implement import/export module syntax (same feature label, same group key, title overlap)
-- `issues/open/516-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same reference path, same feature label, same group key, title overlap)
+- `issues/done/516-implement-alwaysStrictModule.md` - Implement Alwaysstrictmodule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -215,7 +215,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/516-implement-alwaysStrictModule.md",
+    "path": "issues/done/516-implement-alwaysStrictModule.md",
     "title": "Implement Alwaysstrictmodule",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -227,7 +227,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },

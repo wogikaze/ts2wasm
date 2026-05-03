@@ -118,7 +118,7 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/115-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same reference path, same group key, title overlap)
-- `issues/open/495-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same reference path, same feature label, same group key, title overlap)
+- `issues/done/495-implement-aliasInaccessibleModule.md` - Implement Aliasinaccessiblemodule (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -209,7 +209,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/495-implement-aliasInaccessibleModule.md",
+    "path": "issues/done/495-implement-aliasInaccessibleModule.md",
     "title": "Implement Aliasinaccessiblemodule",
     "reason": "same reference path, same feature label, title overlap"
   },
@@ -221,7 +221,7 @@ Duplicate candidates:
   },
   {
     "state": "open",
-    "path": "issues/open/549-implement-FunctionDeclaration-import-export.md",
+    "path": "issues/done/549-implement-FunctionDeclaration-import-export.md",
     "title": "Implement Functiondeclaration Import Export",
     "reason": "same feature label, title overlap"
   },

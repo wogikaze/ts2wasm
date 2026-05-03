@@ -117,8 +117,8 @@ Follow-up issues:
 ## Duplicate detection
 
 - `issues/open/164-implement-ambientStatement.md` - Implement Ambientstatement (same reference path, same group key, title overlap)
-- `issues/open/537-implement-ambientStatement.md` - Implement Ambientstatement (same reference path, same feature label, same group key, title overlap)
-- `issues/open/623-implement-ambientStatement.md` - Implement Ambientstatement (same reference path, same feature label, same group key, title overlap)
+- `issues/done/537-implement-ambientStatement.md` - Implement Ambientstatement (same reference path, same feature label, same group key, title overlap)
+- `issues/done/623-implement-ambientStatement.md` - Implement Ambientstatement (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
