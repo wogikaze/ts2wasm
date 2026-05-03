@@ -8,6 +8,70 @@ use std::path::Path;
 
 use ts2wasm_frontend::Diagnostic;
 
+/// Test262 feature name to tracking-issue ID mapping.
+///
+/// Each entry maps a test262 `features:` value to the ts2wasm issue that tracks
+/// its implementation. Unknown features produce an UnsupportedSyntax diagnostic
+/// pointing to the closest parent meta-issue.
+const KNOWN_FEATURES: &[(&str, &str)] = &[
+    ("IsHTMLDDA", "issue-5022"),
+    ("createRealm", "issue-5023"),
+    ("tail-call-optimization", "issue-5048"),
+    ("Symbol.asyncIterator", "issue-5052"),
+    // --- tracked features (known but not yet stubbed) ---
+    ("Array.fromAsync", "issue-5024"),
+    ("Array.isTemplateObject", "issue-5025"),
+    ("ArrayBuffer", "issue-408"),
+    ("Atomics", "issue-100"),
+    ("Atomics.pause", "issue-119"),
+    ("caller", "issue-346"),
+    ("DataView", "issue-408"),
+    ("Date", "issue-423"),
+    ("FinalizationRegistry", "issue-436"),
+    ("Float16Array", "issue-436"),
+    ("global", "issue-5025"),
+    ("hashbang", "issue-5024"),
+    ("ImmutablePrototypeExotic", "issue-5025"),
+    ("Intl.DateTimeFormat-formatRange", "issue-436"),
+    ("Intl.DateTimeFormat.prototype.formatToParts", "issue-436"),
+    ("Intl.Locale", "issue-436"),
+    ("Intl.NumberFormat-unified", "issue-436"),
+    ("Intl.Segmenter", "issue-436"),
+    ("Intl.Segmenter-v2", "issue-436"),
+    ("Intl.Segmenter-supportedLocalesOf", "issue-436"),
+    ("IsHTMLDDA", "issue-5022"),
+    ("iterator-helpers", "issue-436"),
+    ("JSON", "issue-5025"),
+    ("Map", "issue-5025"),
+    ("Math.sumPrecise", "issue-5024"),
+    ("new-set-methods", "issue-436"),
+    ("Object.entries", "issue-5025"),
+    ("Object.fromEntries", "issue-5024"),
+    ("Object.is", "issue-5025"),
+    ("Promise", "issue-5025"),
+    ("Promise.allSettled", "issue-5024"),
+    ("Promise.all", "issue-5025"),
+    ("Proxy", "issue-5025"),
+    ("Reflect", "issue-5025"),
+    ("RegExp", "issue-5025"),
+    ("RegExp.escape", "issue-5024"),
+    ("RegExp-v-flag", "issue-5024"),
+    ("Set", "issue-5025"),
+    ("ShadowRealm", "issue-436"),
+    ("SharedArrayBuffer", "issue-408"),
+    ("String", "issue-5025"),
+    ("Symbol", "issue-5025"),
+    ("Symbol.species", "issue-5024"),
+    ("Symbol.unscopables", "issue-5025"),
+    ("Temporal", "issue-436"),
+    ("TypedArray", "issue-408"),
+    ("WeakMap", "issue-5025"),
+    ("WeakRef", "issue-436"),
+    ("WeakSet", "issue-5025"),
+    ("WebAssembly", "issue-5025"),
+    ("error-message", "issue-5024"),
+];
+
 /// Process test262 metadata directives if present in source.
 ///
 /// If the source file contains test262 YAML frontmatter with includes/features
@@ -30,11 +94,19 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
 
     let frontmatter = &source[..=frontmatter_end + 4]; // Include the closing */
     let metadata = parse_test262_metadata(frontmatter);
-    if metadata.includes.is_empty() && metadata.features.is_empty() {
+    if metadata.includes.is_empty() && metadata.features.is_empty() && metadata.negative.is_none() {
         return Ok(source.to_string());
     }
 
     let mut injected = String::new();
+
+    // Inject `@negative` comment when a negative directive is present.
+    if let Some(negative_phase) = &metadata.negative {
+        if !injected.is_empty() {
+            injected.push('\n');
+        }
+        injected.push_str(&format!("// @negative phase={negative_phase}\n"));
+    }
 
     // Insert feature-backed stubs (e.g. `$262`) when supported by metadata.
     let feature_stubs = build_feature_stubs(&metadata.features)?;
@@ -89,6 +161,8 @@ pub fn process_test262_includes(input: &Path, source: &str) -> Result<String, Di
 struct Test262Directives {
     includes: Vec<String>,
     features: Vec<String>,
+    /// Phase extracted from `negative:` directive (e.g. "early", "runtime").
+    negative: Option<String>,
 }
 
 /// Extract supported directives from YAML frontmatter.
@@ -133,6 +207,16 @@ fn parse_test262_metadata(frontmatter: &str) -> Test262Directives {
             }
             "features" => {
                 directives.features.extend(parse_yaml_list(value));
+            }
+            "negative" => {
+                if !value.is_empty() && directives.negative.is_none() {
+                    directives.negative = Some(value.to_owned());
+                }
+            }
+            "phase" => {
+                if !value.is_empty() {
+                    directives.negative = Some(value.to_owned());
+                }
             }
             _ => {}
         }
@@ -215,10 +299,15 @@ fn build_feature_stubs(features: &[String]) -> Result<String, Diagnostic> {
     }
 
     if let Some(feature) = unsupported_feature {
+        let tracking_id = KNOWN_FEATURES
+            .iter()
+            .find(|(name, _)| *name == feature)
+            .map(|(_, id)| *id)
+            .unwrap_or("issue-5000");
         return Err(Diagnostic {
             code: ts2wasm_frontend::DiagCode::UnsupportedSyntax,
             message: format!(
-                "UnsupportedTest262Metadata/test262-metadata: test262 feature `{feature}` is not supported by this runner slice"
+                "UnsupportedTest262Metadata/test262-metadata: test262 feature `{feature}` is not supported by this runner slice [{tracking_id}]"
             ),
             span: None,
         });
@@ -430,5 +519,47 @@ var x = 1;"#;
         let source = "var x = 1;";
         let result = remove_frontmatter(source);
         assert_eq!(result, "var x = 1;");
+    }
+
+    #[test]
+    fn test_negative_directive_extracted() {
+        let source = r#"/*---
+negative:
+  phase: early
+  type: SyntaxError
+---*/
+"#;
+        let metadata = parse_test262_metadata(source);
+        assert_eq!(metadata.negative, Some("early".to_owned()));
+    }
+
+    #[test]
+    fn test_negative_directive_injects_comment() {
+        let source = r#"/*---
+negative:
+  phase: early
+  type: SyntaxError
+---*/
+
+var x = 1;"#;
+        let input = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../reference/test262/test/language/expressions/does-not-exist.js");
+        let processed =
+            process_test262_includes(&input, source).expect("negative directive should not fail");
+        assert!(processed.contains("// @negative"));
+    }
+
+    #[test]
+    fn test_known_feature_tracking_id_in_error() {
+        let source = "/*---\nfeatures: [ArrayBuffer]\n---*/\nvar x = 1;";
+        let input = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../reference/test262/test/language/expressions/does-not-exist.js");
+        let error = process_test262_includes(&input, source)
+            .expect_err("known-but-unsupported feature should be rejected");
+        assert!(
+            error.message.contains("[issue-408]"),
+            "tracking ID should appear in error message, got: {}",
+            error.message
+        );
     }
 }
