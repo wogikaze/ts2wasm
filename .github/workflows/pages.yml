@@ -1,0 +1,165 @@
+name: pages
+
+on:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: web-ui/package-lock.json
+
+      - name: Install Python docs tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install mkdocs
+
+      - name: Install runtime tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wabt
+          wget -q https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-linux-x86_64.tar.gz
+          tar -xzf iwasm-2.4.3-linux-x86_64.tar.gz
+          sudo mv iwasm /usr/local/bin/
+          chmod +x /usr/local/bin/iwasm
+
+      - name: Fetch reference suites
+        run: |
+          mkdir -p reference
+          if [ ! -d reference/test262/.git ]; then
+            git clone --depth 1 https://github.com/tc39/test262.git reference/test262
+          fi
+          if [ ! -d reference/typescript/.git ]; then
+            git clone --depth 1 https://github.com/microsoft/TypeScript.git reference/typescript
+          fi
+          if [ ! -d reference/typescript-go/.git ]; then
+            git clone --depth 1 https://github.com/microsoft/typescript-go.git reference/typescript-go
+          fi
+
+      - name: Run full reference coverage
+        run: |
+          ./scripts/manager reference-coverage test262 --jsonl --jobs 4
+          ./scripts/manager reference-coverage tsc --jobs 4
+          ./scripts/manager reference-coverage tsgo --jobs 4
+          ./scripts/manager web-ui-data
+
+      - name: Build coverage dashboard
+        run: |
+          npm ci
+          npm run build -- --base=/ts2wasm/dashboard/
+        working-directory: web-ui
+
+      - name: Build documentation
+        run: |
+          cat > mkdocs.yml <<'EOF'
+          site_name: ts2wasm docs
+          docs_dir: docs
+          site_dir: pages-site/docs
+          use_directory_urls: true
+          theme:
+            name: mkdocs
+          nav:
+            - Index: 00-docs-list.md
+            - Project Definition: 01-project-definition.md
+            - Execution Model: 02-execution-model-and-targets.md
+            - API and Host Capability: 03-api-and-host-capability.md
+            - Compiler Architecture and Runtime: 04-compiler-architecture-and-runtime.md
+            - Compatibility and Semantics: 05-compatibility-and-semantics.md
+            - Testing and Coverage: 06-testing-and-coverage.md
+            - Performance and Optimization: 07-performance-and-optimization.md
+            - Roadmap and Success: 08-roadmap-and-success.md
+            - Security and Capability Model: 09-security-and-capability-model.md
+            - Related Projects: 10-related-projects.md
+            - Shared Definitions: 11-shared-definitions.md
+            - Coding Standard: 12-coding-standard.md
+            - IR Contracts: 13-ir-contracts.md
+            - Runtime ABI: 14-runtime-abi.md
+            - Coverage Matrix: 15-coverage-matrix.md
+            - Commit and Push Policy: 16-commit-and-push-policy.md
+            - Windows Development: 17-windows-development.md
+            - Web UI Reporting: 18-web-ui-reporting.md
+            - Parallel Development: 19-parallel-development.md
+            - Language Reference:
+                - Frontend Parser Wave: language-reference/frontend-parser-wave.md
+                - JavaScript Features: language-reference/javascript-features.md
+                - TypeScript Features: language-reference/typescript-features.md
+                - WASI Features: language-reference/wasi-features.md
+                - WASM Features: language-reference/wasm-features.md
+          EOF
+          mkdocs build --strict
+
+      - name: Assemble Pages site
+        run: |
+          mkdir -p pages-site/dashboard
+          cp -R web-ui/dist/. pages-site/dashboard/
+          cat > pages-site/index.html <<'EOF'
+          <!doctype html>
+          <html lang="en">
+            <head>
+              <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1">
+              <title>ts2wasm</title>
+              <style>
+                body { margin: 0; font-family: system-ui, sans-serif; color: #171717; background: #f7f7f5; }
+                main { max-width: 760px; margin: 12vh auto; padding: 0 24px; }
+                h1 { font-size: 40px; margin: 0 0 24px; }
+                nav { display: grid; gap: 12px; }
+                a { display: block; padding: 16px 18px; border: 1px solid #d8d8d4; border-radius: 8px; background: white; color: #0f172a; text-decoration: none; font-weight: 650; }
+                a span { display: block; margin-top: 4px; color: #52525b; font-weight: 400; }
+              </style>
+            </head>
+            <body>
+              <main>
+                <h1>ts2wasm</h1>
+                <nav>
+                  <a href="./docs/">Documentation<span>Design docs, architecture, runtime ABI, and development policy.</span></a>
+                  <a href="./dashboard/">Coverage Dashboard<span>Latest reference coverage generated by GitHub Actions.</span></a>
+                </nav>
+              </main>
+            </body>
+          </html>
+          EOF
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: pages-site
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
