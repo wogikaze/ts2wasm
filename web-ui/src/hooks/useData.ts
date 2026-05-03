@@ -3,7 +3,7 @@ import type { TestResult, CoverageData, HistoricalData, TestResultsMetadata, Tes
 
 const DEFAULT_LIVE_POLL_MS = 2000
 const MIN_LIVE_POLL_MS = 250
-const DATA_ROOT = `${import.meta.env.BASE_URL}data/`
+const DATA_ROOT = `${new URL("./data/", (typeof window === 'undefined' ? 'http://localhost/dashboard/' : window.location.href)).pathname}`
 
 type LiveStatus = 'static' | 'connecting' | 'connected' | 'error'
 

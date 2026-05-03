@@ -12,7 +12,7 @@ import subprocess
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WEB_UI_DIR = PROJECT_ROOT / "web-ui"
-SITE_DASHBOARD_DIR = PROJECT_ROOT / "site" / "docs" / ".vitepress" / "public" / "dashboard"
+SITE_DASHBOARD_DIR = PROJECT_ROOT / "site" / "docs" / "public" / "dashboard"
 DATA_SRC_DIR = PROJECT_ROOT / "site" / "docs" / "coverage" / "web-ui" / "public" / "data"
 DATA_DST_DIR = SITE_DASHBOARD_DIR / "data"
 

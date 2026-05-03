@@ -77,7 +77,7 @@ cd site
 npm run build
 ```
 
-This generates static dashboard assets under `site/docs/.vitepress/public/dashboard/` and serves
+This generates static dashboard assets under `site/docs/public/dashboard/` and serves
 them from `/dashboard/`.
 
 ## Views

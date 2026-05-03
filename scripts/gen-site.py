@@ -27,7 +27,7 @@ COVERAGE_DIR = PROJECT_ROOT / "artifacts" / "coverage"
 REFERENCE_DIR = PROJECT_ROOT / "reference"
 COVERAGE_WEB_UI_DIR = SITE_DOCS / "coverage" / "web-ui"
 WEB_UI_DATA_DIR = COVERAGE_WEB_UI_DIR / "public" / "data"
-SITE_DASHBOARD_DIST_INDEX = SITE_DOCS / ".vitepress" / "public" / "dashboard" / "index.html"
+SITE_DASHBOARD_DIST_INDEX = SITE_DOCS / "public" / "dashboard" / "index.html"
 
 
 def read_json_safe(path: Path) -> Dict[str, Any]:
