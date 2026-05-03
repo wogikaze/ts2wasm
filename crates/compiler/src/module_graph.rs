@@ -207,7 +207,31 @@ impl ModuleGraphBuilder {
                     message: format!("failed to read {}: {error}", resolved_path.display()),
                     span: None,
                 })?;
-                let resolved_program = parse_module_source(&source)?;
+                // For .d.ts files, add implicit declare to exported const without initializers
+                let resolved_source = if resolved_path.extension().and_then(|e| e.to_str()) == Some("d.ts") {
+                    // Convert "export const NAME: TYPE;" to "export declare const NAME: TYPE;" 
+                    // for type-only declarations without initializers
+                    // Simple string replace: "export const" without "=" -> "export declare const"
+                    source.lines()
+                        .map(|line| {
+                            let trimmed = line.trim();
+                            if trimmed.starts_with("export const") 
+                                && !trimmed.contains("=") 
+                                && trimmed.ends_with(";") 
+                                && !trimmed.contains("declare") 
+                            {
+                                line.replacen("export const", "export declare const", 1)
+                            } else {
+                                line.to_string()
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                        .join("
+")
+                } else {
+                    source
+                };
+                let resolved_program = parse_module_source(&resolved_source)?;
                 self.visit_module(resolved_path.clone(), &resolved_program)?
             };
 
