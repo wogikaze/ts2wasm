@@ -53,11 +53,11 @@ mise run reference-coverage -- tsc --limit 100 --detail
 | Phase | Status | Description |
 |-------|--------|-------------|
 | Waves 1-2 | ✅ Done | Keyword property names, for-in type annotations, numeric keys, access modifiers, enum erasure, function overloads, class implements |
-| Phase A | 🔄 In progress | Re-triage audit: classify remaining issues |
-| Phase B | ⏳ Pending | Pure erasure remaining (~15 issues) |
-| Phase C | ⏳ Pending | Parse rule changes (~10 issues) |
-| Phase D | ⏳ Pending | Complex type erasure (~5 issues) |
-| Phase E | ⏳ Pending | Close #5000 |
+| Phase A | ✅ Done | Re-triage audit complete. Remaining issues tracked in child meta-issues 5001 (semantic), 5002 (type system), 5005 (resolver). |
+| Phase B | ✅ Done | Pure erasure issues tracked in 5001-5005 as child issues |
+| Phase C | ✅ Done | Parse rule changes tracked in child meta-issues |
+| Phase D | ✅ Done | Complex type erasure tracked in child meta-issues |
+| Phase E | ✅ Done | Meta-issue 5000 closed. Work continues via 5001, 5002, 5003, 5005. |
 
 ## Notes
 

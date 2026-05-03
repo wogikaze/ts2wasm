@@ -10,14 +10,14 @@ Issue files are the source of truth for work items. The generated section below 
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
 | abi | 7 | 0 | 7 |
-| backend | 13 | 4 | 9 |
+| backend | 13 | 1 | 12 |
 | cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4175 | 175 |
+| frontend | 4350 | 4171 | 179 |
 | harness | 1 | 1 | 0 |
-| ir | 18 | 1 | 17 |
+| ir | 18 | 0 | 18 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4502 | 394 |
+| total | 4896 | 4494 | 402 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,14 +156,8 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
-| 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | implementation-ready | P2 | 399 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases |
-| 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
-| 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime | feature | backend | implementation-ready | P0 |  | [backend-wasm] Replace throw-as-return with catchable exception runtime |
-| 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP |
-| 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components |
-| 5043 | [frontend] Split large lexer/parser files by grammar responsibility | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility |
-| 5045 | [frontend] Improve syntax error recovery and source spans | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans |
-| 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
+| 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 | 5000 | Meta: TypeScript Compiler Semantic Analysis Coverage |
+| 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 | 5000 | Meta: TypeScript Compiler Name Resolution Coverage |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4650,10 +4644,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 4812 | Implement RegExp literal support | spike | runtime/builtins | class: blocked | Implement RegExp literal support |
 | 4813 | Implement type-system support | spike | frontend/syntax | class: blocked | Implement type-system support |
 | 4814 | Investigate and classify unknown-unsupported cases | spike | frontend/syntax | class: triage-needed | Investigate and classify unknown-unsupported cases |
-| 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | 5000 | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5002 | Meta: TypeScript Compiler Type System Coverage | meta | frontend/semantics | 5000, 5005 | Meta: TypeScript Compiler Type System Coverage |
 | 5003 | Meta: TypeScript Compiler Declaration Emit Coverage | meta | frontend/syntax | 5000, 5001 | Meta: TypeScript Compiler Declaration Emit Coverage |
-| 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | 5000 | Meta: TypeScript Compiler Name Resolution Coverage |
 | 5006 | Meta: TypeScript Compiler Scope Analysis Coverage | meta | frontend/resolver | 5005 | Meta: TypeScript Compiler Scope Analysis Coverage |
 | 5012 | Implement Date object support | spike | frontend/syntax | class: triage-needed | Implement Date object support |
 | 5013 | Implement duplicate-local support | spike | reference/triage | class: triage-needed | Implement duplicate-local support |
@@ -4946,6 +4938,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 404 | Support mutable outer local captures in callback functions | feature | ir/runtime | see `issues/done/404-mutable-outer-local-callback-captures.md` |
 | 405 | Support Test262 harness instanceof function RHS | feature | frontend/semantics | see `issues/done/405-test262-instanceof-harness-function-rhs.md` |
 | 406 | Direct eval Annex B existing binding residuals | feature | frontend/semantics | see `issues/done/406-direct-eval-annexb-existing-binding-residuals.md` |
+| 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | see file |
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 | 444 | Implement RegExp literal support | spike | runtime/builtins | see `issues/done/444-implement-regexp-literal.md` |
@@ -5029,6 +5022,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 3996 | Implement Compiler | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
 | 4284 | Implement Stringincludes | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
 | 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
+| 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | see file |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | see file |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | meta | frontend/resolver | see file |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | see file |
@@ -5040,7 +5034,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | see file |
 | 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see `issues/done/5023-implement-api-sample-watcher-arrow.md` |
 | 5026 | [backend-wasm] Implement real class declaration emission | feature | backend | see file |
+| 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime | feature | backend | see file |
 | 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths | feature | backend | see file |
+| 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP | feature | backend | see file |
+| 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components | refactor | backend | see file |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records | feature | cli | see file |
@@ -5053,9 +5050,12 @@ Issue files are the source of truth for work items. The generated section below 
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation | feature | cli | see file |
 | 5041 | [frontend] Complete Expr AST fixture coverage | test | frontend | see file |
 | 5042 | [frontend] Complete Stmt AST fixture coverage | test | frontend | see file |
+| 5043 | [frontend] Split large lexer/parser files by grammar responsibility | refactor | frontend | see file |
 | 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries | feature | frontend | see file |
+| 5045 | [frontend] Improve syntax error recovery and source spans | feature | frontend | see file |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
+| 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | see `issues/done/5048-ir-bigint-lowering.md` |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | see `issues/done/5049-ir-destructuring.md` |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | see `issues/done/5050-ir-iterator-protocol.md` |
 | 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |

@@ -1,6 +1,6 @@
 # Coverage Matrix
 
-Last updated: 2026-04-28
+Last updated: 2026-05-04
 
 この文書は reference 配下のテスト資産を分母にして coverage を可視化する dashboard である。
 workstream の進行度ではなく、外部参照スイートに対してどこまで実行・分類できているかを 1 行ずつ管理する。

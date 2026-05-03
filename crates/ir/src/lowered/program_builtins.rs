@@ -36,6 +36,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "defineProperty" => Some("ObjectDefineProperty".to_owned()),
                 "assign" => Some("ObjectAssign".to_owned()),
                 "create" => Some("ObjectCreate".to_owned()),
+                "is" => Some("ObjectIs".to_owned()),
                 _ => None,
             };
         }
@@ -56,6 +57,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         }
     }
     match method {
+        "concat" => Some("Concat".to_owned()),
         "charAt" => Some("StringCharAt".to_owned()),
         "substring" => Some("StringSubstring".to_owned()),
         "slice" => Some("StringSlice".to_owned()),
@@ -79,7 +81,6 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "hasOwnProperty" => Some("ObjectHasOwnProperty".to_owned()),
         "push" => Some("ArrayPush".to_owned()),
         "pop" => Some("ArrayPop".to_owned()),
-        "concat" => Some("ArrayConcat".to_owned()),
         "join" => Some("ArrayJoin".to_owned()),
         "reverse" => Some("ArrayReverse".to_owned()),
         _ => None,
@@ -122,6 +123,7 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "some") => Some("ArraySome"),
         ("Array", "find") => Some("ArrayFind"),
         ("Array", "filter") => Some("ArrayFilter"),
+        ("Array", "concat") => Some("ArrayConcat"),
         _ => None,
     }
 }

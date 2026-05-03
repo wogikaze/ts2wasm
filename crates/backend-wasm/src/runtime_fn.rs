@@ -228,6 +228,8 @@ pub(crate) enum RuntimeFn {
     ObjectAssign,
     /// Object.create(proto, propertiesObject)
     ObjectCreate,
+    /// Object.is(value1, value2) — SameValue comparison
+    ObjectIs,
     /// Instanceof operator
     InstanceOf,
     /// M10: Math functions
