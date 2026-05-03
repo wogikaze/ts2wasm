@@ -273,6 +273,7 @@ fn resolve_local_specifier(
         if raw_candidate.is_dir() {
             file_candidates.push(raw_candidate.join("index.ts"));
             file_candidates.push(raw_candidate.join("index.js"));
+            file_candidates.push(raw_candidate.join("index.d.ts"));
         }
         candidates = file_candidates;
     } else {
@@ -281,10 +282,12 @@ fn resolve_local_specifier(
             module_resolution_candidates(&raw_candidate, specifier).unwrap_or_else(|_| vec![]);
         bare_candidates.push(raw_candidate.join("index.ts"));
         bare_candidates.push(raw_candidate.join("index.js"));
+        bare_candidates.push(raw_candidate.join("index.d.ts"));
         let node_mod_dir = importer_dir.join("node_modules").join(&specifier.value);
         if node_mod_dir.is_dir() {
             bare_candidates.push(node_mod_dir.join("index.ts"));
             bare_candidates.push(node_mod_dir.join("index.js"));
+            bare_candidates.push(node_mod_dir.join("index.d.ts"));
         } else {
             bare_candidates.extend(
                 module_resolution_candidates(
@@ -336,7 +339,7 @@ fn module_resolution_candidates(
         .extension()
         .and_then(|extension| extension.to_str())
     {
-        Some("ts" | "js") => Ok(vec![raw_candidate.to_path_buf()]),
+        Some("ts" | "js" | "d.ts") => Ok(vec![raw_candidate.to_path_buf()]),
         Some(extension) => Err(Diagnostic {
             code: DiagCode::UnsupportedModule,
             message: format!(
@@ -348,6 +351,7 @@ fn module_resolution_candidates(
         None => Ok(vec![
             raw_candidate.with_extension("ts"),
             raw_candidate.with_extension("js"),
+            raw_candidate.with_extension("d.ts"),
         ]),
     }
 }
