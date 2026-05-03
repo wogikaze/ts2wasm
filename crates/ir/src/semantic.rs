@@ -494,8 +494,47 @@ impl<'a> HirLowerer<'a> {
         op: BinaryOp,
         right: &ResolvedExpr,
     ) -> Result<HirExpr, Diagnostic> {
-        let left = Box::new(self.lower_expr(left)?);
-        let right = Box::new(self.lower_expr(right)?);
+        self.lower_binary_chain(left, op, right)
+    }
+
+    fn lower_binary_chain(
+        &mut self,
+        left: &ResolvedExpr,
+        op: BinaryOp,
+        right: &ResolvedExpr,
+    ) -> Result<HirExpr, Diagnostic> {
+        let mut chain: Vec<(BinaryOp, &ResolvedExpr)> = Vec::new();
+        let mut current_left = left;
+        let mut current_op = op;
+        let mut current_right = right;
+
+        loop {
+            chain.push((current_op, current_right));
+            if let ResolvedExpr::Binary { left, op, right } = current_left {
+                current_left = left;
+                current_op = *op;
+                current_right = right;
+            } else {
+                break;
+            }
+        }
+
+        let mut accumulated = self.lower_expr(current_left)?;
+        while let Some((binary_op, binary_right)) = chain.pop() {
+            let right = self.lower_expr(binary_right)?;
+            let left = Box::new(accumulated);
+            let right = Box::new(right);
+            accumulated = self.lower_binary_expr(left, binary_op, right)?;
+        }
+        Ok(accumulated)
+    }
+
+    fn lower_binary_expr(
+        &self,
+        left: Box<HirExpr>,
+        op: BinaryOp,
+        right: Box<HirExpr>,
+    ) -> Result<HirExpr, Diagnostic> {
         match op {
             BinaryOp::Add => Ok(HirExpr::JsAdd { left, right }),
             BinaryOp::StrictEqual => Ok(HirExpr::JsStrictEqual { left, right }),

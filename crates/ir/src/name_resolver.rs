@@ -1,4 +1,4 @@
-use ts2wasm_frontend::{ArrayLiteralElement, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
+use ts2wasm_frontend::{ArrayLiteralElement, BinaryOp, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
 
 use crate::binding_pattern::parse_binding_pattern;
 
@@ -636,17 +636,7 @@ impl NameResolver {
                 right,
                 span,
             } => {
-                if let Some(diagnostic) =
-                    self.bigint_number_model_gap(left.as_ref(), right.as_ref(), *span)
-                {
-                    return Err(diagnostic);
-                }
-                Ok(Expr::Binary {
-                    left: Box::new(self.resolve_expr(left)?),
-                    op: *op,
-                    right: Box::new(self.resolve_expr(right)?),
-                    span: *span,
-                })
+                self.resolve_binary_chain(left, *op, right, *span)
             }
             Expr::Call { callee, args, span } => {
                 if self.is_test262_assert_reference_error_probe(callee, args)
@@ -915,6 +905,58 @@ impl NameResolver {
                 span: *span,
             }),
         }
+    }
+
+    fn resolve_binary_chain(
+        &mut self,
+        left: &Expr,
+        op: BinaryOp,
+        right: &Expr,
+        span: Span,
+    ) -> Result<Expr, Diagnostic> {
+        let mut chain: Vec<(BinaryOp, &Expr, Span)> = Vec::new();
+        let mut current_left = left;
+        let mut current_op = op;
+        let mut current_right = right;
+        let mut current_span = span;
+
+        loop {
+            if let Some(diagnostic) =
+                self.bigint_number_model_gap(current_left, current_right, current_span)
+            {
+                return Err(diagnostic);
+            }
+            chain.push((current_op, current_right, current_span));
+            let mut continued = false;
+            if let Expr::Binary {
+                left,
+                op,
+                right,
+                span,
+            } = current_left
+            {
+                current_left = left;
+                current_op = *op;
+                current_right = right;
+                current_span = *span;
+                continued = true;
+            }
+            if !continued {
+                break;
+            }
+        }
+
+        let mut accumulated = self.resolve_expr(current_left)?;
+        while let Some((op, right, span)) = chain.pop() {
+            let right = self.resolve_expr(right)?;
+            accumulated = Expr::Binary {
+                left: Box::new(accumulated),
+                op,
+                right: Box::new(right),
+                span,
+            };
+        }
+        Ok(accumulated)
     }
 
     /// Resolve an expression used as a member access target (e.g., `obj.prop`, `obj[0]`).
