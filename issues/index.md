@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4249 | 101 |
+| frontend | 4350 | 4246 | 104 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 4 | 14 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4584 | 312 |
+| total | 4896 | 4581 | 315 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -295,7 +295,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 177 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
 | 178 | Implement Anonterface | spike | frontend/syntax | class: blocked | Implement Anonterface |
 | 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
-| 180 | Implement Anonymousclassexpression | spike | frontend/syntax | class: blocked | Implement Anonymousclassexpression |
 | 181 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
 | 182 | Implement Anyandunknownhavefalsycomponents | spike | frontend/syntax | class: blocked | Implement Anyandunknownhavefalsycomponents |
 | 183 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall |
@@ -557,7 +556,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 634 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 635 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
 | 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
-| 638 | Implement Anonymousclassexpression | spike | frontend/syntax | class: blocked | Implement Anonymousclassexpression |
 | 639 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
 | 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
 | 641 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall |
@@ -790,7 +788,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 869 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 870 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
 | 872 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
-| 873 | Implement Anonymousclassexpression | spike | frontend/syntax | class: blocked | Implement Anonymousclassexpression |
 | 874 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
 | 875 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
 | 876 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall |
@@ -4848,6 +4845,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 085 | Implement Abstractinterfaceidentifiername | spike | frontend/syntax | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
 | 095 | Implement Accessorbodyintypecontext | spike | frontend/syntax | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
 | 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
+| 180 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/180-implement-anonymousClassExpression.md` |
 | 186 | Implement Anyindexedaccessarraynoexception | spike | frontend/syntax | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
 | 188 | Implement Anyisassignabletoobject | spike | frontend/syntax | see `issues/done/188-implement-anyIsAssignableToObject.md` |
 | 189 | Implement Anyisassignabletovoid | spike | frontend/syntax | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
@@ -5036,8 +5034,10 @@ Issue files are the source of truth for work items. The generated section below 
 | 467 | Implement Transportstream | spike | frontend/syntax | see `issues/done/467-implement-TransportStream.md` |
 | 553 | Implement Transportstream | spike | frontend/syntax | see `issues/done/553-implement-TransportStream.md` |
 | 636 | Implement Anonterface | spike | frontend/syntax | see `issues/done/636-implement-anonterface.md` |
+| 638 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
 | 788 | Implement Transportstream | spike | frontend/syntax | see `issues/done/788-implement-TransportStream.md` |
 | 871 | Implement Anonterface | spike | frontend/syntax | see `issues/done/871-implement-anonterface.md` |
+| 873 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/873-implement-anonymousClassExpression.md` |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | see file |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | meta | frontend/resolver | see file |

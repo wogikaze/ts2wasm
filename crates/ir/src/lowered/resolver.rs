@@ -312,7 +312,7 @@ impl<'a> Resolver<'a> {
                 let local_id = self.declare_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
                 let lowered = if let ResolvedExpr::ArrowFn { params, body, .. } = expr {
-                    self.lower_arrow_fn_with_self(params, body, body_stmts, Some(name))?
+                    self.lower_arrow_fn_with_self(params, body, Some(name))?
                 } else {
                     self.lower_expr(expr)?
                 };

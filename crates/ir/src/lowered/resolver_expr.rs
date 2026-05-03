@@ -1712,7 +1712,7 @@ impl<'a> Resolver<'a> {
             ResolvedExpr::ModuleLoad { specifier } => Ok(LoweredExpr::ModuleLoad {
                 module_id: self.module_id_for_specifier(specifier),
             }),
-            ResolvedExpr::ArrowFn { params, body, body_stmts, .. } => self.lower_arrow_fn(params, body, body_stmts),
+            ResolvedExpr::ArrowFn { params, body, .. } => self.lower_arrow_fn(params, body),
             ResolvedExpr::FunctionExpr { name, params, body } => {
                 self.lower_named_function_expr(name, params, body)
             }
