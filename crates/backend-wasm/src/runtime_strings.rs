@@ -341,8 +341,8 @@ impl WatEmitter<'_> {
     (local.set $s_len (i32.load (local.get $s_obj)))
     (local.set $search_len (i32.load (local.get $search_obj)))
     (local.set $replace_len (i32.load (local.get $replace_obj)))
-    ;; If search is empty, return $s unchanged
-    (if (i32.eqz (local.get $search_len)) (then (return (local.get $s))))
+    ;; If search is empty, mem_equal(0) matches at pos 0, so skip early return
+    ;; and let the search loop handle it naturally.
     ;; Search loop for first occurrence
     (local.set $pos (i32.const {zero}))
     (block $not_found
