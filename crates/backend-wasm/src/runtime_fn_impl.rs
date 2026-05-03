@@ -1765,6 +1765,7 @@ impl RuntimeFn {
             Self::ObjectDefineProperty => "object_define_property",
             Self::ObjectAssign => "object_assign",
             Self::ObjectCreate => "object_create",
+            Self::ObjectIs => "object_is",
             Self::MathFloor => "math_floor",
             Self::MathCeil => "math_ceil",
             Self::MathRound => "math_round",
@@ -1965,6 +1966,7 @@ impl RuntimeFn {
             Self::ObjectDefineProperty,
             Self::ObjectAssign,
             Self::ObjectCreate,
+            Self::ObjectIs,
             // Instanceof operator
             Self::InstanceOf,
             // Math functions
@@ -2174,6 +2176,7 @@ impl RuntimeFn {
             Self::ObjectDefineProperty,
             Self::ObjectAssign,
             Self::ObjectCreate,
+            Self::ObjectIs,
             // Instanceof operator
             Self::InstanceOf,
             // Math functions
