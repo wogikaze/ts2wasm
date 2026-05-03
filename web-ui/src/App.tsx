@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { Play, CheckCircle, XCircle, AlertCircle, AlertTriangle, SkipForward, BarChart3, History, Download, Search, Filter, Moon, Sun, ChevronDown, ChevronRight } from 'lucide-react'
 import {
   Bar,
@@ -16,7 +16,7 @@ import {
   YAxis,
 } from 'recharts'
 import { useTestData, useCoverageData, useHistoricalData } from './hooks/useData'
-import type { CoverageData, HistoricalData, TestResult } from './types'
+import type { CoverageData, HistoricalData, TestResult, TestSummary } from './types'
 import './index.css'
 
 const PERF_REGRESSION_THRESHOLD = 0.2
@@ -46,8 +46,7 @@ interface RunDeltas {
   passed: number | null
   failed: number | null
   skipped: number | null
-  compile_time: number | null
-  runtime: number | null
+  duration_ms: number | null
 }
 
 interface TrendRun extends HistoricalData {
@@ -55,7 +54,7 @@ interface TrendRun extends HistoricalData {
   trendLabel: string
   seriesKey: string
   passRate: number
-  totalDuration: number
+  duration_ms: number | null
   deltas: RunDeltas
   regressionReasons: string[]
 }
@@ -68,6 +67,23 @@ interface TrendChartRow {
 
 type ThemePreference = 'dark' | 'light'
 type StatusFilter = 'all' | TestResult['status']
+
+const chartTooltipContentStyle: CSSProperties = {
+  backgroundColor: 'Canvas',
+  border: '1px solid color-mix(in srgb, CanvasText 22%, transparent)',
+  borderRadius: 6,
+  color: 'CanvasText',
+  boxShadow: '0 10px 24px rgb(0 0 0 / 0.18)',
+}
+
+const chartTooltipLabelStyle: CSSProperties = {
+  color: 'CanvasText',
+  fontWeight: 650,
+}
+
+const chartTooltipItemStyle: CSSProperties = {
+  color: 'CanvasText',
+}
 
 function getInitialTheme(): ThemePreference {
   if (typeof window === 'undefined') return 'dark'
@@ -88,6 +104,14 @@ function clampPercent(value: number) {
 
 function percentOf(value: number, total: number) {
   return total > 0 ? clampPercent((value / total) * 100) : 0
+}
+
+function testSummaryTotal(value: TestSummary) {
+  return value.passed + value.mismatch + value.runtime_error + value.build_error + value.unsupported + value.blocked
+}
+
+function shownRecordCount(test: TestResult) {
+  return Number(test.count ?? 1)
 }
 
 function formatDuration(value?: number) {
@@ -143,13 +167,20 @@ function formatDelta(value: number | null, unit = '') {
 
 function formatDurationDelta(value: number | null) {
   if (value === null) return '-'
-  if (value === 0) return '0s'
+  if (value === 0) return '0ms'
   const prefix = value > 0 ? '+' : ''
-  return `${prefix}${value.toFixed(2)}s`
+  return `${prefix}${Math.round(value).toLocaleString()}ms`
 }
 
 function worsenedByThreshold(current: number, previous: number) {
   return previous > 0 && (current - previous) / previous > PERF_REGRESSION_THRESHOLD
+}
+
+function measuredDurationMs(run: HistoricalData) {
+  if (typeof run.duration_ms === 'number' && Number.isFinite(run.duration_ms)) {
+    return run.duration_ms
+  }
+  return null
 }
 
 function trendSuiteName(run: HistoricalData) {
@@ -183,29 +214,28 @@ function buildTrendRuns(history: HistoricalData[]): TrendRun[] {
     const seriesKey = trendSeriesKey(run)
     const executed = trendExecutedCount(run)
     const passRate = executed > 0 ? (run.passed / executed) * 100 : 0
-    const totalDuration = run.compile_time + run.runtime
+    const durationMs = measuredDurationMs(run)
     const previous = previousBySeries.get(seriesKey)
     const deltas: RunDeltas = previous
       ? {
           passed: run.passed - previous.passed,
           failed: run.failed - previous.failed,
           skipped: run.skipped - previous.skipped,
-          compile_time: run.compile_time - previous.compile_time,
-          runtime: run.runtime - previous.runtime,
+          duration_ms: durationMs !== null && previous.duration_ms !== null
+            ? durationMs - previous.duration_ms
+            : null,
         }
       : {
           passed: null,
           failed: null,
           skipped: null,
-          compile_time: null,
-          runtime: null,
+          duration_ms: null,
         }
 
     const regressionReasons = [
       previous && run.failed > previous.failed ? 'failed increased' : null,
       previous && run.passed < previous.passed ? 'passed dropped' : null,
-      previous && worsenedByThreshold(run.compile_time, previous.compile_time) ? 'compile time +20%' : null,
-      previous && worsenedByThreshold(run.runtime, previous.runtime) ? 'runtime +20%' : null,
+      previous && durationMs !== null && previous.duration_ms !== null && worsenedByThreshold(durationMs, previous.duration_ms) ? 'duration +20%' : null,
     ].filter((reason): reason is string => Boolean(reason))
 
     const trendRun = {
@@ -214,7 +244,7 @@ function buildTrendRuns(history: HistoricalData[]): TrendRun[] {
       trendLabel: new Date(run.timestamp).toLocaleString(),
       seriesKey,
       passRate,
-      totalDuration,
+      duration_ms: durationMs,
       deltas,
       regressionReasons,
     }
@@ -324,8 +354,26 @@ function App() {
   })
 
   const suiteOptions = useMemo(() => (
-    Array.from(new Set(tests.map(test => test.suite))).sort()
-  ), [tests])
+    Array.from(new Set([
+      ...tests.map(test => test.suite),
+      ...Object.keys(testMetadata?.summary_by_suite ?? {}),
+    ])).sort()
+  ), [testMetadata?.summary_by_suite, tests])
+
+  const visibleSummary = useMemo(() => {
+    if (suiteFilter !== 'all' && testMetadata?.summary_by_suite?.[suiteFilter]) {
+      return testMetadata.summary_by_suite[suiteFilter]
+    }
+    return summary
+  }, [suiteFilter, summary, testMetadata?.summary_by_suite])
+
+  const visibleTotalRecords = suiteFilter === 'all'
+    ? testMetadata?.total_records ?? tests.reduce((total, test) => total + shownRecordCount(test), 0)
+    : testMetadata?.total_by_suite?.[suiteFilter] ?? 0
+  const visibleShownRecords = suiteFilter === 'all'
+    ? testMetadata?.shown_records ?? tests.reduce((total, test) => total + shownRecordCount(test), 0)
+    : testMetadata?.shown_by_suite?.[suiteFilter] ?? filteredTests.reduce((total, test) => total + shownRecordCount(test), 0)
+  const filteredShownRecords = filteredTests.reduce((total, test) => total + shownRecordCount(test), 0)
 
   const coverageStatusData = useMemo(() => [
     { name: 'Implemented', value: coverage.implemented },
@@ -366,8 +414,14 @@ function App() {
   const resultTrendRows = useMemo(() => (
     buildTrendChartRows(trendRuns, run => run.passRate)
   ), [trendRuns])
+  const hasPerformanceTrend = useMemo(() => (
+    trendRuns.some(run => run.duration_ms !== null)
+  ), [trendRuns])
   const performanceTrendRows = useMemo(() => (
-    buildTrendChartRows(trendRuns, run => run.totalDuration)
+    buildTrendChartRows(
+      trendRuns.filter(run => run.duration_ms !== null),
+      run => run.duration_ms ?? 0,
+    )
   ), [trendRuns])
 
   const currentExportName = `ts2wasm-${activeTab}`
@@ -415,9 +469,11 @@ function App() {
             skipped: run.skipped,
             compile_time: run.compile_time,
             runtime: run.runtime,
+            duration_ms: run.duration_ms ?? '',
             passed_delta: run.deltas.passed ?? '',
             failed_delta: run.deltas.failed ?? '',
             skipped_delta: run.deltas.skipped ?? '',
+            duration_ms_delta: run.deltas.duration_ms ?? '',
             regression: run.regressionReasons.join('; '),
           }))
     downloadText(`${currentExportName}.csv`, 'text/csv', toCsv(rows))
@@ -569,7 +625,8 @@ function App() {
             {testMetadata ? (
               <div className="mb-5 flex flex-wrap items-center gap-3 rounded-lg border border-gray-700 bg-gray-800 px-4 py-3 text-sm text-gray-300">
                 <span>Data source: <span className="font-semibold text-gray-100">{testMetadata.record_mode ?? 'unknown'}</span></span>
-                <span>Showing <span className="font-semibold text-gray-100">{(testMetadata.shown_records ?? tests.length).toLocaleString()}</span> of <span className="font-semibold text-gray-100">{(testMetadata.total_records ?? tests.length).toLocaleString()}</span> records</span>
+                <span>Suite: <span className="font-semibold text-gray-100">{suiteFilter === 'all' ? 'all' : suiteFilter}</span></span>
+                <span>Showing <span className="font-semibold text-gray-100">{visibleShownRecords.toLocaleString()}</span> of <span className="font-semibold text-gray-100">{visibleTotalRecords.toLocaleString()}</span> records</span>
                 {testMetadata.truncated ? <span className="text-yellow-400">table is capped for browser performance</span> : null}
                 {testMetadata.generated_at ? <span className="text-gray-400">generated {new Date(testMetadata.generated_at).toLocaleString()}</span> : null}
               </div>
@@ -580,39 +637,37 @@ function App() {
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Total</span>
-                  <span className="text-2xl font-bold">{
-                    summary.passed + summary.mismatch + summary.runtime_error + summary.build_error + summary.unsupported + summary.blocked
-                  }</span>
+                  <span className="text-2xl font-bold">{testSummaryTotal(visibleSummary).toLocaleString()}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Passed</span>
-                  <span className="text-2xl font-bold text-green-500">{summary.passed}</span>
+                  <span className="text-2xl font-bold text-green-500">{visibleSummary.passed.toLocaleString()}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Mismatch</span>
-                  <span className="text-2xl font-bold text-orange-500">{summary.mismatch}</span>
+                  <span className="text-2xl font-bold text-orange-500">{visibleSummary.mismatch.toLocaleString()}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Runtime</span>
-                  <span className="text-2xl font-bold text-red-500">{summary.runtime_error}</span>
+                  <span className="text-2xl font-bold text-red-500">{visibleSummary.runtime_error.toLocaleString()}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Build Error</span>
-                  <span className="text-2xl font-bold text-red-400">{summary.build_error}</span>
+                  <span className="text-2xl font-bold text-red-400">{visibleSummary.build_error.toLocaleString()}</span>
                 </div>
               </div>
               <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-400">Unsupported</span>
-                  <span className="text-2xl font-bold text-yellow-500">{summary.unsupported}</span>
+                  <span className="text-2xl font-bold text-yellow-500">{visibleSummary.unsupported.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -655,7 +710,7 @@ function App() {
                   ))}
                 </select>
                 <span className="text-sm text-gray-400">
-                  Showing {filteredTests.length.toLocaleString()} of {tests.length.toLocaleString()}
+                  Showing {filteredShownRecords.toLocaleString()} of {visibleShownRecords.toLocaleString()}
                 </span>
               </div>
             </div>
@@ -697,6 +752,11 @@ function App() {
                             </td>
                             <td className="px-4 py-3 align-top font-medium">
                               <div className="truncate text-gray-100" title={test.name}>{test.name}</div>
+                              {test.count !== undefined && test.count > 1 ? (
+                                <div className="mt-1 text-xs font-semibold text-gray-300">
+                                  {test.count.toLocaleString()} records
+                                </div>
+                              ) : null}
                               {primaryReason ? (
                                 <div className="mt-1 line-clamp-2 text-sm font-semibold text-red-400" title={primaryReason}>
                                   {primaryReason}
@@ -864,7 +924,7 @@ function App() {
                           <Cell key={entry.name} fill={coverageColors[index % coverageColors.length]} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(value) => [chartNumber(value).toLocaleString(), 'cases']} />
+                      <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [chartNumber(value).toLocaleString(), 'cases']} />
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
@@ -879,7 +939,7 @@ function App() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="suite" stroke="#9ca3af" />
                       <YAxis stroke="#9ca3af" domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                      <Tooltip formatter={(value) => [formatPercent(chartNumber(value)), 'coverage']} />
+                      <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [formatPercent(chartNumber(value)), 'coverage']} />
                       <Legend />
                       <Bar dataKey="buildRate" name="Build" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                       <Bar dataKey="semanticRate" name="Semantic" fill="#22c55e" radius={[4, 4, 0, 0]} />
@@ -897,7 +957,7 @@ function App() {
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis dataKey="name" stroke="#9ca3af" />
                     <YAxis stroke="#9ca3af" />
-                    <Tooltip formatter={(value) => [chartNumber(value).toLocaleString(), 'items']} />
+                    <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [chartNumber(value).toLocaleString(), 'items']} />
                     <Bar dataKey="value" name="Open items" radius={[4, 4, 0, 0]}>
                       {priorityData.map((entry) => (
                         <Cell key={entry.name} fill={entry.fill} />
@@ -959,7 +1019,7 @@ function App() {
                       <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                       <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
                       <YAxis stroke="#9ca3af" domain={[0, 100]} tickFormatter={(value) => `${value}%`} />
-                      <Tooltip formatter={(value) => [formatPercent(chartNumber(value)), 'pass rate']} />
+                      <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [formatPercent(chartNumber(value)), 'pass rate']} />
                       <Legend />
                       {trendSeries.map((series, index) => (
                         <Line
@@ -981,27 +1041,33 @@ function App() {
               <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                 <h3 className="text-lg font-semibold mb-4">Performance Trend</h3>
                 <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={performanceTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                      <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
-                      <YAxis stroke="#9ca3af" />
-                      <Tooltip formatter={(value) => [`${chartNumber(value)}s`, 'duration']} />
-                      <Legend />
-                      {trendSeries.map((series, index) => (
-                        <Line
-                          key={series}
-                          type="monotone"
-                          dataKey={series}
-                          name={series}
-                          stroke={trendColors[index % trendColors.length]}
-                          strokeWidth={2}
-                          dot
-                          connectNulls={false}
-                        />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
+                  {hasPerformanceTrend ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={performanceTrendRows} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                        <XAxis dataKey="displayTime" stroke="#9ca3af" minTickGap={24} />
+                        <YAxis stroke="#9ca3af" tickFormatter={(value) => `${value}ms`} />
+                        <Tooltip contentStyle={chartTooltipContentStyle} labelStyle={chartTooltipLabelStyle} itemStyle={chartTooltipItemStyle} formatter={(value) => [`${Math.round(chartNumber(value)).toLocaleString()}ms`, 'duration']} />
+                        <Legend />
+                        {trendSeries.map((series, index) => (
+                          <Line
+                            key={series}
+                            type="monotone"
+                            dataKey={series}
+                            name={series}
+                            stroke={trendColors[index % trendColors.length]}
+                            strokeWidth={2}
+                            dot
+                            connectNulls={false}
+                          />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="flex h-full items-center justify-center rounded-md border border-dashed border-gray-700 text-sm text-gray-400">
+                      No timing data in current history artifacts.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1016,8 +1082,7 @@ function App() {
                     <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Passed</th>
                     <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Failed</th>
                     <th className="w-24 px-4 py-3 text-right text-sm font-medium text-gray-400">Skipped</th>
-                    <th className="w-28 px-4 py-3 text-right text-sm font-medium text-gray-400">Compile</th>
-                    <th className="w-28 px-4 py-3 text-right text-sm font-medium text-gray-400">Runtime</th>
+                    <th className="w-32 px-4 py-3 text-right text-sm font-medium text-gray-400">Duration</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-400">Delta</th>
                     <th className="w-64 px-4 py-3 text-left text-sm font-medium text-gray-400">Regression</th>
                   </tr>
@@ -1032,8 +1097,9 @@ function App() {
                       <td className="px-4 py-3 text-right text-green-500">{run.passed.toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-red-500">{run.failed.toLocaleString()}</td>
                       <td className="px-4 py-3 text-right text-yellow-500">{run.skipped.toLocaleString()}</td>
-                      <td className="px-4 py-3 text-right text-gray-400">{run.compile_time}s</td>
-                      <td className="px-4 py-3 text-right text-gray-400">{run.runtime}s</td>
+                      <td className="px-4 py-3 text-right text-gray-400">
+                        {run.duration_ms === null ? '-' : `${Math.round(run.duration_ms).toLocaleString()}ms`}
+                      </td>
                       <td className="px-4 py-3 text-gray-400">
                         <div className="flex flex-wrap gap-2 text-xs">
                           <span className={run.deltas.passed !== null && run.deltas.passed < 0 ? 'text-red-400' : 'text-green-400'}>
@@ -1043,8 +1109,7 @@ function App() {
                             fail {formatDelta(run.deltas.failed)}
                           </span>
                           <span>skip {formatDelta(run.deltas.skipped)}</span>
-                          <span>compile {formatDurationDelta(run.deltas.compile_time)}</span>
-                          <span>runtime {formatDurationDelta(run.deltas.runtime)}</span>
+                          <span>duration {formatDurationDelta(run.deltas.duration_ms)}</span>
                         </div>
                       </td>
                       <td className="px-4 py-3">

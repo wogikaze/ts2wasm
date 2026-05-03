@@ -6,6 +6,7 @@ export interface TestResult {
   status: TestStatus;
   suite: string;
   duration?: number;
+  count?: number;
   error?: string;
   case?: string;
   target?: string;
@@ -25,7 +26,11 @@ export interface TestResultsMetadata {
   total_records?: number;
   shown_records?: number;
   row_limit?: number;
+  row_limit_per_suite?: number;
   truncated?: boolean;
+  total_by_suite?: Record<string, number>;
+  shown_by_suite?: Record<string, number>;
+  summary_by_suite?: Record<string, TestSummary>;
   sources?: string[];
 }
 
@@ -53,8 +58,9 @@ export interface HistoricalData {
   passed: number;
   failed: number;
   skipped: number;
-  compile_time: number;
-  runtime: number;
+  duration_ms?: number | null;
+  compile_time?: number;
+  runtime?: number;
 }
 
 export interface TestSummary {
