@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md` - Implement tsgo declaration emit: AsConstSatisfies/const generic method cases (same feature label, title overlap)
+- `issues/open/408-implement-tsgo-declaration-emit-asconst-and-generic-methods.md` - Implement tsgo declaration emit: AsConstSatisfies/const generic method cases (same feature label, title overlap)
 - `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` - Implement tsgo declaration emit: package-json exports and subpath reexport cases (same feature label, title overlap)
 - `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` - Implement tsgo declaration emit: subpath import declaration emit cases (same feature label, title overlap)
 - `issues/open/346-implement-tsgo-declaration-emit.md` - Implement TypeScript declaration emit coverage for tsgo suite (16 cases) (same feature label, title overlap)

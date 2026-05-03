@@ -92,3 +92,27 @@ Current state:
 Follow-up issues:
 
 - [x] none
+
+---
+
+## ⚠️ False-done audit (re-opened from issues/done/)
+
+**Why this was false-done**: This is an `implementation-ready` child issue of meta-issue 399 (`depends_on: [399]`) with no completion evidence section, no git commits referencing #408 for implementation, and no validation results. The only commits are "verifier: close issue 408" (admin close action). All scope and acceptance checkboxes are checked but without any evidence of implementation work.
+
+**True-done checklist** (all must pass):
+
+1. **Implement parser/module support** for the two tsgo cases:
+   - `declarationEmitAsConstSatisfiesNonReadonlyResult.ts`
+   - `declarationEmitConstObjectLiteralGenericMethod1.ts`
+   - Both must no longer report `UnsupportedSyntax: declaration-emit`
+
+2. **Commands that must pass**:
+   ```sh
+   cargo fmt --all --check
+   cargo nextest run
+   mise run reference-coverage -- tsgo --path-filter declarationEmitAsConstSatisfiesNonReadonlyResult.ts,declarationEmitConstObjectLiteralGenericMethod1.ts --limit 166 --no-web-ui
+   ```
+
+3. **Specific evidence needed**:
+   - Both reference paths report `build_pass` in coverage output
+   - Completion evidence section filled with commit SHAs and validation results
