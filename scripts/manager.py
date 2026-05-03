@@ -51,10 +51,9 @@ COMMANDS = {
     "test-differential-reporter": ("python", "scripts/report/differential.py"),
     "test-regression-gate": ("python", "scripts/gate/regression.py"),
     "gen-site": ("python", "scripts/gen-site.py"),
-    "gen-issues-from-coverage": ("python", "scripts/gen/issues-from-coverage.py"),
     "create-run-dir": ("python", "scripts/gen/create-run-dir.py"),
     "discord-report": ("python", "scripts/report/discord-report.py"),
-    "coverage-to-issues": ("python", "scripts/dev/coverage-to-issues.sh"),
+    "coverage-to-issues": ("python", "scripts/gen/coverage-to-issues.py --run"),
     "fmt": ("cargo", "fmt --all --check"),
     "clippy": ("cargo", "clippy --all-targets -- -D warnings"),
     "nextest": ("cargo", "nextest run"),
@@ -132,7 +131,6 @@ def usage():
         ("test262", "[use 'mise run test262' instead — alias for reference-coverage test262 --jsonl]"),
         ("test-differential-reporter", "Report from test262 JSONL (stdin)"),
         ("test-regression-gate", "JSONL vs baseline"),
-        ("gen-issues-from-coverage", "Generate issues from reference-coverage --detail"),
         ("coverage-to-issues", "Run coverage and auto-generate issues"),
         ("create-run-dir", "Create reports/runs/<run_id>/ directory"),
         ("discord-report", "Send a Markdown report or Discord JSON payload to Discord"),
@@ -159,7 +157,8 @@ def run_command(script_type, script_path, args):
             sys.exit(1)
         cmd = ["bash", str(full_path)] + args
     elif script_type == "python":
-        cmd = [PYTHON_BIN, str(full_path)] + args
+        parts = script_path.split()
+        cmd = [PYTHON_BIN, str(REPO_ROOT / parts[0])] + parts[1:] + args
     elif script_type == "cargo":
         cmd = ["cargo"] + script_path.split() + args
     else:

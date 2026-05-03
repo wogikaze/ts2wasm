@@ -3,8 +3,12 @@
 Auto-generate issues from reference-coverage --detail output.
 
 Usage:
+  # Pipe mode (existing):
   mise run reference-coverage -- test262 --limit 500 --detail | \
     mise run gen-issues-from-coverage -- --start-id 061 --suite test262
+
+  # Run mode (replaces coverage-to-issues.sh):
+  python scripts/gen/coverage-to-issues.py --run --suite test262 --limit 500
 """
 
 import sys
@@ -556,22 +560,40 @@ def main():
     parser.add_argument("--output-dir", type=str, default="issues/open", help="Output directory (default: issues/open)")
     parser.add_argument("--triage-limit", type=int, default=1, help="Number of representative files to smart-triage per generated issue")
     parser.add_argument("--triage-max-dump-chars", type=int, default=3500, help="Maximum characters per compiler dump in smart triage")
-    args = parser.parse_args()
+    parser.add_argument("--run", action="store_true", help="Run reference-coverage internally before generating issues")
+    parser.add_argument("--limit", type=int, default=None, help="Coverage limit (forwarded to reference-coverage, requires --run)")
+    parser.add_argument("--no-update-index", action="store_true", help="Skip update-issue-index after generation")
+    args, passthrough = parser.parse_known_args()
+
+    # In --run mode, execute reference-coverage and capture output
+    if args.run:
+        cmd = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/run/reference-coverage.py"),
+            args.suite,
+            "--detail",
+        ]
+        if args.limit is not None:
+            cmd.extend(["--limit", str(args.limit)])
+        cmd.extend(passthrough)
+        print(f"# Running: {' '.join(cmd)}", file=sys.stderr)
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=REPO_ROOT)
+        if result.returncode != 0:
+            print(f"# reference-coverage failed (exit {result.returncode})", file=sys.stderr)
+            print(result.stderr, file=sys.stderr)
+            sys.exit(result.returncode)
+        lines = result.stdout.splitlines(keepends=True)
+    else:
+        lines = sys.stdin.readlines()
     
-    # Auto-detect next issue ID if not specified
+    # Parse detail output
+    groups = parse_detail_output(lines, args.suite)
+
+    # Generate issues
     output_dir = Path(args.output_dir)
     if args.start_id is None:
         args.start_id = find_next_issue_id(output_dir)
         print(f"Auto-detected starting issue ID: {args.start_id:03d}", file=sys.stderr)
-    
-    # Read stdin
-    lines = sys.stdin.readlines()
-    
-    # Parse detail output
-    groups = parse_detail_output(lines, args.suite)
-    
-    # Generate issues
-    output_dir = Path(args.output_dir)
     current_id = int(args.start_id)
     existing_issues = load_existing_issue_texts()
     
@@ -614,6 +636,14 @@ def main():
         
         print(f"Created {output_file}", file=sys.stderr)
         current_id += 1
+
+    # Auto-update issue index after generation
+    if not args.no_update_index:
+        print("# Updating issue index...", file=sys.stderr)
+        subprocess.run(
+            [sys.executable, str(REPO_ROOT / "scripts/gen/update-issue-index.py")],
+            cwd=REPO_ROOT,
+        )
 
 
 if __name__ == "__main__":

@@ -48,7 +48,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 # Path for auto-issue generation subprocess
-GEN_ISSUES_SCRIPT = Path(__file__).parent.parent / "gen" / "issues-from-coverage.py"
+GEN_ISSUES_SCRIPT = Path(__file__).parent.parent / "gen" / "coverage-to-issues.py"
 UPDATE_ISSUE_INDEX_SCRIPT = Path(__file__).parent.parent / "gen" / "update-issue-index.py"
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
