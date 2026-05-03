@@ -288,13 +288,13 @@ impl<'a> Resolver<'a> {
         span: Span,
     ) -> Result<LoweredExpr, Diagnostic> {
         match callback {
-            ResolvedExpr::ArrowFn { params, body, .. } => {
+            ResolvedExpr::ArrowFn { params, body, body_stmts, .. } => {
                 if params.len() > 3 {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 }
                 let LoweredExpr::ArrowFn {
                     func_id, captures, ..
-                } = self.lower_arrow_fn(params, body)?
+                } = self.lower_arrow_fn(params, body, body_stmts)?
                 else {
                     return Err(unsupported_array_map_diagnostic(Some(span)));
                 };
@@ -1318,14 +1318,16 @@ impl<'a> Resolver<'a> {
         &mut self,
         params: &[String],
         body: &ResolvedExpr,
+        body_stmts: &[ResolvedStmt],
     ) -> Result<LoweredExpr, Diagnostic> {
-        self.lower_arrow_fn_with_self(params, body, None)
+        self.lower_arrow_fn_with_self(params, body, body_stmts, None)
     }
 
     pub(super) fn lower_arrow_fn_with_self(
         &mut self,
         params: &[String],
         body: &ResolvedExpr,
+        body_stmts: &[ResolvedStmt],
         self_name: Option<&str>,
     ) -> Result<LoweredExpr, Diagnostic> {
         let mut excluded = binding_param_names(params.iter().map(|param| (param.as_str(), None)))?;
@@ -1336,7 +1338,7 @@ impl<'a> Resolver<'a> {
         if let Some(name) = active_self_name {
             excluded.push(name.to_owned());
         }
-        let capture_names = self.arrow_capture_names_with_excluded(body, &excluded);
+        let capture_names = self.arrow_capture_names_with_excluded_and_stmts(body, body_stmts, &excluded);
         let captures = capture_names
             .iter()
             .map(|name| self.resolve_local(name))
@@ -1359,7 +1361,8 @@ impl<'a> Resolver<'a> {
 
         let func_id = FuncId(self.next_func_id);
         self.next_func_id += 1;
-        let body_stmts = vec![ResolvedStmt::Return((*body).clone())];
+        let mut lowered_body_stmts: Vec<ResolvedStmt> = body_stmts.to_vec();
+        lowered_body_stmts.push(ResolvedStmt::Return((*body).clone()));
         let lowered = lower_function(
             func_id,
             &lowered_params,

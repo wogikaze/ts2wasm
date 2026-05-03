@@ -812,8 +812,23 @@ fn unparse_expr(expr: &Expr) -> String {
             unparse_expr(then_expr),
             unparse_expr(else_expr)
         ),
-        Expr::ArrowFn { params, body, .. } => {
-            format!("({}) => {}", params.join(", "), unparse_expr(body))
+        Expr::ArrowFn {
+            params,
+            body,
+            body_stmts,
+            ..
+        } => {
+            if body_stmts.is_empty() {
+                format!("({}) => {}", params.join(", "), unparse_expr(body))
+            } else {
+                let stmts: Vec<String> = body_stmts.iter().map(unparse_stmt).collect();
+                format!(
+                    "({}) => {{ {} return {}; }}",
+                    params.join(", "),
+                    stmts.join("; "),
+                    unparse_expr(body)
+                )
+            }
         }
         Expr::FunctionExpr {
             name, params, body, ..
