@@ -821,7 +821,14 @@ fn unparse_expr(expr: &Expr) -> String {
             if body_stmts.is_empty() {
                 format!("({}) => {}", params.join(", "), unparse_expr(body))
             } else {
-                let stmts: Vec<String> = body_stmts.iter().map(unparse_stmt).collect();
+                let stmts: Vec<String> = body_stmts
+                    .iter()
+                    .map(|s| {
+                        let mut buf = String::new();
+                        unparse_stmt(&mut buf, s, 0);
+                        buf
+                    })
+                    .collect();
                 format!(
                     "({}) => {{ {} return {}; }}",
                     params.join(", "),
