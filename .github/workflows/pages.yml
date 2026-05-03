@@ -19,8 +19,8 @@ jobs:
   sync-docs:
     runs-on: ubuntu-latest
     env:
-      TS2WASM_DOCS_REPO: ${{ vars.TS2WASM_DOCS_REPO }}
-      TS2WASM_DOCS_BRANCH: ${{ vars.TS2WASM_DOCS_BRANCH || 'main' }}
+      TS2WASM_DOCS_REPO: ${{ vars.TS2WASM_DOCS_REPO || 'wogikaze/ts2wasm-docs' }}
+      TS2WASM_DOCS_BRANCH: ${{ vars.TS2WASM_DOCS_BRANCH || 'master' }}
       TS2WASM_DOCS_REPO_PATH: ${{ github.workspace }}/docs-repo
       TS2WASM_WEB_UI_DATA_DIR: ${{ github.workspace }}/docs-repo/coverage/web-ui/public/data
     steps:
@@ -30,7 +30,7 @@ jobs:
       - name: Checkout public docs repository
         uses: actions/checkout@v4
         with:
-          repository: ${{ vars.TS2WASM_DOCS_REPO }}
+          repository: ${{ vars.TS2WASM_DOCS_REPO || 'wogikaze/ts2wasm-docs' }}
           path: docs-repo
           token: ${{ secrets.TS2WASM_DOCS_REPO_TOKEN }}
           fetch-depth: 1
@@ -38,8 +38,8 @@ jobs:
       - name: Configure Pages
         run: |
           if [ -z "${TS2WASM_DOCS_REPO}" ]; then
-            echo "TS2WASM_DOCS_REPO repository variable is required (owner/repo)." >&2
-            echo "Set vars.TS2WASM_DOCS_REPO to your public docs repository." >&2
+            echo "TS2WASM_DOCS_REPO is required (owner/repo)." >&2
+            echo "Set vars.TS2WASM_DOCS_REPO to your public docs repository or edit the workflow default." >&2
             exit 1
           fi
           if [ -z "${TS2WASM_DOCS_REPO_TOKEN}" ]; then
