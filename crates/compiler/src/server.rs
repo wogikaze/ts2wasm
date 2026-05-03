@@ -2,7 +2,8 @@ use std::fs;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
 use std::sync::Mutex;
-use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
 
@@ -18,6 +19,13 @@ use crate::{
     lower_static_named_import_reads_for_build, populate_static_module_exports_for_build,
     validate_ast, validate_optimized_hir_slice,
 };
+
+/// Default timeout for batch compilation (in seconds). After this, remaining
+/// items are reported as timed out rather than processed.
+const BATCH_TIMEOUT_SECS: u64 = 30;
+
+/// Maximum number of worker threads for batch processing. Capped at CPU count.
+const MAX_WORKERS: usize = 8;
 
 /// A single build request from the client (one JSON line on stdin).
 #[derive(Debug, Deserialize)]
@@ -57,7 +65,9 @@ struct ServerResponse {
 ///   - Single: `{"id": N, "source": "..."}`
 ///   - Batch:  `{"id": -1, "items": [{"id": 1, "source": "..."}, ...]}`
 ///
-/// Batch requests process all files in parallel using a thread pool.
+/// Batch requests process all files in parallel using a thread pool with
+/// a configurable timeout and max concurrency. Panics are caught and
+/// reported per-item rather than crashing the server.
 ///
 /// Send `{"id": -1, "source": ""}` (or EOF) to shut down cleanly.
 pub fn run_server() -> Result<(), String> {
@@ -128,6 +138,15 @@ pub fn run_server() -> Result<(), String> {
 }
 
 /// Process a batch of files in parallel using `std::thread::scope`.
+///
+/// Features:
+/// - **Timeout**: if `BATCH_TIMEOUT_SECS` elapses, remaining items get a
+///   `timed out` error response and workers stop.
+/// - **Max concurrency**: worker count is capped at `MAX_WORKERS` and CPU
+///   count, whichever is lower.
+/// - **Panic aggregation**: per-worker panics are caught via
+///   `std::panic::catch_unwind` and reported as internal error responses.
+///
 /// Returns one `ServerResponse` per item, in the same order as `items`.
 fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
     let n = items.len();
@@ -141,10 +160,15 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
     // Atomic counter for work stealing across threads.
     let next_idx = AtomicUsize::new(0);
 
-    // Number of worker threads: up to CPU count, capped at batch size.
+    // Timeout tracking: once set, workers stop claiming new items.
+    let timed_out = AtomicBool::new(false);
+    let deadline = Instant::now();
+
+    // Number of worker threads: up to CPU count and MAX_WORKERS, capped at batch size.
     let n_workers = std::thread::available_parallelism()
         .map(|c| c.get())
         .unwrap_or(4)
+        .min(MAX_WORKERS)
         .min(n)
         .max(1);
 
@@ -152,6 +176,15 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
         for _ in 0..n_workers {
             s.spawn(|| {
                 loop {
+                    // Check timeout before claiming next item.
+                    if timed_out.load(Ordering::Relaxed) {
+                        break;
+                    }
+                    if deadline.elapsed().as_secs() >= BATCH_TIMEOUT_SECS {
+                        timed_out.store(true, Ordering::Relaxed);
+                        break;
+                    }
+
                     let idx = next_idx.fetch_add(1, Ordering::Relaxed);
                     if idx >= n {
                         break;
@@ -160,22 +193,46 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
                     let item = &items[idx];
                     let tmpfile = tmpdir.join(format!("b_{}_{}.js", idx, item.id));
 
-                    // Write source, compile, clean up.
-                    let write_result = fs::write(&tmpfile, &item.source);
-                    let compile_result = match write_result {
-                        Ok(()) => {
-                            let r = compile_source(&tmpfile);
-                            let _ = fs::remove_file(&tmpfile);
-                            r
+                    // Catch panics per-item so one bad compilation can't crash
+                    // the entire batch.
+                    let compile_result = std::panic::catch_unwind(|| {
+                        // Write source, compile, clean up.
+                        let write_result = fs::write(&tmpfile, &item.source);
+                        match write_result {
+                            Ok(()) => {
+                                let r = compile_source(&tmpfile);
+                                let _ = fs::remove_file(&tmpfile);
+                                r
+                            }
+                            Err(err) => Err(Diagnostic {
+                                code: ts2wasm_frontend::DiagCode::BackendIo,
+                                message: format!("failed to write temp file: {err}"),
+                                span: None,
+                            }),
                         }
-                        Err(err) => Err(Diagnostic {
-                            code: ts2wasm_frontend::DiagCode::BackendIo,
-                            message: format!("failed to write temp file: {err}"),
-                            span: None,
-                        }),
-                    };
+                    });
 
-                    let resp = make_response(item.id, compile_result);
+                    let resp = match compile_result {
+                        Ok(Ok(())) => make_response(item.id, Ok(())),
+                        Ok(Err(diag)) => make_response(item.id, Err(diag)),
+                        Err(panic_payload) => {
+                            let msg = if let Some(s) = panic_payload.downcast_ref::<&str>() {
+                                format!("internal error: {s}")
+                            } else if let Some(s) = panic_payload.downcast_ref::<String>() {
+                                format!("internal error: {s}")
+                            } else {
+                                "internal error: unknown panic".to_owned()
+                            };
+                            make_response(
+                                item.id,
+                                Err(Diagnostic {
+                                    code: ts2wasm_frontend::DiagCode::InvariantViolation,
+                                    message: msg,
+                                    span: None,
+                                }),
+                            )
+                        }
+                    };
                     let mut guard = results.lock().unwrap();
                     guard[idx] = Some(resp);
                 }
@@ -183,11 +240,32 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
         }
     });
 
-    results
-        .into_inner()
-        .unwrap()
+    // Fill any remaining unprocessed slots (timeout or skipped) with error
+    // responses so the caller always gets exactly n results.
+    let mut final_results = results.into_inner().unwrap();
+    for (idx, slot) in final_results.iter_mut().enumerate() {
+        if slot.is_none() {
+            *slot = Some(make_response(
+                items[idx].id,
+                Err(Diagnostic {
+                    code: ts2wasm_frontend::DiagCode::InvariantViolation,
+                    message: if timed_out.load(Ordering::Relaxed) {
+                        format!(
+                            "batch timed out after {}s (item {})",
+                            BATCH_TIMEOUT_SECS, idx
+                        )
+                    } else {
+                        format!("internal error: item {idx} was skipped")
+                    },
+                    span: None,
+                }),
+            ));
+        }
+    }
+
+    final_results
         .into_iter()
-        .map(|r| r.expect("all batch slots filled"))
+        .map(|r| r.expect("all batch slots filled after timeout fill"))
         .collect()
 }
 
