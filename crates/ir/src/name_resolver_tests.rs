@@ -178,6 +178,61 @@ mod tests {
     }
 
     #[test]
+    fn test_assert_throws_with_function_decl() {
+        let program = vec![
+            Stmt::Function {
+                name: "assert".to_string(),
+                params: vec![],
+                body: vec![],
+                is_generator: false,
+                span: Span { start: 0, end: 20 },
+            },
+            Stmt::Function {
+                name: "test".to_string(),
+                params: vec![],
+                body: vec![],
+                is_generator: false,
+                span: Span { start: 21, end: 41 },
+            },
+            Stmt::Expr {
+                expr: Expr::Call {
+                    callee: Box::new(Expr::Member {
+                        object: Box::new(Expr::Ident {
+                            name: "assert".to_string(),
+                            span: Span { start: 42, end: 48 },
+                        }),
+                        property: "throws".to_string(),
+                        span: Span { start: 42, end: 55 },
+                    }),
+                    args: vec![
+                        Expr::Ident {
+                            name: "Error".to_string(),
+                            span: Span { start: 56, end: 61 },
+                        },
+                        Expr::Ident {
+                            name: "test".to_string(),
+                            span: Span { start: 63, end: 67 },
+                        },
+                    ],
+                    span: Span { start: 42, end: 68 },
+                },
+                span: Span { start: 42, end: 69 },
+            },
+        ];
+        eprintln!("DEBUG assert.throws test: calling resolve_names");
+        let result = name_resolver::resolve_names(&program);
+        eprintln!(
+            "DEBUG assert.throws test: result = {:?}",
+            &result.as_ref().err()
+        );
+        assert!(
+            result.is_ok(),
+            "assert.throws with declared function should resolve: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
     fn test_duplicate_local_error() {
         let program = vec![
             Stmt::Let {

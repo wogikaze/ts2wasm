@@ -153,16 +153,23 @@ fn build_dump_pipeline(
 ) -> Result<DumpPipeline, Diagnostic> {
     let tokens = Lexer::new(source).tokenize()?;
     let ast = Parser::new(tokens.clone()).parse_program()?;
+    eprintln!("[pipeline] validate_ast");
     super::validate_ast(&ast)?;
+    eprintln!("[pipeline] module_graph");
     super::module_graph::validate_entry_module_graph(input, &ast)?;
+    eprintln!("[pipeline] resolve_names");
     let name_resolved = name_resolver::resolve_names(&ast)?;
+    eprintln!("[pipeline] resolve_builtins");
     let resolved = builtin_resolver::resolve_builtins(&name_resolved)?;
+    eprintln!("[pipeline] build_typed_ir");
     let typed_ir = build_typed_ir(&resolved);
     let optimized_ir = typed_ir
         .as_ref()
         .map_err(Clone::clone)
         .and_then(|typed_ir| optimize_typed_ir(typed_ir, optimization_level));
+    eprintln!("[pipeline] lower_program");
     let lowered = lowered::lower_program(&resolved)?;
+    eprintln!("[pipeline] validate_lowered");
     lowered::validate_lowered(&lowered).map_err(|errs| {
         errs.into_iter().next().unwrap_or(Diagnostic {
             code: DiagCode::InvariantViolation,

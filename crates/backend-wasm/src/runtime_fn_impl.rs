@@ -1689,30 +1689,6 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
-            Self::ArrayShift => RuntimeSpec {
-                symbol: "$array_shift",
-                deps: NO_DEPS,
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::Value,
-            },
-            Self::ArrayUnshift => RuntimeSpec {
-                symbol: "$array_unshift",
-                deps: NO_DEPS,
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::Value,
-            },
-            Self::ArraySplice => RuntimeSpec {
-                symbol: "$array_splice",
-                deps: NO_DEPS,
-                imports: NO_IMPORTS,
-                capability: NO_CAPS,
-                runtime_strings: NO_RUNTIME_STRINGS,
-                result: RuntimeResult::Value,
-            },
         }
     }
 
@@ -1955,9 +1931,6 @@ impl RuntimeFn {
             Self::DecodeURI => "decode_uri",
             Self::Escape => "escape",
             Self::Unescape => "unescape",
-            Self::ArrayShift => "array_shift",
-            Self::ArrayUnshift => "array_unshift",
-            Self::ArraySplice => "array_splice",
         }
     }
 

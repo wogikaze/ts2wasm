@@ -330,7 +330,10 @@ fn resolve_local_specifier(
         }
         // Also search @types/<name> in node_modules
         for dir in importer_dir.ancestors() {
-            let types_dir = dir.join("node_modules").join("@types").join(&specifier.value);
+            let types_dir = dir
+                .join("node_modules")
+                .join("@types")
+                .join(&specifier.value);
             if types_dir.is_dir() {
                 bare_candidates.push(types_dir.join("index.ts"));
                 bare_candidates.push(types_dir.join("index.js"));

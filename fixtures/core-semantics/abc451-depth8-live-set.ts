@@ -1,5 +1,5 @@
-function search(before: string, powersOfTwoStr: string[]): string[] {
-    const answers: string[] = [];
+function search(before, powersOfTwoStr) {
+    const answers = [];
     if (before.length > 0) answers.push(before);
     const remainDigits = 8 - before.length;
     for (let i = 0; i < powersOfTwoStr.length; i++) {
@@ -13,11 +13,11 @@ function search(before: string, powersOfTwoStr: string[]): string[] {
     return answers;
 }
 
-const powersOfTwo: number[] = [];
+const powersOfTwo = [];
 for (let i = 0; 2 ** i <= 1000000000; i++) {
     powersOfTwo.push(2 ** i);
 }
 
-const powersOfTwoStr: string[] = powersOfTwo.map(n => String(n));
+const powersOfTwoStr = powersOfTwo.map(n => String(n));
 const allGoodIntStr = search("", powersOfTwoStr);
 console.log(allGoodIntStr.length);
