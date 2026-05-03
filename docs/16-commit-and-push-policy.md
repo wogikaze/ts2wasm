@@ -223,6 +223,7 @@ agent は以下を守る。
 | docs更新               | 意味単位ごと                               |
 | issue追加              | issue file 作成ごと                      |
 | issue移動              | reopen / close ごと                    |
+| issue close の一括禁止 | close 理由の異なる issue を 1 commit にまとめない。実装が伴わない close（既に実装済み/調査のみ）も close ごとに分ける。 |
 | index同期              | issue移動と同じ commit か generated commit |
 | format               | format-only                          |
 | generated            | generated-only                       |
