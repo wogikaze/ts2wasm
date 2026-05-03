@@ -158,8 +158,10 @@ pub enum LoweredStmt {
     ClassDecl {
         name: String,
         extends: Option<String>,
-        constructor: Option<(Vec<LocalId>, Vec<LoweredStmt>)>,
-        methods: Vec<(String, Vec<LocalId>, Vec<LoweredStmt>)>,
+        constructor: Option<FuncId>,
+        methods: Vec<(String, FuncId)>,
+        static_methods: Vec<(String, FuncId)>,
+        private_fields: Vec<String>,
     },
 }
 
