@@ -1257,6 +1257,14 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ObjectIs => RuntimeSpec {
+                symbol: "$object_is",
+                deps: &[Self::StrictEqual],
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::InstanceOf => RuntimeSpec {
                 symbol: "$instanceof",
                 deps: &[],
