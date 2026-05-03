@@ -577,6 +577,12 @@ impl RuntimeLinkPlan {
             LoweredExpr::BuiltinErrorPrototype(_) => {
                 self.add_required_runtime(RuntimeFn::AllocHeap);
             }
+            LoweredExpr::Block { stmts, result } => {
+                for stmt in stmts {
+                    self.collect_required_runtime_stmts(std::slice::from_ref(stmt));
+                }
+                self.collect_required_runtime_expr(result);
+            }
             LoweredExpr::MethodCall { .. } => {}
             LoweredExpr::ModuleLoad { .. } => {
                 self.add_required_runtime(RuntimeFn::ModuleRequire);
@@ -584,6 +590,7 @@ impl RuntimeLinkPlan {
             LoweredExpr::RuntimeCall { runtime_fn, args } => {
                 if runtime_fn == "ArrayPushMany" {
                     self.add_required_runtime(RuntimeFn::ArrayPush);
+                    self.add_required_runtime(RuntimeFn::ArrayPushGrow);
                     self.add_required_runtime(RuntimeFn::GetLength);
                 }
                 if runtime_fn == "ArrayPushGrow" {

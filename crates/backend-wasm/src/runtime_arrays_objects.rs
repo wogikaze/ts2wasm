@@ -1161,6 +1161,233 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype.reduce (identity reduce: iterates with callback, returns initial value)
+    pub(super) fn emit_array_reduce(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_reduce (param $arr i32) (param $callback i32) (param $initial i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (local.get $initial))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Array.prototype.reduceRight (identity reduce: iterates backwards, returns initial value)
+    pub(super) fn emit_array_reduce_right(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_reduce_right (param $arr i32) (param $callback i32) (param $initial i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.sub (local.get $len) (i32.const {one})))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.lt_s (local.get $i) (i32.const {zero})))
+        (local.set $elem
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (local.get $initial))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Array.prototype.lastIndexOf (strict equal search backwards)
+    pub(super) fn emit_array_last_index_of(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_last_index_of (param $arr i32) (param $search i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {neg_one_tagged}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.sub (local.get $len) (i32.const {one})))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.lt_s (local.get $i) (i32.const {zero})))
+        (local.set $elem
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (if (i32.eq (call $strict_equal (local.get $elem) (local.get $search)) (i32.const {true_tag}))
+          (then
+            (return
+              (i32.or
+                (i32.shl (local.get $i) (i32.const {number_shift}))
+                (i32.const {number_tag})))))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {neg_one_tagged}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            neg_one_tagged = ((-1_i32) << 3) | 4,
+            true_tag = ValueTag::TRUE,
+        ));
+    }
+
+    // Array.prototype.forEach (identity callback: iterate and return undefined)
+    pub(super) fn emit_array_for_each(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_for_each (param $arr i32) (param $callback i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.const {undefined}))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Array.prototype.map (identity callback: creates new array with same elements)
+    pub(super) fn emit_array_map(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_map (param $arr i32) (param $callback i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add
+          (i32.const {array_header})
+          (i32.shl (local.get $len) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $len))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    (i32.store
+      (i32.add (local.get $result_ptr) (i32.const 16))
+      (i32.sub (i32.shl (i32.const 1) (local.get $len)) (i32.const 1)))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (i32.store
+          (i32.add
+            (local.get $result_ptr)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (local.get $elem))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Object methods (M10)
 
     pub(super) fn emit_object_keys(&self, wat: &mut String) {

@@ -621,6 +621,10 @@ fn validate_expr(
                 });
             }
         }
+        LoweredExpr::Block { stmts, result } => {
+            validate_stmts(stmts, local_count, num_funcs, program, errors);
+            validate_expr(result, local_count, num_funcs, program, errors, value_required);
+        }
     }
 }
 

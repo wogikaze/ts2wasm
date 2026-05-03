@@ -620,6 +620,12 @@ impl<'a> WatEmitter<'a> {
                 }
             }
             LoweredExpr::ClassPrototype(_) | LoweredExpr::BuiltinErrorPrototype(_) => {}
+            LoweredExpr::Block { stmts, result } => {
+                for stmt in stmts {
+                    self.collect_statement_strings(stmt);
+                }
+                self.collect_expr_strings(result);
+            }
             LoweredExpr::ModuleLoad { .. } => {}
             LoweredExpr::RuntimeCall { args, .. } => {
                 for arg in args {
@@ -960,6 +966,10 @@ impl<'a> WatEmitter<'a> {
                 add_class_prototype_ref(prototype, prototypes);
             }
             LoweredExpr::BuiltinErrorPrototype(_) | LoweredExpr::ErrorNew { .. } => {}
+            LoweredExpr::Block { stmts, result } => {
+                Self::collect_class_prototypes_from_stmts(stmts, prototypes);
+                Self::collect_class_prototypes_from_expr(result, prototypes);
+            }
             LoweredExpr::New {
                 prototype, args, ..
             } => {
@@ -1091,6 +1101,10 @@ impl<'a> WatEmitter<'a> {
         match expr {
             LoweredExpr::BuiltinErrorPrototype(constructor) => {
                 add_builtin_error_prototype_ref(*constructor, prototypes);
+            }
+            LoweredExpr::Block { stmts, result } => {
+                Self::collect_builtin_error_prototypes_from_stmts(stmts, prototypes);
+                Self::collect_builtin_error_prototypes_from_expr(result, prototypes);
             }
             LoweredExpr::ErrorNew {
                 constructor,

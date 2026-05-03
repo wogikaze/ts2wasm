@@ -1078,14 +1078,6 @@ fn annex_b_string_anchor_fixture_reports_issue_067() {
 }
 
 #[test]
-fn array_map_fixtures_report_issue_270() {
-    assert_build_fails_with_unsupported_builtin(
-        "fixtures/builtins-and-io/array-map-unsupported.ts",
-        "issue-270: Array.prototype.map",
-    );
-}
-
-#[test]
 fn array_sort_unsupported_forms_report_issue_299() {
     assert_build_fails_with_unsupported_builtin(
         "fixtures/core-semantics/array-sort-default-unsupported.ts",

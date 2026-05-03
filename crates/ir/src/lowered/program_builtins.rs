@@ -102,6 +102,11 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Set", "clear") => Some("SetClear"),
         ("RegExp", "test") => Some("RegExpTest"),
         ("RegExp", "exec") => Some("RegExpMatch"),
+        ("Array", "reduce") => Some("ArrayReduce"),
+        ("Array", "reduceRight") => Some("ArrayReduceRight"),
+        ("Array", "lastIndexOf") => Some("ArrayLastIndexOf"),
+        ("Array", "forEach") => Some("ArrayForEach"),
+        ("Array", "map") => Some("ArrayMap"),
         _ => None,
     }
 }

@@ -1235,10 +1235,32 @@ impl<'a> Resolver<'a> {
                         return Err(unsupported_array_sort_diagnostic(Some(*span)));
                     }
 
-                    if (method == "map" && self.is_known_array_expr(object))
-                        || is_array_prototype_map_call_receiver(object, method)
+                    if is_array_prototype_map_call_receiver(object, method)
                     {
                         return Err(unsupported_array_map_diagnostic(Some(*span)));
+                    }
+
+                    // User-callback array methods (forEach, filter, find, some, every, reduce, map)
+                    // are expanded at IR level with While loops.
+                    if (method == "forEach"
+                        || method == "filter"
+                        || method == "find"
+                        || method == "some"
+                        || method == "every"
+                        || method == "reduce"
+                        || method == "map")
+                        && self.is_known_array_expr(object)
+                        && !args.is_empty()
+                        && matches!(&args[0], ResolvedExpr::ArrowFn { .. })
+                    {
+                        let lowered_receiver = self.lower_expr(object)?;
+                        return self.lower_array_callback_method(
+                            method,
+                            lowered_receiver,
+                            object,
+                            args,
+                            *span,
+                        );
                     }
 
                     if matches!(object.as_ref(), ResolvedExpr::This { .. }) {

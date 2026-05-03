@@ -1,4 +1,5 @@
 use super::*;
+use ts2wasm_ir::LoweredStmt;
 
 pub(super) fn local_index(id: LocalId) -> usize {
     id.0
@@ -98,6 +99,70 @@ pub(super) fn expr_may_collect(expr: &LoweredExpr) -> bool {
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)
         }
+        LoweredExpr::Block { stmts, result } => {
+            stmts.iter().any(|s| stmt_may_collect(s)) || expr_may_collect(result)
+        }
+    }
+}
+
+pub(super) fn stmt_may_collect(stmt: &LoweredStmt) -> bool {
+    match stmt {
+        LoweredStmt::Block(stmts) => stmts.iter().any(|s| stmt_may_collect(s)),
+        LoweredStmt::Let(_, expr) | LoweredStmt::Assign(_, expr) => expr_may_collect(expr),
+        LoweredStmt::Expr(expr) => expr_may_collect(expr),
+        LoweredStmt::If {
+            condition,
+            then_body,
+            else_body,
+        } => {
+            expr_may_collect(condition)
+                || then_body.iter().any(|s| stmt_may_collect(s))
+                || else_body.iter().any(|s| stmt_may_collect(s))
+        }
+        LoweredStmt::While { condition, body } | LoweredStmt::DoWhile { condition, body } => {
+            expr_may_collect(condition) || body.iter().any(|s| stmt_may_collect(s))
+        }
+        LoweredStmt::For {
+            init,
+            condition,
+            update,
+            body,
+        } => {
+            init.as_ref().is_some_and(|i| stmt_may_collect(i))
+                || condition.as_ref().is_some_and(|c| expr_may_collect(c))
+                || update.as_ref().is_some_and(|u| expr_may_collect(u))
+                || body.iter().any(|s| stmt_may_collect(s))
+        }
+        LoweredStmt::ForIn { body, .. } | LoweredStmt::ForOf { body, .. } => {
+            body.iter().any(|s| stmt_may_collect(s))
+        }
+        LoweredStmt::Return(expr) | LoweredStmt::Throw(expr) => expr_may_collect(expr),
+        LoweredStmt::TryCatch {
+            try_body,
+            catch_body,
+            finally_body,
+            ..
+        } => {
+            try_body.iter().any(|s| stmt_may_collect(s))
+                || catch_body
+                    .as_ref()
+                    .is_some_and(|b| b.iter().any(|s| stmt_may_collect(s)))
+                || finally_body
+                    .as_ref()
+                    .is_some_and(|b| b.iter().any(|s| stmt_may_collect(s)))
+        }
+        LoweredStmt::Switch { expr, cases } => {
+            expr_may_collect(expr)
+                || cases
+                    .iter()
+                    .any(|(_, stmts)| stmts.iter().any(|s| stmt_may_collect(s)))
+        }
+        LoweredStmt::Labeled { body, .. } => stmt_may_collect(body),
+        LoweredStmt::Break { .. } | LoweredStmt::Continue { .. } => false,
+        LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr } => {
+            expr_may_collect(expr)
+        }
+        LoweredStmt::ClassDecl { .. } => false,
     }
 }
 
@@ -163,5 +228,6 @@ pub(super) fn expr_uses_caller_backend_tmp(expr: &LoweredExpr) -> bool {
         LoweredExpr::ArrowFn { representation, .. } => {
             matches!(representation, ClosureRepresentation::HeapObject)
         }
+        LoweredExpr::Block { result, .. } => expr_uses_caller_backend_tmp(result),
     }
 }

@@ -11,11 +11,13 @@ use ts2wasm_ir::lowered::{
 };
 use ts2wasm_runtime_abi::Layout;
 use ts2wasm_runtime_abi::ValueTag;
+use ts2wasm_runtime_abi::consts::RuntimeConst;
 
 use super::emitter::{
     builtin_error_prototype_global, builtin_error_stack_prefix, class_prototype_global,
     function_symbol,
 };
+use super::stmt_emit::LoopContext;
 
 const CLOSURE_SENTINEL: i32 = -2;
 const CLOSURE_SUBTYPE_OFFSET: u32 = 0;
@@ -882,6 +884,10 @@ impl WatEmitter<'_> {
                     ValueTag::OBJECT,
                 ));
             }
+            LoweredExpr::Block { stmts, result } => {
+                self.emit_statements(wat, stmts, indent, &mut LoopContext::default(), frame);
+                self.emit_expr(wat, result, indent, frame);
+            }
         }
     }
 
@@ -1305,14 +1311,85 @@ impl WatEmitter<'_> {
             return;
         }
 
-        for (index, value) in values.iter().enumerate() {
-            self.emit_expr(wat, array, indent, frame);
-            self.emit_expr(wat, value, indent, frame);
-            wat.push_str(&format!("{pad}(call {})\n", RuntimeFn::ArrayPush.symbol()));
-            if index + 1 != values.len() {
-                wat.push_str(&format!("{pad}(drop)\n"));
-            }
+        let arr_tmp = frame.heap_base_tmp();
+        let val_tmp = frame.heap_value_tmp();
+
+        // Save the array/object reference
+        self.emit_expr(wat, array, indent, frame);
+        wat.push_str(&format!("{pad}(local.set {arr_tmp})\n"));
+        self.emit_gc_root_mirror_index(wat, &pad, arr_tmp, frame);
+
+        // Branch: objects use $array_push (property_set), arrays use $array_push_grow + presence mask
+        let inner = format!("{pad}  ");
+        let inner2 = format!("{pad}    ");
+        let inner3 = format!("{pad}      ");
+        wat.push_str(&format!(
+            "{pad}(if (i32.eq\n\
+             {inner}(i32.and (local.get {arr_tmp}) (i32.const {tag_mask}))\n\
+             {inner}(i32.const {object_tag}))\n\
+             {inner}(then\n",
+            tag_mask = ValueTag::TAG_MASK,
+            object_tag = ValueTag::OBJECT,
+            inner = inner,
+        ));
+        // Object path: $array_push each value, drop intermediate results
+        for value in values {
+            wat.push_str(&format!(
+                "{inner2}(drop\n\
+                 {inner3}(call {}\n\
+                 {inner3}  (local.get {arr_tmp})\n\
+                 {inner3}  ",
+                RuntimeFn::ArrayPush.symbol(),
+            ));
+            self.emit_expr(wat, value, indent + 6, frame);
+            wat.push_str(&format!("{inner3}))\n",));
         }
+        wat.push_str(&format!("{inner})(else\n",));
+        // Array path: $array_push_grow each value + presence mask update
+        for value in values {
+            wat.push_str(&format!(
+                "{inner2}(local.set {arr_tmp}\n\
+                 {inner3}(call {}\n\
+                 {inner3}  (local.get {arr_tmp})\n\
+                 {inner3}  ",
+                RuntimeFn::ArrayPushGrow.symbol(),
+            ));
+            self.emit_expr(wat, value, indent + 6, frame);
+            wat.push_str(&format!("{inner3}))\n",));
+            self.emit_gc_root_mirror_index(wat, &inner2, arr_tmp, frame);
+            // Update presence mask: presence_word |= (1 << (new_len - 1))
+            let p = inner2.clone();
+            wat.push_str(&format!(
+                "{p}(local.set {val_tmp}\n\
+                 {inner3}(i32.sub\n\
+                 {inner3}  (i32.load\n\
+                 {inner3}    (i32.and (local.get {arr_tmp}) (i32.const {heap_mask})))\n\
+                 {inner3}  (i32.const {one})))\n\
+                 {p}(i32.store\n\
+                 {inner3}(i32.add\n\
+                 {inner3}  (i32.and (local.get {arr_tmp}) (i32.const {heap_mask}))\n\
+                 {inner3}  (i32.const {presence_offset}))\n\
+                 {inner3}(i32.or\n\
+                 {inner3}  (i32.load\n\
+                 {inner3}    (i32.add\n\
+                 {inner3}      (i32.and (local.get {arr_tmp}) (i32.const {heap_mask}))\n\
+                 {inner3}      (i32.const {presence_offset})))\n\
+                 {inner3}  (i32.shl\n\
+                 {inner3}    (i32.const {one})\n\
+                 {inner3}    (local.get {val_tmp}))))\n",
+                heap_mask = ValueTag::HEAP_MASK,
+                presence_offset = Layout::ARRAY_PRESENCE_WORDS_OFFSET,
+                one = RuntimeConst::ONE,
+            ));
+        }
+        wat.push_str(&format!("{inner}))\n"));
+        // Return GetLength of (potentially new) array
+        wat.push_str(&format!(
+            "{pad}(call {}\n\
+             {pad}  (local.get {arr_tmp})\n\
+             {pad})\n",
+            RuntimeFn::GetLength.symbol(),
+        ));
     }
 
     fn emit_array_push_grow_call(

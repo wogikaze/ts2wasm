@@ -338,6 +338,10 @@ pub enum LoweredExpr {
     ModuleLoad {
         module_id: usize,
     },
+    Block {
+        stmts: Vec<LoweredStmt>,
+        result: Box<LoweredExpr>,
+    },
     This,
     ArrowFn {
         func_id: FuncId,

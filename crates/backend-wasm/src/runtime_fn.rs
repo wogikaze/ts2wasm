@@ -191,6 +191,16 @@ pub(crate) enum RuntimeFn {
     ArrayEvery,
     /// Array.prototype.some (identity callback: check any truthy)
     ArraySome,
+    /// Array.prototype.reduce (identity reduce: returns initial value)
+    ArrayReduce,
+    /// Array.prototype.reduceRight (identity reduce: returns initial value)
+    ArrayReduceRight,
+    /// Array.prototype.lastIndexOf (strict equal search)
+    ArrayLastIndexOf,
+    /// Array.prototype.forEach (identity callback: no-op iteration)
+    ArrayForEach,
+    /// Array.prototype.map (identity callback: creates new array with same elements)
+    ArrayMap,
     /// M10: Object statics
     ObjectKeys,
     ObjectSpread,
@@ -586,6 +596,11 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayFilter" => Some(RuntimeFn::ArrayFilter),
         "ArrayEvery" => Some(RuntimeFn::ArrayEvery),
         "ArraySome" => Some(RuntimeFn::ArraySome),
+        "ArrayReduce" => Some(RuntimeFn::ArrayReduce),
+        "ArrayReduceRight" => Some(RuntimeFn::ArrayReduceRight),
+        "ArrayLastIndexOf" => Some(RuntimeFn::ArrayLastIndexOf),
+        "ArrayForEach" => Some(RuntimeFn::ArrayForEach),
+        "ArrayMap" => Some(RuntimeFn::ArrayMap),
         "MapNew" => Some(RuntimeFn::MapNew),
         "MapGet" => Some(RuntimeFn::MapGet),
         "MapSet" => Some(RuntimeFn::MapSet),
@@ -1017,6 +1032,11 @@ const ARRAY_FIND_DEPS: &[RuntimeFn] = &[];
 const ARRAY_FILTER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_EVERY_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SOME_DEPS: &[RuntimeFn] = &[];
+const ARRAY_REDUCE_DEPS: &[RuntimeFn] = &[];
+const ARRAY_REDUCE_RIGHT_DEPS: &[RuntimeFn] = &[];
+const ARRAY_LAST_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
+const ARRAY_FOR_EACH_DEPS: &[RuntimeFn] = &[];
+const ARRAY_MAP_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
