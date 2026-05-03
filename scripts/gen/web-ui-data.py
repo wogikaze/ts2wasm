@@ -15,7 +15,27 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_COVERAGE_DIR = REPO_ROOT / "artifacts" / "coverage" / "results"
-DEFAULT_OUT_DIR = REPO_ROOT / "site" / "docs" / "coverage" / "web-ui" / "public" / "data"
+DEFAULT_SITE_DOCS_ROOT = REPO_ROOT / "site" / "docs"
+DEFAULT_HISTORY_FILE = REPO_ROOT / "artifacts" / "coverage" / "history" / "runs.jsonl"
+
+
+def resolve_output_dir() -> Path:
+    """Resolve output directory for dashboard JSON artifacts.
+
+    Priority:
+    1. TS2WASM_WEB_UI_DATA_DIR if set
+    2. TS2WASM_DOCS_REPO_PATH + coverage/web-ui/public/data
+    3. site/docs/coverage/web-ui/public/data (default)
+    """
+    explicit = os.environ.get("TS2WASM_WEB_UI_DATA_DIR")
+    if explicit:
+        explicit_path = Path(explicit)
+        return explicit_path if explicit_path.is_absolute() else REPO_ROOT / explicit_path
+
+    docs_repo = Path(os.environ.get("TS2WASM_DOCS_REPO_PATH", str(DEFAULT_SITE_DOCS_ROOT)))
+    if not docs_repo.is_absolute():
+        docs_repo = REPO_ROOT / docs_repo
+    return docs_repo / "coverage" / "web-ui" / "public" / "data"
 
 STATUS_MAP = {
     "pass": "pass",
@@ -92,7 +112,10 @@ def load_coverage_artifacts(coverage_dir):
             continue
         with path.open("r", encoding="utf-8") as handle:
             data = json.load(handle)
-        data["_source_path"] = path.relative_to(REPO_ROOT).as_posix()
+        try:
+            data["_source_path"] = path.relative_to(REPO_ROOT).as_posix()
+        except ValueError:
+            data["_source_path"] = path.as_posix()
         data["_source_mtime_epoch"] = path.stat().st_mtime
         data["_source_mtime"] = format_utc(
             datetime.fromtimestamp(data["_source_mtime_epoch"], timezone.utc)
@@ -120,18 +143,70 @@ def count_summary(tests):
     return summary
 
 
+def empty_test_summary():
+    return {
+        "passed": 0,
+        "mismatch": 0,
+        "runtime_error": 0,
+        "build_error": 0,
+        "unsupported": 0,
+        "blocked": 0,
+    }
+
+
+def record_weight(record):
+    return int(record.get("count", 1) or 1)
+
+
+def add_record_to_test_summary(summary, record):
+    weight = record_weight(record)
+    status = record["status"]
+    if status == "pass":
+        summary["passed"] += weight
+    elif status == "mismatch":
+        summary["mismatch"] += weight
+    elif status == "runtime_error":
+        summary["runtime_error"] += weight
+    elif status == "fail":
+        summary["build_error"] += weight
+    elif status == "unsupported":
+        summary["unsupported"] += weight
+    elif status == "blocked":
+        summary["blocked"] += weight
+
+
+def summarize_test_records(records):
+    summary = empty_test_summary()
+    for record in records:
+        add_record_to_test_summary(summary, record)
+    return summary
+
+
+def summary_total(summary):
+    return sum(int(summary.get(key, 0) or 0) for key in empty_test_summary())
+
+
 def aggregate_test_records(artifacts):
     tests = []
-    row_id = 1
     for artifact in artifacts:
         suite = artifact.get("suite") or artifact.get("suite_name") or "unknown"
         target = "reference-coverage"
+        if int(artifact.get("semantic_pass", 0) or 0) > 0:
+            pass_bucket = ("semantic-pass", "semantic_pass", "pass", "Node/iwasm semantic match")
+        elif int(artifact.get("passed", 0) or 0) > 0:
+            pass_bucket = ("passed", "passed", "pass", "passed")
+        else:
+            pass_bucket = ("build-pass", "build_pass", "pass", "wasm build success")
+        fail_bucket = ("fail", "fail", "fail", "compiler failure")
+        if int(artifact.get("fail", 0) or 0) == 0 and int(artifact.get("failed", 0) or 0) > 0:
+            fail_bucket = ("failed", "failed", "fail", "failed")
         buckets = [
-            ("semantic-pass", "semantic_pass", "pass", "Node/iwasm semantic match"),
-            ("build-pass", "build_pass", "pass", "wasm build success"),
+            pass_bucket,
+            ("mismatch", "mismatch", "mismatch", "Node/iwasm semantic mismatch"),
+            ("runtime-error", "runtime_error", "runtime_error", "runtime failure"),
             ("unsupported", "unsupported", "unsupported", "unsupported by current compiler slice"),
             ("blocked", "blocked", "blocked", "external/runtime/toolchain blocker"),
-            ("fail", "fail", "fail", "compiler failure"),
+            fail_bucket,
             ("skip-with-reason", "skip_with_reason", "skip", "explicitly skipped with reason"),
         ]
         for case_name, key, status, reason in buckets:
@@ -139,7 +214,7 @@ def aggregate_test_records(artifacts):
             if count == 0:
                 continue
             record = {
-                "id": str(row_id),
+                "id": f"{suite}:{case_name}",
                 "suite": suite,
                 "case": case_name,
                 "name": case_name,
@@ -151,7 +226,6 @@ def aggregate_test_records(artifacts):
             if status in ("fail", "error"):
                 record["error"] = reason
             tests.append(record)
-            row_id += 1
     return tests
 
 
@@ -216,42 +290,56 @@ def load_jsonl_test_records(paths, start_id):
 
 
 def build_test_results(artifacts, jsonl_paths, generated_at, row_limit=1000):
-    if jsonl_paths:
-        all_tests = load_jsonl_test_records(jsonl_paths, 1)
+    jsonl_tests = load_jsonl_test_records(jsonl_paths, 1) if jsonl_paths else []
+    jsonl_suites = {record["suite"] for record in jsonl_tests}
+    aggregate_tests = aggregate_test_records(
+        [artifact for artifact in artifacts if (artifact.get("suite") or artifact.get("suite_name") or "unknown") not in jsonl_suites]
+    )
+    all_tests = jsonl_tests + aggregate_tests
+
+    if jsonl_tests and aggregate_tests:
+        record_mode = "mixed"
+    elif jsonl_tests:
         record_mode = "jsonl"
     else:
-        all_tests = aggregate_test_records(artifacts)
         record_mode = "aggregate"
 
-    shown_tests = all_tests[:row_limit]
+    tests_by_suite = {}
+    for record in all_tests:
+        tests_by_suite.setdefault(record["suite"], []).append(record)
 
-    # Count by status
-    passed = sum(1 for t in all_tests if t["status"] == "pass")
-    mismatch = sum(1 for t in all_tests if t["status"] == "mismatch")
-    runtime_error = sum(1 for t in all_tests if t["status"] == "runtime_error")
-    build_error = sum(1 for t in all_tests if t["status"] == "fail")
-    unsupported = sum(1 for t in all_tests if t["status"] == "unsupported")
-    blocked = sum(1 for t in all_tests if t["status"] == "blocked")
+    shown_tests = []
+    shown_by_suite = {}
+    total_by_suite = {}
+    summary_by_suite = {}
+    for suite in sorted(tests_by_suite):
+        records = tests_by_suite[suite]
+        shown = records[:row_limit]
+        shown_tests.extend(shown)
+        total_by_suite[suite] = sum(record_weight(record) for record in records)
+        shown_by_suite[suite] = sum(record_weight(record) for record in shown)
+        summary_by_suite[suite] = summarize_test_records(records)
+
+    global_summary = summarize_test_records(all_tests)
+    total_records = sum(record_weight(record) for record in all_tests)
+    shown_records = sum(record_weight(record) for record in shown_tests)
 
     return {
         "tests": shown_tests,
-        "summary": {
-            "passed": passed,
-            "mismatch": mismatch,
-            "runtime_error": runtime_error,
-            "build_error": build_error,
-            "unsupported": unsupported,
-            "blocked": blocked,
-        },
+        "summary": global_summary,
         "metadata": {
             "schema_version": 2,
             "generated_at": generated_at,
             "generator": "scripts/gen/web-ui-data.py",
             "record_mode": record_mode,
-            "total_records": len(all_tests),
-            "shown_records": len(shown_tests),
+            "total_records": total_records,
+            "shown_records": shown_records,
             "row_limit": row_limit,
-            "truncated": len(all_tests) > len(shown_tests),
+            "row_limit_per_suite": row_limit,
+            "truncated": shown_records < total_records,
+            "total_by_suite": total_by_suite,
+            "shown_by_suite": shown_by_suite,
+            "summary_by_suite": summary_by_suite,
             "sources": [item["_source_path"] for item in artifacts]
             + [path.relative_to(REPO_ROOT).as_posix() for path in jsonl_paths],
         },
@@ -261,66 +349,161 @@ def priority_for_feature(feature):
     return FEATURE_PRIORITY.get(feature, "p2")
 
 
+def normalized_suite_metrics(item):
+    suite = item.get("suite") or item.get("suite_name") or "unknown"
+    total = int(item.get("total", 0) or 0)
+    denominator = int(item.get("denominator", 0) or total or 0)
+    executed = int(item.get("executed", 0) or total or 0)
+    build_pass = int(item.get("build_pass", item.get("passed", 0)) or 0)
+    semantic_pass = int(item.get("semantic_pass", item.get("passed", 0)) or 0)
+    fail = int(item.get("fail", item.get("failed", 0)) or 0)
+    unsupported = int(item.get("unsupported", 0) or 0)
+    blocked = int(item.get("blocked", 0) or 0)
+    skip_with_reason = int(item.get("skip_with_reason", item.get("skipped", 0)) or 0)
+    return {
+        "suite": suite,
+        "denominator": denominator,
+        "executed": executed,
+        "build_pass": build_pass,
+        "semantic_pass": semantic_pass,
+        "unsupported": unsupported,
+        "blocked": blocked,
+        "fail": fail,
+        "skip_with_reason": skip_with_reason,
+        "source": item["_source_path"],
+    }
+
+
 def build_coverage(artifacts):
-    total = sum(int(item.get("denominator", 0) or 0) for item in artifacts)
-    implemented = sum(int(item.get("build_pass", 0) or 0) for item in artifacts)
-    unsupported = sum(int(item.get("unsupported", 0) or 0) for item in artifacts)
-    failed = sum(int(item.get("fail", 0) or 0) for item in artifacts)
-    blocked = sum(int(item.get("blocked", 0) or 0) for item in artifacts)
-    executed = sum(int(item.get("executed", 0) or 0) for item in artifacts)
+    suites = [normalized_suite_metrics(item) for item in artifacts]
+    total = sum(item["denominator"] for item in suites)
+    implemented = sum(item["build_pass"] for item in suites)
+    unsupported = sum(item["unsupported"] for item in suites)
+    failed = sum(item["fail"] for item in suites)
+    blocked = sum(item["blocked"] for item in suites)
+    executed = sum(item["executed"] for item in suites)
     future = max(total - executed, 0)
 
     by_priority = {"p0": failed + blocked, "p1": 0, "p2": 0, "p3": 0, "future": future}
     for artifact in artifacts:
-        for feature, count in (artifact.get("unsupported_features") or {}).items():
-            priority = priority_for_feature(feature)
-            by_priority[priority] += int(count or 0)
+        unsupported_features = artifact.get("unsupported_features") or {}
+        if unsupported_features:
+            accounted = 0
+            for feature, count in unsupported_features.items():
+                priority = priority_for_feature(feature)
+                feature_count = int(count or 0)
+                by_priority[priority] += feature_count
+                accounted += feature_count
+            remaining = max(int(artifact.get("unsupported", 0) or 0) - accounted, 0)
+            by_priority["p2"] += remaining
+            continue
+        by_priority["p2"] += int(artifact.get("unsupported", 0) or 0)
+
+    unimplemented = unsupported + failed + blocked
+    if total > 0:
+        unimplemented = min(unimplemented, max(total - implemented - future, 0))
 
     return {
         "total": total,
         "implemented": implemented,
-        "unimplemented": unsupported + failed + blocked,
+        "unimplemented": unimplemented,
         "future": future,
         "byPriority": by_priority,
-        "suites": [
-            {
-                "suite": item.get("suite") or item.get("suite_name") or "unknown",
-                "denominator": int(item.get("denominator", 0) or 0),
-                "executed": int(item.get("executed", 0) or 0),
-                "build_pass": int(item.get("build_pass", 0) or 0),
-                "semantic_pass": int(item.get("semantic_pass", 0) or 0),
-                "unsupported": int(item.get("unsupported", 0) or 0),
-                "blocked": int(item.get("blocked", 0) or 0),
-                "fail": int(item.get("fail", 0) or 0),
-                "source": item["_source_path"],
-            }
-            for item in artifacts
-        ],
+        "suites": suites,
     }
 
 
-def build_history(artifacts):
-    history = []
+def jsonl_durations_by_suite(coverage_dir):
+    durations = {}
+    for path in default_jsonl_test_records(coverage_dir):
+        total_duration_ms = 0.0
+        timed_records = 0
+        with path.open("r", encoding="utf-8") as handle:
+            for raw_line in handle:
+                raw_line = raw_line.strip()
+                if not raw_line:
+                    continue
+                data = json.loads(raw_line)
+                duration = data.get("duration_ms", data.get("duration"))
+                if isinstance(duration, (int, float)):
+                    total_duration_ms += float(duration)
+                    timed_records += 1
+        if timed_records:
+            durations[path.name.removesuffix("-results.jsonl")] = total_duration_ms
+    return durations
+
+
+def history_snapshot(item, coverage_dir):
+    metrics = normalized_suite_metrics(item)
+    durations = jsonl_durations_by_suite(coverage_dir)
+    suite = metrics["suite"]
+    duration_ms = item.get("duration_ms")
+    if not isinstance(duration_ms, (int, float)):
+        duration_ms = durations.get(suite)
+    executed = metrics["executed"]
+    return {
+        "run_id": f"{suite}-{executed}",
+        "suite": suite,
+        "executed": executed,
+        "denominator": metrics["denominator"],
+        "timestamp": item["_source_mtime"],
+        "passed": metrics["build_pass"],
+        "failed": metrics["fail"] + metrics["blocked"],
+        "skipped": metrics["unsupported"] + metrics["skip_with_reason"],
+        "duration_ms": duration_ms,
+    }
+
+
+def history_key(row):
+    return "|".join([
+        str(row.get("suite", "unknown")),
+        str(row.get("timestamp", "")),
+        str(row.get("executed", "")),
+        str(row.get("denominator", "")),
+    ])
+
+
+def load_persisted_history(history_file):
+    rows = []
+    if not history_file.is_file():
+        return rows
+    with history_file.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            raw_line = raw_line.strip()
+            if not raw_line:
+                continue
+            rows.append(json.loads(raw_line))
+    return rows
+
+
+def append_history_snapshots(artifacts, coverage_dir, history_file=DEFAULT_HISTORY_FILE):
+    existing = load_persisted_history(history_file)
+    seen = {history_key(row) for row in existing}
+    new_rows = []
     for item in artifacts:
-        suite = item.get("suite") or item.get("suite_name") or "unknown"
-        executed = int(item.get("executed", 0) or item.get("total", 0) or 0)
-        denominator = int(item.get("denominator", 0) or item.get("total", 0) or 0)
-        history.append({
-            "run_id": f"{suite}-{executed}",
-            "suite": suite,
-            "executed": executed,
-            "denominator": denominator,
-            "timestamp": item["_source_mtime"],
-            "passed": int(item.get("build_pass", 0) or 0),
-            "failed": int(item.get("fail", 0) or 0) + int(item.get("blocked", 0) or 0),
-            "skipped": int(item.get("unsupported", 0) or 0) + int(item.get("skip_with_reason", 0) or 0),
-            "compile_time": 0,
-            "runtime": 0,
-        })
-    return history
+        row = history_snapshot(item, coverage_dir)
+        key = history_key(row)
+        if key not in seen:
+            new_rows.append(row)
+            seen.add(key)
+    if not new_rows:
+        return
+    history_file.parent.mkdir(parents=True, exist_ok=True)
+    with history_file.open("a", encoding="utf-8") as handle:
+        for row in new_rows:
+            handle.write(json.dumps(row, sort_keys=True))
+            handle.write("\n")
 
 
-def build_metadata(artifacts, jsonl_paths, generated_at):
+def build_history(artifacts, coverage_dir):
+    rows_by_key = {history_key(row): row for row in load_persisted_history(DEFAULT_HISTORY_FILE)}
+    for item in artifacts:
+        row = history_snapshot(item, coverage_dir)
+        rows_by_key[history_key(row)] = row
+    return sorted(rows_by_key.values(), key=lambda row: (row["timestamp"], row["run_id"]))
+
+
+def build_metadata(artifacts, jsonl_paths, generated_at, out_dir):
     return {
         "schema_version": 1,
         "generated_at": generated_at,
@@ -328,10 +511,10 @@ def build_metadata(artifacts, jsonl_paths, generated_at):
         "sources": [item["_source_path"] for item in artifacts]
         + [path.relative_to(REPO_ROOT).as_posix() for path in jsonl_paths],
         "output_files": [
-            "site/docs/coverage/web-ui/public/data/test-results.json",
-            "site/docs/coverage/web-ui/public/data/coverage.json",
-            "site/docs/coverage/web-ui/public/data/history.json",
-            "site/docs/coverage/web-ui/public/data/metadata.json",
+            str((out_dir / "test-results.json").as_posix()),
+            str((out_dir / "coverage.json").as_posix()),
+            str((out_dir / "history.json").as_posix()),
+            str((out_dir / "metadata.json").as_posix()),
         ],
         "notes": [
             "Coverage totals are derived from artifacts/coverage/results/*.json.",
@@ -347,6 +530,13 @@ def write_json(path, data):
         handle.write("\n")
 
 
+def display_path(path):
+    try:
+        return path.relative_to(REPO_ROOT).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--coverage-dir", type=Path, default=DEFAULT_COVERAGE_DIR)
@@ -356,7 +546,7 @@ def parse_args():
         default=None,
         help=(
             "Output directory for JSON artifacts. If omitted, writes to "
-            "site/docs/coverage/web-ui/public/data."
+            "the docs web-ui data directory."
         ),
     )
     parser.add_argument(
@@ -373,7 +563,7 @@ def main():
     args = parse_args()
     coverage_dir = args.coverage_dir if args.coverage_dir.is_absolute() else REPO_ROOT / args.coverage_dir
     if args.out_dir is None:
-        out_dirs = [DEFAULT_OUT_DIR]
+        out_dirs = [resolve_output_dir()]
     else:
         out_dir = args.out_dir if args.out_dir.is_absolute() else REPO_ROOT / args.out_dir
         out_dirs = [out_dir]
@@ -391,19 +581,21 @@ def main():
             raise SystemExit(f"--test-jsonl not found: {path}")
 
     generated_at = generated_at_iso(artifacts)
+    append_history_snapshots(artifacts, coverage_dir)
     outputs = {
         "test-results.json": build_test_results(artifacts, jsonl_paths, generated_at),
         "coverage.json": build_coverage(artifacts),
-        "history.json": build_history(artifacts),
-        "metadata.json": build_metadata(artifacts, jsonl_paths, generated_at),
+        "history.json": build_history(artifacts, coverage_dir),
     }
     for filename, data in outputs.items():
         for out_dir in out_dirs:
             write_json(out_dir / filename, data)
+    for out_dir in out_dirs:
+        write_json(out_dir / "metadata.json", build_metadata(artifacts, jsonl_paths, generated_at, out_dir))
 
     print("generated 4 files under:")
     for out_dir in out_dirs:
-        print(f"  - {out_dir.relative_to(REPO_ROOT)}")
+        print(f"  - {display_path(out_dir)}")
 
 
 if __name__ == "__main__":

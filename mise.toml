@@ -86,12 +86,16 @@ description = "Generate language coverage report from language-reference (args: 
 run = "python scripts/manager.py coverage-report"
 
 [tasks."coverage-dashboard-data"]
-description = "Generate coverage dashboard JSON under site/docs/coverage/web-ui/public/data"
+description = "Generate coverage dashboard JSON (default: site/docs/coverage/web-ui/public/data, or TS2WASM_DOCS_REPO_PATH override)"
 run = "python scripts/manager.py coverage-dashboard-data"
 
 [tasks."build-dashboard-site"]
-description = "Build web-ui dashboard bundle and publish it to /dashboard/ in site docs"
+description = "Build web-ui dashboard bundle and publish it to /dashboard/ in the docs output root"
 run = "python scripts/build-dashboard-site.py"
+
+[tasks."sync-docs-site"]
+description = "Sync generated docs, coverage matrix, dashboard assets, and dashboard data to external TS2WASM_DOCS_REPO_PATH"
+run = "python scripts/sync-docs-site.py"
 
 [tasks."discord-report"]
 description = "Send or validate a Discord cycle report payload"

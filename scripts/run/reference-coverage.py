@@ -41,6 +41,7 @@ import shutil
 import os
 import threading
 import itertools
+import time
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
@@ -361,6 +362,13 @@ def evidence_command(suite, limit, paths_file, path_filters):
 def refresh_web_ui_data():
     """Regenerate web UI data without changing this command's stdout contract."""
     command = [sys.executable, str(REPO_ROOT / "scripts/gen/web-ui-data.py")]
+    out_dir = os.environ.get("TS2WASM_WEB_UI_DATA_DIR")
+    if not out_dir:
+        docs_repo = os.environ.get("TS2WASM_DOCS_REPO_PATH")
+        if docs_repo:
+            out_dir = str(Path(docs_repo) / "coverage" / "web-ui" / "public" / "data")
+    if out_dir:
+        command.extend(["--out-dir", out_dir])
     for jsonl_file in sorted((REPO_ROOT / "artifacts/coverage/results").glob("*-results.jsonl")):
         command.extend(["--test-jsonl", str(jsonl_file)])
     result = subprocess.run(
@@ -812,6 +820,8 @@ def main():
         files = sampled
         print(f"Sample mode: {len(files)} files selected (max {sample} per category)", file=sys.stderr)
 
+    coverage_started_at = time.perf_counter()
+
     executed = 0
     fail_count = 0
     unsupported_count = 0
@@ -1069,8 +1079,14 @@ def main():
                     "id": -1,
                     "items": [{"id": item["id"], "source": item["build_source"]} for item in batch]
                 })
-                server_proc.stdin.write(req.encode("utf-8") + b"\n")
-                server_proc.stdin.flush()
+                try:
+                    server_proc.stdin.write(req.encode("utf-8") + b"\n")
+                    server_proc.stdin.flush()
+                except (BrokenPipeError, OSError):
+                    # Server process died (e.g. stack overflow); mark batch as blocked
+                    for item in batch:
+                        item["result_metrics"]["blocked"] = True
+                    break
                 resp_line = server_proc.stdout.readline()
                 if not resp_line:
                     # Server disconnected; mark remaining as blocked
@@ -1185,8 +1201,11 @@ def main():
     
         # Server cleanup
         if server_mode and server_proc:
-            server_proc.stdin.write(json.dumps({"id": -1, "source": ""}).encode("utf-8") + b"\n")
-            server_proc.stdin.flush()
+            try:
+                server_proc.stdin.write(json.dumps({"id": -1, "source": ""}).encode("utf-8") + b"\n")
+                server_proc.stdin.flush()
+            except (BrokenPipeError, OSError):
+                pass  # Server already dead; nothing to clean up
             try:
                 server_proc.wait(timeout=5)
             except subprocess.TimeoutExpired:
@@ -1211,7 +1230,9 @@ def main():
         failed = 0
         unsupported = 0
         blocked = 0
+        total_duration_ms = 0
 
+        jsonl_started_at = time.perf_counter()
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_dir = Path(tmp_dir)
             with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
@@ -1225,6 +1246,10 @@ def main():
                         record, status = future.result()
                         if record:
                             jsonl_out.write(record + "\n")
+                            try:
+                                total_duration_ms += int(json.loads(record).get("duration_ms", 0) or 0)
+                            except json.JSONDecodeError:
+                                pass
                         if status == "pass":
                             passed += 1
                         elif status in ("fail", "mismatch", "runtime_error"):
@@ -1245,8 +1270,10 @@ def main():
         print(f"Unsupported: {unsupported}", file=sys.stderr)
         print(f"Blocked: {blocked}", file=sys.stderr)
         print(f"Total: {passed + failed + unsupported + blocked}", file=sys.stderr)
+        print(f"Duration: {total_duration_ms}ms", file=sys.stderr)
 
         # Save summary files
+        wall_duration_ms = int(round((time.perf_counter() - jsonl_started_at) * 1000))
         summary = {
             "suite": suite,
             "passed": passed,
@@ -1254,6 +1281,8 @@ def main():
             "unsupported": unsupported,
             "blocked": blocked,
             "total": passed + failed + unsupported + blocked,
+            "duration_ms": total_duration_ms,
+            "wall_duration_ms": wall_duration_ms,
             "timestamp": datetime.now().isoformat(),
             "jsonl_file": str(jsonl_file),
         }
@@ -1315,6 +1344,7 @@ def main():
         "unsupported": unsupported_count,
         "blocked": blocked_count,
         "skip_with_reason": skip_count,
+        "duration_ms": int(round((time.perf_counter() - coverage_started_at) * 1000)),
         "unsupported_diagcodes": unsupported_diag_counts,
         "unsupported_features": unsupported_feature_counts,
         "status": "in-progress",

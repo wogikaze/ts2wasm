@@ -4,6 +4,7 @@
 from pathlib import Path
 import shutil
 import subprocess
+import os
 
 # /// script
 # requires-python = ">=3.8"
@@ -12,8 +13,15 @@ import subprocess
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 WEB_UI_DIR = PROJECT_ROOT / "web-ui"
-SITE_DASHBOARD_DIR = PROJECT_ROOT / "site" / "docs" / "public" / "dashboard"
-DATA_SRC_DIR = PROJECT_ROOT / "site" / "docs" / "coverage" / "web-ui" / "public" / "data"
+DOCS_REPO_PATH = os.environ.get("TS2WASM_DOCS_REPO_PATH", str(PROJECT_ROOT / "site" / "docs"))
+DOCS_REPO = Path(DOCS_REPO_PATH) if Path(DOCS_REPO_PATH).is_absolute() else PROJECT_ROOT / DOCS_REPO_PATH
+SITE_DASHBOARD_DIR = DOCS_REPO / "public" / "dashboard"
+DATA_SRC_DIR = Path(
+    os.environ.get(
+        "TS2WASM_WEB_UI_DATA_DIR",
+        str(DOCS_REPO / "coverage" / "web-ui" / "public" / "data"),
+    )
+)
 DATA_DST_DIR = SITE_DASHBOARD_DIR / "data"
 
 
