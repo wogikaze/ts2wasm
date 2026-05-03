@@ -209,16 +209,17 @@ impl ModuleGraphBuilder {
                 })?;
                 // For .d.ts files, add implicit declare to exported const without initializers
                 let resolved_source = if resolved_path.to_string_lossy().ends_with(".d.ts") {
-                    // Convert "export const NAME: TYPE;" to "export declare const NAME: TYPE;" 
+                    // Convert "export const NAME: TYPE;" to "export declare const NAME: TYPE;"
                     // for type-only declarations without initializers
                     // Simple string replace: "export const" without "=" -> "export declare const"
-                    source.lines()
+                    source
+                        .lines()
                         .map(|line| {
                             let trimmed = line.trim();
-                            if trimmed.starts_with("export const") 
-                                && !trimmed.contains("=") 
-                                && trimmed.ends_with(";") 
-                                && !trimmed.contains("declare") 
+                            if trimmed.starts_with("export const")
+                                && !trimmed.contains("=")
+                                && trimmed.ends_with(";")
+                                && !trimmed.contains("declare")
                             {
                                 line.replacen("export const", "export declare const", 1)
                             } else {
@@ -226,8 +227,10 @@ impl ModuleGraphBuilder {
                             }
                         })
                         .collect::<Vec<_>>()
-                        .join("
-")
+                        .join(
+                            "
+",
+                        )
                 } else {
                     source
                 };
