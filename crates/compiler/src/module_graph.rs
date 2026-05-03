@@ -283,19 +283,23 @@ fn resolve_local_specifier(
         bare_candidates.push(raw_candidate.join("index.ts"));
         bare_candidates.push(raw_candidate.join("index.js"));
         bare_candidates.push(raw_candidate.join("index.d.ts"));
-        let node_mod_dir = importer_dir.join("node_modules").join(&specifier.value);
-        if node_mod_dir.is_dir() {
-            bare_candidates.push(node_mod_dir.join("index.ts"));
-            bare_candidates.push(node_mod_dir.join("index.js"));
-            bare_candidates.push(node_mod_dir.join("index.d.ts"));
-        } else {
-            bare_candidates.extend(
-                module_resolution_candidates(
-                    &importer_dir.join("node_modules").join(&specifier.value),
-                    specifier,
-                )
-                .unwrap_or_else(|_| vec![]),
-            );
+        // Traverse up directories looking in node_modules/
+        for dir in importer_dir.ancestors() {
+            let node_mod_dir = dir.join("node_modules").join(&specifier.value);
+            if node_mod_dir.is_dir() {
+                bare_candidates.push(node_mod_dir.join("index.ts"));
+                bare_candidates.push(node_mod_dir.join("index.js"));
+                bare_candidates.push(node_mod_dir.join("index.d.ts"));
+            } else {
+                bare_candidates.extend(
+                    module_resolution_candidates(&node_mod_dir, specifier)
+                        .unwrap_or_else(|_| vec![]),
+                );
+            }
+            // Stop at filesystem root
+            if dir == dir.parent().unwrap_or(dir) {
+                break;
+            }
         }
         candidates = bare_candidates;
     }
