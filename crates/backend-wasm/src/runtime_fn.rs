@@ -226,6 +226,12 @@ pub(crate) enum RuntimeFn {
     ArrayAt,
     /// Array.prototype.fill(value) — fills all elements with value
     ArrayFill,
+    /// Array.prototype.shift() — removes and returns first element
+    ArrayShift,
+    /// Array.prototype.unshift(val) — adds element at beginning, returns new length
+    ArrayUnshift,
+    /// Array.prototype.splice(start, deleteCount) — removes elements, returns removed array
+    ArraySplice,
     /// M10: Object statics
     ObjectKeys,
     ObjectSpread,
@@ -638,6 +644,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayMap" => Some(RuntimeFn::ArrayMap),
         "ArrayAt" => Some(RuntimeFn::ArrayAt),
         "ArrayFill" => Some(RuntimeFn::ArrayFill),
+        "ArrayShift" => Some(RuntimeFn::ArrayShift),
+        "ArrayUnshift" => Some(RuntimeFn::ArrayUnshift),
+        "ArraySplice" => Some(RuntimeFn::ArraySplice),
         "MapNew" => Some(RuntimeFn::MapNew),
         "MapGet" => Some(RuntimeFn::MapGet),
         "MapSet" => Some(RuntimeFn::MapSet),
@@ -1096,6 +1105,9 @@ const ARRAY_FOR_EACH_DEPS: &[RuntimeFn] = &[];
 const ARRAY_MAP_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::ArrayGet];
 const ARRAY_FILL_DEPS: &[RuntimeFn] = &[];
+const ARRAY_SHIFT_DEPS: &[RuntimeFn] = &[];
+const ARRAY_UNSHIFT_DEPS: &[RuntimeFn] = &[];
+const ARRAY_SPLICE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 
 // Object method dependencies
 const OBJECT_KEYS_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];

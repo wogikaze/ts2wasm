@@ -129,6 +129,9 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "concat") => Some("ArrayConcat"),
         ("Array", "at") => Some("ArrayAt"),
         ("Array", "fill") => Some("ArrayFill"),
+        ("Array", "shift") => Some("ArrayShift"),
+        ("Array", "unshift") => Some("ArrayUnshift"),
+        ("Array", "splice") => Some("ArraySplice"),
         _ => None,
     }
 }
@@ -145,6 +148,9 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "filter" => Some("ArrayFilter"),
         "push" => Some("ArrayPush"),
         "pop" => Some("ArrayPop"),
+        "shift" => Some("ArrayShift"),
+        "unshift" => Some("ArrayUnshift"),
+        "splice" => Some("ArraySplice"),
         "slice" => Some("ArraySlice"),
         "join" => Some("ArrayJoin"),
         "reverse" => Some("ArrayReverse"),

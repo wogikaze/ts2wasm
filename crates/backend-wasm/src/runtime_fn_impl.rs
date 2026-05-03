@@ -1249,6 +1249,30 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayShift => RuntimeSpec {
+                symbol: "$array_shift",
+                deps: ARRAY_SHIFT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayUnshift => RuntimeSpec {
+                symbol: "$array_unshift",
+                deps: ARRAY_UNSHIFT_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArraySplice => RuntimeSpec {
+                symbol: "$array_splice",
+                deps: ARRAY_SPLICE_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
             Self::ObjectKeys => RuntimeSpec {
                 symbol: "$object_keys",
                 deps: OBJECT_KEYS_DEPS,
@@ -1665,6 +1689,30 @@ impl RuntimeFn {
                 runtime_strings: NO_RUNTIME_STRINGS,
                 result: RuntimeResult::Value,
             },
+            Self::ArrayShift => RuntimeSpec {
+                symbol: "$array_shift",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArrayUnshift => RuntimeSpec {
+                symbol: "$array_unshift",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
+            Self::ArraySplice => RuntimeSpec {
+                symbol: "$array_splice",
+                deps: NO_DEPS,
+                imports: NO_IMPORTS,
+                capability: NO_CAPS,
+                runtime_strings: NO_RUNTIME_STRINGS,
+                result: RuntimeResult::Value,
+            },
         }
     }
 
@@ -1852,6 +1900,9 @@ impl RuntimeFn {
             Self::ArrayMap => "array_map",
             Self::ArrayAt => "array_at",
             Self::ArrayFill => "array_fill",
+            Self::ArrayShift => "array_shift",
+            Self::ArrayUnshift => "array_unshift",
+            Self::ArraySplice => "array_splice",
             Self::ObjectKeys => "object_keys",
             Self::ObjectSpread => "object_spread",
             Self::ObjectValues => "object_values",
@@ -1904,6 +1955,9 @@ impl RuntimeFn {
             Self::DecodeURI => "decode_uri",
             Self::Escape => "escape",
             Self::Unescape => "unescape",
+            Self::ArrayShift => "array_shift",
+            Self::ArrayUnshift => "array_unshift",
+            Self::ArraySplice => "array_splice",
         }
     }
 
@@ -2063,6 +2117,9 @@ impl RuntimeFn {
             Self::ArrayMap,
             Self::ArrayAt,
             Self::ArrayFill,
+            Self::ArrayShift,
+            Self::ArrayUnshift,
+            Self::ArraySplice,
             // Object statics
             Self::ObjectKeys,
             Self::ObjectSpread,
@@ -2284,6 +2341,9 @@ impl RuntimeFn {
             Self::ArrayMap,
             Self::ArrayAt,
             Self::ArrayFill,
+            Self::ArrayShift,
+            Self::ArrayUnshift,
+            Self::ArraySplice,
             // Object statics
             Self::ObjectKeys,
             Self::ObjectSpread,

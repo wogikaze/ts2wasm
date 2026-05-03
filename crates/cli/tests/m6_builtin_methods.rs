@@ -486,6 +486,36 @@ fn build_smoke_array_some_method() {
     );
 }
 
+#[test]
+fn build_smoke_array_find_last_method() {
+    let result = run_fixture("builtins-and-io/array-find-last.ts");
+    assert!(
+        result.is_ok(),
+        "Array.findLast should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_find_last_index_method() {
+    let result = run_fixture("builtins-and-io/array-find-last-index.ts");
+    assert!(
+        result.is_ok(),
+        "Array.findLastIndex should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
+fn build_smoke_array_shift_unshift_splice_method() {
+    let result = run_fixture("builtins-and-io/array-shift-unshift-splice.ts");
+    assert!(
+        result.is_ok(),
+        "Array.shift/unshift/splice should build: {:?}",
+        result.err()
+    );
+}
+
 // RegExp literal expanded pattern support (dot, \d, \w, \s, +, *, ?)
 
 #[test]

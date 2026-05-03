@@ -1508,6 +1508,189 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype.shift() — removes and returns first element
+    pub(super) fn emit_array_shift(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_shift (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $result i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (if (i32.eqz (local.get $len)) (then (return (i32.const {undefined}))))
+    (local.set $result
+      (i32.load (i32.add (local.get $obj) (i32.const {array_header}))))
+    (local.set $i (i32.const {one}))
+    (block $done
+      (loop $shift
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (i32.store
+          (i32.add
+            (local.get $obj)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (i32.sub (local.get $i) (i32.const {one})) (i32.const {elem_shift}))))
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $shift)))
+    (i32.store (local.get $obj) (i32.sub (local.get $len) (i32.const {one})))
+    (local.get $result))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Array.prototype.unshift(val) — adds element at beginning, returns new length
+    pub(super) fn emit_array_unshift(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_unshift (param $arr i32) (param $val i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (local.get $len))
+    (block $done
+      (loop $shift
+        (br_if $done (i32.eqz (local.get $i)))
+        (i32.store
+          (i32.add
+            (local.get $obj)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (i32.sub (local.get $i) (i32.const {one})) (i32.const {elem_shift}))))))
+        (local.set $i (i32.sub (local.get $i) (i32.const {one})))
+        (br $shift)))
+    (i32.store
+      (i32.add (local.get $obj) (i32.const {array_header}))
+      (local.get $val))
+    (local.set $len (i32.add (local.get $len) (i32.const {one})))
+    (i32.store (local.get $obj) (local.get $len))
+    (i32.or (i32.shl (local.get $len) (i32.const {number_shift})) (i32.const {number_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number_tag = ValueTag::NUMBER,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
+    // Array.prototype.splice(start, deleteCount) — removes elements, returns removed array
+    pub(super) fn emit_array_splice(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_splice (param $arr i32) (param $start i32) (param $delete_count i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $s i32)
+    (local $dc i32)
+    (local $tail i32)
+    (local $i i32)
+    (local $result_ptr i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $s (i32.shr_s (local.get $start) (i32.const {number_shift})))
+    (local.set $dc (i32.shr_s (local.get $delete_count) (i32.const {number_shift})))
+    ;; Clamp start to [0, len]
+    (if (i32.lt_s (local.get $s) (i32.const {zero})) (then (local.set $s (i32.const {zero}))))
+    (if (i32.gt_u (local.get $s) (local.get $len)) (then (local.set $s (local.get $len))))
+    ;; Clamp deleteCount to [0, len - start]
+    (if (i32.lt_s (local.get $dc) (i32.const {zero})) (then (local.set $dc (i32.const {zero}))))
+    (local.set $tail (i32.sub (local.get $len) (local.get $s)))
+    (if (i32.gt_u (local.get $dc) (local.get $tail)) (then (local.set $dc (local.get $tail))))
+    ;; Allocate result array for removed elements
+    (local.set $result_ptr
+      (call $alloc_heap
+        (i32.add (i32.const {array_header}) (i32.shl (local.get $dc) (i32.const {elem_shift})))))
+    (i32.store (local.get $result_ptr) (local.get $dc))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 4)) (local.get $dc))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 8)) (i32.const 1))
+    (i32.store (i32.add (local.get $result_ptr) (i32.const 12)) (i32.const {array_header}))
+    ;; Copy removed elements to result
+    (local.set $i (i32.const {zero}))
+    (block $copy_done
+      (loop $copy_loop
+        (br_if $copy_done (i32.ge_u (local.get $i) (local.get $dc)))
+        (i32.store
+          (i32.add
+            (local.get $result_ptr)
+            (i32.add (i32.const {array_header}) (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (i32.add (local.get $s) (local.get $i)) (i32.const {elem_shift}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $copy_loop)))
+    ;; Shift remaining elements left
+    (local.set $i (local.get $s))
+    (block $shift_done
+      (loop $shift_loop
+        (br_if $shift_done (i32.ge_u (local.get $i) (i32.sub (local.get $len) (local.get $dc))))
+        (i32.store
+          (i32.add
+            (local.get $obj)
+            (i32.add
+              (i32.const {array_header})
+              (i32.shl (local.get $i) (i32.const {elem_shift}))))
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (i32.add (local.get $i) (local.get $dc)) (i32.const {elem_shift}))))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $shift_loop)))
+    (i32.store (local.get $obj) (i32.sub (local.get $len) (local.get $dc)))
+    (i32.or (local.get $result_ptr) (i32.const {array_tag})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Object methods (M10)
 
     pub(super) fn emit_object_keys(&self, wat: &mut String) {
