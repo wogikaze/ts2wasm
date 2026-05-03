@@ -1,4 +1,6 @@
-use ts2wasm_frontend::{ArrayLiteralElement, BinaryOp, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp};
+use ts2wasm_frontend::{
+    ArrayLiteralElement, BinaryOp, DiagCode, Diagnostic, Expr, Span, Stmt, UnaryOp,
+};
 
 use crate::binding_pattern::parse_binding_pattern;
 
@@ -635,9 +637,7 @@ impl NameResolver {
                 op,
                 right,
                 span,
-            } => {
-                self.resolve_binary_chain(left, *op, right, *span)
-            }
+            } => self.resolve_binary_chain(left, *op, right, *span),
             Expr::Call { callee, args, span } => {
                 if self.is_test262_assert_reference_error_probe(callee, args)
                     || self.is_test262_assert_comparison_probe(callee, args)

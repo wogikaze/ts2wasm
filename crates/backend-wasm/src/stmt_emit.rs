@@ -1,5 +1,9 @@
 use super::emitter::LocalFrame;
 use super::emitter::WatEmitter;
+use super::expr_emit::{
+    CLOSURE_CAPTURE_COUNT_OFFSET, CLOSURE_CAPTURE_SLOTS_OFFSET, CLOSURE_CODE_ID_OFFSET,
+    CLOSURE_ENV_FLAGS_OFFSET, CLOSURE_SENTINEL,
+};
 use super::runtime_fn::RuntimeFn;
 use std::cell::RefCell;
 use ts2wasm_ir::lowered::LocalId;
@@ -604,9 +608,68 @@ impl WatEmitter<'_> {
                     RuntimeFn::ModuleExportsAssign.symbol(),
                 ));
             }
-            LoweredStmt::ClassDecl { .. } => {
-                // Placeholder for class declarations - backend emission deferred to issue 5011/5026
-                wat.push_str(&format!("{pad};; TODO: implement class declaration\n"));
+            LoweredStmt::ClassDecl {
+                constructor,
+                methods,
+                ..
+            } => {
+                let Some(constructor_id) = constructor else {
+                    return;
+                };
+                let proto_global = super::emitter::class_prototype_global(*constructor_id);
+                for (method_name, func_id) in methods {
+                    // Allocate no-capture closure
+                    wat.push_str(&format!(
+                        "{pad}(local.set {} (call {} (i32.const {})))\n",
+                        frame.heap_base_tmp(),
+                        RuntimeFn::AllocHeap.symbol(),
+                        CLOSURE_CAPTURE_SLOTS_OFFSET,
+                    ));
+                    self.emit_gc_root_mirror_index(wat, &pad, frame.heap_base_tmp(), frame);
+                    // Store closure sentinel
+                    wat.push_str(&format!(
+                        "{pad}(i32.store (local.get {}) (i32.const {CLOSURE_SENTINEL}))\n",
+                        frame.heap_base_tmp(),
+                    ));
+                    // Store func_id
+                    wat.push_str(&format!(
+                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CODE_ID_OFFSET})) (i32.const {}))\n",
+                        frame.heap_base_tmp(),
+                        func_id.0,
+                    ));
+                    // Store capture_count = 0
+                    wat.push_str(&format!(
+                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_CAPTURE_COUNT_OFFSET})) (i32.const 0))\n",
+                        frame.heap_base_tmp(),
+                    ));
+                    // Store env_flags = 0
+                    wat.push_str(&format!(
+                        "{pad}(i32.store (i32.add (local.get {}) (i32.const {CLOSURE_ENV_FLAGS_OFFSET})) (i32.const 0))\n",
+                        frame.heap_base_tmp(),
+                    ));
+                    // Tag as object
+                    wat.push_str(&format!(
+                        "{pad}(local.set {} (i32.or (local.get {}) (i32.const {})))\n",
+                        frame.heap_value_tmp(),
+                        frame.heap_base_tmp(),
+                        ValueTag::OBJECT_TAG,
+                    ));
+                    // $property_set(tagged_prototype, key_ptr, key_len, tagged_closure)
+                    wat.push_str(&format!(
+                        "{pad}(i32.or (global.get ${proto_global}) (i32.const {}))\n",
+                        ValueTag::OBJECT_TAG,
+                    ));
+                    let key_offset = self.string_offset(method_name) + Layout::STRING_HEADER_SIZE;
+                    let key_len = self.string_len(method_name);
+                    wat.push_str(&format!("{pad}(i32.const {key_offset})\n"));
+                    wat.push_str(&format!("{pad}(i32.const {key_len})\n"));
+                    wat.push_str(&format!("{pad}(local.get {})\n", frame.heap_value_tmp(),));
+                    wat.push_str(&format!(
+                        "{pad}(call {})\n",
+                        RuntimeFn::PropertySet.symbol(),
+                    ));
+                    wat.push_str(&format!("{pad}(drop)\n"));
+                }
             }
         }
     }

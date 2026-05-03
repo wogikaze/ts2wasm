@@ -1878,6 +1878,24 @@ fn global_isfinite_matches_node_under_iwasm() {
 #[test]
 fn core_expression_fixtures_match_node_output_under_iwasm() {
     for fixture in [
+        "fixtures/core-expressions/number.ts",
+        "fixtures/core-expressions/string.ts",
+        "fixtures/core-expressions/bool.ts",
+        "fixtures/core-expressions/null.ts",
+        "fixtures/core-expressions/undefined.ts",
+        "fixtures/core-expressions/ident.ts",
+        "fixtures/core-expressions/binary.ts",
+        "fixtures/core-expressions/member.ts",
+        "fixtures/core-expressions/call.ts",
+        "fixtures/core-expressions/assign.ts",
+        "fixtures/core-expressions/array.ts",
+        "fixtures/core-expressions/object.ts",
+        "fixtures/core-expressions/index.ts",
+        "fixtures/core-expressions/new.ts",
+        "fixtures/core-expressions/typeof.ts",
+        "fixtures/core-expressions/arrow-fn.ts",
+        "fixtures/core-expressions/spread.ts",
+        "fixtures/core-expressions/property-assign.ts",
         "fixtures/core-expressions/bigint.ts",
         "fixtures/core-expressions/unary.ts",
         "fixtures/core-expressions/logical-assign.ts",
@@ -1906,11 +1924,57 @@ fn ternary_fixture_reports_unsupported_syntax() {
 }
 
 #[test]
+fn core_expression_ternary_fixture_reports_unsupported_syntax() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-expressions/ternary.ts",
+        "[UnsupportedSyntax]",
+        "ternary operator not yet supported",
+        true,
+    );
+}
+
+#[test]
+fn core_expression_class_expr_fixture_reports_unresolved_name() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-expressions/class-expr.ts",
+        "[UnresolvedName]",
+        "unresolved name: `C`",
+        false,
+    );
+}
+
+#[test]
+fn core_expression_this_closure_fixture_reports_unsupported_runtime_subset() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-expressions/this.ts",
+        "[UnsupportedRuntimeSubset]",
+        "nested function `f` closures with `this` or `arguments`",
+        false,
+    );
+}
+
+#[test]
+fn core_expression_instanceof_date_fixture_reports_unsupported_date() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/core-expressions/instanceof.ts",
+        "[UnsupportedDate]",
+        "instanceof right-hand side must be a supported class constructor `Date`",
+        false,
+    );
+}
+
+#[test]
 fn core_statement_fixtures_match_node_output_under_iwasm() {
     for fixture in [
         "fixtures/core-statements/do-while.ts",
         "fixtures/core-statements/for.ts",
         "fixtures/core-statements/for-of.ts",
+        "fixtures/core-statements/let.ts",
+        "fixtures/core-statements/if.ts",
+        "fixtures/core-statements/while.ts",
+        "fixtures/core-statements/function.ts",
+        "fixtures/core-statements/switch.ts",
+        "fixtures/core-statements/labeled.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }

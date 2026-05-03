@@ -4,7 +4,7 @@
 Usage:
   python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]
       [--paths-file PATH] [--path-filter TEXT] [--dashboard-data]
-      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server]
+      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]
 
 Suites:
   test262   -> reference/test262/test/**/*.js
@@ -24,6 +24,7 @@ Notes:
   - --path-filter: run only files whose repo-relative path contains TEXT (repeatable)
   - --dashboard-data: refresh dashboard data after writing this suite coverage result
   - --jsonl: output results as JSONL (test262 only, enables full harness with parallel exec)
+  - --no-semantic: skip Node/iwasm semantic comparison (compile-only, faster for local full runs)
   - --jobs N: number of parallel jobs (default: CPU count)
   - --sample N: max files per category (test262 only, uses category-based sampling)
    - --category PATTERN: regex filter for test categories (test262 only, used with --sample)
@@ -51,7 +52,16 @@ GEN_ISSUES_SCRIPT = Path(__file__).parent.parent / "gen" / "issues-from-coverage
 UPDATE_ISSUE_INDEX_SCRIPT = Path(__file__).parent.parent / "gen" / "update-issue-index.py"
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "lib"))
-import test262_harness as test262_runner
+# Lazy import: test262_harness is only needed for test262 suite;
+# tsc/tsgo suites use raw source directly.
+test262_runner = None
+
+def _ensure_test262_runner():
+    global test262_runner
+    if test262_runner is None:
+        import test262_harness as _t262
+        test262_runner = _t262
+    return test262_runner
 
 try:
     sys.path.insert(0, str(Path(__file__).parent.parent / "report"))
@@ -197,7 +207,7 @@ def usage():
     print("Usage:")
     print("  python scripts/manager.py reference-coverage <suite> [--limit N] [--json] [--detail]")
     print("      [--paths-file PATH] [--path-filter TEXT] [--dashboard-data] [--no-dashboard-data]")
-    print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server]")
+    print("      [--jsonl] [--jobs N] [--sample N] [--category PATTERN] [--no-server] [--no-semantic]")
     print()
     print("Suites:")
     print("  test262   -> reference/test262/test/**/*.js")
@@ -207,6 +217,7 @@ def usage():
     print("Flags:")
     print("  --jsonl      Output results as JSONL (test262 only, enables full harness with parallel exec)")
     print("  --jobs N     Number of parallel jobs (default: CPU count)")
+    print("  --no-semantic disable semantic check (skip Node/iwasm execution after build)")
     print("  --sample N   Max files per category (test262 only, uses category-based sampling)")
     print("  --category PATTERN  Regex filter for test categories (test262 only, used with --sample)")
 
@@ -396,24 +407,26 @@ def test262_harness_dir_for(file_path):
     for index, part in enumerate(parts):
         if part == "test262":
             return Path(*parts[: index + 1]) / "harness"
-    return test262_runner.HARNESS_DIR
+    t262 = _ensure_test262_runner()
+    return t262.HARNESS_DIR
 
 def prepare_build_inputs(suite, file_path, tmp_dir):
     """Return source paths for wasm and Node execution."""
     if suite != "test262":
         return file_path, file_path
 
+    t262 = _ensure_test262_runner()
     source_code = file_path.read_text(encoding="utf-8")
-    metadata = test262_runner.parse_test262_metadata(source_code)
-    test262_runner.HARNESS_DIR = test262_harness_dir_for(file_path)
+    metadata = t262.parse_test262_metadata(source_code)
+    t262.HARNESS_DIR = test262_harness_dir_for(file_path)
     wasm_source = tmp_dir / "test262-wasm-input.js"
     node_source = tmp_dir / "test262-node-input.js"
     wasm_source.write_text(
-        test262_runner.build_test262_source(file_path, source_code, metadata, target="wasm"),
+        t262.build_test262_source(file_path, source_code, metadata, target="wasm"),
         encoding="utf-8",
     )
     node_source.write_text(
-        test262_runner.build_test262_source(file_path, source_code, metadata, target="node"),
+        t262.build_test262_source(file_path, source_code, metadata, target="node"),
         encoding="utf-8",
     )
     return wasm_source, node_source
@@ -638,6 +651,7 @@ def main():
     web_ui = True
     jsonl_output = False
     jobs = None
+    semantic_check = True
     sample = None
     category_pattern = None
     server_mode = True
@@ -686,6 +700,9 @@ def main():
             i += 1
         elif args[i] == "--jsonl":
             jsonl_output = True
+            i += 1
+        elif args[i] == "--no-semantic":
+            semantic_check = False
             i += 1
         elif args[i] == "--jobs":
             if i + 1 >= len(args):
@@ -833,7 +850,10 @@ def main():
     unsupported_diag_counts = {}
     unsupported_feature_counts = {}
     
-    semantic_enabled = bool(shutil.which("node") and shutil.which("iwasm"))
+    # Semantic checks require test262 harness (only available for test262 suite)
+    if suite != "test262":
+        semantic_check = False
+    semantic_enabled = bool(semantic_check and shutil.which("node") and shutil.which("iwasm"))
     
     if jobs is None:
         jobs = os.cpu_count() or 4
@@ -842,15 +862,20 @@ def main():
     use_server = server_mode
     server_proc = None
     
-    if server_mode:
-        print(f"Starting ts2wasm server (batch mode, {jobs} workers)...", file=sys.stderr)
-        server_proc = subprocess.Popen(
+    def _start_server():
+        """Start (or restart) the ts2wasm batch server process."""
+        proc = subprocess.Popen(
             [str(TS2WASM_BINARY), "server"],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=sys.stderr,
             cwd=REPO_ROOT,
         )
+        return proc
+    
+    if server_mode:
+        print(f"Starting ts2wasm server (batch mode, {jobs} workers)...", file=sys.stderr)
+        server_proc = _start_server()
 
     def _suite_detail_status(metrics):
         if metrics["build_pass"]:
@@ -902,7 +927,8 @@ def main():
     
     def _run_semantic_check(file_path, source_code, metadata, thread_tmp, out_wasm, result_metrics):
         """Run node and iwasm for a build-pass file, updating result_metrics."""
-        node_source = test262_runner.build_test262_source(
+        t262 = _ensure_test262_runner()
+        node_source = t262.build_test262_source(
             file_path, source_code, metadata, target="node"
         )
         node_input = thread_tmp / "node.js"
@@ -977,6 +1003,113 @@ def main():
                     rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
         
         return rm
+
+    def _accumulate_case_result(result, item):
+        """Update counters/detail output from a normalized result dict."""
+        nonlocal executed, build_pass_count, semantic_pass_count, mismatch_count
+        nonlocal runtime_error_count, blocked_count, fail_count
+        nonlocal unsupported_count, unsupported_diag_counts, unsupported_feature_counts
+
+        executed += 1
+        if detail_output:
+            result.setdefault("file_path", str(item["file_path"]))
+            result.setdefault("detail_path", item["detail_path"])
+            result.setdefault("case_name", item["file_path"].name)
+            _append_suite_detail(result)
+
+        if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
+            unsupported_count += 1
+            unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
+            unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
+            if result["detail_line"]:
+                file_details.append(result["detail_line"])
+            return
+        if result["build_pass"]:
+            build_pass_count += 1
+            if result["semantic_pass"]:
+                semantic_pass_count += 1
+            elif result["mismatch"]:
+                mismatch_count += 1
+            elif result["runtime_error"]:
+                runtime_error_count += 1
+            elif result["blocked"]:
+                blocked_count += 1
+            if result["detail_line"]:
+                file_details.append(result["detail_line"])
+            return
+        if result["blocked"]:
+            blocked_count += 1
+            if result["detail_line"]:
+                file_details.append(result["detail_line"])
+            return
+        if result["fail"]:
+            fail_count += 1
+            if result["detail_line"]:
+                file_details.append(result["detail_line"])
+            return
+        if result["unsupported"]:
+            unsupported_count += 1
+            diag_code = result["diag_code"]
+            feat = result["feature_label"]
+            unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
+            unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
+            if result["detail_line"]:
+                file_details.append(result["detail_line"])
+            return
+
+    def _run_build_item_in_subprocess(item, semantic_enabled, tmp_dir):
+        """Fallback path: run a pre-processed build item through standalone compiler."""
+        rm = item["result_metrics"]
+        detail_path = item["detail_path"]
+        thread_tmp = Path(tempfile.mkdtemp(dir=tmp_dir))
+        try:
+            build_input = thread_tmp / "in.js"
+            build_input.write_text(item["build_source"], encoding="utf-8")
+            out_wasm = thread_tmp / "out.wasm"
+
+            build_result = subprocess.run(
+                ["timeout", "8s", str(TS2WASM_BINARY), "build", str(build_input), "-o", str(out_wasm)],
+                capture_output=True,
+                cwd=REPO_ROOT,
+            )
+
+            if build_result.returncode == 0:
+                rm["build_pass"] = True
+                if semantic_enabled:
+                    _run_semantic_check(
+                        item["file_path"], item["source_code"], item["metadata"],
+                        thread_tmp, out_wasm, rm
+                    )
+                if detail_output and not rm.get("detail_line"):
+                    rm["detail_line"] = f"{detail_path}: build_pass"
+                return rm
+
+            if build_result.returncode == 124:
+                rm["blocked"] = True
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: blocked"
+                return rm
+
+            err_content = build_result.stderr.decode("utf-8", errors="ignore")
+            diag_match = re.search(r"\[([A-Za-z0-9_]+)\]", err_content)
+            diag_code = diag_match.group(1) if diag_match else "Unknown"
+            rm["diag_code"] = diag_code
+            if diag_code == "BackendIo":
+                rm["blocked"] = True
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: blocked"
+            elif diag_code == "InvariantViolation":
+                rm["fail"] = True
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: fail: InvariantViolation"
+            else:
+                rm["unsupported"] = True
+                rm["feature_label"] = feature_label(diag_code, err_content, str(item["file_path"]))
+                if detail_output:
+                    rm["detail_line"] = f"{detail_path}: {diag_code}: {rm['feature_label']}"
+            return rm
+        finally:
+            shutil.rmtree(thread_tmp, ignore_errors=True)
     
     def _process_one_file(file_path):
         """Process a single file for coverage measurement. Thread-safe.
@@ -1010,21 +1143,30 @@ def main():
         except (OSError, UnicodeDecodeError):
             return None
         
-        # Check for expected negative parse syntax error
-        negative_phase, negative_type = parse_test262_negative_metadata(source_code)
-        if negative_phase == "parse" and negative_type == "SyntaxError":
-            result_metrics["unsupported"] = True
-            result_metrics["diag_code"] = "ExpectedNegativeSyntax"
-            result_metrics["feature_label"] = "negative-parse-syntaxerror"
-            if detail_output:
-                result_metrics["detail_line"] = f"{detail_path}: ExpectedNegativeSyntax: negative-parse-syntaxerror"
-            return result_metrics
+        # For non-test262 suites (tsc/tsgo), skip test262-specific processing
+        # and use the raw source directly.
+        is_test262 = (suite == "test262")
         
-        metadata = test262_runner.parse_test262_metadata(source_code)
-        test262_runner.HARNESS_DIR = test262_harness_dir_for(file_path)
-        build_source = test262_runner.build_test262_source(
-            file_path, source_code, metadata, target="wasm"
-        )
+        if is_test262:
+            # Check for expected negative parse syntax error
+            negative_phase, negative_type = parse_test262_negative_metadata(source_code)
+            if negative_phase == "parse" and negative_type == "SyntaxError":
+                result_metrics["unsupported"] = True
+                result_metrics["diag_code"] = "ExpectedNegativeSyntax"
+                result_metrics["feature_label"] = "negative-parse-syntaxerror"
+                if detail_output:
+                    result_metrics["detail_line"] = f"{detail_path}: ExpectedNegativeSyntax: negative-parse-syntaxerror"
+                return result_metrics
+            
+            t262 = _ensure_test262_runner()
+            metadata = t262.parse_test262_metadata(source_code)
+            t262.HARNESS_DIR = test262_harness_dir_for(file_path)
+            build_source = t262.build_test262_source(
+                file_path, source_code, metadata, target="wasm"
+            )
+        else:
+            metadata = None
+            build_source = source_code
         
         if use_server:
             # Server mode: return pre-processed item (batch build later)
@@ -1103,6 +1245,17 @@ def main():
     # Thread-safe counter for server items (list for mutation in closure)
     id_counter = [0]
     
+    def _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir):
+        """Process a batch of build items via parallel subprocess calls."""
+        t0 = time.perf_counter()
+        def _run_one(item):
+            return _run_build_item_in_subprocess(item, semantic_enabled, tmp_dir)
+        with ThreadPoolExecutor(max_workers=jobs) as pool:
+            results = list(pool.map(_run_one, batch))
+        for item, result in zip(batch, results):
+            _accumulate_case_result(result, item)
+        print(f"  parallel subprocess: {len(batch)} items in {time.perf_counter()-t0:.2f}s", file=sys.stderr)
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
         
@@ -1124,10 +1277,23 @@ def main():
                     else:
                         early_results.append(result)
             
-            # Phase 2: Batch build via server
-            batch_size = 500
+            # Phase 2: Batch build via server (with auto-restart on crash)
+            batch_size = 200
             for i in range(0, len(build_items), batch_size):
                 batch = build_items[i:i+batch_size]
+
+                # If server died in a previous batch, try to restart it
+                if server_proc is None:
+                    try:
+                        server_proc = _start_server()
+                        print(f"Restarted ts2wasm server for batch {i//batch_size + 1}", file=sys.stderr)
+                    except OSError:
+                        pass  # Fall through to subprocess fallback
+
+                if server_proc is None:
+                    _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir)
+                    continue
+
                 req = json.dumps({
                     "id": -1,
                     "items": [{"id": item["id"], "source": item["build_source"]} for item in batch]
@@ -1136,63 +1302,67 @@ def main():
                     server_proc.stdin.write(req.encode("utf-8") + b"\n")
                     server_proc.stdin.flush()
                 except (BrokenPipeError, OSError):
-                    # Server process died (e.g. stack overflow); mark batch as blocked
-                    for item in batch:
-                        item["result_metrics"]["blocked"] = True
-                    break
-                resp_line = server_proc.stdout.readline()
-                if not resp_line:
-                    # Server disconnected; mark remaining as blocked
-                    for item in batch:
-                        item["result_metrics"]["blocked"] = True
-                    break
-                build_results = json.loads(resp_line.decode("utf-8"))
+                    # Server process died (e.g. stack overflow); parallel subprocess fallback.
+                    if server_proc is not None:
+                        try:
+                            server_proc.kill()
+                        except OSError:
+                            pass
+                        server_proc = None
+                    _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir)
+                    continue
+                # Read response with timeout to avoid blocking if server crashes
+                # Use poll to check server liveness, then read with short timeout
+                resp_line = None
+                _read_err = [None]
+                _read_result = [None]
+                def _do_read():
+                    try:
+                        _read_result[0] = server_proc.stdout.readline()
+                    except Exception as e:
+                        _read_err[0] = e
+                _reader = threading.Thread(target=_do_read, daemon=True)
+                _reader.start()
+                _reader.join(timeout=2)
+                if _reader.is_alive():
+                    # Server likely crashed; kill and fall back
+                    if server_proc is not None:
+                        try:
+                            server_proc.kill()
+                        except OSError:
+                            pass
+                        server_proc = None
+                    _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir)
+                    continue
+                if _read_err[0] is not None or _read_result[0] is None or not _read_result[0]:
+                    # Server disconnected; parallel subprocess fallback.
+                    if server_proc is not None:
+                        try:
+                            server_proc.kill()
+                        except OSError:
+                            pass
+                        server_proc = None
+                    _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir)
+                    continue
+                resp_line = _read_result[0]
+                try:
+                    build_results = json.loads(resp_line.decode("utf-8"))
+                except json.JSONDecodeError:
+                    if server_proc is not None:
+                        try:
+                            server_proc.kill()
+                        except OSError:
+                            pass
+                        server_proc = None
+                    _parallel_subprocess_batch(batch, semantic_enabled, tmp_dir)
+                    continue
                 results_by_id = {r["id"]: r for r in build_results}
                 
                 for item in batch:
                     result = _classify_build_response(
                         results_by_id[item["id"]], item, semantic_enabled, tmp_dir
                     )
-                    executed += 1
-                    if detail_output:
-                        result.setdefault("file_path", str(item["file_path"]))
-                        result.setdefault("detail_path", item["detail_path"])
-                        result.setdefault("case_name", item["file_path"].name)
-                        _append_suite_detail(result)
-                    if result["unsupported"] and result["diag_code"] == "ExpectedNegativeSyntax":
-                        unsupported_count += 1
-                        unsupported_diag_counts["ExpectedNegativeSyntax"] = unsupported_diag_counts.get("ExpectedNegativeSyntax", 0) + 1
-                        unsupported_feature_counts["negative-parse-syntaxerror"] = unsupported_feature_counts.get("negative-parse-syntaxerror", 0) + 1
-                        if result["detail_line"]:
-                            file_details.append(result["detail_line"])
-                    elif result["build_pass"]:
-                        build_pass_count += 1
-                        if result["semantic_pass"]:
-                            semantic_pass_count += 1
-                        elif result["mismatch"]:
-                            mismatch_count += 1
-                        elif result["runtime_error"]:
-                            runtime_error_count += 1
-                        elif result["blocked"]:
-                            blocked_count += 1
-                        if result["detail_line"]:
-                            file_details.append(result["detail_line"])
-                    elif result["blocked"]:
-                        blocked_count += 1
-                        if result["detail_line"]:
-                            file_details.append(result["detail_line"])
-                    elif result["fail"]:
-                        fail_count += 1
-                        if result["detail_line"]:
-                            file_details.append(result["detail_line"])
-                    elif result["unsupported"]:
-                        unsupported_count += 1
-                        diag_code = result["diag_code"]
-                        feat = result["feature_label"]
-                        unsupported_diag_counts[diag_code] = unsupported_diag_counts.get(diag_code, 0) + 1
-                        unsupported_feature_counts[feat] = unsupported_feature_counts.get(feat, 0) + 1
-                        if result["detail_line"]:
-                            file_details.append(result["detail_line"])
+                    _accumulate_case_result(result, item)
             
             # Phase 3: Process early results (negative-parse-syntaxerror etc.)
             for result in early_results:
@@ -1299,7 +1469,7 @@ def main():
             tmp_dir = Path(tmp_dir)
             with open(jsonl_file, 'w', encoding='utf-8') as jsonl_out:
                 with ThreadPoolExecutor(max_workers=jobs) as executor:
-                    futures = {executor.submit(test262_runner.process_one_test, f, tmp_dir, False): f for f in files}
+                    futures = {executor.submit(_ensure_test262_runner().process_one_test, f, tmp_dir, False): f for f in files}
                     completed = 0
                     total = len(files)
                     last_progress = 0

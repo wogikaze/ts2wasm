@@ -159,6 +159,12 @@ pub(crate) enum RuntimeFn {
     StringToLowerCase,
     StringCharCodeAt,
     StringFromCharCode,
+    /// String.prototype.replace
+    StringReplace,
+    /// String.prototype.trimStart / trimLeft
+    StringTrimStart,
+    /// String.prototype.trimEnd / trimRight
+    StringTrimEnd,
     /// Issue 051: RegExp.prototype.test for literal-backed plain byte patterns.
     RegExpTest,
     /// Issue 051: String.prototype.match for literal-backed plain byte patterns.
@@ -574,6 +580,9 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "StringToLowerCase" => Some(RuntimeFn::StringToLowerCase),
         "StringCharCodeAt" => Some(RuntimeFn::StringCharCodeAt),
         "StringFromCharCode" => Some(RuntimeFn::StringFromCharCode),
+        "StringReplace" => Some(RuntimeFn::StringReplace),
+        "StringTrimStart" => Some(RuntimeFn::StringTrimStart),
+        "StringTrimEnd" => Some(RuntimeFn::StringTrimEnd),
         "RegExpTest" => Some(RuntimeFn::RegExpTest),
         "RegExpMatch" => Some(RuntimeFn::RegExpMatch),
         "ArrayPush" => Some(RuntimeFn::ArrayPush),
@@ -986,6 +995,15 @@ const STRING_TO_UPPER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeF
 const STRING_TO_LOWER_CASE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::IsString];
 const STRING_CHAR_CODE_AT_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString];
 const STRING_FROM_CHAR_CODE_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
+
+// String.prototype.replace dependencies
+const STRING_REPLACE_DEPS: &[RuntimeFn] = &[
+    RuntimeFn::AllocHeap,
+    RuntimeFn::Copy,
+    RuntimeFn::IsString,
+    RuntimeFn::MemEqual,
+];
+
 const REGEXP_TEST_DEPS: &[RuntimeFn] = &[RuntimeFn::IsString, RuntimeFn::RegexpMatchInner];
 const REGEXP_MATCH_DEPS: &[RuntimeFn] = &[
     RuntimeFn::IsString,

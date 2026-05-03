@@ -9,24 +9,24 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:summary:start -->
 | Area | Total | Open | Resolved |
 |---|---:|---:|---:|
-| abi | 7 | 2 | 5 |
-| backend | 13 | 6 | 7 |
+| abi | 7 | 0 | 7 |
+| backend | 13 | 4 | 9 |
 | cli | 15 | 0 | 15 |
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4178 | 172 |
+| frontend | 4350 | 4175 | 175 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 1 | 17 |
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
-| runtime | 258 | 122 | 136 |
+| runtime | 258 | 120 | 138 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4511 | 385 |
+| total | 4896 | 4502 | 394 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -158,19 +158,12 @@ Issue files are the source of truth for work items. The generated section below 
 |---:|---|---|---|---|---|---|---|
 | 408 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases | feature | frontend/syntax | implementation-ready | P2 | 399 | Implement tsgo declaration emit: AsConstSatisfies/const generic method cases |
 | 5000 | Meta: TypeScript Compiler Parser Syntax Coverage | meta | frontend/syntax | design | P1 |  | Meta: TypeScript Compiler Parser Syntax Coverage |
-| 5026 | [backend-wasm] Implement real class declaration emission | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement real class declaration emission |
 | 5027 | [backend-wasm] Replace throw-as-return with catchable exception runtime | feature | backend | implementation-ready | P0 |  | [backend-wasm] Replace throw-as-return with catchable exception runtime |
-| 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths | feature | backend | implementation-ready | P0 |  | [backend-wasm] Implement array growth and reallocation for push/write paths |
 | 5029 | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP | feature | backend | implementation-ready | P1 |  | [backend-wasm] Expand direct wasm binary emission beyond console.log string literal MVP |
 | 5030 | [backend-wasm] Split large runtime/WAT emitters into testable components | refactor | backend | implementation-ready | P1 |  | [backend-wasm] Split large runtime/WAT emitters into testable components |
-| 5041 | [frontend] Complete Expr AST fixture coverage | test | frontend | implementation-ready | P0 |  | [frontend] Complete Expr AST fixture coverage |
-| 5042 | [frontend] Complete Stmt AST fixture coverage | test | frontend | implementation-ready | P0 |  | [frontend] Complete Stmt AST fixture coverage |
 | 5043 | [frontend] Split large lexer/parser files by grammar responsibility | refactor | frontend | implementation-ready | P1 |  | [frontend] Split large lexer/parser files by grammar responsibility |
-| 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries | feature | frontend | implementation-ready | P1 |  | [frontend] Define and test TypeScript ambient declaration erasure boundaries |
 | 5045 | [frontend] Improve syntax error recovery and source spans | feature | frontend | implementation-ready | P2 |  | [frontend] Improve syntax error recovery and source spans |
 | 5048 | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice | feature | ir | implementation-ready | P0 |  | [ir] Broaden BigInt lowering beyond signed-i64/first-limb slice |
-| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | implementation-ready | P1 |  | [runtime-abi] Add ABI layout golden tests and versioning |
-| 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | implementation-ready | P1 |  | [runtime-abi] Validate runtime memory map for overlap and headroom |
 <!-- generated:ready:end -->
 
 ## Blocked queue
@@ -4128,7 +4121,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4281 | Implement Strictoptionalproperties | spike | frontend/syntax | class: blocked | Implement Strictoptionalproperties |
 | 4282 | Implement Strictsubtypeandnarrowing | spike | frontend/semantics | class: blocked | Implement Strictsubtypeandnarrowing |
 | 4283 | Implement Stricttypeofunionnarrowing | spike | frontend/syntax | class: triage-needed | Implement Stricttypeofunionnarrowing |
-| 4284 | Implement Stringincludes | spike | runtime/builtins | class: blocked | Implement Stringincludes |
 | 4285 | Implement Stringindexerandconstructor | spike | frontend/syntax | class: blocked | Implement Stringindexerandconstructor |
 | 4286 | Implement Stringindexerassignments Name Resolution | spike | frontend/resolver | class: blocked | Implement Stringindexerassignments Name Resolution |
 | 4287 | Implement Stringindexerassignments Parser Syntax | spike | frontend/syntax | class: blocked | Implement Stringindexerassignments Parser Syntax |
@@ -4138,7 +4130,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 4291 | Implement Stringmatchall | spike | reference/triage | class: blocked | Implement Stringmatchall |
 | 4292 | Implement Stringpropcodegen | spike | frontend/syntax | class: blocked | Implement Stringpropcodegen |
 | 4293 | Implement Stringrawtype | spike | frontend/resolver | class: blocked | Implement Stringrawtype |
-| 4294 | Implement Stringtrim | spike | runtime/builtins | class: blocked | Implement Stringtrim |
 | 4295 | Implement Stripmembersoptionality | spike | frontend/resolver | class: blocked | Implement Stripmembersoptionality |
 | 4296 | Implement Structural | spike | frontend/syntax | class: blocked | Implement Structural |
 | 4297 | Implement Structuraltypeindeclarefileformodule | spike | frontend/syntax | class: blocked | Implement Structuraltypeindeclarefileformodule |
@@ -5036,6 +5027,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 877 | Implement Anydeclare | spike | frontend/syntax | see `issues/done/877-implement-anyDeclare.md` |
 | 1001e | Annex B eval-code function declaration residuals (existing-binding/no-skip/skip-early-err patterns) | feature | frontend/semantics | see file |
 | 3996 | Implement Compiler | spike | frontend/syntax | see `issues/done/3996-implement-reference-typescript-tests-cases-compiler.md` |
+| 4284 | Implement Stringincludes | spike | runtime/builtins | see `issues/done/4284-implement-stringIncludes.md` |
+| 4294 | Implement Stringtrim | spike | runtime/builtins | see `issues/done/4294-implement-stringTrim.md` |
 | 5004 | Meta: Runtime Builtins Coverage (test262) | meta | runtime/builtins | see file |
 | 5007 | Meta: TypeScript Compiler Module Resolution Coverage | meta | frontend/resolver | see file |
 | 5008 | Implement static ES module export forms (default, named, namespace, re-export) | feature | ir/compiler | see file |
@@ -5046,6 +5039,8 @@ Issue files are the source of truth for work items. The generated section below 
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
 | 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | see file |
 | 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see `issues/done/5023-implement-api-sample-watcher-arrow.md` |
+| 5026 | [backend-wasm] Implement real class declaration emission | feature | backend | see file |
+| 5028 | [backend-wasm] Implement array growth and reallocation for push/write paths | feature | backend | see file |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5033 | [cli] Normalize node-diff fixture reporting into structured records | feature | cli | see file |
@@ -5056,10 +5051,15 @@ Issue files are the source of truth for work items. The generated section below 
 | 5038 | [compiler] Harden module graph resolution and diagnostics | feature | cli | see file |
 | 5039 | [compiler] Stabilize test262 preprocessor feature handling | feature | cli | see file |
 | 5040 | [compiler] Add resource limits and cancellation to server batch compilation | feature | cli | see file |
+| 5041 | [frontend] Complete Expr AST fixture coverage | test | frontend | see file |
+| 5042 | [frontend] Complete Stmt AST fixture coverage | test | frontend | see file |
+| 5044 | [frontend] Define and test TypeScript ambient declaration erasure boundaries | feature | frontend | see file |
 | 5046 | [ir] Design full class runtime IR representation | feature | ir | see `issues/done/5046-ir-class-ir.md` |
 | 5047 | [ir] Implement env-cell lowering for outer-scope mutation | feature | ir | see `issues/done/5047-ir-env-cell.md` |
 | 5049 | [ir] Complete destructuring, rest, and default binding lowering | feature | ir | see `issues/done/5049-ir-destructuring.md` |
 | 5050 | [ir] Implement iterator protocol lowering for spread and for-of | feature | ir | see `issues/done/5050-ir-iterator-protocol.md` |
+| 5051 | [runtime-abi] Add ABI layout golden tests and versioning | test | abi | see file |
+| 5052 | [runtime-abi] Validate runtime memory map for overlap and headroom | feature | abi | see `issues/done/5052-abi-memory-map.md` |
 | 5053 | [runtime-abi] Add typed wrappers for tagged values and heap pointers | refactor | abi | see file |
 | 5054 | [runtime-abi] Document value tags and object layout as public ABI | docs | abi | see file |
 | 5055 | [runtime-abi] Add backward-compatibility tests for ABI constants | test | abi | see file |

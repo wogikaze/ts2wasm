@@ -8,6 +8,7 @@ import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
@@ -311,7 +312,7 @@ def build_test262_source(test_file, source_code, metadata, target="wasm"):
 # Record creation
 # ---------------------------------------------------------------------------
 
-def create_test_record(suite, case_path, target, status, expected=None, actual=None, reason=None, tracking=None, source_code=None, error_line=None, stderr=None):
+def create_test_record(suite, case_path, target, status, expected=None, actual=None, reason=None, tracking=None, source_code=None, error_line=None, stderr=None, duration_ms=None):
     """Create a TestRecord JSON object."""
     record = {
         "suite": suite,
@@ -334,6 +335,8 @@ def create_test_record(suite, case_path, target, status, expected=None, actual=N
         record["error_line"] = error_line
     if stderr:
         record["stderr"] = escape_json(stderr)
+    if duration_ms is not None:
+        record["duration_ms"] = duration_ms
 
     return json.dumps(record)
 
@@ -538,41 +541,46 @@ def process_one_test(test_file, tmp_dir, verbose=False):
     if verbose:
         print(f"Processing: {test_file}", file=sys.stderr)
 
+    started_at = time.perf_counter()
+
+    def elapsed_ms():
+        return int(round((time.perf_counter() - started_at) * 1000))
+
     result_status, result_diag, result_feature, result_reason, result_actual, source_code, error_line, stderr_full = compile_and_run_test(test_file, tmp_dir)
     metadata = parse_test262_metadata(source_code)
 
     if result_status == "pass":
         if metadata.expects_negative:
             expected = f"negative {metadata.negative_phase}/{metadata.negative_type or 'error'}"
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_reason, source_code=source_code, stderr=stderr_full)
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_reason, source_code=source_code, stderr=stderr_full, duration_ms=elapsed_ms())
             return record, "pass"
 
         expected, node_ok = get_node_reference(test_file, tmp_dir)
 
         if node_ok and result_actual == expected:
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_actual, source_code=source_code)
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "pass", expected, result_actual, source_code=source_code, duration_ms=elapsed_ms())
             return record, "pass"
         elif node_ok:
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "mismatch", expected, result_actual, "output mismatch", source_code=source_code, stderr=stderr_full)
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "mismatch", expected, result_actual, "output mismatch", source_code=source_code, stderr=stderr_full, duration_ms=elapsed_ms())
             return record, "mismatch"
         else:
-            record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", expected, result_actual, "node execution failed", source_code=source_code)
+            record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", expected, result_actual, "node execution failed", source_code=source_code, duration_ms=elapsed_ms())
             return record, "blocked"
 
     elif result_status == "unsupported":
         tracking_key = f"feature:{result_feature}"
         reason = f"{result_diag}/{result_feature}: {result_reason}"
-        record = create_test_record("test262", str(test_file), "wasm-iwasm", "unsupported", None, None, reason, tracking_key, source_code, error_line, stderr_full)
+        record = create_test_record("test262", str(test_file), "wasm-iwasm", "unsupported", None, None, reason, tracking_key, source_code, error_line, stderr_full, duration_ms=elapsed_ms())
         return record, "unsupported"
 
     elif result_status == "blocked":
         reason = f"{result_diag}/{result_feature}: {result_reason}"
-        record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", None, None, reason, source_code=source_code, error_line=error_line, stderr=stderr_full)
+        record = create_test_record("test262", str(test_file), "wasm-iwasm", "blocked", None, None, reason, source_code=source_code, error_line=error_line, stderr=stderr_full, duration_ms=elapsed_ms())
         return record, "blocked"
 
     elif result_status == "fail":
         reason = f"{result_diag}: {result_reason}"
-        record = create_test_record("test262", str(test_file), "wasm-iwasm", "fail", None, result_actual, reason, source_code=source_code, error_line=error_line, stderr=stderr_full)
+        record = create_test_record("test262", str(test_file), "wasm-iwasm", "fail", None, result_actual, reason, source_code=source_code, error_line=error_line, stderr=stderr_full, duration_ms=elapsed_ms())
         return record, "fail"
 
     return "", "fail"

@@ -315,6 +315,11 @@ fn dump_ast_reports_ambient_module_as_module_unsupported() {
 }
 
 #[test]
+fn build_accepts_ambient_namespace_and_module_erasure() {
+    build_fixture("basics-types/ambient-namespace-erasure.ts");
+}
+
+#[test]
 fn dump_ast_unparse_erases_typescript_generics() {
     let output = run_dump(
         &["--ast", "--unparse"],

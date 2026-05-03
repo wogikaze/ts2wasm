@@ -1,8 +1,8 @@
 use std::fs;
 use std::io::{self, BufRead, Write};
 use std::path::Path;
-use std::sync::Mutex;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use serde::{Deserialize, Serialize};
@@ -26,6 +26,7 @@ const BATCH_TIMEOUT_SECS: u64 = 30;
 
 /// Maximum number of worker threads for batch processing. Capped at CPU count.
 const MAX_WORKERS: usize = 8;
+const SERVER_WORKER_STACK_BYTES: usize = 256 * 1024 * 1024;
 
 /// A single build request from the client (one JSON line on stdin).
 #[derive(Debug, Deserialize)]
@@ -41,7 +42,7 @@ struct ServerRequest {
 }
 
 /// An item in a batch request.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 struct BatchItem {
     id: i64,
     source: String,
@@ -155,14 +156,18 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
     }
 
     // Create a slot for each result, pre-filled with a placeholder.
-    let results: Mutex<Vec<Option<ServerResponse>>> = Mutex::new((0..n).map(|_| None).collect());
+    let results: Arc<Mutex<Vec<Option<ServerResponse>>>> =
+        Arc::new(Mutex::new((0..n).map(|_| None).collect()));
 
     // Atomic counter for work stealing across threads.
-    let next_idx = AtomicUsize::new(0);
+    let next_idx = Arc::new(AtomicUsize::new(0));
 
     // Timeout tracking: once set, workers stop claiming new items.
     let timed_out = AtomicBool::new(false);
+    let timed_out = Arc::new(timed_out);
     let deadline = Instant::now();
+    let items: Arc<Vec<BatchItem>> = Arc::new(items.to_vec());
+    let shared_tmpdir = Arc::new(tmpdir.to_path_buf());
 
     // Number of worker threads: up to CPU count and MAX_WORKERS, capped at batch size.
     let n_workers = std::thread::available_parallelism()
@@ -172,9 +177,19 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
         .min(n)
         .max(1);
 
-    std::thread::scope(|s| {
-        for _ in 0..n_workers {
-            s.spawn(|| {
+    let mut handles = Vec::with_capacity(n_workers);
+    for worker_id in 0..n_workers {
+        let items = Arc::clone(&items);
+        let results = Arc::clone(&results);
+        let next_idx = Arc::clone(&next_idx);
+        let timed_out = Arc::clone(&timed_out);
+        let tmpdir = Arc::clone(&shared_tmpdir);
+        let deadline = deadline;
+
+        let handle = std::thread::Builder::new()
+            .name(format!("ts2wasm-server-worker-{worker_id}"))
+            .stack_size(SERVER_WORKER_STACK_BYTES)
+            .spawn(move || {
                 loop {
                     // Check timeout before claiming next item.
                     if timed_out.load(Ordering::Relaxed) {
@@ -236,13 +251,24 @@ fn process_batch(tmpdir: &Path, items: &[BatchItem]) -> Vec<ServerResponse> {
                     let mut guard = results.lock().unwrap();
                     guard[idx] = Some(resp);
                 }
-            });
+            })
+            .expect("failed to spawn server worker thread");
+
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        if handle.join().is_err() {
+            timed_out.store(true, Ordering::Relaxed);
         }
-    });
+    }
 
     // Fill any remaining unprocessed slots (timeout or skipped) with error
     // responses so the caller always gets exactly n results.
-    let mut final_results = results.into_inner().unwrap();
+    let mut final_results = Arc::try_unwrap(results)
+        .expect("worker threads should be joined and dropped")
+        .into_inner()
+        .unwrap();
     for (idx, slot) in final_results.iter_mut().enumerate() {
         if slot.is_none() {
             *slot = Some(make_response(

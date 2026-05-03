@@ -279,7 +279,12 @@ impl RuntimeLinkPlan {
                     self.collect_required_runtime_expr(expr);
                     self.add_required_runtime(RuntimeFn::ModuleExportsAssign);
                 }
-                LoweredStmt::ClassDecl { .. } => {}
+                LoweredStmt::ClassDecl { methods, .. } => {
+                    if !methods.is_empty() {
+                        self.add_required_runtime(RuntimeFn::AllocHeap);
+                        self.add_required_runtime(RuntimeFn::PropertySet);
+                    }
+                }
             }
         }
     }

@@ -290,6 +290,16 @@ fn build_smoke_string_split_method() {
 }
 
 #[test]
+fn build_smoke_string_replace_method() {
+    let result = run_fixture("builtins-and-io/string-replace.ts");
+    assert!(
+        result.is_ok(),
+        "String.replace should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn string_trim_method_emits() {
     let result = run_fixture("builtins-and-io/string-trim.ts");
     assert!(

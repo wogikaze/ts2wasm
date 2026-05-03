@@ -22,6 +22,8 @@ pub(super) struct WatEmitter<'a> {
     pub(super) strings: HashMap<String, u32>,
     pub(super) string_data: Vec<(u32, String)>,
     pub(super) next_data_offset: u32,
+    class_name_to_ctor: HashMap<String, FuncId>,
+    method_counts: HashMap<FuncId, usize>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -126,12 +128,21 @@ impl LocalFrame {
 impl<'a> WatEmitter<'a> {
     pub(super) fn new(program: &'a LoweredProgram) -> Self {
         let link_plan = RuntimeLinkPlan::from_program(program);
+        let mut class_name_to_ctor = HashMap::new();
+        let mut method_counts = HashMap::new();
+        Self::compute_class_decl_metadata(
+            &program.top_level_statements,
+            &mut class_name_to_ctor,
+            &mut method_counts,
+        );
         let mut emitter = Self {
             program,
             link_plan,
             strings: HashMap::new(),
             string_data: Vec::new(),
             next_data_offset: Layout::DATA_START,
+            class_name_to_ctor,
+            method_counts,
         };
         emitter.intern_required_runtime_strings();
         emitter.collect_program_strings(&program.top_level_statements);
@@ -465,8 +476,14 @@ impl<'a> WatEmitter<'a> {
             LoweredStmt::ModuleExportsAssign { expr } => {
                 self.collect_expr_strings(expr);
             }
-            LoweredStmt::ClassDecl { .. } => {
-                // Class declarations are now live in IR; backend emission deferred
+            LoweredStmt::ClassDecl {
+                methods,
+                static_methods,
+                ..
+            } => {
+                for (name, _) in methods.iter().chain(static_methods.iter()) {
+                    self.intern_string(name);
+                }
             }
         }
     }
@@ -657,13 +674,14 @@ impl<'a> WatEmitter<'a> {
         let pad = " ".repeat(indent);
         for (constructor, parent) in self.ordered_class_prototypes() {
             let global = class_prototype_global(constructor);
+            let method_count = self.method_counts.get(&constructor).copied().unwrap_or(0);
+            let size = Layout::OBJECT_HEADER_SIZE + method_count as u32 * Layout::OBJECT_ENTRY_SIZE;
             wat.push_str(&format!(
                 "{pad}(if (i32.eqz (global.get ${global}))\n{pad}  (then\n"
             ));
             wat.push_str(&format!(
-                "{pad}    (global.set ${global} (call {} (i32.const {})))\n",
+                "{pad}    (global.set ${global} (call {} (i32.const {size})))\n",
                 super::runtime_fn::RuntimeFn::AllocHeap.symbol(),
-                Layout::OBJECT_HEADER_SIZE,
             ));
             wat.push_str(&format!(
                 "{pad}    (i32.store (global.get ${global}) (i32.const 0))\n"
@@ -735,11 +753,21 @@ impl<'a> WatEmitter<'a> {
 
     pub(super) fn class_prototypes(&self) -> BTreeMap<FuncId, Option<FuncId>> {
         let mut prototypes = BTreeMap::new();
+        Self::collect_class_decl_prototypes(
+            &self.program.top_level_statements,
+            &mut prototypes,
+            &self.class_name_to_ctor,
+        );
         Self::collect_class_prototypes_from_stmts(
             &self.program.top_level_statements,
             &mut prototypes,
         );
         for function in &self.program.functions {
+            Self::collect_class_decl_prototypes(
+                &function.body,
+                &mut prototypes,
+                &self.class_name_to_ctor,
+            );
             Self::collect_class_prototypes_from_stmts(&function.body, &mut prototypes);
         }
         prototypes
@@ -1222,6 +1250,67 @@ impl<'a> WatEmitter<'a> {
             | LoweredExpr::ModuleLoad { .. }
             | LoweredExpr::This
             | LoweredExpr::ArrowFn { .. } => {}
+        }
+    }
+
+    fn collect_class_decl_prototypes(
+        stmts: &[LoweredStmt],
+        prototypes: &mut BTreeMap<FuncId, Option<FuncId>>,
+        class_name_to_ctor: &HashMap<String, FuncId>,
+    ) {
+        for stmt in stmts {
+            match stmt {
+                LoweredStmt::ClassDecl {
+                    constructor,
+                    extends,
+                    ..
+                } => {
+                    if let Some(ctor_id) = constructor {
+                        let parent = extends
+                            .as_ref()
+                            .and_then(|name| class_name_to_ctor.get(name))
+                            .copied();
+                        prototypes.entry(*ctor_id).or_insert(parent);
+                        if let Some(parent_id) = parent {
+                            prototypes.entry(parent_id).or_insert(None);
+                        }
+                    }
+                }
+                LoweredStmt::Block(statements) => {
+                    Self::collect_class_decl_prototypes(statements, prototypes, class_name_to_ctor);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    fn compute_class_decl_metadata(
+        stmts: &[LoweredStmt],
+        class_name_to_ctor: &mut HashMap<String, FuncId>,
+        method_counts: &mut HashMap<FuncId, usize>,
+    ) {
+        for stmt in stmts {
+            match stmt {
+                LoweredStmt::ClassDecl {
+                    name,
+                    constructor,
+                    methods,
+                    ..
+                } => {
+                    if let Some(ctor_id) = constructor {
+                        class_name_to_ctor.insert(name.clone(), *ctor_id);
+                        method_counts.insert(*ctor_id, methods.len());
+                    }
+                }
+                LoweredStmt::Block(statements) => {
+                    Self::compute_class_decl_metadata(
+                        statements,
+                        class_name_to_ctor,
+                        method_counts,
+                    );
+                }
+                _ => {}
+            }
         }
     }
 

@@ -65,6 +65,10 @@ run = "python scripts/manager.py update-coverage-matrix"
 description = "Run reference-based coverage (see script for args)"
 run = "python scripts/manager.py reference-coverage"
 
+[tasks."reference-coverage-fast-20"]
+description = "Run ~20% of reference coverage cases (tsc/tsgo) without semantic checks"
+run = "python scripts/manager.py reference-coverage tsc --detail --no-semantic --no-server --limit 1284 && python scripts/manager.py reference-coverage tsgo --detail --no-semantic --no-server --limit 33"
+
 [tasks."reference-triage"]
 description = "Generate rich diagnostics for one reference test path"
 run = "python scripts/manager.py reference-triage"

@@ -65,7 +65,12 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
         "padEnd" => Some("StringPadEnd".to_owned()),
         "repeat" => Some("StringRepeat".to_owned()),
         "split" => Some("StringSplit".to_owned()),
+        "replace" => Some("StringReplace".to_owned()),
         "trim" => Some("StringTrim".to_owned()),
+        "trimStart" => Some("StringTrimStart".to_owned()),
+        "trimEnd" => Some("StringTrimEnd".to_owned()),
+        "trimLeft" => Some("StringTrimStart".to_owned()),
+        "trimRight" => Some("StringTrimEnd".to_owned()),
         "toUpperCase" => Some("StringToUpperCase".to_owned()),
         "toLowerCase" => Some("StringToLowerCase".to_owned()),
         "charCodeAt" => Some("StringCharCodeAt".to_owned()),
@@ -667,12 +672,24 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         return Err(unsupported_regexp_literal(context, raw, "missing pattern"));
     }
     let flags = &raw[delimiter + 1..];
-    if flags.chars().any(|ch| ch != 'g') || flags.chars().count() > 1 {
+    if flags.chars().any(|ch| ch != 'g' && ch != 'i') || flags.chars().count() > 2 {
         return Err(unsupported_regexp_literal(
             context,
             raw,
-            "only the empty flag set or `g` is supported",
+            "only the empty flag set, `g`, `i`, or `gi` is supported",
         ));
+    }
+    // Reject duplicate flags
+    let mut seen_g = false;
+    let mut seen_i = false;
+    for ch in flags.chars() {
+        match ch {
+            'g' if seen_g => return Err(unsupported_regexp_literal(context, raw, "duplicate flag `g`")),
+            'i' if seen_i => return Err(unsupported_regexp_literal(context, raw, "duplicate flag `i`")),
+            'g' => seen_g = true,
+            'i' => seen_i = true,
+            _ => unreachable!(),
+        }
     }
     let pattern = &raw[1..delimiter];
     let bytes = pattern.as_bytes();
@@ -682,14 +699,17 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
         if ch == b'\\' {
             if i + 1 < bytes.len() {
                 match bytes[i + 1] {
-                    b'd' | b'w' | b's' => {
+                    b'd' | b'D' | b'w' | b'W' | b's' | b'S' | b'b' | b'B'
+                    | b'0' | b'n' | b't' | b'r' | b'f' | b'v' | b'\\'
+                    | b'/' | b'.' | b'^' | b'$' | b'+' | b'*' | b'?' | b'('
+                    | b')' | b'[' | b']' | b'{' | b'}' | b'|' => {
                         i += 2;
                     }
                     _ => {
                         return Err(unsupported_regexp_literal(
                             context,
                             raw,
-                            "only \\d, \\w, \\s escape sequences are supported",
+                            &format!("unsupported escape `\\{}`", bytes[i + 1] as char),
                         ));
                     }
                 }
@@ -700,19 +720,51 @@ pub(super) fn validate_regexp_plain_literal(raw: &str, context: &str) -> Result<
                     "incomplete trailing escape sequence",
                 ));
             }
-        } else if matches!(
-            ch,
-            b'^' | b'$' | b'(' | b')' | b'[' | b']' | b'{' | b'}' | b'|'
-        ) {
+        } else if ch == b'[' {
+            // Character class [...]
+            i += 1; // skip '['
+            if i < bytes.len() && bytes[i] == b'^' {
+                i += 1; // negated character class
+            }
+            if i < bytes.len() && bytes[i] == b']' {
+                i += 1; // literal ']' as first char
+            }
+            while i < bytes.len() && bytes[i] != b']' {
+                if bytes[i] == b'\\' {
+                    // escaped character inside class
+                    if i + 1 < bytes.len() {
+                        i += 2;
+                    } else {
+                        return Err(unsupported_regexp_literal(
+                            context,
+                            raw,
+                            "incomplete escape in character class",
+                        ));
+                    }
+                } else {
+                    // Could be a range a-z or a literal character
+                    i += 1;
+                }
+            }
+            if i >= bytes.len() || bytes[i] != b']' {
+                return Err(unsupported_regexp_literal(
+                    context,
+                    raw,
+                    "unclosed character class",
+                ));
+            }
+            i += 1; // skip ']'
+        } else if matches!(ch, b'(' | b')' | b'{' | b'}' | b'|') {
             return Err(unsupported_regexp_literal(
                 context,
                 raw,
-                "only plain literal byte patterns and . \\d \\w \\s + * ? are supported",
+                &format!("unsupported meta character `{}`", ch as char),
             ));
         } else {
+            // ^ and $ are allowed (anchors), also . + * ?
             i += 1;
         }
-        // Consume optional quantifier (but don't allow at pattern start)
+        // Consume optional quantifier
         if i < bytes.len() && matches!(bytes[i], b'+' | b'*' | b'?') {
             i += 1;
         }

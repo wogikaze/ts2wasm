@@ -19,13 +19,13 @@ use super::emitter::{
 };
 use super::stmt_emit::LoopContext;
 
-const CLOSURE_SENTINEL: i32 = -2;
-const CLOSURE_SUBTYPE_OFFSET: u32 = 0;
-const CLOSURE_CODE_ID_OFFSET: u32 = 4;
-const CLOSURE_CAPTURE_COUNT_OFFSET: u32 = 8;
-const CLOSURE_ENV_FLAGS_OFFSET: u32 = 12;
-const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
-const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
+pub(super) const CLOSURE_SENTINEL: i32 = -2;
+pub(super) const CLOSURE_SUBTYPE_OFFSET: u32 = 0;
+pub(super) const CLOSURE_CODE_ID_OFFSET: u32 = 4;
+pub(super) const CLOSURE_CAPTURE_COUNT_OFFSET: u32 = 8;
+pub(super) const CLOSURE_ENV_FLAGS_OFFSET: u32 = 12;
+pub(super) const CLOSURE_CAPTURE_SLOTS_OFFSET: u32 = 16;
+pub(super) const CLOSURE_CAPTURE_SLOT_SIZE: u32 = 4;
 const ENV_CELL_SLOT_COUNT: u32 = 1;
 const ENV_CELL_VALUE_OFFSET: u32 = Layout::ARRAY_HEADER_SIZE;
 const MAX_SUPPORTED_HEAP_CLOSURE_USER_ARGS: usize = 1;
@@ -733,8 +733,16 @@ impl WatEmitter<'_> {
                     self.emit_private_brand_check(wat, args, indent, frame);
                     return;
                 }
-                for arg in args {
-                    self.emit_expr(wat, arg, indent, frame);
+                if runtime_fn == "StringIncludes" && args.len() == 2 {
+                    // No position specified, default to 0 (undefined → start from beginning)
+                    for arg in args {
+                        self.emit_expr(wat, arg, indent, frame);
+                    }
+                    wat.push_str(&format!("{pad}(i32.const {})\n", 0));
+                } else {
+                    for arg in args {
+                        self.emit_expr(wat, arg, indent, frame);
+                    }
                 }
                 let fn_name = super::runtime_fn::runtime_fn_from_name(runtime_fn)
                     .map(|f| f.symbol())

@@ -172,7 +172,7 @@ impl WatEmitter<'_> {
     pub(super) fn emit_string_includes(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
-  (func $string_includes (param $haystack i32) (param $needle i32) (result i32)
+  (func $string_includes (param $haystack i32) (param $needle i32) (param $position i32) (result i32)
     (local $h_obj i32)
     (local $n_obj i32)
     (local $h_len i32)
@@ -184,6 +184,11 @@ impl WatEmitter<'_> {
     (local.set $n_obj (i32.and (local.get $needle) (i32.const {heap_mask})))
     (local.set $h_len (i32.load (local.get $h_obj)))
     (local.set $n_len (i32.load (local.get $n_obj)))
+    ;; Decode position from tagged value (number: (payload << 3) | 4)
+    ;; If position is undefined (0), use 0 as start
+    (if (i32.eq (local.get $position) (i32.const {undefined}))
+      (then (local.set $i (i32.const {zero})))
+      (else (local.set $i (i32.shr_s (local.get $position) (i32.const {shift})))))
     (if (i32.eqz (local.get $n_len)) (then (return (i32.const {true_tag}))))
     (block $not_found
       (loop $search
@@ -201,7 +206,10 @@ impl WatEmitter<'_> {
             header = Layout::STRING_HEADER_SIZE,
             true_tag = ValueTag::TRUE,
             false_tag = ValueTag::FALSE,
+            undefined = ValueTag::UNDEFINED,
+            zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
+            shift = ValueTag::NUMBER_SHIFT,
         ));
     }
 
@@ -308,6 +316,79 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_string_replace(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_replace (param $s i32) (param $search i32) (param $replace i32) (result i32)
+    (local $s_obj i32)
+    (local $search_obj i32)
+    (local $replace_obj i32)
+    (local $s_len i32)
+    (local $search_len i32)
+    (local $replace_len i32)
+    (local $pos i32)
+    (local $pre_len i32)
+    (local $post_len i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    ;; Guard: $s must be string
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (local.get $s))))
+    ;; Guard: $search must be string
+    (if (i32.eqz (call $is_string (local.get $search))) (then (return (local.get $s))))
+    (local.set $s_obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $search_obj (i32.and (local.get $search) (i32.const {heap_mask})))
+    (local.set $replace_obj (i32.and (local.get $replace) (i32.const {heap_mask})))
+    (local.set $s_len (i32.load (local.get $s_obj)))
+    (local.set $search_len (i32.load (local.get $search_obj)))
+    (local.set $replace_len (i32.load (local.get $replace_obj)))
+    ;; If search is empty, return $s unchanged
+    (if (i32.eqz (local.get $search_len)) (then (return (local.get $s))))
+    ;; Search loop for first occurrence
+    (local.set $pos (i32.const {zero}))
+    (block $not_found
+      (loop $search
+        (br_if $not_found (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len))))
+        (if (call $mem_equal
+              (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (local.get $pos))
+              (i32.add (local.get $search_obj) (i32.const {str_header}))
+              (local.get $search_len))
+          (then (br $not_found)))
+        (local.set $pos (i32.add (local.get $pos) (i32.const {one})))
+        (br $search)))
+    ;; If pos > h_len - search_len, not found; return $s
+    (if (i32.gt_u (local.get $pos) (i32.sub (local.get $s_len) (local.get $search_len)))
+      (then (return (local.get $s))))
+    ;; Found at pos: construct result = prefix + replace + suffix
+    (local.set $pre_len (local.get $pos))
+    (local.set $post_len (i32.sub (i32.sub (local.get $s_len) (local.get $pos)) (local.get $search_len)))
+    (local.set $result_len (i32.add (i32.add (local.get $pre_len) (local.get $replace_len)) (local.get $post_len)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {str_header}) (local.get $result_len))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    ;; Copy prefix
+    (call $copy
+      (i32.add (local.get $s_obj) (i32.const {str_header}))
+      (i32.add (local.get $result_ptr) (i32.const {str_header}))
+      (local.get $pre_len))
+    ;; Copy replacement
+    (call $copy
+      (i32.add (local.get $replace_obj) (i32.const {str_header}))
+      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (local.get $pre_len))
+      (local.get $replace_len))
+    ;; Copy suffix
+    (call $copy
+      (i32.add (i32.add (local.get $s_obj) (i32.const {str_header})) (i32.add (local.get $pos) (local.get $search_len)))
+      (i32.add (i32.add (local.get $result_ptr) (i32.const {str_header})) (i32.add (local.get $pre_len) (local.get $replace_len)))
+      (local.get $post_len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            heap_mask = ValueTag::HEAP_MASK,
+            string_tag = ValueTag::STRING,
+            str_header = Layout::STRING_HEADER_SIZE,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+        ));
+    }
+
     pub(super) fn emit_string_trim(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
@@ -379,6 +460,114 @@ impl WatEmitter<'_> {
             heap_mask = ValueTag::HEAP_MASK,
             header = Layout::STRING_HEADER_SIZE,
             string_tag = ValueTag::STRING,
+            one = RuntimeConst::ONE,
+            ascii_tab = 9,
+            ascii_cr = 13,
+            ascii_space = 32,
+        ));
+    }
+
+    pub(super) fn emit_string_trim_start(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_trim_start (param $s i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $start i32)
+    (local $ch i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (block $trim_leading_done
+      (loop $trim_leading
+        (br_if $trim_leading_done (i32.ge_u (local.get $start) (local.get $len)))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {header}))
+              (local.get $start))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $start (i32.add (local.get $start) (i32.const {one})))
+            (br $trim_leading))
+          (else (br $trim_leading_done)))))
+    (if (i32.eqz (local.get $start)) (then (return (local.get $s))))
+    (local.set $result_len (i32.sub (local.get $len) (local.get $start)))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (call $copy
+      (i32.add
+        (i32.add (local.get $obj) (i32.const {header}))
+        (local.get $start))
+      (i32.add (local.get $result_ptr) (i32.const {header}))
+      (local.get $result_len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            one = RuntimeConst::ONE,
+            ascii_tab = 9,
+            ascii_cr = 13,
+            ascii_space = 32,
+        ));
+    }
+
+    pub(super) fn emit_string_trim_end(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $string_trim_end (param $s i32) (result i32)
+    (local $obj i32)
+    (local $len i32)
+    (local $end i32)
+    (local $ch i32)
+    (local $result_len i32)
+    (local $result_ptr i32)
+    (if (i32.eqz (call $is_string (local.get $s))) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $s) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $end (local.get $len))
+    (block $trim_trailing_done
+      (loop $trim_trailing
+        (br_if $trim_trailing_done (i32.le_u (local.get $end) (i32.const {zero})))
+        (local.set $ch
+          (i32.load8_u
+            (i32.add
+              (i32.add (local.get $obj) (i32.const {header}))
+              (i32.sub (local.get $end) (i32.const {one})))))
+        (if
+          (i32.or
+            (i32.eq (local.get $ch) (i32.const {ascii_space}))
+            (i32.and
+              (i32.ge_u (local.get $ch) (i32.const {ascii_tab}))
+              (i32.le_u (local.get $ch) (i32.const {ascii_cr}))))
+          (then
+            (local.set $end (i32.sub (local.get $end) (i32.const {one})))
+            (br $trim_trailing))
+          (else (br $trim_trailing_done)))))
+    (if (i32.eq (local.get $end) (local.get $len)) (then (return (local.get $s))))
+    (local.set $result_len (local.get $end))
+    (local.set $result_ptr (call $alloc_heap (i32.add (i32.const {header}) (local.get $result_len))))
+    (i32.store (local.get $result_ptr) (local.get $result_len))
+    (call $copy
+      (i32.add (local.get $obj) (i32.const {header}))
+      (i32.add (local.get $result_ptr) (i32.const {header}))
+      (local.get $result_len))
+    (i32.or (local.get $result_ptr) (i32.const {string_tag})))
+"#,
+            undefined = ValueTag::UNDEFINED,
+            heap_mask = ValueTag::HEAP_MASK,
+            header = Layout::STRING_HEADER_SIZE,
+            string_tag = ValueTag::STRING,
+            zero = RuntimeConst::ZERO,
             one = RuntimeConst::ONE,
             ascii_tab = 9,
             ascii_cr = 13,

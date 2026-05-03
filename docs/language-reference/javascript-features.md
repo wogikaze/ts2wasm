@@ -221,7 +221,7 @@ BigInt/Number comparison の number-model diagnostic boundary: `NaN` / `Infinity
 
 | 機能 | ECMAScript | 対応方針 | 実装状況 | 優先度 | Issue ID |
 |---|---|---|---|---|---|
-| `class` declaration | ES6 | prototype-based class | 未実装 | P1 | - |
+| `class` declaration | ES6 | prototype-based class | 部分実装（backend prototype method emission in progress; no `extends`/`super`/static fields） | P1 | 5026 |
 | `class` expression | ES6 | anonymous class | 未実装 | P1 | - |
 | `extends` (inheritance) | ES6 | prototype chain | 未実装 | P1 | - |
 | `constructor` | ES6 | class constructor | 未実装 | P1 | - |
@@ -237,7 +237,7 @@ BigInt/Number comparison の number-model diagnostic boundary: `NaN` / `Infinity
 |---|---|---|---|---|---|
 | string literal `"..."` | ES1 | heap object | 実装済み (UTF-8 storage; UTF-16 parity は部分) | P2 | 018 |
 | template literal `` `...` `` | ES6 | string interpolation | 実装済み（basic interpolation） | - | 213 |
-| string methods (`trim`, `split`, etc.) | ES5+ | runtime builtin | 実装済み (basic; `trim` は ASCII whitespace、case conversion は ASCII only) | - | 214 |
+| string methods (`trim`, `split`, `replace`, etc.) | ES5+ | runtime builtin | 実装済み (basic; `trim`/`trimStart`/`trimEnd` は ASCII whitespace、`replace` は最初の一致のみ、case conversion は ASCII only) | - | 214 |
 | string indexing `str[n]` | ES5 | UTF-16 code unit | 実装済み (basic) | - | 043 |
 | `String.fromCharCode` | ES1 | code unit to string | 実装済み (basic) | - | 044 |
 | `String.prototype.charCodeAt` | ES1 | string to code unit | 実装済み (basic) | - | 044 |
@@ -269,7 +269,7 @@ BigInt/Number comparison の number-model diagnostic boundary: `NaN` / `Infinity
 | `Reflect` | ES6 | reflection API | 未実装 | P3 | - |
 | `Map` / `Set` / `WeakMap` / `WeakSet` | ES6 | collection types | 未実装 | P1 | - |
 | `Date` | ES1 | date/time | 未実装 | P1 | - |
-| `RegExp` | ES3 | regular expressions | 未実装 | P1 | - |
+| `RegExp` | ES3 | regular expressions | 部分実装 (literal pattern byte matching; `test`/`match`/`exec`; character class `[...]` / case-insensitive `i` flag / extended escape sequences supported) | P1 | 051, 214 |
 | `JSON` | ES5 | JSON parsing/stringifying | 未実装 | P1 | - |
 | `Math` | ES1 | math functions | 部分実装（common methods; `Math.random` は WASI `random_get` capability を manifest に記録して使用。現行 tagged-int number model では fractional double parity は未達） | P1 | - |
 | `Error` / `TypeError` etc. | ES3 | error types | 未実装 | P1 | - |

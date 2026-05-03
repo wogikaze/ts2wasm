@@ -490,13 +490,11 @@ fn lowering_routes_date_now_to_live_time_runtime_call() {
 }
 
 #[test]
-fn lowering_rejects_unsupported_regexp_test_pattern_character_class() {
-    let program = parse_and_resolve("let ok = /[abc]/.test(\"aaa\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("plain literal byte patterns"));
+fn lowering_accepts_char_class_regexp_test_pattern() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve("let ok = /[abc]/.test(\"aaa\");"))
+            .is_ok()
+    );
 }
 
 #[test]
@@ -508,25 +506,21 @@ fn lowering_accepts_star_regexp_test_pattern() {
 }
 
 #[test]
-fn lowering_rejects_unsupported_new_regexp_pattern_character_class() {
-    let program = parse_and_resolve("let r = new RegExp(\"[abc]\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("RegExp constructor"));
-    assert!(err.message.contains("plain literal byte patterns"));
+fn lowering_accepts_regexp_char_class_new_regexp() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve("let r = new RegExp(\"[abc]\");"))
+            .is_ok()
+    );
 }
 
 #[test]
-fn lowering_rejects_unsupported_new_regexp_flags() {
-    let program = parse_and_resolve("let r = new RegExp(\"abc\", \"i\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("RegExp constructor"));
-    assert!(err.message.contains("empty flag set or `g`"));
+fn lowering_accepts_regexp_i_flag_new_regexp() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
+            "let r = new RegExp(\"abc\", \"i\");"
+        ))
+        .is_ok()
+    );
 }
 
 #[test]
@@ -537,40 +531,33 @@ fn lowering_rejects_duplicate_new_regexp_flags() {
     assert_eq!(err.code, DiagCode::UnsupportedSyntax);
     assert!(err.message.contains("issue-051"));
     assert!(err.message.contains("RegExp constructor"));
-    assert!(err.message.contains("empty flag set or `g`"));
+    assert!(err.message.contains("duplicate"));
 }
 
 #[test]
-fn lowering_rejects_unsupported_string_match_regexp_pattern_character_class() {
-    let program = parse_and_resolve("let hit = \"aaa\".match(/[abc]/);");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("String.prototype.match literal"));
-    assert!(err.message.contains("plain literal byte patterns"));
+fn lowering_accepts_char_class_string_match() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve("let hit = \"aaa\".match(/[abc]/);"))
+            .is_ok()
+    );
 }
 
 #[test]
-fn lowering_rejects_unsupported_regexp_exec_pattern_character_class() {
-    let program = parse_and_resolve("let hit = /[abc]/.exec(\"aaa\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("RegExp.prototype.exec literal"));
-    assert!(err.message.contains("plain literal byte patterns"));
+fn lowering_accepts_char_class_regexp_exec() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve("let hit = /[abc]/.exec(\"aaa\");"))
+            .is_ok()
+    );
 }
 
 #[test]
-fn lowering_rejects_unsupported_direct_new_regexp_exec_pattern_character_class() {
-    let program = parse_and_resolve("let hit = new RegExp(\"[abc]\").exec(\"aaa\");");
-    let err = ts2wasm_ir::lowered::lower_program(&program).unwrap_err();
-
-    assert_eq!(err.code, DiagCode::UnsupportedSyntax);
-    assert!(err.message.contains("issue-051"));
-    assert!(err.message.contains("RegExp constructor"));
-    assert!(err.message.contains("plain literal byte patterns"));
+fn lowering_accepts_char_class_direct_new_regexp_exec() {
+    assert!(
+        ts2wasm_ir::lowered::lower_program(&parse_and_resolve(
+            "let hit = new RegExp(\"[abc]\").exec(\"aaa\");"
+        ))
+        .is_ok()
+    );
 }
 
 #[test]
