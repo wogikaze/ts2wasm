@@ -164,6 +164,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ObjectDefineProperty => self.emit_object_define_property(wat),
                 RuntimeFn::ObjectAssign => self.emit_object_assign(wat),
                 RuntimeFn::ObjectCreate => self.emit_object_create(wat),
+                RuntimeFn::ObjectIs => self.emit_object_is(wat),
                 RuntimeFn::InstanceOf => self.emit_instanceof(wat),
                 RuntimeFn::MathFloor => self.emit_math_floor(wat),
                 RuntimeFn::MathCeil => self.emit_math_ceil(wat),

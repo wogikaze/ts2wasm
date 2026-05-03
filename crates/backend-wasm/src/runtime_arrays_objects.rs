@@ -2090,6 +2090,15 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_object_is(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $object_is (param $a i32) (param $b i32) (result i32)
+    (return (call $strict_equal (local.get $a) (local.get $b))))
+"#,
+        ));
+    }
+
     pub(super) fn emit_instanceof(&self, wat: &mut String) {
         wat.push_str(&format!(
             r#"
