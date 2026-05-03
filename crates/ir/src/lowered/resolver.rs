@@ -311,8 +311,13 @@ impl<'a> Resolver<'a> {
             ResolvedStmt::Let(name, expr) => {
                 let local_id = self.declare_local(name)?;
                 let function_props = self.function_props_for_object_expr(expr);
-                let lowered = if let ResolvedExpr::ArrowFn { params, body, .. } = expr {
-                    self.lower_arrow_fn_with_self(params, body, Some(name))?
+                let lowered = if let ResolvedExpr::ArrowFn {
+                    params,
+                    body,
+                    body_stmts,
+                    ..
+                } = expr {
+                    self.lower_arrow_fn_with_self(params, body, body_stmts, Some(name))?
                 } else {
                     self.lower_expr(expr)?
                 };
