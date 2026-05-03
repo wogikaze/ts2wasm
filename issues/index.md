@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4376 | 3769 | 607 |
+| frontend | 4378 | 3771 | 607 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 0 | 18 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4927 | 4056 | 871 |
+| total | 4929 | 4058 | 871 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -156,6 +156,8 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:ready:start -->
 | ID | Title | Type | Area | Class | Priority | Depends on | Summary |
 |---:|---|---|---|---|---|---|---|
+| 463 | Implement FunctionDeclaration import-export (stub) | spike | frontend/syntax | superseded | P3 |  | Implement FunctionDeclaration import-export (stub) |
+| 464 | Implement FunctionDeclaration parser-syntax (stub) | spike | frontend/syntax | superseded | P3 |  | Implement FunctionDeclaration parser-syntax (stub) |
 | 5001 | Meta: TypeScript Compiler Semantic Analysis Coverage | meta | frontend/semantics | design-ready | P1 | 5000 | Meta: TypeScript Compiler Semantic Analysis Coverage |
 | 5005 | Meta: TypeScript Compiler Name Resolution Coverage | meta | frontend/resolver | design-ready | P1 | 5000 | Meta: TypeScript Compiler Name Resolution Coverage |
 <!-- generated:ready:end -->
