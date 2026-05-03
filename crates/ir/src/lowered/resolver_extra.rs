@@ -2704,6 +2704,115 @@ impl<'a> Resolver<'a> {
 
                 result_expr = LoweredExpr::Local(found);
             }
+            "findLast" => {
+                let found = self.alloc_temp();
+                stmts.push(LoweredStmt::Let(
+                    found,
+                    LoweredExpr::Undefined,
+                ));
+
+                let elem = self.alloc_temp();
+                while_body.push(LoweredStmt::Let(
+                    elem,
+                    LoweredExpr::ArrayGet {
+                        arr: Box::new(arr_ref()),
+                        index: Box::new(LoweredExpr::Local(i)),
+                    },
+                ));
+
+                let pred = self.alloc_temp();
+                let call_args = {
+                    let explicit_args = vec![
+                        LoweredExpr::Local(elem),
+                        LoweredExpr::Local(i),
+                        arr_ref(),
+                    ];
+                    let mut call_args: Vec<LoweredExpr> = explicit_args
+                        .into_iter()
+                        .take(param_count)
+                        .collect();
+                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::User(func_id),
+                        args: call_args,
+                    }
+                };
+                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::If {
+                    condition: LoweredExpr::Local(pred),
+                    then_body: vec![
+                        LoweredStmt::Assign(
+                            found,
+                            LoweredExpr::Local(elem),
+                        ),
+                        LoweredStmt::Break { label: None },
+                    ],
+                    else_body: vec![],
+                });
+                while_body.push(LoweredStmt::Assign(
+                    i,
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(i)),
+                        op: LoweredBinaryOp::Subtract,
+                        right: Box::new(LoweredExpr::Number(1)),
+                    },
+                ));
+
+                result_expr = LoweredExpr::Local(found);
+            }
+            "findLastIndex" => {
+                let found = self.alloc_temp();
+                stmts.push(LoweredStmt::Let(found, LoweredExpr::Number(-1)));
+
+                let elem = self.alloc_temp();
+                while_body.push(LoweredStmt::Let(
+                    elem,
+                    LoweredExpr::ArrayGet {
+                        arr: Box::new(arr_ref()),
+                        index: Box::new(LoweredExpr::Local(i)),
+                    },
+                ));
+
+                let pred = self.alloc_temp();
+                let call_args = {
+                    let explicit_args = vec![
+                        LoweredExpr::Local(elem),
+                        LoweredExpr::Local(i),
+                        arr_ref(),
+                    ];
+                    let mut call_args: Vec<LoweredExpr> = explicit_args
+                        .into_iter()
+                        .take(param_count)
+                        .collect();
+                    call_args.extend(captures.iter().copied().map(LoweredExpr::Local));
+                    LoweredExpr::Call {
+                        kind: FunctionCallKind::User(func_id),
+                        args: call_args,
+                    }
+                };
+                while_body.push(LoweredStmt::Let(pred, call_args));
+                while_body.push(LoweredStmt::If {
+                    condition: LoweredExpr::Local(pred),
+                    then_body: vec![
+                        LoweredStmt::Assign(
+                            found,
+                            LoweredExpr::Local(i),
+                        ),
+                        LoweredStmt::Break { label: None },
+                    ],
+                    else_body: vec![],
+                });
+                while_body.push(LoweredStmt::Assign(
+                    i,
+                    LoweredExpr::Binary {
+                        left: Box::new(LoweredExpr::Local(i)),
+                        op: LoweredBinaryOp::Subtract,
+                        right: Box::new(LoweredExpr::Number(1)),
+                    },
+                ));
+
+                result_expr = LoweredExpr::Local(found);
+            }
             "some" => {
                 let found = self.alloc_temp();
                 stmts.push(LoweredStmt::Let(
@@ -2935,8 +3044,19 @@ impl<'a> Resolver<'a> {
             }
         }
 
-        // Add initial Let(i, Number(0))
-        stmts.push(LoweredStmt::Let(i, LoweredExpr::Number(0)));
+        // Add initial Let(i, ...) based on iteration direction
+        if method == "findLast" || method == "findLastIndex" {
+            stmts.push(LoweredStmt::Let(
+                i,
+                LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(len_local)),
+                    op: LoweredBinaryOp::Subtract,
+                    right: Box::new(LoweredExpr::Number(1)),
+                },
+            ));
+        } else {
+            stmts.push(LoweredStmt::Let(i, LoweredExpr::Number(0)));
+        }
 
         // Determine the While condition based on method
         let condition = match method {
@@ -2958,6 +3078,32 @@ impl<'a> Resolver<'a> {
                     left: Box::new(LoweredExpr::Local(i)),
                     op: LoweredBinaryOp::Less,
                     right: Box::new(LoweredExpr::Local(len_local)),
+                }),
+                op: LoweredBinaryOp::And,
+                right: Box::new(LoweredExpr::Binary {
+                    left: Box::new(result_expr.clone()),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Number(-1)),
+                }),
+            },
+            "findLast" => LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(i)),
+                    op: LoweredBinaryOp::GreaterEqual,
+                    right: Box::new(LoweredExpr::Number(0)),
+                }),
+                op: LoweredBinaryOp::And,
+                right: Box::new(LoweredExpr::Binary {
+                    left: Box::new(result_expr.clone()),
+                    op: LoweredBinaryOp::StrictEqual,
+                    right: Box::new(LoweredExpr::Undefined),
+                }),
+            },
+            "findLastIndex" => LoweredExpr::Binary {
+                left: Box::new(LoweredExpr::Binary {
+                    left: Box::new(LoweredExpr::Local(i)),
+                    op: LoweredBinaryOp::GreaterEqual,
+                    right: Box::new(LoweredExpr::Number(0)),
                 }),
                 op: LoweredBinaryOp::And,
                 right: Box::new(LoweredExpr::Binary {

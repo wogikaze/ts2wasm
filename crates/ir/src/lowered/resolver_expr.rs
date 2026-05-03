@@ -1112,7 +1112,7 @@ impl<'a> Resolver<'a> {
                         },
                         args: lowered_args,
                     })
-                } else if (method == "find" || method == "findIndex" || method == "filter" || method == "every" || method == "some")
+                } else if (method == "find" || method == "findIndex" || method == "findLast" || method == "findLastIndex" || method == "filter" || method == "every" || method == "some")
                     && is_identity_arrow_callback(args)
                     && self.is_known_array_expr(object)
                 {
@@ -1288,6 +1288,8 @@ impl<'a> Resolver<'a> {
                         || method == "filter"
                         || method == "find"
                         || method == "findIndex"
+                        || method == "findLast"
+                        || method == "findLastIndex"
                         || method == "some"
                         || method == "every"
                         || method == "reduce"

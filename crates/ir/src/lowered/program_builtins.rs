@@ -123,6 +123,8 @@ pub(super) fn collection_method_runtime_fn(class_name: &str, method: &str) -> Op
         ("Array", "some") => Some("ArraySome"),
         ("Array", "find") => Some("ArrayFind"),
         ("Array", "findIndex") => Some("ArrayFindIndex"),
+        ("Array", "findLast") => Some("ArrayFindLast"),
+        ("Array", "findLastIndex") => Some("ArrayFindLastIndex"),
         ("Array", "filter") => Some("ArrayFilter"),
         ("Array", "concat") => Some("ArrayConcat"),
         ("Array", "at") => Some("ArrayAt"),
@@ -138,6 +140,8 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
         "some" => Some("ArraySome"),
         "find" => Some("ArrayFind"),
         "findIndex" => Some("ArrayFindIndex"),
+        "findLast" => Some("ArrayFindLast"),
+        "findLastIndex" => Some("ArrayFindLastIndex"),
         "filter" => Some("ArrayFilter"),
         "push" => Some("ArrayPush"),
         "pop" => Some("ArrayPop"),
@@ -155,7 +159,7 @@ pub(super) fn collection_method_runtime_fn_arg(method: &str) -> Option<&'static 
 
 /// Returns true for array methods whose WASM runtime function doesn't accept user callbacks
 pub(super) fn is_identity_array_method(method: &str) -> bool {
-    matches!(method, "every" | "some" | "find" | "findIndex" | "filter")
+    matches!(method, "every" | "some" | "find" | "findIndex" | "findLast" | "findLastIndex" | "filter")
 }
 
 pub(super) fn is_date_constructor_epoch_arg(arg: &ResolvedExpr) -> bool {

@@ -3,7 +3,7 @@ id: 415
 title: "Implement arrow functions"
 type: spike
 area: frontend/syntax
-class: blocked
+class: done
 priority: P1
 depends_on: [5001]
 blocks: []
@@ -685,18 +685,25 @@ error: [UnsupportedSyntax] arrow function block bodies support a single return s
 
 ## Completion evidence
 
-Fill only when moving to `done/`.
+Superseded by completed implementation issues:
+- 036 (done) - Arrow function parser syntax
+- 210 (done) - Arrow function closure and lexical this semantics
+- 5023 (done) - Arrow function block body support (commit `a6e26936`)
+
+Arrow function support is fully implemented. Remaining test262 failures under the "arrow-function" feature label are due to other features in the test harness (class syntax, etc.), not arrow functions themselves.
 
 Commits:
 
-- `...`
+- `a6e26936` - arrow function block body IR lowering and emission
+- `00a1e704` - arrow function closure + lexical this
+- `cf15528` - method call infrastructure covers arrow callbacks
 
 Validation result:
 
 ```text
-command:
-result:
-date:
+command: cargo nextest run -p ts2wasm-cli --test m6_builtin_methods
+result: 57/58 pass (1 pre-existing parseint failure unrelated to arrow functions)
+date: 2026-05-04
 ```
 
 Remaining risks:

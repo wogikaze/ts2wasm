@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4376 | 3770 | 606 |
+| frontend | 4376 | 3769 | 607 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 0 | 18 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4927 | 4057 | 870 |
+| total | 4927 | 4056 | 871 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -213,7 +213,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 411 | Implement annexb-ishtmldda support | spike | frontend/syntax | class: triage-needed | Implement annexb-ishtmldda support |
 | 412 | Implement arguments-object support | spike | runtime/builtins | class: blocked | Implement arguments-object support |
 | 413 | Implement arity support | spike | reference/triage | class: triage-needed | Implement arity support |
-| 415 | Implement arrow functions | spike | frontend/syntax | class: blocked | Implement arrow functions |
 | 416 | Implement async/await support | spike | frontend/syntax | class: triage-needed | Implement async/await support |
 | 417 | Implement async-iteration support | spike | frontend/syntax | class: triage-needed | Implement async-iteration support |
 | 418 | Implement break/continue | spike | frontend/syntax | class: blocked | Implement break/continue |
@@ -4615,6 +4614,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 409 | Implement tsgo declaration emit: package-json exports and subpath reexport cases | feature | frontend/syntax | see `issues/done/409-implement-tsgo-declaration-emit-package-json-subpath.md` |
 | 410 | Implement tsgo declaration emit: subpath import declaration emit cases | feature | frontend/syntax | see `issues/done/410-implement-tsgo-declaration-emit-subpath-import-links.md` |
 | 414 | Implement array-builtin support (dup) | spike | frontend/syntax | see `issues/done/414-implement-array-builtin.md` |
+| 415 | Implement arrow functions | spike | frontend/syntax | see `issues/done/415-implement-arrow-function.md` |
 | 423 | Implement Date object support (dup) | spike | runtime/builtins | see `issues/done/423-implement-date.md` |
 | 427 | Implement duplicate-local support | spike | reference/triage | see `issues/done/427-implement-duplicate-local.md` |
 | 430 | Implement function support (dup) | spike | frontend/syntax | see `issues/done/430-implement-function.md` |
