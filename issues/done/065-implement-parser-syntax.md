@@ -1,6 +1,6 @@
 ---
 id: 065
-title: "Implement parser syntax extensions"
+title: "Implement parser syntax extensions (dup)"
 type: feature
 area: frontend/syntax
 class: blocked

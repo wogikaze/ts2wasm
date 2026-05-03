@@ -1,6 +1,6 @@
 ---
 id: 047
-title: "Implement super keyword"
+title: "Implement super keyword (dup)"
 type: feature
 area: runtime/semantics
 class: done

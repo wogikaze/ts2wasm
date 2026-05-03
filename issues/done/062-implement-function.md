@@ -1,6 +1,6 @@
 ---
 id: 062
-title: "Implement function support"
+title: "Implement function support (dup)"
 type: feature
 area: frontend/semantics
 class: blocked

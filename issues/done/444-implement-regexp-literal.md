@@ -1,6 +1,6 @@
 ---
 id: 444
-title: "Implement RegExp literal support"
+title: "Implement RegExp literal support (dup)"
 type: spike
 area: runtime/builtins
 class: blocked

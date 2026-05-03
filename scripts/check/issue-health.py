@@ -149,6 +149,15 @@ def main() -> int:
     for issue_id in sorted(open_ids & done_ids):
         err(errors, f"id present in both issues/open/ and issues/done/: {issue_id}")
 
+    # Duplicate titles within open/
+    open_title_seen: dict[str, list[Issue]] = {}
+    for issue in by_state["open"]:
+        open_title_seen.setdefault(issue.title, []).append(issue)
+    for title, matches in open_title_seen.items():
+        if len(matches) > 1:
+            rel_paths = ", ".join(m.path.relative_to(REPO).as_posix() for m in matches)
+            err(errors, f"duplicate title in open/: \"{title}\" in {rel_paths}")
+
     # Sequential IDs (no gaps in numeric range) — only check the 5000+ range
     # to avoid conflicts with the legacy hex-suffix sub-issue scheme (<1000).
     all_ids = {norm_id(i) for i in open_ids | done_ids}

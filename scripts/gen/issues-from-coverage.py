@@ -283,6 +283,35 @@ def duplicate_candidates(
     return candidates[:10]
 
 
+def is_high_confidence_duplicate(
+    group_key: str,
+    title: str,
+    files: List[Tuple[str, str, str]],
+    existing_issues: List[Tuple[str, str]],
+) -> bool:
+    """Return True if a high-confidence duplicate already exists (skip creation)."""
+    labels = {feature for _, _, feature in files}
+    title_terms = {term.lower() for term in re.findall(r"[A-Za-z0-9_+-]{4,}", title)}
+    paths = {file_path for file_path, _, _ in files}
+
+    for issue_path, text in existing_issues:
+        score = 0
+        if any(label in text for label in labels):
+            score += 3
+        if group_key in text:
+            score += 3
+        issue_title_match = re.search(r'^title:\s*"?(.+?)"?\s*$', text, re.M)
+        issue_title = issue_title_match.group(1).strip().strip('"') if issue_title_match else ""
+        overlap = title_terms & {term.lower() for term in re.findall(r"[A-Za-z0-9_+-]{4,}", issue_title)}
+        if overlap:
+            score += min(4, len(overlap))
+        if any(file_path in text for file_path in paths):
+            score += 3
+        if score >= 5:
+            return True
+    return False
+
+
 def run_reference_triage(suite: str, file_path: str, max_dump_chars: int) -> str:
     result = subprocess.run(
         [
@@ -505,18 +534,19 @@ Remaining risks:
 
 
 def find_next_issue_id(output_dir: Path) -> int:
-    """Find the next available issue ID by scanning existing issues."""
-    max_id = 0
+    """Find the smallest available issue ID by scanning existing issues (open + done)."""
+    used: set[int] = set()
     for issue_root in [output_dir, output_dir.parent / "done"]:
         if not issue_root.exists():
             continue
         for file_path in issue_root.glob("*.md"):
             match = re.match(r'^(\d+)-', file_path.name)
             if match:
-                issue_id = int(match.group(1))
-                if issue_id > max_id:
-                    max_id = issue_id
-    return max_id + 1
+                used.add(int(match.group(1)))
+    candidate = 1
+    while candidate in used:
+        candidate += 1
+    return candidate
 
 
 def main():
@@ -553,6 +583,14 @@ def main():
             continue
         
         issue_id = f"{current_id:03d}"
+        title = group_key_to_title(group_key, files, args.suite)
+
+        # Check for high-confidence duplicates: skip if existing issue has
+        # same title structure (same title terms + same feature labels)
+        if is_high_confidence_duplicate(group_key, title, files, existing_issues):
+            print(f"Skipping {group_key} (high-confidence duplicate already exists)", file=sys.stderr)
+            continue
+
         content = generate_issue_content(
             issue_id,
             group_key,

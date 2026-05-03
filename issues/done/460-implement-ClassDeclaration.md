@@ -1,6 +1,6 @@
 ---
 id: 460
-title: "Implement Classdeclaration"
+title: "Implement Classdeclaration (dup)"
 type: spike
 area: frontend/syntax
 class: blocked

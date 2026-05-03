@@ -1,6 +1,6 @@
 ---
 id: 3996
-title: "Implement Compiler"
+title: "Implement Compiler (dup)"
 type: spike
 area: frontend/syntax
 class: blocked

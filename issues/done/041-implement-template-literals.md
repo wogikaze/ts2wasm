@@ -1,6 +1,6 @@
 ---
 id: 041
-title: "Implement template literals"
+title: "Implement template literals (dup)"
 type: feature
 area: frontend/semantics
 class: implementation-ready

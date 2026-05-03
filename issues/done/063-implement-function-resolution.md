@@ -1,6 +1,6 @@
 ---
 id: 063
-title: "Implement function resolution"
+title: "Implement function resolution (dup)"
 type: feature
 area: frontend/resolver
 class: blocked
