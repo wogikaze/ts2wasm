@@ -1,0 +1,88 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+.theme-light {
+  background-color: #f8fafc;
+  color: #111827;
+}
+
+.theme-light .bg-gray-900,
+.theme-light .bg-gray-900\/50 {
+  background-color: #f8fafc;
+}
+
+.theme-light .bg-gray-800,
+.theme-light .bg-gray-800\/50 {
+  background-color: #ffffff;
+}
+
+.theme-light .bg-gray-700,
+.theme-light .bg-gray-700\/50,
+.theme-light .hover\:bg-gray-700:hover,
+.theme-light .hover\:bg-gray-700\/50:hover {
+  background-color: #f1f5f9;
+}
+
+.theme-light .text-gray-100 {
+  color: #111827;
+}
+
+.theme-light .text-gray-200,
+.theme-light .hover\:text-gray-200:hover {
+  color: #1f2937;
+}
+
+.theme-light .text-gray-400 {
+  color: #475569;
+}
+
+.theme-light .text-gray-500 {
+  color: #64748b;
+}
+
+.theme-light .border-gray-800,
+.theme-light .border-gray-700 {
+  border-color: #cbd5e1;
+}
+
+.theme-light .divide-gray-700 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #e2e8f0;
+}
+
+.theme-light input,
+.theme-light select {
+  color: #111827;
+  background-color: #ffffff;
+}
+
+.theme-light input::placeholder {
+  color: #64748b;
+}

@@ -15,7 +15,7 @@ Issue files are the source of truth for work items. The generated section below 
 | compiler | 1 | 0 | 1 |
 | coverage | 10 | 0 | 10 |
 | docs | 2 | 0 | 2 |
-| frontend | 4350 | 4172 | 178 |
+| frontend | 4350 | 4178 | 172 |
 | harness | 1 | 1 | 0 |
 | ir | 18 | 1 | 17 |
 | issues | 4 | 0 | 4 |
@@ -26,7 +26,7 @@ Issue files are the source of truth for work items. The generated section below 
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4505 | 391 |
+| total | 4896 | 4511 | 385 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -293,6 +293,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 177 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
 | 178 | Implement Anonterface | spike | frontend/syntax | class: blocked | Implement Anonterface |
 | 179 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
+| 180 | Implement Anonymousclassexpression | spike | frontend/syntax | class: blocked | Implement Anonymousclassexpression |
 | 181 | Implement Anonymousmodules | spike | frontend/syntax | class: blocked | Implement Anonymousmodules |
 | 182 | Implement Anyandunknownhavefalsycomponents | spike | frontend/syntax | class: blocked | Implement Anyandunknownhavefalsycomponents |
 | 183 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | class: blocked | Implement Anyasreturntypefornewoncall |
@@ -383,6 +384,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 463 | Implement Functiondeclaration Import Export | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Import Export |
 | 464 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
 | 466 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
+| 467 | Implement Transportstream | spike | frontend/syntax | class: blocked | Implement Transportstream |
 | 468 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 469 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 470 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
@@ -447,6 +449,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 548 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
 | 550 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
 | 552 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
+| 553 | Implement Transportstream | spike | frontend/syntax | class: blocked | Implement Transportstream |
 | 554 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 555 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 556 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
@@ -510,6 +513,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 633 | Implement Amdmoduleconstenumusage | spike | frontend/syntax | class: blocked | Implement Amdmoduleconstenumusage |
 | 634 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 635 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
+| 636 | Implement Anonterface | spike | frontend/syntax | class: blocked | Implement Anonterface |
 | 637 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
 | 640 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
 | 643 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: blocked | Implement Anyidenticaltoitself |
@@ -652,6 +656,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 783 | Implement Exportassignment | spike | frontend/syntax | class: blocked | Implement Exportassignment |
 | 785 | Implement Functiondeclaration Parser Syntax | spike | frontend/syntax | class: blocked | Implement Functiondeclaration Parser Syntax |
 | 787 | Implement Parameterlist | spike | frontend/syntax | class: blocked | Implement Parameterlist |
+| 788 | Implement Transportstream | spike | frontend/syntax | class: blocked | Implement Transportstream |
 | 789 | Implement Abstractclassinlocalscope | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscope |
 | 790 | Implement Abstractclassinlocalscopeisabstract | spike | frontend/syntax | class: blocked | Implement Abstractclassinlocalscopeisabstract |
 | 791 | Implement Abstractclassunioninstantiation | spike | frontend/resolver | class: blocked | Implement Abstractclassunioninstantiation |
@@ -715,6 +720,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 868 | Implement Amdmoduleconstenumusage | spike | frontend/syntax | class: blocked | Implement Amdmoduleconstenumusage |
 | 869 | Implement Amdmodulename | spike | frontend/syntax | class: blocked | Implement Amdmodulename |
 | 870 | Implement Anonclassdeclarationemitisanon | spike | frontend/syntax | class: blocked | Implement Anonclassdeclarationemitisanon |
+| 871 | Implement Anonterface | spike | frontend/syntax | class: blocked | Implement Anonterface |
 | 872 | Implement Anonymousclassdeclarationdoesntprintwithreadonly | spike | frontend/syntax | class: blocked | Implement Anonymousclassdeclarationdoesntprintwithreadonly |
 | 875 | Implement Anyandunknownhavefalsycomponents | spike | frontend/resolver | class: blocked | Implement Anyandunknownhavefalsycomponents |
 | 878 | Implement Anyidenticaltoitself | spike | frontend/syntax | class: blocked | Implement Anyidenticaltoitself |
@@ -4768,7 +4774,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 085 | Implement Abstractinterfaceidentifiername | spike | frontend/syntax | see `issues/done/085-implement-abstractInterfaceIdentifierName.md` |
 | 095 | Implement Accessorbodyintypecontext | spike | frontend/syntax | see `issues/done/095-implement-accessorBodyInTypeContext.md` |
 | 110 | Implement Addmoreoverloadstobasesignature | spike | frontend/syntax | see `issues/done/110-implement-addMoreOverloadsToBaseSignature.md` |
-| 180 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/180-implement-anonymousClassExpression.md` |
 | 186 | Implement Anyindexedaccessarraynoexception | spike | frontend/syntax | see `issues/done/186-implement-anyIndexedAccessArrayNoException.md` |
 | 188 | Implement Anyisassignabletoobject | spike | frontend/syntax | see `issues/done/188-implement-anyIsAssignableToObject.md` |
 | 189 | Implement Anyisassignabletovoid | spike | frontend/syntax | see `issues/done/189-implement-anyIsAssignableToVoid.md` |
@@ -4957,7 +4962,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 460 | Implement Classdeclaration | spike | frontend/syntax | see `issues/done/460-implement-ClassDeclaration.md` |
 | 461 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/461-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
 | 465 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/465-implement-MemberAccessorDeclaration.md` |
-| 467 | Implement Transportstream | spike | frontend/syntax | see `issues/done/467-implement-TransportStream.md` |
 | 477 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/477-implement-accessOverriddenBaseClassMember.md` |
 | 482 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/482-implement-accessorDeclarationOrder.md` |
 | 483 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/483-implement-accessorInAmbientContextES.md` |
@@ -4979,7 +4983,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 547 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/547-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
 | 549 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/549-implement-FunctionDeclaration-import-export.md` |
 | 551 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/551-implement-MemberAccessorDeclaration.md` |
-| 553 | Implement Transportstream | spike | frontend/syntax | see `issues/done/553-implement-TransportStream.md` |
 | 563 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/563-implement-accessOverriddenBaseClassMember.md` |
 | 568 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/568-implement-accessorDeclarationOrder.md` |
 | 569 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/569-implement-accessorInAmbientContextES.md` |
@@ -4999,7 +5002,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 621 | Implement Ambientnamerestrictions | spike | frontend/syntax | see `issues/done/621-implement-ambientNameRestrictions.md` |
 | 623 | Implement Ambientstatement | spike | frontend/syntax | see `issues/done/623-implement-ambientStatement.md` |
 | 624 | Implement Ambientwithstatements | spike | frontend/syntax | see `issues/done/624-implement-ambientWithStatements.md` |
-| 636 | Implement Anonterface | spike | frontend/syntax | see `issues/done/636-implement-anonterface.md` |
 | 638 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/638-implement-anonymousClassExpression.md` |
 | 639 | Implement Anonymousmodules | spike | frontend/syntax | see `issues/done/639-implement-anonymousModules.md` |
 | 641 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | see `issues/done/641-implement-anyAsReturnTypeForNewOnCall.md` |
@@ -5009,7 +5011,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 782 | Implement Classdeclarationwithinvalidconstonpropertydeclaration | spike | frontend/syntax | see `issues/done/782-implement-ClassDeclarationWithInvalidConstOnPropertyDeclaration.md` |
 | 784 | Implement Functiondeclaration Import Export | spike | frontend/syntax | see `issues/done/784-implement-FunctionDeclaration-import-export.md` |
 | 786 | Implement Memberaccessordeclaration | spike | frontend/syntax | see `issues/done/786-implement-MemberAccessorDeclaration.md` |
-| 788 | Implement Transportstream | spike | frontend/syntax | see `issues/done/788-implement-TransportStream.md` |
 | 798 | Implement Accessoverriddenbaseclassmember | spike | frontend/semantics | see `issues/done/798-implement-accessOverriddenBaseClassMember.md` |
 | 803 | Implement Accessordeclarationorder | spike | frontend/syntax | see `issues/done/803-implement-accessorDeclarationOrder.md` |
 | 804 | Implement Accessorinambientcontextes | spike | frontend/syntax | see `issues/done/804-implement-accessorInAmbientContextES.md` |
@@ -5029,7 +5030,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 856 | Implement Ambientnamerestrictions | spike | frontend/syntax | see `issues/done/856-implement-ambientNameRestrictions.md` |
 | 858 | Implement Ambientstatement | spike | frontend/syntax | see `issues/done/858-implement-ambientStatement.md` |
 | 859 | Implement Ambientwithstatements | spike | frontend/syntax | see `issues/done/859-implement-ambientWithStatements.md` |
-| 871 | Implement Anonterface | spike | frontend/syntax | see `issues/done/871-implement-anonterface.md` |
 | 873 | Implement Anonymousclassexpression | spike | frontend/syntax | see `issues/done/873-implement-anonymousClassExpression.md` |
 | 874 | Implement Anonymousmodules | spike | frontend/syntax | see `issues/done/874-implement-anonymousModules.md` |
 | 876 | Implement Anyasreturntypefornewoncall | spike | frontend/syntax | see `issues/done/876-implement-anyAsReturnTypeForNewOnCall.md` |

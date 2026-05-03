@@ -27,7 +27,7 @@ COVERAGE_DIR = PROJECT_ROOT / "artifacts" / "coverage"
 REFERENCE_DIR = PROJECT_ROOT / "reference"
 COVERAGE_WEB_UI_DIR = SITE_DOCS / "coverage" / "web-ui"
 WEB_UI_DATA_DIR = COVERAGE_WEB_UI_DIR / "public" / "data"
-WEB_UI_DIST_INDEX = COVERAGE_WEB_UI_DIR / "dist" / "index.html"
+SITE_DASHBOARD_DIST_INDEX = SITE_DOCS / ".vitepress" / "public" / "dashboard" / "index.html"
 
 
 def read_json_safe(path: Path) -> Dict[str, Any]:
@@ -41,12 +41,12 @@ def read_json_safe(path: Path) -> Dict[str, Any]:
 
 
 def dashboard_available() -> bool:
-    return WEB_UI_DIST_INDEX.exists()
+    return SITE_DASHBOARD_DIST_INDEX.exists()
 
 
 def detect_dashboard_url() -> str:
     if dashboard_available():
-        return "/coverage/web-ui/"
+        return "/dashboard/"
     return ""
 
 
@@ -229,9 +229,7 @@ def process_coverage():
         if has_dashboard:
             content += "\n## Coverage Dashboard\n\n"
             content += f"- Dashboard: [{dashboard_url}]({dashboard_url})\n"
-            content += "\n<iframe src=\""
-            content += dashboard_url
-            content += "\" title=\"ts2wasm coverage dashboard\" style=\"width:100%; height:640px; border:0; border-radius:8px;\"></iframe>\n\n"
+            content += "\nOpen this page directly (no iframe) for the interactive dashboard.\n"
         else:
             content += "\nNo coverage dashboard bundle is shipped under `site/docs/coverage/web-ui/`. JSON-based summary is still available in the generated output above.\n"
         content += "## Coverage Snapshot\n\n"
@@ -268,7 +266,7 @@ def process_coverage():
             suite_data = suite_summary.get(suite_name, {})
             suite_content = f"# {suite_name} Coverage\n\n"
             if has_dashboard:
-                suite_content += f"Web UI dashboard path: [/coverage/web-ui/](/coverage/web-ui/)\n\n"
+                suite_content += f"Web UI dashboard path: [/dashboard/](/dashboard/)\n\n"
             else:
                 suite_content += "Coverage dashboard: not bundled in this checkout.\n\n"
             if suite_data:
@@ -310,6 +308,7 @@ TypeScript to WebAssembly compiler - Documentation and Test Explorer
 - [Issues](./issues/) - Issue tracker and ready queue
 - [Fixtures](./fixtures/) - Test fixtures browser
 - [Coverage](./coverage/) - Test coverage results
+- [Coverage dashboard](/dashboard/) - Interactive dashboard UI
 
 ## Project Statistics
 

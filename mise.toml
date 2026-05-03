@@ -89,6 +89,10 @@ run = "python scripts/manager.py coverage-report"
 description = "Generate coverage dashboard JSON under site/docs/coverage/web-ui/public/data"
 run = "python scripts/manager.py coverage-dashboard-data"
 
+[tasks."build-dashboard-site"]
+description = "Build web-ui dashboard bundle and publish it to /dashboard/ in site docs"
+run = "python scripts/build-dashboard-site.py"
+
 [tasks."discord-report"]
 description = "Send or validate a Discord cycle report payload"
 run = "python scripts/manager.py discord-report"

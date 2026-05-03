@@ -118,9 +118,9 @@ Follow-up issues:
 
 - `issues/open/081-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 - `issues/open/442-implement-parser-syntax.md` - Implement parser syntax extensions (same feature label, same group key, title overlap)
-- `issues/done/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/open/467-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 - `issues/open/550-implement-FunctionDeclaration-parser-syntax.md` - Implement Functiondeclaration Parser Syntax (same feature label, same group key, title overlap)
-- `issues/done/553-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
+- `issues/open/553-implement-TransportStream.md` - Implement Transportstream (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -145,3 +145,19 @@ date:
 Remaining risks:
 
 - none
+
+## ⚠️ False-done audit (re-opened from `issues/done/`)
+
+**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: [5000]` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
+
+**True-done checklist** (all must pass):
+1. Perform actual triage review of the reference failure case(s)
+2. Either split into implementation-ready child issue(s) or confirm superseded by an existing issue (document with Status note)
+3. Fill in completion evidence section with triage results and commit SHAs
+4. Verify all acceptance criteria checkboxes reflect completed work
+
+**Commands that must pass**:
+```sh
+cargo fmt --all --check
+cargo nextest run
+```

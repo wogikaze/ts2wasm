@@ -536,7 +536,10 @@ TypeScript/JavaScript oracle:
     "topLevel": [
       {
         "kind": "ModuleDeclaration",
-        "text": "namespace M {\r\n    export class C {\r\n        m(fn:{ (n:number):string; },n2:number):string {\r\n            return fn(n2);",
+        "text": "namespace M {
+    export class C {
+        m(fn:{ (n:number):string; },n2:number):string {
+            return fn(n2);",
         "line": 2,
         "character": 1
       },
@@ -556,13 +559,19 @@ TypeScript/JavaScript oracle:
     "pathToPosition": [
       {
         "kind": "SourceFile",
-        "text": "namespace M {\r\n    export class C {\r\n        m(fn:{ (n:number):string; },n2:number):string {\r\n            return fn(n2);",
+        "text": "namespace M {
+    export class C {
+        m(fn:{ (n:number):string; },n2:number):string {
+            return fn(n2);",
         "line": 2,
         "character": 1
       },
       {
         "kind": "ModuleDeclaration",
-        "text": "namespace M {\r\n    export class C {\r\n        m(fn:{ (n:number):string; },n2:number):string {\r\n            return fn(n2);",
+        "text": "namespace M {
+    export class C {
+        m(fn:{ (n:number):string; },n2:number):string {
+            return fn(n2);",
         "line": 2,
         "character": 1
       }
@@ -596,3 +605,19 @@ date:
 Remaining risks:
 
 - none
+
+## ⚠️ False-done audit (re-opened from `issues/done/`)
+
+**Why this was false-done**: This generated triage spike issue was moved to `issues/done/` without actual triage or implementation. It has `type: spike` and `class: blocked` depending on meta-issues (`depends_on: [5000]` or `[5001]`), with zero implementation commits referencing this issue, empty completion evidence (commits `...`), and no Status note or Close note documenting triage results.
+
+**True-done checklist** (all must pass):
+1. Perform actual triage review of the reference failure case(s)
+2. Either split into implementation-ready child issue(s) or confirm superseded by an existing issue (document with Status note)
+3. Fill in completion evidence section with triage results and commit SHAs
+4. Verify all acceptance criteria checkboxes reflect completed work
+
+**Commands that must pass**:
+```sh
+cargo fmt --all --check
+cargo nextest run
+```

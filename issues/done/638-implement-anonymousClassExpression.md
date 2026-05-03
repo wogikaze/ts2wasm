@@ -116,7 +116,7 @@ Follow-up issues:
 
 ## Duplicate detection
 
-- `issues/done/180-implement-anonymousClassExpression.md` - Implement Anonymousclassexpression (same reference path, same feature label, same group key, title overlap)
+- `issues/open/180-implement-anonymousClassExpression.md` - Implement Anonymousclassexpression (same reference path, same feature label, same group key, title overlap)
 
 ## Smart triage
 
@@ -189,7 +189,7 @@ Duplicate candidates:
 [
   {
     "state": "open",
-    "path": "issues/done/180-implement-anonymousClassExpression.md",
+    "path": "issues/open/180-implement-anonymousClassExpression.md",
     "title": "Implement Anonymousclassexpression",
     "reason": "same reference path, same feature label"
   },

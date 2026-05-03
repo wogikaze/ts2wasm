@@ -31,16 +31,17 @@ mise run test262 -- --sample 50 --dashboard-data
 
 ## Local Use
 
-Start the documentation site to view the dashboard in `/coverage`:
+Start the documentation site and build the embedded dashboard bundle, then open `/dashboard`:
 
 ```bash
 mise run coverage-dashboard-data
+mise run build-dashboard-site
 cd site
 npm run dev
 ```
 
-The development server serves the report at `http://localhost:5173` and refreshes
-under `/coverage`.
+The development server serves the report at `http://localhost:5173/dashboard/` and
+refreshes under `/dashboard/`.
 
 ## Local Live Mode
 
@@ -76,7 +77,8 @@ cd site
 npm run build
 ```
 
-This generates a build containing coverage dashboard pages under `site/docs/coverage/web-ui`.
+This generates static dashboard assets under `site/docs/.vitepress/public/dashboard/` and serves
+them from `/dashboard/`.
 
 ## Views
 
