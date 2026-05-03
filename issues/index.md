@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 206 | 201 | 5 |
-| runtime | 258 | 120 | 138 |
+| runtime | 258 | 122 | 136 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4896 | 4594 | 302 |
+| total | 4896 | 4596 | 300 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -4757,6 +4757,9 @@ Issue files are the source of truth for work items. The generated section below 
 | 5018 | Implement legacy-global-builtin support | spike | frontend/syntax | class: triage-needed | Implement legacy-global-builtin support |
 | 5019 | Implement name resolution | spike | frontend/resolver | class: triage-needed | Implement name resolution |
 | 5020 | Implement RegExp literal support | spike | frontend/syntax | class: triage-needed | Implement RegExp literal support |
+| 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | class: blocked | Implement API Sample watcher arrow function return |
+| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | class: blocked | Implement anonymous interface new expression identifier |
+| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | class: blocked | Implement any as return type instanceof constructor RHS |
 <!-- generated:blocked:end -->
 
 ## Done queue
@@ -5051,9 +5054,6 @@ Issue files are the source of truth for work items. The generated section below 
 | 5017 | Implement html-comment support | spike | frontend/syntax | see `issues/done/5017-implement-html-comment.md` |
 | 5021 | Implement string-builtin support | feature | frontend/syntax | see `issues/done/5021-implement-string-builtin.md` |
 | 5022 | Implement Array.prototype.every receiver semantics for 2dArrays | feature | runtime/builtins | see file |
-| 5023 | Implement API Sample watcher arrow function return | feature | runtime/builtins | see file |
-| 5024 | Implement anonymous interface new expression identifier | feature | runtime/builtins | see file |
-| 5025 | Implement any as return type instanceof constructor RHS | feature | runtime/builtins | see file |
 | 5031 | [cli] Replace placeholder parser keyword/operator tests with real assertions | test | cli | see `issues/done/5031-cli-real-parser-assertions.md` |
 | 5032 | [cli] Add deterministic external tool capability detection | feature | cli | see `issues/done/5032-cli-tool-capability-detection.md` |
 | 5036 | [compiler] Introduce CompileReport<T> for non-fatal diagnostics | feature | cli | see `issues/done/5036-compiler-compile-report.md` |
