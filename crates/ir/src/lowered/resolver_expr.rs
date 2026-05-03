@@ -562,10 +562,15 @@ impl<'a> Resolver<'a> {
                 })
             }
             ResolvedExpr::BuiltinCall { builtin, args } => {
-                let lowered_args = args
+                let mut lowered_args = args
                     .iter()
                     .map(|arg| self.lower_expr(arg))
                     .collect::<Result<Vec<_>, _>>()?;
+                // ParseInt accepts an optional second argument (radix).
+                // When omitted, default to 0 (auto-detect radix) per JS semantics.
+                if *builtin == BuiltinId::ParseInt && lowered_args.len() == 1 {
+                    lowered_args.push(LoweredExpr::Number(0));
+                }
                 Ok(LoweredExpr::Call {
                     kind: FunctionCallKind::Builtin(*builtin),
                     args: lowered_args,

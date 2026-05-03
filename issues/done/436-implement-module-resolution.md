@@ -415,6 +415,13 @@ triage or code changes. No implementation commits reference this issue.
      source context, and parser/TypeScript AST evidence
 ## Close note
 
-Superseded by meta-issue 5005 (TypeScript Compiler Name Resolution Coverage), which covers module resolution as a sub-area.
+Partially implemented: bare specifier resolution, node_modules traversal, .d.ts support, package.json types/main field resolution.
+Remaining work tracked under meta-issue 5005 (TypeScript Compiler Name Resolution Coverage).
 
 superseded-by: 5005
+
+Implementation commits:
+- `e42d9571` - basic bare specifier and node_modules resolution
+- `d328e0da` - .d.ts extension support  
+- `1e5ba813` - parent directory node_modules traversal
+- `d1a199c0` - package.json types/main field resolution
