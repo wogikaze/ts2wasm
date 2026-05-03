@@ -991,6 +991,51 @@ impl WatEmitter<'_> {
         ));
     }
 
+    // Array.prototype.findIndex (identity callback: return index of first truthy element)
+    pub(super) fn emit_array_find_index(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $array_find_index (param $arr i32) (result i32)
+    (local $obj i32)
+    (local $tag i32)
+    (local $len i32)
+    (local $i i32)
+    (local $elem i32)
+    (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
+    (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
+    (local.set $len (i32.load (local.get $obj)))
+    (local.set $i (i32.const {zero}))
+    (block $done
+      (loop $scan
+        (br_if $done (i32.ge_u (local.get $i) (local.get $len)))
+        (local.set $elem
+          (i32.load
+            (i32.add
+              (local.get $obj)
+              (i32.add
+                (i32.const {array_header})
+                (i32.shl (local.get $i) (i32.const {elem_shift}))))))
+        (if (call $truthy_bool (local.get $elem))
+          (then (return
+            (i32.or (i32.shl (local.get $i) (i32.const {number_shift})) (i32.const {number})))))
+        (local.set $i (i32.add (local.get $i) (i32.const {one})))
+        (br $scan)))
+    (i32.or (i32.shl (i32.const -1) (i32.const {number_shift})) (i32.const {number})))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            array_tag = ValueTag::ARRAY,
+            heap_mask = ValueTag::HEAP_MASK,
+            array_header = Layout::ARRAY_HEADER_SIZE,
+            elem_shift = Layout::ARRAY_ELEM_SHIFT,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            number = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+            one = RuntimeConst::ONE,
+            undefined = ValueTag::UNDEFINED,
+        ));
+    }
+
     // Array.prototype.filter (identity callback: filter truthy elements)
     pub(super) fn emit_array_filter(&self, wat: &mut String) {
         wat.push_str(&format!(

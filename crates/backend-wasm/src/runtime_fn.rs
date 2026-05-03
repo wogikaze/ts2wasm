@@ -204,6 +204,8 @@ pub(crate) enum RuntimeFn {
     ArrayIncludes,
     /// Array.prototype.find (identity callback: find first truthy element)
     ArrayFind,
+    /// Array.prototype.findIndex (identity callback: return index of first truthy element)
+    ArrayFindIndex,
     /// Array.prototype.filter (identity callback: filter truthy elements)
     ArrayFilter,
     /// Array.prototype.every (identity callback: check all truthy)
@@ -625,6 +627,7 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "ArrayIndexOf" => Some(RuntimeFn::ArrayIndexOf),
         "ArrayIncludes" => Some(RuntimeFn::ArrayIncludes),
         "ArrayFind" => Some(RuntimeFn::ArrayFind),
+        "ArrayFindIndex" => Some(RuntimeFn::ArrayFindIndex),
         "ArrayFilter" => Some(RuntimeFn::ArrayFilter),
         "ArrayEvery" => Some(RuntimeFn::ArrayEvery),
         "ArraySome" => Some(RuntimeFn::ArraySome),
@@ -1082,6 +1085,7 @@ const ARRAY_REVERSE_DEPS: &[RuntimeFn] = &[];
 const ARRAY_INDEX_OF_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const ARRAY_INCLUDES_DEPS: &[RuntimeFn] = &[RuntimeFn::StrictEqual];
 const ARRAY_FIND_DEPS: &[RuntimeFn] = &[];
+const ARRAY_FIND_INDEX_DEPS: &[RuntimeFn] = &[];
 const ARRAY_FILTER_DEPS: &[RuntimeFn] = &[RuntimeFn::AllocHeap, RuntimeFn::Copy];
 const ARRAY_EVERY_DEPS: &[RuntimeFn] = &[];
 const ARRAY_SOME_DEPS: &[RuntimeFn] = &[];

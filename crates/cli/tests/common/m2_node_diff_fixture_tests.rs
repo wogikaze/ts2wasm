@@ -1279,9 +1279,11 @@ fn date_annex_b_fixtures_report_issue_241() {
             "toGMTString",
         ),
     ] {
-        assert_build_fails_with_unsupported_syntax(
+        assert_build_fails_with_diagnostic(
             fixture,
+            "[UnsupportedDate]",
             &format!("issue-241: Date.prototype.{method} is Annex B legacy Date behavior"),
+            true,
         );
     }
 }
@@ -1293,9 +1295,21 @@ fn date_utc_getters_fixture_matches_node_output_under_iwasm() {
 
 #[test]
 fn date_local_getters_fixture_reports_unsupported() {
-    assert_build_fails_with_unsupported_syntax(
+    assert_build_fails_with_diagnostic(
         "fixtures/builtins-and-io/date-local-getters-unsupported.ts",
+        "[UnsupportedDate]",
         "Date.prototype.getFullYear requires host timezone support",
+        true,
+    );
+}
+
+#[test]
+fn eval_fixture_reports_unsupported() {
+    assert_build_fails_with_diagnostic(
+        "fixtures/builtins-and-io/eval-unsupported.ts",
+        "[UnsupportedEval]",
+        "issue-429: direct eval is not supported; runtime code evaluation is intentionally not implemented",
+        true,
     );
 }
 

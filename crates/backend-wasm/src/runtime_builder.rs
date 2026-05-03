@@ -215,6 +215,7 @@ impl WatEmitter<'_> {
                 RuntimeFn::ArrayIndexOf => self.emit_array_index_of(wat),
                 RuntimeFn::ArrayIncludes => self.emit_array_includes(wat),
                 RuntimeFn::ArrayFind => self.emit_array_find(wat),
+                RuntimeFn::ArrayFindIndex => self.emit_array_find_index(wat),
                 RuntimeFn::ArrayFilter => self.emit_array_filter(wat),
                 RuntimeFn::ArrayEvery => self.emit_array_every(wat),
                 RuntimeFn::ArraySome => self.emit_array_some(wat),
