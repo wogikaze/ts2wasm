@@ -208,7 +208,7 @@ impl ModuleGraphBuilder {
                     span: None,
                 })?;
                 // For .d.ts files, add implicit declare to exported const without initializers
-                let resolved_source = if resolved_path.extension().and_then(|e| e.to_str()) == Some("d.ts") {
+                let resolved_source = if resolved_path.to_string_lossy().ends_with(".d.ts") {
                     // Convert "export const NAME: TYPE;" to "export declare const NAME: TYPE;" 
                     // for type-only declarations without initializers
                     // Simple string replace: "export const" without "=" -> "export declare const"
