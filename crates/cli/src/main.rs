@@ -1,7 +1,8 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use clap::Parser;
+use ts2wasm_frontend::{DiagCode, Diagnostic};
 
 #[derive(Parser)]
 #[command(name = "ts2wasm")]
@@ -17,6 +18,10 @@ enum Command {
         /// Reject node host imports
         #[arg(long)]
         host_deny: bool,
+        /// Explain unsupported diagnostics in detail (tracking issue, fixture
+        /// path, workaround, next crate to implement)
+        #[arg(long)]
+        explain_unsupported: bool,
     },
     /// Check a TypeScript source file for parse errors
     Check { input: PathBuf },
@@ -73,6 +78,7 @@ fn run() -> Result<(), String> {
             output,
             manifest,
             host_deny,
+            explain_unsupported,
         } => {
             let result = if host_deny {
                 ts2wasm_cli::build_file_with_host_deny(&input, &output, manifest.as_deref(), true)
@@ -86,7 +92,12 @@ fn run() -> Result<(), String> {
                     }
                     Ok(())
                 }
-                Err(e) => Err(e.to_string()),
+                Err(e) => {
+                    if explain_unsupported {
+                        explain_unsupported_diagnostic(&e, &input);
+                    }
+                    Err(e.to_string())
+                }
             }
         }
         Command::Check { input } => {
@@ -144,4 +155,62 @@ fn run() -> Result<(), String> {
             Ok(())
         }
     }
+}
+
+/// Print detailed explanation for unsupported diagnostics.
+///
+/// When `--explain-unsupported` is passed, this function prints the diagnostic
+/// code breakdown, tracking issue reference (extracted from the message), the
+/// input fixture path, and a suggestion for which crate to implement next.
+fn explain_unsupported_diagnostic(diag: &Diagnostic, input: &Path) {
+    let display = diag.display_code();
+    let is_unsupported = matches!(
+        display,
+        DiagCode::UnsupportedSyntax
+            | DiagCode::UnsupportedBuiltin
+            | DiagCode::UnsupportedDate
+            | DiagCode::UnsupportedRegExp
+            | DiagCode::UnsupportedModule
+            | DiagCode::UnsupportedEval
+            | DiagCode::UnsupportedTypeScriptSyntax
+            | DiagCode::UnsupportedRuntimeSubset
+    );
+
+    if !is_unsupported {
+        return;
+    }
+
+    // Extract tracking issue reference from the message
+    let tracking = diag
+        .message
+        .split_whitespace()
+        .find(|word| word.starts_with("issue-") || word.starts_with("issue:"))
+        .or_else(|| {
+            diag.message
+                .split_whitespace()
+                .find(|word| word.contains("issue-"))
+        })
+        .map(|s| s.trim_end_matches(|c: char| !c.is_alphanumeric() && c != '-'))
+        .unwrap_or("none");
+
+    // Map display code to next crate suggestion
+    let next_crate = match display {
+        DiagCode::UnsupportedTypeScriptSyntax => "frontend (parser/TS erasure)",
+        DiagCode::UnsupportedSyntax => "frontend (parser) or ir (lowering)",
+        DiagCode::UnsupportedBuiltin => "runtime (builtin stubs)",
+        DiagCode::UnsupportedRuntimeSubset => "runtime or ir (lowering)",
+        DiagCode::UnsupportedDate => "runtime (Date implementation)",
+        DiagCode::UnsupportedRegExp => "runtime (RegExp implementation)",
+        DiagCode::UnsupportedModule => "compiler (module graph) or runtime",
+        DiagCode::UnsupportedEval => "reference/triage (eval strategy)",
+        _ => "unknown",
+    };
+
+    eprintln!("\n── explain-unsupported ──────────────────────────────");
+    eprintln!("  code:       {:?}", display);
+    eprintln!("  fixture:    {}", input.display());
+    eprintln!("  tracking:   {}", tracking);
+    eprintln!("  message:    {}", diag.message);
+    eprintln!("  next crate: {}", next_crate);
+    eprintln!("─────────────────────────────────────────────────\n");
 }

@@ -15,6 +15,7 @@ path = "src/lib.rs"
 
 [dependencies]
 ts2wasm-compiler = { path = "../compiler" }
+ts2wasm-frontend = { path = "../frontend" }
 clap = { version = "4", features = ["derive"] }
 
 [dev-dependencies]
