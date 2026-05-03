@@ -3,9 +3,10 @@
 <script>
 (function() {
   const pathname = window.location.pathname;
-  const base = pathname.replace(/\/?dashboard\/?$/, '');
-  const normalizedBase = base === '' ? '' : (base.endsWith('/') ? base : `${base}/`);
-  const target = `${normalizedBase}dashboard/index.html`;
+  const dashboardStart = pathname.indexOf('/dashboard');
+  const rootPrefix = dashboardStart === -1 ? '' : pathname.slice(0, dashboardStart);
+  const normalizedPrefix = rootPrefix.endsWith('/') ? rootPrefix.slice(0, -1) : rootPrefix;
+  const target = `${normalizedPrefix}/dashboard/index.html`;
   if (window.location.pathname !== target) {
     window.location.replace(target);
   }
