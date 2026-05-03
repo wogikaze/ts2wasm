@@ -215,19 +215,40 @@ pub fn lower_program(program: &[ResolvedStmt]) -> Result<LoweredProgram, Diagnos
             ResolvedStmt::Function { .. } => {}
             ResolvedStmt::ClassDecl {
                 name,
+                extends,
+                constructor,
+                methods,
+                private_fields,
                 static_private_fields,
                 static_blocks,
                 ..
             } => {
-                // LIMITATION: Class declarations are partially supported. Constructor and methods
-                // are lowered as standalone functions with env-cell capture support. The class
-                // binding (constructor function, prototype chain) IS NOT emitted — the statement
-                // is dropped. This means:
-                //   - Class method bodies work (env cells, captures, `this`)
-                //   - `new C()`, `C.prototype`, `C.staticMethod` reference the class as a value
-                //     and will produce incorrect runtime results (undefined)
-                // TODO: Implement full class runtime support (constructor, prototype, extends,
-                // static members, private elements). Tracked as issue 5011.
+                // Look up FuncIds for constructor and methods (pre-computed in phase 1)
+                let ctor_id = constructor.as_ref().map(|_| {
+                    let key = class_constructor_key(name);
+                    function_ids[&key]
+                });
+                let mut instance_methods = Vec::new();
+                let mut static_methods = Vec::new();
+                for method in methods {
+                    let key = class_method_key(name, &method.name);
+                    let method_id = function_ids[&key];
+                    if let Some(stripped) = method.name.strip_prefix("static::") {
+                        static_methods.push((stripped.to_owned(), method_id));
+                    } else {
+                        instance_methods.push((method.name.clone(), method_id));
+                    }
+                }
+
+                // Emit class binding first (JS semantics: class visible before static init)
+                top_level_statements.push(LoweredStmt::ClassDecl {
+                    name: name.clone(),
+                    extends: extends.clone(),
+                    constructor: ctor_id,
+                    methods: instance_methods,
+                    static_methods,
+                    private_fields: private_fields.clone(),
+                });
                 let mut initializers = Vec::new();
                 for (field, initializer, span) in static_private_fields {
                     initializers.push(ClassStaticInitializer::PrivateField {

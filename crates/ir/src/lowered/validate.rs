@@ -240,11 +240,36 @@ fn validate_stmt(
         LoweredStmt::Export { expr, .. } | LoweredStmt::ModuleExportsAssign { expr } => {
             validate_expr(expr, local_count, num_funcs, program, errors, true);
         }
-        LoweredStmt::ClassDecl { .. } => {
-            // Dead variant: ResolvedStmt::ClassDecl is handled directly in program.rs:216
-            // (constructor/methods extracted as functions, statement dropped). It never reaches
-            // the lowered resolver or the validator. This variant is a future-class-support
-            // placeholder. See the LIMITATION comment in program.rs for details.
+        LoweredStmt::ClassDecl {
+            constructor,
+            methods,
+            static_methods,
+            ..
+        } => {
+            if let Some(ctor_id) = constructor {
+                if ctor_id.0 >= num_funcs {
+                    errors.push(Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "ClassDecl constructor FuncId {} is out of range (program has {} function(s))",
+                            ctor_id.0, num_funcs
+                        ),
+                        span: None,
+                    });
+                }
+            }
+            for (_, method_id) in methods.iter().chain(static_methods.iter()) {
+                if method_id.0 >= num_funcs {
+                    errors.push(Diagnostic {
+                        code: DiagCode::InvariantViolation,
+                        message: format!(
+                            "ClassDecl method FuncId {} is out of range (program has {} function(s))",
+                            method_id.0, num_funcs
+                        ),
+                        span: None,
+                    });
+                }
+            }
         }
     }
 }

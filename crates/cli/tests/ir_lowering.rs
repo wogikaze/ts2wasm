@@ -95,7 +95,23 @@ fn lowering_passes_immutable_class_method_outer_local_capture() {
     let read = &lowered.functions[1];
     assert_eq!(read.params, vec![LocalId(0), LocalId(1), LocalId(2)]);
 
-    match &lowered.top_level_statements[2] {
+    // Verify ClassDecl is emitted with constructor and read method FuncIds
+    match &lowered.top_level_statements[1] {
+        LoweredStmt::ClassDecl {
+            name,
+            constructor,
+            methods,
+            ..
+        } => {
+            assert_eq!(name, "Reader");
+            assert!(constructor.is_none());
+            assert_eq!(methods.len(), 1);
+            assert_eq!(methods[0].0, "read");
+        }
+        other => panic!("unexpected class decl statement: {other:?}"),
+    }
+
+    match &lowered.top_level_statements[3] {
         LoweredStmt::Expr(LoweredExpr::Call {
             kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
             args,
@@ -796,7 +812,26 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
     );
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
+    // ClassDecl is now emitted at index 0
     match &lowered.top_level_statements[0] {
+        LoweredStmt::ClassDecl {
+            name,
+            constructor,
+            methods,
+            private_fields,
+            ..
+        } => {
+            assert_eq!(name, "Counter");
+            assert!(constructor.is_some());
+            assert_eq!(methods.len(), 2);
+            assert_eq!(methods[0].0, "read");
+            assert_eq!(methods[1].0, "write");
+            assert_eq!(private_fields.as_slice(), ["value"]);
+        }
+        other => panic!("unexpected class decl: {other:?}"),
+    }
+
+    match &lowered.top_level_statements[1] {
         LoweredStmt::Let(
             LocalId(0),
             LoweredExpr::New {
@@ -844,7 +879,7 @@ fn lowering_represents_private_field_access_as_internal_slot_calls() {
         other => panic!("unexpected private field read lowering: {other:?}"),
     }
 
-    match &lowered.top_level_statements[1] {
+    match &lowered.top_level_statements[2] {
         LoweredStmt::Expr(LoweredExpr::Call {
             kind: FunctionCallKind::Builtin(ts2wasm_ir::builtin::BuiltinId::ConsoleLog),
             ..
@@ -1092,7 +1127,28 @@ fn lowering_represents_static_private_field_access_as_same_class_env_cell() {
     );
     let lowered = ts2wasm_ir::lowered::lower_program(&program).unwrap();
 
+    // ClassDecl is now emitted at index 0
     match &lowered.top_level_statements[0] {
+        LoweredStmt::ClassDecl {
+            name,
+            constructor,
+            methods,
+            static_methods,
+            private_fields,
+            ..
+        } => {
+            assert_eq!(name, "C");
+            assert!(constructor.is_none());
+            assert_eq!(methods.len(), 0);
+            assert_eq!(static_methods.len(), 2);
+            assert_eq!(static_methods[0].0, "read");
+            assert_eq!(static_methods[1].0, "write");
+            assert!(private_fields.is_empty());
+        }
+        other => panic!("unexpected class decl: {other:?}"),
+    }
+
+    match &lowered.top_level_statements[1] {
         LoweredStmt::Let(LocalId(0), LoweredExpr::EnvCellNew(initializer)) => {
             assert!(matches!(initializer.as_ref(), LoweredExpr::Number(3)));
         }
