@@ -70,6 +70,22 @@ const KNOWN_FEATURES: &[(&str, &str)] = &[
     ("WeakSet", "issue-5025"),
     ("WebAssembly", "issue-5025"),
     ("error-message", "issue-5024"),
+    // --- commonly used standard / enabled features ---
+    ("legacy-regexp", "issue-5024"),
+    ("arrow-function", "issue-5000"),
+    ("Reflect.construct", "issue-5025"),
+    ("string-trimming", "issue-5025"),
+    ("cross-realm", "issue-5023"),
+    ("class", "issue-5011"),
+    ("generators", "issue-401"),
+    ("BigInt", "issue-281"),
+    ("regexp-named-groups", "issue-5024"),
+    ("regexp-dotall", "issue-5024"),
+    ("Symbol.replace", "issue-5025"),
+    ("Symbol.match", "issue-5025"),
+    ("Symbol.split", "issue-5025"),
+    ("Symbol.iterator", "issue-5052"),
+    ("Symbol.toPrimitive", "issue-5025"),
 ];
 
 /// Process test262 metadata directives if present in source.
