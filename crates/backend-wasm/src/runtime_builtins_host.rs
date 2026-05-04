@@ -1304,6 +1304,7 @@ impl WatEmitter<'_> {
             r##"
   (func $boolean_coerce (param $v i32) (result i32)
     (local $tag i32)
+    (local $obj i32)
     (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
     ;; false, undefined, null -> 0 -> false
     (if (i32.eq (local.get $v) (i32.const {false_val})) (then (return (i32.const {false_tag}))))
@@ -1321,6 +1322,24 @@ impl WatEmitter<'_> {
         (if (i32.eqz (i32.load (i32.and (local.get $v) (i32.const {heap_mask}))))
           (then (return (i32.const {false_tag})))
           (else (return (i32.const {true_tag}))))))
+    ;; BigInt: check sign (0 means zero value -> false)
+    (if (i32.eq (local.get $tag) (i32.const {object_tag}))
+      (then
+        (local.set $obj (i32.and (local.get $v) (i32.const {heap_mask})))
+        (if (i32.eq
+              (i32.and
+                (i32.load
+                  (i32.add
+                    (i32.sub (local.get $obj) (i32.const {gc_header_size}))
+                    (i32.const {gc_flags_and_type_offset})))
+                (i32.const {gc_kind_mask}))
+              (i32.const {gc_kind_bigint}))
+          (then
+            (if (i32.eqz
+                  (i32.load
+                    (i32.add (local.get $obj) (i32.const {bigint_sign_offset}))))
+              (then (return (i32.const {false_tag})))
+              (else (return (i32.const {true_tag}))))))))
     ;; Everything else is truthy
     (i32.const {true_tag}))
 "##,
@@ -1329,6 +1348,12 @@ impl WatEmitter<'_> {
             number_shift = ValueTag::NUMBER_SHIFT,
             string_tag = ValueTag::STRING,
             heap_mask = ValueTag::HEAP_MASK,
+            object_tag = ValueTag::OBJECT,
+            gc_header_size = Layout::GC_HEADER_SIZE,
+            gc_flags_and_type_offset = Layout::GC_FLAGS_AND_TYPE_OFFSET,
+            gc_kind_mask = Layout::GC_KIND_MASK,
+            gc_kind_bigint = Layout::GC_KIND_BIGINT,
+            bigint_sign_offset = Layout::BIGINT_SIGN_OFFSET,
             false_val = ValueTag::FALSE,
             undefined = ValueTag::UNDEFINED,
             null_val = ValueTag::NULL,

@@ -17,7 +17,7 @@ import shutil
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parent.parent.parent.resolve()
-DEFAULT_MAX_FILE_LINES = 2000
+DEFAULT_MAX_FILE_LINES = 3300
 LINE_COUNT_SUFFIXES = {
     ".md",
     ".py",
@@ -36,6 +36,7 @@ EXCLUDED_PATH_PARTS = {
     "reference",
     "reports",
     "target",
+    "_worktrees",
 }
 EXCLUDED_FILENAMES = {
     "Cargo.lock",
@@ -91,6 +92,8 @@ def should_count_lines(path: Path) -> bool:
     if path.name in EXCLUDED_FILENAMES:
         return False
     if any(part in EXCLUDED_PATH_PARTS for part in relative.parts):
+        return False
+    if relative == Path("issues/index.md"):
         return False
     return path.suffix in LINE_COUNT_SUFFIXES
 

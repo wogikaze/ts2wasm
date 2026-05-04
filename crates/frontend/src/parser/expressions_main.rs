@@ -1481,6 +1481,10 @@ impl Parser {
             Some(SpannedToken {
                 kind: Token::Ident(name),
                 span,
+            }) if name == "debugger" => Ok(Expr::Undefined { span }),
+            Some(SpannedToken {
+                kind: Token::Ident(name),
+                span,
             }) => Ok(Expr::Ident { name, span }),
             Some(SpannedToken {
                 kind: Token::This,

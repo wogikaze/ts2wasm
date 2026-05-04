@@ -2562,11 +2562,11 @@ impl WatEmitter<'_> {
     (local.set $tag (i32.and (local.get $arr) (i32.const {tag_mask})))
     (if (i32.ne (local.get $tag) (i32.const {array_tag})) (then (return (i32.const {undefined}))))
     (local.set $obj (i32.and (local.get $arr) (i32.const {heap_mask})))
-    ;; Untag depth: tagged number → raw value; if not a number, default to 1
+    ;; Validate depth: if not a tagged number, default to depth=1 (tagged)
     (local.set $depth
       (select
-        (i32.shr_u (local.get $depth) (i32.const {number_shift}))
-        (i32.const {one})
+        (local.get $depth)
+        (i32.const {one_tagged})
         (i32.eq (i32.and (local.get $depth) (i32.const {tag_mask})) (i32.const {number_tag}))))
     (local.set $len (i32.load (local.get $obj)))
     ;; First pass: count result elements
@@ -2585,10 +2585,10 @@ impl WatEmitter<'_> {
         (local.set $tag (i32.and (local.get $elem) (i32.const {tag_mask})))
         (if (i32.eq (local.get $tag) (i32.const {array_tag}))
           (then
-            (if (i32.gt_s (local.get $depth) (i32.const {zero}))
+            (if (i32.gt_s (i32.shr_u (local.get $depth) (i32.const {number_shift})) (i32.const {zero}))
               (then
                 (local.set $flat_sub
-                  (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one}))))
+                  (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one_tagged}))))
                 (local.set $result_len
                   (i32.add
                     (local.get $result_len)
@@ -2628,10 +2628,10 @@ impl WatEmitter<'_> {
         (local.set $tag (i32.and (local.get $elem) (i32.const {tag_mask})))
         (if (i32.eq (local.get $tag) (i32.const {array_tag}))
           (then
-            (if (i32.gt_s (local.get $depth) (i32.const {zero}))
+            (if (i32.gt_s (i32.shr_u (local.get $depth) (i32.const {number_shift})) (i32.const {zero}))
               (then
                 (local.set $flat_sub
-                  (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one}))))
+                  (call $array_flat (local.get $elem) (i32.sub (local.get $depth) (i32.const {one_tagged}))))
                 (local.set $flat_obj (i32.and (local.get $flat_sub) (i32.const {heap_mask})))
                 (local.set $flat_len (i32.load (local.get $flat_obj)))
                 (local.set $j (i32.const {zero}))
@@ -2686,6 +2686,7 @@ impl WatEmitter<'_> {
             one = RuntimeConst::ONE,
             number_shift = ValueTag::NUMBER_SHIFT,
             number_tag = ValueTag::NUMBER,
+            one_tagged = (RuntimeConst::ONE << ValueTag::NUMBER_SHIFT) | ValueTag::NUMBER,
             undefined = ValueTag::UNDEFINED,
         ));
     }
