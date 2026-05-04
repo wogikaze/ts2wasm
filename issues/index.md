@@ -21,12 +21,12 @@ Issue files are the source of truth for work items. The generated section below 
 | issues | 4 | 0 | 4 |
 | parser | 1 | 0 | 1 |
 | reference | 211 | 183 | 28 |
-| runtime | 259 | 101 | 158 |
+| runtime | 259 | 100 | 159 |
 | scripts | 2 | 0 | 2 |
 | security | 1 | 0 | 1 |
 | tests | 6 | 0 | 6 |
 | wasi | 1 | 0 | 1 |
-| total | 4929 | 4055 | 874 |
+| total | 4929 | 4054 | 875 |
 <!-- generated:summary:end -->
 
 ## Reading rules
@@ -165,7 +165,6 @@ Issue files are the source of truth for work items. The generated section below 
 <!-- generated:blocked:start -->
 | ID | Title | Type | Area | Blocker | Summary |
 |---:|---|---|---|---|---|
-| 017b | Implement GC strategy | feature | runtime/memory | class: blocked | Implement GC strategy |
 | 021 | Implement full wasm backend | feature | backend | class: blocked | Implement full wasm backend |
 | 050 | Implement Date | feature | runtime/builtins | class: blocked | Implement Date |
 | 052 | Implement JSON | feature | runtime/builtins | class: blocked | Implement JSON |
@@ -4244,6 +4243,7 @@ Issue files are the source of truth for work items. The generated section below 
 | 016 | Implement prototype and method call support | feature | runtime/semantics | see `issues/done/016-implement-prototype-and-method-call-support.md` |
 | 017 | Design and implement GC strategy | feature | runtime/memory | see file |
 | 017a | Design GC strategy | feature | runtime/memory | see `issues/done/017a-design-gc-strategy.md` |
+| 017b | Implement GC strategy | feature | runtime/memory | see `issues/done/017b-implement-gc-strategy.md` |
 | 018 | Implement UTF-8 string support | feature | runtime/semantics | see file |
 | 019 | Integrate TypeScript parser/checker | feature | frontend | see file |
 | 019a | Integrate TypeScript compiler API for type checking | feature | frontend | see file |

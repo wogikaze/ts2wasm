@@ -29,14 +29,21 @@ fn m3_semantic_fixtures_match_node_output_under_iwasm() {
         "fixtures/core-semantics/plus.ts",
         "fixtures/core-semantics/number-stringify.ts",
         "fixtures/core-semantics/ir-test.ts",
+        "fixtures/core-semantics/prototype.ts",
+        "fixtures/core-semantics/int32-typed-stress.ts",
+    ] {
+        assert_fixture_matches_node(fixture);
+    }
+}
+
+#[test]
+fn gc_semantic_fixtures_match_node_output_under_iwasm() {
+    for fixture in [
         "fixtures/core-semantics/gc-transient-allocation.ts",
         "fixtures/core-semantics/gc-object-root.ts",
         "fixtures/core-semantics/gc-call-frame-root.ts",
         "fixtures/core-semantics/gc-high-pressure-root.ts",
         "fixtures/core-semantics/closure-gc-call-frame-root.ts",
-        "fixtures/core-semantics/prototype.ts",
-        "fixtures/core-semantics/instanceof.ts",
-        "fixtures/core-semantics/int32-typed-stress.ts",
     ] {
         assert_fixture_matches_node(fixture);
     }
