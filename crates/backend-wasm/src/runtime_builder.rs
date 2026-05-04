@@ -186,6 +186,8 @@ impl WatEmitter<'_> {
                 RuntimeFn::MathMin => self.emit_math_min(wat),
                 RuntimeFn::MathPow => self.emit_math_pow(wat),
                 RuntimeFn::MathRandom => self.emit_math_random(wat),
+                RuntimeFn::MathTrunc => self.emit_math_trunc(wat),
+                RuntimeFn::MathSign => self.emit_math_sign(wat),
                 RuntimeFn::JsonStringify => self.emit_json_stringify(wat),
                 RuntimeFn::JsonParse => self.emit_json_parse(wat),
                 RuntimeFn::ModuleRequire => self.emit_module_require(wat),

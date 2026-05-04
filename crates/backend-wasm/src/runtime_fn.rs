@@ -280,6 +280,10 @@ pub(crate) enum RuntimeFn {
     MathMin,
     MathPow,
     MathRandom,
+    /// Math.trunc - no-op for integer-backed numbers.
+    MathTrunc,
+    /// Math.sign - returns 1, 0, or -1 for integer-backed numbers.
+    MathSign,
     /// M10: JSON functions
     JsonStringify,
     JsonParse,
@@ -590,6 +594,8 @@ pub(crate) fn runtime_fn_from_name(name: &str) -> Option<RuntimeFn> {
         "MathMax" => Some(RuntimeFn::MathMax),
         "MathMin" => Some(RuntimeFn::MathMin),
         "MathRandom" => Some(RuntimeFn::MathRandom),
+        "MathTrunc" => Some(RuntimeFn::MathTrunc),
+        "MathSign" => Some(RuntimeFn::MathSign),
         "ErrorMessage" => Some(RuntimeFn::ErrorMessage),
         "JsonStringify" => Some(RuntimeFn::JsonStringify),
         "JsonParse" => Some(RuntimeFn::JsonParse),

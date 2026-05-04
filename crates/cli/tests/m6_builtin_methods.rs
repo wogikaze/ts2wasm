@@ -90,6 +90,16 @@ fn build_smoke_math_pow_method() {
 }
 
 #[test]
+fn build_smoke_math_trunc_sign_method() {
+    let result = run_fixture("builtins-and-io/math-trunc-sign.ts");
+    assert!(
+        result.is_ok(),
+        "Math.trunc/Math.sign should build: {:?}",
+        result.err()
+    );
+}
+
+#[test]
 fn build_smoke_object_keys_method() {
     let result = run_fixture("builtins-and-io/object-keys.ts");
     assert!(

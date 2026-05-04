@@ -201,6 +201,44 @@ impl WatEmitter<'_> {
         ));
     }
 
+    pub(super) fn emit_math_trunc(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_trunc (param $v i32) (result i32)
+    (local $tag i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {zero}))))
+    ;; trunc is no-op for integer-backed numbers
+    (local.get $v))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
+    pub(super) fn emit_math_sign(&self, wat: &mut String) {
+        wat.push_str(&format!(
+            r#"
+  (func $math_sign (param $v i32) (result i32)
+    (local $tag i32)
+    (local $n i32)
+    (local.set $tag (i32.and (local.get $v) (i32.const {tag_mask})))
+    (if (i32.ne (local.get $tag) (i32.const {number_tag})) (then (return (i32.const {zero}))))
+    (local.set $n (i32.shr_s (local.get $v) (i32.const {number_shift})))
+    (if (i32.gt_s (local.get $n) (i32.const {zero}))
+      (then (return (i32.or (i32.shl (i32.const 1) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (if (i32.lt_s (local.get $n) (i32.const {zero}))
+      (then (return (i32.or (i32.shl (i32.const -1) (i32.const {number_shift})) (i32.const {number_tag})))))
+    (return (i32.or (i32.shl (i32.const {zero}) (i32.const {number_shift})) (i32.const {number_tag}))))
+"#,
+            tag_mask = ValueTag::TAG_MASK,
+            number_tag = ValueTag::NUMBER,
+            number_shift = ValueTag::NUMBER_SHIFT,
+            zero = RuntimeConst::ZERO,
+        ));
+    }
+
     // JSON functions (M10)
 
     pub(super) fn emit_json_stringify(&self, wat: &mut String) {

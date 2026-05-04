@@ -13,6 +13,8 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
                 "min" => Some("MathMin".to_owned()),
                 "pow" => Some("MathPow".to_owned()),
                 "random" => Some("MathRandom".to_owned()),
+                "trunc" => Some("MathTrunc".to_owned()),
+                "sign" => Some("MathSign".to_owned()),
                 _ => None,
             };
         }
@@ -93,7 +95,7 @@ pub(super) fn resolve_method_to_runtime_fn(object: &ResolvedExpr, method: &str) 
 
 pub(super) fn unsupported_annex_b_string_method(method: &str, span: Span) -> Option<Diagnostic> {
     match method {
-        "anchor" | "fontcolor" | "fontsize" | "link" | "substr" => Some(Diagnostic {
+        "substr" => Some(Diagnostic {
             code: DiagCode::UnsupportedSyntax,
             message: format!("issue-067: Annex B String.prototype.{method} is not supported yet"),
             span: Some(span),
